@@ -1,7 +1,8 @@
 (ns cmr.access-control.services.messages
   "Common error messages for access control services."
-  (:require [clojure.string :as string]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]))
 
 (defn provider-does-not-exist
   [provider-id]

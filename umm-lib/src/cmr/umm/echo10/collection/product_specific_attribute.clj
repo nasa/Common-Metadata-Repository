@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.collection.product-specific-attribute
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.generator-util :as gu]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn xml-elem->ProductSpecificAttribute
   [psa-elem]

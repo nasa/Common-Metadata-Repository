@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.product-specific-attribute
   "Contains functions for parsing and generating the ISO MENDS product specific attributes"
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn xml-elem->ProductSpecificAttribute
   "Returns the parsed product specific attribute from the given xml element"

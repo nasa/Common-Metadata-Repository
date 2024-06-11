@@ -1,9 +1,10 @@
 (ns cmr.metadata-db.services.provider-validation
   "Contains functions to validate provider."
-  (:require [cmr.common.validations.core :as v]
-            [cmr.common.services.messages :as cmsg]
-            [clojure.string :as string]
-            [cmr.metadata-db.services.messages :as msg]))
+  (:require
+   [cmr.common.validations.core :as v]
+   [cmr.common.services.messages :as cmsg]
+   [clojure.string :as string]
+   [cmr.metadata-db.services.messages :as msg]))
 
 (def small-provider-id
   "Provider id of the small provider"

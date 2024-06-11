@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.collection.two-d-coordinate-system
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->Coordinate
   [coord-elem]

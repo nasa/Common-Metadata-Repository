@@ -1,10 +1,11 @@
 (ns cmr.umm.echo10.granule.measured-parameter
   "Contains functions for parsing and generating the ECHO10 dialect for measured parameters."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->QAStats
   "Returns a UMM QAStats from a parsed XML structure"

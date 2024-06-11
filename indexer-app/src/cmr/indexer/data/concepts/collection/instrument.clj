@@ -1,8 +1,9 @@
 (ns cmr.indexer.data.concepts.collection.instrument
   "Contains functions for converting instrument hierarchies into elastic documents"
-  (:require [clojure.string :as string]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common-app.services.kms-lookup :as kms-lookup]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
 (def default-instrument-values
   "Default values to use for any platform fields which are nil."

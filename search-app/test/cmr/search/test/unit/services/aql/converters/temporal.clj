@@ -1,10 +1,11 @@
 (ns cmr.search.test.unit.services.aql.converters.temporal
-  (:require [clojure.test :refer [are deftest testing]]
-            [clojure.data.xml :as xml]
-            [cmr.common.date-time-parser :as dt-parser]
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.search.services.aql.converters.temporal]
-            [cmr.search.models.query :as q]))
+  (:require
+   [clojure.test :refer [are deftest testing]]
+   [clojure.data.xml :as xml]
+   [cmr.common.date-time-parser :as dt-parser]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.search.services.aql.converters.temporal]
+   [cmr.search.models.query :as q]))
 
 
 (defn- aql-temporal-elem->condition

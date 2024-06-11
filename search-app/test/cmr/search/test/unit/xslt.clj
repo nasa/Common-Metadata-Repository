@@ -1,12 +1,13 @@
 (ns cmr.search.test.unit.xslt
   "Tests to verify the xsl for ECHO10 to ISO19115"
-  (:require [clojure.test :refer [deftest is testing]]
-            [clojure.data.xml :as xml]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
-            [cmr.common.util :refer [are3]]
-            [cmr.common.xml :as cx]
-            [cmr.common.xml.xslt :as xslt]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [clojure.data.xml :as xml]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common.util :refer [are3]]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.xslt :as xslt]))
 
 (def echo10-collection-no-use-constraints
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>

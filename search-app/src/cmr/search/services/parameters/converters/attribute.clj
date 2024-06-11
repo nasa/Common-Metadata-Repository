@@ -1,17 +1,19 @@
 (ns cmr.search.services.parameters.converters.attribute
   "Contains functions for converting additional attribute search parameters to a query model"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.es-params-converter :as p]
-            [clojure.string :as string]
-            [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.date-time-parser :as date-time-parser])
-  (:import [cmr.search.models.query
-            AttributeNameAndGroupCondition
-            AttributeValueCondition
-            AttributeRangeCondition]
-           clojure.lang.ExceptionInfo))
+  (:require
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
+   [clojure.string :as string]
+   [cmr.search.services.messages.attribute-messages :as msg]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.date-time-parser :as date-time-parser])
+  (:import
+   [cmr.search.models.query
+    AttributeNameAndGroupCondition
+    AttributeValueCondition
+    AttributeRangeCondition]
+   clojure.lang.ExceptionInfo))
 
 (defn empty->nil
   "Converts an empty string to nil"

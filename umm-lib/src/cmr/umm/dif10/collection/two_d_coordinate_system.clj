@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.two-d-coordinate-system
   "Contains functions for convert two d coordinate systems to and parsing from DIF10 XML."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->Coordinate
   "Returns a UMM Coordinate from a parsed Coordinate XML structure"

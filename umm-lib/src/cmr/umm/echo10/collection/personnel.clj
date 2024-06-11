@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.collection.personnel
   "Provides functions to parse and generate ECHO10 personnel related elements."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.util :as util]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (def DEFAULT_FIRST_NAME
   "ECHO10 requires a FirstName tag, but the UMM does not. This is the default if it is

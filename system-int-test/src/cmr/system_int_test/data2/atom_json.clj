@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.data2.atom-json
   "Contains helper functions for converting concepts into the expected map of
   parsed json results."
-  (:require [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [clojure.string :as string]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.echo10.spatial :as echo-s]
-            [cmr.system-int-test.data2.atom :as atom]
-            [cmr.system-int-test.data2.facets :as f]
-            [cmr.common.date-time-parser :as dtp]))
+  (:require
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cheshire.core :as json]
+   [cmr.common.util :as util]
+   [clojure.string :as string]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.echo10.spatial :as echo-s]
+   [cmr.system-int-test.data2.atom :as atom]
+   [cmr.system-int-test.data2.facets :as f]
+   [cmr.common.date-time-parser :as dtp]))
 
 (defn json-polygons->polygons
   [polygons]

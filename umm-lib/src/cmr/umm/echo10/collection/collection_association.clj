@@ -1,7 +1,8 @@
 (ns cmr.umm.echo10.collection.collection-association
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->CollectionAssociation
   [ca-elem]

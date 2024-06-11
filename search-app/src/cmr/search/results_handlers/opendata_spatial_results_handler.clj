@@ -1,8 +1,9 @@
 (ns cmr.search.results-handlers.opendata-spatial-results-handler
   "A helper for converting spatial shapes into opendata results"
-  (:require [clojure.data.xml :as xml]
-            [cmr.spatial.encoding.gml :as gml]
-            [clojure.string :as string]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.spatial.encoding.gml :as gml]
+   [clojure.string :as string]))
 
 (def coordinate-syste->srs-name
   {:cartesian "EPSG:9825" ; Psuedo Plate Carree

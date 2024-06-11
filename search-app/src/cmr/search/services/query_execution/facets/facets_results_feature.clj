@@ -1,10 +1,11 @@
 (ns cmr.search.services.query-execution.facets.facets-results-feature
   "This enables returning facets with collection search results"
-  (:require [cmr.elastic-utils.search.query-execution :as query-execution]
-            [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-            [cmr.common.services.search.results-model :as r]
-            [camel-snake-kebab.core :as csk]
-            [clojure.data.xml :as xml]))
+  (:require
+   [cmr.elastic-utils.search.query-execution :as query-execution]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common.services.search.results-model :as r]
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as xml]))
 
 (def UNLIMITED_TERMS_SIZE
   "The maximum number of results to return from any terms query"

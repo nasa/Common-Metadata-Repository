@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.org
   "Archive and Processing Center elements of ISO are mapped umm organization elements."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.keyword :as k]
+   [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Organizations
   "Return organizations or []"

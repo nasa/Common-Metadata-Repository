@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.collection.progress
   "Functions for parsing/generating UMM collection progress from/to
   ECHO10 XML."
-  (:require [clojure.data.xml :as xml]
-            [clojure.string :as string]
-            [cmr.common.xml :as cx]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]))
 
 (def umm->echo
   {:planned "Planned"

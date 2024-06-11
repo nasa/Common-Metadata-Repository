@@ -1,8 +1,9 @@
 (ns cmr.umm.iso-smap.helper
   "Contains functions used by SMAP ISO collection and granule generation"
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [clj-time.format :as f]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [clj-time.format :as f]))
 
 (defn xml-elem-with-path-value
   "Returns the identification element with the given path and value"

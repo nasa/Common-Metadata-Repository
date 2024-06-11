@@ -1,17 +1,18 @@
 (ns cmr.mock-echo.client.echo-functionality
   "Contains functions for communicating with the mock echo api that aren't normal echo-rest
   operations"
-  (:require [camel-snake-kebab.core :as csk]
-            [cheshire.core :as json]
-            [clojure.string :as string]
-            [clojure.set :as set]
-            [clj-http.client :as client]
-            [clj-time.format :as f]
-            [cmr.common.util :as util]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clojure.string :as string]
+   [clojure.set :as set]
+   [clj-http.client :as client]
+   [clj-time.format :as f]
+   [cmr.common.util :as util]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
             
 (defn request-options
   [conn]

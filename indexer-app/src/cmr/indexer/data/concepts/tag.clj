@@ -1,8 +1,9 @@
 (ns cmr.indexer.data.concepts.tag
   "Contains functions to parse and convert tag concepts"
-  (:require [clojure.string :as string]
-            [cmr.common.util :as util]
-            [cmr.indexer.data.elasticsearch :as es]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.indexer.data.elasticsearch :as es]))
 
 (defmethod es/parsed-concept->elastic-doc :tag
   [context concept parsed-concept]

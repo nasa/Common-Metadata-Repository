@@ -1,10 +1,11 @@
 (ns cmr.search.test.unit.services.query-walkers.collection-query-resolver
-  (:require [clojure.test :refer [deftest is testing]]
-            [cmr.search.services.query-walkers.collection-query-resolver :as c]
-            [cmr.search.test.unit.models.helpers :refer [and-conds coll-query-cond generic or-conds other]]
-            [clojure.string :as string]
-            [cmr.common.services.search.query-model :as cqm]
-            [clojure.set :as set]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.search.services.query-walkers.collection-query-resolver :as c]
+   [cmr.search.test.unit.models.helpers :refer [and-conds coll-query-cond generic or-conds other]]
+   [clojure.string :as string]
+   [cmr.common.services.search.query-model :as cqm]
+   [clojure.set :as set]))
 (defn query
   [condition]
   (cqm/query {:concept-type :granule

@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.personnel
   "Provides functions to parse and generate DIF Personnel elements."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->personnel
   "Returns the personnel records for a parsed Collection XML structure or nil if the elements

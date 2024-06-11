@@ -1,11 +1,12 @@
 (ns cmr.search.services.parameters.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [clojure.string :as string]
-            [cmr.common.util :as cu]
-            [clojure.walk :as walk]
-            [cmr.common.services.messages :as msg]
-            [cmr.search.services.messages.attribute-messages :as a-msg]
-            [cmr.common.services.errors :as errors]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as cu]
+   [clojure.walk :as walk]
+   [cmr.common.services.messages :as msg]
+   [cmr.search.services.messages.attribute-messages :as a-msg]
+   [cmr.common.services.errors :as errors]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."

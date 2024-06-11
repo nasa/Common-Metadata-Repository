@@ -1,10 +1,11 @@
 (ns cmr.umm.echo10.granule.instrument-ref
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.echo10.granule.characteristic-ref :as cref]
-            [cmr.umm.echo10.granule.sensor-ref :as sensor]
-            [cmr.umm.echo10.collection.instrument :as ins]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.granule.characteristic-ref :as cref]
+   [cmr.umm.echo10.granule.sensor-ref :as sensor]
+   [cmr.umm.echo10.collection.instrument :as ins]))
 
 (defn xml-elem->InstrumentRef
   [instrument-ref-elem]

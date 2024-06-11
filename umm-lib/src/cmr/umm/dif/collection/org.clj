@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.org
   "Data Center elements of DIF are mapped to umm organization elements."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- data-centers->organizations
   "Returns a list of organzitions from the Data_Center XML elements. For each Data_Center,

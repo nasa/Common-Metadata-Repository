@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.collection.science-keyword
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]))
 
 (defn xml-elem->ScienceKeyword
   [science-keyword-elem]

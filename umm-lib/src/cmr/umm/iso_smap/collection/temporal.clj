@@ -1,9 +1,10 @@
 (ns cmr.umm.iso-smap.collection.temporal
   "Contains functions for parsing and generating the ISO SMAP temporal"
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed XML structure"

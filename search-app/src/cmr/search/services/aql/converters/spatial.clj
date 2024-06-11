@@ -1,13 +1,14 @@
 (ns cmr.search.services.aql.converters.spatial
   "Handles converting AQL spatial conditions into spatial search conditions"
-  (:require [cmr.search.services.aql.conversion :as c]
-            [cmr.common.xml :as cx]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as ls]
-            [cmr.search.models.query :as qm]))
+  (:require
+   [cmr.search.services.aql.conversion :as c]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.line-string :as ls]
+   [cmr.search.models.query :as qm]))
 
 (defmulti spatial-element->shape
   "Converts a aql spatial area element into a spatial shape"

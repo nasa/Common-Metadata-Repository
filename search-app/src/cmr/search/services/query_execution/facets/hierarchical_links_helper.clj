@@ -14,10 +14,11 @@
                \"science_keywords_h[0][topic]\" the base-field is \"science_keywords_h\".
   field-name - the query-field that needs to be added to (or removed from) the current search.
   value - the value to apply (or remove) for the given field-name."
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as string]
-            [cmr.common.util :as util]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (defn- get-indexes-for-field-name
   "Returns a set of all of the indexes for the given field name within the query parameters."

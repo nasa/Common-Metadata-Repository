@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.reference
   "Functions to parse and generate DIF10 Reference elements"
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.umm-collection :as c]))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM

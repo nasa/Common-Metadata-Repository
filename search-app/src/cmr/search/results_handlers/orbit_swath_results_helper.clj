@@ -1,10 +1,11 @@
 (ns cmr.search.results-handlers.orbit-swath-results-helper
   "Provides helper functions for result handlers that need to return orbit swaths as polygons in
   results"
-  (:require [cmr.spatial.orbits.swath-geometry :as swath]
-            [cmr.search.services.query-helper-service :as query-helper]
-            [cheshire.core :as json]
-            [clojure.string :as string]))
+  (:require
+   [cmr.spatial.orbits.swath-geometry :as swath]
+   [cmr.search.services.query-helper-service :as query-helper]
+   [cheshire.core :as json]
+   [clojure.string :as string]))
 
 (def orbit-elastic-fields
   "This is a set of the elastic fields that need to be retrieved for adding orbit swaths"

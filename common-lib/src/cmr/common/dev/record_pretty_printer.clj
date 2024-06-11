@@ -7,8 +7,9 @@
    This pretty printing capability is not enabled by default. It must be enabled for a type by
    calling the enable-record-pretty-printing macro with the record type. This would typically be
    done directly in the namespace after defining the record."
-  (:require [cmr.common.util :as util]
-            [clojure.pprint :as pp]))
+  (:require
+   [cmr.common.util :as util]
+   [clojure.pprint :as pp]))
 
 (defn mapify-record
   "Converts a record into a map with a :_type key containing a simple name of the key. The map keys

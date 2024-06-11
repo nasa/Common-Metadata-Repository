@@ -1,9 +1,10 @@
 (ns cmr.umm.iso-mends.collection.collection-association
   "Contains functions for parsing and generating the ISO MENDS collection associations"
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->CollectionAssociation
   [ca-elem]

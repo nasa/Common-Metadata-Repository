@@ -1,7 +1,8 @@
 (ns cmr.umm.dif10.collection.metadata-association
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->MetadataAssociation
   [ca-elem]

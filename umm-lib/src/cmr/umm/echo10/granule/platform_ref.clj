@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.granule.platform-ref
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.echo10.granule.instrument-ref :as inst]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.granule.instrument-ref :as inst]))
 
 (defn xml-elem->PlatformRef
   [platform-ref-elem]

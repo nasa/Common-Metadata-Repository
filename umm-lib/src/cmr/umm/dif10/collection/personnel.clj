@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.personnel
   "Provides functions to parse and generate DIF 10 Personnel elements."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.generator-util :as gu]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.generator-util :as gu]
+   [cmr.umm.umm-collection :as c]))
 
 (def personnel-roles
   "DIF 10 schema allows the following strings for personnel roles"

@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.collection.sensor
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.echo10.collection.characteristic :as ch]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.echo10.collection.characteristic :as ch]))
 
 (defn xml-elem->Sensor
   [sensor-elem]

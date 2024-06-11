@@ -1,12 +1,13 @@
 (ns cmr.search.test.unit.services.aql.conversion
-  (:require [clojure.test :refer [are deftest testing]]
-            [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.common.date-time-parser :as dt-parser]
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.common.services.search.query-model :as q]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.common.test.test-util :as tu]))
+  (:require
+   [clojure.test :refer [are deftest testing]]
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.date-time-parser :as dt-parser]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.common.test.test-util :as tu]))
 
 (defn- aql-string-elem->condition
   [aql-snippet]

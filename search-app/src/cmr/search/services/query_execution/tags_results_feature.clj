@@ -1,11 +1,12 @@
 (ns cmr.search.services.query-execution.tags-results-feature
   "This enables the :include-tags feature for collection search results. When it is enabled
   collection search results will include the list of tags that are associated with the collection."
-  (:require [clojure.string :as string]
-            [cmr.common.util :as util]
-            [clojure.edn :as edn]
-            [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-            [cmr.elastic-utils.search.query-execution :as query-execution]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [clojure.edn :as edn]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.query-execution :as query-execution]))
 
 (def stored-tags-field
   "name of the elasticsearch collection mapping field that stores the tags info"

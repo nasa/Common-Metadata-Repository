@@ -1,16 +1,18 @@
 (ns cmr.search.services.parameters.converters.two-d-coordinate-system
   "Contains functions for converting two d coordinate system search parameters to a query model."
-  (:require [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.es-params-converter :as p]
-            [clojure.string :as string]
-            [cmr.common.services.errors :as errors])
-  (:import [cmr.search.models.query
-            CoordinateValueCondition
-            CoordinateRangeCondition
-            TwoDCoordinateCondition
-            TwoDCoordinateSystemCondition]
-           clojure.lang.ExceptionInfo))
+  (:require
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors])
+  (:import
+   [cmr.search.models.query
+    CoordinateValueCondition
+    CoordinateRangeCondition
+    TwoDCoordinateCondition
+    TwoDCoordinateSystemCondition]
+   clojure.lang.ExceptionInfo))
 
 (defn- string->double
   "Returns the double value of the given string if it is not empty"

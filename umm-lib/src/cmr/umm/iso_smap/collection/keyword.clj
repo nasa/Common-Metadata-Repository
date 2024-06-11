@@ -4,14 +4,16 @@
   It would be better if the type element within the descriptiveKeywords could identify the type of
   the keywords. But currently it is always set to 'theme'. We will propose to get this changed,
   but in the mean time, we will have to parse the keyword string to determine the type of the keyword."
-  (:require [clojure.data.xml :as xml]
-            [clojure.string :as string]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-smap.helper :as h])
-  (:import cmr.umm.umm_collection.Platform
-           cmr.umm.umm_collection.Instrument
-           cmr.umm.umm_collection.ScienceKeyword))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-smap.helper :as h])
+  (:import
+   cmr.umm.umm_collection.Platform
+   cmr.umm.umm_collection.Instrument
+   cmr.umm.umm_collection.ScienceKeyword))
 
 (def KEYWORD_SEPARATOR
   "Separator used to separator keyword into keyword fields"

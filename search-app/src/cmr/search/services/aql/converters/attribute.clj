@@ -1,14 +1,15 @@
 (ns cmr.search.services.aql.converters.attribute
   "Contains functions for parsing, validating and converting additionalAttributes aql element to query conditions"
-  (:require [clojure.string :as string]
-            [cmr.common.xml :as cx]
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.search.services.parameters.converters.attribute :as p]
-            [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.common.services.errors :as errors]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.search.services.parameters.converters.attribute :as p]
+   [cmr.search.services.messages.attribute-messages :as msg]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.services.errors :as errors]))
 
 (defn- attrib-value->condition
   [attrib-type attrib-name value]

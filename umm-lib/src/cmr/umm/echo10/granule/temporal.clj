@@ -1,9 +1,10 @@
 (ns cmr.umm.echo10.granule.temporal
   "Contains functions for parsing and generating the ECHO10 granule temporal element."
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.umm-granule :as g]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-granule :as g]))
 
 (defn- xml-elem->RangeDateTime
   "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"

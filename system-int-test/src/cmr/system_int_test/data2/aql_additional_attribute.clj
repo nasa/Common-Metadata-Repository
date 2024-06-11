@@ -1,9 +1,10 @@
 (ns cmr.system-int-test.data2.aql-additional-attribute
   "Contains helper functions for converting additional attribute value parameters into aql string."
-  (:require [clojure.data.xml :as xml]
-            [clj-time.core :as t]
-            [cmr.common.date-time-parser :as p]
-            [cmr.system-int-test.data2.aql :as a]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clj-time.core :as t]
+   [cmr.common.date-time-parser :as p]
+   [cmr.system-int-test.data2.aql :as a]))
 
 (defn generate-time-element
   "Returns the xml element for the give time string"

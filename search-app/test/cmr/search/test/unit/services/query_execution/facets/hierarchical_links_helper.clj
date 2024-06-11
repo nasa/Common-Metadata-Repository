@@ -1,8 +1,9 @@
 (ns cmr.search.test.unit.services.query-execution.facets.hierarchical-links-helper
   "Unit tests for facets hierarchical links helper namespace."
-  (:require [clojure.test :refer [deftest is testing]]
-            [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
-            [cmr.common.util :refer [are3]]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
+   [cmr.common.util :refer [are3]]))
 
 (def base-url
   "Base URL for each request."

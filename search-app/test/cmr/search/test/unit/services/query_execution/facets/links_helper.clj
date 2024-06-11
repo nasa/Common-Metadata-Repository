@@ -1,8 +1,9 @@
 (ns cmr.search.test.unit.services.query-execution.facets.links-helper
   "Unit tests for facets links helper namespace."
-  (:require [clojure.test :refer [deftest is testing]]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]
-            [cmr.common.util :refer [are3]]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.search.services.query-execution.facets.links-helper :as lh]
+   [cmr.common.util :refer [are3]]))
 
 (def base-url
   "Base URL for each request."

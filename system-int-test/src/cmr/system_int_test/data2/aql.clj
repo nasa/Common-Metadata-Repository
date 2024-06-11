@@ -1,9 +1,10 @@
 (ns cmr.system-int-test.data2.aql
   "Contains helper functions for converting parameters into aql string."
-  (:require [clojure.data.xml :as xml]
-            [clj-time.core :as t]
-            [cmr.common.util :as u]
-            [cmr.common.date-time-parser :as p]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clj-time.core :as t]
+   [cmr.common.util :as u]
+   [cmr.common.date-time-parser :as p]))
 
 (defn- generate-value-element
   "Returns the xml element for the given element value. It will be either value or textPattern."

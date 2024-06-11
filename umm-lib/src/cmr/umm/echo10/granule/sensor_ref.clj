@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.granule.sensor-ref
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.echo10.granule.characteristic-ref :as cref]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.granule.characteristic-ref :as cref]))
 
 (defn xml-elem->SensorRef
   [sensor-ref-elem]

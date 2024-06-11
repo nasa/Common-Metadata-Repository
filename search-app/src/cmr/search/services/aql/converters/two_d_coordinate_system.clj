@@ -1,10 +1,11 @@
 (ns cmr.search.services.aql.converters.two-d-coordinate-system
   "Contains functions for converting TwoDCoordinateSystem aql element to query conditions"
-  (:require [cmr.common.xml :as cx]
-            [clojure.string :as string]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as qm]))
+  (:require
+   [cmr.common.xml :as cx]
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.search.models.query :as qm]))
 
 (defn- element->coordinate-cond
   "Returns the two d coordinate condition for the given element and coordinate index"

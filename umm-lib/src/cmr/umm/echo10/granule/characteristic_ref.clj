@@ -1,7 +1,8 @@
 (ns cmr.umm.echo10.granule.characteristic-ref
-  (:require [clojure.data.xml :as xml]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]))
 
 (defn xml-elem->CharacteristicRef
   [char-elem]
