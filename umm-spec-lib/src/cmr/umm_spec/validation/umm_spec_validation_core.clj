@@ -8,8 +8,7 @@
    [cmr.umm-spec.validation.parent-weaver :as pw]
    [cmr.umm-spec.additional-attribute :as aa]
    [cmr.common.services.errors :as e]
-   [clojure.string :as str]
-   [cmr.umm.iso-smap.granule.orbit]))
+   [clojure.string :as str]))
 
 (defmulti humanize-field-for-error-msg
   "Converts a field name into an easier to read field name.  This should only be used when
