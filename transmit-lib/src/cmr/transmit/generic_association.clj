@@ -2,10 +2,9 @@
   "This contains functions for interacting with the generic association API."
   (:require
    [cheshire.core :as json]
-   [cmr.common.concepts :as concepts]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]))
+   [cmr.transmit.http-helper :as hh]))
 
 (defn- generic-association-url-for-concept-revision
   "Returns the generic association url for the given concept-id and revision-id."
@@ -32,7 +31,7 @@
   ([context concept-id revision-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn #(generic-association-url-for-concept-revision % concept-id revision-id)
                  :method :post
                  :raw? raw?
@@ -55,7 +54,7 @@
   ([context concept-id revision-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn #(generic-association-url-for-concept-revision % concept-id revision-id)
                  :method :delete
                  :raw? raw?

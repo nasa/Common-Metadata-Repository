@@ -3,9 +3,7 @@
   (:require [cmr.transmit.connection :as conn]
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
-            [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util :refer [defn-timed]]))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -23,20 +21,16 @@
           (concept-type->url-part concept-type)
           (codec/url-encode native-id)))
 
-(defn- health-url
-  [conn]
-  (format "%s/health" (conn/root-url conn)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed ingest-concept
   "Send a request to ingest service to ingest a concept using the optional headers"
   ([context concept headers]
    (ingest-concept context concept headers false))
   ([context concept headers raw]
-   (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept]
+   (let [{:keys [provider-id concept-type metadata native-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :put
@@ -45,12 +39,13 @@
                                 :content-type (:format concept)
                                 :headers headers
                                 :accept :json}}))))
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-concept
   "Send a request to ingest service to delete a concept using the optional headers"
   ([context concept headers]
    (ingest-concept context concept headers false))
   ([context concept headers raw]
-   (let [{:keys [provider-id concept-type native-id revision-id]} concept]
+   (let [{:keys [provider-id concept-type native-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
@@ -59,4 +54,5 @@
                                 :accept :json}}))))
 
 ;; Defines health check function
+(declare get-ingest-health)
 (h/defhealther get-ingest-health :ingest {:timeout-secs 2})
