@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.migrations.033-replace-tags-namespace-and-value-with-tag-key
   (:require [clojure.java.jdbc :as j]
             [clojure.edn :as edn]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [config.mdb-migrate-config :as config]
             [cmr.common.util :as util]
             [config.mdb-migrate-helper :as h]))
@@ -26,11 +26,11 @@
           ;; Some rows may already have a tag-key instead of namespace and value.
           {:keys [namespace value tag-key]} metadata
           tag-key (or tag-key
-                      (str/lower-case (str namespace "." value)))
+                      (string/lower-case (str namespace "." value)))
           ;; Tombstones don't have metadata so the best we can do is replace the char 29 with a
           ;; dot.
           native-id (if deleted
-                      (str/replace native_id (str (char 29)) ".")
+                      (string/replace native_id (str (char 29)) ".")
                       tag-key)
           metadata (if deleted
                      metadata
@@ -54,7 +54,7 @@
     (let [{:keys [id metadata deleted native_id]} result
           result (if deleted
                    ;; Just replace the . at the end of the native id with a group separator.
-                  (let [native-id (str/replace native_id #"\.(.*?$)" (str (char 29) "$1"))]
+                  (let [native-id (string/replace native_id #"\.(.*?$)" (str (char 29) "$1"))]
                     (assoc result :native_id native-id))
                   ;; There is no way to properly recover a namespace and value that have a
                   ;; "." in the value.

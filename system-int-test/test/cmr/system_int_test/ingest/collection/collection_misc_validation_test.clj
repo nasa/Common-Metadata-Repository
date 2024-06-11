@@ -2,8 +2,8 @@
   "CMR Ingest miscellaneous validation integration tests"
   (:require
     [clojure.java.io :as io]
-    [clojure.string :as str]
-    [clojure.test :refer :all]
+    [clojure.string :as string]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -39,7 +39,7 @@
           (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata))]
 
       (is (= 201 status))
-      (is (str/includes? warnings
+      (is (string/includes? warnings
            "[:SpatialExtent] Granule Spatial Representation must be supplied.")))))
 
 (deftest duplicate-entry-title-test

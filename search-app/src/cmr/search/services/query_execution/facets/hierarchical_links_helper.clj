@@ -14,10 +14,11 @@
                \"science_keywords_h[0][topic]\" the base-field is \"science_keywords_h\".
   field-name - the query-field that needs to be added to (or removed from) the current search.
   value - the value to apply (or remove) for the given field-name."
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (defn- get-indexes-for-field-name
   "Returns a set of all of the indexes for the given field name within the query parameters."
@@ -116,7 +117,7 @@
   "Returns the query parameters for the provided base-field with the index removed from the
   parameter name."
   [query-params]
-  (util/map-keys #(str/replace % #"\[\d+\]" "") query-params))
+  (util/map-keys #(string/replace % #"\[\d+\]" "") query-params))
 
 (defn- find-duplicate-indexes
   "Returns a set of indexes that have query parameters that are completely duplicated by another

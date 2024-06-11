@@ -12,7 +12,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Remove non-CMR directories
         run: |
-          rm -rf browse-scaler
           rm -rf legacy-migration
           rm -rf other
           rm -rf system-validation-test

@@ -1,17 +1,19 @@
 (ns cmr.search.services.parameters.converters.attribute
   "Contains functions for converting additional attribute search parameters to a query model"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.es-params-converter :as p]
-            [clojure.string :as str]
-            [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.date-time-parser :as date-time-parser])
-  (:import [cmr.search.models.query
-            AttributeNameAndGroupCondition
-            AttributeValueCondition
-            AttributeRangeCondition]
-           clojure.lang.ExceptionInfo))
+  (:require
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
+   [clojure.string :as string]
+   [cmr.search.services.messages.attribute-messages :as msg]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.date-time-parser :as date-time-parser])
+  (:import
+   [cmr.search.models.query
+    AttributeNameAndGroupCondition
+    AttributeValueCondition
+    AttributeRangeCondition]
+   clojure.lang.ExceptionInfo))
 
 (defn empty->nil
   "Converts an empty string to nil"
@@ -68,9 +70,9 @@
   (let [comma-escape "\\,"
         comma-replace "%COMMA%" ; used to replace escaped commas during splitting
         parts (->> (-> value
-                       (str/replace comma-escape comma-replace)
-                       (str/split #"," 5))
-                   (map #(str/replace % comma-replace ","))
+                       (string/replace comma-escape comma-replace)
+                       (string/split #"," 5))
+                   (map #(string/replace % comma-replace ","))
                    (map empty->nil))]
     (parts->condition parts)))
 

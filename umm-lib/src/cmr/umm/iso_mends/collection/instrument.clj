@@ -1,12 +1,13 @@
 (ns cmr.umm.iso-mends.collection.instrument
   "Contains functions for parsing and generating the ISO MENDS instrument"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.sensor :as sensor]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.sensor :as sensor]
+   [cmr.umm.iso-mends.collection.keyword :as k]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->Instrument
   [instrument-elem]
@@ -72,19 +73,19 @@
   (for [instrument instruments]
     (let [{:keys [long-name short-name sensors instrument-id platform-id]} instrument
           title (instrument->keyword instrument)]
-      (x/element :gmi:instrument {}
-                 (x/element (get-instrument-tag instrument) {:id instrument-id}
-                            (x/element :gmi:citation {}
-                                       (x/element :gmd:CI_Citation {}
+      (xml/element :gmi:instrument {}
+                 (xml/element (get-instrument-tag instrument) {:id instrument-id}
+                            (xml/element :gmi:citation {}
+                                       (xml/element :gmd:CI_Citation {}
                                                   (h/iso-string-element :gmd:title title)
-                                                  (x/element :gmd:date {:gco:nilReason "unknown"})))
-                            (x/element :gmi:identifier {}
-                                       (x/element :gmd:MD_Identifier {}
+                                                  (xml/element :gmd:date {:gco:nilReason "unknown"})))
+                            (xml/element :gmi:identifier {}
+                                       (xml/element :gmd:MD_Identifier {}
                                                   (h/iso-string-element :gmd:code short-name)
                                                   (h/iso-string-element :gmd:description long-name)))
                             (h/iso-string-element :gmi:type "")
-                            (x/element :gmi:description {:gco:nilReason "missing"})
-                            (x/element :gmi:mountedOn {:xlink:href (str "#" platform-id)})
+                            (xml/element :gmi:description {:gco:nilReason "missing"})
+                            (xml/element :gmi:mountedOn {:xlink:href (str "#" platform-id)})
                             (sensor/generate-sensors sensors))))))
 
 (defn generate-instrument-keywords

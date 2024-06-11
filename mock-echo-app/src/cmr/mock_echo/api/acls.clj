@@ -1,12 +1,13 @@
 (ns cmr.mock-echo.api.acls
   "Defines the HTTP URL routes for acls"
-  (:require [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [cmr.mock-echo.data.acl-db :as acl-db]
-            [cmr.mock-echo.api.api-helpers :as ah]
-            [cmr.common.services.errors :as svc-errors]
-            [cmr.mock-echo.data.provider-db :as p-db]
-            [clojure.string :as str]))
+  (:require
+   [compojure.core :refer :all]
+   [cheshire.core :as json]
+   [cmr.mock-echo.data.acl-db :as acl-db]
+   [cmr.mock-echo.api.api-helpers :as ah]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.mock-echo.data.provider-db :as p-db]
+   [clojure.string :as string]))
 
 (defn create-acl
   [context body]
@@ -47,7 +48,7 @@
       :bad-request
       "Mock ECHO does not currently support retrieving acls as references"))
 
-  (let [acl-fields (map object-identity-type->acl-field (str/split (:object_identity_type params) #","))
+  (let [acl-fields (map object-identity-type->acl-field (string/split (:object_identity_type params) #","))
         provider-id (:provider_id params)]
     (if provider-id
       (get-acls-having-fields-and-provider context acl-fields provider-id)

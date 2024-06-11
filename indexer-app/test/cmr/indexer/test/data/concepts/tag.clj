@@ -2,17 +2,17 @@
   "Code coverage tests for the functions of testing cmr.indexer.data.concepts.tag
    namespace."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is]]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.tag :as tag]))
 
 (defn- create-tag
   "Create a tag map"
   [tag-key originator data]
-  {:tag-key-lowercase (str/lower-case tag-key)
+  {:tag-key-lowercase (string/lower-case tag-key)
    :originator-id-lowercase (util/safe-lowercase originator)
-   :tag-value-lowercase (when (string? data) (str/lower-case data))})
+   :tag-value-lowercase (when (string? data) (string/lower-case data))})
 
 (deftest does-has-cloud-s3-tag-work
   "The function has-cloud-s3-tag should only return true if there is a

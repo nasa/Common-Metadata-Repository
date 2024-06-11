@@ -4,10 +4,9 @@
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [debug warn info error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -185,9 +184,9 @@
   (let [description (:Description use-constraints)
         linkage (get-in use-constraints [:LicenseURL :Linkage])
         license-text (:LicenseText use-constraints)]
-    (or (and description (some #(str/includes? description %) geoss-url-list))
-        (and linkage (some #(str/includes? linkage %) geoss-url-list))
-        (and license-text (some #(str/includes? license-text %) geoss-url-list)))))
+    (or (and description (some #(string/includes? description %) geoss-url-list))
+        (and linkage (some #(string/includes? linkage %) geoss-url-list))
+        (and license-text (some #(string/includes? license-text %) geoss-url-list)))))
 
 (defn- alter-consortiums
   "Alter the consortiums list based on use-constraints.
@@ -220,7 +219,7 @@
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
         original-consortiums (when consortiums-str
-                               (remove empty? (str/split (str/upper-case consortiums-str) #" ")))
+                               (remove empty? (string/split (string/upper-case consortiums-str) #" ")))
         altered-consortiums (alter-consortiums original-consortiums (:UseConstraints collection))
         consortiums (seq altered-consortiums)
         collection (merge {:concept-id concept-id} (remove-index-irrelevant-defaults collection))
@@ -258,13 +257,13 @@
         platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc context %)
                                (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms2-nested)
-                                  (map str/trim))
+                                  (map string/trim))
         platform-long-names (->> platforms2-nested
                                  (concat platforms)
                                  (keep :long-name)
                                  distinct
-                                 (map str/trim)
-                                 (remove str/blank?))
+                                 (map string/trim)
+                                 (remove string/blank?))
         instruments (mapcat :instruments platforms)
         instruments (concat instruments (mapcat :composed-of instruments))
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc context %)
@@ -272,25 +271,25 @@
         instrument-short-names (->> instruments-nested
                                     (map :short-name)
                                     distinct
-                                    (map str/trim))
+                                    (map string/trim))
         instrument-long-names (->> instruments-nested
                                    (concat instruments)
                                    (keep :long-name)
                                    distinct
-                                   (map str/trim)
-                                   (remove str/blank?))
+                                   (map string/trim)
+                                   (remove string/blank?))
         sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
         project-short-names (->> (map :ShortName (:Projects collection))
-                                 (map str/trim))
+                                 (map string/trim))
         project-long-names (->> (keep :LongName (:Projects collection))
-                                (map str/trim))
+                                (map string/trim))
         ;; Pull author info from both creator and other citation details
         authors (->> (concat
                       (keep :Creator (:CollectionCitations collection))
                       (keep :OtherCitationDetails (:CollectionCitations collection)))
-                     (map str/trim))
+                     (map string/trim))
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         meaningful-short-name-fn (fn [c]
@@ -298,11 +297,11 @@
                                      (when (not= su/not-provided short-name)
                                        short-name)))
         archive-centers (map #(data-center/data-center-short-name->elastic-doc context %)
-                             (map str/trim (data-center/extract-archive-center-names collection)))
+                             (map string/trim (data-center/extract-archive-center-names collection)))
         ;; get the normalized names back
         archive-center-names (keep meaningful-short-name-fn archive-centers)
         data-centers (map #(data-center/data-center-short-name->elastic-doc context %)
-                          (map str/trim (data-center/extract-data-center-names collection)))
+                          (map string/trim (data-center/extract-data-center-names collection)))
         ;; returns a list of {:start-date xxx :end-date yyy}
         temporal-extents (->> collection-temporal-extents
                               ;; converts temporal-extents into a list of many
@@ -360,7 +359,7 @@
             :concept-seq-id (min es/MAX_INT concept-seq-id)
             :concept-seq-id-long concept-seq-id
             :native-id native-id
-            :native-id-lowercase (str/lower-case native-id)
+            :native-id-lowercase (string/lower-case native-id)
             :user-id user-id
             :permitted-group-ids permitted-group-ids
                                ;; If there's an entry in the collection granule aggregates then the collection has granules.
@@ -375,13 +374,13 @@
                                                 (set consortiums)
                                                 (set (common-config/opensearch-consortiums))))))
             :granule-data-format granule-data-format
-            :granule-data-format-lowercase (map str/lower-case granule-data-format)
+            :granule-data-format-lowercase (map string/lower-case granule-data-format)
             :entry-id entry-id
-            :entry-id-lowercase (str/lower-case entry-id)
-            :entry-title (str/trim entry-title)
-            :entry-title-lowercase (str/trim (str/lower-case entry-title))
+            :entry-id-lowercase (string/lower-case entry-id)
+            :entry-title (string/trim entry-title)
+            :entry-title-lowercase (string/trim (string/lower-case entry-title))
             :provider-id provider-id
-            :provider-id-lowercase (str/lower-case provider-id)
+            :provider-id-lowercase (string/lower-case provider-id)
             :short-name short-name
             :short-name-lowercase (util/safe-lowercase short-name)
             :version-id version-id
@@ -397,10 +396,10 @@
             :collection-data-type collection-data-type
             :collection-data-type-lowercase (when collection-data-type
                                               (if (sequential? collection-data-type)
-                                                (map str/lower-case collection-data-type)
-                                                (str/lower-case collection-data-type)))
+                                                (map string/lower-case collection-data-type)
+                                                (string/lower-case collection-data-type)))
             :platform-sn platform-short-names
-            :platform-sn-lowercase  (map str/lower-case platform-short-names)
+            :platform-sn-lowercase  (map string/lower-case platform-short-names)
                            ;; hierarchical fields
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
@@ -424,26 +423,26 @@
             :location-keywords (map #(clk/location-keyword->elastic-doc context %)
                                     (:LocationKeywords collection))
             :instrument-sn instrument-short-names
-            :instrument-sn-lowercase  (map str/lower-case instrument-short-names)
+            :instrument-sn-lowercase  (map string/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
-            :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
+            :sensor-sn-lowercase  (map string/lower-case sensor-short-names)
             :authors authors
-            :authors-lowercase (map str/lower-case authors)
+            :authors-lowercase (map string/lower-case authors)
             :consortiums consortiums
             :consortiums-lowercase (map util/safe-lowercase consortiums)
             :project-sn project-short-names
-            :project-sn-lowercase  (map str/lower-case project-short-names)
+            :project-sn-lowercase  (map string/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
-            :two-d-coord-name-lowercase  (map str/lower-case two-d-coord-names)
+            :two-d-coord-name-lowercase  (map string/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
-            :spatial-keyword-lowercase  (map str/lower-case spatial-keywords)
+            :spatial-keyword-lowercase  (map string/lower-case spatial-keywords)
             :attributes (attrib/aas->elastic-docs collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
-            :archive-center-lowercase (map str/lower-case archive-center-names)
+            :archive-center-lowercase (map string/lower-case archive-center-names)
             :data-center data-center-names
-            :data-center-lowercase (map str/lower-case data-center-names)
+            :data-center-lowercase (map string/lower-case data-center-names)
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links
@@ -465,11 +464,11 @@
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
                                                 :entry-id entry-id})
-            :platform-ln-lowercase (map str/lower-case platform-long-names)
-            :instrument-ln-lowercase (map str/lower-case instrument-long-names)
-            :sensor-ln-lowercase (map str/lower-case sensor-long-names)
-            :project-ln-lowercase (map str/lower-case project-long-names)
-            :temporal-keyword-lowercase (map str/lower-case temporal-keywords)
+            :platform-ln-lowercase (map string/lower-case platform-long-names)
+            :instrument-ln-lowercase (map string/lower-case instrument-long-names)
+            :sensor-ln-lowercase (map string/lower-case sensor-long-names)
+            :project-ln-lowercase (map string/lower-case project-long-names)
+            :temporal-keyword-lowercase (map string/lower-case temporal-keywords)
                            ;; tags
             :tags tags
                            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:

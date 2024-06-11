@@ -1,25 +1,14 @@
 (ns cmr.system-int-test.data2.opendata
   "Contains functions for parsing opendata results."
   (:require
-   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
-   [clojure.test]
    [cmr.common.util :as util]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.relations :as r]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
-   [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s])
@@ -87,8 +76,8 @@
                       ;; no temporal in collection will be treated as start date 1970-01-01T00:00:00 by CMR
                       date-util/parsed-default-date)
         end-date (sed/end-date :collection temporal)
-        start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))
+        start-date (when start-date (string/replace (str start-date) #"\.000Z" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\.000Z" "Z"))
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
         ;; DIF9 doesn't support DataDates in umm-spec-lib:
         ;;  So its insert-time and update-time are nil.
@@ -135,7 +124,7 @@
                                         (map ru/related-url->encoded-url publication-references))
                            :issued (when (and insert-time
                                               (not= (str date-util/parsed-default-date)
-                                                    (str/replace (str insert-time) #"Z" ".000Z")))
+                                                    (string/replace (str insert-time) #"Z" ".000Z")))
                                      (str insert-time))})))
 
 (defn collections->expected-opendata

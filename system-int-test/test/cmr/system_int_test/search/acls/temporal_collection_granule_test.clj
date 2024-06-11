@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.acls.temporal-collection-granule-test
   "Tests searching for collections and granules with temporal ACLs in place."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.test.time-util :as tu]
    [cmr.common.util :refer [are2 are3] :as util]
    [cmr.mock-echo.client.echo-util :as e]
@@ -146,7 +146,7 @@
                            (str "granules.atom?"
                                 (when token (str "token=" token "&"))
                                 "page_size=100&concept_id="
-                                (str/join "&concept_id=" concept-ids)))]
+                                (string/join "&concept_id=" concept-ids)))]
             (is (= gran-atom (:results (search/find-concepts-atom
                                         :granule (util/remove-nil-keys
                                                   {:token token

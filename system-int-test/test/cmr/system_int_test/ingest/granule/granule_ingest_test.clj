@@ -7,12 +7,11 @@
    [clj-time.core :as t]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [are3]]
    [cmr.indexer.data.index-set :as index-set]
-   [cmr.indexer.system :as indexer-system]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -352,9 +351,9 @@
                    concept-format)
           invalid-granule (update concept :metadata
                                   #(-> %
-                                       (str/replace "2010-12-12T12:00:00" "A")
+                                       (string/replace "2010-12-12T12:00:00" "A")
                                        ;; this is to cause validation error for iso-smap format
-                                       (str/replace "gmd:DS_Series" "XXXX")))
+                                       (string/replace "gmd:DS_Series" "XXXX")))
           {:keys [status errors]} (ingest/ingest-concept invalid-granule)]
       (is (= [400 validation-errors] [status errors]) (prn-str errors)))
 

@@ -1,7 +1,0 @@
-FROM node:16
-
-WORKDIR /app
-RUN mkdir /app/artifacts
-
-COPY . /app
-RUN npm install

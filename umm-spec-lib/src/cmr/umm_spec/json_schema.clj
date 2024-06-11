@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [cheshire.factory :as factory]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.validations.json-schema :as js-validations]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -111,11 +111,11 @@
 
 (defmethod resolve-ref :$ref
   [schema-name type-def]
-  (let [[ref-schema-name _ type-name] (str/split (:$ref type-def) #"/")]
+  (let [[ref-schema-name _ type-name] (string/split (:$ref type-def) #"/")]
     (assoc type-def :$ref (if (= ref-schema-name "#")
                             {:schema-name schema-name
                              :type-name (keyword type-name)}
-                            {:schema-name (str/replace ref-schema-name "#" "")
+                            {:schema-name (string/replace ref-schema-name "#" "")
                              :type-name (keyword type-name)}))))
 
 (defmethod resolve-ref "object"

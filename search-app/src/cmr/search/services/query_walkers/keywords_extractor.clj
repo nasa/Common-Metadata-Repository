@@ -1,8 +1,7 @@
 (ns cmr.search.services.query-walkers.keywords-extractor
   "Defines protocols and functions to extract keywords from a query."
   (:require
-   [clojure.string :as str]
-   [cmr.common.services.search.query-model :as cqm]
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors])
   (:import cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.ConditionGroup
@@ -57,16 +56,16 @@
 (defn- extract-keywords-seq-from-value
   "Converts value to lower case and splits on whitespace to create a list of keywords"
   [value]
-  (-> value str/lower-case (str/split #"\s+")))
+  (-> value string/lower-case (string/split #"\s+")))
 
 (defn- extract-keywords-seq-from-keyword-value
   "Converts keyword value to lower case and splits on whitespace to create a list of keywords.
   Or if the value is a double quoted string, do not split on whitespace."
   [value]
-  (let [t-value (str/trim value)]
-    (if (and (str/starts-with? t-value "\"") (str/ends-with? t-value "\""))
-      (-> t-value str/lower-case (str/replace #"^\"|\"$" "") vector)
-      (-> value str/lower-case (str/split #"\s+")))))
+  (let [t-value (string/trim value)]
+    (if (and (string/starts-with? t-value "\"") (string/ends-with? t-value "\""))
+      (-> t-value string/lower-case (string/replace #"^\"|\"$" "") vector)
+      (-> value string/lower-case (string/split #"\s+")))))
 
 (extend-protocol ExtractKeywords
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,7 +1,7 @@
 (ns cmr.common-app.services.cache-info
   "Functions to get information about the currently running JVM such as memory usage."
   (:require
-   [clojure.spec.alpha :as spec]
+   [clojure.spec.alpha :as s]
    [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
@@ -9,8 +9,8 @@
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :refer [info error]]))
 
-(spec/def ::cache-size-map
-  (spec/and map?
+(s/def ::cache-size-map
+  (s/and map?
             #(every? keyword? (keys %))
             #(every? number? (vals %))))
 
@@ -35,9 +35,9 @@
   Supports sizes up to
   java.lang.Long/MAX_VALUE = 9223372036854775807 Bytes => 8192 Petabytes"
   [cache-size-map]
-  (when-not (spec/valid? ::cache-size-map cache-size-map)
+  (when-not (s/valid? ::cache-size-map cache-size-map)
     (throw (ex-info "Invalid cache-size-map"
-                    (spec/explain-data ::cache-size-map cache-size-map))))
+                    (s/explain-data ::cache-size-map cache-size-map))))
   (doseq [[cache-key size] cache-size-map]
     ;; negatives denote external cache
     (when-not (neg? size)

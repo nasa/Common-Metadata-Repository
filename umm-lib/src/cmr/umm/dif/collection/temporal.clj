@@ -1,10 +1,11 @@
 (ns cmr.umm.dif.collection.temporal
   "Contains functions for parsing and generating the Temporal_Coverage element of DIF dialect."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.date-time-parser :as parser]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.date-util :as date-util]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.date-time-parser :as parser]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.dif.date-util :as date-util]))
 
 (defn xml-elem->Temporal
   "Returns a list of UMM RangeDateTimes from a parsed DIF XML structure"
@@ -26,8 +27,8 @@
   (when temporal
     (for [range-date-time (:range-date-times temporal)]
       (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-        (x/element :Temporal_Coverage {}
+        (xml/element :Temporal_Coverage {}
                    (when beginning-date-time
-                     (x/element :Start_Date {} (str beginning-date-time)))
+                     (xml/element :Start_Date {} (str beginning-date-time)))
                    (when ending-date-time
-                     (x/element :Stop_Date {} (str ending-date-time))))))))
+                     (xml/element :Stop_Date {} (str ending-date-time))))))))

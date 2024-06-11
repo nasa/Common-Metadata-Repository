@@ -1,9 +1,9 @@
 (ns cmr.indexer.data.concepts.tag
   "Contains functions to parse and convert tag concepts"
-  (:require [clojure.string :as str]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]
-            [cmr.indexer.data.elasticsearch :as es]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.indexer.data.elasticsearch :as es]))
 
 (defmethod es/parsed-concept->elastic-doc :tag
   [context concept parsed-concept]
@@ -15,7 +15,7 @@
       {:concept-id concept-id
        :deleted deleted}
       {:concept-id concept-id
-       :tag-key-lowercase (str/lower-case tag-key)
+       :tag-key-lowercase (string/lower-case tag-key)
        :description description
        :originator-id-lowercase  (util/safe-lowercase originator-id)})))
 
@@ -23,10 +23,10 @@
   "Converts the tag association into the portion going in the collection elastic document."
   [tag-association]
   (let [{:keys [tag-key originator-id data]} tag-association]
-    {:tag-key-lowercase (str/lower-case tag-key)
+    {:tag-key-lowercase (string/lower-case tag-key)
      :originator-id-lowercase  (util/safe-lowercase originator-id)
      :tag-value-lowercase (when (string? data)
-                            (str/lower-case data))}))
+                            (string/lower-case data))}))
 
 (def earthdata-cloud-s3-tag
   "The Earthdata cloud tag for s3 resources"

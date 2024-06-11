@@ -2,9 +2,9 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [clojure.test :refer [is]]
    [cmr.acl.core :as acl]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -199,7 +199,7 @@
              (Integer. v)
              (catch NumberFormatException _
                v)))
-         (str/split path #"/"))))
+         (string/split path #"/"))))
 
 (defn- parse-xml-error-elem
   "Parse an xml error entry. If this contains a path then we need to return map with a :path
@@ -226,7 +226,7 @@
 (defmethod parse-ingest-body :xml
   [response-format response]
   (try
-    (let [xml-elem (x/parse-str (:body response))]
+    (let [xml-elem (xml/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         (util/remove-nil-keys
@@ -268,7 +268,7 @@
   [response-format response]
   (when (not-empty (:body response))
     (try
-      (let [xml-elem (x/parse-str (:body response))]
+      (let [xml-elem (xml/parse-str (:body response))]
         (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
           (parse-xml-error-response-elem xml-elem)
           {:warnings (cx/string-at-path xml-elem [:warnings])}))
@@ -585,7 +585,7 @@
 (defmethod parse-bulk-update-body :xml
   [response-format response]
   (try
-    (let [xml-elem (x/parse-str (:body response))]
+    (let [xml-elem (xml/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:task-id (cx/string-at-path xml-elem [:task-id])
@@ -658,7 +658,7 @@
 (defmethod parse-bulk-update-provider-status-body :default
   [response-format response]
   (try
-    (let [xml-elem (x/parse-str (:body response))]
+    (let [xml-elem (xml/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
@@ -747,7 +747,7 @@
 (defmethod parse-bulk-update-task-status-body :xml
   [response-format response]
   (try
-    (let [xml-elem (x/parse-str (:body response))]
+    (let [xml-elem (xml/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:created-at (cx/string-at-path xml-elem [:created-at])

@@ -3,10 +3,9 @@
   (:require 
     [cheshire.core :as json] 
     [clojure.data.csv :as csv]
-    [clojure.data.xml :as x]
+    [clojure.data.xml :as xml]
     [clojure.set :as set]
-    [cmr.common.services.errors :as service-errors]
-    [cmr.common.xml :as cx])
+    [cmr.common.services.errors :as service-errors])
   (:import
     [java.io StringWriter]))
 
@@ -23,26 +22,26 @@
 (defmethod provider-holding->xml-elem false
   [echo-compatible? provider-holding]
   (let [{:keys [entry-title concept-id provider-id granule-count]} provider-holding]
-    (x/element :provider-holding {}
-               (x/element :entry-title {} entry-title)
-               (x/element :concept-id {} concept-id)
-               (x/element :granule-count {} granule-count)
-               (x/element :provider-id {} provider-id))))
+    (xml/element :provider-holding {}
+               (xml/element :entry-title {} entry-title)
+               (xml/element :concept-id {} concept-id)
+               (xml/element :granule-count {} granule-count)
+               (xml/element :provider-id {} provider-id))))
 
 (defmethod provider-holding->xml-elem true
   [echo-compatible? provider-holding]
   (let [{:keys [entry-title concept-id provider-id granule-count]} provider-holding]
-    (x/element :provider-holding {}
-               (x/element :dataset_id {} entry-title)
-               (x/element :echo_collection_id {} concept-id)
-               (x/element :granule_count {} granule-count)
-               (x/element :provider_id {} provider-id))))
+    (xml/element :provider-holding {}
+               (xml/element :dataset_id {} entry-title)
+               (xml/element :echo_collection_id {} concept-id)
+               (xml/element :granule_count {} granule-count)
+               (xml/element :provider_id {} provider-id))))
 
 (defmethod provider-holdings->string :xml
   [result-format provider-holdings options]
   (let [{:keys [echo-compatible?]} options]
-    (x/emit-str
-      (x/element :provider-holdings {:type "array"}
+    (xml/emit-str
+      (xml/element :provider-holdings {:type "array"}
                  (map (partial provider-holding->xml-elem echo-compatible?) provider-holdings)))))
 
 (def CSV_HEADER

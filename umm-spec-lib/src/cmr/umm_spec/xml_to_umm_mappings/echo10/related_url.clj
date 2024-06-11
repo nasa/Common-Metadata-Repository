@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.related-url
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as util]
@@ -141,7 +141,7 @@
  Default is used if cannot be found in the table"
  [resource-type]
  (if resource-type
-  (let [types (str/split resource-type #" : ")]
+  (let [types (string/split resource-type #" : ")]
    (if (> (count types) 1)
     (if (contains? url-content-types (first types)) ; Check for valid URLContentType
      ;; No subtype

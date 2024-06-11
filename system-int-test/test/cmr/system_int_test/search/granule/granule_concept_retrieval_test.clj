@@ -3,13 +3,10 @@
   /concepts/:concept-id/:revision-id endpoints."
   (:require
    [cheshire.core :as json]
-   [clj-time.format :as f]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3] :as util]
-   [cmr.common.xml :as cx]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -19,7 +16,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as transmit-config]
-   [cmr.umm.echo10.echo10-collection :as c]
    [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
    [cmr.umm.umm-core :as umm]))
 
@@ -42,7 +38,7 @@
                          ;; parser prepends "gov.nasa.echo:" to entry-title for some reason
                          (update-in [:EntryTitle]
                                     (fn [entry-title]
-                                      (str/replace entry-title "gov.nasa.echo:" "")))
+                                      (string/replace entry-title "gov.nasa.echo:" "")))
                          ;; remove default added by parser
                          (assoc :metadata-language nil)
                          ;; remove default added by parser

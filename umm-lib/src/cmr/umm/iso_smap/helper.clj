@@ -1,8 +1,9 @@
 (ns cmr.umm.iso-smap.helper
   "Contains functions used by SMAP ISO collection and granule generation"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [clj-time.format :as f]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [clj-time.format :as f]))
 
 (defn xml-elem-with-path-value
   "Returns the identification element with the given path and value"
@@ -30,7 +31,7 @@
 
 (defn scope-code-element
   [code-value]
-  (x/element
+  (xml/element
     :gmd:MD_ScopeCode
     {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
      :codeListValue code-value} code-value))
@@ -40,26 +41,26 @@
   (let [iso-code-list-attributes
         {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
          :codeListValue "utf8"}]
-    (x/element :gmd:characterSet {}
-               (x/element :gmd:MD_CharacterSetCode iso-code-list-attributes "utf8"))))
+    (xml/element :gmd:characterSet {}
+               (xml/element :gmd:MD_CharacterSetCode iso-code-list-attributes "utf8"))))
 
 (defn iso-hierarchy-level-element
   "Defines the iso-hierarchy-level-element"
   [code-value]
-  (x/element :gmd:hierarchyLevel {} (scope-code-element code-value)))
+  (xml/element :gmd:hierarchyLevel {} (scope-code-element code-value)))
 
 (defn iso-string-element
   "Returns the iso element with gco:CharacterString that holds the given string value"
   [key value]
-  (x/element key {}
-             (x/element :gco:CharacterString {} value)))
+  (xml/element key {}
+             (xml/element :gco:CharacterString {} value)))
 
 (defn- iso-date-type-element
   "Returns the iso date type element for the given type"
   [type]
-  (x/element
+  (xml/element
     :gmd:dateType {}
-    (x/element
+    (xml/element
       :gmd:CI_DateTypeCode
       {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
        :codeListValue type} type)))
@@ -69,20 +70,20 @@
   ([type date]
    (iso-date-element type date false))
   ([type date date-only?]
-   (x/element :gmd:date {}
-              (x/element :gmd:CI_Date {}
-                         (x/element :gmd:date {}
+   (xml/element :gmd:date {}
+              (xml/element :gmd:CI_Date {}
+                         (xml/element :gmd:date {}
                                     (if date-only?
-                                      (x/element :gco:Date {} (f/unparse (f/formatters :date) date))
-                                      (x/element :gco:DateTime {} (str date))))
+                                      (xml/element :gco:Date {} (f/unparse (f/formatters :date) date))
+                                      (xml/element :gco:DateTime {} (str date))))
                          (iso-date-type-element type)))))
 
 (defn- generate-identifer-element
   "Returns the smap iso identifier element for the given key and value"
   [key value]
-  (x/element
+  (xml/element
     :gmd:identifier {}
-    (x/element
+    (xml/element
       :gmd:MD_Identifier {}
       (iso-string-element :gmd:code value)
       (iso-string-element :gmd:codeSpace "smap.jpl.nasa.gov")
@@ -101,34 +102,34 @@
 (defn generate-citation-element
   "Returns the citation element with the given title and datetime"
   [title type date]
-  (x/element :gmd:citation {}
-             (x/element :gmd:CI_Citation {}
+  (xml/element :gmd:citation {}
+             (xml/element :gmd:CI_Citation {}
                         (iso-string-element :gmd:title title)
                         (iso-date-element type date))))
 
 (defn generate-dataset-id-element
   "Returns the smap iso dataset id element"
   [dataset-id update-time]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
       (generate-citation-element "DataSetId" "revision" update-time)
       (iso-string-element :gmd:abstract "DataSetId")
-      (x/element :gmd:aggregationInfo {}
-                 (x/element :gmd:MD_AggregateInformation {}
-                            (x/element :gmd:aggregateDataSetIdentifier {}
-                                       (x/element :gmd:MD_Identifier {}
+      (xml/element :gmd:aggregationInfo {}
+                 (xml/element :gmd:MD_AggregateInformation {}
+                            (xml/element :gmd:aggregateDataSetIdentifier {}
+                                       (xml/element :gmd:MD_Identifier {}
                                                   (iso-string-element :gmd:code dataset-id)))
-                            (x/element :gmd:associationType {})))
+                            (xml/element :gmd:associationType {})))
       (iso-string-element :gmd:language "eng"))))
 
 (defn generate-datetime-element
   "Returns the smap iso update-time/insert-time element"
   [title date-type datetime]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
       (generate-citation-element title date-type datetime)
       (iso-string-element :gmd:abstract title)

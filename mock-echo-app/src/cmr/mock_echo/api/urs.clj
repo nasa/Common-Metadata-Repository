@@ -3,16 +3,14 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [cmr.common.config :refer [defconfig]]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.data.urs-db :as urs-db]
    [cmr.transmit.config :as transmit-config]
-   [compojure.core :refer :all]
-   [ring.util.response :as rsp]))
+   [compojure.core :refer :all]))
 
 (defn get-user
   "Processes a request to get a user."
@@ -148,7 +146,7 @@
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
   [body]
-  (let [parsed (x/parse-str body)]
+  (let [parsed (xml/parse-str body)]
     {:username (cx/string-at-path parsed [:userName])
      :password (cx/string-at-path parsed [:password])
      :email    (cx/string-at-path parsed [:emailAddress])
@@ -191,7 +189,7 @@
   [request]
   (let [auth (get-in request [:headers "authorization"])
         cred (and auth (decode-base64 (last (re-find #"^Basic (.*)$" auth))))
-        [user pass] (and cred (str/split (str cred) #":" 2))]
+        [user pass] (and cred (string/split (str cred) #":" 2))]
     {:username user :password pass}))
 
 (defn assert-urs-basic-auth-info

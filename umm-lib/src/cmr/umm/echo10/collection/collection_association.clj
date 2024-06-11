@@ -1,7 +1,8 @@
 (ns cmr.umm.echo10.collection.collection-association
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->CollectionAssociation
   [ca-elem]
@@ -20,11 +21,11 @@
 (defn generate-collection-associations
   [cas]
   (when (seq cas)
-    (x/element
+    (xml/element
       :CollectionAssociations {}
       (for [ca cas]
         (let [{:keys [short-name version-id]} ca]
-          (x/element :CollectionAssociation {}
-                     (x/element :ShortName {} short-name)
-                     (x/element :VersionId {} version-id)
-                     (x/element :CollectionType {} "Input Collection")))))))
+          (xml/element :CollectionAssociation {}
+                     (xml/element :ShortName {} short-name)
+                     (xml/element :VersionId {} version-id)
+                     (xml/element :CollectionType {} "Input Collection")))))))

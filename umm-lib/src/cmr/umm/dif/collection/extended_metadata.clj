@@ -1,7 +1,7 @@
 (ns cmr.umm.dif.collection.extended-metadata
   "Provide functions to parse and generate DIF Extended_Metadata elements."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
    [cmr.umm.collection.product-specific-attribute :as psa]))
 
@@ -85,11 +85,11 @@
           ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value
           ;; is value, then parameter-range-begin, then parameter-range-end.
           value (or value parameter-range-begin parameter-range-end)]
-      (x/element :Metadata {}
-                 (when group (x/element :Group {} group))
-                 (x/element :Name {} name)
-                 (when description (x/element :Description {} description))
-                 (x/element :Type {} (psa/gen-data-type data-type))
+      (xml/element :Metadata {}
+                 (when group (xml/element :Group {} group))
+                 (xml/element :Name {} name)
+                 (when description (xml/element :Description {} description))
+                 (xml/element :Type {} (psa/gen-data-type data-type))
                  ;; false is a valid value
                  (when-not (nil? value)
-                   (x/element :Value {} value))))))
+                   (xml/element :Value {} value))))))

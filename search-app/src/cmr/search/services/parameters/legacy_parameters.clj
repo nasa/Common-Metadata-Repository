@@ -1,13 +1,12 @@
 (ns cmr.search.services.parameters.legacy-parameters
   "Contains functions for tranforming legacy parameters to the CMR format."
-  (:require [clojure.set :as set]
-            [clojure.string :as s]
-            [ring.util.codec :as rc]
-            [cmr.common.util :as cu]
-            [clojure.walk :as w]
-            [cmr.common.services.messages :as msg]
-            [cmr.search.services.messages.attribute-messages :as a-msg]
-            [cmr.common.services.errors :as errors]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as cu]
+   [clojure.walk :as walk]
+   [cmr.common.services.messages :as msg]
+   [cmr.search.services.messages.attribute-messages :as a-msg]
+   [cmr.common.services.errors :as errors]))
 
 (def param-aliases
   "A map of non UMM parameter names to their UMM fields."
@@ -59,7 +58,7 @@
   "Walk the request params tree to replace aliases of parameter names."
   [params]
   (->> params
-       (w/postwalk #(if (map? %)
+       (walk/postwalk #(if (map? %)
                       (cu/rename-keys-with % param-aliases merger)
                       %))
        replace-legacy-sort-keys))
@@ -95,7 +94,7 @@
 (defn- escape-commas
   "Escape commas in an attribute parameter field"
   [value]
-  (when value (s/replace value "," "\\,")))
+  (when value (string/replace value "," "\\,")))
 
 (defn- attr-map->cmr-param
   "Create an attribute string from a map of attribute key/values."
@@ -174,9 +173,9 @@
   "Returns the CMR style two d coordinate system parameter for the legacy style params"
   [name coords]
   (let [cmr-coords (when coords (-> coords
-                                    (s/replace ":" "+")
-                                    (s/replace "," ":")
-                                    (s/replace "+" ",")))]
+                                    (string/replace ":" "+")
+                                    (string/replace "," ":")
+                                    (string/replace "+" ",")))]
     (if cmr-coords
       (str name ":" cmr-coords)
       name)))

@@ -2,7 +2,7 @@
   "Contains messages for reporting responses to the user"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.validations.core :as v]))
 
 (defn invalid-aql
@@ -42,7 +42,7 @@
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
-  (format "Parameter(s) [%s] can not be used with exclude." (str/join ", " (map name params-set))))
+  (format "Parameter(s) [%s] can not be used with exclude." (string/join ", " (map name params-set))))
 
 (defn mixed-arity-parameter-msg
   "Creates a message saying the given parameter should not appear as both a single value and

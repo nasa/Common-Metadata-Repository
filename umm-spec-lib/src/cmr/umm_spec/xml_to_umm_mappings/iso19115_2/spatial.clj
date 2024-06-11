@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
-   [clojure.data.xml :as c-xml]
-   [clojure.set :as c-set]
+   [clojure.data.xml :as xml]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
@@ -131,7 +131,7 @@
   [doc]
   (when-let [orbit-foot-prints (select doc orbit-foot-prints-xpath)]
     (for [orbit-foot-print orbit-foot-prints
-          :let [ofp-string (value-of (c-xml/emit-str orbit-foot-print) "CharacterString")
+          :let [ofp-string (value-of (xml/emit-str orbit-foot-print) "CharacterString")
                 ofp-map (iso-xml-parsing-util/convert-iso-description-string-to-map
                          ofp-string
                          (re-pattern "Footprint:|FootprintUnit:|Description:")
@@ -234,7 +234,7 @@
    is contained in the ISO record."
   []
   (into {}
-    (for [x (c-set/map-invert generate-horizontal-resolution-code-name-map)]
+    (for [x (set/map-invert generate-horizontal-resolution-code-name-map)]
       {(first (first x)) (second x)
        (second (first x)) (second x)})))
 

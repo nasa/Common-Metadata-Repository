@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.humanizer
   "Contains functions to converting collection into elasticsearch humanized collection docs"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common-app.humanizer :as humanizer]
    [cmr.indexer.data.concepts.collection.platform :as platform]
@@ -11,7 +11,7 @@
 (defn- add-humanized-lowercase
   "Adds a :value-lowercase field to a humanized object"
   [obj]
-  (assoc obj :value-lowercase (str/lower-case (:value obj))))
+  (assoc obj :value-lowercase (string/lower-case (:value obj))))
 
 (defn- select-indexable-humanizer-fields
   "Selects the fields from humanizers that can be indexed."

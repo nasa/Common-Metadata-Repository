@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.java.io :as jio]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -12,38 +12,38 @@
    [cmr.transmit.config :as transmit-config]))
 
 (def grid-good (-> "schemas/grid/v0.0.1/metadata.json"
-                   (jio/resource)
+                   (io/resource)
                    (slurp)
                    (json/parse-string true)))
 
 (def data-quality-summary (-> "schemas/data-quality-summary/v1.0.0/metadata.json"
-                              (jio/resource)
+                              (io/resource)
                               (slurp)
                               (json/parse-string true)))
 
 (def order-option (-> "schemas/order-option/v1.0.0/metadata.json"
-                      (jio/resource)
+                      (io/resource)
                       (slurp)
                       (json/parse-string true)))
 
 (def collection-draft (-> "schemas/collection-draft/v1.0.0/metadata.json"
-                          (jio/resource)
+                          (io/resource)
                           (slurp)
                           (json/parse-string true)))
 
 (def order-option-draft (-> "schemas/order-option-draft/v1.0.0/metadata.json"
-                            (jio/resource)
+                            (io/resource)
                             (slurp)
                             (json/parse-string true)))
 
 (def variable-draft (-> "schemas/variable-draft/v1.0.0/metadata_with_private_data.json"
-                        (jio/resource)
+                        (io/resource)
                         (slurp)
                         (json/parse-string true)))
 
 (def variable-draft-without-private
   (-> "schemas/variable-draft/v1.0.0/metadata_with_private_data.json"
-      (jio/resource)
+      (io/resource)
       (slurp)
       (json/parse-string true)
       (dissoc :_private)))

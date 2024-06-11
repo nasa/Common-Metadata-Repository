@@ -1,7 +1,8 @@
 (ns cmr.umm.echo10.collection.characteristic
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Characteristic
   [char-elem]
@@ -22,13 +23,13 @@
 (defn generate-characteristics
   [characteristics]
   (when-not (empty? characteristics)
-    (x/element
+    (xml/element
       :Characteristics {}
       (for [characteristic characteristics]
         (let [{:keys [name description data-type unit value]} characteristic]
-          (x/element :Characteristic {}
-                     (x/element :Name {} name)
-                     (x/element :Description {} description)
-                     (x/element :DataType {} data-type)
-                     (x/element :Unit {} unit)
-                     (x/element :Value {} value)))))))
+          (xml/element :Characteristic {}
+                     (xml/element :Name {} name)
+                     (xml/element :Description {} description)
+                     (xml/element :DataType {} data-type)
+                     (xml/element :Unit {} unit)
+                     (xml/element :Value {} value)))))))

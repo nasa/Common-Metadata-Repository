@@ -18,4 +18,26 @@
            cmr.common.util/are2 clj-kondo.lint-as/def-catch-all} 
  :linters {:unresolved-var {:exclude [digest/md5 digest/sha-1]} ;; dynamically generated
            ;; our defs with ^:dynamic metadata are being caught by this with no clear way to selectively turn off
-           :uninitialized-var {:level :off}}}
+           :uninitialized-var {:level :off}
+           :consistent-alias
+            {:aliases
+             {clojure.datafy datafy
+              clojure.edn edn
+              clojure.java.io io
+              clojure.math math
+              clojure.set set
+              clojure.walk walk
+              clojure.zip zip
+              clojure.core.async async
+              clojure.data.csv csv
+              clojure.data.xml xml
+              clojure.tools.cli cli
+              clojure.java.shell sh
+              clojure.pprint pp
+              clojure.spec.alpha s
+              clojure.string string ;; We have elected to not follow the official style guide for this alias to help avoid confusion around str
+              clojure.core.matrix mat
+              clojure.tools.logging log
+              clojure.core.protocols p
+              clojure.core.reducers r
+              cmr.common.xml cx}}}}
