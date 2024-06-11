@@ -7,7 +7,7 @@
    (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup SearchLookup))
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.spatial.relations :as relations]
    [cmr.spatial.serialize :as srl])
   (:gen-class
@@ -44,7 +44,7 @@
 (defn- convert-params
   "Convert the comma separated string into a vector of integers."
   [[k v]]
-  [k (map #(Integer. ^String %) (str/split v #","))])
+  [k (map #(Integer. ^String %) (string/split v #","))])
 
 (defn- params->spatial-shape
   [params]

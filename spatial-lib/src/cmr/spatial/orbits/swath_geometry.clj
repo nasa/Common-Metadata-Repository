@@ -3,7 +3,7 @@
   (:require
    [clj-time.coerce :as c]
    [clj-time.core :as t]
-   [clojure.core.matrix :as cm]
+   [clojure.core.matrix :as mat]
    [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.math :refer [EARTH_ANGULAR_VELOCITY_RAD_S asin atan2 degrees radians]]
    [cmr.spatial.orbits.orbits :as orbits]
@@ -119,11 +119,11 @@
   which will transform the vector <1, 0, 0> into the <x, y, z> position
   along the orbit track at the given time."
   [orbit-parameters ascending-crossing-theta]
-  (let [orientation-transform (cm/mmul (orbit-crossing-theta-transform ascending-crossing-theta)
+  (let [orientation-transform (mat/mmul (orbit-crossing-theta-transform ascending-crossing-theta)
                                        (orbit-declination-transform orbit-parameters))
         angular-velocity-rad-s (orbits/angular-velocity-rad-s orbit-parameters)]
     (fn [^double t]
-      (cm/mmul
+      (mat/mmul
         (earth-rotation-transform t)
         orientation-transform
         (orbit-latitude-transform (* angular-velocity-rad-s t))))))
@@ -138,12 +138,12 @@
         half-swath-width-rad (/ (orbits/swath-width-rad orbit-parameters) 2.0)
         left-swath-transform (m/z-axis-rotation-matrix (- half-swath-width-rad))
         right-swath-transform (m/z-axis-rotation-matrix half-swath-width-rad)
-        x-axis (cm/array :vectorz [1.0 0.0 0.0])]
+        x-axis (mat/array :vectorz [1.0 0.0 0.0])]
     (fn [t]
       (let [track-position-transform (time->track-position-transform t)]
         (map vec3->point
-             [(cm/mmul track-position-transform left-swath-transform x-axis)
-              (cm/mmul track-position-transform right-swath-transform x-axis)])))))
+             [(mat/mmul track-position-transform left-swath-transform x-axis)
+              (mat/mmul track-position-transform right-swath-transform x-axis)])))))
 
 (defn- interpolation-times
   "Returns a sequence of time offsets (in seconds) starting at start-time-s and

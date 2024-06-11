@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.validation.related-url
   "Defines validations for Related Urls throughout UMM collections."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.util :as su]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu])
@@ -63,7 +63,7 @@
   [field-path value]
   (let [url-pattern (re-pattern "^[\\w\\d]+:\\/\\/")]
     (when (or (and (re-seq url-pattern value)
-                   (not (str/starts-with? value "s3")))
+                   (not (string/starts-with? value "s3")))
               (= su/not-provided-url value)
               (re-seq #"[\[\"\s,;]" value))
       {field-path

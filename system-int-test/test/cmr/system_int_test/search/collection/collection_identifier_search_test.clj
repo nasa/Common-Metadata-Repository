@@ -1,11 +1,9 @@
 (ns cmr.system-int-test.search.collection.collection-identifier-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require
-   [clojure.java.shell :as shell]
-   [clojure.string :as s]
-   [clojure.test :refer :all]
+   [clojure.java.shell :as sh]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.elastic-utils.search.es-messenger :as cmsg]
-   [cmr.common.services.messages :as msg]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
@@ -669,6 +667,6 @@
     ;; client side checking. So we do it through curl on the command line.
     ;; This depends on curl being installed on the test machine.
     ;; Do not use this unless absolutely necessary.
-    (let [{:keys [out]} (shell/sh "curl" "--silent" "-i"
+    (let [{:keys [out]} (sh/sh "curl" "--silent" "-i"
                                   (str (url/search-url :collection) "?entry-title\\[\\]=%"))]
       (is (re-find #"(?s)400 Bad Request.*Invalid URL encoding: Incomplete trailing escape \(%\) pattern.*" out)))))

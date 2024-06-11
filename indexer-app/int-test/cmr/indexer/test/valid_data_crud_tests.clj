@@ -1,11 +1,8 @@
 (ns cmr.indexer.test.valid-data-crud-tests
   "Contains integration tests to verify index-set crud operations with good data."
   (:require
-   [cheshire.core :as cheshire]
-   [clj-http.client :as client]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [clojure.walk :as walk]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
@@ -112,7 +109,7 @@
 
      ;; Verify the collection indexes were created in elasticsearch.
      (doseq [collection expected-coll-indexes
-             :let [collection-index-part (-> collection (str/replace "-" "_") str/lower-case)
+             :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
        (is (esi/exists? @util/elastic-connection elastic-index-name))))))
 

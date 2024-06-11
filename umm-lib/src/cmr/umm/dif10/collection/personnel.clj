@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.personnel
   "Provides functions to parse and generate DIF 10 Personnel elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.generator-util :as gu]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.generator-util :as gu]
+   [cmr.umm.umm-collection :as c]))
 
 (def personnel-roles
   "DIF 10 schema allows the following strings for personnel roles"
@@ -49,7 +50,7 @@
   [contacts]
   (for [contact contacts
         :when (= :email (:type contact))]
-    (x/element :Email {} (:value contact))))
+    (xml/element :Email {} (:value contact))))
 
 
 (defn- generate-roles
@@ -57,19 +58,19 @@
   [roles]
   (or (seq (for [role roles
                  :when (get personnel-roles role)]
-             (x/element :Role {} role)))
+             (xml/element :Role {} role)))
       ;; If non of the roles match with one of the enumeraion types suppored by DIF10,
       ;; a role of "TECHNICAL CONTACT" is given since role is required field in DIF10.
-      [(x/element :Role {} "TECHNICAL CONTACT")]))
+      [(xml/element :Role {} "TECHNICAL CONTACT")]))
 
 (defn generate-personnel
   "Generates the XML entries for a collection's personnel field."
   [personnel]
   (for [{:keys [first-name middle-name last-name contacts roles]} personnel]
-    (x/element :Personnel {}
+    (xml/element :Personnel {}
                (generate-roles roles)
-               (x/element :Contact_Person {}
+               (xml/element :Contact_Person {}
                           (gu/optional-elem :First_Name first-name)
                           (gu/optional-elem :Middle_Name middle-name)
-                          (x/element :Last_Name {} last-name)
+                          (xml/element :Last_Name {} last-name)
                           (generate-emails contacts)))))

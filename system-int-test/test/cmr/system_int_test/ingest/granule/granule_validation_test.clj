@@ -4,14 +4,13 @@
     [clj-time.core :as t]
     [clj-time.format :as tf ]
     [clojure.java.io :as io]
-    [clojure.java.shell :as shell]
-    [clojure.test :refer :all]
+    [clojure.java.shell :as sh]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are2]]
     [cmr.ingest.services.messages :as msg]
     [cmr.spatial.line-string :as l]
     [cmr.spatial.mbr :as m]
-    [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -451,7 +450,7 @@
           validate-url (url/validate-url provider-id :granule native-id)
           coll-form (format "collection=<%s;type=%s" coll-file (:format coll-concept))
           granule-form (format "granule=<%s;type=%s" granule-file (:format granule-concept))
-          {:keys [out]} (shell/sh "curl" "-i" "-F" granule-form "-F" coll-form validate-url)]
+          {:keys [out]} (sh/sh "curl" "-i" "-F" granule-form "-F" coll-form validate-url)]
       out)
     (finally
       (io/delete-file coll-file)

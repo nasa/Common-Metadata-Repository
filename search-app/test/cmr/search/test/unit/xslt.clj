@@ -1,12 +1,13 @@
 (ns cmr.search.test.unit.xslt
   "Tests to verify the xsl for ECHO10 to ISO19115"
-  (:require [clojure.test :refer :all]
-            [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are3]]
-            [cmr.common.xml :as xml]
-            [cmr.common.xml.xslt :as xslt]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [clojure.data.xml :as xml]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common.util :refer [are3]]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.xslt :as xslt]))
 
 (def echo10-collection-no-use-constraints
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -369,11 +370,11 @@
 				  <Orderable>true</Orderable>
 				</Granule>")
 
-(def echo10-granule-browse-uppercase (str/replace echo10-granule-browse "Browse" "BROWSE"))
+(def echo10-granule-browse-uppercase (string/replace echo10-granule-browse "Browse" "BROWSE"))
 
-(def echo10-granule-browse-lowercase (str/replace echo10-granule-browse "Browse" "browse"))
+(def echo10-granule-browse-lowercase (string/replace echo10-granule-browse "Browse" "browse"))
 
-(def echo10-granule-browse-mixed-case (str/replace echo10-granule-browse "Browse" "BrOwSe"))
+(def echo10-granule-browse-mixed-case (string/replace echo10-granule-browse "Browse" "BrOwSe"))
 
 (def echo10-granule-no-browse
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -830,10 +831,10 @@
  (let [xsl (xslt/read-template (io/resource "xslt/echo10_to_iso19115.xsl"))]
   (testing "ECHO10 to ISO19115 Tranforms"
    (are3 [echo10 expected-iso path]
-     (let [iso-parsed (x/parse-str (xslt/transform echo10 xsl))
-           iso-element (xml/element-at-path iso-parsed path)
-           expected-iso-parsed (x/parse-str expected-iso)
-           expected-iso-element (xml/element-at-path expected-iso-parsed path)]
+     (let [iso-parsed (xml/parse-str (xslt/transform echo10 xsl))
+           iso-element (cx/element-at-path iso-parsed path)
+           expected-iso-parsed (xml/parse-str expected-iso)
+           expected-iso-element (cx/element-at-path expected-iso-parsed path)]
        (def the-iso (xslt/transform echo10 xsl))
        (def the-iso-element iso-element)
        (is (= expected-iso-element iso-element)))
@@ -861,6 +862,6 @@
 
   (testing "Hard coded maintenance note is no longer embedded."
    (let [xsl (xslt/read-template (io/resource "xslt/echo10_to_iso19115.xsl"))
-         iso-parsed (x/parse-str (xslt/transform echo10-granule-browse xsl))]
-    (is (= nil (xml/element-at-path iso-parsed
+         iso-parsed (xml/parse-str (xslt/transform echo10-granule-browse xsl))]
+    (is (= nil (cx/element-at-path iso-parsed
                 [:metadataMaintenance :MD_MaintenanceInformation :maintenanceNote])))))))

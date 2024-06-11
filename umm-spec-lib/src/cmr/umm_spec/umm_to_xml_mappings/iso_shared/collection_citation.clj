@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation
   "Functions for generating ISO XML elements from UMM collection-citation records."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -19,7 +19,7 @@
     [:gmd:citedResponsibleParty
      [:gmd:CI_ResponsibleParty
       [:gmd:individualName
-       [:gco:CharacterString (str/trim creator)]]
+       [:gco:CharacterString (string/trim creator)]]
       [:gmd:role
         [:gmd:CI_RoleCode {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
                            :codeListValue "author"} "author"]]]]))
@@ -31,7 +31,7 @@
      [:gmd:citedResponsibleParty
       [:gmd:CI_ResponsibleParty
        [:gmd:individualName
-        [:gco:CharacterString (str/trim editor)]]
+        [:gco:CharacterString (string/trim editor)]]
        [:gmd:positionName
         [:gco:CharacterString "editor"]]
        [:gmd:role
@@ -45,7 +45,7 @@
      [:gmd:citedResponsibleParty
       [:gmd:CI_ResponsibleParty
        [:gmd:individualName
-        [:gco:CharacterString (str/trim publisher)]]
+        [:gco:CharacterString (string/trim publisher)]]
        [:gmd:role
         [:gmd:CI_RoleCode {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
                            :codeListValue "publisher"} "publisher"]]]]))

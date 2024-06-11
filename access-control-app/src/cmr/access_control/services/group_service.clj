@@ -3,7 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.edn :as edn]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth]
@@ -341,7 +341,7 @@
     (gc/group-conds (cp/group-operation param options)
                     (map #(cp/parameter->condition context concept-type param % options) value))
     ;; CMR indicates we should search for system groups
-    (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
+    (if (= (string/upper-case value) SYSTEM_PROVIDER_ID)
       (common-qm/not-exist-condition :provider)
       (cp/string-parameter->condition concept-type param value options))))
 

@@ -1,8 +1,7 @@
 (ns cmr.metadata-db.migrations.034-generate-tag-associations-from-tags
   (:require
    [clojure.edn :as edn]
-   [clojure.java.jdbc :as j]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.metadata-db.services.concept-service :as cs]
    [config.mdb-migrate-helper :as h]
    [config.mdb-migrate-config :as config]))
@@ -33,7 +32,7 @@
               (println (format "Creating association with concept-id [%s]" concept-id))
               (let [user-id (:user-id tag)
                     tag-key (:tag-key tag)
-                    native-id (str/join "/" [tag-key concept-id])
+                    native-id (string/join "/" [tag-key concept-id])
                     ta-metadata (pr-str {:associated-concept-id concept-id
                                          :tag-key tag-key
                                          :originator-id (:originator-id tag)})

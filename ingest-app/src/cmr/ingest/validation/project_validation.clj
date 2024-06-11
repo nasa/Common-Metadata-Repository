@@ -1,7 +1,7 @@
 (ns cmr.ingest.validation.project-validation
   "Provides functions to validate the projects during collection update"
   (:require
-   [clojure.set :as s]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
@@ -15,7 +15,7 @@
         current-projects (map :ShortName (:Projects concept))
         previous-projects (map :ShortName (:Projects prev-concept))
         project-aliases (mapcat #(get project-alias-map %) (map string/upper-case current-projects))
-        deleted-project-names (s/difference
+        deleted-project-names (set/difference
                                 (set (map util/safe-lowercase previous-projects))
                                 (set (map util/safe-lowercase (concat current-projects project-aliases))))]
     (for [name deleted-project-names]

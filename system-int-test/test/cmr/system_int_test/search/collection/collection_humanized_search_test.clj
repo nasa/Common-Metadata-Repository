@@ -3,8 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
@@ -97,7 +97,7 @@
                 (format "PROV1,%s,B,V2,AM-1,Terra" (:concept-id coll2))
                 (format "PROV1,%s,C,V3,Bioosphere,Biosphere" (:concept-id coll3))
                 (format "PROV1,%s,C,V3,USGS_SOFIA,USGS SOFIA" (:concept-id coll3))]
-               (str/split report #"\n")))
+               (string/split report #"\n")))
         (testing "Ensure that the returned report is the same as the cached one"
           (is (= report (get-cached-report))))))))
 

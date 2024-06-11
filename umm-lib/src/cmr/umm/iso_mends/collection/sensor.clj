@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.sensor
   "Contains functions for parsing and generating the ISO MENDS sensor"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.generator-util :as gu]))
 
 (defn xml-elem->Sensor
   [sensor-elem]
@@ -40,15 +41,15 @@
   (for [sensor sensors]
     (let [{:keys [short-name long-name sensor-id instrument-id]} sensor
           title (if (empty? long-name) short-name (str short-name " > " long-name))]
-      (x/element :eos:sensor {}
-                 (x/element :eos:EOS_Sensor {:id sensor-id}
-                            (x/element :eos:citation {}
-                                       (x/element :gmd:CI_Citation {}
+      (xml/element :eos:sensor {}
+                 (xml/element :eos:EOS_Sensor {:id sensor-id}
+                            (xml/element :eos:citation {}
+                                       (xml/element :gmd:CI_Citation {}
                                                   (h/iso-string-element :gmd:title title)
-                                                  (x/element :gmd:date {:gco:nilReason "unknown"})))
-                            (x/element :eos:identifier {}
-                                       (x/element :gmd:MD_Identifier {}
+                                                  (xml/element :gmd:date {:gco:nilReason "unknown"})))
+                            (xml/element :eos:identifier {}
+                                       (xml/element :gmd:MD_Identifier {}
                                                   (h/iso-string-element :gmd:code short-name)
                                                   (h/iso-string-element :gmd:description long-name)))
-                            (x/element :eos:type {:gco:nilReason "missing"})
-                            (x/element :eos:mountedOn {:xlink:href (str "#" instrument-id)}))))))
+                            (xml/element :eos:type {:gco:nilReason "missing"})
+                            (xml/element :eos:mountedOn {:xlink:href (str "#" instrument-id)}))))))

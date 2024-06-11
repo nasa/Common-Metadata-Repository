@@ -1,9 +1,10 @@
 (ns cmr.umm.iso-smap.collection.temporal
   "Contains functions for parsing and generating the ISO SMAP temporal"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed XML structure"
@@ -38,24 +39,24 @@
     (concat
       (for [range-date-time range-date-times]
         (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-          (x/element
+          (xml/element
             :gmd:temporalElement {}
-            (x/element
+            (xml/element
               :gmd:EX_TemporalExtent {}
-              (x/element :gmd:extent {}
-                         (x/element :gml:TimePeriod {:gml:id (gu/generate-id)}
+              (xml/element :gmd:extent {}
+                         (xml/element :gml:TimePeriod {:gml:id (gu/generate-id)}
                                     (when beginning-date-time
-                                      (x/element :gml:beginPosition {} (str beginning-date-time)))
+                                      (xml/element :gml:beginPosition {} (str beginning-date-time)))
                                     (if ending-date-time
-                                      (x/element :gml:endPosition {} (str ending-date-time))
-                                      (x/element :gml:endPosition {}))))))))
+                                      (xml/element :gml:endPosition {} (str ending-date-time))
+                                      (xml/element :gml:endPosition {}))))))))
 
       (for [single-date-time single-date-times]
-        (x/element
+        (xml/element
           :gmd:temporalElement {}
-          (x/element
+          (xml/element
             :gmd:EX_TemporalExtent {}
-            (x/element :gmd:extent {}
-                       (x/element :gml:TimeInstant {:gml:id (gu/generate-id)}
-                                  (x/element :gml:timePosition {} (str single-date-time))))))))))
+            (xml/element :gmd:extent {}
+                       (xml/element :gml:TimeInstant {:gml:id (gu/generate-id)}
+                                  (xml/element :gml:timePosition {} (str single-date-time))))))))))
 

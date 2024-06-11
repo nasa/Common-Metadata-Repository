@@ -1,11 +1,8 @@
 (ns cmr.system-int-test.search.acls.collection-test
   "Tests searching for collections with ACLs in place."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.acl.acl-fetcher :as acl-fetcher]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.common.services.messages :as msg]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.atom :as da]
@@ -13,12 +10,9 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.opendata :as od]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures
@@ -279,7 +273,7 @@
                          guest-permitted-collections
                          (str "collections.atom?token=" guest-token
                               "&page_size=100&concept_id="
-                              (str/join "&concept_id=" concept-ids)))]
+                              (string/join "&concept_id=" concept-ids)))]
           (is (= coll-atom (:results (search/find-concepts-atom
                                       :collection {:token guest-token
                                                    :page-size 100
@@ -299,7 +293,7 @@
                          guest-permitted-collections
                          (str "collections.json?token=" guest-token
                               "&page_size=100&concept_id="
-                              (str/join "&concept_id=" concept-ids)))
+                              (string/join "&concept_id=" concept-ids)))
               {:keys [hits results]} (search/find-concepts-json
                                       :collection {:token guest-token
                                                    :page-size 100

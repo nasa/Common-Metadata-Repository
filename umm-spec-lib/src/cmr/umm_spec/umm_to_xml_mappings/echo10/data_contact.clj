@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact
   "Functions for generating ECHO10 XML contact elements from UMM data centers and contact persons."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.umm-spec.util :as u]))
 
 (def umm-data-center-role->echo10-contact-organization-role
@@ -38,7 +38,7 @@
   addresses into 1 street address string"
   [street-addresses]
   (if (seq street-addresses)
-   (str/join " " street-addresses)
+   (string/join " " street-addresses)
    u/not-provided))
 
 (defn- generate-emails

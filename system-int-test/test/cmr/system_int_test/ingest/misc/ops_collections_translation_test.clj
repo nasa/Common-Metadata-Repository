@@ -2,11 +2,9 @@
   "Translate OPS collections into various supported metadata formats."
   (:require
     [clj-http.client :as client]
-    [clojure.data.csv :as csv]
-    [clojure.data.xml :as x]
-    [clojure.java.io :as io]
-    [clojure.string :as str]
-    [clojure.test :refer :all]
+    [clojure.data.xml :as xml]
+    [clojure.string :as string]
+    [clojure.test :refer [is use-fixtures]]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer [error info]]
     [cmr.common.mime-types :as mt]
@@ -160,9 +158,9 @@
   "For a 'string too long' error, just print out what string it is and the size so that
   the test output does not get bloated with the full string"
   [error]
-  (if-let [result (re-find #".* string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
-    (let [string-index (str/index-of result "string")
-          length-index (str/index-of result "is too long (length:")]
+  (if-let [result (re-find #".* string .*is too long \(length: \d+, maximum allowed: \d+\)" (string/replace error "\n" ""))]
+    (let [string-index (string/index-of result "string")
+          length-index (string/index-of result "is too long (length:")]
       (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
     error))
 
@@ -209,8 +207,8 @@
                               {:query-params {:concept-id concept-id}
                                :connection-manager (s/conn-mgr)})
          body (:body response)
-         parsed (x/parse-str body)
-         metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+         parsed (xml/parse-str body)
+         metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
          result (first (cx/elements-at-path parsed [:result]))
          metadata (first metadatas)
@@ -230,8 +228,8 @@
                                                :page_num page-num}
                                 :connection-manager (s/conn-mgr)})
           body (:body response)
-          parsed (x/parse-str body)
-          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+          parsed (xml/parse-str body)
+          metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
       (map (fn [result metadata]
              (let [{{:keys [concept-id revision-id format]} :attrs} result
@@ -263,7 +261,7 @@
   "Take a validation result and return a row formatted for CSV"
   [result]
   (let [{:keys [provider-id concept-id entry-title errors]} result
-        error-string (str/join "; " errors)]
+        error-string (string/join "; " errors)]
     [provider-id concept-id entry-title error-string]))
 
 (comment

@@ -1,11 +1,12 @@
 (ns cmr.search.services.tagging.tag-validation
   "This contains functions for validating the business rules of tag."
-  (:require [clojure.string :as str]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.validations.core :as v]
-            [cmr.search.services.tagging.json-schema-validation :as jv]))
+  (:require
+   [clojure.string :as string]
+   [cheshire.core :as json]
+   [cmr.common.util :as util]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v]
+   [cmr.search.services.tagging.json-schema-validation :as jv]))
 
 (defn- validate-tag-key
   "Validates there is no / character in tag-key, throws service error if there is."
@@ -22,7 +23,7 @@
   (-> (json/parse-string tag-json-str true)
       util/map-keys->kebab-case
       ;; tag-key is always in lowercase
-      (update :tag-key str/lower-case)))
+      (update :tag-key string/lower-case)))
 
 (defn sanitized-json
   "Returns the json string with dashes in field names replaced by underscores,

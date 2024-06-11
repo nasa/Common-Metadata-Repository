@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.related-url
   "Provide functions to parse and generate DIF Related_URL elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 ;; There is no required element in Multimedia_Sample according to the schema
 ;; We only deal with DIF Related_URL for now
@@ -33,11 +34,11 @@
   (when (seq related-urls)
     (for [related-url related-urls]
       (let [{:keys [url type sub-type description]} related-url]
-        (x/element :Related_URL {}
+        (xml/element :Related_URL {}
                    (when type
-                     (x/element :URL_Content_Type {}
-                                (x/element :Type {} type)
-                                (when sub-type (x/element :Subtype {} sub-type))))
-                   (x/element :URL {} url)
+                     (xml/element :URL_Content_Type {}
+                                (xml/element :Type {} type)
+                                (when sub-type (xml/element :Subtype {} sub-type))))
+                   (xml/element :URL {} url)
                    (when description
-                     (x/element :Description {} description)))))))
+                     (xml/element :Description {} description)))))))

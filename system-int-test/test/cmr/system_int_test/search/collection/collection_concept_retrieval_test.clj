@@ -3,33 +3,20 @@
   /concepts/:concept-id/:revision-id endpoints."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clj-time.format :as f]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
+   [clojure.data.xml :as xml]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3] :as util]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.spatial.codec :as codec]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.atom-json :as dj]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.kml :as dk]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -37,9 +24,7 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as ver]
    [cmr.umm.echo10.echo10-collection :as c]
-   [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
-   [cmr.umm.umm-core :as umm]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-core :as umm]))
 
 (use-fixtures
   :each
@@ -351,7 +336,7 @@
         (are [mime-type xml?]
              (let [response (search/retrieve-concept (:concept-id c1-echo) nil {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (x/parse-str (:body response)) [:error])
+                             (cx/string-at-path (xml/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))

@@ -1,7 +1,7 @@
 (ns cmr.access-control.test.bootstrap
   "Bootstraps the initial access control system so that the echo system token has minimal permissions"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.common.log :refer [info]]
    [cmr.transmit.config :as transmit-config]
@@ -22,7 +22,7 @@
         ;; Find or create the administrators group.
         {:keys [concept-id]} (or (mdb-legacy/find-latest-concept
                                   context
-                                  {:native-id (str/lower-case (transmit-config/administrators-group-name))
+                                  {:native-id (string/lower-case (transmit-config/administrators-group-name))
                                    :provider-id "CMR"
                                    :exclude-metadata true}
                                   :access-group)

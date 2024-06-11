@@ -1,9 +1,10 @@
 (ns cmr.umm.iso-smap.collection.progress
   "Functions for parsing/generating Collection Progress values from/to
   ISO SMAP XML."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as string]
-            [cmr.common.xml :as cx]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]))
 
 (def umm->iso
   {:planned "planned"
@@ -33,7 +34,7 @@
   the given collection."
   [{:keys [collection-progress]}]
   (when-let [value (umm->iso collection-progress)]
-    (x/element :gmd:status {}
-               (x/element :gmd:MD_ProgressCode {:codeList code-list-url
+    (xml/element :gmd:status {}
+               (xml/element :gmd:MD_ProgressCode {:codeList code-list-url
                                                 :codeListValue value}
                           value))))

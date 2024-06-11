@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact
  "Functions to parse DataCenters and ContactPersons from ISO 19115-2"
  (:require
-  [clojure.string :as str]
+  [clojure.string :as string]
   [cmr.common.xml.parse :refer [value-of]]
   [cmr.common.xml.simple-xpath :refer [select]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
@@ -111,16 +111,16 @@
  "Split the name into short name and long name. ISO has one name field so use delimeter."
  [name]
  (when name
-  (when-let [names (seq (str/split name #"&gt;|>"))]
-   {:ShortName (str/trim (first names))
+  (when-let [names (seq (string/split name #"&gt;|>"))]
+   {:ShortName (string/trim (first names))
     :LongName (when (> (count names) 1)
-               (str/join " " (map str/trim (rest names))))})))
+               (string/join " " (map string/trim (rest names))))})))
 
 (defn parse-individual-name
  "Parse an individial name into first, middle, last. ISO has one name field so use one or
  more spaces as delimeter."
  [name sanitize?]
- (let [names (str/split name #" {1,}")
+ (let [names (string/split name #" {1,}")
        num-names (count names)]
   (case num-names
    0 (when sanitize?
@@ -129,7 +129,7 @@
    2 {:FirstName (first names)
       :LastName (last names)}
    {:FirstName (first names)
-    :MiddleName (str/join " " (subvec names 1 (dec num-names)))
+    :MiddleName (string/join " " (subvec names 1 (dec num-names)))
     :LastName (last names)})))
 
 (defn- parse-contacts-xml

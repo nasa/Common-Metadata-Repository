@@ -1,14 +1,15 @@
 (ns cmr.search.services.aql.converters.attribute
   "Contains functions for parsing, validating and converting additionalAttributes aql element to query conditions"
-  (:require [clojure.string :as s]
-            [cmr.common.xml :as cx]
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.search.services.parameters.converters.attribute :as p]
-            [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.common.services.errors :as errors]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.search.services.parameters.converters.attribute :as p]
+   [cmr.search.services.messages.attribute-messages :as msg]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.services.errors :as errors]))
 
 (defn- attrib-value->condition
   [attrib-type attrib-name value]
@@ -25,8 +26,8 @@
         condition (qm/map->AttributeRangeCondition
                     {:type attrib-type
                      :name attrib-name
-                     :min-value (when-not (s/blank? minv) minv)
-                     :max-value (when-not (s/blank? maxv) maxv)})]
+                     :min-value (when-not (string/blank? minv) minv)
+                     :max-value (when-not (string/blank? maxv) maxv)})]
     (p/parse-component-type condition false)))
 
 (defn- time-from-strings

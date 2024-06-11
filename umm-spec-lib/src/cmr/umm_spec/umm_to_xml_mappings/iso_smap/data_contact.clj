@@ -2,7 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM DataCenters, ContactPersons and ContactGroups."
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]
@@ -85,7 +85,7 @@
   (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
    [:gmd:pointOfContact
     [:gmd:CI_ResponsibleParty
-     [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
+     [:gmd:individualName (char-string (string/trim (string/join " " [FirstName MiddleName LastName])))]
      (when data-center-name
       [:gmd:organisationName (char-string data-center-name)])
      [:gmd:positionName (char-string NonDataCenterAffiliation)]
@@ -126,7 +126,7 @@
                :when (not= "Metadata Author" role)]
            [path
             [:gmd:CI_ResponsibleParty
-             [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
+             [:gmd:individualName (char-string (string/trim (string/join " " [FirstName MiddleName LastName])))]
              (when data-center-name
                [:gmd:organisationName (char-string data-center-name)])
              (when NonDataCenterAffiliation
@@ -183,7 +183,7 @@
               data-center-name (generate-data-center-name contact-person)]]
     [:gmd:contact
      [:gmd:CI_ResponsibleParty
-      [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
+      [:gmd:individualName (char-string (string/trim (string/join " " [FirstName MiddleName LastName])))]
       [:gmd:organisationName
        (char-string data-center-name)]
       (when NonDataCenterAffiliation

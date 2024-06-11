@@ -3,16 +3,14 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clj-time.format :as f]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]
@@ -53,7 +51,7 @@
 (defn xml-elem->bounding-rectangles
   [entry-elem]
   (map (fn [s]
-         (let [[s w n e] (map #(Double. ^String %) (str/split s #" "))]
+         (let [[s w n e] (map #(Double. ^String %) (string/split s #" "))]
            (m/mbr w n e s)))
        (cx/strings-at-path entry-elem [:box])))
 
@@ -61,7 +59,7 @@
   "Extracts the spatial shapes from the XML entry."
   [entry-elem]
   (when-let [coordinate-system (some-> (cx/string-at-path entry-elem [:coordinateSystem])
-                                       str/lower-case
+                                       string/lower-case
                                        keyword)]
     (let [coordinate-system (if (= coordinate-system :orbit)
                               :geodetic
@@ -208,7 +206,7 @@
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
-  (let [xml-struct (x/parse-str xml)]
+  (let [xml-struct (xml/parse-str xml)]
     (util/remove-nil-keys
       {:id (cx/string-at-path xml-struct [:id])
        :title (cx/string-at-path xml-struct [:title])

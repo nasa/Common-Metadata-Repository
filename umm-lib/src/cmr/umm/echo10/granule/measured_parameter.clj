@@ -1,10 +1,11 @@
 (ns cmr.umm.echo10.granule.measured-parameter
   "Contains functions for parsing and generating the ECHO10 dialect for measured parameters."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->QAStats
   "Returns a UMM QAStats from a parsed XML structure"
@@ -66,7 +67,7 @@
   [qa-stats]
   (when-let [{:keys [qa-percent-missing-data qa-percent-out-of-bounds-data
                      qa-percent-interpolated-data qa-percent-cloud-cover]} qa-stats]
-    (x/element :QAStats {}
+    (xml/element :QAStats {}
                (gu/optional-elem :QAPercentMissingData qa-percent-missing-data)
                (gu/optional-elem :QAPercentOutOfBoundsData qa-percent-out-of-bounds-data)
                (gu/optional-elem :QAPercentInterpolatedData qa-percent-interpolated-data)
@@ -80,7 +81,7 @@
                      operational-quality-flag-explanation
                      science-quality-flag
                      science-quality-flag-explanation]} qa-flags]
-    (x/element :QAFlags {}
+    (xml/element :QAFlags {}
                (gu/optional-elem :AutomaticQualityFlag automatic-quality-flag)
                (gu/optional-elem :AutomaticQualityFlagExplanation automatic-quality-flag-explanation)
                (gu/optional-elem :OperationalQualityFlag operational-quality-flag)
@@ -91,11 +92,11 @@
 (defn generate-measured-parameters
   [measured-params]
   (when (seq measured-params)
-    (x/element
+    (xml/element
       :MeasuredParameters {}
       (for [{:keys [parameter-name qa-stats qa-flags]} measured-params]
-        (x/element :MeasuredParameter {}
-                   (x/element :ParameterName {} parameter-name)
+        (xml/element :MeasuredParameter {}
+                   (xml/element :ParameterName {} parameter-name)
                    (generate-qa-stats qa-stats)
                    (generate-qa-flags qa-flags))))))
 
