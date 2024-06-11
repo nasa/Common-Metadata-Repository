@@ -8,7 +8,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.granule.temporal :as gt]
+   [cmr.umm-spec.temporal :as temporal]
    [cmr.umm.umm-collection :as c]
    [cmr.umm.umm-granule :as g]
    [cmr.umm.umm-spatial :as umm-s])
@@ -42,9 +42,9 @@
         single (when single-date-time (p/parse-datetime single-date-time))]
     (cond
       (or begin end)
-      (gt/temporal {:range-date-time (c/->RangeDateTime begin end)})
+      (temporal/temporal {:RangeDateTime (c/->RangeDateTime begin end)})
       single
-      (gt/temporal {:single-date-time single}))))
+      (temporal/temporal {:SingleDateTime single}))))
 
 (defn sensor-ref
   "Return a sensor-ref based on sensor attribs."
