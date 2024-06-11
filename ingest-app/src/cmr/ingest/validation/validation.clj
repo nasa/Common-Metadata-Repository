@@ -104,7 +104,11 @@
    (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
                                   context
                                   :mime-type
-                                  msg/mime-type-not-matches-kms-keywords)}})})
+                                  msg/mime-type-not-matches-kms-keywords)
+                       :Format (match-kms-keywords-validation-single 
+                                context
+                                :granule-data-format
+                                msg/getdata-format-not-matches-kms-keywords)}})})
 
 (defn- related-url-validator
   "Return a validator that checks a ContentType, Type, and Subtype keyword combo

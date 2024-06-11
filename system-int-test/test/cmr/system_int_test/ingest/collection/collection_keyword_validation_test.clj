@@ -2,9 +2,9 @@
   "CMR Ingest keyword validation integration tests"
   (:require
     [clojure.test :refer :all]
-    [cmr.common.util :refer [are2 are3]]
+    [cmr.common.util :refer [are3]]
     [cmr.ingest.services.messages :as msg]
-    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -14,7 +14,7 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest-umm-spec-collection
+   (let [response (data-core/ingest-umm-spec-collection
                    "PROV1"
                    (data-umm-c/collection coll-attributes)
                    (merge {:allow-failure? true} options))]
@@ -30,7 +30,7 @@
    (let [collection (assoc (data-umm-c/collection coll-attributes)
                            :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
-         response (d/ingest-umm-spec-collection provider-id collection options)]
+         response (data-core/ingest-umm-spec-collection provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-keywords
@@ -106,7 +106,7 @@
 
           response (ingest/validate-concept concept {:validate-keywords false})]
       (is (= {:status 200
-              :warnings "After translating item to UMM-C the metadata had the following issue(s): [:DataCenters 0 :ContactInformation :RelatedUrls 0] URLContentType must be DataCenterURL for DataCenter RelatedUrls;; [:RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType2] was not a valid keyword.;; [:Platforms 0] Platform short name [foo], long name [Airbus A340-600], and type [Jet] was not a valid keyword combination.;; [:DataCenters 0] Data center short name [SomeCenter] was not a valid keyword.;; [:DataCenters 0 :ContactInformation :RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType1] was not a valid keyword."}
+              :warnings "After translating item to UMM-C the metadata had the following issue(s): [:DataCenters 0 :ContactInformation :RelatedUrls 0] URLContentType must be DataCenterURL for DataCenter RelatedUrls;; [:RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType2] was not a valid keyword.;; [:RelatedUrls 0 :GetData :Format] Format [RelatedUrls: BadFormat2] was not a valid keyword.;; [:Platforms 0] Platform short name [foo], long name [Airbus A340-600], and type [Jet] was not a valid keyword combination.;; [:DataCenters 0] Data center short name [SomeCenter] was not a valid keyword.;; [:DataCenters 0 :ContactInformation :RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType1] was not a valid keyword.;; [:DataCenters 0 :ContactInformation :RelatedUrls 0 :GetData :Format] Format [RelatedUrls: BadFormat1] was not a valid keyword."}
              response))))
 
  (testing "ArchiveAndDistributionInformation and RelatedUrls keyword validation"
@@ -268,7 +268,7 @@
             :Subtype "MAP"}]})
 
   (testing "Project keyword validation"
-    (are2 [short-name long-name]
+    (are3 [short-name long-name]
           (assert-invalid-keywords
             {:Projects [(assoc (data-umm-cmn/project short-name "") :LongName long-name)]}
             ["Projects" 0]
@@ -291,7 +291,7 @@
           "Invalid combination"
           "SEDAC/GISS CROP-CLIM DBQ" "European Digital Archive of Soil Maps")
 
-    (are2 [short-name long-name]
+    (are3 [short-name long-name]
           (assert-valid-keywords
             {:Projects [(assoc (data-umm-cmn/project short-name "") :LongName long-name)]})
           "Exact match"
@@ -304,7 +304,7 @@
           "EUDaSM" "European DIgItal ArchIve of SoIl MAps"))
 
   (testing "Platform keyword validation"
-    (are2 [short-name long-name type]
+    (are3 [short-name long-name type]
           (assert-invalid-keywords
             {:Platforms [(data-umm-cmn/platform {:ShortName short-name
                                                  :LongName long-name
@@ -333,7 +333,7 @@
           "Long name is in Platform and nil in KMS"
           "ALTUS" "foo" "Aircraft")
 
-    (are2 [short-name long-name type]
+    (are3 [short-name long-name type]
           (assert-valid-keywords
             {:Platforms [(data-umm-cmn/platform {:ShortName short-name
                                                  :LongName long-name
@@ -431,7 +431,7 @@
           "bIoTa"))
 
   (testing "Instrument keyword validation"
-    (are2 [short-name long-name]
+    (are3 [short-name long-name]
           (assert-invalid-keywords
             {:Platforms
              [(data-umm-cmn/platform
@@ -456,7 +456,7 @@
           "Invalid combination"
           "ATM" "Land, Vegetation, and Ice Sensor")
 
-    (are2 [short-name long-name]
+    (are3 [short-name long-name]
           (assert-valid-keywords
             {:Platforms
              [(data-umm-cmn/platform
