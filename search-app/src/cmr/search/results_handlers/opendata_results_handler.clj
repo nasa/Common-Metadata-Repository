@@ -214,14 +214,14 @@
   "Returns a distribution open data field for the provided related URL.
   See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
   [related-url]
-  (let [{:keys [description url get-data-mime-type URLContentType Type Subtype]} related-url
+  (let [{:keys [description url get-data-mime-type url-content-type type sub-type]} related-url
         get-data-mime-type (or (util/nil-if-value umm-spec-util/not-provided get-data-mime-type)
                                (related-url/infer-url-mime-type url))
         downloadable? (related-url/downloadable-mime-type? get-data-mime-type)
         url-type (if downloadable? :downloadURL :accessURL)]
     (util/remove-nil-keys {url-type (related-url/related-url->encoded-url url)
                            :mediaType (when downloadable? get-data-mime-type)
-                           :title (related-url/related-url->title URLContentType Type Subtype)
+                           :title (related-url/related-url->title url-content-type type sub-type)
                            :description description})))
 
 (defn landing-page

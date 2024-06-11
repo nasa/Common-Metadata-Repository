@@ -4,7 +4,6 @@
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url-titles :as related-url-titles]
-   [cmr.common.log :refer [error]]
    [ring.util.codec :as codec]
    [ring.util.mime-type :as mime-type]))
 

@@ -116,7 +116,7 @@
    :measurement-name [:context-medium :object :quantity :uuid]
    :concepts [:short-name :long-name :uuid]
    :iso-topic-categories [:iso-topic-category :uuid]
-   :related-urls [:URLContentType :Type :Subtype :uuid]
+   :related-urls [:url-content-type :type :subtype :uuid]
    :granule-data-format [:short-name :long-name :uuid]
    :mime-type [:mime-type :uuid]
    :processing-levels [:processing-level :uuid]})

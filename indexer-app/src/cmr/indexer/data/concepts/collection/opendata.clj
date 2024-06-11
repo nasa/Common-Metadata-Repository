@@ -35,9 +35,9 @@
         get-data-mime-type (get-in related-url [:GetData :MimeType])
         get-service-mime-type (get-in related-url [:GetService :MimeType])
         size (get-in related-url [:GetData :Size])]
-    {:Type Type
-     :Subtype Subtype
-     :URLContentType URLContentType
+    {:type Type
+     :sub-type Subtype
+     :url-content-type URLContentType
      :url URL
      :get-data-mime-type get-data-mime-type
      :description Description

@@ -38,7 +38,7 @@
    :measurement-name [:context-medium :object :quantity]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :related-urls [:URLContentType :Type :Subtype]
+   :related-urls [:url-content-type :type :subtype]
    :granule-data-format [:short-name]
    :mime-type [:mime-type]
    :processing-levels [:processing-level]})

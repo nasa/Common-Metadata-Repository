@@ -37,7 +37,8 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as ver]
    [cmr.umm.echo10.echo10-collection :as c]
-    [cmr.umm.umm-core :as umm]
+   [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
+   [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures

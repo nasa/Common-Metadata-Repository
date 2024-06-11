@@ -32,7 +32,9 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm.dif.dif-collection]
-    [ring.util.codec :as codec]))
+   [cmr.umm.iso-mends.iso-mends-collection]
+   [cmr.umm.iso-smap.iso-smap-collection]
+   [ring.util.codec :as codec]))
 
 (defn enable-writes
   "Enables writes for tags / tag associations."
