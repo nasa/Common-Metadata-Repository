@@ -4,7 +4,7 @@
    [clojure.java.jdbc :as jdbc]
    [cmr.metadata-db.data.util :as util]))
 
-(def granule-column-sql-false
+(def create-granule-column-sql
   (str "id NUMBER,
        concept_id VARCHAR(255) NOT NULL,
        native_id VARCHAR(250) NOT NULL,
@@ -28,65 +28,29 @@
   "Returns the sql to define provider granule columns"
   [provider]
   (case (:small provider)
-    false granule-column-sql-false
-    true (str granule-column-sql-false ",provider_id VARCHAR(255) NOT NULL")))
-
-(defn- granule-constraint-sql-false
-  "Returns the sql to define constraint on provider granule table - not the small provider."
-  [table-name]
-  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
-
-               ;; Unique constraint on native id and revision id
-               "CONSTRAINT %s_con_rev
-               UNIQUE (native_id, revision_id)
-               USING INDEX (create unique index %s_ucr_i
-               ON %s (native_id, revision_id)), "
-
-               ;; Unique constraint on concept id and revision id
-               "CONSTRAINT %s_cid_rev
-               UNIQUE (concept_id, revision_id)
-               USING INDEX (create unique index %s_cri
-               ON %s (concept_id, revision_id))")
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name))
-
-(defn- granule-constraint-sql-true
-  "Returns the sql to define constraint on the small provider granule table"
-  [table-name]
-  (util/validate-table-name table-name)
-  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
-
-               ;; Unique constraint on native id and revision id
-               "CONSTRAINT %s_con_rev
-               UNIQUE (provider_id, native_id, revision_id)
-               USING INDEX (create unique index %s_ucr_i
-               ON %s (provider_id, native_id, revision_id)), "
-
-               ;; Unique constraint on concept id and revision id
-               "CONSTRAINT %s_cid_rev
-               UNIQUE (concept_id, revision_id)
-               USING INDEX (create unique index %s_cri
-               ON %s (concept_id, revision_id))")
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name
-          table-name))
+    false create-granule-column-sql
+    true (str create-granule-column-sql ",provider_id VARCHAR(255) NOT NULL")))
 
 (defn granule-constraint-sql
   "Returns the sql to define constraint on provider granule table"
   [provider table-name]
   (util/validate-table-name table-name)
-  (case (:small provider)
-    false (granule-constraint-sql-false table-name)
-    true (granule-constraint-sql-true table-name)))
+  (let [native-revision-str-1 (format "CONSTRAINT %s_pk PRIMARY KEY (id), CONSTRAINT %s_con_rev " table-name table-name)
+        native-revision-2 (if (:small provider)
+                            (format (str "UNIQUE (provider_id, native_id, revision_id) USING INDEX (create unique index %s_ucr_i "
+                                         "ON %s (provider_id, native_id, revision_id)), ")
+                                    table-name
+                                    table-name)
+                            (format (str "UNIQUE (native_id, revision_id) USING INDEX (create unique index %s_ucr_i "
+                                         "ON %s (native_id, revision_id)), ")
+                                    table-name
+                                    table-name))
+        con-rev-constraint (format (str "CONSTRAINT %s_cid_rev UNIQUE (concept_id, revision_id) "
+                                        "USING INDEX (create unique index %s_cri ON %s (concept_id, revision_id))")
+                                   table-name
+                                   table-name
+                                   table-name)]
+    (str native-revision-str-1 native-revision-2 con-rev-constraint)))
 
 (defn- create-common-gran-indexes
   [db table-name]
@@ -113,10 +77,6 @@
   ;; This index makes it faster to find counts by collection of undeleted granules for metadata db holdings
   (jdbc/db-do-commands db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
                                   table-name
-                                  table-name))
-  ;; This index makes it much faster to find granules that are not deleted that have a delete time.
-  (jdbc/db-do-commands db (format "create index %s_dd on %s (deleted, delete_time)"
-                                  table-name
                                   table-name)))
 
 (defn create-granule-indexes
@@ -125,5 +85,11 @@
   (util/validate-table-name table-name)
   (create-common-gran-indexes db table-name)
   (case (:small provider)
-    false (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name))
-    true (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)" table-name table-name))))
+    false (do
+            (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name))
+            ;; This index makes it much faster to find granules that are not deleted that have a delete time.
+            (jdbc/db-do-commands db (format "create index %s_dd on %s (deleted, delete_time)" table-name table-name)))
+    true (do
+           (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)" table-name table-name))
+           ;; This index makes it much faster to find granules that are not deleted that have a delete time.
+           (jdbc/db-do-commands db (format "create index %s_dd on %s (provider_id, deleted, delete_time)" table-name table-name)))))
