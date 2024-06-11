@@ -240,7 +240,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below.
  * `pretty` - Return formatted results if set to true.
- * `token` - Specifies a user token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#header) is the prefered way to supply a token. This parameter may be deprecated in the future.
+ * `token` - Specifies a user token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#headers) is the prefered way to supply a token. This parameter may be deprecated in the future.
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -5695,7 +5695,7 @@ The [cmr-graphql](https://github.com/nasa/cmr-graphql) API can handle POST reque
 
 ```
 
-curl -XPOST '%GRAPHQL-ENDPOINT%' \ 
+curl -XPOST '%GRAPHQL-ENDPOINT%' \
 -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer XXXXX' \
 -d '{"query":"{ collections{ count}}"}'
@@ -5801,8 +5801,8 @@ __Response__
 ```
 
 ### <a name="cmr-graphql-addtional-information"></a> Additional Information
-The [cmr-graphql](https://github.com/nasa/cmr-graphql) is maintained separately from the CMR REST API, it is expected that new fields added to CMR concepts will lag behind changes to the CMR REST API. Though these should be periodically updated to match the latest changes in the CMR API, requested changes can be made by adding an issue to the [cmr-graphql](https://github.com/nasa/cmr-graphql) repository on 
+The [cmr-graphql](https://github.com/nasa/cmr-graphql) is maintained separately from the CMR REST API, it is expected that new fields added to CMR concepts will lag behind changes to the CMR REST API. Though these should be periodically updated to match the latest changes in the CMR API, requested changes can be made by adding an issue to the [cmr-graphql](https://github.com/nasa/cmr-graphql) repository on
 ``` https://github.com/nasa/cmr-graphql/issues```.
 
-For additional information on the cmr-graphql as well as more example queries please visit 
+For additional information on the cmr-graphql as well as more example queries please visit
 ``` https://github.com/nasa/cmr-graphql#readme ```
