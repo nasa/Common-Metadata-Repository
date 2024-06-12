@@ -4,7 +4,7 @@
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.collection.temporal :as ct]
+            [cmr.umm-spec.temporal :as temporal]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [clj-time.format :as f]
             [cmr.umm.collection.entry-id :as eid]
@@ -75,11 +75,11 @@
         single (when single-date-time (p/parse-datetime single-date-time))]
     (cond
       (or begin end)
-      (ct/temporal {:range-date-times [(c/->RangeDateTime begin end)]
-                    :ends-at-present-flag ends-at-present?})
+      (temporal/temporal {:RangeDateTimes [(c/->RangeDateTime begin end)]
+                    :EndsAtPresentFlag ends-at-present?})
 
       single
-      (ct/temporal {:single-date-times [single]}))))
+      (temporal/temporal {:SingleDateTimes [single]}))))
 
 (defn science-keyword
   [attribs]
