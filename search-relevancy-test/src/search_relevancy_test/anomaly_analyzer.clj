@@ -1,9 +1,7 @@
 (ns search-relevancy-test.anomaly-analyzer
   "Functions to help analyze why a relevancy test is failing"
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [search-relevancy-test.core :as core]
    [search-relevancy-test.relevancy-test :as relevancy-test]))
 
@@ -16,7 +14,7 @@
         tests (filter #(= (str anomaly-number) (:anomaly %))
                       csv-data)
         concept-ids (distinct
-                     (mapcat #(str/split (:concept-ids %) #",")
+                     (mapcat #(string/split (:concept-ids %) #",")
                              tests))]
     {:search (:search (first tests))
      :concept-ids concept-ids}))

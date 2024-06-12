@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.data2.provider-holdings
   "Contains helper functions for converting provider holdings into the expected map of parsed results."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cheshire.core :as json]
-            [clojure.data.csv :as csv]
-            [clojure.set :as set]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cheshire.core :as json]
+   [clojure.data.csv :as csv]
+   [clojure.set :as set]))
 
 (defmulti parse-provider-holdings
   "Returns the parsed provider holdings based on the given format and result string"
@@ -32,7 +33,7 @@
 
 (defmethod parse-provider-holdings :xml
   [format echo-compatible? xml]
-  (let [xml-struct (x/parse-str xml)]
+  (let [xml-struct (xml/parse-str xml)]
     (map (partial xml-elem->provider-holding echo-compatible?)
          (cx/elements-at-path xml-struct [:provider-holding]))))
 

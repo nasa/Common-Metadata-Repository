@@ -1,8 +1,8 @@
 (ns cmr.ingest.validation.instrument-validation
   "Provides functions to validate the instruments during collection update"
   (:require
-   [clojure.set :as s]
-   [clojure.string :as str]
+   [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
@@ -37,9 +37,9 @@
   (let [ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
         current-parent-ins (get-parent-instruments-from-concept concept)
         previous-parent-ins (get-parent-instruments-from-concept prev-concept)
-        ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
+        ins-aliases (mapcat #(get ins-alias-map %) (map string/upper-case current-parent-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
-        deleted-parent-instrument-names (s/difference
+        deleted-parent-instrument-names (set/difference
                                           (set (map util/safe-lowercase previous-parent-ins))
                                           (set (map util/safe-lowercase (concat current-parent-ins ins-aliases))))]
     (for [name deleted-parent-instrument-names]
@@ -57,9 +57,9 @@
   (let [ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
         current-child-ins (get-child-instruments-from-concept concept)
         previous-child-ins (get-child-instruments-from-concept prev-concept)
-        ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-child-ins))
+        ins-aliases (mapcat #(get ins-alias-map %) (map string/upper-case current-child-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
-        deleted-child-instrument-names (s/difference
+        deleted-child-instrument-names (set/difference
                                          (set (map util/safe-lowercase previous-child-ins))
                                          (set (map util/safe-lowercase (concat current-child-ins ins-aliases))))]
     (for [name deleted-child-instrument-names]

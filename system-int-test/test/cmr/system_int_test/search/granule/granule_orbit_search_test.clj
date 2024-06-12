@@ -1,26 +1,19 @@
 (ns cmr.system-int-test.search.granule.granule-orbit-search-test
   "Tests for spatial search with orbital back tracking."
   (:require
-   [clojure.string :as s]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.util :as u]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
-   [cmr.spatial.kml :as kml]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as point]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.search.granule.granule-spatial-search-test :as st]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 

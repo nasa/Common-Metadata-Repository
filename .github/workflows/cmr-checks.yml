@@ -1,21 +1,40 @@
 name: CMR Checks
-
 on:
+  workflow_dispatch:
+  push:
+    branches: [ master, main, feature/**, CMR-**, cmr-**]
   pull_request:
-    branches: [ master, main ]
-
+    branches: [ master, main , features/**, CMR-**, cmr-**]
 jobs:
   cloc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Remove non-CMR directories
         run: |
-          rm -rf browse-scaler
           rm -rf legacy-migration
           rm -rf other
           rm -rf system-validation-test
           rm -rf tea-config-generator
           rm -rf token-service-client
       - name: Count Lines of Code (cloc)
-        uses: djdefi/cloc-action@5
+        uses: djdefi/cloc-action@6
+  kondo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Run Kondo Report
+        id: gen-report
+        run: ./dev-system/support/run-kondo.sh >> report.log
+      - name: Show Kondo Report
+        id: show-report
+        if: always()
+        run: cat report.log
+      - name: Publish Kondo Report
+        id: pub-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kondo-Report.txt
+          path: report.log

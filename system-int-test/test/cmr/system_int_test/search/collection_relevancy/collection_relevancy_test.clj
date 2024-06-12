@@ -2,17 +2,12 @@
   "Test the integration between different kinds of relevancy: Keyword, Temporal, and
    Community Usage."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.config :as config]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-common]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]

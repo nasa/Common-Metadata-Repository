@@ -1,16 +1,18 @@
 (ns cmr.search.services.parameters.converters.two-d-coordinate-system
   "Contains functions for converting two d coordinate system search parameters to a query model."
-  (:require [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.es-params-converter :as p]
-            [clojure.string :as s]
-            [cmr.common.services.errors :as errors])
-  (:import [cmr.search.models.query
-            CoordinateValueCondition
-            CoordinateRangeCondition
-            TwoDCoordinateCondition
-            TwoDCoordinateSystemCondition]
-           clojure.lang.ExceptionInfo))
+  (:require
+   [cmr.search.models.query :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors])
+  (:import
+   [cmr.search.models.query
+    CoordinateValueCondition
+    CoordinateRangeCondition
+    TwoDCoordinateCondition
+    TwoDCoordinateSystemCondition]
+   clojure.lang.ExceptionInfo))
 
 (defn- string->double
   "Returns the double value of the given string if it is not empty"
@@ -21,7 +23,7 @@
   "Returns a list of coordinate values for the given search coordinate
   which is in the format of 5 or 5-7"
   [coord-str]
-  (let [[x y] (s/split coord-str #"-")]
+  (let [[x y] (string/split coord-str #"-")]
     (try
       [(string->double x) (string->double y)]
       (catch NumberFormatException e
@@ -31,7 +33,7 @@
 (defn string->coordinate-condition
   "Returns a list of coordinate conditions for the given search coordinate string"
   [coord-str]
-  (let [coord-str (when coord-str (s/trim coord-str))]
+  (let [coord-str (when coord-str (string/trim coord-str))]
     (when-not (or (empty? coord-str) (= "-" coord-str))
       (let [[x y] (string->coordinate-values coord-str)]
         (if (and (nil? y) (nil? (re-find #"-" coord-str)))
@@ -46,7 +48,7 @@
   "Returns a map of search coordinates for the given string
   which is in the format of 5,10 or 5-7,1-6, etc."
   [coordinates-str]
-  (let [[coord-1 coord-2] (s/split coordinates-str #",")
+  (let [[coord-1 coord-2] (string/split coordinates-str #",")
         coord-1-cond (string->coordinate-condition coord-1)
         coord-2-cond (string->coordinate-condition coord-2)]
     (qm/map->TwoDCoordinateCondition {:coordinate-1-cond coord-1-cond
@@ -55,12 +57,12 @@
 (defn- validate-two-d-param-str
   "Validate the two-d parameter string, throws error if it is invalid."
   [concept-type param-str]
-  (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
+  (let [[two-d-name two-d-coord-str] (string/split param-str #":" 2)
         param-name (if (= :collection concept-type) "two_d_coordinate_system[name]" "Grid name")
-        msg (if (s/blank? param-str)
+        msg (if (string/blank? param-str)
               (format "%s can not be empty" param-name)
               (format "%s can not be empty, but is for [%s]" param-name param-str))]
-    (when (s/blank? two-d-name)
+    (when (string/blank? two-d-name)
       (errors/throw-service-error :bad-request msg))
 
     (when (and (= :collection concept-type) (not-empty two-d-coord-str))
@@ -71,9 +73,9 @@
 (defn two-d-param-str->condition
   [concept-type param-str]
   (validate-two-d-param-str concept-type param-str)
-  (let [[two-d-name two-d-coord-str] (s/split param-str #":" 2)
+  (let [[two-d-name two-d-coord-str] (string/split param-str #":" 2)
         coordinate-conds (when-not (empty? two-d-coord-str)
-                           (->> (s/split two-d-coord-str #":")
+                           (->> (string/split two-d-coord-str #":")
                                 (map string->TwoDCoordinateCondition)
                                 (remove nil?)
                                 seq))]

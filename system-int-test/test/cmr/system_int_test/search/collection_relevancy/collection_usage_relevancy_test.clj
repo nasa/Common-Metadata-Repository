@@ -4,21 +4,14 @@
   cmr.system-int-test.search.collection-relevancy.collection-relevancy namespace.
   For all of the tests in this namespace we bin each integer value to its own bin."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.config :as config]
-   [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.search-util :as search]))
 
 (def sample-usage-csv

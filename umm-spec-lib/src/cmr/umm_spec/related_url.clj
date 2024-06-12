@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.related-url
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url-titles :as related-url-titles]))
@@ -148,7 +148,7 @@
 (defn convert-to-bytes
   [size unit]
   (when (and size unit)
-    (case (str/upper-case unit)
+    (case (string/upper-case unit)
       ("BYTES" "B") size
       ("KILOBYTES" "KB") (* size 1024)
       ("MEGABYTES" "MB") (* size 1048576)

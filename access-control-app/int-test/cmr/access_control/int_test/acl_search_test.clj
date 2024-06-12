@@ -1,7 +1,7 @@
 (ns cmr.access-control.int-test.acl-search-test
   (:require
    [clj-http.client :as client]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
@@ -866,7 +866,7 @@
             [acl1]
 
             "Case sensitivity"
-            [(str/lower-case group1-concept-id)]
+            [(string/lower-case group1-concept-id)]
             []
 
             "Null target-id"

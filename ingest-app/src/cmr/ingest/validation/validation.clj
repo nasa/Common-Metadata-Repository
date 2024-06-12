@@ -104,7 +104,11 @@
    (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
                                   context
                                   :mime-type
-                                  msg/mime-type-not-matches-kms-keywords)}})})
+                                  msg/mime-type-not-matches-kms-keywords)
+                       :Format (match-kms-keywords-validation-single 
+                                context
+                                :granule-data-format
+                                msg/getdata-format-not-matches-kms-keywords)}})})
 
 (defn- related-url-validator
   "Return a validator that checks a ContentType, Type, and Subtype keyword combo
@@ -182,6 +186,10 @@
                       context :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
    :DataCenters (match-kms-keywords-validation
                  context :providers msg/data-center-not-matches-kms-keywords)
+   :ProcessingLevel {:Id (match-kms-keywords-validation-single
+                          context
+                          :processing-levels
+                          msg/processing-level-id-not-matches-kms-keywords)}
    :DirectoryNames (match-kms-keywords-validation
                     context :concepts msg/directory-name-not-matches-kms-keywords)
    :ISOTopicCategories (match-kms-keywords-validation

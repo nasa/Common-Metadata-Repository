@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO XML documents."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
@@ -47,7 +47,7 @@
   [doc sanitize? service-url-path service-online-resource-xpath]
   (for [service (select doc service-url-path)
         :let [local-name (value-of service "srv:serviceType/gco:LocalName")]
-        :when (str/includes? local-name "RelatedURL")
+        :when (string/includes? local-name "RelatedURL")
         :let [url-types (parse-url-types-from-description local-name)
               uris (mapv #(value-of % "gmd:linkage/gmd:URL")
                          (select service service-online-resource-xpath))
@@ -65,7 +65,7 @@
     (merge url-types
            {:URL (when url-link (url/format-url url-link sanitize?))
             :Description (when (seq description)
-                           (str/trim description))}
+                           (string/trim description))}
            (util/remove-nil-keys
             {:GetService (when (or MimeType full-name DataID protocol DataType Format
                                   (seq uris))
@@ -162,7 +162,7 @@
  (for [url (select doc publication-url-path)
        :let [description (char-string-value url "gmd:description")]
        :when (and (some? description)
-                  (not (str/includes? description "PublicationReference:")))
+                  (not (string/includes? description "PublicationReference:")))
        :let [types-and-desc (parse-url-types-from-description description)]]
   {:URL (value-of url "gmd:linkage/gmd:URL")
    :Description (:Description types-and-desc)

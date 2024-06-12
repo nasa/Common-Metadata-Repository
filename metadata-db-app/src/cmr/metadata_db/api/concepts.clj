@@ -2,15 +2,14 @@
   "Defines the HTTP URL routes that deal with concepts."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as str]
-   [cmr.common.log :refer (debug info warn error)]
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.search-service :as search-service]
-   [compojure.core :refer :all]
+   [compojure.core :refer [DELETE GET POST context routes]]
    [inflections.core :as inf]))
 
 (defn as-int
@@ -34,7 +33,7 @@
 (defn- allow-missing?
   "Returns true if the allow_missing parameter is set to true"
   [params]
-  (= "true" (some-> params :allow_missing str/lower-case)))
+  (= "true" (some-> params :allow_missing string/lower-case)))
 
 (defn- get-concepts
   "Get concepts using concept-id/revision-id tuples."

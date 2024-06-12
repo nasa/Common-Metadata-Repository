@@ -1,8 +1,8 @@
 (ns cmr.umm.iso-mends.collection.keyword
   "Contains functions for parsing and generating the ISO MENDS keyword related fields"
   (:require
-   [clojure.data.xml :as x]
-   [clojure.string :as s]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [cmr.common.xml :as cx]
    [cmr.umm.iso-mends.collection.helper :as h]
    [cmr.umm.umm-collection :as c]))
@@ -36,7 +36,7 @@
   [science-keyword]
   ;; NOTE: ISO science-keywords cannot be parsed correclty from xml if there are '>' in the keywords
   (let [[category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]
-        (map #(if (= "NONE" %) nil %) (s/split science-keyword #">"))]
+        (map #(if (= "NONE" %) nil %) (string/split science-keyword #">"))]
     (c/map->ScienceKeyword
       {:category category
        :topic (or topic c/not-provided)
@@ -62,7 +62,7 @@
   [science-keyword]
   (let [{:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword]
-    (s/join ">" (map #(or % "NONE")
+    (string/join ">" (map #(or % "NONE")
                      [category topic term variable-level-1 variable-level-2
                       variable-level-3 detailed-variable]))))
 
@@ -71,15 +71,15 @@
   lot of duplicate info on GCMD and is not required by the schema."
   [type keywords]
   (when-not (empty? keywords)
-    (x/element
+    (xml/element
       :gmd:descriptiveKeywords {}
-      (x/element
+      (xml/element
         :gmd:MD_Keywords {}
         (if (sequential? keywords)
           (for [keyword keywords] (h/iso-string-element :gmd:keyword keyword))
           (h/iso-string-element :gmd:keyword keywords))
-        (x/element :gmd:type {}
-                   (x/element :gmd:MD_KeywordTypeCode (keyword-type-attributes type) type))))))
+        (xml/element :gmd:type {}
+                   (xml/element :gmd:MD_KeywordTypeCode (keyword-type-attributes type) type))))))
 
 
 (defn generate-science-keywords

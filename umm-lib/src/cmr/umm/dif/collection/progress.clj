@@ -1,9 +1,10 @@
 (ns cmr.umm.dif.collection.progress
   "Functions for parsing and generating the UMM Collection Progress
   information from and to DIF XML."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as string]
-            [cmr.common.xml :as cx]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.xml :as cx]))
 
 (defn parse
   "Returns a collection progress value from a parsed DIF XML document
@@ -22,7 +23,7 @@
   value."
   [{:keys [collection-progress]}]
   (when collection-progress
-    (x/element :Data_Set_Progress {}
+    (xml/element :Data_Set_Progress {}
                (-> collection-progress
                    name
                    (string/replace "-" " ")

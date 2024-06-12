@@ -3,7 +3,7 @@
    for message passing."
   (:require
    [cheshire.core :as json]
-   [clojure.core.async :as a]
+   [clojure.core.async :as async]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [info warn error]]
@@ -35,10 +35,10 @@
    them to the handler, and process the response."
   [queue-broker queue-name handler]
   (let [queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
-    (a/go
+    (async/go
       (try
         (u/while-let
-          [msg (a/<! queue-ch)]
+          [msg (async/<! queue-ch)]
           (let [msg (json/decode msg true)]
             (try
               (handler msg)
@@ -54,7 +54,7 @@
   [channels]
   (when channels
     (loop []
-      (when-not (= :done (first (a/alts!! (vec channels) :default :done)))
+      (when-not (= :done (first (async/alts!! (vec channels) :default :done)))
         (recur)))))
 
 (defrecord
@@ -89,8 +89,8 @@
 
     ;; Wait for go blocks to finish
     (doseq [handler-ch @handler-channels-atom]
-      (a/close! handler-ch)
-      (let [[_ ch] (a/alts!! [(a/timeout 2000)
+      (async/close! handler-ch)
+      (let [[_ ch] (async/alts!! [(async/timeout 2000)
                               handler-ch])]
         (when-not (= ch handler-ch)
           (warn "Timed out waiting for go block to complete"))))
@@ -104,7 +104,7 @@
     [_this queue-name msg]
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
     (if-let [chan (queues-to-channels queue-name)]
-      (a/>!! chan (json/generate-string msg))
+      (async/>!! chan (json/generate-string msg))
       (throw (IllegalArgumentException.
               (str "Could not find channel bound to queue " queue-name)))))
 
@@ -157,7 +157,7 @@
                                           (update-in e-to-q [exchange] conj queue))
                                         exchanges-to-empty-sets
                                         exchange-queue-tuples)
-        q-to-chans (into {} (for [q queues] [q (a/chan CHANNEL_BUFFER_SIZE)]))]
+        q-to-chans (into {} (for [q queues] [q (async/chan CHANNEL_BUFFER_SIZE)]))]
     (->MemoryQueueBroker queues exchanges-to-queue-sets
                          q-to-chans
                          (atom nil))))

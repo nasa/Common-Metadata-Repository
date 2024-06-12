@@ -1,8 +1,0 @@
-{
-    "path": "granules/G1200460416-ESA",
-    "queryStringParameters": {
-        "h ": 85,
-        "w": 85,
-        "imageSrc":"https://airsl2.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level2/AIRH2CCF.006/2002/243/AIRS.2002.08.31.028.L2.CC_H.v6.0.12.0.G14101130602.hdf.jpg"
-    }
-}

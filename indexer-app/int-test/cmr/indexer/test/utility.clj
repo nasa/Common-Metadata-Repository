@@ -3,10 +3,7 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
-   [clojure.java.io :as io]
-   [clojure.string :as str]
    [clojure.test :refer :all]
-   [clojure.walk :as walk]
    [clojurewerkz.elastisch.rest :as esr]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]))

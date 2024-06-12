@@ -1,16 +1,11 @@
 (ns cmr.system-int-test.virtual-product.virtual-product-test
   (:require
-   [cheshire.core :as json]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -18,7 +13,6 @@
    [cmr.system-int-test.utils.virtual-product-util :as vp]
    [cmr.umm.echo10.granule :as g]
    [cmr.umm.umm-collection :as umm-c]
-   [cmr.umm.umm-granule :as umm-g]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.virtual-product.config]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
@@ -275,7 +269,7 @@
                       :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
-        [ur-prefix ur-suffix] (str/split granule-ur #":")
+        [ur-prefix ur-suffix] (string/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
         opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]

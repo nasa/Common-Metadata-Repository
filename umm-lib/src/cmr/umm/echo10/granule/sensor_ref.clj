@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.granule.sensor-ref
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.echo10.granule.characteristic-ref :as cref]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.granule.characteristic-ref :as cref]))
 
 (defn xml-elem->SensorRef
   [sensor-ref-elem]
@@ -21,9 +22,9 @@
 (defn generate-sensor-refs
   [sensor-refs]
   (when (seq sensor-refs)
-    (x/element
+    (xml/element
       :Sensors {}
       (for [{:keys [short-name characteristic-refs]} sensor-refs]
-        (x/element :Sensor {}
-                   (x/element :ShortName {} short-name)
+        (xml/element :Sensor {}
+                   (xml/element :ShortName {} short-name)
                    (cref/generate-characteristic-refs characteristic-refs))))))

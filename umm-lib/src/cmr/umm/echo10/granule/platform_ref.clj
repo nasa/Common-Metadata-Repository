@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.granule.platform-ref
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.echo10.granule.instrument-ref :as inst]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.granule.instrument-ref :as inst]))
 
 (defn xml-elem->PlatformRef
   [platform-ref-elem]
@@ -22,10 +23,10 @@
 (defn generate-platform-refs
   [platform-refs]
   (when-not (empty? platform-refs)
-    (x/element
+    (xml/element
       :Platforms {}
       (for [platform-ref platform-refs]
         (let [{:keys [short-name instrument-refs]} platform-ref]
-          (x/element :Platform {}
-                     (x/element :ShortName {} short-name)
+          (xml/element :Platform {}
+                     (xml/element :ShortName {} short-name)
                      (inst/generate-instrument-refs instrument-refs)))))))

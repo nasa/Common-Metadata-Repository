@@ -2,7 +2,7 @@
   "Uses the redis hash cache to access providers in redis. This class 
   provides shared functions for provider data that the CMR apps use."
   (:require
-   [clojure.set :as cset]
+   [clojure.set :as set]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :refer [def-stateful-job]]
    [cmr.common.redis-log-util :as rl-util]
@@ -67,7 +67,7 @@
   "Throws an exception if the given provider-ids are invalid, otherwise returns the input."
   [context providers]
   (when-let [invalid-providers
-             (seq (cset/difference
+             (seq (set/difference
                    (set providers)
                    (set (map :provider-id (vals (get-cached-providers context))))))]
     (errors/throw-service-errors
