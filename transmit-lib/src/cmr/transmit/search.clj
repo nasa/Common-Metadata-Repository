@@ -24,12 +24,14 @@
  [context sub-id]
  (let [conn (config/context->app-connection context :metadata-db)
        request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" sub-id))
-       response (client/put request-url
-                            (merge
-                              (config/conn-params conn)
-                              {:accept :xml
-                               :headers (token-header context)
-                               :throw-exceptions false}))
+       params (merge
+               (config/conn-params conn)
+               {:accept :xml
+                :headers (merge
+                          (token-header context)
+                          {:client-id config/cmr-client-id})
+                :throw-exceptions false})
+       response (client/put request-url params)
        {:keys [body]} response
        status (int (:status response))]
    (when-not (= status 204)
@@ -42,14 +44,15 @@
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules")
-        response (client/get request-url
-                             (merge
-                               (config/conn-params conn)
-                               {:accept :xml
-                                :query-params (assoc params :page-size 0)
-                                :headers (assoc (ch/context->http-headers context)
-                                                config/token-header (config/echo-system-token))
-                                :throw-exceptions false}))
+        params (merge
+                (config/conn-params conn)
+                {:accept :xml
+                 :query-params (assoc params :page-size 0)
+                 :headers (assoc (ch/context->http-headers context)
+                                 config/token-header (config/echo-system-token)
+                                 :client-id config/cmr-client-id)
+                 :throw-exceptions false})
+        response (client/get request-url params)
         {:keys [headers body]} response
         status (int (:status response))]
     (case status
@@ -88,14 +91,15 @@
         request-url (str (conn/root-url conn) (format "/%ss.xml" (name concept-type)))
         request-body (dissoc params :token)
         token (:token params)
-        header (ch/context->http-headers context)
-        response (client/post request-url
-                              (merge
-                                (config/conn-params conn)
-                                {:body (codec/form-encode request-body)
-                                 :content-type mt/form-url-encoded
-                                 :throw-exceptions false
-                                 :headers (if token (assoc header config/token-header token) header)}))
+        header (merge (ch/context->http-headers context)
+                      {:client-id config/cmr-client-id})
+        params (merge
+                (config/conn-params conn)
+                {:body (codec/form-encode request-body)
+                 :content-type mt/form-url-encoded
+                 :throw-exceptions false
+                 :headers (if token (assoc header config/token-header token) header)})
+        response (client/post request-url params)
         {:keys [status body]} response]
     (if (= status 200)
       (parse-granule-response body)
@@ -115,14 +119,16 @@
                          (dissoc :token)
                          (assoc :page_size 0))
         token (:token params)
-        header (ch/context->http-headers context)
-        response (client/post request-url
-                              (merge
-                                (config/conn-params conn)
-                                {:body (codec/form-encode request-body)
-                                 :content-type mt/form-url-encoded
-                                 :throw-exceptions false
-                                 :headers (if token (assoc header config/token-header token) header)}))
+        header (merge
+                (ch/context->http-headers context)
+                {:client-id config/cmr-client-id})
+        params (merge
+                (config/conn-params conn)
+                {:body (codec/form-encode request-body)
+                 :content-type mt/form-url-encoded
+                 :throw-exceptions false
+                 :headers (if token (assoc header config/token-header token) header)})
+        response (client/post request-url params)
         {:keys [status body]} response]
     (when-not (= status 200)
       body)))

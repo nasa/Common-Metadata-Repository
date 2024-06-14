@@ -34,7 +34,8 @@
 
 (defn refresh-elastic-index
   []
-  (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))))
+  (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))
+               {:headers {:client-id config/cmr-client-id}}))
 
 (defn unindex-all-groups
   "Manually unindexes all groups from Elasticsearch. Use bulk delete instead of delete by query
@@ -49,7 +50,8 @@
                          {:throw-exceptions true
                           :content-type :json
                           :body "{\"version\": true, \"size\": 10000, \"query\": {\"match_all\": {}}}"
-                          :as :json})
+                          :as :json
+                          :client-id config/cmr-client-id})
         bulk-body (str/join
                    "\n"
                    (mapv (fn [hit]
@@ -63,7 +65,8 @@
                                access-control-index/group-index-name)
                        {:throw-exceptions false
                         :content-type :json
-                        :body (str bulk-body "\n")})]
+                        :body (str bulk-body "\n")
+                        :client-id config/cmr-client-id})]
     (when-not (= 200 (:status bulk-response))
       (throw (Exception. (str "Failed to unindex all groups:" (pr-str bulk-response)))))
     (refresh-elastic-index)))
@@ -446,11 +449,13 @@
 (defn disable-access-control-writes
   "Use the enable/disable endpoint on access control to disable writes."
   [options]
-  (let [response (client/post (disable-access-control-writes-url) options)]
+  (let [params (merge options {:headers {:client-id config/cmr-client-id}})
+        response (client/post (disable-access-control-writes-url) params)]
     (is (= 200 (:status response)))))
 
 (defn enable-access-control-writes
   "Use the enable/disable endpoint on access control to enable writes."
   [options]
-  (let [response (client/post (enable-access-control-writes-url) options)]
+  (let [params (merge options {:headers {:client-id config/cmr-client-id}})
+        response (client/post (enable-access-control-writes-url) params)]
     (is (= 200 (:status response)))))

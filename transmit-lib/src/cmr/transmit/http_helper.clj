@@ -102,21 +102,25 @@
   * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
   desired. Defaults to false.
   * :use-system-token? - indicates if the ECHO system token should be put in the header
-  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :http-options - map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?]
+                     :as request}]
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        ;; Validate that a connection manager is always present. This can cause poor performance if
+        ;; not.
         _ (when-not (:connection-manager connection-params)
-            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+            (errors/internal-error!
+             (format "No connection manager created for [%s] in current application" app-name)))
         response (http-response->raw-response
                    (client/request
                      (merge connection-params
                             {:url (url-fn conn)
                              :method method
                              :throw-exceptions false}
+                            {:headers {:client-id config/cmr-client-id}}
                             (when use-system-token?
                               {:headers {config/token-header (config/echo-system-token)}})
                             http-options)))]
@@ -133,11 +137,13 @@
   * :use-system-token? - indicates if the ECHO system token should be put in the header
   * :http-options - map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as _request}]
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?]
+                     :as _request}]
   (let [conn (config/context->app-connection context app-name)
         _response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        ;; Validate that a connection manager is always present. This can cause poor performance if
+        ;; not.
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error!
              (format "No connection manager created for [%s] in current application" app-name)))
@@ -148,7 +154,8 @@
                              :method method
                              :throw-exceptions false}
                             (when use-system-token?
-                              {:headers {config/token-header (config/echo-system-token)}})
+                              {:headers {:client-id config/cmr-client-id
+                                         config/token-header (config/echo-system-token)}})
                             http-options)))]
     response))
 
@@ -173,11 +180,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to create the item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the item. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the item. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# item#]
        (~fn-name context# item# nil))
       ([context# item# options#]
@@ -203,11 +210,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to update the item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id# item#]
        (~fn-name context# concept-id# item# nil))
       ([context# concept-id# item# options#]
@@ -236,11 +243,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to delete an item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the token. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the token. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id#]
        (~fn-name context# concept-id# nil))
       ([context# concept-id# options#]
@@ -268,11 +275,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to get an item by concept id. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id#]
        (~fn-name context# concept-id# nil))
       ([context# concept-id# options#]
@@ -294,11 +301,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to find items by parameters. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# params#]
        (~fn-name context# params# nil))
       ([context# params# options#]
@@ -306,7 +313,9 @@
              {raw?# :raw? token# :token http-options# :http-options} options#
              method# (get options# :method :get)
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
+             headers# (merge
+                       (when token# {config/token-header token#})
+                       {:client-id config/cmr-client-id})]
          (request context# ~app-name
                   {:url-fn ~url-fn
                    :method method#
@@ -327,11 +336,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to find items by parameters. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# params#]
        (~fn-name context# params# nil))
       ([context# params# options#]

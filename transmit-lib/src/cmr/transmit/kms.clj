@@ -276,7 +276,8 @@
             url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
             params (merge
                     (config/conn-params conn)
-                    {:headers {:accept-charset "utf-8"}
+                    {:headers {:accept-charset "utf-8"
+                               :client-id config/cmr-client-id}
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]
