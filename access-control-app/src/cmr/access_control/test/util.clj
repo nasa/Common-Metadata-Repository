@@ -51,7 +51,7 @@
                           :content-type :json
                           :body "{\"version\": true, \"size\": 10000, \"query\": {\"match_all\": {}}}"
                           :as :json
-                          :client-id config/cmr-client-id})
+                          :headers {:client-id config/cmr-client-id}})
         bulk-body (str/join
                    "\n"
                    (mapv (fn [hit]
@@ -66,7 +66,7 @@
                        {:throw-exceptions false
                         :content-type :json
                         :body (str bulk-body "\n")
-                        :client-id config/cmr-client-id})]
+                        :headers {:client-id config/cmr-client-id}})]
     (when-not (= 200 (:status bulk-response))
       (throw (Exception. (str "Failed to unindex all groups:" (pr-str bulk-response)))))
     (refresh-elastic-index)))
@@ -449,13 +449,13 @@
 (defn disable-access-control-writes
   "Use the enable/disable endpoint on access control to disable writes."
   [options]
-  (let [params (merge options {:headers {:client-id config/cmr-client-id}})
+  (let [params (merge-with into options {:headers {:client-id config/cmr-client-id}})
         response (client/post (disable-access-control-writes-url) params)]
     (is (= 200 (:status response)))))
 
 (defn enable-access-control-writes
   "Use the enable/disable endpoint on access control to enable writes."
   [options]
-  (let [params (merge options {:headers {:client-id config/cmr-client-id}})
+  (let [params (merge-with into options {:headers {:client-id config/cmr-client-id}})
         response (client/post (enable-access-control-writes-url) params)]
     (is (= 200 (:status response)))))
