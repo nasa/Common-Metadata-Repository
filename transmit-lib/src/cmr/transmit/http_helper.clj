@@ -114,15 +114,16 @@
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error!
              (format "No connection manager created for [%s] in current application" app-name)))
+        headers (merge {:client-id config/cmr-client-id}
+                       (when use-system-token?
+                         {config/token-header (config/echo-system-token)}))
         response (http-response->raw-response
                    (client/request
-                     (merge connection-params
+                     (merge-with into connection-params
                             {:url (url-fn conn)
                              :method method
-                             :throw-exceptions false}
-                            {:headers {:client-id config/cmr-client-id}}
-                            (when use-system-token?
-                              {:headers {config/token-header (config/echo-system-token)}})
+                             :throw-exceptions false
+                             :headers headers}
                             http-options)))]
     (response-handler request response)))
 
@@ -147,16 +148,17 @@
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error!
              (format "No connection manager created for [%s] in current application" app-name)))
+        headers (merge {:client-id config/cmr-client-id}
+                       (when use-system-token?
+                         {config/token-header (config/echo-system-token)}))
         response (http-response->raw-response-with-headers
-                   (client/request
-                     (merge connection-params
-                            {:url (url-fn conn)
-                             :method method
-                             :throw-exceptions false}
-                            (when use-system-token?
-                              {:headers {:client-id config/cmr-client-id
-                                         config/token-header (config/echo-system-token)}})
-                            http-options)))]
+                  (client/request
+                   (merge-with into connection-params
+                               {:url (url-fn conn)
+                                :method method
+                                :throw-exceptions false
+                                :headers headers}
+                               http-options)))]
     response))
 
 (defn include-request-id
@@ -191,7 +193,8 @@
        (let [options# (merge options# ~default-options)
              {raw?# :raw? token# :token http-options# :http-options} options#
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
+             headers# (merge {:client-id config/cmr-client-id}
+                             (when token# {config/token-header token#}))]
          (request context# ~app-name
                   {:url-fn ~url-fn
                    :method :post
@@ -221,7 +224,8 @@
        (let [options# (merge options# ~default-options)
              {raw?# :raw? token# :token revision-id# :cmr-revision-id http-options# :http-options} options#
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})
+             headers# (merge {:client-id config/cmr-client-id}
+                             (when token# {config/token-header token#}))
              headers# (if revision-id#
                         (assoc headers# config/revision-id-header revision-id#)
                         headers#)]
@@ -254,7 +258,8 @@
        (let [options# (merge options# ~default-options)
              {raw?# :raw? token# :token revision-id# :cmr-revision-id http-options# :http-options} options#
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})
+             headers# (merge {:client-id config/cmr-client-id}
+                             (when token# {config/token-header token#}))
              headers# (if revision-id#
                         (assoc headers# config/revision-id-header revision-id#)
                         headers#)]
@@ -286,12 +291,14 @@
        (let [options# (merge options# ~default-options)
              {raw?# :raw? token# :token http-options# :http-options} options#
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
+             headers# (merge {:client-id config/cmr-client-id}
+                             (when token# {config/token-header token#}))]
          (request context# ~app-name
                   {:url-fn #(~url-fn % concept-id#)
                    :method :get
                    :raw? raw?#
-                   :http-options (merge {:headers headers# :accept :json}
+                   :http-options (merge {:headers headers#
+                                         :accept :json}
                                         http-options#)}))))))
 
 (defmacro defsearcher
@@ -348,7 +355,9 @@
              {raw?# :raw? token# :token http-options# :http-options headers# :headers} options#
              method# (get options# :method :get)
              token# (or token# (:token context#))
-             headers# (merge headers# (when token# {config/token-header token#}))]
+             headers# (merge headers#
+                             {:client-id config/cmr-client-id}
+                             (when token# {config/token-header token#}))]
          (request-with-returned-headers context# ~app-name
                   {:url-fn ~url-fn
                    :method method#
@@ -375,11 +384,13 @@
       [context#]
       (let [health-fn# (fn []
                          (let [{status# :status body# :body}
+                               headers# {:client-id config/cmr-client-id}
                                (request context# ~app-name
                                         {:url-fn ~cmr.transmit.http-helper/health-url
                                          :method :get
                                          :raw? true
-                                         :http-options {:accept :json}})]
+                                         :http-options {:accept :json
+                                                        :headers headers#}})]
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}
                              {:ok? false :dependencies body#})))
@@ -401,6 +412,7 @@
                {:url-fn ~cmr.transmit.http-helper/reset-url
                 :method :post
                 :raw? raw#
+                :http-options {:headers {:client-id config/cmr-client-id}}
                 :use-system-token? true}))))
 
 (defmacro defcacheclearer
@@ -417,4 +429,5 @@
                {:url-fn ~cmr.transmit.http-helper/clear-cache-url
                 :method :post
                 :raw? raw#
+                :http-options {:headers {:client-id config/cmr-client-id}}
                 :use-system-token? true}))))
