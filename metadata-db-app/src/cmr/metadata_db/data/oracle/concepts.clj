@@ -286,21 +286,6 @@
                                        "because the collection is already associated with another variable [%s] with same name.")
                                   variable-concept-id associated-concept-id v-concept-id-same-name)})))))
 
-(defn validate-same-provider-variable-association
-  "Validates that variable and the collection in the concept being saved are from the same provider.
-  Returns nil if valid and an error response if invalid."
-  [concept]
-  (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
-        associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (when (and variable-concept-id associated-concept-id)
-      (let [v-provider-id (second (string/split variable-concept-id #"-"))
-            c-provider-id (second (string/split associated-concept-id #"-"))]
-        (when (not= v-provider-id c-provider-id)
-          {:error :variable-association-not-same-provider
-           :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
-                                       "because they do not belong to the same provider.")
-                                  variable-concept-id associated-concept-id)})))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptsStore Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -432,8 +417,7 @@
      [conn db]
      (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                         (when (= :variable-association (:concept-type concept))
-                          (or (validate-same-provider-variable-association concept)
-                              (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
+                          (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]
        ;; There was a concept id, native id mismatch with earlier concepts
        error
        ;; Concept id native id pair was valid
