@@ -8,7 +8,7 @@
    [cmr.umm-spec.validation.parent-weaver :as pw]
    [cmr.umm-spec.additional-attribute :as aa]
    [cmr.common.services.errors :as e]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.umm.iso-smap.granule.orbit]))
 
 (defmulti humanize-field-for-error-msg
@@ -24,8 +24,8 @@
   [field-path-item]
   (-> field-path-item
       name
-      (str/replace #"-refs$" "-references")
-      (str/replace #"-ref$" "-reference")
+      (string/replace #"-refs$" "-references")
+      (string/replace #"-ref$" "-reference")
       keyword))
 
 (defn- validation-errors->path-errors

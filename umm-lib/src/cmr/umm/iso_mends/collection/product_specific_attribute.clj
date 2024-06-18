@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.product-specific-attribute
   "Contains functions for parsing and generating the ISO MENDS product specific attributes"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn xml-elem->ProductSpecificAttribute
   "Returns the parsed product specific attribute from the given xml element"
@@ -55,9 +56,9 @@
   "Defines the ISO19115 element for product specific attribute type.
   This is a placeholder element to pass the schema validation.
   Hard coded with a value since we don't use it in umm-lib and umm-lib is going away soon."
-  (x/element
+  (xml/element
         :eos:type {}
-        (x/element
+        (xml/element
           :eos:EOS_AdditionalAttributeTypeCode
           {:codeList "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode"
            :codeListValue "processingInformation"}
@@ -68,9 +69,9 @@
   [data-type]
   (when (some? data-type)
     (let [data-type (psa/gen-data-type data-type)]
-      (x/element
+      (xml/element
         :eos:dataType {}
-        (x/element
+        (xml/element
           :eos:EOS_AdditionalAttributeDataTypeCode
           {:codeList "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode"
            :codeListValue data-type}
@@ -81,24 +82,24 @@
   specific attributes"
   [psas]
   (when (seq psas)
-    (x/element
+    (xml/element
       :gmi:processingInformation {}
-      (x/element
+      (xml/element
         :eos:EOS_Processing {}
-        (x/element :gmi:identifier {})
-        (x/element
+        (xml/element :gmi:identifier {})
+        (xml/element
           :eos:otherProperty {}
-          (x/element
+          (xml/element
             :gco:Record {}
-            (x/element
+            (xml/element
               :eos:AdditionalAttributes {}
               (for [{:keys [data-type name description parameter-range-begin
                             parameter-range-end value]} psas]
-                (x/element
+                (xml/element
                   :eos:AdditionalAttribute {}
-                  (x/element
+                  (xml/element
                     :eos:reference {}
-                    (x/element
+                    (xml/element
                       :eos:EOS_AdditionalAttributeDescription {}
                       type-element
                       (string-element-if-exist :eos:name name)

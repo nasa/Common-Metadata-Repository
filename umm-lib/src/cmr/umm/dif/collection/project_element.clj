@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.project-element
   "Provide functions to parse and generate DIF Project elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Project
   [project-elem]
@@ -22,7 +23,7 @@
   (when (seq projects)
     (for [proj projects]
       (let [{:keys [short-name long-name]} proj]
-        (x/element :Project {}
-                   (x/element :Short_Name {} short-name)
+        (xml/element :Project {}
+                   (xml/element :Short_Name {} short-name)
                    (when long-name
-                     (x/element :Long_Name {} long-name)))))))
+                     (xml/element :Long_Name {} long-name)))))))

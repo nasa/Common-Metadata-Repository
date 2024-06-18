@@ -1,11 +1,12 @@
 (ns cmr.umm.dif10.collection.temporal
   "Contains functions for parsing the DIF10 temporal coverage element."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.date-time-parser :as parser]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.generator-util :as gu]
-            [cmr.umm.dif.date-util :as date-util]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.date-time-parser :as parser]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]
+   [cmr.umm.dif.date-util :as date-util]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"
@@ -57,7 +58,7 @@
   (when temporal
     (let [{:keys [time-type date-type temporal-range-type precision-of-seconds
                   ends-at-present-flag range-date-times single-date-times periodic-date-times]} temporal]
-      (x/element :Temporal_Coverage {}
+      (xml/element :Temporal_Coverage {}
                  (gu/optional-elem :Time_Type time-type)
                  (gu/optional-elem :Date_Type date-type)
                  (gu/optional-elem :Temporal_Range_Type temporal-range-type)
@@ -66,21 +67,21 @@
 
                  (for [range-date-time range-date-times]
                    (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-                     (x/element :Range_DateTime {}
+                     (xml/element :Range_DateTime {}
                                 (when beginning-date-time
-                                  (x/element :Beginning_Date_Time {} (str beginning-date-time)))
+                                  (xml/element :Beginning_Date_Time {} (str beginning-date-time)))
                                 (when ending-date-time
-                                  (x/element :Ending_Date_Time {} (str ending-date-time))))))
+                                  (xml/element :Ending_Date_Time {} (str ending-date-time))))))
 
                  (for [single-date-time single-date-times]
-                   (x/element :Single_DateTime {} (str single-date-time)))
+                   (xml/element :Single_DateTime {} (str single-date-time)))
 
                  (for [{:keys [name start-date end-date duration-unit duration-value
                                period-cycle-duration-unit period-cycle-duration-value]} periodic-date-times]
-                   (x/element :Periodic_DateTime {}
+                   (xml/element :Periodic_DateTime {}
                               (gu/optional-elem :Name name)
-                              (when start-date (x/element :Start_Date {} (str start-date)))
-                              (when end-date (x/element :End_Date {} (str end-date)))
+                              (when start-date (xml/element :Start_Date {} (str start-date)))
+                              (when end-date (xml/element :End_Date {} (str end-date)))
                               (gu/optional-elem :Duration_Unit duration-unit)
                               (gu/optional-elem :Duration_Value duration-value)
                               (gu/optional-elem :Period_Cycle_Duration_Unit period-cycle-duration-unit)

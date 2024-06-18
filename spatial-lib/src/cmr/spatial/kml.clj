@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as string]
    [clojure.data.xml :as xml]
-   [clojure.java.shell :as shell]
+   [clojure.java.shell :as sh]
    [cmr.spatial.relations :as relations]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.mbr :as m]
@@ -145,4 +145,4 @@
    (display-shapes shapes "ge_scratch.kml"))
   ([shapes filename]
    (spit filename (shapes->kml shapes))
-   (shell/sh "open" filename)))
+   (sh/sh "open" filename)))

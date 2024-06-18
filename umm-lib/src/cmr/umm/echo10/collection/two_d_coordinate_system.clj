@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.collection.two-d-coordinate-system
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->Coordinate
   [coord-elem]
@@ -32,18 +33,18 @@
 (defn- generate-coordinate
   [coord-key coord]
   (let [{:keys [min-value max-value]} coord]
-    (x/element coord-key {}
-               (when min-value (x/element :MinimumValue {} min-value))
-               (when max-value (x/element :MaximumValue {} max-value)))))
+    (xml/element coord-key {}
+               (when min-value (xml/element :MinimumValue {} min-value))
+               (when max-value (xml/element :MaximumValue {} max-value)))))
 
 (defn generate-two-ds
   [two-d-coordinate-systems]
   (when (seq two-d-coordinate-systems)
-    (x/element
+    (xml/element
       :TwoDCoordinateSystems {}
       (for [two-d two-d-coordinate-systems]
         (let [{:keys [name coordinate-1 coordinate-2]} two-d]
-          (x/element :TwoDCoordinateSystem {}
-                     (x/element :TwoDCoordinateSystemName {} name)
+          (xml/element :TwoDCoordinateSystem {}
+                     (xml/element :TwoDCoordinateSystemName {} name)
                      (generate-coordinate :Coordinate1 coordinate-1)
                      (generate-coordinate :Coordinate2 coordinate-2)))))))

@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.location-keyword
   "Contains functions for converting location keyword hierarchies into elastic documents"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.util :as util]))
@@ -28,16 +28,16 @@
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]}
         hierarchical-location]
     {:category category
-     :category-lowercase (str/lower-case category)
+     :category-lowercase (string/lower-case category)
      :type type
-     :type-lowercase (str/lower-case type)
+     :type-lowercase (string/lower-case type)
      :subregion-1 subregion-1
-     :subregion-1-lowercase (str/lower-case subregion-1)
+     :subregion-1-lowercase (string/lower-case subregion-1)
      :subregion-2 subregion-2
-     :subregion-2-lowercase (str/lower-case subregion-2)
+     :subregion-2-lowercase (string/lower-case subregion-2)
      :subregion-3 subregion-3
-     :subregion-3-lowercase (str/lower-case subregion-3)
+     :subregion-3-lowercase (string/lower-case subregion-3)
      :uuid uuid
-     :uuid-lowercase (when uuid (str/lower-case uuid))
+     :uuid-lowercase (when uuid (string/lower-case uuid))
      :detailed-location detailed-location
      :detailed-location-lowercase (util/safe-lowercase detailed-location)}))

@@ -4,7 +4,7 @@
   comments here. Topics in SNS are (mostly) equivalent to exchanges in RabbitMQ."
   (:require
    [cheshire.core :as json]
-   [clojure.core.async :as a]
+   [clojure.core.async :as async]
    [clojure.string :as string]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
@@ -239,7 +239,7 @@
                        (.setMaxNumberOfMessages (Integer/valueOf 1))
                        ;; Tell SQS how long to wait before returning with no data (long polling).
                        (.setWaitTimeSeconds (Integer/valueOf (queue-polling-timeout))))]
-     (a/thread
+     (async/thread
        (loop [sqs-client-atom (atom sqs-client)]
          (try
            (let [rec-result (.receiveMessage @sqs-client-atom rec-req)]

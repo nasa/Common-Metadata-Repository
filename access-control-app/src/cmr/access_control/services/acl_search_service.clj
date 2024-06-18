@@ -3,7 +3,7 @@
    validation and user visibility permission checks"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.data.acl-schema :as schema]
    [cmr.access-control.services.auth-util :as auth-util]
    [cmr.access-control.services.group-service :as groups]
@@ -53,7 +53,7 @@
 (defn- valid-permission?
   "Returns true if the given permission is valid."
   [permission]
-  (contains? (set schema/valid-permissions) (str/lower-case permission)))
+  (contains? (set schema/valid-permissions) (string/lower-case permission)))
 
 (defn- permitted-concept-id-validation
   "Validates permitted concept id parameter"
@@ -93,7 +93,7 @@
     (when-let [invalid-permissions (seq (remove valid-permission? permissions))]
       [(format (str "Sub-parameter permission of parameter group_permissions has invalid values [%s]. "
                     "Only 'read', 'update', 'create', 'delete', or 'order' may be specified.")
-               (str/join ", " invalid-permissions))])))
+               (string/join ", " invalid-permissions))])))
 
 (defn- group-permission-validation
   "Validates group_permission parameters.
@@ -119,7 +119,7 @@
 (defn- valid-identity-type?
   "Returns true if the given identity-type is valid, i.e., one of 'system', 'single_instance', 'provider', or 'catalog_item'."
   [identity-type]
-  (contains? (set (keys acl-identity-type->search-value)) (str/lower-case identity-type)))
+  (contains? (set (keys acl-identity-type->search-value)) (string/lower-case identity-type)))
 
 (defn- identity-type-validation
   "Validates identity-type parameters."
@@ -128,7 +128,7 @@
     (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
       [(format (str "Parameter identity_type has invalid values [%s]. "
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
-               (str/join ", " invalid-types))])))
+               (string/join ", " invalid-types))])))
 
 (defn- target-id-validation
   "Validates that when target-id parameter is specified,
@@ -182,7 +182,7 @@
  (if (sequential? value)
    (gc/group-conds (cp/group-operation param options)
                    (map #(cp/parameter->condition context concept-type param % options) value))
-   (let [value (get acl-identity-type->search-value (str/lower-case value))]
+   (let [value (get acl-identity-type->search-value (string/lower-case value))]
      (cp/string-parameter->condition concept-type param value options))))
 
 (defmethod cp/parameter->condition :acl-permitted-user

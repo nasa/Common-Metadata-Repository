@@ -3,10 +3,7 @@
    is to test the two types of data being saved in the same metadata file. The humanizer and
    community usage APIs are tested individually in other test files in this folder."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.humanizer-util :as hu]

@@ -2,7 +2,7 @@
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
@@ -365,10 +365,10 @@
   [condition]
   (let [query-str (:query-str condition)
         trimmed-query-str (when query-str
-                            (str/trim query-str))
+                            (string/trim query-str))
         ;;literal double quotes are passed in as \\\"
         query-str-without-literal-quotes (when query-str
-                                           (str/replace trimmed-query-str #"\\\"" ""))
+                                           (string/replace trimmed-query-str #"\\\"" ""))
         ;;\" is reserved for phrase boundaries.
         count-of-double-quotes (if query-str
                                  (count (re-seq #"\"" query-str-without-literal-quotes))
@@ -380,9 +380,9 @@
     (when (and (= :keyword (:field condition))
                (or (> count-of-double-quotes 2) ;;multi keyword-phrase case
                    ;;mix of keyword and keyword-phrase case, including the case when one \" is missing.
-                   (and (str/includes? query-str-without-literal-quotes "\"")
-                        (not (and (str/starts-with? trimmed-query-str "\"")
-                                  (str/ends-with? trimmed-query-str "\""))))))
+                   (and (string/includes? query-str-without-literal-quotes "\"")
+                        (not (and (string/starts-with? trimmed-query-str "\"")
+                                  (string/ends-with? trimmed-query-str "\""))))))
       (errors/throw-service-errors
        :bad-request
        [(str "keyword phrase mixed with keyword, or another keyword-phrase are not supported. "
@@ -390,16 +390,16 @@
 
     (if (and query-str
              (= :keyword (:field condition))
-             (str/starts-with? trimmed-query-str "\"")
-             (str/ends-with? trimmed-query-str "\""))
+             (string/starts-with? trimmed-query-str "\"")
+             (string/ends-with? trimmed-query-str "\""))
       (assoc condition :query-str (-> trimmed-query-str
-                                      (str/replace #"^\"" "* ")
-                                      (str/replace #"\"$" " *")
-                                      (str/replace #"\\\"" "\""))
+                                      (string/replace #"^\"" "* ")
+                                      (string/replace #"\"$" " *")
+                                      (string/replace #"\\\"" "\""))
                        :field :keyword-phrase)
       (if (and query-str
-               (str/includes? trimmed-query-str "\\\""))
-        (assoc condition :query-str (str/replace trimmed-query-str #"\\\"" "\""))
+               (string/includes? trimmed-query-str "\\\""))
+        (assoc condition :query-str (string/replace trimmed-query-str #"\\\"" "\""))
         condition))))
 
 (defmethod q2e/query->elastic :collection

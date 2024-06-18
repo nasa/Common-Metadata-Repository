@@ -1,9 +1,6 @@
 (ns cmr.process.manager.core
   (:require
-    [clojure.core.async :as async]
-    [clojure.java.shell :as shell]
-    [clojure.string :as string]
-    [cmr.process.manager.util :as util]
+    [clojure.java.shell :as sh]
     [taoensso.timbre :as log]
     [trifl.ps :as process]))
 
@@ -44,7 +41,7 @@
   to `stdout` if the log-level is set to `:trace`."
   [& cmd-and-args]
   (log/tracef "Making sh call with %s ..." cmd-and-args)
-  (let [result (apply shell/sh cmd-and-args)
+  (let [result (apply sh/sh cmd-and-args)
         out (:out result)
         err (:err result)]
     (log/trace "Got result ...")

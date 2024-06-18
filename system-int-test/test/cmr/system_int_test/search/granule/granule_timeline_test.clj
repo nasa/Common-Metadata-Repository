@@ -1,18 +1,11 @@
 (ns cmr.system-int-test.search.granule.granule-timeline-test
   "This tests the granule timeline feature of the search api."
   (:require
-   [cheshire.core :as json]
-   [clj-time.coerce :as c]
-   [clj-time.core :as t]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.dev.util :as dev]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))

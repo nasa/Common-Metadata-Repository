@@ -3,7 +3,7 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [clojure.test.check.properties :refer [for-all]]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.common.joda-time]
    [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
@@ -704,7 +704,7 @@
                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center_URL, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_ID, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
-           (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
+           (c/validate-xml (string/replace valid-collection-xml "Personnel" "XXXX"))))))
 
 (deftest parse-nil-version-test
   ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide

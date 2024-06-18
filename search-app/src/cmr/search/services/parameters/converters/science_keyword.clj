@@ -1,9 +1,10 @@
 (ns cmr.search.services.parameters.converters.science-keyword
   "Contains functions for converting science keywords query parameters to conditions"
-  (:require [clojure.string :as str]
-            [cmr.elastic-utils.search.nested-field :as nf]
-            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.es-params-converter :as p]))
+  (:require
+   [clojure.string :as string]
+   [cmr.elastic-utils.search.nested-field :as nf]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]))
 
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords
@@ -11,7 +12,7 @@
   (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :and)
-        target-field (keyword (str/replace (name param) #"-h$" "-humanized"))]
+        target-field (keyword (string/replace (name param) #"-h$" "-humanized"))]
 
     (if (map? (first (vals value)))
       ;; If multiple science keywords are passed in like the following

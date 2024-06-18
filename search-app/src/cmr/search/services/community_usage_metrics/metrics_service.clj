@@ -4,7 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.query-execution :as qe]
@@ -23,7 +23,7 @@
    version-col - the index of the Version in each CSV line
    hosts-col - the index of the Hosts in each CSV line"
   [csv-header]
-  (let [csv-header (mapv str/trim csv-header)]
+  (let [csv-header (mapv string/trim csv-header)]
     {:product-col (.indexOf csv-header "Product")
      :version-col (.indexOf csv-header "ProductVersion")
      :hosts-col (.indexOf csv-header "Hosts")}))
@@ -97,7 +97,7 @@
   (let [access-count (read-csv-column csv-line hosts-col)]
     (if (seq access-count)
       (try
-        (Long/parseLong (str/replace access-count "," "")) ; Remove commas in large ints
+        (Long/parseLong (string/replace access-count "," "")) ; Remove commas in large ints
         (catch java.lang.NumberFormatException e
           (errors/throw-service-error :invalid-data
                                       (format (str "Error parsing 'Hosts' CSV Data. "

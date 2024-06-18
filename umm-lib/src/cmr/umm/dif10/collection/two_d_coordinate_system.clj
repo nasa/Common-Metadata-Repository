@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.two-d-coordinate-system
   "Contains functions for convert two d coordinate systems to and parsing from DIF10 XML."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->Coordinate
   "Returns a UMM Coordinate from a parsed Coordinate XML structure"
@@ -37,21 +38,21 @@
   "Returns coordinate xml structure for the given coordinate"
   [coord-key coord]
   (let [{:keys [min-value max-value]} coord]
-    (x/element coord-key {}
-               (when min-value (x/element :Minimum_Value {} min-value))
-               (when max-value (x/element :Maximum_Value {} max-value)))))
+    (xml/element coord-key {}
+               (when min-value (xml/element :Minimum_Value {} min-value))
+               (when max-value (xml/element :Maximum_Value {} max-value)))))
 
 (defn generate-two-ds
   "Returns DIF10 Spatial_Info element for the given two d coordinate systems"
   [two-d-coordinate-systems]
   (when (seq two-d-coordinate-systems)
-    (x/element
+    (xml/element
       :Spatial_Info {}
       ;; Spatial_Coverage_Type is always Horizontal
-      (x/element :Spatial_Coverage_Type {} "Horizontal")
+      (xml/element :Spatial_Coverage_Type {} "Horizontal")
       (for [two-d two-d-coordinate-systems]
         (let [{:keys [name coordinate-1 coordinate-2]} two-d]
-          (x/element :TwoD_Coordinate_System {}
-                     (x/element :TwoD_Coordinate_System_Name {} name)
+          (xml/element :TwoD_Coordinate_System {}
+                     (xml/element :TwoD_Coordinate_System_Name {} name)
                      (generate-coordinate :Coordinate1 coordinate-1)
                      (generate-coordinate :Coordinate2 coordinate-2)))))))

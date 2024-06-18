@@ -27,16 +27,14 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.transmit.kms :as kms]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [GET context]]))
 
 (def sorted-hierarchical-map
   "A map that sorts the keys of the hierarchical map so it is presented in a pleasing way to Users
@@ -54,7 +52,7 @@
         :bad-request
         (format "The keyword scheme [%s] is not supported. Valid schemes are: %s, and %s."
                 (name keyword-scheme)
-                (str/join
+                (string/join
                   ", " (map #(csk/->snake_case (name %)) (rest valid-keywords)))
                 (-> valid-keywords first name csk/->snake_case))))))
 

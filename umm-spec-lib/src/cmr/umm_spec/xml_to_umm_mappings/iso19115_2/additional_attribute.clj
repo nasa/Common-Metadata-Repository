@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute
   "Functions for parsing UMM additional attribute records out of ISO19115-2 XML documents."
   (:require
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
@@ -35,7 +35,7 @@
       {:Group (char-string-value description "eos:identifier/gmd:MD_Identifier/gmd:code")
        :Name (char-string-value description "eos:name")
        :DataType (when-let [data-type (value-of description "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode")]
-                   (s/trim data-type))
+                   (string/trim data-type))
        :Value (char-string-value aa "eos:value")
        :Description (su/with-default (char-string-value description "eos:description") sanitize?)
        :MeasurementResolution (char-string-value description "eos:measurementResolution")

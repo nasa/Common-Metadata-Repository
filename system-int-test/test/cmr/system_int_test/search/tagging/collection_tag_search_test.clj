@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.tagging.collection-tag-search-test
   "This tests searching for collections by tag parameters"
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.atom :as atom]
@@ -248,8 +248,8 @@
                                     atom/collections->expected-atom
                                     atom/collections->expected-json)
                       feed-id (->> (-> include-tags
-                                       (str/replace "?" "%3F")
-                                       (str/replace "," "%2C"))
+                                       (string/replace "?" "%3F")
+                                       (string/replace "," "%2C"))
                                    (format "collections.%s?provider=PROV1&include_tags=%s"
                                            (name response-format)))]
                   (-> (expected-fn all-prov1-colls feed-id)

@@ -1,7 +1,7 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
   (:require
-   [clojure.set :as cset]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.generics :as common-generic]
    [cmr.common.services.errors :as errors]
@@ -16,7 +16,7 @@
 (def generic-concept-prefix->concept-type
   "Maps a generic concept id prefix to the concept type.
    Return: {(str X) :generic (str GRD) :grid...}"
-  (cset/map-invert generic-concept-types->concept-prefix))
+  (set/map-invert generic-concept-types->concept-prefix))
 
 (defn get-generic-concept-types-array
   "Gets the array of generic concept types and optionally modify those values.
@@ -102,7 +102,7 @@
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
-  (cset/map-invert concept-prefix->concept-type))
+  (set/map-invert concept-prefix->concept-type))
 
 (defn pluralize-concept-type-name
   "Pluralizes the passed in concept keyword/string and returns the string. The compliment

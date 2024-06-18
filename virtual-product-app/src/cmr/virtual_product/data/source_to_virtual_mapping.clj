@@ -1,8 +1,7 @@
 (ns cmr.virtual-product.data.source-to-virtual-mapping
   "Defines source to vritual granule mapping rules."
   (:require
-   [clojure.string :as str]
-   [cmr.common.mime-types :as mt]
+   [clojure.string :as string]
    [cmr.umm.related-url-helper :as ruh]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
@@ -253,14 +252,14 @@
 
 (defmethod generate-granule-ur :default
   [provider-id source-short-name virtual-granule granule-ur]
-  (str/replace-first granule-ur source-short-name (:short-name virtual-granule)))
+  (string/replace-first granule-ur source-short-name (:short-name virtual-granule)))
 
 (defmethod generate-granule-ur "AST_L1A"
   [provider-id source-short-name virtual-granule granule-ur]
   (let [virtual-version-id (sanitize-version-id (:version-id virtual-granule))]
-    (as-> (str/replace-first granule-ur source-short-name (:short-name virtual-granule)) granule-ur
+    (as-> (string/replace-first granule-ur source-short-name (:short-name virtual-granule)) granule-ur
           (if virtual-version-id
-            (str/replace-first granule-ur #"\.\d\d\d" (str "." virtual-version-id))
+            (string/replace-first granule-ur #"\.\d\d\d" (str "." virtual-version-id))
             granule-ur))))
 
 ;; The granule urs of granules in the virtual collection based on AST_L1A is a simple
@@ -278,12 +277,12 @@
 
 (defmethod compute-source-granule-ur :default
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
-  (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
+  (string/replace-first virtual-granule-ur virtual-short-name source-short-name))
 
 (defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
-  (as-> (str/replace-first virtual-granule-ur virtual-short-name source-short-name) virtual-granule-ur
-        (str/replace-first virtual-granule-ur #"\.\d\d\d:" ".003:")))
+  (as-> (string/replace-first virtual-granule-ur virtual-short-name source-short-name) virtual-granule-ur
+        (string/replace-first virtual-granule-ur #"\.\d\d\d:" ".003:")))
 
 (defn- update-core-fields
   "Update the core set of fields in the source granule umm to create the virtual granule umm. These

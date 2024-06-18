@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.org
   "Data Center elements of DIF are mapped to umm organization elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- data-centers->organizations
   "Returns a list of organzitions from the Data_Center XML elements. For each Data_Center,
@@ -33,20 +34,20 @@
   "Return archive or processing center based on org type"
   [orgs]
   (for [org orgs :when (= :distribution-center (:type org))]
-    (x/element :Data_Center {}
-               (x/element :Data_Center_Name {}
-                          (x/element :Short_Name {} (:org-name org)))
+    (xml/element :Data_Center {}
+               (xml/element :Data_Center_Name {}
+                          (xml/element :Short_Name {} (:org-name org)))
                ;; stubbed personnel
-               (x/element :Personnel {}
-                          (x/element :Role {} c/not-provided)
-                          (x/element :Last_Name {} c/not-provided)))))
+               (xml/element :Personnel {}
+                          (xml/element :Role {} c/not-provided)
+                          (xml/element :Last_Name {} c/not-provided)))))
 
 (defn generate-metadata
   "Processing centers are stored as Extended Metadata. Generate the metadata elements for each
   processing center. Use a default group name. Must end with .processor"
   [orgs]
   (for [org orgs :when (= :processing-center (:type org))]
-    (x/element :Metadata {}
-               (x/element :Group {} "gov.nasa.esdis.cmr.processor")
-               (x/element :Name {} "Processor")
-               (x/element :Value {} (:org-name org)))))
+    (xml/element :Metadata {}
+               (xml/element :Group {} "gov.nasa.esdis.cmr.processor")
+               (xml/element :Name {} "Processor")
+               (xml/element :Value {} (:org-name org)))))

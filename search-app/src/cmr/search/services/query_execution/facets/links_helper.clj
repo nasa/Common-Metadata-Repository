@@ -13,7 +13,7 @@
   value - the value to apply (or remove) for the given field-name."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [ring.util.codec :as codec]))
 
 (defn generate-query-string
@@ -39,7 +39,7 @@
   query-params for keys that match the field-name or field-name[]. For example both platform and
   platform[] are matched against in the query parameter keys if the field-name is :platform."
   [query-params field-name value]
-  (let [value (str/lower-case value)
+  (let [value (string/lower-case value)
         field-name-snake-case (csk/->snake_case_string field-name)]
     (reduce
      (fn [query-params field-name]
@@ -47,7 +47,7 @@
            (update query-params field-name
                    (fn [existing-values]
                      (remove (fn [existing-value]
-                               (= (str/lower-case existing-value) value))
+                               (= (string/lower-case existing-value) value))
                              existing-values)))
            (dissoc query-params field-name)))
      query-params
@@ -97,8 +97,8 @@
   and the link itself. Looks for matches case insensitively."
   [base-url query-params field-name value]
   (let [values-for-field (get-values-for-field query-params field-name)
-        value-exists (some #{(str/lower-case value)}
-                           (keep #(when % (str/lower-case %)) values-for-field))]
+        value-exists (some #{(string/lower-case value)}
+                           (keep #(when % (string/lower-case %)) values-for-field))]
     (if value-exists
       (create-remove-link base-url query-params field-name value)
       (create-apply-link base-url query-params field-name value))))

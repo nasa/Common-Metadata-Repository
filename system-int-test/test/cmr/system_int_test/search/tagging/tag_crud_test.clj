@@ -1,16 +1,13 @@
 (ns cmr.system-int-test.search.tagging.tag-crud-test
   "This tests the CMR Search API's tagging capabilities"
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures
@@ -94,7 +91,7 @@
                (tags/create-tag token tag))))
 
       (testing "tag-key is case-insensitive"
-        (let [{:keys[status errors]} (tags/create-tag token (update tag :tag-key str/upper-case))]
+        (let [{:keys[status errors]} (tags/create-tag token (update tag :tag-key string/upper-case))]
           (is (= [409 [(format "A tag with tag-key [%s] already exists with concept id [%s]."
                                (:tag-key tag) concept-id)]]
                  [status errors]))))
@@ -140,7 +137,7 @@
         token (echo-util/login (system/context) "user1")
         _ (tags/create-tag token tag)
         expected-tag (-> tag
-                         (update :tag-key str/lower-case)
+                         (update :tag-key string/lower-case)
                          (assoc :originator-id "user1" :status 200))]
     (testing "Retrieve existing tag, verify tag-key is converted to lowercase"
       (is (= expected-tag (tags/get-tag tag-key))))

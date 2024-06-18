@@ -2,17 +2,16 @@
   "Contains functions for bootstrapping virtual products."
   (:require
    [clojure.core.async :as async :refer [go go-loop >! <! <!!]]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.bootstrap.data.util :as data]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.common.config :as config :refer [defconfig]]
-   [cmr.common.log :refer :all]
+   [cmr.common.log :refer [error info warn]]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as mdb-c]
    [cmr.metadata-db.data.providers :as mdb-p]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.transmit.metadata-db :as mdb]
    [cmr.umm.umm-core :as umm]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
    [cmr.virtual-product.services.virtual-product-service :as vps]))
@@ -187,7 +186,7 @@
         thread-chans
         (for [n (range 0 (virtual-product-num-threads))
               :let [log (fn [& args]
-                          (info "process-source-granule-batches" n ":" (str/join " " args)))]]
+                          (info "process-source-granule-batches" n ":" (string/join " " args)))]]
           (async/thread
             (log "starting")
             (try

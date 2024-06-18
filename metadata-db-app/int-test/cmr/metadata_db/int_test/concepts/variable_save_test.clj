@@ -14,14 +14,15 @@
 
 (use-fixtures :each (util/reset-database-fixture
                      {:provider-id "PROV1" :small false}
-                     {:provider-id "PROV2" :small false}))
+                     {:provider-id "PROV2" :small false}
+                     {:provider-id "PROV3" :small false}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest save-variable-and-association
-  (c-spec/general-save-concept-test :variable ["PROV1" "PROV2"]))
+  (c-spec/general-save-concept-test :variable ["PROV1" "PROV2" "PROV3"]))
 
 (deftest save-variable-with-missing-required-parameters
   (c-spec/save-test-with-missing-required-parameters
@@ -38,13 +39,16 @@
   (let [coll (concepts/create-and-save-concept :collection "PROV1" 1 1)
         coll-concept-id (:concept-id coll)
         attributes {:coll-concept-id coll-concept-id}
-        concept1 (concepts/create-concept :variable "PROV1" 1 attributes)
+        concept1 (concepts/create-concept :variable "PROV2" 1 attributes)
         {status :status
          revision-id :revision-id
          concept1-concept-id :concept-id} (util/save-concept concept1)]
-    ;; verify variable is saved and the revision id is 1
-    (is (= status 201))
-    (is (= 1 revision-id))
+
+    (testing "associate variable and collection from different providers is successful"
+      ;; verify variable is saved and the revision id is 1
+      ;; note: The collection is on PROV1 and the variable is on PROV2.
+      (is (= status 201))
+      (is (= 1 revision-id)))
 
     (testing "save variable with all the same data, i.e. update the variable"
       (let [{:keys [status concept-id revision-id]} (util/save-concept concept1)]
@@ -53,13 +57,16 @@
         (is (= 2 revision-id))))
 
     (testing "save variable with same data but different provider"
-      (let [concept3 (assoc concept1 :provider-id "PROV2")
+      (let [concept3 (assoc concept1 :provider-id "PROV3")
             {:keys [errors status concept-id revision-id]} (util/save-concept concept3)]
+        ;; Now it's trying to associate this new variable on PROV3, with the collection on PROV1,
+        ;; which is already associated with the variable on PROV2 with the same name. 
         (is (= status 409))
         (is (re-matches
-             (re-pattern (str "Variable \\[V.*-PROV2\\] and collection \\["
+             (re-pattern (str "Variable \\[V.*-PROV3\\] and collection \\["
                               coll-concept-id
-                              "\\] can not be associated because they do not belong to the same provider."))
+                              "\\] can not be associated because the collection is already associated with another "
+                              "variable \\[V.*-PROV2\\] with same name."))
              (first errors)))))
 
     (testing "save variable with the same native-id, different variable name on the same provider"

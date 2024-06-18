@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.personnel
   "Provides functions to parse and generate DIF Personnel elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->personnel
   "Returns the personnel records for a parsed Collection XML structure or nil if the elements
@@ -27,22 +28,22 @@
   [contacts]
   (for [contact contacts
         :when (= :email (:type contact))]
-    (x/element :Email {} (:value contact))))
+    (xml/element :Email {} (:value contact))))
 
 (defn- generate-roles
   "Generates the XML entries for the roles associated with a person."
   [roles]
   (for [role roles]
-    (x/element :Role {} role)))
+    (xml/element :Role {} role)))
 
 (defn generate-personnel
   "Generates the XML entries for a collection's personnel field."
   [personnel]
   (for [{:keys [first-name last-name contacts roles]} personnel]
-    (x/element :Personnel {}
+    (xml/element :Personnel {}
                (generate-roles roles)
                (when first-name
-                 (x/element :First_Name {} first-name))
+                 (xml/element :First_Name {} first-name))
                (when last-name
-                 (x/element :Last_Name {} last-name))
+                 (xml/element :Last_Name {} last-name))
                (generate-emails contacts))))

@@ -1,19 +1,19 @@
 (ns cmr.system-int-test.data2.atom-json
   "Contains helper functions for converting concepts into the expected map of
   parsed json results."
-  (:require [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.echo10.spatial :as echo-s]
-            [cmr.system-int-test.data2.atom :as atom]
-            [cmr.system-int-test.data2.facets :as f]
-            [cmr.common.date-time-parser :as dtp]))
+  (:require
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cheshire.core :as json]
+   [cmr.common.util :as util]
+   [clojure.string :as string]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.echo10.spatial :as echo-s]
+   [cmr.system-int-test.data2.atom :as atom]
+   [cmr.system-int-test.data2.facets :as f]
+   [cmr.common.date-time-parser :as dtp]))
 
 (defn json-polygons->polygons
   [polygons]
@@ -30,14 +30,14 @@
 (defn json-boxes->bounding-rectangles
   [boxes]
   (map (fn [s]
-         (let [[s w n e] (map #(Double. ^String %) (str/split s #" "))]
+         (let [[s w n e] (map #(Double. ^String %) (string/split s #" "))]
            (m/mbr w n e s)))
        boxes))
 
 (defn json-geometry->shapes
   "Extracts the spatial shapes from the json geometry."
   [coordinate-system points boxes polygons lines]
-  (when-let [coordinate-system (some-> coordinate-system str/lower-case keyword)]
+  (when-let [coordinate-system (some-> coordinate-system string/lower-case keyword)]
     (let [coordinate-system (if (= :orbit coordinate-system)
                               :geodetic
                               coordinate-system)]
@@ -54,17 +54,17 @@
 
 (defn parse-long
   [^String v]
-  (when-not (str/blank? v)
+  (when-not (string/blank? v)
     (Long. v)))
 
 (defn parse-double
   [^String v]
-  (when-not (str/blank? v)
+  (when-not (string/blank? v)
     (Double. v)))
 
 (defn parse-integer
   [^String v]
-  (when-not (str/blank? v)
+  (when-not (string/blank? v)
     (Integer. v)))
 
 (defn- parse-orbit-parameters

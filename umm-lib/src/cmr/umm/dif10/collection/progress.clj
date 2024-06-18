@@ -1,10 +1,11 @@
 (ns cmr.umm.dif10.collection.progress
   "Functions for parsing and generating the UMM Collection Progress
   information from and to DIF 10 XML."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as string]
-            [clojure.set :refer [map-invert]]
-            [cmr.common.xml :as cx]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [clojure.set :refer [map-invert]]
+   [cmr.common.xml :as cx]))
 
 (def state-map
   {:planned  "PLANNED"
@@ -23,4 +24,4 @@
   value."
   [collection]
   (when-let [state (:collection-progress collection)]
-    (x/element :Dataset_Progress {} (state-map state))))
+    (xml/element :Dataset_Progress {} (state-map state))))

@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-time.core :as time]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.edn :as edn]
    [clojure.walk :as walk]
    [cmr.common-app.services.search :as qs]
@@ -387,14 +387,14 @@
 (defn- atom-link->xml-element
   "Convert an atom link to an XML element"
   [atom-link]
-  (x/element :link (atom-link->attribute-map atom-link)
+  (xml/element :link (atom-link->attribute-map atom-link)
              (when (:inherited atom-link)
-               (x/element :echo:inherited))))
+               (xml/element :echo:inherited))))
 
 (defn- organization->xml-element
   "Convert an organization to an XML element"
   [org]
-  (x/element :echo:organization {} org))
+  (xml/element :echo:organization {} org))
 
 (defn- tag->xml-element
   "Convert a tag to an XML element"
@@ -402,10 +402,10 @@
   (let [[tag-key {:keys [data]}] tag
         data-str (when data
                    (json/generate-string data))]
-    (x/element :echo:tag {}
-               (x/element :echo:tagKey {} tag-key)
+    (xml/element :echo:tag {}
+               (xml/element :echo:tagKey {} tag-key)
                (when data-str
-                 (x/element :echo:data {} data-str)))))
+                 (xml/element :echo:data {} data-str)))))
 
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"
@@ -422,7 +422,7 @@
 (defn- orbit-parameters->xml-element
   "Convert orbit parameters into an XML element"
   [orbit-params]
-  (x/element :echo:orbitParameters (orbit-parameters->attribute-map orbit-params)))
+  (xml/element :echo:orbitParameters (orbit-parameters->attribute-map orbit-params)))
 
 (defn- ocsd->attribute-map
   "Convert an oribt calculated spatial domain to attributes for an XML element"
@@ -445,7 +445,7 @@
 (defn- ocsd->xml-element
   "Convert an oribt calculated spatial domain to an XML element"
   [ocsd]
-  (x/element :echo:orbitCalSpatialDomain (ocsd->attribute-map ocsd)))
+  (xml/element :echo:orbitCalSpatialDomain (ocsd->attribute-map ocsd)))
 
 (defn- orbit->xml-element
   "Convert an oribt to an XML element"
@@ -457,7 +457,7 @@
                              (add-attribs :startDirection start-direction)
                              (add-attribs :endLatitude end-lat)
                              (add-attribs :endDirection end-direction))]
-    (x/element :echo:orbit orbit-attrib-map)))
+    (xml/element :echo:orbit orbit-attrib-map)))
 
 (defmulti atom-reference->xml-element
   (fn [results concept-type reference]
@@ -472,43 +472,43 @@
                 orbit-parameters organizations tags has-variables has-formats has-transforms has-combine
                 has-spatial-subsetting has-temporal-subsetting cloud-hosted consortiums]} reference
         granule-count (get granule-counts-map id 0)]
-    (x/element :entry {}
-               (x/element :id {} id)
-               (map #(x/element :consortium {} %) consortiums)
-               (x/element :title {:type "text"} title)
-               (x/element :summary {:type "text"} summary)
-               (x/element :updated {} updated)
-               (x/element :echo:datasetId {} dataset-id)
-               (x/element :echo:shortName {} short-name)
-               (x/element :echo:versionId {} version-id)
-               (x/element :echo:originalFormat {} original-format)
-               (when collection-data-type (x/element :echo:collectionDataType {} collection-data-type))
-               (x/element :echo:dataCenter {} data-center)
-               (when archive-center (x/element :echo:archiveCenter {} archive-center))
+    (xml/element :entry {}
+               (xml/element :id {} id)
+               (map #(xml/element :consortium {} %) consortiums)
+               (xml/element :title {:type "text"} title)
+               (xml/element :summary {:type "text"} summary)
+               (xml/element :updated {} updated)
+               (xml/element :echo:datasetId {} dataset-id)
+               (xml/element :echo:shortName {} short-name)
+               (xml/element :echo:versionId {} version-id)
+               (xml/element :echo:originalFormat {} original-format)
+               (when collection-data-type (xml/element :echo:collectionDataType {} collection-data-type))
+               (xml/element :echo:dataCenter {} data-center)
+               (when archive-center (xml/element :echo:archiveCenter {} archive-center))
                (map organization->xml-element organizations)
-               (when processing-level-id (x/element :echo:processingLevelId {} processing-level-id))
-               (when start-date (x/element :time:start {} (str start-date)))
-               (when end-date (x/element :time:end {} (str end-date)))
+               (when processing-level-id (xml/element :echo:processingLevelId {} processing-level-id))
+               (when start-date (xml/element :time:start {} (str start-date)))
+               (when end-date (xml/element :time:end {} (str end-date)))
                (map atom-link->xml-element atom-links)
-               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
+               (when coordinate-system (xml/element :echo:coordinateSystem {} coordinate-system))
                (when orbit-parameters (orbit-parameters->xml-element orbit-parameters))
                (map atom-spatial/shape->xml-element shapes)
-               (map #(x/element :echo:difId {} %) associated-difs)
-               (x/element :echo:onlineAccessFlag {} online-access-flag)
-               (x/element :echo:browseFlag {} browse-flag)
+               (map #(xml/element :echo:difId {} %) associated-difs)
+               (xml/element :echo:onlineAccessFlag {} online-access-flag)
+               (xml/element :echo:browseFlag {} browse-flag)
                (when has-granules-map
-                 (x/element :echo:hasGranules {} (or (< 0 granule-count)
+                 (xml/element :echo:hasGranules {} (or (< 0 granule-count)
                                                      (get has-granules-map id false))))
                (when granule-counts-map
-                 (x/element :echo:granuleCount {} granule-count))
-               (x/element :echo:hasVariables {} has-variables)
-               (x/element :echo:hasFormats {} has-formats)
-               (x/element :echo:hasTransforms {} has-transforms)
-               (x/element :echo:hasCombine {} has-combine)
-               (x/element :echo:hasSpatialSubsetting {} has-spatial-subsetting)
-               (x/element :echo:hasTemporalSubsetting {} has-temporal-subsetting)
-               (x/element :echo:cloudHosted {} cloud-hosted)
-               (when score (x/element :relevance:score {} score))
+                 (xml/element :echo:granuleCount {} granule-count))
+               (xml/element :echo:hasVariables {} has-variables)
+               (xml/element :echo:hasFormats {} has-formats)
+               (xml/element :echo:hasTransforms {} has-transforms)
+               (xml/element :echo:hasCombine {} has-combine)
+               (xml/element :echo:hasSpatialSubsetting {} has-spatial-subsetting)
+               (xml/element :echo:hasTemporalSubsetting {} has-temporal-subsetting)
+               (xml/element :echo:cloudHosted {} cloud-hosted)
+               (when score (xml/element :relevance:score {} score))
                (map tag->xml-element tags))))
 
 (defmethod atom-reference->xml-element :granule
@@ -517,27 +517,27 @@
                 data-center start-date end-date atom-links online-access-flag browse-flag
                 collection-concept-id day-night cloud-cover coordinate-system shapes
                 orbit orbit-calculated-spatial-domains]} reference]
-    (x/element :entry {}
-               (x/element :id {} id)
-               (x/element :title {:type "text"} title)
-               (x/element :updated {} updated)
-               (x/element :echo:datasetId {} dataset-id)
-               (x/element :echo:collectionConceptId {} collection-concept-id)
-               (when producer-gran-id (x/element :echo:producerGranuleId {} producer-gran-id))
-               (when size (x/element :echo:granuleSizeMB {} size))
-               (x/element :echo:originalFormat {} original-format)
-               (x/element :echo:dataCenter {} data-center)
-               (when start-date (x/element :time:start {} (str start-date)))
-               (when end-date (x/element :time:end {} (str end-date)))
+    (xml/element :entry {}
+               (xml/element :id {} id)
+               (xml/element :title {:type "text"} title)
+               (xml/element :updated {} updated)
+               (xml/element :echo:datasetId {} dataset-id)
+               (xml/element :echo:collectionConceptId {} collection-concept-id)
+               (when producer-gran-id (xml/element :echo:producerGranuleId {} producer-gran-id))
+               (when size (xml/element :echo:granuleSizeMB {} size))
+               (xml/element :echo:originalFormat {} original-format)
+               (xml/element :echo:dataCenter {} data-center)
+               (when start-date (xml/element :time:start {} (str start-date)))
+               (when end-date (xml/element :time:end {} (str end-date)))
                (map atom-link->xml-element atom-links)
                (when orbit (orbit->xml-element orbit))
                (map ocsd->xml-element orbit-calculated-spatial-domains)
-               (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
+               (when coordinate-system (xml/element :echo:coordinateSystem {} coordinate-system))
                (map atom-spatial/shape->xml-element shapes)
-               (x/element :echo:onlineAccessFlag {} online-access-flag)
-               (x/element :echo:browseFlag {} browse-flag)
-               (when day-night (x/element :echo:dayNightFlag {} day-night))
-               (when cloud-cover (x/element :echo:cloudCover {} cloud-cover)))))
+               (xml/element :echo:onlineAccessFlag {} online-access-flag)
+               (xml/element :echo:browseFlag {} browse-flag)
+               (when day-night (xml/element :echo:dayNightFlag {} day-night))
+               (when cloud-cover (xml/element :echo:cloudCover {} cloud-cover)))))
 
 (defn- append-links
   "Append collection links to the given reference and returns the reference"
@@ -574,11 +574,11 @@
                                    {:xmlns:relevance
                                     "http://a9.com/-/opensearch/extensions/relevance/1.0/"})
                             header-attributes)]
-    (x/emit-str
-      (x/element :feed header-attributes
-                 (x/element :updated {} (str (time/now)))
-                 (x/element :id {} (url/atom-request-url context concept-type result-format))
-                 (x/element :title {:type "text"} (concept-type->atom-title concept-type))
+    (xml/emit-str
+      (xml/element :feed header-attributes
+                 (xml/element :updated {} (str (time/now)))
+                 (xml/element :id {} (url/atom-request-url context concept-type result-format))
+                 (xml/element :title {:type "text"} (concept-type->atom-title concept-type))
                  (map (partial atom-reference->xml-element results concept-type) items)
                  (frf/facets->xml-element "echo" facets)))))
 

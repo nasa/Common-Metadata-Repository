@@ -5,7 +5,7 @@
   routes that apply to both (e.g., robots.txt)."
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common.api.errors :as errors]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
@@ -24,8 +24,7 @@
    [compojure.core :refer [GET context routes]]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]
-   [ring.middleware.multipart-params :refer [wrap-multipart-params]]))
+   [ring.middleware.params :as params]))
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -34,9 +33,9 @@
   [query-str]
   (when query-str
     (let [query-str (-> query-str
-                        (str/replace #"%5B" "[")
-                        (str/replace #"%5D" "]")
-                        (str/replace #"\[\]" ""))]
+                        (string/replace #"%5B" "[")
+                        (string/replace #"%5D" "]")
+                        (string/replace #"\[\]" ""))]
       (last (some #(re-find % query-str)
                   [#"(^|&)(.*?)=.*?&\2\["
                    #"(^|&)(.*?)\[.*?&\2="])))))

@@ -1,9 +1,10 @@
 (ns cmr.umm.dif10.collection.reference
   "Functions to parse and generate DIF10 Reference elements"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [camel-snake-kebab.core :as csk]
+   [cmr.umm.umm-collection :as c]))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM
@@ -44,11 +45,11 @@
   "Returns a seq of DIF 10 Reference elements from a seq of UMM publication references."
   [references]
   (for [reference references]
-    (x/element :Reference {}
+    (xml/element :Reference {}
                (for [[umm-key dif-tag] umm-dif-publication-reference-mappings
                      :let [v (get reference umm-key)]
                      :when v]
-                 (x/element dif-tag {} v)))))
+                 (xml/element dif-tag {} v)))))
 
 (defn xml-elem->Citations
   "Returns a list of collection citations which are strings."
@@ -59,5 +60,5 @@
   "Generates a dataset citation given a umm-collection map"
   [collection]
   (for [citation (:collection-citations collection)]
-    (x/element :Dataset_Citation {}
-               (x/element :Other_Citation_Details {} citation))))
+    (xml/element :Dataset_Citation {}
+               (xml/element :Other_Citation_Details {} citation))))

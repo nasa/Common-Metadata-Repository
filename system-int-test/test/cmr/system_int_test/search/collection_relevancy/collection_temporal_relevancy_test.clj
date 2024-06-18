@@ -2,20 +2,13 @@
   "This tests the CMR Search API's temporal relevancy scoring and ranking
   capabilities"
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.config :as config]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as umm-common]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-   [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))

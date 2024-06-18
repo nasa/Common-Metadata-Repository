@@ -8,7 +8,7 @@
    * cmr.access-control.test.provider-util
    * cmr.system-int-test.utils.provider-util"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]))
 
 ;; The most basic provider metadata needed to create a provider
@@ -34,7 +34,7 @@
         cmr-only (:cmr-only minimum-provider)
         small (:small minimum-provider)
         consortiums (:consortiums minimum-provider)
-        consortium-list (when (some? consortiums) (str/split (str/trim consortiums) #" "))
+        consortium-list (when (some? consortiums) (string/split (string/trim consortiums) #" "))
         extra-fields (dissoc minimum-provider
                              :provider-id
                              :provider-guid

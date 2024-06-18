@@ -1,7 +1,7 @@
 (ns cmr.access-control.test.util
   (:require
    [clj-http.client :as client]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.elastic-utils.search.access-control-index :as access-control-index]
    [cmr.common-app.test.side-api :as side]
@@ -50,9 +50,9 @@
                          {:throw-exceptions true
                           :content-type :json
                           :body "{\"version\": true, \"size\": 10000, \"query\": {\"match_all\": {}}}"
-                          :as :json
-                          :headers {:client-id config/cmr-client-id}})
-        bulk-body (str/join
+                          :headers {:client-id config/cmr-client-id}
+                          :as :json})
+        bulk-body (string/join
                    "\n"
                    (mapv (fn [hit]
                            (format "{\"delete\": {\"_id\": \"%s\", \"version\": %d, \"version_type\": \"external_gte\"}}"
@@ -404,7 +404,7 @@
                                                               options)
          all-items (->> acls
                         (map #(acl->search-response-item include-full-acl %))
-                        (sort-by #(str/lower-case (:name %)))
+                        (sort-by #(string/lower-case (:name %)))
                         vec)
          start (* (dec page-num) page-size)
          end (+ start page-size)
