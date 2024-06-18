@@ -7,6 +7,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh]
+   [cmr.common.util :as util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]))
 
@@ -109,22 +110,23 @@
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-        ;; Validate that a connection manager is always present. This can cause poor performance if
-        ;; not.
+        ;; Validate that connection manager is always present. This causes poor performance if not.
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error!
              (format "No connection manager created for [%s] in current application" app-name)))
-        headers (merge {:client-id config/cmr-client-id}
-                       (when use-system-token?
-                         {config/token-header (config/echo-system-token)}))
+        http-options (as-> http-options mac-guffin
+                       (util/remove-nil-keys mac-guffin)
+                       (assoc-in mac-guffin [:headers :client-id] config/cmr-client-id)
+                       (if use-system-token?
+                         (assoc-in mac-guffin
+                                   [:headers config/token-header]
+                                   (config/echo-system-token))
+                         mac-guffin))
         response (http-response->raw-response
-                   (client/request
-                     (merge-with into connection-params
-                            {:url (url-fn conn)
-                             :method method
-                             :throw-exceptions false
-                             :headers headers}
-                            http-options)))]
+                  (client/request
+                   (merge connection-params
+                               {:url (url-fn conn) :method method :throw-exceptions false}
+                               http-options)))]
     (response-handler request response)))
 
 (defn request-with-returned-headers
