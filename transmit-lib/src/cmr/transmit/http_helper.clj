@@ -77,6 +77,7 @@
   [{:keys [status body] :as resp}]
   (cond
     (<= 200 status 299) body
+    (= 401 status) (errors/throw-service-errors :unauthorized (:errors body))
     (= 409 status) (errors/throw-service-errors :conflict (:errors body))
     (= 422 status) (errors/throw-service-errors :invalid-data (:errors body))
     :else (errors/internal-error!
