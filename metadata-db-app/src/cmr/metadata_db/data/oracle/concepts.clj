@@ -425,6 +425,7 @@
                          :transaction-id (long (:transaction_id result))})
            (su/query conn stmt)))))
 
+;; TODO Step 15 :: this is where we save the concept to the DB
 (defn save-concept
   [db provider concept]
   (try

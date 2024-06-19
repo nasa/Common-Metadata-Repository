@@ -41,6 +41,7 @@
          {:status 200
           :task-id task-id})))))
 
+;; TODO Step 2
 (defn bulk-update-granules
   "Bulk update granules. Validate provider exists, check ACLs, and validate
    POST body. Writes tasks to queue for worker to begin processing."

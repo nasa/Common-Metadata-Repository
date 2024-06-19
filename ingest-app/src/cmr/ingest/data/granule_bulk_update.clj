@@ -177,6 +177,7 @@
                                             (sql-utils/where `(and (= :task-id ~task-id))
                                                              (= :granule-ur ~granule-ur)))))
 
+  ;; TODO Step 4? update DB
   (create-and-save-bulk-granule-update-status
    [db provider-id user-id request-json-body instructions]
    ;; In a transaction, add one row to the task status table and for each concept
@@ -194,6 +195,7 @@
                   "IN_PROGRESS" user-id created-at]]
       (jdbc/db-do-prepared db statement values)
       ;; Write a row to granule status for each granule-ur
+      ;; TODO why does there need to be one row per granule-ur -- is there a better way to save this info? Why do we need the DB at all?
       (apply jdbc/insert! conn
              "bulk_update_gran_status"
              ["task_id" "provider_id" "granule_ur" "instruction" "status"]

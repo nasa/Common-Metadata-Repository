@@ -267,6 +267,7 @@
          (GET "/status/:task-id"
            [task-id :as request]
            (bulk/get-collection-task-status provider-id task-id request)))
+       ;; TODO Step 1
        (context "/bulk-update/granules" []
          (POST "/"
            request

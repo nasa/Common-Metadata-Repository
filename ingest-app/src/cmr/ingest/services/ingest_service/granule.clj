@@ -92,7 +92,7 @@
     (validate-granule context concept
                       (constantly [parent-collection-concept
                                    collection]))))
-
+;; TODO Step 10
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]

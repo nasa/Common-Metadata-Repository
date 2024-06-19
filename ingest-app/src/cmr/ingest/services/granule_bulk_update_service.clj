@@ -179,6 +179,7 @@
          validate-granule-bulk-update-no-duplicate-urs)
     request))
 
+;; TODO Step 5
 (defn- publish-instructions-partitioned
   "Publish bulk granule update events in partitioned amounts."
   [context provider-id user-id task-id instructions partition-size]
@@ -201,6 +202,7 @@
                                           user-id
                                           ins-list)))))
 
+;; TODO Step 3
 (defn validate-and-save-bulk-granule-update
   "Validate the granule bulk update request, save rows to the db for task
   and granule statuses, and queue bulk granule update. Return task id, which comes
@@ -538,36 +540,62 @@
 
     (invalid-event-type (:event-type bulk-update-params))))
 
+;; TODO Step 9
 (defn- update-granule-concept-and-status
-  "Perform update for the granule concept and granule bulk update status."
+  "Perform update for the granule concept and granule bulk update status. Throws error if concept cannot be updated."
   [context task-id concept granule-ur bulk-update-params user-id]
   (if-let [updated-concept (update-granule-concept context concept bulk-update-params user-id)]
     (do
-      (ingest-service/save-granule context updated-concept)
+      (ingest-service/save-granule context updated-concept) ;; TODO Why save one concept at a time to the DB? Why not do a bulk update in oracle?
       (data-granule-bulk-update/update-bulk-update-task-granule-status
        context task-id granule-ur bulk-update-service/updated-status ""))
+    ;; when concept is nil this else statement triggers
     (data-granule-bulk-update/update-bulk-update-task-granule-status
      context task-id granule-ur bulk-update-service/skipped-status
      (format (str "Granule with granule-ur [%s] in task-id [%s] is not updated "
                   "because the metadata format [%s] is not supported.")
              granule-ur task-id (:format concept)))))
 
+;; TODO Step 8
+;; Example passed parameters
+;; provider-id = "CDDIS"
+;; task-id = 670092
+;;  "bulk-update-params":{
+;;    "event-type":"update_field:onlineaccessurl",
+;;    "granule-ur":"gnss_data_highrate_2009_113_09d_00_darw113a15.09d.Z",
+;;    "new-value":[{
+;;                  "from":"https://cddis.nasa.gov/archive/gnss/data/highrate/2009/113/09d/00/darw113a15.09d.Z",
+;;                  "to":"https://cddis.nasa.gov/archive/gnss/data/highrate/2009/113/darw1130.09d.txt"
+;;                  },
+;;                  {
+;;                   "from":"ftp://gdc.cddis.eosdis.nasa.gov/gnss/data/highrate/2009/113/09d/00/darw113a15.09d.Z",
+;;                    "to":"ftp://gdc.cddis.eosdis.nasa.gov/gnss/data/highrate/2009/113/darw1130.09d.txt"
+;;                  }]},
+;; user-id = "taylor.yates"
 (defn handle-granule-bulk-update-event
   [context provider-id task-id bulk-update-params user-id]
   (let [{:keys [granule-ur]} bulk-update-params]
     (try
+      ;; find concepts in database
       (if-let [concept (mdb/find-latest-concept
                         context {:provider-id provider-id :granule-ur granule-ur} :granule)]
         (if (:deleted concept)
+          ;; if the concept found is deleted, update the task status as failed and log that it could not be updated
+          ;; TODO do we want this? Why are we failing updates if the concept is deleted? And we are failing the entire task? How are tasks divided again? Per msg load?
+          ;; Example of database bulk_update_gran_status
+          ;; task_id, provider_id, granule_ur, instruction, updated_at, status, status_message
+          ;; 544685,	CDDIS,	gnss_data_highrate_2007_281_07d_21_tash281v00.07d.Z,	{"event-type":"update_field:onlineaccessurl","granule-ur":"gnss_data_highrate_2007_281_07d_21_tash281v00.07d.Z","new-value":[{"from":"https://cddis.nasa.gov/archive/gnss/data/highrate/2007/281/07d/21/tash281v00.07d.Z","to":"https://cddis.nasa.gov/archive/gnss/data/highrate/2007/281/tash2810.07d.txt"},{"from":"ftp://gdc.cddis.eosdis.nasa.gov/gnss/data/highrate/2007/281/07d/21/tash281v00.07d.Z","to":"ftp://gdc.cddis.eosdis.nasa.gov/gnss/data/highrate/2007/281/tash2810.07d.txt"}]},	2024-04-20 01:20:55,	UPDATED,	(null)
           (data-granule-bulk-update/update-bulk-update-task-granule-status
            context task-id granule-ur bulk-update-service/failed-status
            (format (str "Granule with granule-ur [%s] on provider [%s] in task-id [%s] "
                         "is deleted. Can not be updated.")
                    granule-ur provider-id task-id))
           ;; granule found and not deleted, update the granule
+          ;; TODO if concept is not found, this below code will still trigger... FIXME BUG? Do we want this behavior? Probably not.
           (update-granule-concept-and-status
            context task-id concept granule-ur bulk-update-params user-id))
         ;; granule not found
+        ;; TODO why is this 'granule not found' logic here and not above the if statement? FIXME BUG
         (data-granule-bulk-update/update-bulk-update-task-granule-status
          context task-id granule-ur bulk-update-service/failed-status
          (format "Granule UR [%s] in task-id [%s] does not exist." granule-ur task-id)))

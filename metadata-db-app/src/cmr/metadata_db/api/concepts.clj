@@ -78,6 +78,7 @@
      :body (json/generate-string associations)
      :headers rh/json-header}))
 
+;; TODO Step 13
 (defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
@@ -159,7 +160,7 @@
         (POST "/:concept-type" {:keys [params request-context]}
           (find-concepts request-context params)))
       ;; saves a concept
-      (POST "/" {:keys [request-context params body]}
+      (POST "/" {:keys [request-context params body]} ;; TODO Step 12
         (save-concept-revision request-context params body))
       ;; remove a draft from the database
       (DELETE "/force-delete-draft/:concept-id" {{:keys [concept-id] :as params} :params

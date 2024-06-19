@@ -881,6 +881,7 @@
          context
          (ingest-events/associations-update-event associations))))))
 
+;; TODO STEP 14
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -903,7 +904,7 @@
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
-                       (try-to-save db provider context))
+                       (try-to-save db provider context)) ;; saves to oracle here
           revision-id (:revision-id concept)]
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)

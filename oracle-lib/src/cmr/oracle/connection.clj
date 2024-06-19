@@ -123,10 +123,11 @@
       (.setUser user)
       (.setPassword password)
       (.setURL (str "jdbc:" subprotocol ":" subname))
-      (.setMinPoolSize 5)
-      (.setMaxPoolSize 100)
+      (.setMinPoolSize 30)
+      (.setMaxPoolSize 30) ;; TODO Jyna change this to something smaller or set up so that ingest and search have larger connection pool sizes, while bootstrap and other apps have fewer connection pool sizes
       (.setInactiveConnectionTimeout 60)
       (.setConnectionWaitTimeout 600)
+      (.setConnectionHarvestTriggerCount 2)
       (.setPropertyCycle 120)
       (.setFastConnectionFailoverEnabled fcf-enabled)
       (.setONSConfiguration ons-config)
