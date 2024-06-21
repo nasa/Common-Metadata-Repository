@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]))
+   [cmr.transmit.http-helper :as hh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -28,24 +28,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-(h/defcreator create-tag :search tags-url)
-(h/defsearcher search-for-tags :search tags-url)
-(h/defupdater update-tag :search tag-url)
-(h/defdestroyer delete-tag :search tag-url)
-(h/defgetter get-tag :search tag-url)
+(declare create-tag search-for-tags update-tag delete-tag get-tag)
+
+(hh/defcreator create-tag :search tags-url)
+(hh/defsearcher search-for-tags :search tags-url)
+(hh/defupdater update-tag :search tag-url)
+(hh/defdestroyer delete-tag :search tag-url)
+(hh/defgetter get-tag :search tag-url)
 
 (defmulti tag-associations-url
   "Returns the url to associate a tag based on the association type.
   Valid association types are :query and :concept-ids."
-  (fn [context tag-key association-type]
+  (fn [_context _tag-key association-type]
     association-type))
 
 (defmethod tag-associations-url :query
-  [context tag-key _]
+  [context tag-key _association-type]
   (tag-associations-by-query-url context tag-key))
 
 (defmethod tag-associations-url :concept-ids
-  [context tag-key _]
+  [context tag-key _association-type]
   (tag-associations-by-concept-ids-url context tag-key))
 
 (defn associate-tag
@@ -62,7 +64,7 @@
   ([association-type context tag-key content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn #(tag-associations-url % tag-key association-type)
                  :method :post
                  :raw? raw?
@@ -81,12 +83,12 @@
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
-  ([association-type context concept-id content]
+  ([_association-type context concept-id content]
    (dissociate-tag context concept-id content nil))
   ([association-type context concept-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn #(tag-associations-url % concept-id association-type)
                  :method :delete
                  :raw? raw?

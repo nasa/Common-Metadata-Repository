@@ -4,7 +4,7 @@
    [clj-http.client :as client]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
@@ -15,7 +15,8 @@
    [cmr.indexer.data.bulk :as cmr-bulk]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.indexer.services.index-set-service :as index-set-svc]))
+   [cmr.indexer.services.index-set-service :as index-set-svc]
+   [cmr.transmit.config :as t-config]))
 
 (def MAX_INT
   "The maximum `integer` type value supported by Elasticsearch, 2^31 - 1"
@@ -166,11 +167,11 @@
   (index-set-svc/reset context)
   (create-indexes context))
 
-(defrecord ESstore 
-  [;; configuration of host, port and admin-token for elasticsearch 
+(defrecord ESstore
+  [;; configuration of host, port and admin-token for elasticsearch
    config
 
-   ;; The connection to elasticsearch 
+   ;; The connection to elasticsearch
    conn]
 
 
@@ -358,7 +359,8 @@
            response (client/delete delete-url
                                    (merge http-opts
                                           {:headers {"Authorization" admin-token
-                                                     "Confirm-delete-action" "true"}
+                                                     "Confirm-delete-action" "true"
+                                                     :client-id t-config/cmr-client-id}
                                            :throw-exceptions false}))
            status (:status response)]
        (if-not (some #{200 404} [status])
@@ -377,6 +379,7 @@
     (client/post delete-url
                  (merge http-opts
                         {:headers {"Authorization" admin-token
-                                   "Confirm-delete-action" "true"}
+                                   "Confirm-delete-action" "true"
+                                   :client-id t-config/cmr-client-id}
                          :content-type :json
                          :body (json/generate-string {:query query})}))))

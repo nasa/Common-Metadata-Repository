@@ -1,11 +1,10 @@
 (ns cmr.transmit.community-usage-metrics
   "This contains functions for interacting with the humanizers API."
   (:require
-   [cheshire.core :as json]
    [cmr.common.mime-types :as mt]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]))
+   [cmr.transmit.http-helper :as hh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -26,7 +25,7 @@
   ([context content {:keys [raw? http-options token]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn community-usage-metrics-url
                  :method :put
                  :raw? raw?
@@ -48,7 +47,7 @@
   ([context {:keys [raw? http-options token]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
-     (h/request context :search
+     (hh/request context :search
                 {:url-fn community-usage-metrics-url
                  :method :get
                  :raw? raw?
