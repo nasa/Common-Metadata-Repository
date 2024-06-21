@@ -4,8 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.java.io :as io]
-   [cmr.common-app.static :as static]
-   [cmr.common.log :refer :all]
+   [cmr.common.log :refer [warn]]
    [cmr.transmit.config :as transmit])
   (:import (java.net ConnectException)))
 
@@ -25,7 +24,7 @@
   (transmit/application-public-root-url
     (or (:cmr-application context) context)))
 
-(defn get-search-reference-file
+(defn- get-search-reference-file
   "Locate a reference file whose location is well-known and stable (won't
   change) in the search-app codebase. This is intended to be used to calculate
   the absolute file-system path to the `search-app` directory.
@@ -38,7 +37,7 @@
       (io/resource)
       (.getFile)))
 
-(defn walk-parents
+(defn- walk-parents
   "A utility function for getting successive parent directories of a given path.
   The intent is to use this with absolute paths, not relative paths."
   [file-path depth]
@@ -73,8 +72,8 @@
           (str "../")
           (recur (dec d))))))
 
-(defn get-provider-resource
-  "Utility functions that define the string value for static ouput files. These
+(defn- get-provider-resource
+  "Utility functions that define the string value for static output files. These
   are intended to be used to create absolute paths to specific files."
   [base provider-id tag filename]
   (format "%s/resources/public/site/collections/directory/%s/%s/%s"
@@ -95,12 +94,13 @@
 
 (defn endpoint-get
   "A utility function that performs an HTTP `GET` and a few consistently used
-  processing steps."
+   processing steps. This function will not insert client-id, it is the
+   responsibility of the caller to do that."
   [& args]
   (try
     (-> (apply client/get args)
         :body
         (json/parse-string true))
     (catch ConnectException e
-           (warn (.getMessage e))
-           {})))
+      (warn (.getMessage e))
+      {})))

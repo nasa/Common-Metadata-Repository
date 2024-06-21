@@ -15,7 +15,7 @@
    [cmr.common-app.site.data :as common-data]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.doi :as doi]
-   [cmr.common.log :refer [debug error]]
+   [cmr.common.log :refer [debug]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.search.query-model :as query-model]
    [cmr.common.util :refer [defn-timed]]
@@ -50,10 +50,13 @@
   :execution-context)
 
 (defmethod get-providers :cli
-  [context]
+  [_context]
+  (debug "get-providers called with cli context, not running mdb version of get-providers")
   (let [providers-url (format "%sproviders"
-                              (transmit-config/application-public-root-url :ingest))]
-    (util/endpoint-get providers-url {:accept mt/json})))
+                              (transmit-config/application-public-root-url :ingest))
+        headers {:client-id transmit-config/cmr-client-id}]
+    (util/endpoint-get providers-url {:accept mt/json
+                                      :headers headers})))
 
 (defmethod get-providers :default
   [context]
@@ -67,17 +70,18 @@
 
   The default variant is the original, designed to work with the regular
   request context which contains the state of a running CMR."
-  (fn [context & args] (:execution-context context)))
+  (fn [context & _args] (:execution-context context)))
 
 (defmethod collection-data :cli
-  [context tag provider-id]
+  [_context tag provider-id]
   (as-> (transmit-config/application-public-root-url :search) data
         (format "%scollections" data)
         (util/endpoint-get data {:accept mt/umm-json-results
                                  :query-params {:provider provider-id
                                                 :tag-key tag
                                                 :include_facets "v2"
-                                                :page-size 2000}})
+                                                :page-size 2000}
+                                 :headers {:client-id transmit-config/cmr-client-id}})
         (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 

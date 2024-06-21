@@ -19,7 +19,7 @@
     [clojure.java.io :as io]
     [clojure.set :as set]
     [clojure.string :as string]
-    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.log :as log :refer (info warn error)]
     [cmr.common.util :as util]
     [cmr.transmit.config :as config]
     [cmr.transmit.connection :as conn]))
@@ -43,13 +43,13 @@
    :processing-levels :uuid})
 
 (comment
- "The following map contains code used for trasitioning CMR from SIT->UAT->PROD
-  and keeping in step with KMS changes. These three envirments all talk to
+ "The following map contains code used for transitioning CMR from SIT->UAT->PROD
+  and keeping in step with KMS changes. These three environment all talk to
   production KMS due to AWS->EBNET network limitations. Because of of this we
-  need to be able to publish data for all three envirments with one host. while
+  need to be able to publish data for all three environment with one host. while
   not ideal, it was decided to use the different 'version' capabilities in KMS
-  to isolate production from the other two envirments. Specificly: rucontenttype
-  is a three level tree in SIT, but not PROD. This process is only needed durring
+  to isolate production from the other two environment Specificly: rucontenttype
+  is a three level tree in SIT, but not PROD. This process is only needed during
   the transition and should be deleted once in production.
 
   To override the scheme KMS settings, set the config kms-scheme-override-json to:
@@ -58,7 +58,7 @@
  )
 
 (defn- scheme-overrides
-  "CMR will Allow for any KMS resource URL to be overriden by a config
+  "CMR will Allow for any KMS resource URL to be overridden by a config
    variable (AWS parameter). The config is assumed to contain a string with JSON.
    Return value is the KMS schema override map as configured in AWS as
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
@@ -217,7 +217,7 @@
   a breakdown of the subfields for the keyword scheme, and from the third line on are the actual
   values.
 
-  keyword-scheme shoud be something like :platforms
+  keyword-scheme should be something like :platforms
   csv-content is the raw text of the CSV file to parse
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
@@ -276,7 +276,8 @@
             url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
             params (merge
                     (config/conn-params conn)
-                    {:headers {:accept-charset "utf-8"}
+                    {:headers {:accept-charset "utf-8"
+                               :client-id config/cmr-client-id}
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]

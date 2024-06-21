@@ -2,7 +2,6 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
-   [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
@@ -10,7 +9,8 @@
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.config :as config]
-   [cmr.indexer.services.messages :as m]))
+   [cmr.indexer.services.messages :as m]
+   [cmr.transmit.config :as t-config]))
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -110,7 +110,8 @@
     (let [admin-token (:admin-token config)
           response (client/delete (esr/index-url conn index-name)
                                   {:headers {"Authorization" admin-token
-                                             "Confirm-delete-action" "true"}
+                                             "Confirm-delete-action" "true"
+                                             :client-id t-config/cmr-client-id}
                                    :throw-exceptions false})
           status (:status response)]
       (if-not (some #{200 202 204} [status])

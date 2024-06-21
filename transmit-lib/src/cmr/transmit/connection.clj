@@ -2,11 +2,10 @@
   "Contains functions that allow creating application connections. We'll eventually use this for
   implementing CMR-538"
   (:require
-   [camel-snake-kebab.core :as csk]
    [clj-http.conn-mgr :as conn-mgr]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :refer [debug info error]]))
+   [cmr.common.log :refer [error]]))
 
 (defn create-app-connection
   "Creates a 'connection' to an application"

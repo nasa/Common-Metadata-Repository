@@ -1,8 +1,10 @@
 (ns cmr.transmit.test.kms
   "Contains unit tests for verifying KMS retrieval functionality."
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are3]]
-            [cmr.transmit.kms :as kms]))
+  (:require
+   [clojure.test :refer :all]
+   [clj-http.client :as client]
+   [cmr.common.util :refer [are3]]
+   [cmr.transmit.kms :as kms]))
 
 (def sample-csv
   "Sample KMS csv file"
@@ -153,3 +155,16 @@
            (location). The end parsing should be the same until the CMR supports only subregion-4.)."
     (is (= (#'kms/parse-entries-from-csv :spatial-keywords spatial-keywords-3-subregions)
            (#'kms/parse-entries-from-csv :spatial-keywords spatial-keywords-4-subregions)))))
+
+(deftest check-kms-client-id
+  (testing "check for client id"
+    (let [context {:system {:kms-connection
+                            {:protocol "http" :host "localhost" :port "2999" :context ""}}}
+          action-tester (fn [arg]
+                          (is (= "cmr-internal" (:client-id (:headers arg)))
+                              (format "Failed testing %s" (:url arg)))
+                          {:status 200 :body "" :headers {"CMR-Hits" "42"}})]
+
+      (with-redefs [client/request action-tester]
+        (let [result (kms/get-keywords-for-keyword-scheme context :platforms)]
+          (is (nil? result)))))))
