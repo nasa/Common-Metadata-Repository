@@ -1,5 +1,5 @@
 (ns cmr.transmit.test.indexer
-  "These tests will check the functions in cmr.transmit.metadata-db. The client-id tests will not
+  "These tests will check the functions in cmr.transmit.indexer. The client-id tests will not
    check the functionality of the function called, but instead will check that the request includes
    a client id."
   (:require
