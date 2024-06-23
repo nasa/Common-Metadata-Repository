@@ -728,3 +728,16 @@
                    (= "LUNAR" sct))
              (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
              rc))))))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.0" "1.18.1"]
+  [_context collection & _]
+  ;; File sizes from numbers to positive numbers. No need to migrate.
+  ;; If negative numbers or 0 were ingested in 1.18.0, warnings will be given when migrate to 1.18.1.
+  (-> collection
+      (m-spec/update-version :collection "1.18.1"))) 
+
+(defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.0"]
+  [_context collection & _]
+  ;; File sizes from positive numbers to numbers, No need to migrate
+  (-> collection
+      (m-spec/update-version :collection "1.18.0"))) 
