@@ -16,6 +16,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
    [cmr.indexer.data.concepts.subscription]
@@ -90,79 +91,83 @@
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]
   (routes
-    (context (:relative-root-url system) []
+   (context (:relative-root-url system) []
 
       ;; Routes for index-set services
-      index-set-routes
+     index-set-routes
 
        ;; for NGAP deployment health check
-      (GET "/" {} {:status 200})
+     (GET "/" {} {:status 200})
 
       ;; Index a concept
-      (POST "/" {body :body context :request-context params :params headers :headers}
-        (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-              options {:ignore-conflict? (ignore-conflict? params)}]
+     (POST "/" {body :body context :request-context params :params headers :headers}
+       (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
+             options {:ignore-conflict? (ignore-conflict? params)}]
           ;; indexing all revisions index, does nothing for concept types that do not support all revisions index
-          (index-svc/index-concept-by-concept-id-revision-id
-            context concept-id revision-id (assoc options :all-revisions-index? true))
+         (index-svc/index-concept-by-concept-id-revision-id
+          context concept-id revision-id (assoc options :all-revisions-index? true))
           ;; indexing concept index
-          (r/created (index-svc/index-concept-by-concept-id-revision-id
-                       context concept-id revision-id (assoc options :all-revisions-index? false)))))
+         (r/created (index-svc/index-concept-by-concept-id-revision-id
+                     context concept-id revision-id (assoc options :all-revisions-index? false)))))
 
       ;; reset operation available just for development purposes
       ;; delete configured elastic indexes and create them back
-      (POST "/reset" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (cache/reset-caches request-context)
-        (index-svc/reset request-context)
-        {:status 204})
+     (POST "/reset" {:keys [request-context params headers]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (cache/reset-caches request-context)
+       (index-svc/reset request-context)
+       {:status 204})
 
       ;; Sends an update to the index set to update mappings and index settings.
-      (POST "/update-indexes" {:keys [request-context params]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/update-indexes request-context params)
-        {:status 200})
+     (POST "/update-indexes" {:keys [request-context params]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (index-svc/update-indexes request-context params)
+       {:status 200})
 
       ;; This is just an alias for /update-indexes to make it easy to update indexes
       ;; after a deployment using the same deployment code that other apps use for db-migrate.
-      (POST "/db-migrate" {:keys [request-context params]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/update-indexes request-context params)
-        {:status 200})
+     (POST "/db-migrate" {:keys [request-context params]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (index-svc/update-indexes request-context params)
+       {:status 200})
 
       ;; add routes for accessing caches
-      common-routes/cache-api-routes
+     common-routes/cache-api-routes
 
-      (POST "/reindex-provider-collections" {:keys [request-context params headers body]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/reindex-provider-collections request-context body)
-        {:status 200})
+     (POST "/reindex-provider-collections" {:keys [request-context params headers body]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (index-svc/reindex-provider-collections request-context body)
+       {:status 200})
 
-      (POST "/reindex-tags" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/reindex-tags request-context)
-        {:status 200})
+     (POST "/reindex-tags" {:keys [request-context params headers]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (index-svc/reindex-tags request-context)
+       {:status 200})
 
       ;; Unindex all concepts within a provider
-      (context "/provider/:provider-id" [provider-id]
-        (DELETE "/" {:keys [request-context params headers]}
-          (acl/verify-ingest-management-permission request-context :update)
-          (index-svc/delete-provider request-context provider-id)
-          {:status 200}))
+     (context "/provider/:provider-id" [provider-id]
+       (DELETE "/" {:keys [request-context params headers]}
+         (acl/verify-ingest-management-permission request-context :update)
+         (index-svc/delete-provider request-context provider-id)
+         {:status 200}))
 
       ;; Unindex a concept
-      (context "/:concept-id/:revision-id" [concept-id revision-id]
-        (DELETE "/" {:keys [request-context params headers]}
-          (let [options {:ignore_conflict? (ignore-conflict? params)}]
-            (index-svc/delete-concept
-              request-context concept-id revision-id (assoc options :all-revisions-index? true))
-            (index-svc/delete-concept
-              request-context concept-id revision-id (assoc options :all-revisions-index? false))
-            {:status 204})))
+     (context "/:concept-id/:revision-id" [concept-id revision-id]
+       (DELETE "/" {:keys [request-context params headers]}
+         (let [options {:ignore_conflict? (ignore-conflict? params)}]
+           (index-svc/delete-concept
+            request-context concept-id revision-id (assoc options :all-revisions-index? true))
+           (index-svc/delete-concept
+            request-context concept-id revision-id (assoc options :all-revisions-index? false))
+           {:status 204})))
+     (context "/stats" []
+       (GET "/jvmstats"
+         {}
+         (jvm-info/log-jvm-statistics)))
 
-      (common-health/health-api-routes index-svc/health))
+     (common-health/health-api-routes index-svc/health))
 
-    (route/not-found "Not Found")))
+   (route/not-found "Not Found")))
 
 (defn make-api [system]
   (-> (build-routes system)

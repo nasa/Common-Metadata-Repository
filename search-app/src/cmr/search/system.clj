@@ -149,8 +149,7 @@
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
-                          (cache-info/create-log-cache-info-job "search")
-                          jvm-info/log-jvm-statistics-job])}]
+                          (cache-info/create-log-cache-info-job "search")])}]
     (transmit-config/system-with-connections
      sys
      [:indexer :echo-rest :metadata-db :kms :access-control :urs])))

@@ -115,7 +115,6 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job
                           (cache-info/create-log-cache-info-job "access-control")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 

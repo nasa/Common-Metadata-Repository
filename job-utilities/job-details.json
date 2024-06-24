@@ -17,5 +17,110 @@
                 "year" : "*"
             }
         }
+    },
+    "AccessControlLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "access-control",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "BootstrapLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "bootstrap",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "IndexerLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "indexer",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "IngestLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "ingest",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "MetadataDBLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "metadata-db",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "SearchLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "search",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "VirtualProductLogJVMStatistics" :
+    {
+        "target" : {
+            "endpoint" : "jobs/jvmstats",
+            "service" : "virtual-product",
+            "single-target" : false
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 5,
+                "hours" : 0
+            }
+        }
     }
 }

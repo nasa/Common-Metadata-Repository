@@ -4,6 +4,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.cache :as cache]
    [cmr.search.api.autocomplete :as autocomplete-api]
    [cmr.search.api.community-usage-metrics :as metrics-api]
@@ -118,11 +119,16 @@
         ;; Add routes for managing jobs
         (common-routes/job-api-routes
          (routes
-           (POST "/refresh-collection-metadata-cache"
-             {ctx :request-context}
-             (acl/verify-ingest-management-permission ctx :update)
-             (metadata-cache/refresh-cache ctx)
-             {:status 200})))
+          (POST "/refresh-collection-metadata-cache"
+            {ctx :request-context}
+            (acl/verify-ingest-management-permission ctx :update)
+            (metadata-cache/refresh-cache ctx)
+            {:status 200})))
+        
+        (context "/stats" []
+          (GET "/jvmstats"
+            {}
+            (jvm-info/log-jvm-statistics)))
 
         ;; Add routes for accessing caches
         common-routes/cache-api-routes

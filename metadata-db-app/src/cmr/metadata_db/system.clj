@@ -55,8 +55,7 @@
                        common-health/health-cache-key (common-health/create-health-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
               :unclustered-scheduler (jobs/create-scheduler
-                                      `system-holder [jvm-info/log-jvm-statistics-job
-                                                      (cache-info/create-log-cache-info-job "metadata-db")])
+                                      `system-holder [(cache-info/create-log-cache-info-job "metadata-db")])
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:access-control :echo-rest]))))

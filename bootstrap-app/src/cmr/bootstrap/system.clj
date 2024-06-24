@@ -99,8 +99,7 @@
                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
                       humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)
                       has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)}
-             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
-                                                               (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
+             :scheduler (jobs/create-scheduler `system-holder [(provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
                                                                (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")

@@ -78,7 +78,6 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job
                           (cache-info/create-log-cache-info-job "indexer")])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 

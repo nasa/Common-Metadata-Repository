@@ -18,6 +18,7 @@
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (info error)]
    [cmr.common.mime-types :as mt]
@@ -455,4 +456,9 @@
 
         (GET "/"
              {ctx :request-context params :params}
-             (get-allowed-s3-buckets ctx params))))))
+             (get-allowed-s3-buckets ctx params)))
+      
+      (context "/stats" []
+        (GET "/jvmstats"
+          {}
+          (jvm-info/log-jvm-statistics))))))

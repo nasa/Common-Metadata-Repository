@@ -6,6 +6,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.concepts :as concepts]
    [cmr.common.generics :as common-generic]
    [cmr.common.log :refer [info]]
@@ -276,6 +277,13 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
+(def statistics-routes
+  (routes
+   (context "/stats" []
+     (GET "/jvmstats"
+       {}
+       (jvm-info/log-jvm-statistics)))))
+
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
@@ -292,6 +300,9 @@
 
       ;; add routes for managing jobs
       job-management-routes
+
+      ;; add routes for running stats logging jobs
+      statistics-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

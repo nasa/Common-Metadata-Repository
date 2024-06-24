@@ -5,6 +5,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
@@ -21,7 +22,8 @@
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params])
+   [ring.middleware.params :as params]
+   [cmr.metadata-db.api.routes :as routes])
   (:require
    ;; These must be required here to make multimethod implementations available.
    ;; XXX This is not a good pattern for large software systems; we need to
@@ -61,6 +63,13 @@
         (mdb-jobs/expired-concept-cleanup request-context)
         {:status 204}))))
 
+(def statistics-routes
+  (routes
+   (context "/stats" []
+     (GET "/jvmstats"
+       {}
+       (jvm-info/log-jvm-statistics)))))
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -72,6 +81,7 @@
       subscription-api/subscription-api-routes
       common-routes/cache-api-routes
       job-api-routes
+      statistics-routes
       (common-health/health-api-routes hs/health)
       admin-api-routes)
 
