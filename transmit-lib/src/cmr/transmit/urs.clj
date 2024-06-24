@@ -2,13 +2,12 @@
   (:require
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as http-helper]
-   [ring.util.codec :as codec]))
+   [cmr.transmit.http-helper :as http-helper]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -24,10 +23,6 @@
 (defn- user-info-url
   [conn username]
   (format "%s/api/users/%s" (conn/root-url conn) username))
-
-(defn- group-search-url
-  [conn]
-  (format "%s/api/user_groups/search" (conn/root-url conn)))
 
 (defn- groups-for-user-url
   [conn username]

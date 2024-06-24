@@ -1,13 +1,15 @@
 (ns cmr.transmit.http-helper
   "Contains helpers for handling making http requests and processing responses."
-  (:require [clj-http.client :as client]
-            [cmr.common.api.context :as context]
-            [cmr.common.mime-types :as mt]
-            [cheshire.core :as json]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [cmr.common.api.context :as context]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.common.util :as util]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (defn reset-url
   [conn]
@@ -77,6 +79,7 @@
   [{:keys [status body] :as resp}]
   (cond
     (<= 200 status 299) body
+    (= 401 status) (errors/throw-service-errors :unauthorized (:errors body))
     (= 409 status) (errors/throw-service-errors :conflict (:errors body))
     (= 422 status) (errors/throw-service-errors :invalid-data (:errors body))
     :else (errors/internal-error!
@@ -101,24 +104,30 @@
   * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
   desired. Defaults to false.
   * :use-system-token? - indicates if the ECHO system token should be put in the header
-  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :http-options - map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?]
+                     :as request}]
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        ;; Validate that connection manager is always present. This causes poor performance if not.
         _ (when-not (:connection-manager connection-params)
-            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+            (errors/internal-error!
+             (format "No connection manager created for [%s] in current application" app-name)))
+        http-options (as-> http-options mac-guffin
+                       (util/remove-nil-keys mac-guffin)
+                       (assoc-in mac-guffin [:headers :client-id] config/cmr-client-id)
+                       (if use-system-token?
+                         (assoc-in mac-guffin
+                                   [:headers config/token-header]
+                                   (config/echo-system-token))
+                         mac-guffin))
         response (http-response->raw-response
-                   (client/request
-                     (merge connection-params
-                            {:url (url-fn conn)
-                             :method method
-                             :throw-exceptions false}
-                            (when use-system-token?
-                              {:headers {config/token-header (config/echo-system-token)}})
-                            http-options)))]
+                  (client/request
+                   (merge connection-params
+                               {:url (url-fn conn) :method method :throw-exceptions false}
+                               http-options)))]
     (response-handler request response)))
 
 (defn request-with-returned-headers
@@ -127,27 +136,32 @@
 
   * :url-fn - A function taking a transmit connection and returning the URL to use.
   * :method - the HTTP method. :get, :post, etc.
-  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
+  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response) is
   desired. Defaults to false.
   * :use-system-token? - indicates if the ECHO system token should be put in the header
-  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :http-options - map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?]
+                     :as _request}]
   (let [conn (config/context->app-connection context app-name)
-        response-handler (or response-handler default-response-handler)
+        _response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        ;; Validate that a connection manager is always present. This can cause poor performance if
+        ;; not.
         _ (when-not (:connection-manager connection-params)
-            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+            (errors/internal-error!
+             (format "No connection manager created for [%s] in current application" app-name)))
+        headers (merge {:client-id config/cmr-client-id}
+                       (when use-system-token?
+                         {config/token-header (config/echo-system-token)}))
         response (http-response->raw-response-with-headers
-                   (client/request
-                     (merge connection-params
-                            {:url (url-fn conn)
-                             :method method
-                             :throw-exceptions false}
-                            (when use-system-token?
-                              {:headers {config/token-header (config/echo-system-token)}})
-                            http-options)))]
+                  (client/request
+                   (merge-with into connection-params
+                               {:url (url-fn conn)
+                                :method method
+                                :throw-exceptions false
+                                :headers headers}
+                               http-options)))]
     response))
 
 (defn include-request-id
@@ -171,11 +185,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to create the item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the item. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the item. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# item#]
        (~fn-name context# item# nil))
       ([context# item# options#]
@@ -201,11 +215,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to update the item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id# item#]
        (~fn-name context# concept-id# item# nil))
       ([context# concept-id# item# options#]
@@ -234,11 +248,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to delete an item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the token. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the token. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id#]
        (~fn-name context# concept-id# nil))
       ([context# concept-id# options#]
@@ -266,11 +280,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to get an item by concept id. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# concept-id#]
        (~fn-name context# concept-id# nil))
       ([context# concept-id# options#]
@@ -282,7 +296,8 @@
                   {:url-fn #(~url-fn % concept-id#)
                    :method :get
                    :raw? raw?#
-                   :http-options (merge {:headers headers# :accept :json}
+                   :http-options (merge {:headers headers#
+                                         :accept :json}
                                         http-options#)}))))))
 
 (defmacro defsearcher
@@ -292,11 +307,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to find items by parameters. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# params#]
        (~fn-name context# params# nil))
       ([context# params# options#]
@@ -304,7 +319,8 @@
              {raw?# :raw? token# :token http-options# :http-options} options#
              method# (get options# :method :get)
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
+             headers# (merge
+                       (when token# {config/token-header token#}))]
          (request context# ~app-name
                   {:url-fn ~url-fn
                    :method method#
@@ -325,11 +341,11 @@
   ([fn-name app-name url-fn default-options]
    `(defn ~fn-name
       "Sends a request to find items by parameters. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
+       * :raw? - set to true to indicate the raw response should be returned. See
+         cmr.transmit.http-helper for more info. Default false.
+       * token - the user token to use when creating the group. If not set the token in the context
+         will be used.
+       * http-options - Other http-options to be sent to clj-http."
       ([context# params#]
        (~fn-name context# params# nil))
       ([context# params# options#]
@@ -363,12 +379,14 @@
       "Sends a request to call the health endpoint of the given app."
       [context#]
       (let [health-fn# (fn []
-                         (let [{status# :status body# :body}
+                         (let [headers# {:client-id config/cmr-client-id}
+                               {status# :status body# :body}
                                (request context# ~app-name
                                         {:url-fn ~cmr.transmit.http-helper/health-url
                                          :method :get
                                          :raw? true
-                                         :http-options {:accept :json}})]
+                                         :http-options {:accept :json
+                                                        :headers headers#}})]
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}
                              {:ok? false :dependencies body#})))

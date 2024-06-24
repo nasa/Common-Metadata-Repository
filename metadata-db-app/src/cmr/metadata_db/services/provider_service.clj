@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.services.provider-service
   (:require
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util]

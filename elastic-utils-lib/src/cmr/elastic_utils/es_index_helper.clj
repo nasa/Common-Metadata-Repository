@@ -1,10 +1,11 @@
 (ns cmr.elastic-utils.es-index-helper
   "Defines helper functions for invoking ES index"
   (:require
-   [clj-http.client :as http]
+   [clj-http.client :as client]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]
-   [clojurewerkz.elastisch.rest.utils :refer [join-names]])
+   [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+   [cmr.transmit.config :as config])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
 
@@ -38,10 +39,11 @@
  "refresh an index"
   [conn index-name]
   (-> (rest/index-refresh-url conn (join-names index-name))
-      (http/post (merge (.http-opts conn)
+      (client/post (merge (.http-opts conn)
                         nil
                         {:accept :json
-                         :content-type :json}))
+                         :content-type :json
+                         :headers {:client-id config/cmr-client-id}}))
       (:body)
       (rest/parse-safely)))
 

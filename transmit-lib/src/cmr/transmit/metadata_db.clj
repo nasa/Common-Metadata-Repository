@@ -49,14 +49,17 @@
    (get-concept-id context concept-type provider-id native-id true))
   ([context concept-type provider-id native-id throw-service-error?]
    (let [conn (config/context->app-connection context :metadata-db)
-         request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/"
-                          (codec/url-encode native-id))
-         response (client/get request-url (merge
-                                           (config/conn-params conn)
-                                           {:accept :json
-                                            :headers (ch/context->http-headers context)
-                                            :throw-exceptions false
-                                            :http-options (h/include-request-id context {})}))
+         request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id
+                          "/" (codec/url-encode native-id))
+         params (merge
+                 (config/conn-params conn)
+                 {:accept :json
+                  :headers (merge
+                            (ch/context->http-headers context)
+                            {:client-id config/cmr-client-id})
+                  :throw-exceptions false
+                  :http-options (h/include-request-id context {})})
+         response (client/get request-url params)
          status (int (:status response))
          body (json/decode (:body response))]
      (case status
@@ -83,15 +86,18 @@
    (let [conn (config/context->app-connection context :metadata-db)
          tuples-json-str (json/generate-string concept-tuples)
          request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
-         response (client/post request-url (merge
-                                            (config/conn-params conn)
-                                            {:body tuples-json-str
-                                             :content-type :json
-                                             :query-params {:allow_missing allow-missing?}
-                                             :accept :json
-                                             :throw-exceptions false
-                                             :headers (ch/context->http-headers context)
-                                             :http-options (h/include-request-id context {})}))
+         params (merge
+                 (config/conn-params conn)
+                 {:body tuples-json-str
+                  :content-type :json
+                  :query-params {:allow_missing allow-missing?}
+                  :accept :json
+                  :throw-exceptions false
+                  :headers (merge
+                            (ch/context->http-headers context)
+                            {:client-id config/cmr-client-id})
+                  :http-options (h/include-request-id context {})})
+         response (client/post request-url params)
          status (int (:status response))]
      (case status
        404
@@ -103,10 +109,11 @@
        (map mdb2/finish-parse-concept (json/decode (:body response) true))
 
        ;; default
-       (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
-                                    status
-                                    " "
-                                    response))))))
+       (errors/internal-error!
+        (str "Get concept revisions failed. MetadataDb app response status code: "
+             status
+             " "
+             response))))))
 
 (declare get-latest-concepts context concept-ids allow-missing?)
 (defn-timed get-latest-concepts
@@ -117,15 +124,18 @@
    (let [conn (config/context->app-connection context :metadata-db)
          ids-json-str (json/generate-string concept-ids)
          request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
-         response (client/post request-url (merge
-                                            (config/conn-params conn)
-                                            {:body ids-json-str
-                                             :query-params {:allow_missing allow-missing?}
-                                             :content-type :json
-                                             :accept :json
-                                             :throw-exceptions false
-                                             :headers (ch/context->http-headers context)
-                                             :http-options (h/include-request-id context {})}))
+         params (merge
+                 (config/conn-params conn)
+                 {:body ids-json-str
+                  :query-params {:allow_missing allow-missing?}
+                  :content-type :json
+                  :accept :json
+                  :throw-exceptions false
+                  :headers (merge
+                            (ch/context->http-headers context)
+                            {:client-id config/cmr-client-id})
+                  :http-options (h/include-request-id context {})})
+         response (client/post request-url params)
          status (int (:status response))]
      (case status
        404
@@ -147,14 +157,17 @@
   the http get."
   [context params concept-type]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))]
-    (client/post request-url (merge
-                              (config/conn-params conn)
-                              {:accept :json
-                               :form-params params
-                               :headers (ch/context->http-headers context)
-                               :throw-exceptions false
-                               :http-options (h/include-request-id context {})}))))
+        request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))
+        params (merge
+                (config/conn-params conn)
+                {:accept :json
+                 :form-params params
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :throw-exceptions false
+                 :http-options (h/include-request-id context {})})]
+    (client/post request-url params)))
 
 (defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
@@ -259,14 +272,17 @@
   Returns the raw response."
   [context params]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/associations/search")]
-    (client/post request-url (merge
-                              (config/conn-params conn)
-                              {:accept :json
-                               :form-params params
-                               :headers (ch/context->http-headers context)
-                               :throw-exceptions false
-                               :http-options (h/include-request-id context {})}))))
+        request-url (str (conn/root-url conn) "/associations/search")
+        params (merge
+                (config/conn-params conn)
+                {:accept :json
+                 :form-params params
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :throw-exceptions false
+                 :http-options (h/include-request-id context {})})]
+    (client/post request-url params)))
 
 (defn find-associations
   "Searches metadata db for associations matching the given parameters.
@@ -324,13 +340,16 @@
   [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/concepts/search/expired-collections")
-        response (client/get request-url (merge
-                                          (config/conn-params conn)
-                                          {:accept :json
-                                           :query-params {:provider provider-id}
-                                           :headers (ch/context->http-headers context)
-                                           :throw-exceptions false
-                                           :http-options (h/include-request-id context {})}))
+        params (merge
+                (config/conn-params conn)
+                {:accept :json
+                 :query-params {:provider provider-id}
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :throw-exceptions false
+                 :http-options (h/include-request-id context {})})
+        response (client/get request-url params)
         {:keys [status body]} response
         status (int status)]
     (case status
@@ -344,13 +363,14 @@
   "Create the provider with the given provider id, returns the raw response coming back from metadata-db"
   [context provider]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers")]
-    (client/post request-url
-                 {:body (json/generate-string provider)
-                  :content-type :json
-                  :headers {config/token-header (config/echo-system-token)}
-                  :throw-exceptions false
-                  :http-options (h/include-request-id context {})})))
+        request-url (str (conn/root-url conn) "/providers")
+        params {:body (json/generate-string provider)
+                :content-type :json
+                :headers {config/token-header (config/echo-system-token)
+                          :client-id config/cmr-client-id}
+                :throw-exceptions false
+                :http-options (h/include-request-id context {})}]
+    (client/post request-url params)))
 
 (declare create-provider provider)
 (defn-timed create-provider
@@ -367,45 +387,50 @@
   "Reads a provider with the given provider id"
   [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers/" provider-id)]
-    (client/get request-url
-                {:headers {config/token-header (config/echo-system-token)}
-                 :throw-exceptions false
-                 :http-options (h/include-request-id context {})})))
+        request-url (str (conn/root-url conn) "/providers/" provider-id)
+        params {:headers {config/token-header (config/echo-system-token)
+                          :client-id config/cmr-client-id}
+                :throw-exceptions false
+                :http-options (h/include-request-id context {})}]
+    (client/get request-url params)))
 
 (declare read-providers)
 (defn-timed read-providers
   "Reads all providers"
   [context]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers")]
-    (client/get request-url
-                {:headers {config/token-header (config/echo-system-token)}
-                 :throw-exceptions false
-                 :http-options (h/include-request-id context {})})))
+        request-url (str (conn/root-url conn) "/providers")
+        params {:headers {config/token-header (config/echo-system-token)
+                          :client-id config/cmr-client-id}
+                :throw-exceptions false
+                :http-options (h/include-request-id context {})}]
+    (client/get request-url params)))
 
 (defn update-provider-raw
   "Update a provider in the database"
   [context provider]
   (let [conn (config/context->app-connection context :metadata-db)
         provider-id (get provider :ProviderId (get provider :provider-id))
-        request-url (str (conn/root-url conn) "/providers/" provider-id)]
-    (client/put request-url
-                {:body (json/generate-string provider)
-                 :content-type :json
-                 :headers {config/token-header (config/echo-system-token)}
-                 :throw-exceptions false
-                 :http-options (h/include-request-id context {})})))
+        request-url (str (conn/root-url conn) "/providers/" provider-id)
+        params {:body (json/generate-string provider)
+                :content-type :json
+                :headers {config/token-header (config/echo-system-token)
+                          :client-id config/cmr-client-id}
+                :throw-exceptions false
+                :http-options (h/include-request-id context {})}]
+    (client/put request-url params)))
 
 (defn delete-provider-raw
   "Delete the provider with the matching provider-id from the CMR metadata repo,
   returns the raw response coming back from metadata-db."
   [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers/" provider-id)]
-    (client/delete request-url {:throw-exceptions false
-                                :headers {config/token-header (config/echo-system-token)}
-                                :http-options (h/include-request-id context {})})))
+        request-url (str (conn/root-url conn) "/providers/" provider-id)
+        params {:throw-exceptions false
+                :headers {config/token-header (config/echo-system-token)
+                          :client-id config/cmr-client-id}
+                :http-options (h/include-request-id context {})}]
+    (client/delete request-url params)))
 
 (declare delete-provider)
 (defn-timed delete-provider
@@ -422,13 +447,16 @@
   returns the raw response coming back from metadata-db"
   [context]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/providers")]
-    (client/get request-url (merge
-                              (config/conn-params conn)
-                              {:accept :json
-                               :headers (ch/context->http-headers context)
-                               :throw-exceptions false
-                               :http-options (h/include-request-id context {})}))))
+        request-url (str (conn/root-url conn) "/providers")
+        params (merge
+                (config/conn-params conn)
+                {:accept :json
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :throw-exceptions false
+                 :http-options (h/include-request-id context {})})]
+    (client/get request-url params)))
 
 (defn get-all-providers
   "Returns the list of provider ids configured in the metadata db, including
@@ -436,9 +464,12 @@
   [context]
   (let [request-url (fn [conn] (str (conn/root-url conn) "/providers"))]
     ;; Using http/helper pass "meta" arg to retrieve provider metadata
-    (h/request context :metadata-db {:url-fn request-url 
-                                     :method :get 
-                                     :http-options (h/include-request-id context {:query-params {:meta true}})})))
+    (h/request context :metadata-db {:url-fn request-url
+                                     :method :get
+                                     :headers {:client-id config/cmr-client-id}
+                                     :http-options (h/include-request-id
+                                                    context
+                                                    {:query-params {:meta true}})})))
 
 (declare get-providers)
 (defn-timed get-providers
@@ -456,16 +487,19 @@
   "Saves a concept in metadata db"
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
+        url (str (conn/root-url conn) "/concepts")
         concept-json-str (json/generate-string concept)
-        response (client/post (str (conn/root-url conn) "/concepts")
-                              (merge
-                               (config/conn-params conn)
-                               {:body concept-json-str
-                                :content-type :json
-                                :accept :json
-                                :throw-exceptions false
-                                :headers (ch/context->http-headers context)
-                                :http-options (h/include-request-id context {})}))
+        params (merge
+                (config/conn-params conn)
+                {:body concept-json-str
+                 :content-type :json
+                 :accept :json
+                 :throw-exceptions false
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :http-options (h/include-request-id context {})})
+        response (client/post url params)
         status (int (:status response))
         ;; For CMR-4841 - log the first 255 characters of the response body if
         ;; the parsing of the html throws exception.
@@ -498,18 +532,19 @@
   "delete a draft in metadata db"
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
+        url (str (conn/root-url conn) "/concepts/force-delete-draft/" (:concept-id concept))
         concept-json-str (json/generate-string concept)
-        response (client/delete (str (conn/root-url conn)
-                                     "/concepts/force-delete-draft/"
-                                     (:concept-id concept))
-                                (merge
-                                 (config/conn-params conn)
-                                 {:body concept-json-str
-                                  :content-type :json
-                                  :accept :json
-                                  :throw-exceptions false
-                                  :headers (ch/context->http-headers context)
-                                  :http-options (h/include-request-id context {})}))
+        params (merge
+                (config/conn-params conn)
+                {:body concept-json-str
+                 :content-type :json
+                 :accept :json
+                 :throw-exceptions false
+                 :headers (merge
+                           (ch/context->http-headers context)
+                           {:client-id config/cmr-client-id})
+                 :http-options (h/include-request-id context {})})
+        response (client/delete url params)
         status (int (:status response))
         ;; For CMR-4841 - log the first 255 characters of the response body if
         ;; the parsing of the html throws exception.
