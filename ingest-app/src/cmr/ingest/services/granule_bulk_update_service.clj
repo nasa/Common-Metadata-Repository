@@ -546,9 +546,12 @@
   [context task-id concept granule-ur bulk-update-params user-id]
   (if-let [updated-concept (update-granule-concept context concept bulk-update-params user-id)]
     (do
-      (ingest-service/save-granule context updated-concept) ;; TODO Why save one concept at a time to the DB? Why not do a bulk update in oracle?
-      (data-granule-bulk-update/update-bulk-update-task-granule-status
-       context task-id granule-ur bulk-update-service/updated-status ""))
+      (let [start-time (System/currentTimeMillis)
+            _ (ingest-service/save-granule context updated-concept) ;; TODO Why save one concept at a time to the DB? Why not do a bulk update in oracle?
+            _ (printf "UPDATING GRANULE !!! Granule %s in task id %s took %s secs" granule-ur task-id (- (System/currentTimeMillis) start-time))
+            start-time-2 (System/currentTimeMillis)
+            _ (data-granule-bulk-update/update-bulk-update-task-granule-status context task-id granule-ur bulk-update-service/updated-status "")]
+        (printf "UPDATING BULK TASK STATUS !!! Granule %s in task id %s took %s secs" granule-ur task-id (- (System/currentTimeMillis) start-time-2))))
     ;; when concept is nil this else statement triggers
     (data-granule-bulk-update/update-bulk-update-task-granule-status
      context task-id granule-ur bulk-update-service/skipped-status
