@@ -98,8 +98,7 @@
               :scheduler (jobs/create-clustered-scheduler
                            `system-holder :db
                            (conj (ingest-jobs/jobs)
-                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                 (cache-info/create-log-cache-info-job "ingest")))
+                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        acl/token-smp-cache-key (acl/create-token-smp-cache)
                        acl/token-pc-cache-key (acl/create-token-pc-cache)

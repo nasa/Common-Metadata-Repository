@@ -114,8 +114,7 @@
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          (cache-info/create-log-cache-info-job "access-control")])}]
+                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start

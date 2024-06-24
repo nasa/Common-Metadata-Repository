@@ -152,7 +152,7 @@
              (route/not-found "Not Found")))
          {:status 200}))
      (context "/stats" []
-       (GET "/jvmstats"
+       (GET "/jvm-stats"
          {}
          (jvm-info/log-jvm-statistics)))
       ;; db migration route

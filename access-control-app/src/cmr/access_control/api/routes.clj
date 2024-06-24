@@ -19,6 +19,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (info error)]
    [cmr.common.mime-types :as mt]
@@ -459,6 +460,9 @@
              (get-allowed-s3-buckets ctx params)))
       
       (context "/stats" []
-        (GET "/jvmstats"
+        (GET "/jvm-stats"
           {}
-          (jvm-info/log-jvm-statistics))))))
+          (jvm-info/log-jvm-statistics))
+        (GET "/cache-sizes"
+          {ctx :request-context}
+          (cache-info/log-cache-sizes (:system ctx)))))))

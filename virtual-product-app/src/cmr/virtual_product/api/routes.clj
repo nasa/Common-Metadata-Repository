@@ -5,6 +5,7 @@
             [cmr.common-app.api.health :as common-health]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.services.jvm-info :as jvm-info]
+            [cmr.common-app.services.cache-info :as cache-info]
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
@@ -27,9 +28,12 @@
             {:status 415
              :body (str "Unsupported content type [" content-type "]")})))
       (context "/stats" []
-        (GET "/jvmstats"
+        (GET "/jvm-stats"
           {}
-          (jvm-info/log-jvm-statistics)))
+          (jvm-info/log-jvm-statistics))
+        (GET "/cache-sizes"
+          {ctx :request-context}
+          (cache-info/log-cache-sizes (:system ctx))))
 
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))

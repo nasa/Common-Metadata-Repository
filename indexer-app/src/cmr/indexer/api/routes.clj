@@ -17,6 +17,7 @@
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.cache-info :as cache-info]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
    [cmr.indexer.data.concepts.subscription]
@@ -161,9 +162,12 @@
             request-context concept-id revision-id (assoc options :all-revisions-index? false))
            {:status 204})))
      (context "/stats" []
-       (GET "/jvmstats"
+       (GET "/jvm-stats"
          {}
-         (jvm-info/log-jvm-statistics)))
+         (jvm-info/log-jvm-statistics))
+       (GET "/cache-sizes"
+         {ctx :request-context}
+         (cache-info/log-cache-sizes (:system ctx))))
 
      (common-health/health-api-routes index-svc/health))
 

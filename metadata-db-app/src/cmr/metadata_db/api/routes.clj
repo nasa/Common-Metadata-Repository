@@ -6,6 +6,7 @@
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
@@ -66,9 +67,12 @@
 (def statistics-routes
   (routes
    (context "/stats" []
-     (GET "/jvmstats"
+     (GET "/jvm-stats"
        {}
-       (jvm-info/log-jvm-statistics)))))
+       (jvm-info/log-jvm-statistics))
+     (GET "/cache-sizes"
+       {ctx :request-context}
+       (cache-info/log-cache-sizes (:system ctx))))))
 
 (defn- build-routes [system]
   (routes

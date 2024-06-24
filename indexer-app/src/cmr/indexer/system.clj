@@ -77,8 +77,7 @@
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                          (cache-info/create-log-cache-info-job "indexer")])
+                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :access-control :echo-rest :kms :search])))
