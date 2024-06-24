@@ -9,8 +9,10 @@
    [cmr.transmit.connection :as conn]))
 
 ;; Defines health check function
+(declare get-indexer-health)
 (h/defhealther get-indexer-health :indexer {:timeout-secs 2})
 
+(declare clear-cache)
 (h/defcacheclearer clear-cache :indexer)
 
 (defn- rebalance-collection-url
@@ -29,14 +31,15 @@
   "Submit a request to indexer to fetch an index-set assoc with an id"
   [context id]
   (let [conn (config/context->app-connection context :indexer)
-        response (client/request
-                   (merge
-                     (config/conn-params conn)
-                     {:method :get
-                      :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
-                      :accept :json
-                      :throw-exceptions false
-                      :headers {config/token-header (config/echo-system-token)}}))
+        params (merge
+                (config/conn-params conn)
+                {:method :get
+                 :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
+                 :accept :json
+                 :throw-exceptions false
+                 :headers {:client-id config/cmr-client-id
+                           config/token-header (config/echo-system-token)}})
+        response (client/request params)
         status (:status response)
         body (cheshire/decode (:body response) true)]
     (case (int status)

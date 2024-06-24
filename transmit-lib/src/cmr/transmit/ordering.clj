@@ -7,7 +7,7 @@
   (:require
    [clj-http.client :as client]
    [cmr.common.api.context :as ctxt]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mime]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]

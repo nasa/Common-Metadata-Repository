@@ -17,7 +17,7 @@
 
 (defmulti associations-url
   "Returns the url to associate a concept with the given concept id to collections."
-  (fn [context concept-id]
+  (fn [_context concept-id]
     (:concept-type (concepts/parse-concept-id concept-id))))
 
 (defmethod associations-url :service
@@ -33,7 +33,7 @@
   (associations-by-concept-ids-url context :variable concept-id))
 
 (defmulti single-association-url
-  (fn [context concept-id associated-concept-id]
+  (fn [_context concept-id associated-concept-id]
     (->> [concept-id associated-concept-id]
          (map #(concepts/parse-concept-id %))
          (map :concept-type))))
