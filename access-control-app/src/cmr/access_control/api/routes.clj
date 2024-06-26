@@ -462,7 +462,9 @@
       (context "/stats" []
         (GET "/jvm-stats"
           {}
-          (jvm-info/log-jvm-statistics))
+          (jvm-info/log-jvm-statistics)
+          {:status 200}) 
         (GET "/cache-sizes"
           {ctx :request-context}
-          (cache-info/log-cache-sizes (:system ctx)))))))
+          (cache-info/log-cache-sizes (:system ctx))
+          {:status 200})))))

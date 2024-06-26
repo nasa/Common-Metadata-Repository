@@ -125,14 +125,14 @@
             (acl/verify-ingest-management-permission ctx :update)
             (metadata-cache/refresh-cache ctx)
             {:status 200})))
-        
-        (context "/stats" []
-          (GET "/jvm-stats"
-            {}
-            (jvm-info/log-jvm-statistics))
-          (GET "/cache-sizes"
-            {ctx :request-context}
-            (cache-info/log-cache-sizes (:system ctx))))
+
+         (context "/stats" []
+           (GET "/jvm-stats"
+             {}
+             (jvm-info/log-jvm-statistics))
+           (GET "/cache-sizes"
+             {ctx :request-context}
+             (cache-info/log-cache-sizes (:system ctx))))
 
         ;; Add routes for accessing caches
         common-routes/cache-api-routes

@@ -154,7 +154,8 @@
      (context "/stats" []
        (GET "/jvm-stats"
          {}
-         (jvm-info/log-jvm-statistics)))
+         (jvm-info/log-jvm-statistics)
+         {:status 200}))
       ;; db migration route
      (POST "/db-migrate" {:keys [request-context params]}
        (acl/verify-ingest-management-permission request-context :update)
