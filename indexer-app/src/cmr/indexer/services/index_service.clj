@@ -678,7 +678,10 @@
              concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
-              (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
+              (let [[tm result] (util/time-execution
+                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
+                (info (format "Timed function %s/index-deleted-granule took %d ms." (str *ns*) tm))
+                result))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete context concept-mapping-types concept-id revision-id)))))

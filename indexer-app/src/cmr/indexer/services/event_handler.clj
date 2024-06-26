@@ -2,7 +2,9 @@
   "Provides functions for subscribing to and handling events."
   (:require
    [cmr.common.concepts :as cc]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
    [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
@@ -59,38 +61,45 @@
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id more-concepts]}]
   ;; combine concept-id revision-id with more-concepts
-  (let [all-concepts (conj more-concepts {:concept-id concept-id :revision-id revision-id})]
-    (doseq [{:keys [concept-id revision-id]} all-concepts]
-      (if (= :humanizer (cc/concept-id->type concept-id))
-        (indexer/update-humanizers context)
-        (indexer/index-concept-by-concept-id-revision-id
-         context concept-id revision-id {:ignore-conflict? true
-                                         :all-revisions-index? all-revisions-index?})))))
+  (let [all-concepts (conj more-concepts {:concept-id concept-id :revision-id revision-id})
+        [tm _] (util/time-execution
+                (doseq [{:keys [concept-id revision-id]} all-concepts]
+                  (if (= :humanizer (cc/concept-id->type concept-id))
+                    (indexer/update-humanizers context)
+                    (indexer/index-concept-by-concept-id-revision-id
+                     context concept-id revision-id {:ignore-conflict? true
+                                                     :all-revisions-index? all-revisions-index?}))))]
+    (info (format "Timed function %s/handle-ingest-event :concept-update all-revisions-index? [%s] took %d ms." (str *ns*) all-revisions-index? tm))))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when-not (= :humanizer (cc/concept-id->type concept-id))
-    (indexer/delete-concept
-      context concept-id revision-id {:ignore-conflict? true
-                                      :all-revisions-index? all-revisions-index?})))
+    (let [[tm _] (util/time-execution
+                  (indexer/delete-concept
+                   context concept-id revision-id {:ignore-conflict? true
+                                                   :all-revisions-index? all-revisions-index?}))]
+      (info (format "Timed function %s/handle-ingest-event :concept-delete all-revisions-index? [%s] took %d ms." (str *ns*) all-revisions-index? tm)))))
 
 (defmethod handle-ingest-event :tombstone-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when (= :granule (cc/concept-id->type concept-id))
-    (deleted-granule/remove-deleted-granule context concept-id revision-id
-                                            {:ignore-conflict? true})))
+    (let [[tm _] (util/time-execution
+                  (deleted-granule/remove-deleted-granule context concept-id revision-id {:ignore-conflict? true}))]
+      (info (format "Timed function %s/handle-ingest-event :tombstone-delete took %d ms." (str *ns*) tm)))))
 
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when-not (= :humanizer (cc/concept-id->type concept-id))
-    (do
-      ;; We should never receive a message that's not for the all revisions index
-      (when-not all-revisions-index?
-        (errors/internal-error!
-          (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
-                       "index.  concept-id: %s revision-id: %s")
-                  concept-id revision-id)))
-      (indexer/force-delete-all-concept-revision context concept-id revision-id))))
+    ;; We should never receive a message that's not for the all revisions index
+    (when-not all-revisions-index?
+      (errors/internal-error!
+       (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
+                    "index.  concept-id: %s revision-id: %s")
+               concept-id revision-id)))
+      (let [[tm result] (util/time-execution
+                         (indexer/force-delete-all-concept-revision context concept-id revision-id))]
+        (info (format "Timed function %s/handle-ingest-event :concept-revision-delete all-revisions-index? [%s] took %d ms." (str *ns*) all-revisions-index? tm))
+        result)))
 
 (defmethod handle-ingest-event :expire-concept
   [context all-revisions-index? {:keys [concept-id revision-id]}]
