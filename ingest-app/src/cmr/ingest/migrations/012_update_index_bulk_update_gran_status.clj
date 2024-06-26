@@ -8,7 +8,8 @@
   (println "cmr.ingest.migrations.012-update-index-bulk-update-gran-status up...")
   (h/sql "alter table CMR_INGEST.bulk_update_gran_status drop constraint bugs_pk drop index")
   (h/sql "alter table CMR_INGEST.bulk_update_gran_status add constraint bugs_pk primary key (TASK_ID, GRANULE_UR)")
-  (h/sql "CREATE INDEX bugs_prov_i ON CMR_INGEST.bulk_update_gran_status(PROVIDER_ID)"))
+  (h/sql "CREATE INDEX bugs_prov_i ON CMR_INGEST.bulk_update_gran_status(PROVIDER_ID)")
+  (h/sql "CREATE INDEX gran_ur_idx ON CMR_INGEST.bulk_update_gran_status(GRANULE_UR)"))
 
 (defn down
   "Migrates the database down from version 12."
