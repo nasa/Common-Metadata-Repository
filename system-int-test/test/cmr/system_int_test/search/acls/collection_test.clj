@@ -360,14 +360,14 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
         coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
-        coll2-1 (d/ingest "PROV1" coll2-umm)
+        coll2-1 (d/ingest-umm-spec-collection "PROV1" coll2-umm)
         ;; 2 versions of collection 2 will allow us to test the force reindex option after we
         ;; force delete the latest version of coll2-2
-        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
-        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
+        coll2-2 (d/ingest-umm-spec-collection "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
+        coll3 (d/ingest-umm-spec-collection "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
+        coll4 (d/ingest-umm-spec-collection "PROV2" (dc/collection {:entry-title "coll4"}))
 
         _ (index/wait-until-indexed)
         acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
