@@ -87,7 +87,7 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-short-name-cache-keys (kl/create-kms-short-name-cache)
                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)

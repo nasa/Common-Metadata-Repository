@@ -126,7 +126,7 @@
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
                       urs/urs-cache-key (urs/create-urs-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-short-name-cache-keys (kl/create-kms-short-name-cache)
                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)

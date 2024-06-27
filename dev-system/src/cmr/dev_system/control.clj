@@ -87,7 +87,7 @@
 
     ;; Retrieve KMS resources
     (GET "/kms/:filename" [filename]
-      (let [resource (io/resource (str "kms_examples/" filename))]
+      (let [resource (io/resource (str "kms_examples/" filename "_full"))]
         (if resource
           {:status 200
            :body (slurp resource)

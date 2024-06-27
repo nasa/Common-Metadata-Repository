@@ -41,7 +41,7 @@
 
 (def ^:private context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+  {:system {:caches {kl/kms-short-name-cache-keys (kl/create-kms-short-name-cache)
                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                      kl/kms-location-cache-key (kl/create-kms-location-cache)
                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)}}

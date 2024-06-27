@@ -50,7 +50,7 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+  {:system {:caches {kms-lookup/kms-short-name-cache-keys (kms-lookup/create-kms-short-name-cache)
                      kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
                      kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                      kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})

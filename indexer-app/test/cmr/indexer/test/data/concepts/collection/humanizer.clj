@@ -18,7 +18,7 @@
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
     {:system {:caches {hf/humanizer-cache-key humanizer-cache
-                       kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                       kms-lookup/kms-short-name-cache-keys (kms-lookup/create-kms-short-name-cache)
                        kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
                        kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                        kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}))

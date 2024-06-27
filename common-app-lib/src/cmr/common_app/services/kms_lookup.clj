@@ -32,10 +32,10 @@
   (:import #_{:clj-kondo/ignore [:unused-import]}
            (clojure.lang ExceptionInfo)))
 
-(def kms-short-name-cache-key
+(def kms-short-name-cache-keys
   "The key used to store the data generated from KMS into a short name index cache
   in the system hash cache map for fast lookups."
-  :kms-short-name-index)
+  [:kms-short-name-providers :kms-short-name-platforms :kms-short-name-instruments])
 
 (def kms-umm-c-cache-key
   "The key used to store the data generated from KMS into a umm-c index cache
@@ -55,7 +55,7 @@
 (defn create-kms-short-name-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-short-name-cache-key]
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-short-name-cache-keys]
                                     :read-connection (redis-config/redis-read-conn-opts)
                                     :primary-connection (redis-config/redis-conn-opts)}))
 
@@ -202,17 +202,24 @@
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
         location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
         measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)
-        short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
+        short-name-cache (hash-cache/context->cache context kms-short-name-cache-keys)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
         measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
         _ (rl-util/log-refresh-start (format "%s %s %s %s"
-                                             kms-short-name-cache-key
+                                             kms-short-name-cache-keys
                                              kms-umm-c-cache-key
                                              kms-location-cache-key
                                              kms-measurement-cache-key))
-        [tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))
-        _ (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)
+        [tm _] (util/time-execution (hash-cache/set-values short-name-cache :kms-short-name-providers 
+                                                           (:providers short-name-lookup-map)))
+        _ (rl-util/log-redis-write-complete "create-kms-index" :kms-short-name-providers tm)
+        [tm _] (util/time-execution (hash-cache/set-values short-name-cache :kms-short-name-platforms
+                                                           (:platforms (:platforms short-name-lookup-map))))
+        _ (rl-util/log-redis-write-complete "create-kms-index" :kms-short-name-platforms tm)
+        [tm _] (util/time-execution (hash-cache/set-values short-name-cache :kms-short-name-instruments
+                                                           (:instruments short-name-lookup-map)))
+        _ (rl-util/log-redis-write-complete "create-kms-index" :kms-short-name-instruments tm)
         [tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))
         _ (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)
         [tm _] (util/time-execution (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map))
@@ -243,22 +250,49 @@
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
   that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme short-name]
+  (def lsn-ctx context)
+  (def lsn-kws keyword-scheme)
+  (def lsn-sn short-name)
   (try
     (when-not (:ignore-kms-keywords context)
-      (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
-            [tm keywords] (util/time-execution (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme))
-            _ (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
+      (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-keys)
+            cache-key (case lsn-kws
+                        :providers :kms-short-name-providers
+                        :platforms :kms-short-name-platforms
+                        :instruments :kms-short-name-instruments)
+            [tm keywords] (util/time-execution (hash-cache/get-value short-name-cache cache-key short-name))
+            _ (rl-util/log-redis-read-complete "lookup-by-short-name" cache-key tm)
             keywords (if keywords
                        keywords
-                       (let [_ (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
-                             [tm kwords] (util/time-execution (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme))]
-                         (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
+                       (let [_ (load-cache-if-necessary context short-name-cache kms-short-name-cache-keys)
+                             [tm kwords] (util/time-execution (hash-cache/get-value short-name-cache cache-key short-name))]
+                         (rl-util/log-redis-read-complete "lookup-by-short-name" cache-key tm)
                          kwords))]
-        (get keywords (util/safe-lowercase short-name))))
+        keywords))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-by-short-name found redis carmine exception. Will return nil result." e)
         (throw e)))))
+
+(comment
+  (let [lsn-kws :providers
+        lsn-sn "itc"
+        short-name-cache (hash-cache/context->cache lsn-ctx kms-short-name-cache-keys)
+        cache-key (case lsn-kws
+                    :providers :kms-short-name-providers
+                    :platforms :kms-short-name-platforms
+                    :instruments :kms-short-name-instruments)
+        [tm keywords] (util/time-execution (hash-cache/get-value short-name-cache cache-key lsn-sn))
+        _ (rl-util/log-redis-read-complete "lookup-by-short-name" cache-key tm)
+        keywords (if keywords
+                   keywords
+                   (let [_ (load-cache-if-necessary lsn-ctx short-name-cache kms-short-name-cache-keys)
+                         [tm kwords] (util/time-execution (hash-cache/get-value short-name-cache cache-key lsn-sn))]
+                     (rl-util/log-redis-read-complete "lookup-by-short-name" cache-key tm)
+                     kwords))]
+    #_(get keywords (util/safe-lowercase lsn-sn))
+    keywords)
+  )
 
 (defn lookup-by-location-string
   "Takes a kms-index and a location string and returns the full KMS hierarchy for that location
