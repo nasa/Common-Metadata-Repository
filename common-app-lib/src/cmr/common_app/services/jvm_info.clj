@@ -29,19 +29,3 @@
     (info (format (str "Maximum Memory (MB): [%.0f] Total Allocated Memory (MB): [%.0f] Free "
                        " memory (MB): [%.0f] Used memory (MB): [%.0f] Percent used: [%.1f]")
                   max-mb total-mb free-mb used-mb percent-used))))
-
-;; Job for logging JVM statistics
-(defjob LogJvmStatisticsJob
-  [_ _]
-  (log-jvm-statistics))
-
-(defconfig log-statistics-interval
-  "Number of seconds between logging JVM statistics."
-  {:default 300
-   :type Long})
-
-(def log-jvm-statistics-job
-  "A job to log the JVM statistics."
-  {:job-type LogJvmStatisticsJob
-   :job-key "log-jvm-statistics"
-   :interval (log-statistics-interval)})

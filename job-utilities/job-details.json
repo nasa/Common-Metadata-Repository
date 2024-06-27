@@ -4,7 +4,8 @@
         "target" : {
             "endpoint" : "caches/refresh/kms",
             "service" : "bootstrap",
-            "single-target" : true
+            "single-target" : true,
+            "request-type" : "POST"
         },
         "scheduling" : {
             "type" : "cron",
@@ -23,7 +24,8 @@
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "access-control",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
@@ -33,12 +35,29 @@
             }
         }
     },
+    "AccessControlLogCacheSize" :
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "access-control",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
+                "hours" : 0
+            }
+        }
+    },
     "BootstrapLogJVMStatistics" :
     {
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "bootstrap",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
@@ -53,12 +72,29 @@
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "indexer",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
             "timing" : {
                 "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "IndexerLogCacheSizes" :
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "indexer",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
                 "hours" : 0
             }
         }
@@ -68,12 +104,29 @@
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "ingest",
-            "single-target" : false
+            "single-target" : false,
+            "GET"
         },
         "scheduling" : {
             "type" : "interval",
             "timing" : {
                 "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "IngestLogCacheSizes" :
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "ingest",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
                 "hours" : 0
             }
         }
@@ -83,12 +136,29 @@
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "metadata-db",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
             "timing" : {
                 "minutes" : 5,
+                "hours" : 0
+            }
+        }
+    },
+    "MetadataDBCacheLogSizes" :
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "metadata-db",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
                 "hours" : 0
             }
         }
@@ -98,7 +168,8 @@
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "search",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
@@ -108,12 +179,29 @@
             }
         }
     },
+    "SearchLogCacheSizes" :
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "search",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
+                "hours" : 0
+            }
+        }
+    },
     "VirtualProductLogJVMStatistics" :
     {
         "target" : {
             "endpoint" : "stats/jvm-stats",
             "service" : "virtual-product",
-            "single-target" : false
+            "single-target" : false,
+            "request-type" : "GET"
         },
         "scheduling" : {
             "type" : "interval",
@@ -122,5 +210,21 @@
                 "hours" : 0
             }
         }
-    }
+    },
+    "VirtualProductLogCacheSizes" ;
+    {
+        "target" : {
+            "endpoint" : "stats/cache-sizes",
+            "service" : "virtual-product",
+            "single-target" : false,
+            "request-type" : "GET"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 15,
+                "hours" : 0
+            }
+        }
+    },
 }

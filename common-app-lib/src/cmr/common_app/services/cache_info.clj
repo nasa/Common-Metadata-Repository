@@ -50,22 +50,4 @@
     (catch java.lang.ArithmeticException e
       (error (str "In-memory-cache size calculation experienced a problem: " (.getMessage e))))))
 
-(defjob LogCacheSizesJob
-  [_ system]
-  (let [cache-size-map (merge (cache/cache-sizes {:system system})
-                              (hash-cache/cache-sizes {:system system}))]
-    (log-cache-sizes cache-size-map)))
-
-(defconfig log-cache-info-interval
-  "Number of seconds between logging cache information."
-  {:default 900 ;; 15 minutes
-   :type Long})
-
 (def ^:private trim-and-lowercase (comp string/lower-case string/trim name))
-
-(defn create-log-cache-info-job
-  "Creates a job to log the system cache info."
-  [system-name]
-  {:job-type LogCacheSizesJob
-   :job-key (format "log-%s-cache-size" (trim-and-lowercase system-name))
-   :interval (log-cache-info-interval)})
