@@ -21,7 +21,7 @@
     "AccessControlLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "access-control",
             "single-target" : false
         },
@@ -36,7 +36,7 @@
     "BootstrapLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "bootstrap",
             "single-target" : false
         },
@@ -51,7 +51,7 @@
     "IndexerLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "indexer",
             "single-target" : false
         },
@@ -66,7 +66,7 @@
     "IngestLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "ingest",
             "single-target" : false
         },
@@ -81,7 +81,7 @@
     "MetadataDBLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "metadata-db",
             "single-target" : false
         },
@@ -96,7 +96,7 @@
     "SearchLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "search",
             "single-target" : false
         },
@@ -111,7 +111,7 @@
     "VirtualProductLogJVMStatistics" :
     {
         "target" : {
-            "endpoint" : "jobs/jvmstats",
+            "endpoint" : "stats/jvm-stats",
             "service" : "virtual-product",
             "single-target" : false
         },
