@@ -17,6 +17,6 @@
 (defn down
   "Migrates the database down from version 88."
   []
-  ;; do nothing as we don't want to lose the metadata documents when migrating
+  ;; do nothing as we don't want to loose the metadata documents when migrating
   ;; down and then back up
-  (println "cmr.metadata-db.migrations.088-add-meta-to-provider down..."))
+  (println "cmr.metadata-db.migrations.087-update-generic-document-name-length down..."))
