@@ -30,8 +30,8 @@ def handler(event, _):
     if environment is None:
         print("ERROR: Environment variable not set!")
         error_state = True
-    if cmr_url is None:
-        print("ERROR: CMR_URL variable not set!")
+    if cmr_lb_name is None:
+        print("ERROR: CMR_LB_NAME variable not set!")
         error_state = True
     if error_state:
         sys.exit(1)
@@ -44,8 +44,6 @@ def handler(event, _):
 
     token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
     token = ssm_client.get_parameter(Name=token_param_name, WithDecryption=True)['Parameter']['Value']
-
-    cmr_url = ec2_client.
 
     pool_manager = urllib3.PoolManager(headers={"Authorization": token}, timeout=urllib3.Timeout(15))
 
