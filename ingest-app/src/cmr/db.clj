@@ -21,6 +21,7 @@
   (let [db (oracle-config/sys-dba-db-spec)]
     (o/drop-user db (ingest-config/ingest-username))))
 
+;; TODO Jyna this is where the app automatically migrates
 (defn -main
   "Execute the given database operation specified by input arguments."
   [& args]

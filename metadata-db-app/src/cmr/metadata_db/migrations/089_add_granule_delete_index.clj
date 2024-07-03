@@ -3,6 +3,7 @@
    [clojure.string :as string]
    [config.mdb-migrate-helper :as mh]))
 
+;; TODO temp disable this long migration so it does not trigger
 (defn up
   "Migrates the database up to version 89."
   []
