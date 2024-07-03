@@ -40,7 +40,7 @@ def handler(event, _):
     ssm_client = boto3.client('ssm')
     elb_client = boto3.client('elbv2')
 
-    cmr_url = elb_client.describe_load_balancers(Names=[cmr_lb_name])[0]["DNSName"]
+    cmr_url = elb_client.describe_load_balancers(Names=[cmr_lb_name])["LoadBalancers"][0]["DNSName"]
 
     token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
     token = ssm_client.get_parameter(Name=token_param_name, WithDecryption=True)['Parameter']['Value']
