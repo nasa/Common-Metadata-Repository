@@ -25,15 +25,13 @@ def handler(event, _):
     single_target = event.get('single-target', True)
     request_type = event.get('request-type', "GET")
 
-    error_state = False
-
     if environment is None:
         print("ERROR: Environment variable not set!")
-        error_state = True
     if cmr_lb_name is None:
         print("ERROR: CMR_LB_NAME variable not set!")
-        error_state = True
-    if error_state:
+    #An extra check here so that if both variables are not set,
+    #it can at least be reported at one time
+    if environment is None or cmr_lb_name is None:
         sys.exit(1)
 
     client = boto3.client('ecs')
@@ -42,8 +40,8 @@ def handler(event, _):
 
     cmr_url = elb_client.describe_load_balancers(Names=[cmr_lb_name])["LoadBalancers"][0]["DNSName"]
 
-    token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
-    token = ssm_client.get_parameter(Name=token_param_name, WithDecryption=True)['Parameter']['Value']
+    token = ssm_client.get_parameter(Name='/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN', \
+                                     WithDecryption=True)['Parameter']['Value']
 
     pool_manager = urllib3.PoolManager(headers={"Authorization": token}, timeout=urllib3.Timeout(15))
 
@@ -52,8 +50,9 @@ def handler(event, _):
 
         response = pool_manager.request(request_type, cmr_url + '/' + service + '/' + endpoint)
         if response.status != 200:
-            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint + ": " + str(response.status) + " reason: " + response.reason)
-            exit(-1)
+            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint \
+                  + ": " + str(response.status) + " reason: " + response.reason)
+            sys.exit(-1)
     else:
         #Multi-target functionality is not fully implemented.
         #CMR-9688 has been made to finish this part out
@@ -62,11 +61,11 @@ def handler(event, _):
             serviceName=service+'-'+environment
         )['taskArns']
 
-        response2 = client.describe_tasks(
+        response = client.describe_tasks(
             cluster='cmr-service-'+environment,
             tasks=response
         )
-        task_ips = jmespath.search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value", response2)
+        task_ips = jmespath.search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value", response)
         task_ips = jmespath.search("[]", task_ips)
 
         for task in task_ips:
@@ -74,5 +73,6 @@ def handler(event, _):
 
             response = pool_manager.request(request_type, task + '/' + service + '/' + endpoint)
             if response.status != 200:
-                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint + ": " + str(response.status) + " reason: " + response.reason)
-                exit(-1)
+                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint \
+                      + ": " + str(response.status) + " reason: " + response.reason)
+                sys.exit(-1)

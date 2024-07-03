@@ -30,7 +30,8 @@ def run_job(details, name):
     """
     Takes the job details and runs a REST request on the job endpoint.
     """
-    print('send ' + details["target"]["request-type"] + ' to ' + details["target"]["endpoint"] + ' for job ' + name)
+    print('send ' + details["target"]["request-type"] + \
+          ' to ' + details["target"]["endpoint"] + ' for job ' + name)
     pool_manager.request(details["target"]["request-type"], build_endpoint(details))
 
 def create_schedule():
