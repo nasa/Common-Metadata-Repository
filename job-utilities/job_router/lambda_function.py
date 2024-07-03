@@ -52,7 +52,7 @@ def handler(event, _):
 
         response = pool_manager.request(request_type, cmr_url + '/' + service + '/' + endpoint)
         if response.status != 200:
-            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint + ": " + response.status + " reason: " + response.reason)
+            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint + ": " + str(response.status) + " reason: " + response.reason)
             exit(-1)
     else:
         #Multi-target functionality is not fully implemented.
@@ -74,5 +74,5 @@ def handler(event, _):
 
             response = pool_manager.request(request_type, task + '/' + service + '/' + endpoint)
             if response.status != 200:
-                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint + ": " + response.status + " reason: " + response.reason)
+                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint + ": " + str(response.status) + " reason: " + response.reason)
                 exit(-1)
