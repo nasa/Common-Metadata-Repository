@@ -10,7 +10,8 @@ import os
 import schedule
 import urllib3
 
-service_ports_file_name = os.getenv("SERVICE_PORTS_FILE", "service_ports_file.json")
+service_ports_file_name = os.getenv("SERVICE_PORTS_FILE", "service-ports.json")
+job_details_file_name = os.getenv("JOB_DETAILS_FILE", "../job-details.json")
 
 pool_manager = urllib3.PoolManager(headers={"Authorization" : "mock-echo-system-token"})
 
@@ -27,17 +28,17 @@ def build_endpoint(job):
 
 def run_job(details, name):
     """
-    Takes the job details and runs a POST request on the job endpoint.
+    Takes the job details and runs a REST request on the job endpoint.
     """
-    print('send POST to ' + details["target"]["endpoint"] + ' for job ' + name)
-    pool_manager.request("POST", build_endpoint(details),)
+    print('send ' + details["target"]["request-type"] + ' to ' + details["target"]["endpoint"] + ' for job ' + name)
+    pool_manager.request(details["target"]["request-type"], build_endpoint(details))
 
 def create_schedule():
     """
     Uses the job-details file to create local schedule using
     the schedule python library
     """
-    with open('../job-details.json', encoding="UTF-8") as json_file:
+    with open(job_details_file_name, encoding="UTF-8") as json_file:
         jobs_map = json.load(json_file)
         for job_name, job_details in jobs_map.items():
             #Cron scheduling will assume it is scheduled to run at a certain time every day

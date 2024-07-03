@@ -19,10 +19,11 @@ def handler(event, _):
     CMR_LB_URL - The LB used for routing calls to CMR
     """
     environment = os.getenv('CMR_ENVIRONMENT')
-    cmr_url = os.getenv('CMR_LB_URL')
+    cmr_lb_name = os.getenv('CMR_LB_NAME')
     service = event.get('service', 'bootstrap')
     endpoint = event.get('endpoint')
     single_target = event.get('single-target', True)
+    request_type = event.get('request-type', "GET")
 
     error_state = False
 
@@ -37,18 +38,24 @@ def handler(event, _):
 
     client = boto3.client('ecs')
     ssm_client = boto3.client('ssm')
+    elb_client = boto3.client('elbv2')
+
+    cmr_url = elb_client.describe_load_balancers(Names=[cmr_lb_name])[0]["DNSName"]
 
     token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
-    token = ssm_client.get_parameter(Name=token_param_name,
-                                        WithDecryption=True)['Parameter']['Value']
+    token = ssm_client.get_parameter(Name=token_param_name, WithDecryption=True)['Parameter']['Value']
 
-    pool_manager = urllib3.PoolManager(headers={"Authorization": token},
-                                       timeout=urllib3.Timeout(15))
+    cmr_url = ec2_client.
+
+    pool_manager = urllib3.PoolManager(headers={"Authorization": token}, timeout=urllib3.Timeout(15))
 
     if single_target:
-        print("Running POST on URL: " + cmr_url + '/' + service + '/' + endpoint)
+        print("Running " + request_type + " on URL: " + cmr_url + '/' + service + '/' + endpoint)
 
-        response = pool_manager.request("POST", cmr_url + '/' + service + '/' + endpoint)
+        response = pool_manager.request(request_type, cmr_url + '/' + service + '/' + endpoint)
+        if response.status != 200:
+            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint + ": " + response.status + " reason: " + response.reason)
+            exit(-1)
     else:
         #Multi-target functionality is not fully implemented.
         #CMR-9688 has been made to finish this part out
@@ -67,4 +74,7 @@ def handler(event, _):
         for task in task_ips:
             print("Running POST on URL: " + task + '/' + service + '/' + endpoint)
 
-            response = pool_manager.request("POST", task + '/' + service + '/' + endpoint)
+            response = pool_manager.request(request_type, task + '/' + service + '/' + endpoint)
+            if response.status != 200:
+                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint + ": " + response.status + " reason: " + response.reason)
+                exit(-1)
