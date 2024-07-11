@@ -2,12 +2,16 @@
   "Defines the HTTP URL routes for the application."
   (:require
    [cmr.acl.core :as acl]
+   [clojure.tools.trace :as trace]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
+   [config.mdb-migrate-config]
+   [cmr.metadata-db.config.mdb-migrate-config]
+   [config.migrate-config]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.api.concepts :as concepts-api]
    [cmr.metadata-db.api.provider :as provider-api]
@@ -18,6 +22,7 @@
    [compojure.core :refer :all]
    [compojure.route :as route]
    [drift.execute :as drift]
+   [drift.core]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
@@ -28,6 +33,8 @@
    ;;     find a different way to accomplish this goal ... possibly use protocols
    ;;     instead.
    [cmr.metadata-db.data.oracle.concepts.generic-documents]))
+;(trace/trace-ns drift.execute)
+;(trace/trace-ns drift.core)
 
 (def admin-api-routes
   "The administrative control routes for metadata db."
@@ -40,12 +47,15 @@
       {:status 204})
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
+      (info "user dir: " (.getProperty (System/getProperties) "user.dir"))
       (let [migrate-args (if-let [version (:version params)]
-                           ["migrate" "-version" version]
-                           ["migrate"])]
-        (info "Running db migration:" migrate-args)
-        (drift/run (conj migrate-args "-c" "config.mdb-migrate-config/app-migrate-config")))
-      {:status 204})))
+                           ;["migrate" "-version" version]
+                           ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
+                           ["-c" "config.mdb-migrate-config/app-migrate-config" "-v" version]
+                           ["-c" "config.mdb-migrate-config/app-migrate-config"])]
+        (println "Running db migration:" migrate-args)
+        (drift/run migrate-args)
+      {:status 204}))))
 
 (def job-api-routes
   (common-routes/job-api-routes

@@ -45,18 +45,15 @@
 
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
-  (let [config {:directory "src/cmr/ingest/migrations"
-               :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
-               :namespace-prefix "cmr.ingest.migrations"
-               :migration-number-generator incremental-migration-number-generator
-               :init maybe-create-schema-table
-               :current-version current-db-version
-               :update-version update-db-version}
-        _ (println "config = " config)]
-    config))
+  {:directory "src/cmr/ingest/migrations"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
+   :namespace-prefix "cmr.ingest.migrations"
+   :migration-number-generator incremental-migration-number-generator
+   :init maybe-create-schema-table
+   :current-version current-db-version
+   :update-version update-db-version})
 
 (defn migrate-config []
   "Drift migrate configuration used by lein migrate.
    Calling shutdown-agents allows lein migrate command to terminate faster."
-  (println "app-migrate-config = " (app-migrate-config))
   (assoc (app-migrate-config) :finished shutdown-agents))

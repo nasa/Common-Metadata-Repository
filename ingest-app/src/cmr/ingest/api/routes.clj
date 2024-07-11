@@ -27,31 +27,19 @@
    [compojure.core :refer [DELETE GET POST PUT context routes]]
    [drift.execute :as drift]))
 
-;; TODO Step 1
 (def db-migration-routes
   (POST "/db-migrate"
       {ctx :request-context params :params}
       (acl/verify-ingest-management-permission ctx :update)
       (let [migrate-args (if-let [version (:version params)]
                            ["migrate" "-version" version]
-                           ["migrate"])
-            _ (println "Running db migration:" migrate-args)
-            result (drift/run
-                     (conj
-                       migrate-args
-                       "-config"
-                       "config.ingest-migrate-config/app-migrate-config"))
-            ]
-        (println "result is = " result)
-        ;(info "Running db migration:" migrate-args) ;; endpoint is def triggered because I see this in the logs
-        ;; migrate-args = ["migrate" "-version" "89"]
-        ;; conj = ["migrate" "-version" "89" "-c" "config.ingest-migrate-config/app-migrate-config"]
-        ;(drift/run
-        ; (conj
-        ;  migrate-args
-        ;  "-c"
-        ;  "config.ingest-migrate-config/app-migrate-config"))
-        )
+                           ["migrate"])]
+        (info "Running db migration:" migrate-args)
+        (drift/run
+         (conj
+          migrate-args
+          "-c"
+          "config.ingest-migrate-config/app-migrate-config")))
       {:status 204}))
 
 (def job-management-routes
