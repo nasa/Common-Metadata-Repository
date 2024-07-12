@@ -46,7 +46,14 @@
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
       (info "user dir: " (.getProperty (System/getProperties) "user.dir")) ;; this is /app in SIT
-      (println (:out (shell/sh "pwd")))
+      (info "home dir: " (.getProperty (System/getProperties) "user.home"))
+      (println "PWD = " (:out (shell/sh "pwd")))
+      (println "LS -A = "(:out (shell/sh "ls" "-a")))
+      (println (:out (shell/sh "lein" "--version")))
+      (shell/sh "cp" "cmr-standalone.jar" "cmr-standalone-copy.jar")
+      (shell/sh "jar xf cmr-standalone-copy.jar")
+      (println "LS -A = "(:out (shell/sh "ls" "-a")))
+      (shell/sh "cd cmr-standalone-copy")
       (println (:out (shell/sh "ls" "-a")))
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
