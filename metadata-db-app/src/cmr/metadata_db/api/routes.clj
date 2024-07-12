@@ -30,8 +30,8 @@
    ;;     find a different way to accomplish this goal ... possibly use protocols
    ;;     instead.
    [cmr.metadata-db.data.oracle.concepts.generic-documents]))
-;(trace/trace-ns drift.execute)
-;(trace/trace-ns drift.core)
+(trace/trace-ns drift.execute)
+(trace/trace-ns drift.core)
 
 (def admin-api-routes
   "The administrative control routes for metadata db."
