@@ -3,6 +3,7 @@
   (:require
    [cmr.acl.core :as acl]
    [clojure.tools.trace :as trace]
+   [clojure.java.shell :as shell]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
@@ -45,6 +46,7 @@
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
       (info "user dir: " (.getProperty (System/getProperties) "user.dir")) ;; this is /app in SIT
+      (shell/sh "ls" "-a")
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
                            ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
