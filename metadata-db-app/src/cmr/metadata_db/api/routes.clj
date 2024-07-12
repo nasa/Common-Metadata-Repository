@@ -44,7 +44,7 @@
       {:status 204})
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
-      (info "user dir: " (.getProperty (System/getProperties) "user.dir"))
+      (info "user dir: " (.getProperty (System/getProperties) "user.dir")) ;; this is /app in SIT
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
                            ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
