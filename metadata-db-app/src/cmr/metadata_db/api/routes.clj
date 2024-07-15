@@ -52,9 +52,9 @@
       ;(println (:out (shell/sh "lein" "--version"))) ;; error no lein
       (shell/sh "cp" "cmr-standalone.jar" "cmr-standalone-copy.jar")
       (shell/sh "jar xf cmr-standalone-copy.jar")
-      (println "LS -A = "(:out (shell/sh "ls" "-a")))
+      (println "AFTER LS -A = " (:out (shell/sh "ls" "-a")))
       (shell/sh "cd cmr-standalone-copy")
-      (println (:out (shell/sh "ls" "-a")))
+      (println "INSIDE COPY: " (:out (shell/sh "ls" "-a")))
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
                            ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
