@@ -4,7 +4,10 @@
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
    [cmr.metadata-db.services.util :as mdb-util]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as oracle]
    [drift.builder :refer [incremental-migration-number-generator]])
   (:import
    (java.sql SQLException)))
@@ -21,7 +24,7 @@
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
-  [_args]
+  [args]
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
     (j/db-do-commands (db) "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
@@ -40,9 +43,8 @@
   ; sleep a second to workaround timestamp precision issue
   (Thread/sleep 1000))
 
-(defn app-migrate-config
+(defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
-  []
   {:directory "src/cmr/metadata_db/migrations"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.mdb-migrate-config :as config])"
    :namespace-prefix "cmr.metadata-db.migrations"
@@ -51,8 +53,7 @@
    :current-version current-db-version
    :update-version update-db-version})
 
-(defn migrate-config
+(defn migrate-config []
   "Drift migrate configuration used by lein migrate.
    Calling shutdown-agents allows lein migrate command to terminate faster."
-  []
   (assoc (app-migrate-config) :finished shutdown-agents))

@@ -19,13 +19,10 @@
   (doseq [provider (provider-service/get-providers context)]
     ;; Only granule are cleaned up here. Ingest cleans up expired collections because it
     ;; must remove granules from the index that belong to the collections.
-    (try
-      (concept-service/delete-expired-concepts context provider :granule)
-      (catch Exception e
-        (error (format "ExpiredConceptCleanupJob for provider %s failed; error: %s" (:provider-id provider) (.getMessage e)))))))
+    (concept-service/delete-expired-concepts context provider :granule)))
 
 (def-stateful-job ExpiredConceptCleanupJob
-  [_ctx system]
+  [ctx system]
   (expired-concept-cleanup {:system system}))
 
 (defn old-revision-concept-cleanup
@@ -48,7 +45,7 @@
     (concept-service/delete-old-revisions context provider :access-group)))
 
 (def-stateful-job OldRevisionConceptCleanupJob
-  [_ctx system]
+  [ctx system]
   (old-revision-concept-cleanup {:system system}))
 
 (def jobs
