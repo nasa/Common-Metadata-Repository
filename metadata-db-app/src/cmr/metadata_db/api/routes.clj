@@ -1,7 +1,10 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
+  (:import [java.io File])
   (:require
    [cmr.acl.core :as acl]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.tools.trace :as trace]
    [clojure.java.shell :as shell]
    [cmr.common-app.api.health :as common-health]
@@ -21,6 +24,9 @@
    [compojure.route :as route]
    [drift.execute :as drift]
    [drift.core]
+   [drift.runner]
+   [drift.config]
+   [drift.args]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
@@ -33,6 +39,9 @@
    [cmr.metadata-db.data.oracle.concepts.generic-documents]))
 (trace/trace-ns drift.execute)
 (trace/trace-ns drift.core)
+(trace/trace-ns drift.runner)
+(trace/trace-ns drift.config)
+(trace/trace-ns drift.args)
 
 (def admin-api-routes
   "The administrative control routes for metadata db."
@@ -45,23 +54,49 @@
       {:status 204})
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
-      (info "user dir: " (.getProperty (System/getProperties) "user.dir")) ;;  /app in SIT
-      (info "home dir: " (.getProperty (System/getProperties) "user.home")) ;; /root
+      (println "user dir: " (.getProperty (System/getProperties) "user.dir")) ;;  /app in SIT which has the cmr-standalone.jar file and nothing else in that dir
+      (println "home dir: " (.getProperty (System/getProperties) "user.home")) ;; /root
+
       (println "PWD = " (:out (shell/sh "pwd"))) ;; /app
       (println "LS -A = "(:out (shell/sh "ls" "-a"))) ;; .
-      ;(println (:out (shell/sh "lein" "--version"))) ;; error no lein
-      (shell/sh "cp" "cmr-standalone.jar" "cmr-standalone-copy.jar")
-      (shell/sh "jar xf cmr-standalone-copy.jar")
-      (println "AFTER LS -A = " (:out (shell/sh "ls" "-a")))
-      (shell/sh "cd cmr-standalone-copy")
-      (println "INSIDE COPY: " (:out (shell/sh "ls" "-a")))
+      ;(shell/sh "cp" "cmr-standalone.jar" "cmr-standalone-copy.jar")
+      ;(shell/sh "jar" "xf" "cmr-standalone-copy.jar")
+      ;(println "AFTER LS -A = " (:out (shell/sh "ls" "-a")))
+      ;(shell/sh "cd" "cmr-standalone-copy")
+      ;(println "INSIDE COPY: " (:out (shell/sh "ls" "-a")))
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
                            ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
                            ["-c" "config.mdb-migrate-config/app-migrate-config" "-v" version]
                            ["-c" "config.mdb-migrate-config/app-migrate-config"])]
         (println "Running db migration:" migrate-args)
-        (drift/run migrate-args)
+        ;(with-redefs [drift.core/find-migrate-directory (File. (.getPath "./metadata_db") "/migrations")]
+        ;  (drift/run migrate-args))
+        ;(with-redefs [drift.core/find-migrate-directory (io/file "./src/cmr/metadata_db/migrations")]
+        ;  (drift/run migrate-args))
+        ;(with-redefs [drift.core/user-directory (fn [] (new File "./src/cmr/metadata_db"))]
+        ;  (drift/run migrate-args))
+        ;(with-redefs [drift.core/user-directory (fn [] (new File "migrations"))]
+        ;  (drift/run migrate-args))
+
+        (println "Running db migration ATTEMPT 2:" migrate-args)
+
+        ;(with-redefs [drift.core/find-migrate-directory (File. "src/cmr/metadata_db/migrations")]
+        ; (drift/run migrate-args))
+
+        ;(with-redefs [drift.core/user-directory (fn [] (new File "././migrations"))]
+        ;  (drift/run migrate-args))
+
+
+        ;; (with-redefs [drift.core/user-directory (fn [] (new File "/Users/jmaeng/Projects/Common-Metadata-Repository/dev-system/checkouts/metadata-db-app/src/cmr/metadata_db"))]
+        ;  (drift/run migrate-args)) ;; WORKS
+
+        (println "ABSOLUTE PATH = " (.getAbsolutePath (File. "")))
+
+        (with-redefs [drift.core/user-directory (fn [] (new File (.getAbsolutePath (File. ""))))]
+          (drift/run migrate-args))
+
+
       {:status 204}))))
 
 (def job-api-routes
