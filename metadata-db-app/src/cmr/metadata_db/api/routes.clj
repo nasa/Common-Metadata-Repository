@@ -57,13 +57,14 @@
       (println "user dir: " (.getProperty (System/getProperties) "user.dir")) ;;  /app in SIT which has the cmr-standalone.jar file and nothing else in that dir
       (println "home dir: " (.getProperty (System/getProperties) "user.home")) ;; /root
 
+      ;; need to locate migration directory correctly if possible?
+      ;; revisit the 'migrate' arg?
+      ;; replace drift
+
+
       (println "PWD = " (:out (shell/sh "pwd"))) ;; /app
       (println "LS -A = "(:out (shell/sh "ls" "-a"))) ;; .
-      ;(shell/sh "cp" "cmr-standalone.jar" "cmr-standalone-copy.jar")
-      ;(shell/sh "jar" "xf" "cmr-standalone-copy.jar")
-      ;(println "AFTER LS -A = " (:out (shell/sh "ls" "-a")))
-      ;(shell/sh "cd" "cmr-standalone-copy")
-      ;(println "INSIDE COPY: " (:out (shell/sh "ls" "-a")))
+      (println "FILES INSIDE NEW CMR FOLDER = "(:out (shell/sh "ls" "-a" "./cmr")))
       (let [migrate-args (if-let [version (:version params)]
                            ;["migrate" "-version" version]
                            ;["migrate"] ; need this to prevent error where 'target is null' for migrate namespace
@@ -79,22 +80,22 @@
         ;(with-redefs [drift.core/user-directory (fn [] (new File "migrations"))]
         ;  (drift/run migrate-args))
 
-        (println "Running db migration ATTEMPT 2:" migrate-args)
+        ;(println "Running db migration ATTEMPT 2:" migrate-args)
 
         ;(with-redefs [drift.core/find-migrate-directory (File. "src/cmr/metadata_db/migrations")]
         ; (drift/run migrate-args))
 
-        ;(with-redefs [drift.core/user-directory (fn [] (new File "././migrations"))]
-        ;  (drift/run migrate-args))
-
-
-        ;; (with-redefs [drift.core/user-directory (fn [] (new File "/Users/jmaeng/Projects/Common-Metadata-Repository/dev-system/checkouts/metadata-db-app/src/cmr/metadata_db"))]
-        ;  (drift/run migrate-args)) ;; WORKS
-
-        (println "ABSOLUTE PATH = " (.getAbsolutePath (File. "")))
-
-        (with-redefs [drift.core/user-directory (fn [] (new File (.getAbsolutePath (File. ""))))]
+        (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr")))]
           (drift/run migrate-args))
+
+
+         ;(with-redefs [drift.core/user-directory (fn [] (new File "/Users/jmaeng/Projects/Common-Metadata-Repository/dev-system/checkouts/metadata-db-app/src/cmr/metadata_db"))]
+         ; (drift/run migrate-args)) ;; WORKS
+
+        (println "ABSOLUTE PATH = " (.getAbsolutePath (File. ""))) ;;  /app
+
+        ;(with-redefs [drift.core/user-directory (fn [] (new File (.getAbsolutePath (File. ""))))]
+        ;  (drift/run migrate-args))
 
 
       {:status 204}))))

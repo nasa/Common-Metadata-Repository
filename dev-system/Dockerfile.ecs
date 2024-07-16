@@ -2,3 +2,7 @@ FROM eclipse-temurin:17
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 WORKDIR /app
+
+RUN mkdir cmr
+COPY /app/cmr-standalone.jar /app/cmr/cmr-standalone-copy.jar
+RUN jar xf /app/cmr/cmr-standalone-copy.jar
