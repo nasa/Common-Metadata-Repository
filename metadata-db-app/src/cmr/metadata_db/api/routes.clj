@@ -85,14 +85,14 @@
         ;(with-redefs [drift.core/find-migrate-directory (File. "src/cmr/metadata_db/migrations")]
         ; (drift/run migrate-args))
 
-        (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr")))]
+        (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr/cmr-standalone-copy")))]
           (drift/run migrate-args))
 
 
          ;(with-redefs [drift.core/user-directory (fn [] (new File "/Users/jmaeng/Projects/Common-Metadata-Repository/dev-system/checkouts/metadata-db-app/src/cmr/metadata_db"))]
          ; (drift/run migrate-args)) ;; WORKS
 
-        (println "ABSOLUTE PATH = " (.getAbsolutePath (File. ""))) ;;  /app
+        ;(println "ABSOLUTE PATH = " (.getAbsolutePath (File. ""))) ;;  /app
 
         ;(with-redefs [drift.core/user-directory (fn [] (new File (.getAbsolutePath (File. ""))))]
         ;  (drift/run migrate-args))

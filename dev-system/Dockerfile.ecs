@@ -2,12 +2,15 @@ FROM eclipse-temurin:17
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
-RUN apt-get install zip unzip
+RUN apt-get install unzip
 
 RUN mkdir -p /app/cmr
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr/cmr-standalone-copy.jar
 RUN unzip cmr-standalone-copy.jar -d /app/cmr
 RUN echo 'Inside opened jar'
 RUN ls -a /app/cmr
+RUN ls -R /app/cmr | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+RUN echo 'Inside unzipped jar'
+RUN ls -R /app/cmr/cmr-standalone-copy | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 WORKDIR /app
