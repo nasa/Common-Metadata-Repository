@@ -6,7 +6,7 @@
    [cmr.indexer.data.elasticsearch :as es]))
 
 (defmethod es/parsed-concept->elastic-doc :tag
-  [context concept parsed-concept]
+  [_context concept parsed-concept]
   (let [{:keys [concept-id deleted]} concept
         {:keys [tag-key description originator-id]} parsed-concept]
     (if deleted

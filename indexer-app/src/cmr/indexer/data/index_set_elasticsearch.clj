@@ -77,8 +77,7 @@
 (defn get-index-set
   "Fetch index-set associated with an id."
   [context index-set-id]
-  (let [conn (get-in context [:system :db :conn])
-        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?
                        (get-in context [:system :db]) index-name idx-mapping-type index-set-id)]
@@ -114,7 +113,7 @@
                                              :client-id t-config/cmr-client-id}
                                    :throw-exceptions false})
           status (:status response)]
-      (if-not (some #{200 202 204} [status])
+      (when-not (some #{200 202 204} [status])
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defn save-document-in-elastic
@@ -136,7 +135,7 @@
 
 (defn delete-document
   "Delete the document from elastic, raise error on failure."
-  [context index-name mapping-type id]
+  [context index-name _mapping-type id]
   (let [{:keys [host port admin-token]} (get-in context [:system :db :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
