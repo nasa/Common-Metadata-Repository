@@ -85,7 +85,7 @@
         ;(with-redefs [drift.core/find-migrate-directory (File. "src/cmr/metadata_db/migrations")]
         ; (drift/run migrate-args))
 
-        (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr/cmr-standalone-copy")))]
+        (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr")))]
           (drift/run migrate-args))
 
 
