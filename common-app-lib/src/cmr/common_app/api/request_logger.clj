@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :refer [report]]
+   [cmr.common.log :as log :refer [report]]
    [cmr.common.util :as util]
    [cmr.common.time-keeper :as tk]
    [digest :as digest]
@@ -82,6 +82,18 @@
                                (assoc-in [:headers "Content-SHA1"] body-sha1))]
       updated-response)))
 
+(defn assoc-hashes
+  "Conditionally adds md5 and sha1 hashes if the log level is either debug or
+   trace. These values are pulled from the response map."
+  [data response]
+  (let [log-level (log/apparent-log-level)]
+    (if (contains? (set [:debug :trace]) log-level)
+      (-> data
+          (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
+          (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
+          (util/remove-nil-keys))
+      data)))
+
 ;; log-ring-request should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
 
@@ -129,14 +141,13 @@
              ;; that reporting scripts can try to protect against change. Humans
              ;; may be creating Splunk or ELK reports based on this content.
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
+                      (assoc-hashes response)
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
                       (as-> data (if (= id :ignore-id) (assoc data "log-id" id) data))
                       ;; assume that (add-body-hashes) has been run and reuse data
-                      (assoc "body-md5" (get-in response [:headers "Content-MD5"])
-                             "body-sha1" (get-in response [:headers "Content-SHA1"])
-                             "client-id" (get-in request [:headers "client-id"] "unknown")
+                      (assoc "client-id" (get-in request [:headers "client-id"] "unknown")
                              "form-params" (dump-param form-params :form-params)
                              "method" (string/upper-case (name (:request-method request)))
                              "now" now

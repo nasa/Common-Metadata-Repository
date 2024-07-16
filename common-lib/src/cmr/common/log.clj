@@ -168,3 +168,10 @@
   (let [options (when level
                   {:level (keyword (string/lower-case level))})]
     (create-logger options)))
+
+(defn apparent-log-level
+  "Return the internal log level used by timber directly from timbre as there is no set function in
+   this api to get the current version. We could query the level here, but it can change if using
+   taoensso.timbre/with-log-level"
+  []
+  (:min-level tiber/*config*))
