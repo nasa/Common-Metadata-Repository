@@ -11,7 +11,7 @@
     (try
       (if (string/includes? table-name "SMALL_PROV")
         (mh/sql (format "create index %s_DR ON %s (provider_id, deleted, revision_date)" table-name table-name))
-        (mh/sql (format "create index %s_DD ON %s (deleted, revision_date)" table-name table-name)))
+        (mh/sql (format "create index %s_DR ON %s (deleted, revision_date)" table-name table-name)))
       (catch java.sql.BatchUpdateException e
         ;; If the index already exists we can ignore the error. This could
         ;; happen if a migration was moved down, then back up.'
