@@ -1,13 +1,20 @@
 FROM eclipse-temurin:17
 
+RUN apt-get update
+RUN apt-get install zip
+RUN apt-get install unzip
+
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
-COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr-standalone-copy.jar
-RUN jar xf cmr-standalone-copy.jar
-COPY cmr-standalone-copy /app/cmr
+RUN echo 'unzip attempt 1'
+RUN cd /app/cmr-standalone.jar && jar xf cmr-standalone.jar
+RUN ls -a /app
 
-RUN echo 'Inside temp folder'
-RUN ls -a /app/cmr
-RUN ls -R /app/cmr | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+RUN echo 'unzip attempt 2'
+RUN cd /app/cmr-standalone.jar && unzip cmr-standalone.jar
+RUN ls -a /app
+
+RUN echo 'Get tree'
+RUN ls -R /app | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 WORKDIR /app
