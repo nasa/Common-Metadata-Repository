@@ -1,8 +1,7 @@
 FROM eclipse-temurin:17
 
 RUN apt-get update
-RUN apt-get install zip
-RUN apt-get install unzip
+RUN apt-get install zip -y
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
