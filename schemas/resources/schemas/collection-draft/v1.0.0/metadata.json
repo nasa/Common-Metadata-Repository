@@ -264,8 +264,8 @@
         "DOI" : "10.1234/DOIID",
         "Authority" : "https://doi.org/"
       },
-      "ShortName" : "Mapping Short Name 1.18.0",
-      "EntryTitle" : "Mapping Example for UMM-C 1.18.0",
+      "ShortName" : "Mapping Short Name 1.18.1",
+      "EntryTitle" : "Mapping Example for UMM-C 1.18.1",
       "PublicationReferences" : [ {
         "OnlineResource" : {
           "Linkage" : "http://www.yahoo.com",
@@ -814,9 +814,9 @@
         "LongName" : "MUSES"
       } ],
       "MetadataSpecification" : {
-        "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
+        "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
         "Name" : "UMM-C",
-        "Version" : "1.18.0"
+        "Version" : "1.18.1"
       },
       "ArchiveAndDistributionInformation" : {
         "FileArchiveInformation" : [ {
