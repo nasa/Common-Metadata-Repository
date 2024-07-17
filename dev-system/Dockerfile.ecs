@@ -5,17 +5,16 @@ RUN apt-get install zip -y
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
-RUN echo 'unzip attempt 1'
-RUN cd /app && unzip cmr-standalone.jar
+RUN mkdir -p /app/cmr-files
+COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-files/cmr-copy.jar
+
+RUN cd /app/cmr-files && unzip cmr-copy.jar
+RUN echo 'app ls'
 RUN ls -a /app
+RUN echo 'cmr-files ls'
+RUN ls -a /app/cmr-files
 
 RUN echo 'Get tree'
 RUN ls -R /app | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-
-RUN cd cmr-standalone && ls -a
-
-RUN echo 'unzip attempt 2'
-RUN cd /app && jar xf cmr-standalone.jar
-RUN ls -a /app
 
 WORKDIR /app
