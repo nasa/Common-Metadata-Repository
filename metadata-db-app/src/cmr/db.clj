@@ -1,5 +1,6 @@
 (ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
+  (:import [java.io File])
   (:require
    [clojure.java.jdbc :as j]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -8,8 +9,8 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
-   [config.mdb-migrate-config :as mc]
-   [drift.execute :as drift])
+   [drift.core]
+   [drift.execute])
   (:gen-class))
 
 (defconfig echo-business-user
@@ -91,11 +92,16 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run
-          (conj
-           (vec args)
-           "-c"
-           "config.mdb_migrate_config/app-migrate-config"))
+        ;; drift looks for migration files within the user.directory, which is /app in service envs.
+        ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
+        ;; can find the migration files correctly
+        ;; we had to force method change in drift to set the correct path
+        (try
+          (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
+            (drift.execute/run (conj (vec args) "-c" "config.mdb_migrate_config/app-migrate-config")))
+          (catch Exception e
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/metadata-db-app/src")))]
+              (drift.execute/run (conj (vec args) "-c" "config.mdb_migrate_config/app-migrate-config")))))
 
         :else
         (info "Unsupported operation: " op))

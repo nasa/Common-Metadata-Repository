@@ -3,7 +3,6 @@
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :dependencies [[cheshire "5.12.0"]
-                 [org.clojure/tools.trace "0.8.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"]
@@ -38,7 +37,6 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
