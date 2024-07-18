@@ -141,7 +141,7 @@
              ;; that reporting scripts can try to protect against change. Humans
              ;; may be creating Splunk or ELK reports based on this content.
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
-                      (assoc-hashes response)
+                      ;(assoc-hashes response)
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
