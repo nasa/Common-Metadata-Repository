@@ -4,7 +4,8 @@
         "target" : {
             "endpoint" : "caches/refresh/kms",
             "service" : "bootstrap",
-            "single-target" : true
+            "single-target" : true,
+            "request-type" : "POST"
         },
         "scheduling" : {
             "type" : "cron",
