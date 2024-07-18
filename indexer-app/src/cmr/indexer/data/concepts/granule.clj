@@ -137,8 +137,8 @@
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ocsd-json (granule->ocsd-json umm-granule)
         ;; not empty is used below to get a real true false value
-        downloadable (seq (ru/downloadable-urls related-urls))
-        browsable (seq (ru/browse-urls related-urls))
+        downloadable (not (empty? (ru/downloadable-urls related-urls)))
+        browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
         update-time (index-util/date->elastic update-time)
         track (get-in umm-granule [:spatial-coverage :track])
