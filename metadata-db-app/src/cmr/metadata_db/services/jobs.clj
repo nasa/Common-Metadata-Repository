@@ -31,21 +31,18 @@
 (defn old-revision-concept-cleanup
   [context]
   ;; cleanup CMR system concepts
-  (concept-service/delete-old-revisions context pv/cmr-provider :acl)
-  (concept-service/delete-old-revisions context pv/cmr-provider :tag-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :tag)
-  (concept-service/delete-old-revisions context pv/cmr-provider :variable-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :service-association)
-  (concept-service/delete-old-revisions context pv/cmr-provider :tool-association)
+  (doseq [type [:acl :tag-association :tag :variable-association :service-association :tool-association]]
+    (try
+      (concept-service/delete-old-revisions context pv/cmr-provider type)
+      (catch Exception e
+        (error (format "OldRevisionConceptCleanupJob for concept-type %s failed; error: %s" type (.getMessage e))))))
   ;; cleanup provider specific tables
   (doseq [provider (provider-service/get-providers context)]
-    (concept-service/delete-old-revisions context provider :collection)
-    (concept-service/delete-old-revisions context provider :granule)
-    (concept-service/delete-old-revisions context provider :variable)
-    (concept-service/delete-old-revisions context provider :service)
-    (concept-service/delete-old-revisions context provider :tool)
-    (concept-service/delete-old-revisions context provider :subscription)
-    (concept-service/delete-old-revisions context provider :access-group)))
+    (doseq [type [:collection :granule :variable :service :tool :subscription :access-group]]
+      (try
+        (concept-service/delete-old-revisions context provider type)
+        (catch Exception e
+          (error (format "OldRevisionConceptCleanupJob for provider %s concept-type %s failed; error: %s" (:provider-id provider) type (.getMessage e))))))))
 
 (def-stateful-job OldRevisionConceptCleanupJob
   [_ctx system]
