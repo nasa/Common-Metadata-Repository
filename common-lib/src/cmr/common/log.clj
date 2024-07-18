@@ -174,4 +174,6 @@
    this api to get the current version. We could query the level here, but it can change if using
    taoensso.timbre/with-log-level"
   []
-  (:min-level tiber/*config*))
+  (if-some [_ tiber/*config*]
+    (:min-level tiber/*config*)
+    :warn))
