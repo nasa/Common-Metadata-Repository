@@ -10,7 +10,7 @@
    generating elastic values. If an index does not specify what type it is for,
    then assume elastic"
   [list-of-indexes]
-  (keep #(when (not (nil? %)) %)
+  (keep #(if (not (nil? %)) %)
         (map
          (fn [x] (when (or (nil? (:Type x)) (= "elastic" (:Type x))) x))
          list-of-indexes)))

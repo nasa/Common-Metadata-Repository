@@ -1150,7 +1150,7 @@
          (get-granule-index-names-for-collection context coll-concept-id target-index-key))
 
        ;; Default
-       (when (some? (concept-type (common-generic/latest-approved-documents)))
+       (if (some? (concept-type (common-generic/latest-approved-documents)))
          ;; Generics are a bunch of document types, find out which one to work with
          ;; and return the index name for those
          (if all-revisions-index?
