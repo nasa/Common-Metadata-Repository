@@ -141,7 +141,7 @@
              ;; that reporting scripts can try to protect against change. Humans
              ;; may be creating Splunk or ELK reports based on this content.
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
-                      ;(assoc-hashes response)
+                      (assoc-hashes response)
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
@@ -149,7 +149,8 @@
                       ;; assume that (add-body-hashes) has been run and reuse data
                       (assoc "client-id" (get-in request [:headers "client-id"] "unknown")
                              "form-params" (dump-param form-params :form-params)
-                             "method" (string/upper-case (name (:request-method request)))
+                             "method" (string/upper-case
+                                       (name (get-in request [:request-method] "unknown")))
                              "now" now
                              "protocol" (:protocol request)
                              "query-params" (dump-param query-params :query-params)
@@ -173,7 +174,9 @@
   ;; and what you will get back.
   (let [body-stream (clojure.java.io/reader (char-array "p1=a&p2=b"))
         request {:headers {"content-type" "application/x-www-form-urlencoded;anything-allowed-here"}
-                 :body body-stream}]
+                 :body body-stream}
+        foo (log-ring-request {})]
+    ;;(foo {}) ;;uncomment this to run the log-ring-request and test it out
     (ring.middleware.params/assoc-form-params request "UTF-8"))
 
   ;; and query paramas are simple and can be done as the following:
