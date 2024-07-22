@@ -4,6 +4,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.ingest.data.memory_db]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
@@ -32,22 +33,25 @@
   (POST "/db-migrate"
       {ctx :request-context params :params}
       (acl/verify-ingest-management-permission ctx :update)
-      (let [migrate-args (if-let [version (:version params)]
+      (let [db (get-in ctx [:system :db])
+            migrate-args (if-let [version (:version params)]
                            ["-c" "config.ingest-migrate-config/app-migrate-config" "-v" version]
                            ["-c" "config.ingest-migrate-config/app-migrate-config"])]
         (info "Running db migration with args:" migrate-args)
+        (println "DB IN INGEST IS = " db)
         ;; drift looks for migration files within the user.directory, which is /app in service envs.
         ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
         ;; can find the migration files correctly
         ;; we had to force method change in drift to set the correct path
-        (try
-          ;; trying non-local path to find drift migration files
-          (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
-            (drift.execute/run migrate-args))
-          (catch Exception e
-            (println "caught exception trying to find migration files. We are probably in local env. Trying local route to migration files...")
-            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
-              (drift.execute/run migrate-args)))))
+        (if (not (instance? cmr.ingest.data.memory_db.ACLHashMemoryStore db))
+          (try
+            ;; trying non-local path to find drift migration files
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
+              (drift.execute/run migrate-args))
+            (catch Exception e
+              (println "caught exception trying to find migration files. We are probably in local env. Trying local route to migration files...")
+              (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
+                (drift.execute/run migrate-args))))))
       {:status 204}))
 
 (def job-management-routes

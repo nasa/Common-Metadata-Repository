@@ -2,12 +2,12 @@
   "Entry point for the db related operations. Defines a main method that accepts arguments."
   (:import [java.io File])
   (:require [cmr.common.log :refer (debug info warn error)]
-            [drift.core]
-            [drift.execute]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.ingest.config :as ingest-config]
-            [cmr.oracle.sql-utils :as su])
+            [cmr.oracle.sql-utils :as su]
+            [drift.core]
+            [drift.execute])
   (:gen-class))
 
 (defn create-user
@@ -41,9 +41,11 @@
         ;; can find the migration files correctly
         ;; we had to force method change in drift to set the correct path
         (try
+          ;; trying non-local path to find drift migration files
           (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
             (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))
           (catch Exception e
+            (println "caught exception trying to find migration files in db.clj file for ingest-app. We are probably in local env. Trying local route to migration files...")
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
               (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))
             ))
