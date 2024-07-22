@@ -46,7 +46,7 @@
             (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))
           (catch Exception e
             (println "caught exception trying to find migration files in db.clj file for ingest-app. We are probably in local env. Trying local route to migration files...")
-            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/src")))]
               (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))
             ))
 

@@ -48,7 +48,7 @@
             (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))
           (catch Exception e
             (println "caught exception trying to find migration files in db.clj file in bootstrap app. We are probably in local env. Trying local route to migration files...")
-            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/bootstrap-app/src")))]
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/src")))]
               (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))))
 
         :else

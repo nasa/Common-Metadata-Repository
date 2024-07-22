@@ -156,8 +156,11 @@
   "Searches metadata db for concepts matching the given parameters, returns the raw response from
   the http get."
   [context params concept-type]
-  (let [conn (config/context->app-connection context :metadata-db)
+  (let [_ (println "INSIDE find-concepts-raw")
+        conn (config/context->app-connection context :metadata-db)
+        _ (println "CONNECTION IS  = " conn)
         request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))
+        _ (println "REQUEST URL is = " request-url)
         params (merge
                 (config/conn-params conn)
                 {:accept :json
@@ -166,7 +169,8 @@
                            (ch/context->http-headers context)
                            {:client-id config/cmr-client-id})
                  :throw-exceptions false
-                 :http-options (h/include-request-id context {})})]
+                 :http-options (h/include-request-id context {})})
+        _ (println "PARAMS is = " params)]
     (client/post request-url params)))
 
 (defn find-concepts
