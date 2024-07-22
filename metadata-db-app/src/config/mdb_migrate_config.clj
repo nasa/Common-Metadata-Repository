@@ -51,6 +51,17 @@
    :current-version current-db-version
    :update-version update-db-version})
 
+(defn app-migrate-config-lein
+  "Drift migrate configuration used by CMR app's db-migrate endpoint."
+  []
+  {:directory "src/cmr/metadata_db/migrations"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.mdb-migrate-config :as config])"
+   :namespace-prefix "cmr.metadata-db.migrations"
+   :migration-number-generator incremental-migration-number-generator
+   :init maybe-create-schema-table
+   :current-version current-db-version
+   :update-version update-db-version})
+
 (defn migrate-config
   "Drift migrate configuration used by lein migrate.
    Calling shutdown-agents allows lein migrate command to terminate faster."
