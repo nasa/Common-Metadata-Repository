@@ -110,3 +110,10 @@
   "Number of days where collection end-date counts as ongoing"
   {:default 30
    :type Long})
+
+(defconfig reduced-indexer-log
+  "When true only one log entry will be written for every index action performed by index-service.
+   The single log entry will also be in JSON and be as short as possible to cut down on log
+   retention requirements. Turning this feature on may break Splunk reports."
+  {:default false
+   :type Boolean})

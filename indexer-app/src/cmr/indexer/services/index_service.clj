@@ -10,7 +10,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
-   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.log :as log :refer [debug info report warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
@@ -70,6 +70,9 @@
                   (t/after? delete-time (tk/now)))))
           batch))
 
+;; ***********************************************
+;; multi method prepare batch
+
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
   (fn [_context batch _options]
@@ -120,6 +123,8 @@
 (defmethod prepare-batch :subscription
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
+
+;; **********************
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
@@ -283,18 +288,53 @@
                             {:latest true})]
     (bulk-index context latest-tag-batches)))
 
+(defn- time-to-visibility-text
+  "This is the original log entry used by Splunk to report on time to index.
+   NOTE: Changes to this text may break reports."
+  [concept-id milliseconds]
+  (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
+          concept-id
+          milliseconds))
+
+(defn- time-to-visibility-json
+  "This is a replacement log to be used by Splunk to report on time to index. Features of this log
+   are: JSON, more values, smaller content. Content size is such an issue that short names are given
+   for fields which may not be as human readable as possible. This log can be output in the millions
+   per day. Scripts can use the version (v) value if needed to judge what content may be in the
+   log. Future developers should change this value if adding or removing values so as to inform
+   scripts of a change.
+   NOTE: Changes to this text may break reports."
+  [concept-id revision-id milliseconds all-revisions-index?]
+  (format (str "{\"v\": \"1\", \"msg\": \"index-visible-time\", "
+               "\"c-id\": \"%s\", "
+               "\"r-id\": \"%s\", "
+               "\"v-ms\": \"%s\", "
+               "\"all\": \"%s\"}")
+          concept-id
+          revision-id
+          milliseconds
+          all-revisions-index?))
+
+(defn- send-time-to-visibility-log
+  "Send either a JSON message as a report or the original log entry to info."
+  [concept-id revision-id ms-durration all-revisions-index?]
+  (if (config/reduced-indexer-log)
+    (report (time-to-visibility-json concept-id revision-id ms-durration all-revisions-index?))
+    (info (time-to-visibility-text concept-id ms-durration))))
+
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
-  [{:keys [concept-id revision-date]}]
+  [{:keys [concept-id revision-id revision-date]} options]
   (let [now (tk/now)
-        rev-datetime (f/parse (f/formatters :date-time) revision-date)]
+        {:keys [all-revisions-index?]} options
+        rev-datetime (f/parse (f/formatters :date-time) revision-date)
+        ms-duration (t/in-millis (t/interval rev-datetime now))]
+
     ;; Guard against revision-date that is set to the future by a provider or a test.
     (if (t/before? rev-datetime now)
       ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
       ;; Splunk searches used by ops.
-      (info (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
-                    concept-id
-                    (t/in-millis (t/interval rev-datetime now))))
+      (send-time-to-visibility-log concept-id revision-id ms-duration all-revisions-index?)
       (warn (format
              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
              concept-id
@@ -352,8 +392,6 @@
                                                               :generic-associations generic-associations}))
     (:revision-id concept)))
 
-;; *******************************************
-
 (defn get-tag-associations
   "Returns the tag associations of the concept"
   [context concept]
@@ -400,7 +438,6 @@
     :tool
     (meta-db/get-associations-for-tool context concept)))
 
-
 (defn create-association-map-keys
   "Creates the association map keys that lists out all of the different association types.
   For example, this function changes the named concept type from variable-association to a
@@ -417,7 +454,8 @@
         new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
     (set/rename-keys grouped-assocs new-key-map)))
 
-;; *******************************************
+;; ***********************************************
+;; multi method index-concept
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
@@ -428,7 +466,11 @@
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type deleted]} concept]
+        {:keys [concept-id revision-id concept-type deleted]} concept
+        start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
+                              concept-id revision-id all-revisions-index?)
+        end-log-msg (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
+                            concept-id revision-id all-revisions-index?)]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
                ;; don't index a deleted variable
                ;; we need to add this check because a variable deletion causes a variable
@@ -436,8 +478,10 @@
                ;; So it is possible that we try to reindex a deleted variable here
                ;; and we don't want to allow a deleted variable be indexed
                (not (and (= :variable concept-type) deleted)))
-      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
+      ;; This log is very verbose, can be in the millions
+      (if (config/reduced-indexer-log)
+        (debug start-log-msg)
+        (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
@@ -476,10 +520,12 @@
                                          revision-id
                                          elastic-version
                                          elastic-options)
-            (info (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
-                          concept-id revision-id all-revisions-index?))))))))
+            ;; This log is very verbose, can be in the millions
+            (if (config/reduced-indexer-log)
+             (debug end-log-msg)
+             (info end-log-msg))))))))
 
-;; *******************************************
+;; **********************
 
 (defn- index-associated-collection
   "Index the associated collection concept of the given concept. This is used by indexing
@@ -549,7 +595,8 @@
       (index-associated-concept
        context (get-in association [:extra-fields :variable-concept-id]) {}))))
 
-;; *******************************************
+;; ***********************************************
+;; Multi method index-concept (continue)
 
 (defmethod index-concept :tag-association
   [context concept _parsed-concept options]
@@ -580,7 +627,7 @@
   (index-associated-generic-source context concept options)
   (index-associated-generic-destination context concept options))
 
-;; *******************************************
+;; **********************
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
@@ -597,7 +644,7 @@
                       (meta-db/get-latest-concept context concept-id))
             parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
-        (log-ingest-to-index-time concept)))))
+        (log-ingest-to-index-time concept options)))))
 
 (defn- cascade-collection-delete
   "Performs the cascade actions of collection deletion,
@@ -610,7 +657,7 @@
                 (concept-mapping-types :granule)
                 {:term {(query-field->elastic-field :collection-concept-id :granule)
                         concept-id}})]
-      (if (not= (get resp :status) 200)
+      (when (not= (get resp :status) 200)
         (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp)))))
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
@@ -629,7 +676,8 @@
               (search/find-granule-hits context {:collection-concept-id concept-id}))
       log-string)))
 
-;; *******************************************
+;; ***********************************************
+;; Multi method delete-concept
 
 (defmulti delete-concept
   "Delete the concept with the given id"
@@ -708,7 +756,7 @@
     (index-associated-generic-source context concept options)
     (index-associated-generic-destination context concept options)))
 
-;; *******************************************
+;; **********************
 
 (defn force-delete-all-concept-revision
   "Removes a concept revision from the all revisions index"
