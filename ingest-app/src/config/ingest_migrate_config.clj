@@ -4,8 +4,6 @@
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.ingest.config :as ingest-config]
-   [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.connection :as oracle]
    [cmr.metadata-db.services.util :as mdb-util]
    [drift.builder :refer [incremental-migration-number-generator]])
   (:import

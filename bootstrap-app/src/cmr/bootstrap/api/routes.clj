@@ -160,7 +160,6 @@
                              ["-c" "config.bootstrap-migrate-config/app-migrate-config" "-version" version]
                              ["-c" "config.bootstrap-migrate-config/app-migrate-config"])]
           (info "Running db migration with args:" migrate-args)
-          (println "DB IN BOOTSTRAP IS = " db)
           ;; drift looks for migration files within the user.directory, which is /app in service envs.
           ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
           ;; can find the migration files correctly
@@ -171,11 +170,11 @@
                 (drift.execute/run migrate-args))
               (catch Exception e
                 (try
-                  (println "caught exception trying to find migration files. We are probably in local env. Trying local route to migration files...")
+                  (println "caught exception trying to find migration files for cloud env. We are probably in local env. Trying local route to migration files...")
                   (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/bootstrap-app/src")))]
                     (drift.execute/run migrate-args))
                   (catch Exception e2
-                    (println "caught exception trying to find migratin files with local route external, trying last resort migration")
+                    (println "caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
                     (drift.execute/run (cons migrate-args "migrate")))))))
         {:status 204})
       ;; Add routes for checking health of the application

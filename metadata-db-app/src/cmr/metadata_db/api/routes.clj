@@ -2,7 +2,6 @@
   "Defines the HTTP URL routes for the application."
   (:import [java.io File])
   (:require
-    [clojure.tools.trace :as trace]
    [cmr.acl.core :as acl]
    [cmr.common.memory-db.connection]
    [cmr.common-app.api.health :as common-health]
@@ -11,6 +10,7 @@
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.api.concepts :as concepts-api]
    [cmr.metadata-db.api.provider :as provider-api]
    [cmr.metadata-db.api.subscriptions :as subscription-api]
@@ -49,8 +49,7 @@
             migrate-args (if-let [version (:version params)]
                            ["-c" "config.mdb-migrate-config/app-migrate-config" "-v" version]
                            ["-c" "config.mdb-migrate-config/app-migrate-config"])]
-        (println "Running db migration with args:" migrate-args)
-        (println "DB IN METDATA DB IS = " db)
+        (info "Running db migration with args:" migrate-args)
         ;; drift looks for migration files within the user.directory, which is /app in service envs.
         ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
         ;; can find the migration files correctly

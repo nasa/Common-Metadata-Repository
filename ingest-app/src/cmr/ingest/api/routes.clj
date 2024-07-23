@@ -38,7 +38,6 @@
                            ["-c" "config.ingest-migrate-config/app-migrate-config" "-v" version]
                            ["-c" "config.ingest-migrate-config/app-migrate-config"])]
         (info "Running db migration with args:" migrate-args)
-        (println "DB IN INGEST IS = " db)
         ;; drift looks for migration files within the user.directory, which is /app in service envs.
         ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
         ;; can find the migration files correctly

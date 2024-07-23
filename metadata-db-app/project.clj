@@ -18,7 +18,6 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.clojure/tools.trace "0.8.0"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-core "1.10.0"]
