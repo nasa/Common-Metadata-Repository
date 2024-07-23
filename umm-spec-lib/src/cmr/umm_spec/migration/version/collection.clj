@@ -740,4 +740,17 @@
   [_context collection & _]
   ;; File sizes from positive numbers to numbers, only need to migrate version. 
   (-> collection
-      (m-spec/update-version :collection "1.18.0"))) 
+      (m-spec/update-version :collection "1.18.0")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.2"]
+  [_context collection & _]
+  ;; Nothing changed. Only moved all the types in oneOf's to top level..
+  (-> collection
+      (m-spec/update-version :collection "1.18.2")))
+   
+(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
+  [_context collection & _]
+  ;; Nothing changed. 
+  (-> collection
+      (m-spec/update-version :collection "1.18.1")))
+
