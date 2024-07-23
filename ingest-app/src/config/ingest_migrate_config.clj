@@ -53,6 +53,7 @@
    :current-version current-db-version
    :update-version update-db-version})
 
+;; Use this migration func when calling drift.execute/run for lein
 (defn app-migrate-config-lein []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
   {:directory "src/cmr/ingest/migrations"

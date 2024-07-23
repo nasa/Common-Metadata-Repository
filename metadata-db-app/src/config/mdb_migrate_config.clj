@@ -51,6 +51,7 @@
    :current-version current-db-version
    :update-version update-db-version})
 
+;; Use this func for migration with lein
 (defn app-migrate-config-lein
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
   []

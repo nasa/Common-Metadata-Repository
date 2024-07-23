@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the application."
   (:import [java.io File])
   (:require
+    [clojure.tools.trace :as trace]
    [cmr.acl.core :as acl]
    [cmr.common.memory-db.connection]
    [cmr.common-app.api.health :as common-health]

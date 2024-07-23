@@ -3,6 +3,7 @@
   (:import [java.io File])
   (:require
    [clojure.java.jdbc :as j]
+   [clojure.tools.trace :as trace]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.config :as mdb-config]

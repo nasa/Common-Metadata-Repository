@@ -18,6 +18,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.trace "0.8.0"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-core "1.10.0"]
@@ -64,7 +65,7 @@
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
-            "migrate" ["migrate" "-c" "config.mdb-migrate-config/app-migrate-config"]
+            "migrate" ["migrate" "-c" "config.mdb-migrate-config/app-migrate-config-lein"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
 

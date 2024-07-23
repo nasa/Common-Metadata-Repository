@@ -75,7 +75,7 @@
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
-            "migrate" ["migrate" "-c" "config.ingest-migrate-config/app-migrate-config"]
+            "migrate" ["migrate" "-c" "config.ingest-migrate-config/app-migrate-config-lein"]
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
             ;; Prints out documentation on configuration environment variables.
