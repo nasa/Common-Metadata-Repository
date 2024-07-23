@@ -82,7 +82,7 @@
                                (assoc-in [:headers "Content-SHA1"] body-sha1))]
       updated-response)))
 
-(defn assoc-hashes
+(defn add-hash-to-data
   "Conditionally adds md5 and sha1 hashes if the log level is either debug or
    trace. These values are pulled from the response map."
   [data response]
@@ -141,7 +141,7 @@
              ;; that reporting scripts can try to protect against change. Humans
              ;; may be creating Splunk or ELK reports based on this content.
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
-                      (assoc-hashes response)
+                      (add-hash-to-data response)
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
