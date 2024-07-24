@@ -88,8 +88,10 @@
     false (do
             (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name))
             ;; This index makes it much faster to find granules that are not deleted that have a delete time.
-            (jdbc/db-do-commands db (format "create index %s_dd on %s (deleted, delete_time)" table-name table-name)))
+            (jdbc/db-do-commands db (format "create index %s_dd on %s (deleted, delete_time)" table-name table-name))
+            (jdbc/db-do-commands db (format "create index %s_dr on %s (deleted, revision_date)" table-name table-name)))
     true (do
            (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)" table-name table-name))
            ;; This index makes it much faster to find granules that are not deleted that have a delete time.
-           (jdbc/db-do-commands db (format "create index %s_dd on %s (provider_id, deleted, delete_time)" table-name table-name)))))
+           (jdbc/db-do-commands db (format "create index %s_dd on %s (provider_id, deleted, delete_time)" table-name table-name))
+           (jdbc/db-do-commands db (format "create index %s_dr on %s (provider_id, deleted, revision_date)" table-name table-name)))))
