@@ -303,17 +303,27 @@
    per day. Scripts can use the version (v) value if needed to judge what content may be in the
    log. Future developers should change this value if adding or removing values so as to inform
    scripts of a change.
+
+   Values in log:
+   * fv : Format Version
+   * mg : MessaGe type
+   * ci : Concept Id
+   * ri : Revision Id (number)
+   * vm : Visibility Milliseconds
+   * ar : All Revisions (0 or 1)
+
    NOTE: Changes to this text may break reports."
   [concept-id revision-id milliseconds all-revisions-index?]
-  (format (str "{\"v\": \"1\", \"msg\": \"index-visible-time\", "
-               "\"c-id\": \"%s\", "
-               "\"r-id\": \"%s\", "
-               "\"v-ms\": \"%s\", "
-               "\"all\": \"%s\"}")
-          concept-id
-          revision-id
-          milliseconds
-          all-revisions-index?))
+  (let [all-value (if all-revisions-index? 1 0)]
+    (format (str "{\"fv\": 1 \"mg\": \"index-vis\", "
+                 "\"ci\": \"%s\", "
+                 "\"ri\": \"%s\", "
+                 "\"vm\": \"%d\", "
+                 "\"ar\": %d}")
+            concept-id
+            revision-id
+            milliseconds
+            all-value)))
 
 (defn- send-time-to-visibility-log
   "Send either a JSON message as a report or the original log entry to info."
