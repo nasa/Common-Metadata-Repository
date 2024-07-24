@@ -1,7 +1,6 @@
 (ns cmr.search.validators.opendata
  "Validate Opendata formatted collections against JSON schema in /resources/schema"
  (:require
-  [clojure.java.io :as io]
   [cmr.common.validations.json-schema :as json-schema]))
 
 (defn- load-opendata-schema

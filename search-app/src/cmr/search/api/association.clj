@@ -64,7 +64,7 @@
   [context headers body concept-type concept-id]
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
-  (debug (format "Dissociating %s [%s] from collections: %s by client: %s."
+  (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
   (if (and (> (count (map :concept-id (json/parse-string body true))) 1)
            (= :variable concept-type)) 
