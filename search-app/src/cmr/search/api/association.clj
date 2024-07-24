@@ -3,13 +3,12 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.association-service :as assoc-service]
    [cmr.search.services.association-validation :as assoc-validation]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (defn- validate-association-content-type
   "Validates that content type sent with a association is JSON."
@@ -65,7 +64,7 @@
   [context headers body concept-type concept-id]
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
-  (info (format "Dissociating %s [%s] from collections: %s by client: %s."
+  (debug (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
   (if (and (> (count (map :concept-id (json/parse-string body true))) 1)
            (= :variable concept-type)) 

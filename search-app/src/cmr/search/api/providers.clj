@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.provider-service :as provider-service]
@@ -31,7 +31,7 @@
   "Invokes query service to retrieve provider holdings and returns the response"
   [ctx path-w-extension params headers]
   (let [params (core-api/process-params nil params path-w-extension headers mt/json)
-        _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
+        _ (debug (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params))
                         (pr-str params)))
         [provider-holdings provider-holdings-formatted]

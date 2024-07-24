@@ -19,7 +19,6 @@
 
 (def system nil)
 
-
 (defn create-system
   []
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.

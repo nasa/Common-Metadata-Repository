@@ -3,7 +3,7 @@
   (:require
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.core :as core-api]
@@ -73,13 +73,13 @@
 (defn- find-concept-by-concept-id*
   "Perfrom the retrieval of concept by concept id and revision id"
   ([ctx result-format concept-id]
-   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+   (debug (format "Search for concept with cmr-concept-id [%s]" concept-id))
    (core-api/search-response
     ctx
     (query-svc/find-concept-by-id ctx result-format concept-id)))
 
   ([ctx result-format concept-id revision-id]
-   (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
+   (debug (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                  concept-id
                  revision-id))
    (core-api/search-response

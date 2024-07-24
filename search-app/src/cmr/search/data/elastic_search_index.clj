@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]

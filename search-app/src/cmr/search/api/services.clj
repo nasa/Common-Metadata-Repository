@@ -2,8 +2,7 @@
   "Defines the API for associating/dissociating services with collections in the CMR."
   (:require
    [cmr.search.api.association :as association]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (def service-api-routes
   (context "/services" []

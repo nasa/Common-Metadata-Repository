@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.concepts :as common-concepts]
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.generic-association-service :as generic-assoc-service]
@@ -43,7 +43,7 @@
   [context headers body concept-id revision-id]
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
-  (info (format "Associate concept [%s] revision [%s] on concepts: %s by client: %s."
+  (debug (format "Associate concept [%s] revision [%s] on concepts: %s by client: %s."
                 concept-id revision-id body (:client-id context)))
   (let [concept-type (common-concepts/concept-id->type concept-id)
         results (generic-assoc-service/associate-to-concepts context concept-type concept-id revision-id body)
@@ -56,7 +56,7 @@
   [context headers body concept-id revision-id]
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
-  (info (format "Dissociating concept [%s] revision [%s] from concepts: %s by client: %s."
+  (debug (format "Dissociating concept [%s] revision [%s] from concepts: %s by client: %s."
                 concept-id revision-id body (:client-id context)))
   (let [concept-type (common-concepts/concept-id->type concept-id)
         results (generic-assoc-service/dissociate-from-concepts context concept-type concept-id revision-id body)
