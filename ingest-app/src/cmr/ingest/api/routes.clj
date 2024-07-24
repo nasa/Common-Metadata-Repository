@@ -1,10 +1,10 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the ingest API."
-  (:import (cmr.ingest.data.memory_db ACLHashMemoryStore)
-           [java.io File])
+  (:import [java.io File])
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.ingest.data.memory_db]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
@@ -42,7 +42,7 @@
         ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
         ;; can find the migration files correctly
         ;; we had to force method change in drift to set the correct path
-        (if (not (instance? ACLHashMemoryStore db))
+        (if (not (instance? cmr.ingest.data.memory_db.ACLHashMemoryStore db))
           (try
             ;; trying non-local path to find drift migration files
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
