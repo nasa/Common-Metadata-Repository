@@ -6,7 +6,7 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kms-fetcher/kms-cache-key (kms-fetcher/create-kms-cache)}}})
+   {:system {:caches {kms-fetcher/kms-cache-key (kms-fetcher/create-kms-cache)}}})
 
 (deftest fetch-gcmd-keywords-map-test
   (testing "cache connection error"

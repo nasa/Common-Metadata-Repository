@@ -248,7 +248,6 @@
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
   keyword scheme."
   [context keyword-scheme]
-
   ;; From time to time KMS will not be ready to host a set of keywords as the
   ;; population of that system happens on it's team's own schedule. In the case
   ;; where a standard list is ready before the KMS sever is, load that list from
