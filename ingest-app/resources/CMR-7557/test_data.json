@@ -286,8 +286,8 @@
     } ]
   },
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
+    "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
     "Name": "UMM-C",
-    "Version": "1.18.0"
+    "Version": "1.18.1"
   }
 }
