@@ -75,7 +75,7 @@
   (let [full-platform
         (merge default-platform-values
                (kms-lookup/lookup-by-short-name context :platforms short-name))
-        {:keys [basis category sub-category short-name long-name uuid]
+        {:keys [category sub-category short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
     {:category category

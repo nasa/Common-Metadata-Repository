@@ -26,3 +26,22 @@
 
       "Testing a provider that has large sized collections."
       (index-svc/collection-large-file-providers-reindex-batch-size) "GHRSSTCWIC")))
+
+(deftest index-log-size-test
+  (testing "Make sure that any new time to visibility index log is not larger then the original"
+
+    ;; The time to visibility log can print in the millions per day and there are two different
+    ;; versions of this log depending on the value of defconfig reduced-indexer-log. When true a
+    ;; JSON version of this log is printed which contains more information but should still be
+    ;; shorter as Splunk storage is expensive.
+
+    (let [concept-id "G1001055217-ASF"
+          revision-id "123"
+          milliseconds 1024
+          all-revisions-index? true
+          time-to-visibility-text (var index-svc/time-to-visibility-text) ;; private function
+          time-to-visibility-json (var index-svc/time-to-visibility-json) ;; private function
+          text (time-to-visibility-text concept-id milliseconds)
+          json (time-to-visibility-json concept-id revision-id milliseconds all-revisions-index?)]
+
+      (is (<= (count json) (count text))))))

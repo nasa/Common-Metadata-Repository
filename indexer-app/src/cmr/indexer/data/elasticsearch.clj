@@ -96,7 +96,7 @@
 (defmulti parsed-concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the
   given concept"
-  (fn [context concept parsed-concept]
+  (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
 (defn requires-update?
@@ -179,13 +179,13 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (let [conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
       (index-set-es/create-index this config/idx-cfg-for-index-sets)
       this))
 
-  (stop [this system]
+  (stop [this _system]
     this))
 
 (defn create-elasticsearch-store
@@ -211,11 +211,6 @@
               msg (str "Call to Elasticsearch caught exception " err-msg)]
           (errors/internal-error! msg))))))
 
-(defn- concept->type
-  "Returns concept type for the given concept"
-  [concept]
-  (cs/concept-id->type (:concept-id concept)))
-
 (defn- context->es-config
   "Returns the elastic config in the context"
   [context]
@@ -238,7 +233,6 @@
   [context concept {:keys [all-revisions-index?] :as options}]
   (try
     (let [{:keys [concept-id revision-id]} concept
-          type (name (concept->type concept))
           elastic-version (get-elastic-version concept)
           concept (-> concept
                       (update :tag-associations #(parse-non-tombstone-associations context %))
@@ -345,7 +339,7 @@
   "Delete the document from Elasticsearch, raise error if failed."
   ([context es-indexes es-type concept-id revision-id elastic-version]
    (delete-document context es-indexes es-type concept-id revision-id elastic-version nil))
-  ([context es-indexes es-type concept-id revision-id elastic-version options]
+  ([context es-indexes _es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
      (let [{:keys [admin-token]} (context->es-config context)
@@ -372,7 +366,7 @@
 
 (defn delete-by-query
   "Delete document that match the given query"
-  [context es-index es-type query]
+  [context es-index _es-type query]
   (let [{:keys [admin-token]} (context->es-config context)
         {:keys [uri http-opts]} (context->conn context)
         delete-url (format "%s/%s/_delete_by_query" uri es-index)]

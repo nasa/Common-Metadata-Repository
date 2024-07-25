@@ -5,7 +5,7 @@
    [clj-time.core :refer [now]]
    [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info error]]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
@@ -13,8 +13,7 @@
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.services.index-service :as service]
-   [cmr.transmit.metadata-db :as meta-db]
-   [cmr.transmit.search :as search]))
+   [cmr.transmit.metadata-db :as meta-db]))
 
 (defconfig autocomplete-suggestion-age-limit
   "Age in hours that we allow autocomplete suggestions to persist to avoid stale data."
@@ -203,6 +202,8 @@
          flatten
          (remove anti-value-suggestion?))))
 
+(declare reindex-autocomplete-suggestions-for-provider)
+(declare context provider-id)
 (defn-timed reindex-autocomplete-suggestions-for-provider
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]

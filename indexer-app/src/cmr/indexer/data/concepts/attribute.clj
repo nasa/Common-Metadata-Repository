@@ -11,28 +11,28 @@
 
 (defmulti value->elastic-value
   "Converts a attribute value into the elastic value that should be transmitted"
-  (fn [type value]
+  (fn [type _value]
     type))
 
 (defmethod value->elastic-value :default
-  [type value]
+  [_type value]
   (or value ""))
 
 (defmethod value->elastic-value :boolean
-  [type value]
+  [_type value]
   (if (nil? value) "" value))
 
 (defmethod value->elastic-value :datetime
-  [type value]
+  [_type value]
   (when value (p/clj-time->date-time-str value)))
 
 (defmethod value->elastic-value :time
-  [type value]
+  [_type value]
   ;; This relies on the fact that times are parsed into times on day 1970-01-01
   (when value (p/clj-time->date-time-str value)))
 
 (defmethod value->elastic-value :date
-  [type value]
+  [_type value]
   (when value (p/clj-time->date-time-str value)))
 
 (def type->field-name

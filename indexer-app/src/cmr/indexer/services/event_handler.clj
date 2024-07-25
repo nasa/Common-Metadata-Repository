@@ -15,7 +15,7 @@
 ;; are reserved for the provider queue which is configured to handle long processing times.
 (defmulti handle-provider-event
   "Handle the various actions that can be requested for a provider via the provider-queue"
-  (fn [context msg]
+  (fn [_context msg]
     (keyword (:action msg))))
 
 (defmethod handle-provider-event :provider-collection-reindexing
@@ -49,7 +49,7 @@
 
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
-  (fn [context all-revisions-index? msg]
+  (fn [_context _all-revisions-index? msg]
     (keyword (:action msg))))
 
 ;; Default ignores the ingest event. There may be ingest events we don't care about.
@@ -75,7 +75,7 @@
                                       :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :tombstone-delete
-  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  [context _all-revisions-index? {:keys [concept-id revision-id]}]
   (when (= :granule (cc/concept-id->type concept-id))
     (deleted-granule/remove-deleted-granule context concept-id revision-id
                                             {:ignore-conflict? true})))
@@ -83,14 +83,14 @@
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when-not (= :humanizer (cc/concept-id->type concept-id))
-    (do
+
       ;; We should never receive a message that's not for the all revisions index
       (when-not all-revisions-index?
         (errors/internal-error!
           (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
                        "index.  concept-id: %s revision-id: %s")
                   concept-id revision-id)))
-      (indexer/force-delete-all-concept-revision context concept-id revision-id))))
+      (indexer/force-delete-all-concept-revision context concept-id revision-id)))
 
 (defmethod handle-ingest-event :expire-concept
   [context all-revisions-index? {:keys [concept-id revision-id]}]
@@ -103,19 +103,19 @@
   "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/provider-queue-listener-count)]
+    (dotimes [_ (config/provider-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/provider-queue-name)
                                 #(handle-provider-event context %)))
-    (dotimes [n (config/index-queue-listener-count)]
+    (dotimes [_ (config/index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/index-queue-name)
                                 #(handle-ingest-event context false %)))
-    (dotimes [n (config/all-revisions-index-queue-listener-count)]
+    (dotimes [_ (config/all-revisions-index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/all-revisions-index-queue-name)
                                 #(handle-ingest-event context true %)))
-    (dotimes [n (config/deleted-granules-index-queue-listener-count)]
+    (dotimes [_ (config/deleted-granules-index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/deleted-granule-index-queue-name)
                                 #(handle-ingest-event context true %)))))
