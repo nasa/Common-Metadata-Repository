@@ -5,7 +5,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.api.context :as cmn-context]
-   [cmr.common.log :as log :refer (debug info)]
+   [cmr.common.log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -162,7 +162,7 @@
                                                      :source-concept-type concept-type})
                                              operation))
                                           associations))]
-    (info "update-associations:" t1)
+    (info "update-associations:" t1) ;;TODO is this required? or needed?
     result))
 
 (defn- fetch-concept

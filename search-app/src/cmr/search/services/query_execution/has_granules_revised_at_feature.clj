@@ -6,7 +6,6 @@
   This works exactly the same as the has_granules_created_at feature, but uses a different
   parameter to search for relevant granules."
   (:require
-   [clojure.set :as set]
    [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.search.services.query-execution.multi-part-query-feature-common :as mp-query-common]))
 

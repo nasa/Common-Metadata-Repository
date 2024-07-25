@@ -86,7 +86,7 @@
     (if-let [vec-concept-ids (metadata-cache/get-collection-metadata-cache-concept-ids context)]
       vec-concept-ids
       (when (> retries 0)
-        (info (format (str "Failed reading %s for the humanizer report. "
+        (warn (format (str "Failed reading %s for the humanizer report. "
                            "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
                       cmn-coll-metadata-cache/cache-key

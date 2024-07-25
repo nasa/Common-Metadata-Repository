@@ -10,7 +10,6 @@
    [cmr.common.services.search.query-model :as q]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as qm]
    [cmr.search.services.query-walkers.condition-extractor :as condition-extractor])
   (:import [cmr.common.services.search.query_model
             Query

@@ -1,8 +1,6 @@
 (ns cmr.search.services.query-walkers.collection-concept-id-extractor
   "Defines protocols and functions to extract collection concept ids from the query constructs"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.services.search.query-model :as cqm]
-            [cmr.search.models.query :as qm]))
+  (:require [cmr.common.services.errors :as errors]))
 
 (defprotocol ExtractCollectionConceptId
   "Defines a function to extract collection concept ids"
