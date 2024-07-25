@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.index-set-service 
+(ns cmr.indexer.services.index-set-service
   "Provide functions to store, retrieve, delete index-sets"
   (:require
    [cheshire.core :as json]
@@ -199,9 +199,7 @@
   [context index-set]
   (info "Updating index-set" (pr-str index-set))
   (validate-requested-index-set context index-set true)
-  (let [index-names (get-index-names index-set)
-        indices-w-config (build-indices-list-w-config index-set)
-        idx-name-of-index-sets (:index-name config/idx-cfg-for-index-sets)
+  (let [indices-w-config (build-indices-list-w-config index-set)
         es-store (context->es-store context)]
 
     (doseq [idx indices-w-config]
@@ -366,7 +364,7 @@
   "Put elastic in a clean state after deleting indices associated with index-
   sets and index-set docs."
   [context]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  (let [{:keys [index-name]} config/idx-cfg-for-index-sets
         index-set-ids (es/get-index-set-ids
                        (context->es-store context)
                        index-name

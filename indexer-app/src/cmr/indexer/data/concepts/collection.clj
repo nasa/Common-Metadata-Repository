@@ -214,7 +214,7 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format extra-fields tag-associations
+                created-at revision-date deleted format tag-associations
                 variable-associations service-associations tool-associations generic-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
