@@ -5,10 +5,12 @@ RUN apt-get install zip -y
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
-RUN echo 'Unzip cmr files for drift compatibility -- so it can find the migration files'
-RUN mkdir -p /app/cmr-files
-COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-files/cmr-copy.jar
+# RUN echo 'Unzip cmr files for drift compatibility -- so it can find the migration files'
+# RUN mkdir -p /app/cmr-files
+# COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-files/cmr-copy.jar
 
-RUN cd /app/cmr-files && unzip cmr-copy.jar
+# RUN cd /app/cmr-files && unzip cmr-copy.jar
+
+COPY ./drift-migration-files /app/drift-migration-files
 
 WORKDIR /app

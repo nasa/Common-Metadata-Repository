@@ -98,7 +98,7 @@
         ; we had to force method change in drift to set the correct path
         (try
           ;; trying non-local path to find drift migration files
-          (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
+          (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
             (drift.execute/run (conj (vec args) "-c" "config.mdb_migrate_config/app-migrate-config")))
           (catch Exception e
             (println "caught exception trying to find migration files in db.clj file in metadata-db-app. We are probably in local env. Trying local route to migration files...")

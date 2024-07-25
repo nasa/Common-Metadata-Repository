@@ -43,7 +43,7 @@
 (defn app-migrate-config
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
   []
-  {:directory "/cmr/metadata_db/migrations"
+  {:directory "/metadata_db/migrations"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.mdb-migrate-config :as config])"
    :namespace-prefix "cmr.metadata-db.migrations"
    :migration-number-generator incremental-migration-number-generator

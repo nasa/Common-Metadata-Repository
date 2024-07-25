@@ -57,7 +57,7 @@
         (if (not (instance? cmr.common.memory_db.connection.MemoryStore db))
           (try
             ;; trying non-local path to find drift migration files for external oracle db"
-            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
               (drift.execute/run migrate-args))
             (catch Exception e
               (println "caught exception trying to find migration files. We are probably in local env w/ external db. Trying local route to migration files...")

@@ -166,7 +166,7 @@
           ;; we had to force method change in drift to set the correct path
            (try
               ;; trying non-local path to find drift migration files
-              (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/cmr-files")))]
+              (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
                 (drift.execute/run migrate-args))
               (catch Exception e
                 (try

@@ -43,7 +43,7 @@
 
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
-  {:directory "/cmr/ingest/migrations"
+  {:directory "/ingest/migrations"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
    :namespace-prefix "cmr.ingest.migrations"
    :migration-number-generator incremental-migration-number-generator
@@ -51,9 +51,8 @@
    :current-version current-db-version
    :update-version update-db-version})
 
-;; Use this migration func when calling drift.execute/run for lein
 (defn app-migrate-config-lein []
-  "Drift migrate configuration used by CMR app's db-migrate endpoint."
+  "Drift migrate configuration used by CMR app's db-migrate endpoint for running with lein."
   {:directory "src/cmr/ingest/migrations"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
    :namespace-prefix "cmr.ingest.migrations"
