@@ -1081,8 +1081,8 @@
       }]
     },
     "TemporalResolutionType": {
-      "type": "object",
       "oneOf": [{
+        "type": "object",
         "title": "Contant or Varies Resolution",
         "additionalProperties": false,
         "description": "Describes the amount of time between measurements.",
@@ -1095,6 +1095,7 @@
         },
         "required": ["Unit"]
       }, {
+        "type": "object",
         "title": "Numerical Resolution",
         "additionalProperties": false,
         "description": "Describes the amount of time between measurements.",
