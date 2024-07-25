@@ -5,12 +5,14 @@ RUN apt-get install zip -y
 
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
-# RUN echo 'Unzip cmr files for drift compatibility -- so it can find the migration files'
+RUN echo 'Unzip migration files so drift can find the migration files to execute db-migrate'
+
 # RUN mkdir -p /app/cmr-files
 # COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-files/cmr-copy.jar
-
 # RUN cd /app/cmr-files && unzip cmr-copy.jar
 
-COPY ./drift-migration-files /app/drift-migration-files
+COPY ./drift-migration-files.zip /app/drift-migration-files.zip
+RUN cd /app && unzip drift-migration-files.zip
+RUN ls -R /app | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 WORKDIR /app
