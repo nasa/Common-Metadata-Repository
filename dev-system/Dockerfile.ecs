@@ -3,6 +3,9 @@ FROM eclipse-temurin:17
 RUN apt-get update
 RUN apt-get install zip -y
 
+echo 'What is in curr dir?'
+RUN ls -a .
+
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 
 RUN echo 'Unzip migration files so drift can find the migration files to execute db-migrate'
