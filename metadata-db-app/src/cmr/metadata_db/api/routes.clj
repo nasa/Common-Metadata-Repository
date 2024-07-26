@@ -1,7 +1,9 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
+  (:import [java.io File])
   (:require
    [cmr.acl.core :as acl]
+   [cmr.common.memory-db.connection]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
@@ -17,11 +19,13 @@
    [cmr.metadata-db.services.jobs :as mdb-jobs]
    [compojure.core :refer :all]
    [compojure.route :as route]
-   [drift.execute :as drift]
+   [drift.core]
+   [drift.execute]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params])
+   [ring.middleware.params :as params]
+   [cmr.metadata-db.services.util :as mdb-util])
   (:require
    ;; These must be required here to make multimethod implementations available.
    ;; XXX This is not a good pattern for large software systems; we need to
@@ -40,11 +44,25 @@
       {:status 204})
     (POST "/db-migrate" {:keys [request-context params]}
       (acl/verify-ingest-management-permission request-context :update)
-      (let [migrate-args (if-let [version (:version params)]
-                           ["migrate" "-version" version]
-                           ["migrate"])]
-        (info "Running db migration:" migrate-args)
-        (drift/run (conj migrate-args "-c" "config.mdb-migrate-config/app-migrate-config")))
+
+      (let [db (mdb-util/context->db request-context)
+            migrate-args (if-let [version (:version params)]
+                           ["-c" "config.mdb-migrate-config/app-migrate-config" "-v" version]
+                           ["-c" "config.mdb-migrate-config/app-migrate-config"])]
+        (info "Running db migration with args:" migrate-args)
+        ;; drift looks for migration files within the user.directory, which is /app in service envs.
+        ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
+        ;; can find the migration files correctly
+        ;; we had to force method change in drift to set the correct path
+        (if (not (instance? cmr.common.memory_db.connection.MemoryStore db))
+          (try
+            ;; trying non-local path to find drift migration files for external oracle db"
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
+              (drift.execute/run migrate-args))
+            (catch Exception e
+              (println "caught exception trying to find migration files. We are probably in local env w/ external db. Trying local route to migration files...")
+              (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/metadata-db-app/src")))]
+                (drift.execute/run migrate-args))))))
       {:status 204})))
 
 (def job-api-routes

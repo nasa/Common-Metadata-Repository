@@ -1,4 +1,13 @@
 FROM eclipse-temurin:17
 
+RUN apt-get update
+RUN apt-get install zip -y
+
 COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
+
+RUN echo 'Unzip migration files so drift can find the migration files to execute db-migrate'
+
+COPY ./drift-migration-files.zip /app/drift-migration-files.zip
+RUN cd /app && unzip drift-migration-files.zip
+
 WORKDIR /app
