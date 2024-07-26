@@ -3,7 +3,6 @@
   (:require
    [cmr.common.cache :as c]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.jobs :refer [def-stateful-job]]
    [cmr.transmit.community-usage-metrics :as metrics]))
 
 (defn- get-and-prepare-community-usage-metrics

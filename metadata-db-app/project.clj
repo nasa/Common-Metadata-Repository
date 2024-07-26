@@ -64,7 +64,7 @@
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
-            "migrate" ["migrate" "-c" "config.mdb-migrate-config/app-migrate-config"]
+            "migrate" ["migrate" "-c" "config.mdb-migrate-config/app-migrate-config-lein"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
 
