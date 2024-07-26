@@ -10,7 +10,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [debug info report warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
@@ -70,9 +70,12 @@
                   (t/after? delete-time (tk/now)))))
           batch))
 
+;; ***********************************************
+;; multi method prepare batch
+
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
-  (fn [context batch options]
+  (fn [_context batch _options]
     (cs/concept-id->type (:concept-id (first batch)))))
 
 (defmethod prepare-batch :default
@@ -120,6 +123,8 @@
 (defmethod prepare-batch :subscription
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
+
+;; **********************
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
@@ -283,18 +288,63 @@
                             {:latest true})]
     (bulk-index context latest-tag-batches)))
 
+(defn- time-to-visibility-text
+  "This is the original log entry used by Splunk to report on time to index.
+   NOTE: Changes to this text may break reports."
+  [concept-id milliseconds]
+  (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
+          concept-id
+          milliseconds))
+
+(defn- time-to-visibility-json
+  "This is a replacement log to be used by Splunk to report on time to index. Features of this log
+   are: JSON, more values, smaller content. Content size is such an issue that short names are given
+   for fields which may not be as human readable as possible. This log can be output in the millions
+   per day. Scripts can use the version (v) value if needed to judge what content may be in the
+   log. Future developers should change this value if adding or removing values so as to inform
+   scripts of a change.
+
+   Values in log:
+   * fv : Format Version
+   * mg : MessaGe type
+   * ci : Concept Id
+   * ri : Revision Id (number)
+   * vm : Visibility Milliseconds
+   * ar : All Revisions (0 or 1)
+
+   NOTE: Changes to this text may break reports."
+  [concept-id revision-id milliseconds all-revisions-index?]
+  (let [all-value (if all-revisions-index? 1 0)]
+    (format (str "{\"fv\": 1 \"mg\": \"index-vis\", "
+                 "\"ci\": \"%s\", "
+                 "\"ri\": \"%s\", "
+                 "\"vm\": \"%d\", "
+                 "\"ar\": %d}")
+            concept-id
+            revision-id
+            milliseconds
+            all-value)))
+
+(defn- send-time-to-visibility-log
+  "Send either a JSON message as a report or the original log entry to info."
+  [concept-id revision-id ms-durration all-revisions-index?]
+  (if (config/reduced-indexer-log)
+    (report (time-to-visibility-json concept-id revision-id ms-durration all-revisions-index?))
+    (info (time-to-visibility-text concept-id ms-durration))))
+
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
-  [{:keys [concept-id revision-date]}]
+  [{:keys [concept-id revision-id revision-date]} options]
   (let [now (tk/now)
-        rev-datetime (f/parse (f/formatters :date-time) revision-date)]
+        {:keys [all-revisions-index?]} options
+        rev-datetime (f/parse (f/formatters :date-time) revision-date)
+        ms-duration (t/in-millis (t/interval rev-datetime now))]
+
     ;; Guard against revision-date that is set to the future by a provider or a test.
     (if (t/before? rev-datetime now)
       ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
       ;; Splunk searches used by ops.
-      (info (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
-                    concept-id
-                    (t/in-millis (t/interval rev-datetime now))))
+      (send-time-to-visibility-log concept-id revision-id ms-duration all-revisions-index?)
       (warn (format
              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
              concept-id
@@ -302,7 +352,7 @@
 
 (defn- get-elastic-version-with-associations
   "Returns the elastic version of the concept and its associations"
-  [context concept associations]
+  [_context concept associations]
   (es/get-elastic-version
    (-> concept
        (assoc :tag-associations (:tag-associations associations))
@@ -311,120 +361,92 @@
        (assoc :tool-associations (:tool-associations associations))
        (assoc :generic-associations (:generic-associations associations)))))
 
-(defmulti get-elastic-version
+(defn- get-elastic-version
   "Returns the elastic version of the concept"
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod get-elastic-version :default
   [context concept]
-  (:revision-id concept))
+  (case (:concept-type concept)
+    :collection
+    (let [tag-associations (meta-db/get-associations-for-collection context concept :tag-association)
+          variable-associations (meta-db/get-associations-for-collection
+                                 context concept :variable-association)
+          service-associations (meta-db/get-associations-for-collection
+                                context concept :service-association)
+          tool-associations (meta-db/get-associations-for-collection
+                             context concept :tool-association)
+          generic-associations (meta-db/get-generic-associations-for-concept context concept)
+          associations {:tag-associations tag-associations
+                        :variable-associations variable-associations
+                        :service-associations service-associations
+                        :tool-associations tool-associations
+                        :generic-associations generic-associations}]
+      (get-elastic-version-with-associations context concept associations))
 
-(defmethod get-elastic-version :collection
-  [context concept]
-  (let [tag-associations (meta-db/get-associations-for-collection context concept :tag-association)
-        variable-associations (meta-db/get-associations-for-collection
-                               context concept :variable-association)
-        service-associations (meta-db/get-associations-for-collection
-                              context concept :service-association)
-        tool-associations (meta-db/get-associations-for-collection
-                           context concept :tool-association)
-        generic-associations (meta-db/get-generic-associations-for-concept context concept)
-        associations {:tag-associations tag-associations
-                      :variable-associations variable-associations
-                      :service-associations service-associations
-                      :tool-associations tool-associations
-                      :generic-associations generic-associations}]
-    (get-elastic-version-with-associations context concept associations)))
+    :variable
+    (let [variable-associations (meta-db/get-associations-for-variable context concept)
+          generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+      (get-elastic-version-with-associations context concept {:variable-associations variable-associations
+                                                              :generic-associations generic-associations}))
+    :service
+    (let [service-associations (meta-db/get-associations-for-service context concept)
+          generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+      (get-elastic-version-with-associations context concept {:service-associations service-associations
+                                                              :generic-associations generic-associations}))
 
-(defmethod get-elastic-version :variable
-  [context concept]
-  (let [variable-associations (meta-db/get-associations-for-variable context concept)
-        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
-    (get-elastic-version-with-associations context concept {:variable-associations variable-associations
-                                                            :generic-associations generic-associations})))
+    :subscription
+    (:transaction-id concept)
 
-(defmethod get-elastic-version :service
-  [context concept]
-  (let [service-associations (meta-db/get-associations-for-service context concept)
-        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
-    (get-elastic-version-with-associations context concept {:service-associations service-associations
-                                                            :generic-associations generic-associations})))
+    :tool
+    (let [tool-associations (meta-db/get-associations-for-tool context concept)
+          generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+      (get-elastic-version-with-associations context concept {:tool-associations tool-associations
+                                                              :generic-associations generic-associations}))
+    (:revision-id concept)))
 
-(defmethod get-elastic-version :subscription
-  [context concept]
-  (:transaction-id concept))
-
-(defmethod get-elastic-version :tool
-  [context concept]
-  (let [tool-associations (meta-db/get-associations-for-tool context concept)
-        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
-    (get-elastic-version-with-associations context concept {:tool-associations tool-associations
-                                                            :generic-associations generic-associations})))
-
-(defmulti get-tag-associations
+(defn get-tag-associations
   "Returns the tag associations of the concept"
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod get-tag-associations :default
   [context concept]
-  nil)
+  (case (:concept-type concept)
+    :collection (meta-db/get-associations-for-collection context concept :tag-association)
+    :default nil))
 
-(defmethod get-tag-associations :collection
-  [context concept]
-  (meta-db/get-associations-for-collection context concept :tag-association))
-
-(defmulti get-variable-associations
+(defn get-variable-associations
   "Returns the variable associations of the concept"
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod get-variable-associations :default
   [context concept]
-  nil)
+  (case (:concept-type concept)
+    :default
+    nil
 
-(defmethod get-variable-associations :collection
-  [context concept]
-  (meta-db/get-associations-for-collection context concept :variable-association))
+    :collection
+    (meta-db/get-associations-for-collection context concept :variable-association)
 
-(defmethod get-variable-associations :variable
-  [context concept]
-  (meta-db/get-associations-for-variable context concept))
+    :variable
+    (meta-db/get-associations-for-variable context concept)))
 
-(defmulti get-service-associations
+(defn get-service-associations
   "Returns the service associations of the concept"
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod get-service-associations :default
   [context concept]
-  nil)
+  (case (:concept-type concept)
+    :default
+    nil
 
-(defmethod get-service-associations :collection
-  [context concept]
-  (meta-db/get-associations-for-collection context concept :service-association))
+    :collection
+    (meta-db/get-associations-for-collection context concept :service-association)
 
-(defmethod get-service-associations :service
-  [context concept]
-  (meta-db/get-associations-for-service context concept))
+    :service
+    (meta-db/get-associations-for-service context concept)))
 
-(defmulti get-tool-associations
+(defn get-tool-associations
   "Returns the tool associations of the concept"
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod get-tool-associations :default
   [context concept]
-  nil)
+  (case (:concept-type concept)
+    :default
+    nil
 
-(defmethod get-tool-associations :collection
-  [context concept]
-  (meta-db/get-associations-for-collection context concept :tool-association))
+    :collection
+    (meta-db/get-associations-for-collection context concept :tool-association)
 
-(defmethod get-tool-associations :tool
-  [context concept]
-  (meta-db/get-associations-for-tool context concept))
+    :tool
+    (meta-db/get-associations-for-tool context concept)))
 
 (defn create-association-map-keys
   "Creates the association map keys that lists out all of the different association types.
@@ -442,16 +464,23 @@
         new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
     (set/rename-keys grouped-assocs new-key-map)))
 
+;; ***********************************************
+;; multi method index-concept
+
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
    association concept indexes the associated collection concept."
-  (fn [context concept parsed-concept options]
+  (fn [_context concept _parsed-concept _options]
     (:concept-type concept)))
 
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type deleted]} concept]
+        {:keys [concept-id revision-id concept-type deleted]} concept
+        start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
+                              concept-id revision-id all-revisions-index?)
+        end-log-msg (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
+                            concept-id revision-id all-revisions-index?)]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
                ;; don't index a deleted variable
                ;; we need to add this check because a variable deletion causes a variable
@@ -459,8 +488,10 @@
                ;; So it is possible that we try to reindex a deleted variable here
                ;; and we don't want to allow a deleted variable be indexed
                (not (and (= :variable concept-type) deleted)))
-      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
+      ;; This log is very verbose, can be in the millions
+      (if (config/reduced-indexer-log)
+        (debug start-log-msg)
+        (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
@@ -499,8 +530,12 @@
                                          revision-id
                                          elastic-version
                                          elastic-options)
-            (info (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
-                          concept-id revision-id all-revisions-index?))))))))
+            ;; This log is very verbose, can be in the millions
+            (if (config/reduced-indexer-log)
+             (debug end-log-msg)
+             (info end-log-msg))))))))
+
+;; **********************
 
 (defn- index-associated-collection
   "Index the associated collection concept of the given concept. This is used by indexing
@@ -559,7 +594,7 @@
   "Index the associated variable concept of the given variable association concept."
   [context concept options]
   (index-associated-concept
-    context (get-in concept [:extra-fields :variable-concept-id]) options))
+   context (get-in concept [:extra-fields :variable-concept-id]) options))
 
 (defn- reindex-associated-variables
   "Reindex variables associated with the collection"
@@ -568,7 +603,10 @@
                           context coll-concept-id coll-revision-id :variable-association)]
     (doseq [association var-associations]
       (index-associated-concept
-        context (get-in association [:extra-fields :variable-concept-id]) {}))))
+       context (get-in association [:extra-fields :variable-concept-id]) {}))))
+
+;; ***********************************************
+;; Multi method index-concept (continue)
 
 (defmethod index-concept :tag-association
   [context concept _parsed-concept options]
@@ -581,23 +619,25 @@
   (index-associated-variable context concept {:all-revisions-index? true}))
 
 (defmethod index-concept :service-association
-  [context concept parsed-concept options]
+  [context concept _parsed-concept options]
   (index-associated-collection context concept options)
   (index-associated-concept context
                             (get-in concept [:extra-fields :service-concept-id])
                             options))
 
 (defmethod index-concept :tool-association
-  [context concept parsed-concept options]
+  [context concept _parsed-concept options]
   (index-associated-collection context concept options)
   (index-associated-concept context
                             (get-in concept [:extra-fields :tool-concept-id])
                             options))
 
 (defmethod index-concept :generic-association
-  [context concept parsed-concept options]
+  [context concept _parsed-concept options]
   (index-associated-generic-source context concept options)
   (index-associated-generic-destination context concept options))
+
+;; **********************
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
@@ -614,7 +654,7 @@
                       (meta-db/get-latest-concept context concept-id))
             parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
-        (log-ingest-to-index-time concept)))))
+        (log-ingest-to-index-time concept options)))))
 
 (defn- cascade-collection-delete
   "Performs the cascade actions of collection deletion,
@@ -622,12 +662,12 @@
   [context concept-mapping-types concept-id revision-id]
   (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
     (let [resp (es/delete-by-query
-                 context
-                 index
-                 (concept-mapping-types :granule)
-                 {:term {(query-field->elastic-field :collection-concept-id :granule)
-                         concept-id}})]
-      (if (not= (get resp :status) 200)
+                context
+                index
+                (concept-mapping-types :granule)
+                {:term {(query-field->elastic-field :collection-concept-id :granule)
+                        concept-id}})]
+      (when (not= (get resp :status) 200)
         (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp)))))
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
@@ -640,14 +680,18 @@
                            revision-id
                            all-revisions-index?)]
     (if (= concept-type :collection)
+      #_{:clj-kondo/ignore [:unresolved-var]}
       (format "%s. Removing %d granules."
               log-string
               (search/find-granule-hits context {:collection-concept-id concept-id}))
       log-string)))
 
+;; ***********************************************
+;; Multi method delete-concept
+
 (defmulti delete-concept
   "Delete the concept with the given id"
-  (fn [context concept-id revision-id options]
+  (fn [_context concept-id _revision-id _options]
     (cs/concept-id->type concept-id)))
 
 (defmethod delete-concept :default
@@ -669,8 +713,8 @@
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
                          (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))]
             (es/save-document-in-elastic
-              context index-names (concept-mapping-types concept-type)
-              es-doc concept-id revision-id elastic-version elastic-options))
+             context index-names (concept-mapping-types concept-type)
+             es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
@@ -722,12 +766,14 @@
     (index-associated-generic-source context concept options)
     (index-associated-generic-destination context concept options)))
 
+;; **********************
+
 (defn force-delete-all-concept-revision
   "Removes a concept revision from the all revisions index"
   [context concept-id revision-id]
   (let [concept-type (cs/concept-id->type concept-id)
         index-names (idx-set/get-concept-index-names
-                      context concept-id revision-id {:all-revisions-index? true})
+                     context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
                          :all-revisions-index? true}]
@@ -792,10 +838,10 @@
     (info "Sending events to reindex collections in all providers:" (pr-str providers))
     (doseq [provider-id providers]
       (publish-provider-event
-        context
-        {:action :provider-collection-reindexing
-         :provider-id provider-id
-         :all-revisions-index? false}))
+       context
+       {:action :provider-collection-reindexing
+        :provider-id provider-id
+        :all-revisions-index? false}))
     (info "Reindexing all collection events submitted.")))
 
 (defn update-humanizers
