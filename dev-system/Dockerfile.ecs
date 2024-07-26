@@ -10,10 +10,6 @@ COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-standalone.j
 
 RUN echo 'Unzip migration files so drift can find the migration files to execute db-migrate'
 
-# RUN mkdir -p /app/cmr-files
-# COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar /app/cmr-files/cmr-copy.jar
-# RUN cd /app/cmr-files && unzip cmr-copy.jar
-
 COPY ./drift-migration-files.zip /app/drift-migration-files.zip
 RUN cd /app && unzip drift-migration-files.zip
 RUN ls -R /app | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
