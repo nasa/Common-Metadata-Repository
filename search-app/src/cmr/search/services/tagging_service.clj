@@ -5,7 +5,7 @@
     [clojure.edn :as edn]
     [cmr.elastic-utils.search.query-execution :as qe]
     [cmr.common.api.context :as context-util]
-    [cmr.common.log :as log :refer [debug info]]
+    [cmr.common.log :refer [debug info]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
@@ -50,7 +50,7 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
   of the saved tag."
   [context tag-json-str]
-  (info (format "Creating tag [%s]" tag-json-str))
+  (debug (format "Creating tag [%s]" tag-json-str))
   (let [user-id (context-util/context->user-id
                  context
                  msg/token-required-for-tag-modification)
@@ -254,7 +254,7 @@
                                                                  :originator-id originator-id})
                                              operation))
                                           tag-associations))]
-    (info "update-tag-associations:" t1)
+    (debug "update-tag-associations:" t1)
     result))
 
 (defn- update-tag-associations-with-query

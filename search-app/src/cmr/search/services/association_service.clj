@@ -162,7 +162,7 @@
                                                      :source-concept-type concept-type})
                                              operation))
                                           associations))]
-    (info "update-associations:" t1) ;;TODO is this required? or needed?
+    (debug "update-associations:" t1)
     result))
 
 (defn- fetch-concept

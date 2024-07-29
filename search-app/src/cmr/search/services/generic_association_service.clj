@@ -195,7 +195,7 @@
                                                      :source-revision-id revision-id})
                                              operation))
                                           associations))]
-    (info "update-generic-associations:" t1) ;; TODO is this required?
+    (debug "update-generic-associations:" t1)
     result))
 
 (defn- link-to-concepts

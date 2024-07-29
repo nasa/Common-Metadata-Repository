@@ -9,7 +9,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
-   [cmr.common.log :as log :refer [info warn error]]
+   [cmr.common.log :refer [info warn error]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]

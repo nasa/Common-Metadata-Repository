@@ -9,7 +9,7 @@
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :refer (warn)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.community-usage-metrics.metrics-json-schema-validation :as metrics-json]
