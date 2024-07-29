@@ -5,8 +5,6 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
@@ -122,6 +120,7 @@
                              :number_of_replicas 1,
                              :refresh_interval "1s"}})
 
+(declare attributes-field-mapping)
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
   {:name m/string-field-mapping
@@ -135,6 +134,7 @@
    :time-value m/date-field-mapping
    :date-value m/date-field-mapping})
 
+(declare science-keywords-field-mapping)
 (defnestedmapping science-keywords-field-mapping
   "Defines mappings for science keywords."
   {:category m/string-field-mapping
@@ -154,12 +154,14 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare tag-associations-mapping)
 (defnestedmapping tag-associations-mapping
   "Defines mappings for tag associations."
   {:tag-key-lowercase m/string-field-mapping
    :originator-id-lowercase m/string-field-mapping
    :tag-value-lowercase m/string-field-mapping})
 
+(declare variables-mapping)
 (defnestedmapping variables-mapping
   "Defines mappings for variables."
   {:measurement m/string-field-mapping
@@ -169,6 +171,7 @@
    :originator-id-lowercase m/string-field-mapping})
 
 ;;DEPRECATED see :platforms2
+(declare platform-hierarchical-mapping)
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
@@ -182,6 +185,7 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare platform2-hierarchical-mapping)
 (defnestedmapping platform2-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:basis m/string-field-mapping
@@ -197,6 +201,7 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare instrument-hierarchical-mapping)
 (defnestedmapping instrument-hierarchical-mapping
   "Defines hierarchical mappings for instruments."
   {:category m/string-field-mapping
@@ -214,6 +219,7 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare data-center-hierarchical-mapping)
 (defnestedmapping data-center-hierarchical-mapping
   "Defines hierarchical mappings for any type of data center."
   {:level-0 m/string-field-mapping
@@ -233,6 +239,7 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare location-keywords-hierarchical-mapping)
 (defnestedmapping location-keywords-hierarchical-mapping
   "Defines hierarchical mappings for location keywords."
   {:category m/string-field-mapping
@@ -250,6 +257,7 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare orbit-calculated-spatial-domain-mapping)
 (defnestedmapping orbit-calculated-spatial-domain-mapping
   "Defines mappings for storing orbit calculated spatial domains."
   {:orbital-model-name m/string-field-mapping
@@ -259,27 +267,32 @@
    :equator-crossing-longitude m/double-field-mapping
    :equator-crossing-date-time m/date-field-mapping})
 
+(declare track-pass-mapping)
 (defnestedmapping track-pass-mapping
   "Defines mappings for storing track pass."
   {:pass (m/doc-values m/int-field-mapping)
    :tiles (m/doc-values m/string-field-mapping)})
 
+(declare prioritized-humanizer-mapping)
 (defnestedmapping prioritized-humanizer-mapping
   "Defines a string value and priority for use in boosting facets."
   {:value m/string-field-mapping
    :value-lowercase m/string-field-mapping
    :priority m/int-field-mapping})
 
+(declare float-prioritized-mapping)
 (defnestedmapping float-prioritized-mapping
   "Defines a float value and priority for use in boosting facets."
   {:value m/float-field-mapping
    :priority m/int-field-mapping})
 
+(declare temporal-mapping)
 (defnestedmapping temporal-mapping
   "Defines mappings for TemporalExtents."
   {:start-date m/date-field-mapping
    :end-date m/date-field-mapping})
 
+(declare measurement-identifiers-mapping)
 (defnestedmapping measurement-identifiers-mapping
   "Defines mappings for variable measurement identifiers."
   {:contextmedium m/string-field-mapping
@@ -325,6 +338,7 @@
    ;; ords contains longitude latitude pairs (ordinates) of all the shapes
    :ords (m/not-indexed (m/stored m/int-field-mapping))})
 
+(declare collection-mapping)
 (defmapping collection-mapping :collection
   "Defines the elasticsearch mapping for storing collections. These are the
   fields that will be stored in an Elasticsearch document. Note, fields can only
@@ -560,6 +574,7 @@
           :s3-bucket-and-object-prefix-names m/string-field-mapping}
          spatial-coverage-fields))
 
+(declare deleted-granule-mapping)
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules. These are the
   fields that will be stored in an Elasticsearch document."
@@ -569,6 +584,7 @@
    :granule-ur (m/doc-values m/string-field-mapping)
    :parent-collection-id (m/doc-values m/string-field-mapping)})
 
+(declare granule-mapping)
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections. These are the
   fields that will be stored in an Elasticsearch document."
@@ -732,6 +748,7 @@
 
    spatial-coverage-fields))
 
+(declare tag-mapping)
 (defmapping tag-mapping :tag
   "Defines the elasticsearch mapping for storing tags. These are the fields
   that will be stored in an Elasticsearch document."
@@ -740,6 +757,7 @@
    :description (m/not-indexed m/string-field-mapping)
    :originator-id-lowercase m/string-field-mapping})
 
+(declare autocomplete-mapping)
 (defmapping autocomplete-mapping :suggestion
   "Defines the elasticsearch mapping for storing autocomplete suggestions.
    These are the fields that will be stored in an Elasticsearch document."
@@ -750,6 +768,7 @@
    :permitted-group-ids (m/doc-values m/string-field-mapping)
    :modified (m/doc-values m/date-field-mapping)})
 
+(declare variable-mapping)
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables. These are the
   fields that will be stored in an Elasticsearch document."
@@ -782,6 +801,7 @@
    :science-keywords-gzip-b64 m/binary-field-mapping
    :instance-information-gzip-b64 m/binary-field-mapping})
 
+(declare service-mapping)
 (defmapping service-mapping :service
   "Defines the elasticsearch mapping for storing services. These are the
   fields that will be stored in an Elasticsearch document."
@@ -804,6 +824,7 @@
    ;; associations with the service stored as EDN gzipped and base64 encoded for retrieving purpose
    :associations-gzip-b64 m/binary-field-mapping})
 
+(declare tool-mapping)
 (defmapping tool-mapping :tool
   "Defines the elasticsearch mapping for storing tools. These are the
   fields that will be stored in an Elasticsearch document."
@@ -826,6 +847,7 @@
    ;; associations with the tool stored as EDN gzipped and base64 encoded for retrieving purpose
    :associations-gzip-b64 m/binary-field-mapping})
 
+(declare subscription-mapping)
 (defmapping subscription-mapping :subscription
   "Defines the elasticsearch mapping for storing subscriptions. These are the
   fields that will be stored in an Elasticsearch document."
@@ -1085,7 +1107,7 @@
          concept (when (= :granule concept-type)
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
-  ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
+  ([context concept-id _revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)
          index-concept-type (resolve-generic-concept-type concept-type)
          indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
@@ -1139,7 +1161,7 @@
   "Return the granule index names for the input provider id"
   [context provider-id]
   (let [indexes (get-in (get-concept-type-index-names context) [:index-names :granule])
-        filter-fn (fn [[k v]]
+        filter-fn (fn [[k _v]]
                     (or
                       (.endsWith (name k) (str "_" provider-id))
                       (= :small_collections k)))]

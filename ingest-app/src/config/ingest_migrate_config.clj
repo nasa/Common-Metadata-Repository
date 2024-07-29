@@ -4,8 +4,6 @@
    [clojure.java.jdbc :as j]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.ingest.config :as ingest-config]
-   [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.connection :as oracle]
    [cmr.metadata-db.services.util :as mdb-util]
    [drift.builder :refer [incremental-migration-number-generator]])
   (:import
@@ -45,6 +43,16 @@
 
 (defn app-migrate-config []
   "Drift migrate configuration used by CMR app's db-migrate endpoint."
+  {:directory "/ingest/migrations"
+   :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
+   :namespace-prefix "cmr.ingest.migrations"
+   :migration-number-generator incremental-migration-number-generator
+   :init maybe-create-schema-table
+   :current-version current-db-version
+   :update-version update-db-version})
+
+(defn app-migrate-config-lein []
+  "Drift migrate configuration used by CMR app's db-migrate endpoint for running with lein."
   {:directory "src/cmr/ingest/migrations"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.ingest-migrate-config :as config])"
    :namespace-prefix "cmr.ingest.migrations"

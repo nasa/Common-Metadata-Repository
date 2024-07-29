@@ -1,13 +1,14 @@
 (ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
+  (:import [java.io File])
   (:require
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
-   [config.bootstrap-migrate-config :as mc]
-   [drift.execute :as drift])
+   [drift.core]
+   [drift.execute])
   (:gen-class))
 
 (defn create-user
@@ -37,11 +38,18 @@
         (drop-user)
 
         (= "migrate" op)
-        (drift/run
-          (conj
-           (vec args)
-           "-c"
-           "config.bootstrap_migrate_config/app-migrate-config"))
+        ; drift looks for migration files within the user.directory, which is /app in service envs.
+        ; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
+        ; can find the migration files correctly
+        ; we had to force method change in drift to set the correct path
+        (try
+          ;; trying non-local path to find drift migration files
+          (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
+            (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))
+          (catch Exception e
+            (println "caught exception trying to find migration files in db.clj file in bootstrap app. We are probably in local env. Trying local route to migration files...")
+            (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/src")))]
+              (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))))
 
         :else
         (info "Unsupported operation: " op))

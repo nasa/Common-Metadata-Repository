@@ -3,12 +3,10 @@
    complying to a schema supported by the Generic Document system) to and object
    that can be indexed in lucine."
   (:require
-   [cheshire.core :as json]
-   [clojure.string :as string]
-   [cmr.common.log :refer (debug info warn error)]))
+   [clojure.string :as string]))
 
 (defn only-elastic-preferences
-  "Go through all the index configurations and return only the ones related to 
+  "Go through all the index configurations and return only the ones related to
    generating elastic values. If an index does not specify what type it is for,
    then assume elastic"
   [list-of-indexes]

@@ -1,18 +1,14 @@
 (ns cmr.indexer.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
-   [cheshire.core :as json]
-   [clojure.stacktrace :refer [print-stack-trace]]
-   [clojure.string :as string]
    [clojure.walk :as walk]
-   [compojure.core :refer :all]
+   [compojure.core :refer [DELETE GET POST PUT context routes]]
    [compojure.handler :as handler]
    [compojure.route :as route]
-   [cmr.acl.core :as acl] ;; These must be required here to make multimethod implementations available.
+   [cmr.acl.core :as acl] ;; These must be required here to make defmulti implementations available.
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
-   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
@@ -35,34 +31,34 @@
 (def ^:private index-set-routes
   "Routes providing index-set operations"
   (context "/index-sets" []
-    (POST "/" {body :body request-context :request-context params :params headers :headers}
+    (POST "/" {body :body request-context :request-context}
       (let [index-set (walk/keywordize-keys body)]
         (acl/verify-ingest-management-permission request-context :update)
         (r/created (index-set-svc/create-index-set request-context index-set))))
 
     ;; respond with index-sets in elastic
-    (GET "/" {request-context :request-context params :params headers :headers}
+    (GET "/" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :read)
       (r/response (index-set-svc/get-index-sets request-context)))
 
-    (POST "/reset" {request-context :request-context params :params headers :headers}
+    (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
       (index-set-svc/reset request-context)
       {:status 204})
 
     (context "/:id" [id]
-      (GET "/" {request-context :request-context params :params headers :headers}
+      (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-set request-context id)))
 
-      (PUT "/" {request-context :request-context body :body params :params headers :headers}
+      (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/update-index-set request-context index-set)
           {:status 200}))
 
-      (DELETE "/" {request-context :request-context params :params headers :headers}
+      (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
         (index-set-svc/delete-index-set request-context id)
         {:status 204})
@@ -99,7 +95,7 @@
       (GET "/" {} {:status 200})
 
       ;; Index a concept
-      (POST "/" {body :body context :request-context params :params headers :headers}
+      (POST "/" {body :body context :request-context params :params}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
               options {:ignore-conflict? (ignore-conflict? params)}]
           ;; indexing all revisions index, does nothing for concept types that do not support all revisions index
@@ -111,7 +107,7 @@
 
       ;; reset operation available just for development purposes
       ;; delete configured elastic indexes and create them back
-      (POST "/reset" {:keys [request-context params headers]}
+      (POST "/reset" {:keys [request-context]}
         (acl/verify-ingest-management-permission request-context :update)
         (cache/reset-caches request-context)
         (index-svc/reset request-context)
@@ -133,26 +129,26 @@
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (POST "/reindex-provider-collections" {:keys [request-context params headers body]}
+      (POST "/reindex-provider-collections" {:keys [request-context body]}
         (acl/verify-ingest-management-permission request-context :update)
         (index-svc/reindex-provider-collections request-context body)
         {:status 200})
 
-      (POST "/reindex-tags" {:keys [request-context params headers]}
+      (POST "/reindex-tags" {:keys [request-context]}
         (acl/verify-ingest-management-permission request-context :update)
         (index-svc/reindex-tags request-context)
         {:status 200})
 
       ;; Unindex all concepts within a provider
       (context "/provider/:provider-id" [provider-id]
-        (DELETE "/" {:keys [request-context params headers]}
+        (DELETE "/" {:keys [request-context]}
           (acl/verify-ingest-management-permission request-context :update)
           (index-svc/delete-provider request-context provider-id)
           {:status 200}))
 
       ;; Unindex a concept
       (context "/:concept-id/:revision-id" [concept-id revision-id]
-        (DELETE "/" {:keys [request-context params headers]}
+        (DELETE "/" {:keys [request-context params]}
           (let [options {:ignore_conflict? (ignore-conflict? params)}]
             (index-svc/delete-concept
               request-context concept-id revision-id (assoc options :all-revisions-index? true))

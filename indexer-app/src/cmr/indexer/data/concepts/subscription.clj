@@ -7,7 +7,7 @@
    [cmr.indexer.data.elasticsearch :as es]))
 
 (defmethod es/parsed-concept->elastic-doc :subscription
-  [context concept parsed-concept]
+  [_context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields created-at]} concept
         {:keys [subscription-name subscriber-id collection-concept-id]} extra-fields

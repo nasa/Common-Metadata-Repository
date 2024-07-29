@@ -1,5 +1,6 @@
 (ns cmr.bootstrap.api.routes
   "Defines the HTTP URL routes for the application."
+  (:import [java.io File])
   (:require
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.bulk-index :as bulk-index]
@@ -24,7 +25,8 @@
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-granules-or-cwic-results-feature]
    [compojure.core :refer :all]
    [compojure.route :as route]
-   [drift.execute :as drift]
+   [drift.core]
+   [drift.execute]
    [inflections.core :as inf]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
@@ -153,11 +155,27 @@
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)
-        (let [migrate-args (if-let [version (:version params)]
-                             ["migrate" "-version" version]
-                             ["migrate"])]
-          (info "Running db migration:" migrate-args)
-          (drift/run (conj migrate-args "-c" "config.bootstrap-migrate-config/app-migrate-config")))
+        (let [db (get-in request-context [:system :db])
+              migrate-args (if-let [version (:version params)]
+                             ["-c" "config.bootstrap-migrate-config/app-migrate-config" "-version" version]
+                             ["-c" "config.bootstrap-migrate-config/app-migrate-config"])]
+          (info "Running db migration with args:" migrate-args)
+          ;; drift looks for migration files within the user.directory, which is /app in service envs.
+          ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
+          ;; can find the migration files correctly
+          ;; we had to force method change in drift to set the correct path
+           (try
+              ;; trying non-local path to find drift migration files
+              (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
+                (drift.execute/run migrate-args))
+              (catch Exception e
+                (try
+                  (println "caught exception trying to find migration files for cloud env. We are probably in local env. Trying local route to migration files...")
+                  (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/bootstrap-app/src")))]
+                    (drift.execute/run migrate-args))
+                  (catch Exception e2
+                    (println "caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
+                    (drift.execute/run (cons migrate-args "migrate")))))))
         {:status 204})
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))
