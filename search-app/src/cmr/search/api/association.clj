@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.log :refer (debug info)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.association-service :as assoc-service]

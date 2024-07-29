@@ -3,7 +3,7 @@
   (:require
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug)]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.core :as core-api]
