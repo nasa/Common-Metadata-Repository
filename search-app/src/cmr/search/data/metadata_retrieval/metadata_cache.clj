@@ -75,6 +75,7 @@
 (defn refresh-cache
   "Refreshes the collection metadata cache"
   [context]
+  (info "Refreshing metadata cache")
   (let [start-time (System/currentTimeMillis)
         incremental-since-refresh-date (str (clj-time.core/now))
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
@@ -98,6 +99,7 @@
   "Updates the collection metadata cache by querying elastic search for updates since the
   last time the cache was updated."
   [context]
+    (info "Updating collection metadata cache")
     (let [start-time (System/currentTimeMillis)
           cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
           incremental-since-refresh-date (str (t/now))

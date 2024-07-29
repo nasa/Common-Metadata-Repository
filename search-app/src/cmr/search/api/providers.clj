@@ -31,7 +31,7 @@
   "Invokes query service to retrieve provider holdings and returns the response"
   [ctx path-w-extension params headers]
   (let [params (core-api/process-params nil params path-w-extension headers mt/json)
-        _ (debug (format "Searching for provider holdings from client %s in format %s with params %s."
+        _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params))
                         (pr-str params)))
         [provider-holdings provider-holdings-formatted]

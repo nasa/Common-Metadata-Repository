@@ -285,7 +285,7 @@
   "Retrieves a timeline of granules within each collection found."
   [ctx path-w-extension params headers query-string]
   (let [params (core-api/process-params :granule params path-w-extension headers mt/json)
-        _ (debug (format "Getting granule timeline from client %s, token_type %s with params %s."
+        _ (info (format "Getting granule timeline from client %s, token_type %s with params %s."
                         (:client-id ctx) (get-token-type (:token ctx)) (pr-str params)))
         search-params (lp/process-legacy-psa params)]
     (core-api/search-response ctx (query-svc/get-granule-timeline ctx search-params))))
@@ -297,7 +297,7 @@
         _ (when (= :stac (:result-format params))
             (svc-errors/throw-service-error
              :bad-request "search by JSON query is not allowed with STAC result format"))
-        _ (debug (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
+        _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
     (core-api/search-response ctx results)))
@@ -318,7 +318,7 @@
   "Invokes query service to search for collections that are deleted and returns the response"
   [ctx path-w-extension params headers]
   (let [params (core-api/process-params :collection params path-w-extension headers mt/xml)]
-    (debug (format "Searching for deleted collections from client %s in format %s with params %s."
+    (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (core-api/search-response ctx (query-svc/get-deleted-collections ctx params))))
@@ -327,7 +327,7 @@
   "Invokes query service to search for granules that are deleted and returns the response"
   [ctx path-w-extension params headers]
   (let [params (core-api/process-params nil params path-w-extension headers mt/xml)]
-    (debug (format "Searching for deleted granules from client %s in format %s with params %s."
+    (info (format "Searching for deleted granules from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (core-api/search-response ctx (query-svc/get-deleted-granules ctx params))))
