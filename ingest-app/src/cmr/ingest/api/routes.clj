@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the ingest API."
   (:import [java.io File])
   (:require
+   [clojure.stacktrace]
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.ingest.data.memory_db]
@@ -48,6 +49,8 @@
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
               (drift.execute/run migrate-args))
             (catch Exception e
+              (println "Exception: " e)
+              (clojure.stacktrace/print-stack-trace e)
               (println "caught exception trying to find migration files. We are probably in local env. Trying local route to migration files...")
               (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
                 (drift.execute/run migrate-args))))))
