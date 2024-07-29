@@ -3,7 +3,6 @@
   (:require
    [clojure.string :as string]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.indexer.data.concept-parser :as concept-parser]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.association-util :as assoc-util]
@@ -11,7 +10,7 @@
    [cmr.transmit.metadata-db :as mdb]))
 
 (defmethod es/parsed-concept->elastic-doc :tool
-  [context concept parsed-concept]
+  [_context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields tool-associations generic-associations]} concept
         {:keys [tool-name]} extra-fields

@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concept-parser
   "Contains helper functions to parse a concept for indexing."
-  (:require 
+  (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.string :as string]
@@ -11,15 +11,15 @@
 (defmulti parse-concept
   "Parse the metadata from a concept map into a UMM model or map containing data needed for
   indexing."
-  (fn [context concept]
+  (fn [_context concept]
     (keyword (:concept-type concept))))
 
 (defmethod parse-concept :tag
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :tag-association
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :variable
@@ -27,7 +27,7 @@
   (umm/parse-metadata context concept))
 
 (defmethod parse-concept :variable-association
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :service
@@ -35,7 +35,7 @@
   (umm/parse-metadata context concept))
 
 (defmethod parse-concept :service-association
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :collection
@@ -48,19 +48,20 @@
 
 (defmethod parse-concept :tool
   [context concept]
+  (println "here in tool handler")
   (umm/parse-metadata context concept))
- 
+
 (defmethod parse-concept :tool-association
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :generic-association
-  [context concept]
+  [_context concept]
   (edn/read-string (:metadata concept)))
 
 (doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod parse-concept concept-type
-    [context concept]
+    [_context concept]
     (json/parse-string (:metadata concept) true)))
 
 (doseq [concept-type concepts/get-draft-concept-types-array]
@@ -79,5 +80,5 @@
           (umm/parse-metadata context concept))))))
 
 (defmethod parse-concept :default
- [context concept]
- (umm-legacy/parse-concept context concept))
+  [context concept]
+  (umm-legacy/parse-concept context concept))

@@ -6,7 +6,6 @@
    [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -21,6 +20,7 @@
    [cmr.umm.echo10.spatial :as umm-spatial]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (cmr.spatial.mbr Mbr)))
 
