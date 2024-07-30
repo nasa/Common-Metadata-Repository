@@ -1,5 +1,7 @@
 (ns cmr.search.services.query-walkers.condition-extractor
   "Defines protocols and functions to extract conditions."
+  (:require [cmr.common.services.search.query-model :as cqm]
+            [cmr.search.models.query :as qm])
   (:import [cmr.common.services.search.query_model
             Query
             ConditionGroup
