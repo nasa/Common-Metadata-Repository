@@ -7,7 +7,7 @@
   []
   (try
     (j/db-do-commands (config/db) "DROP TABLE CMR_INGEST.provider_acl_hash")
-    (catch Exception e)))
+    (catch Exception _e)))
 
 (defn up
   "Migrates the database up to version 3."

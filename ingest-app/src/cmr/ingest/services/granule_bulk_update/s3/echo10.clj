@@ -2,6 +2,7 @@
   "Contains functions to update ECHO10 granule xml for S3 url bulk update."
   (:require
    [clojure.data.xml :as xml]
+   [clojure.set :as set]
    [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.xml :as cx]
@@ -55,7 +56,7 @@
   into online-accesses and appends them."
   [online-accesses urls]
   (let [s3-resources (filter #(is-s3? (:url %)) online-accesses)
-        new-s3-urls (clojure.set/difference (set urls) (set (map :url s3-resources)))
+        new-s3-urls (set/difference (set urls) (set (map :url s3-resources)))
         new-s3-resources (urls->s3-urls (set new-s3-urls))]
     (concat new-s3-resources online-accesses)))
 

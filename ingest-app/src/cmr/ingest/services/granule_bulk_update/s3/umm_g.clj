@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.granule-bulk-update.s3.umm-g
   "Contains functions to update UMM-G granule metadata for s3 url bulk update."
   (:require
+   [clojure.set :as set]
    [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]))
 
 (def ^:private S3_RELATEDURL_TYPE
@@ -31,7 +32,7 @@
   returning a new list of related-urls."
   [related-urls urls]
   (let [s3-resources (filter is-s3? related-urls)
-        new-s3-urls (clojure.set/difference (set urls) (set (map :URL s3-resources)))
+        new-s3-urls (set/difference (set urls) (set (map :URL s3-resources)))
         new-s3-resources (urls->s3-urls new-s3-urls)]
     (concat related-urls new-s3-resources)))
 

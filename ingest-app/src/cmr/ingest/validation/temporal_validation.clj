@@ -36,7 +36,7 @@
 (defn out-of-range-temporal-searches
   "Returns the search parameters for identifying granules which fall outside
   the temporal range defined for the collection"
-  [context concept-id concept prev-concept]
+  [_context concept-id concept prev-concept]
   (let [updated-start-time (spec-time/collection-start-date concept)
         updated-end-time (spec-time/collection-end-date concept)
         prev-start-time (spec-time/collection-start-date prev-concept)

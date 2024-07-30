@@ -2,8 +2,6 @@
   "Defines the HTTP URL routes for the ingest web site."
   (:require
    [cmr.common-app.static :as static]
-   [cmr.common-app.site.data :as common-data]
-   [cmr.common-app.site.pages :as common-pages]
    [cmr.ingest.site.pages :as pages]
    [cmr.transmit.config :as config]
    [compojure.core :refer [GET context routes]]

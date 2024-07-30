@@ -6,7 +6,6 @@
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]

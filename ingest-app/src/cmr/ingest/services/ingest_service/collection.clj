@@ -68,6 +68,7 @@
       :warnings warnings
       :existing-errors existing-errors})))
 
+(declare validate-and-prepare-collection context concept validation-options)
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
@@ -90,26 +91,27 @@
      :warnings warnings
      :existing-errors existing-errors}))
 
+(declare save-collection)
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
    Return entry-titile, concept-id, revision-id, and warnings."
   [context concept validation-options]
   (let [{:keys [concept warnings existing-errors]} (validate-and-prepare-collection context
                                                                                     concept
-                                                                                    validation-options)]
-    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-          entry-title (get-in concept [:extra-fields :entry-title])]
+                                                                                    validation-options)
+        {:keys [concept-id revision-id]} (mdb/save-concept context concept)
+        entry-title (get-in concept [:extra-fields :entry-title])]
       ;; if ingested with existing errors, log the existing errors and warnings for the collection
       ;; and the user
-      (when (seq existing-errors)
-        (warn "Ingest with existing errors info:  "
-              (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
-                      concept-id (pr-str existing-errors) (pr-str warnings)
-                      (if (:token context)
-                        (common-context/context->user-id context)
-                        "unknown user"))))
-      {:entry-title entry-title
-       :concept-id concept-id
-       :revision-id revision-id
-       :warnings warnings
-       :existing-errors existing-errors})))
+    (when (seq existing-errors)
+      (warn "Ingest with existing errors info:  "
+            (format "Collection[%s] has the existing errors: %s and warnings: %s by user: [%s]"
+                    concept-id (pr-str existing-errors) (pr-str warnings)
+                    (if (:token context)
+                      (common-context/context->user-id context)
+                      "unknown user"))))
+    {:entry-title entry-title
+     :concept-id concept-id
+     :revision-id revision-id
+     :warnings warnings
+     :existing-errors existing-errors}))

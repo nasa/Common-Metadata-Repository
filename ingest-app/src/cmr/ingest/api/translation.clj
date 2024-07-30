@@ -12,7 +12,7 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as util]
    [cmr.umm-spec.versioning :as versioning]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [GET POST context]]))
 
 (def concept-type->supported-input-formats
   "A map of concept type to the list of formats that are supported for input of translation."
@@ -94,7 +94,7 @@
 
 (defmulti perform-translation
   "Perform the collection translation and return the translation response map."
-  (fn [context concept-type content-type accept-header body skip-umm-validation options]
+  (fn [_context concept-type _content-type _accept-header _body _skip-umm-validation _options]
     concept-type))
 
 (defmethod perform-translation :collection
@@ -107,7 +107,7 @@
       (translate-response context umm accept-header))))
 
 (defmethod perform-translation :granule
-  [context concept-type content-type accept-header body skip-umm-validation options]
+  [context concept-type content-type accept-header body skip-umm-validation _options]
   (let [umm (umm-legacy/parse-concept
              context {:concept-type concept-type
                       :format content-type
@@ -167,12 +167,11 @@
 
 (def random-metadata-routes
   "This defines routes for development purposes that can generate random metadata and return it."
-  (GET "/random-metadata" {:keys [body headers request-context]}
+  (GET "/random-metadata" {:keys [headers request-context]}
     (let [supported-formats (concept-type->supported-output-formats :collection)
-          output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)]
-
-      (let [umm (test-check-gen/generate umm-generators/umm-c-generator)
-            output-str (umm-spec/generate-metadata umm output-mime-type)]
-        {:status 200
-         :body output-str
-         :headers {"Content-Type" output-mime-type}}))))
+          output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)
+          umm (test-check-gen/generate umm-generators/umm-c-generator)
+          output-str (umm-spec/generate-metadata request-context umm output-mime-type)]
+      {:status 200
+       :body output-str
+       :headers {"Content-Type" output-mime-type}})))
