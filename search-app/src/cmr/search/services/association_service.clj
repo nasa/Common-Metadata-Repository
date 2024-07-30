@@ -5,7 +5,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.api.context :as cmn-context]
-   [cmr.common.log :refer (debug info)]
+   [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]

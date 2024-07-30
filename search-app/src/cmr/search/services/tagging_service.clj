@@ -5,7 +5,7 @@
     [clojure.edn :as edn]
     [cmr.elastic-utils.search.query-execution :as qe]
     [cmr.common.api.context :as context-util]
-    [cmr.common.log :refer [debug info]]
+    [cmr.common.log :as log :refer [debug info]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]

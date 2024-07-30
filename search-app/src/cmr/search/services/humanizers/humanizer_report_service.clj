@@ -9,7 +9,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
-   [cmr.common.log :refer [info warn error]]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -86,7 +86,7 @@
     (if-let [vec-concept-ids (metadata-cache/get-collection-metadata-cache-concept-ids context)]
       vec-concept-ids
       (when (> retries 0)
-        (warn (format (str "Failed reading %s for the humanizer report. "
+        (info (format (str "Failed reading %s for the humanizer report. "
                            "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
                       cmn-coll-metadata-cache/cache-key

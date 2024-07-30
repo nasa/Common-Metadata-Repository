@@ -6,7 +6,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.log :refer [warn]]
+   [cmr.common.log :as log :refer [warn]]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
