@@ -1069,7 +1069,7 @@
       "description": "This class defines the horizontal spatial extents coordinate system and the data product's horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal distance between successive elements of data in a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data resolution could be different in the two horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which is the minimum distance between points that an instrument can see as distinct.",
       "oneOf": [{
         "type": "object",
-        "title": "Description of the Resolution",
+        "title": "Geodetic Model",
         "additionalProperties": false,
         "properties": {
           "Description": {
@@ -1084,7 +1084,7 @@
         "required": ["GeodeticModel"]
       }, {
         "type": "object",
-        "title": "Horizontal Data Resolution Information",
+        "title": "Horizontal Data Resolution",
         "additionalProperties": false,
         "properties": {
           "Description": {
@@ -1103,7 +1103,7 @@
         "required": ["HorizontalDataResolution"]
       }, {
         "type": "object",
-        "title": "Local Coordinate System Information",
+        "title": "Local Coordinate System",
         "additionalProperties": false,
         "properties": {
           "Description": {
