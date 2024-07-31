@@ -211,7 +211,7 @@
         result-format (rfh/printable-result-format (:result-format query))
         log-message (log-search-result-metadata (:hits results) (name concept-type)
                                                 total-took (:client-id context) (:token context) result-format
-                                                "" nil)]
+                                                "with params %s" (pr-str params))]
     (info (cond
             scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
             search-after (format "%s, search-after: %s, new search-after: %s."
@@ -485,7 +485,7 @@
         pr-result-format (rfh/printable-result-format result-format)
         log-message (log-search-result-metadata hits "deleted collections"
                                                 total-took (:client-id context) (:token context) pr-result-format
-                                                "" nil)]
+                                                "with params %s" (pr-str params))]
     (info log-message)
     {:results results-str
      :hits hits
@@ -530,7 +530,7 @@
         pr-result-format (rfh/printable-result-format result-format)
         log-message (log-search-result-metadata (:hits results) "deleted granules"
                                                 total-took (:client-id context) (:token context) pr-result-format
-                                                "" nil)]
+                                                "with params %s" (pr-str params))]
     (info log-message)
     {:results results-str
      :hits hits
