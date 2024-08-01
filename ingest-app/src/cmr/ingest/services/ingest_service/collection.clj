@@ -68,7 +68,8 @@
       :warnings warnings
       :existing-errors existing-errors})))
 
-(declare validate-and-prepare-collection context concept validation-options)
+(declare validate-and-prepare-collection)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
@@ -92,9 +93,10 @@
      :existing-errors existing-errors}))
 
 (declare save-collection)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
-   Return entry-titile, concept-id, revision-id, and warnings."
+   Return entry-title, concept-id, revision-id, and warnings."
   [context concept validation-options]
   (let [{:keys [concept warnings existing-errors]} (validate-and-prepare-collection context
                                                                                     concept

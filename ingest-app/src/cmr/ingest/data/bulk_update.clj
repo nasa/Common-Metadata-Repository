@@ -184,9 +184,7 @@
   [context]
   (get-in context [:system :db]))
 
-(declare get-collection-tasks)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed get-collection-tasks
+(defn get-collection-tasks
   "Returns bulk update statuses with task ids by provider"
   [context provider-id]
   (get-provider-bulk-update-status (context->db context) provider-id))

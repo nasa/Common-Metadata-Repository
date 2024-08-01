@@ -51,9 +51,7 @@
   (when (<= (count (:metadata concept)) 4)
     (errors/throw-service-error :bad-request "Request content is too short.")))
 
-(declare validate-concept-request)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed validate-concept-request
+(defn validate-concept-request
   "Validates the initial request to ingest a concept."
   [concept]
   (validate-format concept)
@@ -318,9 +316,7 @@
                                 (:format concept)
                                 (:metadata concept))))
 
-(declare validate-concept-metadata)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed validate-concept-metadata
+(defn validate-concept-metadata
   ([concept]
    (validate-concept-metadata concept true))
   ([concept throw-error?]
@@ -424,9 +420,7 @@
         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
-(declare validate-granule-umm-spec)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed validate-granule-umm-spec
+(defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
@@ -448,9 +442,7 @@
                                   granule
                                   (granule-keyword-validations context))))
 
-(declare validate-business-rules)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed validate-business-rules
+(defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   ([context concept]
    (validate-business-rules context concept nil))

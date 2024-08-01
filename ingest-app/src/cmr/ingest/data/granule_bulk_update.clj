@@ -8,7 +8,7 @@
    [cmr.common.log :refer (info error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.common.util :refer [defn-timed defn-timed-level] :as util]
    [cmr.ingest.config :as config]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as sql-utils]))
@@ -240,9 +240,7 @@
  [context]
  (get-in context [:system :db]))
 
-(declare cleanup-bulk-granule-tasks)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed cleanup-bulk-granule-tasks
+(defn cleanup-bulk-granule-tasks
   "Run a delete operation in the database to delete bulk granule update
   tasks older than the retention period."
   [context]
@@ -265,15 +263,12 @@
   [context provider-id params]
   (get-granule-tasks-by-provider-id (context->db context) provider-id params))
 
-(declare get-granule-task-by-id)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed get-granule-task-by-id
+(defn get-granule-task-by-id
   "Returns the granule bulk update task by id"
   [context task-id]
   (get-granule-task-by-task-id (context->db context) task-id))
 
-(declare get-bulk-update-granule-statuses-for-task)
-(defn-timed get-bulk-update-granule-statuses-for-task
+(defn get-bulk-update-granule-statuses-for-task
   [context task-id]
   (get-bulk-update-task-granule-status (context->db context) task-id))
 
@@ -298,6 +293,7 @@
    (context->db context) task-id granule-ur status status-message))
 
 (declare get-incomplete-granule-task-ids)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-incomplete-granule-task-ids
   "Returns a list of granule bulk update task ids where the status is not COMPELTE."
   [context]
@@ -345,7 +341,7 @@
 
 (declare mark-task-complete)
 #_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed mark-task-complete
+(defn-timed-level debug mark-task-complete
   "Marks a granule bulk task as COMPLETE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
   [context task-id]

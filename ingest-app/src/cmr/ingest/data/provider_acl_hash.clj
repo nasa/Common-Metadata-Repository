@@ -37,16 +37,12 @@
   [context]
   (get-in context [:system :db]))
 
-(declare get-provider-id-acl-hashes)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed get-provider-id-acl-hashes
+(defn get-provider-id-acl-hashes
   "Returns a map of provider ids to hash values."
   [context]
   (some-> context context->db get-acl-hash edn/read-string))
 
-(declare save-provider-id-acl-hashes)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed save-provider-id-acl-hashes
+(defn save-provider-id-acl-hashes
   "Saves the map of provider id acl hash values"
   [context provider-hashes]
   (save-acl-hash (context->db context) (pr-str provider-hashes)))
