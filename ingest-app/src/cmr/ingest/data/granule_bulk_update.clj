@@ -5,7 +5,7 @@
    [clj-time.coerce :as time-coerce]
    [clojure.java.jdbc :as jdbc]
    [clojure.string :as string]
-   [cmr.common.log :refer (info error)]
+   [cmr.common.log :refer (debug info error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [defn-timed defn-timed-level] :as util]
@@ -341,7 +341,7 @@
 
 (declare mark-task-complete)
 #_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn mark-task-complete
+(defn-timed-level mark-task-complete debug
   "Marks a granule bulk task as COMPLETE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
   [context task-id]
