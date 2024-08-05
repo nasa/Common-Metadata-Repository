@@ -1,13 +1,8 @@
 (ns cmr.search.results-handlers.stac-spatial-results-handler
   "A helper for converting spatial shapes into stac results"
   (:require
-   [cmr.spatial.cartesian-ring :as cr]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]))
+   [cmr.spatial.mbr :as m]))
 
 (defprotocol stacSpatialHandler
   "Converts a spatial shape into GeoJSON structures"

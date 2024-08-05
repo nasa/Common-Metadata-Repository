@@ -1,11 +1,8 @@
 (ns cmr.search.test.unit.results-handlers.stac-spatial-results-handler
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
-   [cmr.spatial.cartesian-ring :as cr]
-   [cmr.spatial.derived :as d]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]

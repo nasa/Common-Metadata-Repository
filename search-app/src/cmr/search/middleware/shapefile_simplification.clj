@@ -1,11 +1,8 @@
 (ns cmr.search.middleware.shapefile-simplification
   "Middleware to optionally reduce the complexity of shapefiles"
   (:require
-   [clojure.java.io :as io]
-   [cheshire.core :as json]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.api.errors :as api-errors]
-   [cmr.common.log :refer [debug]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.search.services.parameters.converters.geojson :as geojson]

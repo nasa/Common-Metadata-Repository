@@ -2,8 +2,7 @@
   "Defines the API for associating/dissociating tools with collections in the CMR."
   (:require
    [cmr.search.api.association :as association]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (def tool-api-routes
   (context "/tools" []
