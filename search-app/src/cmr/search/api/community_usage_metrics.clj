@@ -7,10 +7,8 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.routes :as cr]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
    [cmr.search.services.community-usage-metrics.metrics-service :as metrics-service]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (defn- community-usage-metrics-response
   "Creates a successful community usage metrics response with the given data response"

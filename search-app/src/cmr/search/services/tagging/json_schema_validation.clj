@@ -1,8 +1,6 @@
 (ns cmr.search.services.tagging.json-schema-validation
   "This contains JSON schema validations related to the tagging service"
-  (:require [cmr.common.validations.json-schema :as js]
-            [cheshire.core :as json]
-            [cmr.common.services.errors :as errors]))
+  (:require [cmr.common.validations.json-schema :as js]))
 
 (def ^:private base-tag-schema-structure
   "Base Schema for tags as json."

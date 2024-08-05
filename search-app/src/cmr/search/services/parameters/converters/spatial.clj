@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-params-converter :as p]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
    [cmr.spatial.circle :as spatial-circle]

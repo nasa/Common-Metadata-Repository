@@ -5,15 +5,13 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.tagging-service :as tagging-service]
    [cmr.transmit.config :as transmit-config]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (defn- validate-tag-content-type
   "Validates that content type sent with a tag is JSON"
@@ -81,7 +79,7 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (info (format "Tagging [%s] on collections: %s by client: %s."
+  (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
   (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
 
@@ -91,7 +89,7 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (info (format "Dissociating tag [%s] from collections: %s by client: %s."
+  (debug (format "Dissociating tag [%s] from collections: %s by client: %s."
                 tag-key body (:client-id context)))
   (tag-api-response (tagging-service/dissociate-tag-to-collections context tag-key body)))
 
@@ -101,7 +99,7 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (info (format "Tagging [%s] on collections by query: %s by client: %s."
+  (debug (format "Tagging [%s] on collections by query: %s by client: %s."
                 tag-key body (:client-id context)))
   (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
 
@@ -111,7 +109,7 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (info (format "Dissociating tag [%s] from collections by query: %s by client: %s."
+  (debug (format "Dissociating tag [%s] from collections by query: %s by client: %s."
                 tag-key body (:client-id context)))
   (tag-api-response (tagging-service/dissociate-tag-by-query context tag-key body)))
 

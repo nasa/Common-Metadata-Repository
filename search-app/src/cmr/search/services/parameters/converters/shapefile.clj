@@ -2,8 +2,8 @@
   "Contains parameter converters for shapefile parameter"
   (:require
    [clojure.java.io :as io]
-   [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.log :refer [debug info]]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.log :refer [debug]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]

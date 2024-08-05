@@ -8,8 +8,7 @@
    [cmr.common.util :as util]
    [cmr.search.services.association-service :as assoc-service]
    [cmr.search.services.association-validation :as assoc-validation]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (defn- validate-association-content-type
   "Validates that content type sent with a association is JSON."
