@@ -5,7 +5,6 @@
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.api.context :as context-util]
-   [cmr.common.util :as util]
    [cmr.search.services.acls.acl-helper :as acl-helper]
    [cmr.transmit.config :as tc]))
 

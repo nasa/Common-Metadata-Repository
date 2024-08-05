@@ -9,7 +9,6 @@
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as parser]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.models.query :as qm]
    [cmr.search.services.parameters.legacy-parameters :as lp]))
