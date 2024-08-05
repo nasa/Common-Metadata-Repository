@@ -5,7 +5,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as common-app-config]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug info error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
@@ -609,4 +609,4 @@
     (catch Exception e
       ;; not sure if this is the best way to handle this error, looks like a
       ;; bunch of noise during tests which has no impact.
-      (comment println (.getMessage e)))))
+      (debug (.getMessage e)))))

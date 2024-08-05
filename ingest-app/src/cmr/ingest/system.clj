@@ -29,7 +29,6 @@
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.metadata-db.services.util :as mdb-util]
-   [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
    [cmr.transmit.urs :as urs]))

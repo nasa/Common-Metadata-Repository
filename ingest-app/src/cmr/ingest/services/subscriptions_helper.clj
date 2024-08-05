@@ -8,8 +8,8 @@
    [cmr.common-app.config :as common-app-config]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-range-parser :as date-time-range-parser]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors] 
+   [cmr.common.log :refer (debug info error)]
+   [cmr.common.services.errors :as errors]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -97,6 +97,7 @@
         end-time (last parts)]
     (assoc raw :start-time start-time :end-time end-time)))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-update-subscription-notification-time!
   "Fires off an http call to update the time which the subscription last was processed"
   [context sub-id]
@@ -123,6 +124,7 @@
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- search-gran-refs-by-collection-id
   [context params sub-id]
   (try
@@ -132,6 +134,7 @@
              (dissoc params :token) "\n\n" (.getMessage e) "\n\n" e)
       [])))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- search-collection-refs
   [context params sub-id]
   (try
@@ -176,11 +179,11 @@
   (postal-core/send-message email-settings email-content))
 
 (defmulti create-email-content
-  (fn [sub-type from-email-address to-email-address concept-ref-locations subscription]
+  (fn [sub-type _from-email-address _to-email-address _concept-ref-locations _subscription]
     sub-type))
 
 (defmethod create-email-content :granule
-  [sub-type from-email-address to-email-address concept-ref-locations subscription]
+  [_sub-type from-email-address to-email-address concept-ref-locations subscription]
   (let [metadata (json/parse-string (:metadata subscription))
         concept-id (get-in subscription [:extra-fields :collection-concept-id])
         meta-query (get metadata "Query")
@@ -206,7 +209,7 @@
                             ").\n"))}]}))
 
 (defmethod create-email-content :collection
-  [sub-type from-email-address to-email-address concept-ref-locations subscription]
+  [_sub-type from-email-address to-email-address concept-ref-locations subscription]
   (let [metadata (json/parse-string (:metadata subscription))
         meta-query (get metadata "Query")
         sub-start-time (:start-time subscription)

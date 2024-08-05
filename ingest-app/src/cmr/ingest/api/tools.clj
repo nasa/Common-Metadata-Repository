@@ -4,7 +4,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
@@ -21,7 +21,7 @@
 
 (defn validate-tool
   [provider-id native-id request]
-  (let [{:keys [body content-type params headers request-context]} request
+  (let [{:keys [body content-type headers request-context]} request
         concept (api-core/body->concept! :tool provider-id native-id body content-type headers)]
     (api-core/verify-provider-exists request-context provider-id)
     (info (format "Validating Tool %s from client %s"

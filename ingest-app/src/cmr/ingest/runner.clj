@@ -7,7 +7,7 @@
 
 (defn -main
   "Starts the App."
-  [& args]
+  [& _args]
   (let [system (system/start (system/create-system))]
     (cfg/check-env-vars)
     (events/stop-on-exit-hook (:instance-name system) #(system/stop system))

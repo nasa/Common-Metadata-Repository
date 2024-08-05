@@ -23,11 +23,11 @@
   {:tag UploadContext}
   [request encoding]
   (reify UploadContext
-    (getContentType [this]       (get-in request [:headers "content-type"]))
-    (getContentLength [this]     (or (req/content-length request) -1))
-    (contentLength [this]        (or (req/content-length request) -1))
-    (getCharacterEncoding [this] encoding)
-    (getInputStream [this]       (:body request))))
+    (getContentType [_this]       (get-in request [:headers "content-type"]))
+    (getContentLength [_this]     (or (req/content-length request) -1))
+    (contentLength [_this]        (or (req/content-length request) -1))
+    (getCharacterEncoding [_this] encoding)
+    (getInputStream [_this]       (:body request))))
 
 (defn- file-item-iterator-seq
   "Create a lazy seq from a FileItemIterator instance."

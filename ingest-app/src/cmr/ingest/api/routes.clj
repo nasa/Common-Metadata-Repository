@@ -47,7 +47,7 @@
             ;; trying non-local path to find drift migration files
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
               (drift.execute/run migrate-args))
-            (catch Exception e
+            (catch Exception _e
               (println "caught exception trying to find migration files. We are probably in local env. Trying local route to migration files...")
               (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/ingest-app/src")))]
                 (drift.execute/run migrate-args))))))
@@ -68,7 +68,7 @@
             ctx (= "true" (:force_version params)))
            {:status 200})
      (POST "/reindex-autocomplete-suggestions"
-           {ctx :request-context params :params}
+           {ctx :request-context _params :params}
            (acl/verify-ingest-management-permission ctx :update)
            (jobs/trigger-autocomplete-suggestions-reindex ctx)
            {:status 200})
@@ -259,8 +259,10 @@
             provider-id native-id request)))
 
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
-       (context ["/:concept-type" :concept-type (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [concept-type]
-         (context ["/:native-id" :native-id #".*$"] [native-id]
+       (context ["/:concept-type"
+                 :concept-type
+                 (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [_concept-type]
+         (context ["/:native-id" :native-id #".*$"] [_native-id]
            (POST "/" request (gen-doc/crud-generic-document request :create))
            (GET "/" request (gen-doc/crud-generic-document request :read))
            (PUT "/" request (gen-doc/crud-generic-document request :update))

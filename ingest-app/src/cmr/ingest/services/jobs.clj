@@ -5,7 +5,7 @@
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs :refer [def-stateful-job]]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.ingest.data.bulk-update :as bulk-update]
    [cmr.ingest.data.granule-bulk-update :as granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
@@ -107,7 +107,7 @@
 ;; Periodically checks the acls for a provider. When they change reindexes all the collections in a
 ;; provider.
 (def-stateful-job ReindexCollectionPermittedGroups
-  [ctx system]
+  [_ctx system]
   (let [context {:system system}]
     (reindex-collection-permitted-groups context)))
 
@@ -115,7 +115,7 @@
 ;; This is done as a temporary fix for CMR-1311 but we may keep it around to help temper other race
 ;; conditions that may occur.
 (def-stateful-job ReindexAllCollections
-  [ctx system]
+  [_ctx system]
   (let [context {:system system}]
     (reindex-all-collections context false)))
 
@@ -131,7 +131,7 @@
        (mdb/save-concept context {:concept-id concept-id :deleted true})))))
 
 (def-stateful-job CleanupExpiredCollections
-  [ctx system]
+  [_ctx system]
   (let [context {:system system}]
     (cleanup-expired-collections context)))
 

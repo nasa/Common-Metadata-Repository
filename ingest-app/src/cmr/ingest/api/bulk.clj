@@ -2,20 +2,16 @@
   "Bulk ingest functions in support of the ingest API."
   (:require
    [clojure.data.xml :as xml]
-   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.xml.gen :refer :all]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.granule-bulk-update :as data-gran-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update]
-   [cmr.ingest.services.ingest-service :as ingest]
    [cmr.common.util :as util]))
 
 (defn bulk-update-collections
@@ -93,7 +89,7 @@
 
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
-  (fn [headers result]
+  (fn [headers _result]
     (api-core/get-ingest-result-format headers :xml)))
 
 (defmethod generate-provider-tasks-response :json
@@ -102,7 +98,7 @@
   (api-core/generate-ingest-response headers result))
 
 (defmethod generate-provider-tasks-response :xml
-  [headers result]
+  [_headers result]
   ;; Create an xml response for a list of tasks
   {:status (api-core/ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
@@ -114,7 +110,7 @@
 
 (defmulti get-provider-tasks*
   "Get bulk update tasks status based on concept type"
-  (fn [context provider-id concept-type params]
+  (fn [_context _provider-id concept-type _params]
     concept-type))
 
 (defmethod get-provider-tasks* :collection
@@ -138,7 +134,7 @@
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
-  (fn [headers result]
+  (fn [headers _result]
     (api-core/get-ingest-result-format headers :xml)))
 
 (defmethod generate-provider-task-status-response :json
@@ -147,7 +143,7 @@
   (api-core/generate-ingest-response headers result))
 
 (defmethod generate-provider-task-status-response :xml
-  [headers result]
+  [_headers result]
   ;; Create an xml response for a list of tasks
   {:status (api-core/ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}

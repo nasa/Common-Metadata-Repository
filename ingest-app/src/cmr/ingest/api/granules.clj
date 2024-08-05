@@ -4,7 +4,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.ingest.api.core :as api-core]
@@ -14,7 +14,7 @@
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
   or a normal request with the XML as the body."
-  (fn [provider-id native-id request]
+  (fn [_provider-id _native-id request]
     (if (seq (:multipart-params request))
       :multipart-params
       :default)))
@@ -60,7 +60,7 @@
 
 (defn ingest-granule
   [provider-id native-id request]
-  (let [{:keys [body content-type params headers request-context]} request]
+  (let [{:keys [body content-type headers request-context]} request]
     (lt-validation/validate-launchpad-token request-context)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
@@ -78,7 +78,7 @@
 
 (defn delete-granule
   [provider-id native-id request]
-  (let [{:keys [request-context params headers]} request
+  (let [{:keys [request-context headers]} request
         concept-attribs (api-core/set-revision-id
                          {:provider-id provider-id
                           :native-id native-id
