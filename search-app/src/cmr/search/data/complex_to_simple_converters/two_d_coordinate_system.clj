@@ -3,8 +3,7 @@
   protocol for two d coordinate system related search fields."
   (:require [cmr.common.services.search.query-model :as qm]
             [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.search.query-transform :as c2s]
-            [cmr.common.services.errors :as errors]))
+            [cmr.elastic-utils.search.query-transform :as c2s]))
 
 (defprotocol ConvertCoordinateCondition
   (coordinate-cond->condition

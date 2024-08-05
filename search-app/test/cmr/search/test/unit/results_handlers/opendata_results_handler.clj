@@ -2,7 +2,7 @@
   "This tests the opendata-results-handler namespace."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.search.results-handlers.opendata-results-handler :as opendata-results-handler]))
 
 (deftest distribution-is-downloadable

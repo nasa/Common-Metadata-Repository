@@ -3,8 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]
-   [ring.util.codec :as codec]))
+   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]))
 
 (def ^:private metadata-link
   "example metadata-link for test"

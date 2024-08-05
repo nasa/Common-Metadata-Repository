@@ -2,9 +2,9 @@
   "Contains parameter converters for shapefile parameter"
   (:require
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.api.errors :as api-errors]
-   [cmr.common.log :refer [debug error]]
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors])
   (:import
    (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
