@@ -73,13 +73,13 @@
 (defn- find-concept-by-concept-id*
   "Perfrom the retrieval of concept by concept id and revision id"
   ([ctx result-format concept-id]
-   (debug (format "Search for concept with cmr-concept-id [%s]" concept-id))
+   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
    (core-api/search-response
     ctx
     (query-svc/find-concept-by-id ctx result-format concept-id)))
 
   ([ctx result-format concept-id revision-id]
-   (debug (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
+   (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                  concept-id
                  revision-id))
    (core-api/search-response
