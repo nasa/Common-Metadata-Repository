@@ -1,8 +1,5 @@
 (ns cmr.ingest.validation.spatial-validation
-  "Provides functions to validate the spatial attributes of a collection during its update."
-  (:require
-   [camel-snake-kebab.core :as csk]
-   [cmr.common.util :as util]))
+  "Provides functions to validate the spatial attributes of a collection during its update.")
 
 (defn- extract-granule-spatial-representation
   "Returns the granule spatial representation of the collection or a default of :no-spatial."
@@ -15,7 +12,7 @@
   representation and would be indexed based on that. We can't allow this change if there are any
   granules. Returns a search that will see if the collection contains any granules if the gsr
   changes."
-  [context concept-id concept prev-concept]
+  [_context concept-id concept prev-concept]
   (let [prev-gsr (extract-granule-spatial-representation prev-concept)
         new-gsr (extract-granule-spatial-representation concept)]
     (when-not (= prev-gsr new-gsr)

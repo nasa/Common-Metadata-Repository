@@ -4,7 +4,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]))
@@ -22,7 +22,7 @@
 
 (defn validate-collection
   [provider-id native-id request]
-  (let [{:keys [body content-type params headers request-context]} request
+  (let [{:keys [body content-type _params headers request-context]} request
         concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
         validation-options (get-validation-options headers)]
     (api-core/verify-provider-exists request-context provider-id)
@@ -39,7 +39,7 @@
 
 (defn ingest-collection
   [provider-id native-id request]
-  (let [{:keys [body content-type params headers request-context]} request]
+  (let [{:keys [body content-type _params headers request-context]} request]
     (lt-validation/validate-launchpad-token request-context)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)

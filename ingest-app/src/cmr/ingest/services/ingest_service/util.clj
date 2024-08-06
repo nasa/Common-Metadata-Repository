@@ -20,8 +20,8 @@
   "Fixes formats"
   [concept-type fmt]
   (if (or
-        (not (mt/umm-json? fmt))
-        (mt/version-of fmt))
+       (not (mt/umm-json? fmt))
+       (mt/version-of fmt))
     fmt
     (str fmt ";version=" (config/ingest-accept-umm-version concept-type))))
 
@@ -49,6 +49,8 @@
     {:ok? ok?
      :dependencies dep-health}))
 
+(declare delete-concept)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
@@ -63,11 +65,11 @@
         concept-id (:concept-id existing-concept)]
     (when-not concept-id
       (errors/throw-service-error
-        :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
+       :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
     (when (:deleted existing-concept)
       (errors/throw-service-error
-        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                           (util/html-escape native-id) (util/html-escape concept-id))))
+       :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                          (util/html-escape native-id) (util/html-escape concept-id))))
     (let [concept (-> concept-attribs
                       (dissoc :provider-id :native-id)
                       (assoc :concept-id concept-id :deleted true))

@@ -1,7 +1,6 @@
 (ns cmr.ingest.services.granule-bulk-update.mime-type.umm-g
   "Contains functions to update UMM-G granule metadata for MimeType granule bulk update."
   (:require
-   [clojure.string :as string]
    [cmr.common.services.errors :as errors]))
 
 (defn- update-link-mime-type

@@ -22,7 +22,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.ingest.services.provider-service :as provider-service]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [DELETE GET POST PUT context]]))
 
 (defn- drop-metadata
   "Look for and remove metadata field from the body returned by the metadata db
@@ -122,7 +122,7 @@
   (context "/providers" []
 
     ;; create a new provider
-    (POST "/" {:keys [request-context body params headers]}
+    (POST "/" {:keys [request-context body headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
       (one-result->response-map
@@ -131,14 +131,12 @@
                                            (read-body headers body)))))
 
     ;; read a provider
-    (GET "/:provider-id" {{:keys [provider-id] :as params} :params
-                          request-context :request-context
-                          headers :headers}
+    (GET "/:provider-id" {{:keys [provider-id]} :params
+                          request-context :request-context}
       (one-result->response-map (provider-service/read-provider request-context provider-id)))
 
     ;; update an existing provider
-    (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
-                          request-context :request-context
+    (PUT "/:provider-id" {request-context :request-context
                           body :body
                           headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
@@ -149,7 +147,7 @@
                                           (read-body headers body)))))
 
     ;; delete a provider
-    (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
+    (DELETE "/:provider-id" {{:keys [provider-id]} :params
                              request-context :request-context
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)

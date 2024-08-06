@@ -2,12 +2,10 @@
   "Stores and retrieves the hashes of the ACLs for a provider."
   (:require
    [cheshire.core :as json]
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.common.util :as util]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.granule-bulk-update :as granule-data-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as acl-hash]))
@@ -38,13 +36,13 @@
   data-bulk-update/BulkUpdateStore
 
   (get-provider-bulk-update-status
-   [this provider-id]
+   [_this provider-id]
    (some->> @task-status-atom
             (filter #(= provider-id (:provider-id %)))
             (map #(select-keys % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
   (get-bulk-update-task-status
-   [this task-id provider-id]
+   [_this task-id provider-id]
    (let [task-status (some->> @task-status-atom
                               (some #(when (and (= provider-id (str (:provider-id %)))
                                                 (= task-id (str (:task-id %))))
@@ -52,14 +50,14 @@
      (select-keys task-status [:created-at :name :task-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-collection-status
-   [this task-id]
+   [_this task-id]
    (some->> @collection-status-atom
             (into [])
             (filter #(= (str task-id) (str (:task-id %))))
             (map #(select-keys % [:concept-id :status :status-message]))))
 
   (get-bulk-update-collection-status
-   [this task-id concept-id]
+   [_this task-id concept-id]
    (let [coll-status (some->> @collection-status-atom
                               (some #(when (and (= concept-id (:concept-id %))
                                                 (= (str task-id) (:task-id %)))
@@ -67,7 +65,7 @@
      (select-keys coll-status [:concept-id :status :status-message])))
 
   (create-and-save-bulk-update-status
-   [this provider-id json-body concept-ids]
+   [_this provider-id json-body concept-ids]
    (swap! task-id-atom inc)
    (let [task-id (str @task-id-atom)
          name (get (json/parse-string json-body) "name" task-id)]
@@ -136,14 +134,14 @@
   granule-data-bulk-update/GranBulkUpdateStore
 
   (get-granule-tasks-by-provider-id
-   [this provider-id params]
+   [_this provider-id _params]
    (some->> @granule-task-status-atom
             (filter #(= provider-id (:provider-id %)))
             (map #(select-keys
                    % [:created-at :name :task-id :status :status-message :request-json-body]))))
 
   (get-granule-task-by-task-id
-   [this task-id]
+   [_this task-id]
    (let [task-status (some->> @granule-task-status-atom
                               (some #(when (= task-id (str (:task-id %)))
                                        %)))]
@@ -151,7 +149,7 @@
                   [:created-at :name :provider-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-granule-status
-   [this task-id]
+   [_this task-id]
    (some->> @granule-status-atom
             (into [])
             (filter #(= (str task-id) (str (:task-id %))))
@@ -159,7 +157,7 @@
             (map util/remove-nil-keys)))
 
   (get-bulk-update-granule-status
-   [this task-id granule-ur]
+   [_this task-id granule-ur]
    (let [gran-status (some->> @granule-status-atom
                               (some #(when (and (= granule-ur (:granule-ur %))
                                                 (= (str task-id) (:task-id %)))
@@ -167,7 +165,7 @@
      (select-keys gran-status [:granule-ur :status :status-message])))
 
   (create-and-save-bulk-granule-update-status
-   [this provider-id user-id request-json-body instructions]
+   [_this provider-id user-id request-json-body instructions]
    (swap! granule-task-id-atom inc)
    (let [task-id (str @granule-task-id-atom)
          parsed-json (json/parse-string request-json-body true)
@@ -243,13 +241,13 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (reset-bulk-update
-   [this]
+   [_this]
    (reset! task-status-atom [])
    (reset! collection-status-atom [])
    (reset! task-id-atom 0))
 
   (reset-bulk-granule-update
-   [this]
+   [_this]
    (reset! granule-task-status-atom [])
    (reset! granule-status-atom [])
    (reset! granule-task-id-atom 0))
@@ -258,10 +256,10 @@
   lifecycle/Lifecycle
 
   (start
-   [this system]
+   [this _system]
    this)
   (stop
-   [this system]
+   [this _system]
    this))
 
 (defn create-db

@@ -3,13 +3,12 @@
   (:require
    [cheshire.core :as json]
    [clj-time.coerce :as time-coerce]
-   [clj-time.local :as l]
    [clojure.java.jdbc :as jdbc]
    [clojure.string :as string]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug info error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.common.util :refer [defn-timed defn-timed-level] :as util]
    [cmr.ingest.config :as config]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as sql-utils]))
@@ -76,7 +75,7 @@
   ;;the valid date should be either like "2000-01-01T10:00:00Z,2000-01-02T10:00:00Z"
   ;;or just one date like "2000-01-01T10:00:00Z".
   (when date
-    (let [date-trimmed (string/replace date #"^,|,$| " "") 
+    (let [date-trimmed (string/replace date #"^,|,$| " "")
           dates (string/split date-trimmed #",")
           begin-date (first dates)
           end-date (second dates)]
@@ -116,7 +115,7 @@
                      [:created-at :name :task-id :status :status-message :request-json-body]
                      (sql-utils/from "granule_bulk_update_tasks")
                      (sql-utils/where `(and (= :provider-id ~provider-id)
-                                            (<= :created-at (:to_utc_timestamp_tz ~end-date)) 
+                                            (<= :created-at (:to_utc_timestamp_tz ~end-date))
                                             (>= :created-at (:to_utc_timestamp_tz ~begin-date))))
                      (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
                    (if begin-date
@@ -133,7 +132,7 @@
                        (sql-utils/from "granule_bulk_update_tasks")
                        (sql-utils/where `(= :provider-id ~provider-id))
                        (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))))
-            ;; Note: the column selected out of the database is created_at, instead of created-at. 
+            ;; Note: the column selected out of the database is created_at, instead of created-at.
             statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
                                  (take max-rows (sql-utils/query conn stmt))))
             statuses (map util/map-keys->kebab-case statuses)]
@@ -217,7 +216,7 @@
     [db task-id granule-ur status status-message]
     (try
       (jdbc/with-db-transaction
-        [conn db]
+        [_conn db]
         (let [statement (str "UPDATE bulk_update_gran_status "
                              "SET status = ?, status_message = ?, updated_at = ?"
                              "WHERE task_id = ? AND granule_ur = ?")
@@ -241,7 +240,7 @@
  [context]
  (get-in context [:system :db]))
 
-(defn-timed cleanup-bulk-granule-tasks
+(defn cleanup-bulk-granule-tasks
   "Run a delete operation in the database to delete bulk granule update
   tasks older than the retention period."
   [context]
@@ -257,21 +256,24 @@
       (errors/throw-service-error :invalid-data
                                   [(str "Error cleaning up bulk granule update task table "
                                         (.getMessage e))]))))
-
+(declare get-granule-tasks-by-provider)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
   [context provider-id params]
   (get-granule-tasks-by-provider-id (context->db context) provider-id params))
 
-(defn-timed get-granule-task-by-id
+(defn get-granule-task-by-id
   "Returns the granule bulk update task by id"
   [context task-id]
   (get-granule-task-by-task-id (context->db context) task-id))
 
-(defn-timed get-bulk-update-granule-statuses-for-task
+(defn get-bulk-update-granule-statuses-for-task
   [context task-id]
   (get-bulk-update-task-granule-status (context->db context) task-id))
 
+(declare create-granule-bulk-update-task)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed create-granule-bulk-update-task
   "Create all rows for granule bulk update status tables - task status and granule status.
   Returns task id."
@@ -279,6 +281,8 @@
   (create-and-save-bulk-granule-update-status
    (context->db context) provider-id user-id request-json-body instructions))
 
+(declare update-bulk-update-task-granule-status)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed update-bulk-update-task-granule-status
   "For the task and concept id, update the granule to the given status with the
    given status message"
@@ -288,6 +292,8 @@
   (update-bulk-update-granule-status
    (context->db context) task-id granule-ur status status-message))
 
+(declare get-incomplete-granule-task-ids)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-incomplete-granule-task-ids
   "Returns a list of granule bulk update task ids where the status is not COMPELTE."
   [context]
@@ -318,6 +324,8 @@
               (util/html-escape task-id))]))
   task-id)
 
+(declare task-completed?)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed task-completed?
   "Returns false if there are any granule updates marked PENDING."
   [context task-id]
@@ -331,7 +339,9 @@
             (sql-utils/where `(and (= :status "PENDING")
                                    (= :task-id ~task-id))))))))
 
-(defn-timed mark-task-complete
+(declare mark-task-complete)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
+(defn-timed-level mark-task-complete debug
   "Marks a granule bulk task as COMPLETE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
   [context task-id]

@@ -51,7 +51,7 @@
   (when (<= (count (:metadata concept)) 4)
     (errors/throw-service-error :bad-request "Request content is too short.")))
 
-(defn-timed validate-concept-request
+(defn validate-concept-request
   "Validates the initial request to ingest a concept."
   [concept]
   (validate-format concept)
@@ -105,7 +105,7 @@
                                   context
                                   :mime-type
                                   msg/mime-type-not-matches-kms-keywords)
-                       :Format (match-kms-keywords-validation-single 
+                       :Format (match-kms-keywords-validation-single
                                 context
                                 :granule-data-format
                                 msg/getdata-format-not-matches-kms-keywords)}})})
@@ -316,7 +316,7 @@
                                 (:format concept)
                                 (:metadata concept))))
 
-(defn-timed validate-concept-metadata
+(defn validate-concept-metadata
   ([concept]
    (validate-concept-metadata concept true))
   ([concept throw-error?]
@@ -420,7 +420,7 @@
         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
-(defn-timed validate-granule-umm-spec
+(defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
@@ -442,7 +442,7 @@
                                   granule
                                   (granule-keyword-validations context))))
 
-(defn-timed validate-business-rules
+(defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   ([context concept]
    (validate-business-rules context concept nil))
@@ -511,18 +511,16 @@
         (errors/throw-service-errors :invalid-data err-messages)
          ;; throw warnings when error doesn't exist.
         (when warning-messages
-          (do
-            (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec warning-messages)))
-            warning-messages)))
+          (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec warning-messages)))
+          warning-messages))
        ;; when we are supposed to return errors as warnings as well,
        ;; return both errors and warnings as warnings.
       (when-let [all-warning-messages (seq (umm-spec-validation/validate-variable
-                                              variable
-                                              [(variable-keyword-validations context)
-                                               (variable-keyword-validations-warnings context)]))]
-        (do
-          (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
-          all-warning-messages)))))
+                                            variable
+                                            [(variable-keyword-validations context)
+                                             (variable-keyword-validations-warnings context)]))]
+        (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
+        all-warning-messages))))
 
 (defn validate-variable-associated-collection
   "Validate the collection being associated to is accessible."
