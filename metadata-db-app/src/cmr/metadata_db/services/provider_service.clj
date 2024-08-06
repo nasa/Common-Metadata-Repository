@@ -1,6 +1,6 @@
 (ns cmr.metadata-db.services.provider-service
   (:require
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :refer (debug info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util]
@@ -27,7 +27,7 @@
   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
   ([context] (get-providers context nil))
   ([context params]
-   (info "Getting provider list.")
+   (debug "Getting provider list.")
   (let [db (mdb-util/context->db context)
         providers (providers/get-providers db)
         providers (if (:meta params)

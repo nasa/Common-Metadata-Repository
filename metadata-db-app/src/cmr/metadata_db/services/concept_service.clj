@@ -7,7 +7,7 @@
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer (info warn trace)]
+   [cmr.common.log :refer (debug info warn trace)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
@@ -528,7 +528,7 @@
 (defn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples allow-missing?]
-  (info (format "Getting [%d] concepts by concept-id/revision-id"
+  (debug (format "Getting [%d] concepts by concept-id/revision-id"
                 (count concept-id-revision-id-tuples)))
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
@@ -1060,7 +1060,7 @@
                         (c/get-expired-concepts db provider concept-type)))]
     (loop []
       (when-let [expired-concepts (seq (get-expired))]
-        (info "Deleting expired" (name concept-type) "concepts:" (pr-str (map :concept-id expired-concepts)))
+        (debug "Deleting expired" (name concept-type) "concepts:" (pr-str (map :concept-id expired-concepts)))
         (doseq [c expired-concepts]
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)
@@ -1124,7 +1124,7 @@
     ;; We only want to publish the deleted-tombstone event in the case where a granule tombstone is
     ;; being cleaned up, not when an old revision is being removed, because the case of old revision,
     ;; a deleted-tombstone even would have been published already.
-    (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
+    (debug "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
       context provider concept-type false
       #(c/get-old-concept-revisions
@@ -1136,7 +1136,7 @@
          concept-truncation-batch-size)
       concept-truncation-batch-size)
 
-    (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
+    (debug "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
       context provider concept-type true
       #(c/get-tombstoned-concept-revisions
