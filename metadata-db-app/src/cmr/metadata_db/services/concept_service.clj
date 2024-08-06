@@ -562,13 +562,8 @@
       (let [millis (- (System/currentTimeMillis) start)]
         (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
         (keep concepts-by-tuple concept-id-revision-id-tuples))
-      ;; some concepts weren't found
-      (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
-                                                   (set (keys concepts-by-tuple)))]
-        (errors/throw-service-errors
-          :not-found
-          (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
-               missing-concept-tuples))))))
+      ;; some concepts weren't found in the database
+      (keep #(if (concepts-by-tuple %) (concepts-by-tuple %) {:metadata nil}) concept-id-revision-id-tuples)))) 
 
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
