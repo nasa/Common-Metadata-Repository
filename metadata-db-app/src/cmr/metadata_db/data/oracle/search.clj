@@ -273,7 +273,7 @@
                    (do
                      (info "Couldn't find batch so searching for more from" start-index)
                      (when-let [next-id (find-batch-starting-id db table params start-index)]
-                       (info "Found next-id of" next-id)
+                       (debug "Found next-id of" next-id)
                        (lazy-find next-id)))
                    ;; We found a batch. Return it and the next batch lazily
                    (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
@@ -311,7 +311,7 @@
                   (do
                     (info "Couldn't find batch so searching for more from" start-index)
                     (when-let [next-id (find-batch-starting-id-with-stmt db stmt start-index)]
-                      (info "Found next-id of" next-id)
+                      (debug "Found next-id of" next-id)
                       (lazy-find next-id)))
                   ;; We found a batch. Return it and the next batch lazily
                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
