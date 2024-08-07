@@ -45,11 +45,16 @@
           tuples [[(:concept-id coll1) 1]
                   [(:concept-id coll1) 2]
                   ["C2-REG_PROV" 1]]
-          {:keys [status errors]} (util/get-concepts tuples)]
-      (is (= 404 status))
-      (is (= #{(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 2)
-               (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-REG_PROV" 1)}
-             (set errors))))))
+          {:keys [status concepts]} (util/get-concepts tuples)
+          expected-cond [true true true]
+          ;; When a concept revision doesn't exist in DB, it returns nil for metadata.
+          actual-cond (map #(if (:concept-id %)
+                              (and (is (= (:concept-id coll1) (:concept-id %)))
+                                   (is (= 1 (:revision-id %))))
+                              (is (= nil (:metadata %))))
+                           concepts)]
+      (is (= 200 status))
+      (is (= expected-cond actual-cond)))))
 
 (deftest get-concepts-with-one-invalid-id-test-allow-missing
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
