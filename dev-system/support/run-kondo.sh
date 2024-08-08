@@ -21,6 +21,8 @@ projects_to_check='access-control-app/src \
             common-lib/src \
             elastic-utils-lib/src \
             es-spatial-plugin/src \
+            indexer-app/src \
+            ingest-app/src \
             message-queue-lib/src \
             umm-lib/src'
 

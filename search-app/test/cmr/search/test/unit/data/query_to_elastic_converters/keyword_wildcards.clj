@@ -2,7 +2,7 @@
   "This test tests the pure functions get-validate-keyword-wildcards-msg"
   (:require
     [clojure.test :refer :all]
-    [cmr.common.util :as u :refer [are3]]
+    [cmr.common.util :refer [are3]]
     [cmr.search.data.query-to-elastic :as query-to-elastic]))
 
 (deftest get-validate-keyword-wildcards-msg-test

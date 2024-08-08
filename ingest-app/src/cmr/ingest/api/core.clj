@@ -9,17 +9,15 @@
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.xml.gen :refer :all]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.tokens :as tokens]
-   [cmr.common.util :as util]
-   [ring.util.codec :as ring-codec])
+   [cmr.common.util :as util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -31,7 +29,8 @@
                       (some #(when (= provider-id (:provider-id %)) %)))]
     (when-not provider
       (srvc-errors/throw-service-error
-        :invalid-data (format "Provider with provider-id [%s] does not exist." (util/html-escape provider-id))))))
+        :invalid-data (format "Provider with provider-id [%s] does not exist."
+                              (util/html-escape provider-id))))))
 
 (def valid-response-mime-types
   "Supported ingest response formats"
@@ -81,7 +80,7 @@
   ([headers default-format]
    (get-ingest-result-format
      headers (set (keys content-type-mime-type->response-format)) default-format))
-  ([headers valid-mime-types default-format]
+  ([headers _valid-mime-types default-format]
    (get content-type-mime-type->response-format
         (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
         default-format)))
@@ -113,11 +112,11 @@
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
-  (fn [headers result]
+  (fn [headers _result]
     (get-ingest-result-format headers :xml)))
 
 (defmethod generate-ingest-response :json
-  [headers result]
+  [_headers result]
   ;; ring-json middleware will handle converting the body to json
   {:status (or (:status result)
                (ingest-status-code result))
@@ -125,7 +124,7 @@
    :body result})
 
 (defmethod generate-ingest-response :xml
-  [headers result]
+  [_headers result]
   {:status (or (:status result)
                (ingest-status-code result))
    :headers {"Content-Type" (mt/format->mime-type :xml)}
@@ -133,11 +132,11 @@
 
 (defmulti generate-validate-response
   "Convert a result to a proper response format"
-  (fn [headers result]
+  (fn [headers _result]
     (get-ingest-result-format headers :xml)))
 
 (defmethod generate-validate-response :json
-  [headers result]
+  [_headers result]
   ;; ring-json middleware will handle converting the body to json
   (if (seq result)
     {:status 200
@@ -146,7 +145,7 @@
     {:status 200}))
 
 (defmethod generate-validate-response :xml
-  [headers result]
+  [_headers result]
   (if (seq result)
    {:status 200
     :headers {"Content-Type" (mt/format->mime-type :xml)}
@@ -246,7 +245,7 @@
         (if (and (some? content) (some? data))
           [(json/generate-string content) (json/generate-string data)]
           [body-str]))
-      (catch com.fasterxml.jackson.core.JsonParseException jpe
+      (catch com.fasterxml.jackson.core.JsonParseException _jpe
         ;; other blocks of code will check the validity of the body, but at this
         ;; point we may be looking at XML and not JSON, just return the content
         ;; of body and stop looking for Association Data
@@ -297,9 +296,10 @@
                   (:client-id request-context)
                   (lt-validation/get-token-type (:token request-context))))))
 
-(defn set-default-error-format [default-response-format handler]
+(defn set-default-error-format
   "Ring middleware to add a default format to the exception-info created during exceptions. This
   is used to determine the default format for each route."
+  [default-response-format handler]
   (fn [request]
     (try
       (handler request)
@@ -313,7 +313,7 @@
 (defn delete-concept
   "Delete the given concept by its concept type, provider id and native id."
   [concept-type provider-id native-id request]
-  (let [{:keys [request-context params headers]} request
+  (let [{:keys [request-context headers]} request
         concept-attribs (-> {:provider-id provider-id
                              :native-id native-id
                              :concept-type concept-type}

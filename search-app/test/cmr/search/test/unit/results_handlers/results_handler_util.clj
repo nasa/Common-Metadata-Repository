@@ -1,6 +1,6 @@
 (ns cmr.search.test.unit.results-handlers.results-handler-util
   (:require [clojure.test :refer :all]
-            [cmr.common.util :as util :refer [are3]]
+            [cmr.common.util :refer [are3]]
             [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
 (deftest convert-associations-test

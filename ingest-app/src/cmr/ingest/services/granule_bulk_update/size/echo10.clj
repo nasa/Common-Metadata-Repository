@@ -4,8 +4,7 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.xml :as cx]))
+   [cmr.common.services.errors :as errors]))
 
 (def ^:private tags-after-data-granule
   "Defines the element tags that come after DataGranule in ECHO10 Granule xml schema"

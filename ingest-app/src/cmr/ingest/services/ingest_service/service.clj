@@ -12,7 +12,7 @@
 (defn- add-extra-fields-for-service
   "Returns service concept with fields necessary for ingest into metadata db
   under :extra-fields."
-  [context concept service]
+  [_context concept service]
   (assoc concept :extra-fields {:service-name (:Name service)
                                 :service-type (:Type service)}))
 
@@ -52,6 +52,8 @@
   (let [errors (seq (umm-spec-validation/validate-service service (match-kms-related-url-content-type-type-and-subtype context)))]
     (if-errors-throw :bad-request errors)))
 
+(declare save-service)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-service
   "Store a service concept in mdb and indexer. Return concept-id, and revision-id."
   [context concept]

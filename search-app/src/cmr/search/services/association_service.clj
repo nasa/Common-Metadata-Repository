@@ -162,7 +162,7 @@
                                                      :source-concept-type concept-type})
                                              operation))
                                           associations))]
-    (info "update-associations:" t1)
+    (debug "update-associations:" t1)
     result))
 
 (defn- fetch-concept

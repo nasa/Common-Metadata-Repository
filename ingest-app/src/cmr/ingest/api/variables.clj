@@ -44,7 +44,7 @@
      (v/validate-variable-associated-collection
       request-context coll-concept-id coll-revision-id)
      (let [concept (validate-and-prepare-variable-concept concept)
-           {concept-format :format metadata :metadata data :data} concept
+           {concept-format :format metadata :metadata} concept
            variable (spec/parse-metadata request-context :variable concept-format metadata)
            validate-var-result (v/umm-spec-validate-variable
                                 variable request-context (not (ingest-config/validate-umm-var-keywords)))

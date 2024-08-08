@@ -50,7 +50,7 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
   of the saved tag."
   [context tag-json-str]
-  (info (format "Creating tag [%s]" tag-json-str))
+  (debug (format "Creating tag [%s]" tag-json-str))
   (let [user-id (context-util/context->user-id
                  context
                  msg/token-required-for-tag-modification)
@@ -254,7 +254,7 @@
                                                                  :originator-id originator-id})
                                              operation))
                                           tag-associations))]
-    (info "update-tag-associations:" t1)
+    (debug "update-tag-associations:" t1)
     result))
 
 (defn- update-tag-associations-with-query

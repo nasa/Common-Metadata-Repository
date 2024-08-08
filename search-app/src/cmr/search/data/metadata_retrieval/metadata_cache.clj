@@ -17,7 +17,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.memory-db.connection]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer [debug info]]
+   [cmr.common.log :refer [debug info]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
@@ -76,7 +76,8 @@
   "Refreshes the collection metadata cache"
   [context]
   (info "Refreshing metadata cache")
-  (let [incremental-since-refresh-date (str (clj-time.core/now))
+  (let [start-time (System/currentTimeMillis)
+        incremental-since-refresh-date (str (clj-time.core/now))
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
@@ -91,15 +92,16 @@
                           cmn-coll-metadata-cache/collection-metadata-cache-fields-key
                           (vec (remove nil? (keys new-cache-value))))
     (hash-cache/set-values rcache cmn-coll-metadata-cache/cache-key new-cache-value)
-    (info "Metadata cache refresh complete. Cache Size:"
-          (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))))
+    (info "Metadata cache refresh complete. Took %d ms. Cache Size:"
+          ((System/currentTimeMillis) - start-time) (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))))
 
 (defn update-cache-job
   "Updates the collection metadata cache by querying elastic search for updates since the
   last time the cache was updated."
   [context]
     (info "Updating collection metadata cache")
-    (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+    (let [start-time (System/currentTimeMillis)
+          cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
           incremental-since-refresh-date (str (t/now))
           concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
           new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
@@ -121,7 +123,7 @@
       (hash-cache/set-values cache
                              cmn-coll-metadata-cache/cache-key
                              new-cache-value)
-      (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
+      (info "Metadata cache update complete. Took %d ms. Cache Size:" ((System/currentTimeMillis) - start-time) (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
 (defn in-memory-db?
   "Checks to see if the database in the context is an in-memory db."

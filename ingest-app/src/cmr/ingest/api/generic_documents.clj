@@ -185,6 +185,8 @@
                (util/html-escape version)
                (.getMessage e))))))
 
+(declare save-document)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-document
   "Store a concept in mdb and indexer. Return concept-id, and revision-id."
   [context concept]
@@ -270,7 +272,7 @@
              request-context :read :provider-object provider-id))]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
-(defn- extract-info-from-concept-id 
+(defn- extract-info-from-concept-id
   "Extract concept info from concept-id."
   [concept-id]
   (let [draft-concept-type (common-concepts/concept-id->type concept-id)

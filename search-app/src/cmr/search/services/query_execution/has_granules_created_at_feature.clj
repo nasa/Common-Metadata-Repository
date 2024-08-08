@@ -11,7 +11,6 @@
   has_granules_created_at time ranges.
   3.) Return the full search results for those collection-ids returned by the granule query."
   (:require
-   [clojure.set :as set]
    [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.search.services.query-execution.multi-part-query-feature-common :as mp-query-common]))
 

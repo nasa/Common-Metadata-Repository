@@ -163,11 +163,48 @@
          result# (do ~@body)]
      [(- (System/currentTimeMillis) start#) result#]))
 
+(defmacro defn-timed-level
+  "Creates a function that logs how long it took to execute the body. It
+   supports multiarity functions but only times how long the last listed arity
+   version takes. This means it should be used with multiarity functions where
+   it calls itself with the extra arguments.
+   This function is different from defn-timed by allowing the log function to be
+   passed in so as to allow the calling function to pick which level to log to."
+  [fn-name level & fn-tail]
+  (let [fn-name-str (name fn-name)
+        ns-str (str *ns*)
+        ;; Extract the doc string from the function if present
+        [doc-string fn-tail] (if (string? (first fn-tail))
+                               [(first fn-tail) (next fn-tail)]
+                               [nil fn-tail])
+        ;; Wrap single arity functions in a list
+        fn-tail (if (vector? (first fn-tail))
+                  (list fn-tail)
+                  fn-tail)
+        ;; extract other arities defined in the function which will not be
+        ;; timed.
+        other-arities (drop-last fn-tail)
+        ;; extract the last arity definitions bindings and body
+        [timed-arity-bindings & timed-arity-body] (last fn-tail)]
+    `(defn ~fn-name
+       ~@(when doc-string [doc-string])
+       ~@other-arities
+       (~timed-arity-bindings
+        (let [start# (System/currentTimeMillis)]
+          (try
+            ~@timed-arity-body
+            (finally
+              (let [elapsed# (- (System/currentTimeMillis) start#)]
+                (when (true? (cfg/defn-timed-debug))
+                  (~level
+                   (format
+                    "Timed function %s/%s took %d ms."
+                    ~ns-str ~fn-name-str elapsed#)))))))))))
 (defmacro defn-timed
   "Creates a function that logs how long it took to execute the body. It
-  supports multiarity functions but only times how long the last listed arity
-  version takes. This means it should be used with multiarity functions where
-  it calls itself with the extra arguments."
+   supports multiarity functions but only times how long the last listed arity
+   version takes. This means it should be used with multiarity functions where
+   it calls itself with the extra arguments."
   [fn-name & fn-tail]
   (let [fn-name-str (name fn-name)
         ns-str (str *ns*)
@@ -188,23 +225,23 @@
        ~@(when doc-string [doc-string])
        ~@other-arities
        (~timed-arity-bindings
-         (let [start# (System/currentTimeMillis)]
-           (try
-             ~@timed-arity-body
-             (finally
-               (let [elapsed# (- (System/currentTimeMillis) start#)]
-                 (when (true? (cfg/defn-timed-debug))
-                   (info
-                     (format
-                       "Timed function %s/%s took %d ms."
-                       ~ns-str ~fn-name-str elapsed#)))))))))))
+        (let [start# (System/currentTimeMillis)]
+          (try
+            ~@timed-arity-body
+            (finally
+              (let [elapsed# (- (System/currentTimeMillis) start#)]
+                (when (true? (cfg/defn-timed-debug))
+                  (info
+                   (format
+                    "Timed function %s/%s took %d ms."
+                    ~ns-str ~fn-name-str elapsed#)))))))))))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type
   passed in must be a java class. Uses the getBasis function on record classes
   which returns a list of symbols of the fields of the record."
   [record-type]
-  `(map keyword  ( ~(symbol (str record-type "/getBasis")))))
+  `(map keyword  (~(symbol (str record-type "/getBasis")))))
 
 (defn remove-map-keys
   "Removes all keys from a map where the provided function returns true for the
@@ -242,7 +279,7 @@
   (cond
     (map? x)
     (let [clean-map (remove-nil-keys
-                      (zipmap (keys x) (map remove-empty-maps (vals x))))]
+                     (zipmap (keys x) (map remove-empty-maps (vals x))))]
       (when (seq clean-map)
         clean-map))
     (sequential? x)
@@ -256,7 +293,7 @@
   [x]
   (cond
     (map? x) (let [clean-map (remove-nil-keys
-                               (zipmap (keys x) (map remove-nils-empty-maps-seqs (vals x))))]
+                              (zipmap (keys x) (map remove-nils-empty-maps-seqs (vals x))))]
                (when (seq clean-map)
                  clean-map))
     (vector? x) (when (seq x)
@@ -271,13 +308,13 @@
   [f m]
   (when m
     (letfn [(handle-value [v]
-                          (cond
-                            (map? v) (map-keys f v)
-                            (vector? v) (mapv handle-value v)
-                            (seq? v) (map handle-value v)
-                            :else v))
+              (cond
+                (map? v) (map-keys f v)
+                (vector? v) (mapv handle-value v)
+                (seq? v) (map handle-value v)
+                :else v))
             (mapper [[k v]]
-                    [(f k) (handle-value v)])]
+              [(f k) (handle-value v)])]
       (into {} (map mapper m)))))
 
 (defn map-values
@@ -379,13 +416,13 @@
   [f values]
   (let [errors (atom nil)
         result (doall (pmap
-                        (fn [val]
+                       (fn [val]
                          (try
                            (f val)
                            (catch Exception e
                              (swap! errors conj e)
                              nil)))
-                        values))]
+                       values))]
     (if @errors
       (throw (first @errors))
       result)))
@@ -533,7 +570,7 @@
         ^LZ4Factory factory (LZ4Factory/fastestInstance)
         ^LZ4Compressor compressor (.highCompressor factory)
         max-compressed-length (.maxCompressedLength
-                                compressor decompressed-length)
+                               compressor decompressed-length)
         compressed (byte-array max-compressed-length)
         compressed-length (.compress compressor
                                      ;; Data to compress and size
@@ -581,7 +618,7 @@
   obtained by gzip compressing the bytes of the original string."
   [input]
   (let [^bytes b64-bytes (-> input string->gzip-bytes b64/encode)]
-   (String. b64-bytes (java.nio.charset.Charset/forName "UTF-8"))))
+    (String. b64-bytes (java.nio.charset.Charset/forName "UTF-8"))))
 
 (defn gzip-base64->string
   "Converts a base64 encoded gzipped string back to the original string."
@@ -610,13 +647,13 @@
   [matching-map]
   (into {}
         (mapcatv
-          (fn [[k v]]
-            (if (map? v)
-              (mapv (fn [[path value]]
-                      [(vec (cons k path)) value])
-                    (map->path-values v))
-              [[[k] v]]))
-          matching-map)))
+         (fn [[k v]]
+           (if (map? v)
+             (mapv (fn [[path value]]
+                     [(vec (cons k path)) value])
+                   (map->path-values v))
+             [[[k] v]]))
+         matching-map)))
 
 (defn map-matches-path-values?
   "Returns true if the map matches the given path values. Path values are
@@ -783,10 +820,10 @@
      using-map-with-different-sized-collections-in-clojure"
   [f default & colls]
   (lazy-seq
-    (when (some seq colls)
-      (cons
-        (apply f (map #(if (seq %) (first %) default) colls))
-        (apply map-longest f default (map rest colls))))))
+   (when (some seq colls)
+     (cons
+      (apply f (map #(if (seq %) (first %) default) colls))
+      (apply map-longest f default (map rest colls))))))
 
 (defn key-sorted-map
   "Creates an empty map whose keys are sorted by the order given. Keys not in
@@ -796,21 +833,21 @@
   ;; Create a map of the keys to a numeric number indicating their position.
   (let [key-order-map (zipmap key-order (range))]
     (sorted-map-by
-      (fn [k1 k2]
-        (let [k1-order (key-order-map k1)
-              k2-order (key-order-map k2)]
-          (cond
+     (fn [k1 k2]
+       (let [k1-order (key-order-map k1)
+             k2-order (key-order-map k2)]
+         (cond
             ;; k1 and k2 are both in the key-order-map.
-            (and k1-order k2-order) (compare k1-order k2-order)
+           (and k1-order k2-order) (compare k1-order k2-order)
 
             ;; k1 is in the map but not k2. k1 should appear earlier than k2
-            k1-order -1
+           k1-order -1
 
             ;; k2 is in the map but not k1. k1 should appear after k2
-            k2-order 1
+           k2-order 1
 
             ;; Neither is in the map so compare them directly
-            :else (compare k1 k2)))))))
+           :else (compare k1 k2)))))))
 
 ;; Copied from clojure.core.incubator. We were having issues referring to this after updating to
 ;; Clojure 1.7.
@@ -926,10 +963,10 @@
   "Display a Java object's public methods."
   [obj]
   (print-table
-    (sort-by :name
-      (filter (fn [x]
-                (contains? (:flags x) :public))
-              (:members (reflect obj))))))
+   (sort-by :name
+            (filter (fn [x]
+                      (contains? (:flags x) :public))
+                    (:members (reflect obj))))))
 
 (defn show-env
   "Show the system environment currently available to Clojure.
@@ -958,11 +995,11 @@
   "Show just the system environment variables with the `CMR_` prefix."
   []
   (show-env
-    (comp keyword
-          string/lower-case
-          #(string/replace % "_" "-")
-          #(string/replace % #"^CMR_" ""))
-    #(string/starts-with? %1 "CMR_")))
+   (comp keyword
+         string/lower-case
+         #(string/replace % "_" "-")
+         #(string/replace % #"^CMR_" ""))
+   #(string/starts-with? %1 "CMR_")))
 
 (defn scrub-token
   "Scrub token:
