@@ -7,7 +7,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :refer [info error]]))
+   [cmr.common.log :refer [debug error]]))
 
 (s/def ::cache-size-map
   (s/and map?
@@ -25,7 +25,7 @@
 
     (< size 1073741824)
     (format "%.2f MB" (double (/ size 1048576)))
-    
+
     :else
     (format "%.2f GB" (double (/ size 1073741824)))))
 
@@ -41,10 +41,12 @@
   (doseq [[cache-key size] cache-size-map]
     ;; negatives denote external cache
     (when-not (neg? size)
-      (info (format "in-memory-cache [%s] [%s] [%d bytes]" cache-key (human-readable-bytes size) size))))
+      ;; This can be a moderate volume log, 20k a day.
+      (debug (format "in-memory-cache [%s] [%s] [%d bytes]" cache-key (human-readable-bytes size) size))))
   (try
     (let [combined-size (reduce + 0 (filter pos? (vals cache-size-map)))]
-      (info (format "Total in-memory-cache usage [%s] [%d bytes]"
+      ;; This is a low volume log, over a 1000 a day, but is paired with the one above.
+      (debug (format "Total in-memory-cache usage [%s] [%d bytes]"
                     (human-readable-bytes combined-size)
                     combined-size)))
     (catch java.lang.ArithmeticException e
