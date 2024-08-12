@@ -116,9 +116,11 @@
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
   [response]
-  (map #(-> %
-            (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
-            (update-in [:concept-type] keyword))
+  (map #(if (:revision-date %)
+          (-> %
+              (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
+              (update-in [:concept-type] keyword))
+          %)
        (json/decode (:body response) true)))
 
 (defn get-concept-id
