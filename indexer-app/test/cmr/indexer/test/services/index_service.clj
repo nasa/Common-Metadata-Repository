@@ -54,5 +54,4 @@
           data (json/parse-string raw-json true)]
       (is (some? data) "time-to-visibility-json parsing test")
       (is (= "ACL" (:ct data)) "Checking concept type")
-      (is (= 1 (:fv data)) "Checking format version")
       (is (= "index-vis" (:mg data)) "Checking message id"))))

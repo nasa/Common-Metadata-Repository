@@ -301,12 +301,9 @@
   "This is a replacement log to be used by Splunk to report on time to index. Features of this log
    are: JSON, more values, smaller content. Content size is such an issue that short names are given
    for fields which may not be as human readable as possible. This log can be output in the millions
-   per day. Scripts can use the version (v) value if needed to judge what content may be in the
-   log. Future developers should change this value if adding or removing values so as to inform
-   scripts of a change.
+   per day.
 
    Values in log:
-   * fv : Format Version
    * mg : MessaGe type
    * ct : Concept Type (from Concept Id)
    * ci : Concept Id
@@ -318,8 +315,7 @@
   [concept-id revision-id milliseconds all-revisions-index?]
   (let [all-value (if all-revisions-index? 1 0)
         concept-type (re-find (re-pattern "^[A-Z]+") concept-id)]
-    (format (str "{\"fv\":1,"
-                 "\"mg\":\"index-vis\","
+    (format (str "{\"mg\":\"index-vis\","
                  "\"ct\":\"%s\","
                  "\"ci\":\"%s\","
                  "\"ri\":%d,"
