@@ -7,7 +7,7 @@
 
 (defmulti handle-provider-event
   "Handle the various actions that can be requested for a provider via the provider-queue"
-  (fn [context msg]
+  (fn [_context msg]
     (keyword (:action msg))))
 
 (defmethod handle-provider-event :bulk-update
@@ -48,7 +48,7 @@
    (:user-id message)))
 
 (defmethod handle-provider-event :granule-bulk-update-task-cleanup
-  [context message]
+  [context _message]
   (granule-bulk-update-service/cleanup-bulk-granule-task-table context))
 
 ;; Default ignores the provider event. There may be provider events we don't care about.
@@ -59,11 +59,11 @@
   "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/ingest-queue-listener-count)]
+    (dotimes [_ (config/ingest-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/ingest-queue-name)
                                 #(handle-provider-event context %)))
-    (dotimes [n (config/bulk-update-queue-listener-count)]
+    (dotimes [_ (config/bulk-update-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/bulk-update-queue-name)
                                 #(handle-provider-event context %)))))

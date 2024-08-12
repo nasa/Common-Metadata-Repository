@@ -1,7 +1,7 @@
 (ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
   (:import [java.io File])
-  (:require [cmr.common.log :refer (debug info warn error)]
+  (:require [cmr.common.log :refer (info error)]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.ingest.config :as ingest-config]
@@ -44,7 +44,7 @@
           ;; trying non-local path to find drift migration files
           (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
             (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))
-          (catch Exception e
+          (catch Exception _e
             (println "caught exception trying to find migration files in db.clj file for ingest-app. We are probably in local env. Trying local route to migration files...")
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/src")))]
               (drift.execute/run (conj (vec args) "-c" "config.ingest_migrate_config/app-migrate-config")))))

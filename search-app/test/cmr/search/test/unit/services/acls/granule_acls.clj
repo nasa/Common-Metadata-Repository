@@ -4,7 +4,7 @@
             [cmr.common.hash-cache :as hash-cache]
             [cmr.redis-utils.config :as redis-config]
             [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
-            [cmr.common.util :as util :refer [are3]]
+            [cmr.common.util :refer [are3]]
             [cmr.redis-utils.test.test-util :as test-util]
             [cmr.search.services.acls.granule-acls :as g]))
 

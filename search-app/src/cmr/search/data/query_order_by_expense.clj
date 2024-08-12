@@ -2,9 +2,7 @@
   "Sorts query conditions within a query by their execution expense. Elasticsearch recommend putting
   cached filters before uncached filters. Expensive queries like exact spatial intersection should
   be placed last."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.search.es-query-order-by-expense :as qobe])
+  (:require [cmr.elastic-utils.search.es-query-order-by-expense :as qobe])
   (:import [cmr.search.models.query
             CollectionQueryCondition
             SpatialCondition

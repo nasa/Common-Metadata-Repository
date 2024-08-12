@@ -6,8 +6,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.point :as point]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.ring-relations :as rr]
-   [clojure.math.numeric-tower :as math])
+   [cmr.spatial.ring-relations :as rr])
   (:import
    (java.io BufferedReader File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)

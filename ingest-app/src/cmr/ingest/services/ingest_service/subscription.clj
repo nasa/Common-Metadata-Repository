@@ -7,7 +7,7 @@
 (defn- add-extra-fields-for-subscription
   "Returns subscription concept with fields necessary for ingest into metadata db
   under :extra-fields."
-  [context concept subscription]
+  [_context concept subscription]
   (assoc concept :extra-fields
                  {:subscription-name (:Name subscription)
                   :collection-concept-id (:CollectionConceptId subscription)
@@ -15,6 +15,8 @@
                   :subscription-type (or (:Type subscription) "granule")
                   :normalized-query (:normalized-query concept)}))
 
+(declare save-subscription)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-subscription
   "Store a subscription concept in mdb and indexer."
   [context concept]

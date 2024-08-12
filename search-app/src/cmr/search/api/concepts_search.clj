@@ -3,13 +3,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [clojure.walk :as walk]
    [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.config :as common-app-config]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.generics :as common-generic]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -20,8 +19,7 @@
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.search.validators.all-granule-validation :as all-gran-validation]
-   [compojure.core :refer :all]
-   [inflections.core :as inf]))
+   [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
@@ -361,7 +359,7 @@
                                (json/parse-string true)
                                :scroll_id)]
     (do
-      (info (format "Clear scroll: %s" short-scroll-id))
+      (debug (format "Clear scroll: %s" short-scroll-id))
       ;; if the short scroll id is valid, retrieve the real scroll id
       (if-let [scroll-id (->> short-scroll-id
                               (core-api/get-scroll-id-and-search-params-from-cache context)

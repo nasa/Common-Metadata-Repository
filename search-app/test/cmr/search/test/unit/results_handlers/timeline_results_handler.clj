@@ -1,11 +1,7 @@
 (ns cmr.search.test.unit.results-handlers.timeline-results-handler
   (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
             [cmr.search.results-handlers.timeline-results-handler :as trh]
-            [clj-time.core :as t]
-            [clj-time.coerce :as c]))
+            [clj-time.core :as t]))
 
 (deftest adjacent-interval-test
   (testing "year"

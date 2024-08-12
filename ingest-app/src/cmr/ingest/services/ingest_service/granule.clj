@@ -1,6 +1,5 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -21,6 +20,8 @@
         :invalid-data
         "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
+(declare get-granule-parent-collection-and-concept)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-granule-parent-collection-and-concept
   "Returns the parent collection concept, parsed UMM spec record, and the parse UMM lib record for a
   granule as a tuple. Finds the parent collection using the provider id and collection ref. This will
@@ -42,7 +43,7 @@
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
-  [context concept granule collection-concept]
+  [_context concept granule collection-concept]
   (let [{:keys [granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         parent-collection-id (:concept-id collection-concept)
@@ -52,6 +53,8 @@
                                   :delete-time (when delete-time (str delete-time))
                                   :granule-ur granule-ur})))
 
+(declare validate-granule)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.
   Returns a tuple of the parent collection concept and the granule concept.
@@ -59,19 +62,17 @@
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
   This can be used to provide the collection through an alternative means like the API."
   ([context concept]
-   (validate-granule
-    context concept get-granule-parent-collection-and-concept))
+   (validate-granule context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
-   (v/validate-concept-request concept)
-   (v/validate-concept-metadata concept)
-
-   (let [granule (umm-legacy/parse-concept context concept)
+   (let [_ (v/validate-concept-request concept)
+         _ (v/validate-concept-metadata concept)
+         granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
           umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
      (v/validate-granule-umm-spec context umm-spec-collection granule)
-     
+
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
                          context concept granule parent-collection-concept)]
@@ -93,9 +94,10 @@
                       (constantly [parent-collection-concept
                                    collection]))))
 
+(declare save-granule)
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (let [[coll-concept concept] (validate-granule context concept)
+  (let [[_coll-concept concept] (validate-granule context concept)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
     {:concept-id concept-id, :revision-id revision-id}))

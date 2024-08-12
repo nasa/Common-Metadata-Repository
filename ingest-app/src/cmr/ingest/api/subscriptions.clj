@@ -7,7 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
@@ -50,7 +50,7 @@
             (subscriber-collection-permission-error
              subscriber-id
              concept-id)))
-        (catch Exception e
+        (catch Exception _e
           (subscriber-collection-permission-error
            subscriber-id
            concept-id))))))
@@ -104,7 +104,6 @@
    subscriber-id, normalized-query, subscription-type."
   [request-context subscription parsed]
   (let [native-id (:native-id subscription)
-        provider-id (:provider-id subscription)
         normalized-query (:normalized-query subscription)
         collection-id (:CollectionConceptId parsed)
         subscriber-id (:SubscriberId parsed)
@@ -328,7 +327,7 @@
   "Processes a request to create a subscription. A native id will be generated."
   ([request]
    (create-subscription nil request))
-  ([provider-id request]
+  ([_provider-id request]
    (let [{:keys [body content-type headers request-context]} request]
      (common-ingest-checks request-context)
      (let [tmp-subscription (body->subscription (str (UUID/randomUUID)) body content-type headers)
@@ -345,7 +344,7 @@
   "Processes a request to create a subscription using the native-id provided."
   ([native-id request]
    (create-subscription-with-native-id nil native-id request))
-  ([provider-id native-id request]
+  ([_provider-id native-id request]
    (validate-native-id-not-blank native-id)
    (let [{:keys [body content-type headers request-context]} request]
      (common-ingest-checks request-context)
@@ -367,7 +366,7 @@
   existing functionality."
   ([native-id request]
    (create-or-update-subscription-with-native-id nil native-id request))
-  ([provider-id native-id request]
+  ([_provider-id native-id request]
    (validate-native-id-not-blank native-id)
    (let [{:keys [body content-type headers request-context]} request
          _ (common-ingest-checks request-context)
@@ -420,7 +419,7 @@
   ([native-id request]
    (delete-subscription nil native-id request))
   ([provider-id native-id request]
-   (let [{:keys [body content-type headers request-context]} request
+   (let [{:keys [headers request-context]} request
          _ (common-ingest-checks request-context)
          [provider-id subscriber-id] (prepare-delete-request request-context provider-id native-id)
          concept-attribs (-> {:provider-id provider-id

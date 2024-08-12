@@ -8,13 +8,15 @@
 (defn add-extra-fields-for-variable
   "Returns collection concept with fields necessary for ingest into metadata db
   under :extra-fields."
-  [context concept variable]
+  [_context concept variable]
   (assoc concept
          :extra-fields
          {:variable-name (:Name variable)
           :measurement (:LongName variable)
           :fingerprint (fingerprint/get-variable-fingerprint (:metadata concept))}))
 
+(declare save-variable)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-variable
   "Store a variable concept in mdb and indexer. Return name, long-name, concept-id, and
   revision-id."
