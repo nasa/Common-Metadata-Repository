@@ -45,14 +45,16 @@
                       (if (:deleted concept)
                         {:meta (results-helper/elastic-result->meta concept-type elastic-result)}
                         (let [metadata (:metadata concept)
-                              metadata (if (string/includes? (:format concept) "json")
-                                         metadata
-                                         (let [concept-type (:concept-type concept)]
-                                           (if (concepts/is-draft-concept? concept-type)
-                                             (let [draft-concept-type (concepts/get-concept-type-of-draft concept-type)
-                                                   concept (assoc concept :concept-type draft-concept-type)]
-                                               (json/encode (umm/parse-metadata context concept)))
-                                             (json/encode (umm/parse-metadata context concept)))))]
+                              metadata (if metadata
+                                         (if (string/includes? (:format concept) "json")
+                                           metadata
+                                           (let [concept-type (:concept-type concept)]
+                                             (if (concepts/is-draft-concept? concept-type)
+                                               (let [draft-concept-type (concepts/get-concept-type-of-draft concept-type)
+                                                     concept (assoc concept :concept-type draft-concept-type)]
+                                                 (json/encode (umm/parse-metadata context concept)))
+                                               (json/encode (umm/parse-metadata context concept)))))
+                                          "{\"errors\":\"concept not found in DB\"}")]
                           (results-helper/elastic-result+metadata->umm-json-item
                            concept-type elastic-result metadata))))
                     elastic-matches
