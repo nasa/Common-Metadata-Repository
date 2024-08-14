@@ -1,6 +1,7 @@
 (ns cmr.indexer.test.services.index-service
   "Tests for index service"
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.indexer.services.index-service :as index-svc]))
@@ -45,3 +46,12 @@
           json (time-to-visibility-json concept-id revision-id milliseconds all-revisions-index?)]
 
       (is (<= (count json) (count text))))))
+
+(deftest time-to-visibility-json-test
+  (testing "Ensure that the output of the time-to-vilibility-json function is in fact JSON"
+    (let [time-to-visibility-json (var index-svc/time-to-visibility-json) ;; private function
+          raw-json (time-to-visibility-json "ACL123-CMR", 1, 1234, false)
+          data (json/parse-string raw-json true)]
+      (is (some? data) "time-to-visibility-json parsing test")
+      (is (= "ACL" (:ct data)) "Checking concept type")
+      (is (= "index-vis" (:mg data)) "Checking message id"))))
