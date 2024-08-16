@@ -3,6 +3,7 @@
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
             [cmr.common-app.api.health :as common-health]
+            [cmr.common-app.api.request-logger :as req-log]
             [cmr.common-app.api.routes :as common-routes]
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
@@ -11,7 +12,8 @@
             [cmr.common.api.context :as context]
             [cmr.common.mime-types :as mt]
             [cmr.virtual-product.services.translation-service :as ts]
-            [cmr.virtual-product.services.health-service :as hs]))
+            [cmr.virtual-product.services.health-service :as hs]
+            [cmr.common-app.api.request-logger :as req-logger]))
 
 (defn- build-routes [system]
   (routes
@@ -34,7 +36,10 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       (context/build-request-context-handler system)
       handler/site
       common-routes/pretty-print-response-handler
-      ring-json/wrap-json-response))
+      ring-json/wrap-json-response
+      ;; Last in line, but really first for request as they process in reverse
+      req-log/add-time-stamp))

@@ -166,10 +166,11 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       (context/build-request-context-handler system)
       handler/site
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response
       req-log/add-body-hashes
-      req-log/log-ring-request))
+      ))

@@ -31,7 +31,8 @@
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params]
+   [cmr.common-app.api.request-logger :as req-log]))
 
 (defn- build-routes [system]
   (routes
@@ -187,9 +188,12 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      ;; Last in line, but really first for request as they process in reverse
+      req-log/add-time-stamp))

@@ -47,9 +47,12 @@
       mp/wrap-multipart-params
       (api-errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; (must be after request id)
       common-routes/add-security-header-response-handler
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
       req-log/add-body-hashes
-      req-log/log-ring-request))
+
+      ;; Last in line, but really first for request as they process in reverse
+      req-log/add-time-stamp))
