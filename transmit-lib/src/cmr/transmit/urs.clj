@@ -92,13 +92,30 @@
                                                           :method :post :raw? true
                                                           :http-options {:form-params {:token token}}})]
     (when-not (= 200 status)
-      (error (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d].
-        EDL error message: [%s]" (common-util/scrub-token token) status (pr-str body)))
       (errors/throw-service-error
        :unauthorized
-       (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
-               (common-util/scrub-token token) status)))
-    (select-keys body [:lp_token_expires_in :uid])))
+       (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]. EDL error message: [%s]"
+               (common-util/scrub-token token)
+               status
+               (pr-str body))))
+    ;; The throw above will prevent the next line of code from executing if status is not 200.
+    ;; The block below is protected if Earthdata Login (EDL) goes down for any reason and the body
+    ;; is not what is expected; CMR-10086.
+    (try
+      (select-keys body [:lp_token_expires_in :uid])
+      (catch Exception _e
+        (if (string? body)
+          (errors/throw-service-error
+           :unauthorized
+           (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]. EDL error message: [%s]"
+                   (common-util/scrub-token token)
+                   status
+                   (pr-str (common-util/trunc body 500)))) ;the body is truncated just in-case it is really big.
+          (errors/throw-service-error
+           :unauthorized
+           (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
+                   (common-util/scrub-token token)
+                   status)))))))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
