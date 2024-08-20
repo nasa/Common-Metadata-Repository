@@ -1,19 +1,18 @@
 (ns cmr.virtual-product.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.request-logger :as req-log]
-            [cmr.common-app.api.routes :as common-routes]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.api.context :as context]
-            [cmr.common.mime-types :as mt]
-            [cmr.virtual-product.services.translation-service :as ts]
-            [cmr.virtual-product.services.health-service :as hs]
-            [cmr.common-app.api.request-logger :as req-logger]))
+  (:require
+   [cmr.virtual-product.services.translation-service :as ts]
+   [compojure.core  :refer [GET POST context routes]]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-logger :as req-log]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.mime-types :as mt]
+   [cmr.virtual-product.services.health-service :as hs]
+   [compojure.handler :as handler]))
 
 (defn- build-routes [system]
   (routes
@@ -21,7 +20,7 @@
       ;; for NGAP deployment health check
       (GET "/" {} {:status 200})
       (context "/translate-granule-entries" []
-        (POST "/" {:keys [body content-type headers request-context]}
+        (POST "/" {:keys [body content-type _headers request-context]}
           (if (= (mt/mime-type->format content-type) :json)
             {:status 200
              :body (ts/translate request-context (slurp body))}
@@ -41,5 +40,6 @@
       handler/site
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-response
+      req-log/add-body-hashes
       ;; Last in line, but really first for request as they process in reverse
       req-log/add-time-stamp))
