@@ -38,4 +38,5 @@
       params/wrap-params
       req-log/add-body-hashes
       ;; Last in line, but really first for request as they process in reverse
-      req-log/add-time-stamp))
+      ;req-log/add-time-stamp
+      ))
