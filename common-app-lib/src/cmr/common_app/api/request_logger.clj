@@ -155,7 +155,7 @@
        (let [response (handler request) ;; Do all the response handlers first
              log-start (tk/now-ms) ;; After processing the other handlers, start tracking log time
              _ (when-not (:ring-start-time request) ;; Did someone forget to setup a routes.clj
-                 (error "There is no ring start time for this service" (:uri request)))
+                 (error "There is no ring start time for this service" (request->uri request)))
              now (dtp/clj-time->date-time-str (tk/now))
              ring-start (get request :ring-start-time (tk/now-ms))
              query-params (params/assoc-query-params request "UTF-8")
