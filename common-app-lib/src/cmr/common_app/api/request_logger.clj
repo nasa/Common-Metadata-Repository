@@ -112,7 +112,9 @@
   (fn [request]
     (if (some? (:ring-start-time request))
       (handler request)
-      (handler (assoc request :ring-start-time (tk/now-ms))))))
+      (handler (assoc request
+                      :ring-start-now (tk/now)
+                      :ring-start-time (tk/now-ms))))))
 
 ;; log-ring-request should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
@@ -153,11 +155,14 @@
      (if-not (config/enable-enhanced-http-logging)
        (handler request)
        (let [response (handler request) ;; Do all the response handlers first
+             ;; Do all the time based captures upfront
              log-start (tk/now-ms) ;; After processing the other handlers, start tracking log time
+             ring-start (get request :ring-start-time (tk/now-ms))
+             ring-now (get request :ring-start-now (tk/now))
+             ;; processing of logs can now start
+             now-text (dtp/clj-time->date-time-str ring-now)
              _ (when-not (:ring-start-time request) ;; Did someone forget to setup a routes.clj
                  (error "There is no ring start time for this service" (request->uri request)))
-             now (dtp/clj-time->date-time-str (tk/now))
-             ring-start (get request :ring-start-time (tk/now-ms))
              query-params (params/assoc-query-params request "UTF-8")
              form-params (params/assoc-form-params request "UTF-8")
              note (-> {"message-type" "request-log"}
@@ -168,16 +173,16 @@
                       (as-> data (if (= id :ignore-id) data (assoc data "log-id" id)))
                       ;; assume that (add-body-hashes) has been run and reuse data
                       (into (:headers request)) ;; Bring in all the existing headers
-                      (assoc "cmr-hit" (get-in response [:headers "CMR-Hit"] "n/a")
-                             "cmr-took" (get-in response [:headers "CMR-Took"] "n/a")
+                      (assoc "cmr-hit" (get-in response [:headers "CMR-Hit"] nil)
+                             "cmr-took" (get-in response [:headers "CMR-Took"] nil)
                              "form-params" (dump-param form-params :form-params)
                              "method" (string/upper-case
                                        (name (get-in request [:request-method] "unknown")))
-                             "now" now
-                             "now-ms" log-start
+                             "now" now-text
+                             "now-ms" ring-start
                              "query-params" (dump-param query-params :query-params)
                              "remote-address" (normalize-local (:remote-addr request))
-                             "request-id" (get-in response [:headers "CMR-Request-Id"] "-to early-")
+                             "request-id" (get-in response [:headers "CMR-Request-Id"] "n/a")
                              "status" (:status response)
                              "uri" (get-in request [:uri] "/")
                              "url" (request->uri request)
