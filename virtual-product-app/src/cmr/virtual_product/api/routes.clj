@@ -1,10 +1,6 @@
 (ns cmr.virtual-product.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
-   [cmr.virtual-product.services.translation-service :as ts]
-   [compojure.core  :refer [GET POST context routes]]
-   [compojure.route :as route]
-   [ring.middleware.json :as ring-json]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
@@ -12,7 +8,11 @@
    [cmr.common.api.errors :as errors]
    [cmr.common.mime-types :as mt]
    [cmr.virtual-product.services.health-service :as hs]
-   [compojure.handler :as handler]))
+   [cmr.virtual-product.services.translation-service :as ts]
+   [compojure.core  :refer [GET POST context routes]]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]))
 
 (defn- build-routes [system]
   (routes
