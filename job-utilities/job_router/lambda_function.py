@@ -18,7 +18,7 @@ def handler(event, _):
     Some environment variables are required.
     These should be set on the deployed Lambda.
     CMR_ENVIRONMENT - Where the Lambda is deployed
-    CMR_LB_URL - The LB used for routing calls to CMR
+    CMR_LB_NAME - The LB used for routing calls to CMR
     """
     environment = os.getenv('CMR_ENVIRONMENT')
     cmr_lb_name = os.getenv('CMR_LB_NAME')
