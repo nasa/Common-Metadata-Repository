@@ -8,6 +8,7 @@ import os
 import sys
 import boto3
 import urllib3
+import json
 import jmespath
 
 def handler(event, _):
@@ -26,13 +27,33 @@ def handler(event, _):
     request_type = event.get('request-type', "GET")
 
     if environment is None:
-        print("ERROR: Environment variable not set!")
+        print("ERROR: CMR_ENVIRONMENT variable not set!")
     if cmr_lb_name is None:
         print("ERROR: CMR_LB_NAME variable not set!")
     #An extra check here so that if both variables are not set,
     #it can at least be reported at one time
     if environment is None or cmr_lb_name is None:
         sys.exit(1)
+
+    if environment == 'local':
+        json_file = open('service-ports.json')
+        service_ports = json.load(json_file)
+
+        token = 'mock-echo-system-token'
+        pool_manager = urllib3.PoolManager(num_pools=1, headers={"Authorization": token}, timeout=urllib3.Timeout(15))
+
+        print("Sending to: " + "host.docker.internal:" + service_ports[service] + "/" + endpoint)
+        try:
+            response = pool_manager.request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint)
+            if response.status != 200:
+                print("Error received sending " + request_type + " to " + "host.docker.internal:" + service_ports[service] + "/" + endpoint \
+                        + ": " + str(response.status) + " reason: " + response.reason)
+                sys.exit(-1)
+        except Exception as e:
+            print("Ran into an error!")
+            print(e)
+            sys.exit(-1)
+        return
 
     client = boto3.client('ecs')
     ssm_client = boto3.client('ssm')

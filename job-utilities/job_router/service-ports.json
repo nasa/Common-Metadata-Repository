@@ -1,0 +1,9 @@
+{
+    "metadata-db" : "3001",
+    "ingest" : "3002",
+    "search" : "3003",
+    "indexer" : "3004",
+    "bootstrap" : "3006",
+    "virtual-product" : "3009",
+    "access-control" : "3011"
+}
