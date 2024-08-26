@@ -4,11 +4,12 @@ an AWS EventBridge rule and make a call to an endpoint
 for running scheduled jobs. These endpoints could be through
 a load balancer or directly to an ECS service
 """
+import json
 import os
 import sys
+
 import boto3
 import urllib3
-import json
 import jmespath
 
 def handler(event, _):
@@ -36,11 +37,13 @@ def handler(event, _):
         sys.exit(1)
 
     if environment == 'local':
-        json_file = open('service-ports.json')
+        json_file = open('service-ports.json', encoding="UTF-8")
         service_ports = json.load(json_file)
 
         token = 'mock-echo-system-token'
-        pool_manager = urllib3.PoolManager(num_pools=1, headers={"Authorization": token}, timeout=urllib3.Timeout(15))
+        pool_manager = urllib3.PoolManager(num_pools=1, \
+                                           headers={"Authorization": token}, \
+                                           timeout=urllib3.Timeout(15))
 
         print("Sending to: " + "host.docker.internal:" + service_ports[service] + "/" + endpoint)
         try:
