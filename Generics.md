@@ -10,6 +10,7 @@ If adding a new document, you will need to update the defconf variable by either
 	(defconfig approved-pipeline-documents
   		{:default {:grid ["0.0.1"]
              :data-quality-summary ["1.0.0"]
+             :visualization ["1.0.0"]
              :order-option ["1.0.0"]
              :service-entry ["1.0.0"]
              :service-option ["1.0.0"]}
@@ -19,6 +20,7 @@ When setting in an ENV or in AWS, use the JSON format:
 
 	"{\"grid\": [\"0.0.1\"],
     \"data-quality-summary\": [\"1.0.0\"],
+    \"visualization\": [\"1.0.0\"],
     \"order-option\": [\"1.0.0\"],
     \"service-entry\": [\"1.0.0\"],
     \"service-option\": [\"1.0.0\"]}"

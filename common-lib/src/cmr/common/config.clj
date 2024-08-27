@@ -227,6 +227,7 @@
    are passed through the parser and returned as if it was the default."
   {:default {:grid ["0.0.1"]
              :data-quality-summary ["1.0.0"]
+             :visualization ["1.0.0"]
              :order-option ["1.0.0"]
              :collection-draft ["1.0.0"]
              :tool-draft ["1.0.0"]

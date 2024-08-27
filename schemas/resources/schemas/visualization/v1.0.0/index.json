@@ -1,0 +1,56 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+    "Name": "Generic-Index",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Visualization",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "VSL",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Id",
+      "Field": ".Id",
+      "Name": "Id",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Name",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "VisualizationType",
+      "Field": ".VisualizationType",
+      "Name": "VisualizationType",
+      "Mapping": "string"
+    },
+    {    
+      "Description": "Visualization Source ConceptIds",
+      "Field": ".ConceptIds",
+      "Name": "ConceptIds",
+      "Mapping": "string",
+      "Indexer": "simple-array-field", 
+      "Configuration": {"sub-fields": ["value"]}
+    },
+    {    
+      "Description": "Visualization Source ConceptIds",
+      "Field": ".ConceptIds",
+      "Name": "ConceptIds",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["shortName"]}
+    }
+  ]
+}

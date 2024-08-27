@@ -21,6 +21,11 @@
                               (slurp)
                               (json/parse-string true)))
 
+(def visualization (-> "schemas/visualization/v1.0.0/metadata.json"
+                       (io/resource)
+                       (slurp)
+                       (json/parse-string true)))
+
 (def order-option (-> "schemas/order-option/v1.0.0/metadata.json"
                       (io/resource)
                       (slurp)

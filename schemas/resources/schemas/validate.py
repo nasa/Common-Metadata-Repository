@@ -54,7 +54,7 @@ def test_schema(schema_name):
 def main():
   ret = test_schema("index")
 
-  for i in ["data-quality-summary", "grid", "order-option", "service-entry", "service-option"]:
+  for i in ["data-quality-summary", "visualization", "grid", "order-option", "service-entry", "service-option"]:
     ret = ret + test_schema(i)
     ret = ret + test_index(i)
 

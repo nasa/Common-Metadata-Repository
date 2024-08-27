@@ -203,6 +203,7 @@
     [_]
     {:name :string
      :id :string
+     :visualizationtype :string,
      :provider :string
      :native-id :string
      :concept-id :string}))

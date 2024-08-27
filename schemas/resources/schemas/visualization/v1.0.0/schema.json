@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-Vis",
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+    "Id": {
+      "description": "The unique identifier for the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+
+    "Name": {
+      "description": "A short descriptive title of the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Subtitle": {
+      "description": "A short descriptive subtitle of the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Description": {
+      "description": "A human readable description of the visualization written using HTML notation for advanced text.  The goal is to create descriptions for the science-minded public that may have an interest in finding out what the visualization shows, why it’s important, how it was created, etc...",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+
+    "ScienceKeywords": {
+      "description": "Earth Science keywords that are representative of the data being visualized. The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ScienceKeywordType"
+      },
+      "minItems": 0
+    },
+
+    "SpatialExtent": {
+      "$ref": "umm-cmn-json-schema.json#/definitions/SpatialExtentType"
+    },
+
+    "TemporalExtents": {
+      "description": "This class contains attributes which describe the temporal range of a specific layer. Temporal Extent includes a specification of the Temporal Range Type of the collection, which is one of Range Date Time, Single Date Time, or Periodic Date Time",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/TemporalExtentType"
+      },
+      "minItems": 1
+    },
+
+    "ConceptIds": {
+      "description": "Which CMR dataset(s) are represented by the visualization.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Identify whether the associated dataset is NRT or STD.",
+            "type": "string",
+            "enum": [
+              "NRT",
+              "STD"
+            ]
+          },
+          "value": {
+            "description": "The dataset's CMR concept id",
+            "type": "string"
+          },
+          "dataCenter": {
+            "type": "string"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": ["type", "value"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+
+    "VisualizationType": {
+       "type": "string",
+       "enum": ["tiles", "maps"]
+    },
+
+    "MetadataSpecification": {
+      "description": "Required to add in schema information into every record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    },
+
+    "What": {
+    },
+
+    "How": {
+    }
+  },
+
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "VisualizationType": {"const": "tiles"}
+        }
+      },
+      "then": {
+        "properties": {
+          "What": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/What"
+          },
+          "How": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/How"
+          }
+        }
+      }
+    },
+
+    {
+      "if": {
+        "properties": {
+          "VisualizationType": {"const": "maps"}
+        }
+      },
+      "then": {
+        "properties": {
+          "What": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/What"
+          },
+          "How": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/How"
+          }
+        }
+      }
+    }
+
+  ],
+
+  "required": [
+    "Id",
+    "Name",
+    "VisualizationType",
+    "What",
+    "How",
+    "ConceptIds", 
+    "MetadataSpecification"
+  ],  
+
+  "definitions": {
+
+    "ScienceKeywordType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS). The valid values can be found at the KMS website: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.",
+      "properties": {
+        "Category": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Topic": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Term": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel1": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel2": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel3": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "DetailedVariable": {
+          "$ref": "#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Category", "Topic", "Term"]
+    },
+    "KeywordStringType": {
+      "description": "The keyword string type for science keywords. The pattern below helps to minimize the types of characters allowed in the keywords to help users minimize keyword issues.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
+    },
+
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/visualization/1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Visualization"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}
