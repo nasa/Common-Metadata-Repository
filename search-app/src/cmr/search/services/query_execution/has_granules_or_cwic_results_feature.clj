@@ -57,7 +57,8 @@
   (let [condition (qm/string-conditions :consortiums ["CWIC"])
         query (qm/query {:concept-type :collection
                          :condition condition
-                         :page-size :unlimited})
+                         :page-size :unlimited
+                         :remove-source true})
         results (common-esi/execute-query context query)]
     (into {}
           (for [coll-id (map :_id (get-in results [:hits :hits]))]
@@ -70,7 +71,8 @@
                                     (common-config/opensearch-consortiums)))
         query (qm/query {:concept-type :collection
                          :condition condition
-                         :page-size :unlimited})
+                         :page-size :unlimited
+                         :remove-source true})
         results (common-esi/execute-query context query)]
     (into {}
           (for [coll-id (map :_id (get-in results [:hits :hits]))]
