@@ -5,7 +5,6 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -713,10 +712,13 @@
           ;; save tombstone in all revisions collection index
           (let [es-doc (if (cs/generic-concept? concept-type)
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
-                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))]
-            (es/save-document-in-elastic
-             context index-names (concept-mapping-types concept-type)
-             es-doc concept-id revision-id elastic-version elastic-options))
+                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
+                [tm result] (util/time-execution
+                             (es/save-document-in-elastic
+                              context index-names (concept-mapping-types concept-type)
+                              es-doc concept-id revision-id elastic-version elastic-options))]
+            (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
+            result)
           ;; delete concept from primary concept index
           (do
             (es/delete-document
@@ -724,10 +726,16 @@
              concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
-              (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
+              (let [[tm result] (util/time-execution
+                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
+                (debug (format "Timed function %s index-deleted-granule took %d ms." (str *ns*) tm))
+                result))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
-              (cascade-collection-delete context concept-mapping-types concept-id revision-id)))))
+              (let [[tm result] (util/time-execution
+                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
+                (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
+                result)))))
       ;; For draft concept, after the index is deleted, remove it from database.
       (when (cs/is-draft-concept? concept-type)
         (meta-db/delete-draft context concept)))))
