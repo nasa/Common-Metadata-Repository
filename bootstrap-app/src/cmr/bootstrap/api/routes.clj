@@ -11,6 +11,7 @@
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as cmc]
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-caches]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
@@ -22,8 +23,9 @@
    [cmr.common.generics :as common-generic]
    [cmr.common.log :refer [info]]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
-   [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-granules-or-cwic-results-feature]
-   [compojure.core :refer :all]
+   [cmr.search.services.query-execution.has-granules-or-cwic-results-feature
+    :as has-granules-or-cwic-results-feature]
+   [compojure.core :refer [DELETE GET POST context routes]]
    [compojure.route :as route]
    [drift.core]
    [drift.execute]
@@ -124,7 +126,7 @@
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
       (context "/caches/refresh/:cache-name" [cache-name]
-        (POST "/" {:keys [params request-context headers]}
+        (POST "/" {:keys [request-context]}
           (acl/verify-ingest-management-permission request-context :update)
           (let [keyword-cache-name (keyword cache-name)]
             (cond
@@ -155,8 +157,7 @@
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)
-        (let [db (get-in request-context [:system :db])
-              migrate-args (if-let [version (:version params)]
+        (let [migrate-args (if-let [version (:version params)]
                              ["-c" "config.bootstrap-migrate-config/app-migrate-config" "-version" version]
                              ["-c" "config.bootstrap-migrate-config/app-migrate-config"])]
           (info "Running db migration with args:" migrate-args)
@@ -168,13 +169,13 @@
               ;; trying non-local path to find drift migration files
               (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
                 (drift.execute/run migrate-args))
-              (catch Exception e
+              (catch Exception _e
                 (try
-                  (println "caught exception trying to find migration files for cloud env. We are probably in local env. Trying local route to migration files...")
+                  (println "Caught exception trying to find migration files for cloud env. We are probably in local env. Trying local route to migration files...")
                   (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/checkouts/bootstrap-app/src")))]
                     (drift.execute/run migrate-args))
-                  (catch Exception e2
-                    (println "caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
+                  (catch Exception _e2
+                    (println "Caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
                     (drift.execute/run (cons migrate-args "migrate")))))))
         {:status 204})
       ;; Add routes for checking health of the application
@@ -187,9 +188,12 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      ;; Last in line, but really first for request as they process in reverse
+      req-log/add-time-stamp))

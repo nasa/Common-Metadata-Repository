@@ -52,17 +52,17 @@
   (fn [concept-type json-entry]
     concept-type))
 
-(defn parse-long
+(defn parse-long-local
   [^String v]
   (when-not (string/blank? v)
     (Long. v)))
 
-(defn parse-double
+(defn parse-double-local
   [^String v]
   (when-not (string/blank? v)
     (Double. v)))
 
-(defn parse-integer
+(defn parse-integer-local
   [^String v]
   (when-not (string/blank? v)
     (Integer. v)))
@@ -73,7 +73,7 @@
   (when orbit-params
     (let [result (util/remove-nil-keys
                    (into orbit-params
-                         (for [[k v] orbit-params] [k (parse-double v)])))]
+                         (for [[k v] orbit-params] [k (parse-double-local v)])))]
       ;; Don't return an empty map
       (when (seq result)
         result))))
@@ -83,20 +83,20 @@
   [orbit]
   (when orbit
     (-> orbit
-        (update-in [:ascending-crossing] parse-double)
-        (update-in [:start-lat] parse-double)
+        (update-in [:ascending-crossing] parse-double-local)
+        (update-in [:start-lat] parse-double-local)
         (update-in [:start-direction] echo-s/orbit-direction->key)
-        (update-in [:end-lat] parse-double)
+        (update-in [:end-lat] parse-double-local)
         (update-in [:end-direction] echo-s/orbit-direction->key))))
 
 (defn- parse-ocsd
   "Parse orbit-calculated-spatial-domain map"
   [ocsd]
   (into ocsd (util/remove-nil-keys
-               {:orbit-number (parse-long (:orbit-number ocsd))
-                :start-orbit-number (parse-integer (:start-orbit-number ocsd))
-                :stop-orbit-number (parse-integer (:stop-orbit-number ocsd))
-                :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))})))
+               {:orbit-number (parse-long-local (:orbit-number ocsd))
+                :start-orbit-number (parse-integer-local (:start-orbit-number ocsd))
+                :stop-orbit-number (parse-integer-local (:stop-orbit-number ocsd))
+                :equator-crossing-longitude (parse-double-local (:equator-crossing-longitude ocsd))})))
 
 (defmethod json-entry->entry :collection
   [concept-type json-entry]
@@ -166,7 +166,7 @@
        :dataset-id dataset-id
        :collection-concept-id collection-concept-id
        :producer-granule-id producer-granule-id
-       :size (parse-double granule-size)
+       :size (parse-double-local granule-size)
        :original-format original-format
        :data-center data-center
        :links (seq links)
@@ -177,7 +177,7 @@
        :online-access-flag online-access-flag
        :browse-flag browse-flag
        :day-night-flag day-night-flag
-       :cloud-cover (parse-double cloud-cover)
+       :cloud-cover (parse-double-local cloud-cover)
        :coordinate-system coordinate-system
        :shapes shapes})))
 

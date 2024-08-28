@@ -28,6 +28,7 @@
   (-> (build-routes system)
       acl/add-authentication-handler
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
@@ -36,4 +37,6 @@
       common-routes/pretty-print-response-handler
       params/wrap-params
       req-log/add-body-hashes
-      req-log/log-ring-request))
+      ;; Last in line, but really first for request as they process in reverse
+      req-log/log-ring-request
+      req-log/add-time-stamp))

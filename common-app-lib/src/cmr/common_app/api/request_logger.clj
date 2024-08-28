@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :as log :refer [report]]
+   [cmr.common.log :as log :refer [error report]]
    [cmr.common.util :as util]
    [cmr.common.time-keeper :as tk]
    [digest :as digest]
@@ -47,11 +47,15 @@
        (assoc data field-name (util/scrub-token token))
        data))))
 
+(def max-dump-params
+  "The maximum number of parameters to dump to logs due to the issue of storing large logs."
+  128)
+
 (defn- dump-param
   "Dump out a form post parameter or url parameter map from inside a given
    request object taking care to mask tokens and to limit the number of actual
    values that will be logged. Defaults (2 parameter call) to 128 parameters."
-  ([data field] (dump-param data field 128))
+  ([data field] (dump-param data field max-dump-params))
   ([data field limit]
    (-> data
        (get field {})
@@ -60,6 +64,26 @@
        (scrub-token-from-map "token")
        ;; Parameters in forms could be really large, don't log everything
        (as-> item (apply dissoc item (drop limit (keys item)))))))
+
+(defn- normalize-local
+  "IP 6 addresses are ugly and wildly different then IP 4, normalize these so that all localhost
+   searches can be found in logs regardless of technology used to deliver the request."
+  [raw-address]
+  (if (contains? (set ["[0:0:0:0:0:0:0:1]" "127.0.0.1"]) raw-address)
+    "localhost"
+    raw-address))
+
+(defn- add-hash-to-data
+  "Conditionally adds md5 and sha1 hashes if the log level is either debug or
+   trace. These values are pulled from the response map."
+  [data response]
+  (let [log-level (log/apparent-log-level)]
+    (if (contains? (set [:debug :trace]) log-level)
+      (-> data
+          (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
+          (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
+          (util/remove-nil-keys))
+      data)))
 
 ;; *****************************************************************************
 ;; Ring Middleware Handlers
@@ -73,7 +97,7 @@
   [handler]
   (fn [request]
     (let [response (handler request)
-            ;; This is run after all responses
+          ;; This is run after all responses
           text (str (:body response))
           body-md5 (digest/md5 text)
           body-sha1 (digest/sha-1 text)
@@ -82,17 +106,15 @@
                                (assoc-in [:headers "Content-SHA1"] body-sha1))]
       updated-response)))
 
-(defn add-hash-to-data
-  "Conditionally adds md5 and sha1 hashes if the log level is either debug or
-   trace. These values are pulled from the response map."
-  [data response]
-  (let [log-level (log/apparent-log-level)]
-    (if (contains? (set [:debug :trace]) log-level)
-      (-> data
-          (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
-          (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
-          (util/remove-nil-keys))
-      data)))
+(defn add-time-stamp
+  "Add the current time to the request"
+  [handler]
+  (fn [request]
+    (if (some? (:ring-start-time request))
+      (handler request)
+      (handler (assoc request
+                      :ring-start-now (tk/now)
+                      :ring-start-time (tk/now-ms))))))
 
 ;; log-ring-request should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
@@ -116,54 +138,62 @@
 ;; time
 
 (defn log-ring-request
-  "Log a request from Ring returning JSON data to be parsed by a log tool like
-   Splunk or ELK. This handler can be called multiple times at different positions
-   in the handlers call. When calling this function multiple times in the routes
-   list, then pass in an ID (the two arity call) and the output will include the
-   ID value in the log so that log entries can be told apart. One may want to do
-   this to see when a value logged becomes valid in the routes chain and thus
-   availible downstream.
+  "Log a request from Ring returning JSON data to be parsed by a log tool like Splunk or ELK. This
+   handler can be called multiple times at different positions in the handlers call but it does
+   depend on common-routes/add-request-id-response-handler and add-time-stamp. When calling this
+   function multiple times in the routes list, then pass in an ID (the two arity call) and the
+   output will include the ID value in the log so that log entries can be told apart. One may want
+   to do this to see when a value logged becomes valid in the routes chain and thus availible
+   downstream.
 
-   NOTE: If you pass in an ID of :ignore then no ID will be written out, the
-   same behavior if you call the single arity call."
+   NOTE: If you pass in an ID of :ignore then no ID will be written out, the same behavior if you
+   call the single arity call."
   ([handler]
    (log-ring-request handler :ignore-id))
   ([handler id]
    (fn [request]
      (if-not (config/enable-enhanced-http-logging)
        (handler request)
-       (let [start (tk/now-ms)
-             now (dtp/clj-time->date-time-str (tk/now))
-             response (handler request)
+       (let [response (handler request) ;; Do all the response handlers first
+             ;; Do all the time based captures upfront
+             log-start (tk/now-ms) ;; After processing the other handlers, start tracking log time
+             ring-start (get request :ring-start-time (tk/now-ms))
+             ring-now (get request :ring-start-now (tk/now))
+             ;; processing of logs can now start
+             now-text (dtp/clj-time->date-time-str ring-now)
+             _ (when-not (:ring-start-time request) ;; Did someone forget to setup a routes.clj
+                 (error "There is no ring start time for this service" (request->uri request)))
              query-params (params/assoc-query-params request "UTF-8")
              form-params (params/assoc-form-params request "UTF-8")
-             ;; If adding or removing elements, change the log-version number so
-             ;; that reporting scripts can try to protect against change. Humans
-             ;; may be creating Splunk or ELK reports based on this content.
-             note (-> {"log-type" "action-log" "log-version" "1.0.0"}
+             note (-> {"message-type" "request-log"}
                       (add-hash-to-data response)
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
-                      (as-> data (if (= id :ignore-id) (assoc data "log-id" id) data))
+                      (as-> data (if (= id :ignore-id) data (assoc data "log-id" id)))
                       ;; assume that (add-body-hashes) has been run and reuse data
-                      (assoc "client-id" (get-in request [:headers "client-id"] "unknown")
+                      (into (:headers request)) ;; Bring in all the existing headers
+                      (assoc "cmr-hit" (get-in response [:headers "CMR-Hit"] nil)
+                             "cmr-took" (get-in response [:headers "CMR-Took"] nil)
                              "form-params" (dump-param form-params :form-params)
                              "method" (string/upper-case
                                        (name (get-in request [:request-method] "unknown")))
-                             "now" now
-                             "protocol" (:protocol request)
+                             "now" now-text
+                             "now-ms" ring-start
                              "query-params" (dump-param query-params :query-params)
-                             "remote-address" (:remote-addr request)
-                             "request-id" (get-in response [:headers "CMR-Request-Id"] "-to early-")
+                             "remote-address" (normalize-local (:remote-addr request))
+                             "request-id" (get-in response [:headers "CMR-Request-Id"] "n/a")
                              "status" (:status response)
-                             "took" (get-in response [:headers "CMR-Took"] "n/a")
-                             "uri" (request->uri request)
-                             "user-agent" (get-in request [:headers "user-agent"] "unknown")
-                             ;; do this last
-                             "log-cost-ms" (- (tk/now-ms) start)))]
+                             "uri" (get-in request [:uri] "/")
+                             "url" (request->uri request)
+                             ;; do these last
+                             "log-cost" (- (tk/now-ms) log-start)
+                             "duration" (- (tk/now-ms) ring-start))
+                      (util/remove-nil-keys))]
          (report (json/generate-string note))
          response)))))
+
+;; *************************************
 
 (comment
   ;; Notes on using ring code:
