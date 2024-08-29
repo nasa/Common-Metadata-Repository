@@ -121,6 +121,7 @@
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
+      req-log/log-ring-request ;; Must be after request id
       common-routes/add-security-header-response-handler
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
@@ -128,5 +129,6 @@
       params/wrap-params
       copy-of-body-handler
       req-log/add-body-hashes
-      req-log/log-ring-request
-      (shapefile/shapefile-upload default-error-format)))
+      (shapefile/shapefile-upload default-error-format)
+      ;;Last in line, but really first for requests
+      req-log/add-time-stamp))

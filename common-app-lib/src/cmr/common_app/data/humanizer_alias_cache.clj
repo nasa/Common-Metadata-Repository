@@ -15,7 +15,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (info warn)]
+   [cmr.common.log :as log :refer (debug info)]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
@@ -107,7 +107,8 @@
                                 (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name))]
     (rl-util/log-redis-read-complete "get-non-humanized-source-to-aliases-map" humanizer-alias-cache-key tm)
     (when (or (nil? found-aliases-map) (empty? found-aliases-map))
-      (warn (format "cache-miss: %s could not find map with humanizer-field-name [%s]" humanizer-alias-cache-key humanizer-field-name)))
+      ;; This can be a high volume log, over a million per day
+      (debug (format "cache-miss: %s could not find map with humanizer-field-name [%s]" humanizer-alias-cache-key humanizer-field-name)))
     found-aliases-map))
 
 (defconfig humanizer-alias-cache-job-refresh-rate

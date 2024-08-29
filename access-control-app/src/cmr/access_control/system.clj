@@ -25,8 +25,7 @@
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
-   [cmr.transmit.urs :as urs]
-   [cmr.access-control.config :as access-control-config]))
+   [cmr.transmit.urs :as urs]))
 
 (declare access-control-nrepl-port)
 (defconfig access-control-nrepl-port
