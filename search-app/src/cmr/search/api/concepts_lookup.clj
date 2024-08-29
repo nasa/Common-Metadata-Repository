@@ -3,13 +3,13 @@
   (:require
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.pages :as pages]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [GET OPTIONS context]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants
@@ -73,15 +73,16 @@
 (defn- find-concept-by-concept-id*
   "Perfrom the retrieval of concept by concept id and revision id"
   ([ctx result-format concept-id]
-   (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+   (info (format "Search for concept with cmr-concept-id [%s] and result format [%s]" concept-id result-format))
    (core-api/search-response
     ctx
     (query-svc/find-concept-by-id ctx result-format concept-id)))
 
   ([ctx result-format concept-id revision-id]
-   (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
+   (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s] and result format [%s]"
                  concept-id
-                 revision-id))
+                 revision-id
+                 result-format))
    (core-api/search-response
     ctx
     (query-svc/find-concept-by-id-and-revision ctx result-format concept-id revision-id))))
@@ -89,7 +90,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and
   possibly revision id) and returns the response"
-  [ctx path-w-extension params headers]
+  [ctx path-w-extension headers]
   (let [concept-id (core-api/path-w-extension->concept-id path-w-extension)
         revision-id (core-api/path-w-extension->revision-id path-w-extension)
         concept-type (concepts/concept-id->type concept-id)
@@ -149,8 +150,9 @@
   ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
   (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
     ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
-    ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
+    ;; the endpoint. In this case, the Authorization header is used in the GET request.
+    #_{:clj-kondo/ignore [:unused-binding]}
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
-      {params :params headers :headers ctx :request-context}
-      (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))
+      {headers :headers ctx :request-context}
+      (find-concept-by-cmr-concept-id ctx path-w-extension headers))))

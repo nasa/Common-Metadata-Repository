@@ -3,6 +3,14 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.message-queue.config :as rmq-conf]))
 
+;; This is here to remove linter unresolved variable error.
+(declare index-queue-name index-queue-listener-count all-revisions-index-queue-name
+         all-revisions-index-queue-listener-count deleted-granule-index-queue-name
+         deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
+         ingest-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
+         deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
+
+
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully
 ;; foot print of this index will remain small
