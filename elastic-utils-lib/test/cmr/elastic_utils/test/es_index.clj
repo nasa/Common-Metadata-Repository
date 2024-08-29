@@ -1,7 +1,7 @@
 (ns cmr.elastic-utils.test.es-index
   "Tests for the cmr.elastic-utils.search.es-index namespace"
   (:require 
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.elastic-utils.search.es-index :as es-index]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]))
