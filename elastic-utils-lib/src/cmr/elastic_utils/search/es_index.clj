@@ -85,7 +85,8 @@
                 highlights
                 scroll
                 scroll-id
-                search-after]} query
+                search-after
+                remove-source]} query
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                       (es-config/elastic-scroll-search-type)
@@ -100,7 +101,7 @@
      :sort sort-params
      :size page-size
      :from offset
-     :_source fields
+     :_source (if (nil? remove-source) fields false)
      :aggs aggregations
      :scroll scroll-timeout
      :scroll-id scroll-id
