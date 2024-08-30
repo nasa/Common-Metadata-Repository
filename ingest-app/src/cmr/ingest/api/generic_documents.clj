@@ -52,12 +52,13 @@
       (errors/throw-service-error
        :invalid-data
        (format "The %s schema is currently disabled and cannot be ingested." (util/html-escape schema)))
-      (if-some [schema-file (gconfig/read-schema-specification schema version)]
-        (let [schema-obj (js-validater/json-string->json-schema schema-file)]
-          (js-validater/validate-json schema-obj raw-json true))
-        (errors/throw-service-error
-         :invalid-data
-         (format "While the [%s] schema with version [%s] is approved, it cannot be found." (util/html-escape schema) (util/html-escape version)))))))
+      (let [schema-path (format "schemas/%s/v%s/schema.json" (name schema) version)
+            schema-obj (js-validater/parse-json-schema-from-path schema-path)]
+        (if schema-obj
+          (js-validater/validate-json schema-obj raw-json true)
+          (errors/throw-service-error
+           :invalid-data
+           (format "While the [%s] schema with version [%s] is approved, it cannot be found." (util/html-escape schema) (util/html-escape version))))))))
 
 (defn- concept-type->singular
   "Common task to convert concepts from their public URL form to their internal

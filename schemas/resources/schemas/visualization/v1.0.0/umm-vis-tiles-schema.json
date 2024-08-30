@@ -1,0 +1,34 @@
+{ "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "What": {
+      "title": "UMM-Vis-Tiles", 
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the title type.",
+      "properties": {
+        "whattile1": {
+          "type": "string"
+        },
+        "whattile2": {
+          "type": "string" 
+        }
+      },
+      "required": ["whattile1", "whattile2"]
+    },
+    "How": {
+      "title": "UMM-Vis-Tiles",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the title type.",
+      "properties": {
+        "howtile1": {
+          "type": "string"
+        },
+        "howtile2": {
+          "type": "string"
+        }
+      },
+      "required": ["howtile1", "howtile2"]
+    }
+  }
+} 

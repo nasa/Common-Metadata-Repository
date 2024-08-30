@@ -1,0 +1,912 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SpatialExtentType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the geographic and vertical (altitude, depth) coverage of the data.",
+      "properties": {
+        "SpatialCoverageType": {
+          "description": "Denotes whether the collection's spatial coverage requires horizontal, vertical, horizontal and vertical, orbit, or vertical and orbit in the spatial domain and coordinate system definitions.",
+          "$ref": "#/definitions/SpatialCoverageTypeEnum"
+        },
+        "HorizontalSpatialDomain": {
+          "$ref": "#/definitions/HorizontalSpatialDomainType"
+        },
+        "VerticalSpatialDomains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerticalSpatialDomainType"
+          }
+        },
+        "OrbitParameters": {
+          "$ref": "#/definitions/OrbitParametersType"
+        },
+        "GranuleSpatialRepresentation": {
+          "$ref": "#/definitions/GranuleSpatialRepresentationEnum"
+        }
+      },
+      "required": ["GranuleSpatialRepresentation"],
+      "allOf": [{"$ref": "#/definitions/OrbitParameterExistsIfGranuleSpatialRepresentationIsOrbit"}]
+    },
+    "SpatialCoverageTypeEnum": {
+      "type": "string",
+      "enum": ["EARTH/GLOBAL", "HORIZONTAL", "VERTICAL", "ORBITAL", "HORIZONTAL_VERTICAL", "ORBITAL_VERTICAL", "HORIZONTAL_ORBITAL", "HORIZONTAL_VERTICAL_ORBITAL", "LUNAR"]
+    },
+    "HorizontalSpatialDomainType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Information about a collection with horizontal spatial coverage.",
+      "properties": {
+        "ZoneIdentifier": {
+          "description": "The appropriate numeric or alpha code used to identify the various zones in the collection's grid coordinate system.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Geometry": {
+          "$ref": "#/definitions/GeometryType"
+        },
+        "ResolutionAndCoordinateSystem": {
+          "description": "Specifies the horizontal spatial extents coordinate system and its resolution.",
+          "$ref": "#/definitions/ResolutionAndCoordinateSystemType"
+        }
+      },
+      "required": ["Geometry"]
+    },
+    "GeometryType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "CoordinateSystem": {
+          "$ref": "#/definitions/CoordinateSystemEnum"
+        },
+        "Points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 1
+        },
+        "BoundingRectangles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundingRectangleType"
+          },
+          "minItems": 1
+        },
+        "GPolygons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GPolygonType"
+          },
+          "minItems": 1
+        },
+        "Lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LineType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["CoordinateSystem"],
+      "anyOf": [{
+        "required": ["Points"]
+      }, {
+        "required": ["BoundingRectangles"]
+      }, {
+        "required": ["GPolygons"]
+      }, {
+        "required": ["Lines"]
+      }]
+    },
+    "CoordinateSystemEnum": {
+      "type": "string",
+      "enum": ["CARTESIAN", "GEODETIC"]
+    },
+    "PointType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The longitude and latitude values of a spatially referenced point in degrees.",
+      "properties": {
+        "Longitude": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "Latitude": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["Longitude", "Latitude"]
+    },
+    "LatitudeType": {
+      "description": "The latitude value of a spatially referenced point, in degrees.  Latitude values range from -90 to 90.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "LongitudeType": {
+      "description": "The longitude value of a spatially referenced point, in degrees.  Longitude values range from -180 to 180.",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "BoundingRectangleType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "WestBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "NorthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        },
+        "EastBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "SouthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["WestBoundingCoordinate", "NorthBoundingCoordinate", "EastBoundingCoordinate", "SouthBoundingCoordinate"]
+    },
+    "GPolygonType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Boundary": {
+          "$ref": "#/definitions/BoundaryType"
+        },
+        "ExclusiveZone": {
+          "$ref": "#/definitions/ExclusiveZoneType"
+        }
+      },
+      "required": ["Boundary"]
+    },
+    "BoundaryType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A boundary is set of points connected by straight lines representing a polygon on the earth. It takes a minimum of three points to make a boundary. Points must be specified in counter-clockwise order and closed (the first and last vertices are the same).",
+      "properties": {
+        "Points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 4
+        }
+      },
+      "required": ["Points"]
+    },
+    "ExclusiveZoneType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Contains the excluded boundaries from the GPolygon.",
+      "properties": {
+        "Boundaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundaryType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Boundaries"]
+    },
+    "LineType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 2
+        }
+      },
+      "required": ["Points"]
+    },
+    "VerticalSpatialDomainType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Type": {
+          "description": "Describes the type of the area of vertical space covered by the collection locality.",
+          "$ref": "#/definitions/VerticalSpatialDomainTypeEnum"
+        },
+        "Value": {
+          "description": "Describes the extent of the area of vertical space covered by the collection. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["Type", "Value"]
+    },
+    "VerticalSpatialDomainTypeEnum": {
+      "type": "string",
+      "enum": ["Atmosphere Layer", "Maximum Altitude", "Maximum Depth", "Minimum Altitude", "Minimum Depth"]
+    },
+    "FootprintType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The largest width of an instrument's footprint as measured on the Earths surface. The largest Footprint takes the place of SwathWidth in the Orbit Backtrack Algorithm if SwathWidth does not exist. The optional description element allows the user of the record to be able to distinguish between the different footprints of an instrument if it has more than 1.",
+      "properties": {
+        "Footprint": {
+          "description": "The largest width of an instrument's footprint as measured on the Earths surface. The largest Footprint takes the place of SwathWidth in the Orbit Backtrack Algorithm if SwathWidth does not exist.",
+          "type": "number"
+        },
+        "FootprintUnit": {
+          "description": "The Footprint value's unit.",
+          "type": "string",
+          "enum": ["Kilometer", "Meter"]
+        },
+        "Description": {
+          "description": "The description element allows the user of the record to be able to distinguish between the different footprints of an instrument if it has more than 1.",
+          "type": "string"
+        }
+      },
+      "required": ["Footprint", "FootprintUnit"]
+    },
+    "OrbitParametersType": {
+      "description": "Orbit parameters for the collection used by the Orbital Backtrack Algorithm.",
+      "oneOf":[{
+        "type": "object",
+        "title": "Orbit parameters with just swath",
+        "additionalProperties": false,
+        "properties": {
+          "SwathWidth": {
+            "description": "Total observable width of the satellite sensor nominally measured at the equator.",
+            "type": "number"
+          },
+          "SwathWidthUnit": {
+            "description": "The SwathWidth value's unit.",
+            "type": "string",
+            "enum": ["Kilometer", "Meter"]
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
+        },
+        "required": ["SwathWidth", "SwathWidthUnit", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
+        }
+      }, {
+        "type": "object",
+        "title": "Orbit parameters with just footprints",
+        "additionalProperties": false,
+        "properties": {
+          "Footprints" : {
+            "description": "A list of instrument footprints or field of views. A footprint holds the largest width of the described footprint as measured on the earths surface along with the width's unit. An optional description element exists to be able to distinguish between the footprints, if that is desired. This element is optional. If this element is used at least 1 footprint must exist in the list.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/FootprintType"
+            },
+            "minItems": 1
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
+        },
+        "required": ["Footprints", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
+        }
+      }, {
+        "type": "object",
+        "title": "Orbit parameters with both swathwidth and footprints",
+        "additionalProperties": false,
+        "properties": {
+          "SwathWidth": {
+            "description": "Total observable width of the satellite sensor nominally measured at the equator.",
+            "type": "number"
+          },
+          "SwathWidthUnit": {
+            "description": "The SwathWidth value's unit.",
+            "type": "string",
+            "enum": ["Kilometer", "Meter"]
+          },
+          "Footprints" : {
+            "description": "A list of instrument footprints or field of views. A footprint holds the largest width of the described footprint as measured on the earths surface along with the width's unit. An optional description element exists to be able to distinguish between the footprints, if that is desired. This element is optional. If this element is used at least 1 footprint must exist in the list.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/FootprintType"
+            },
+            "minItems": 1
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
+        },
+        "required": ["SwathWidth", "SwathWidthUnit", "Footprints", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
+        }
+      }]
+    },
+    "GranuleSpatialRepresentationEnum": {
+      "type": "string",
+      "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
+    },
+    "OrbitParameterExistsIfGranuleSpatialRepresentationIsOrbit": {
+      "$comment": "Checks if the Granule Spatial Representation value is Oribt, then the oribt parameter must exist.",
+      "if": {"properties": {"GranuleSpatialRepresentation": {"const": "ORBIT"}}},
+      "then": {"required": ["OrbitParameters"]}
+    },    
+    "ResolutionAndCoordinateSystemType": {
+      "description": "This class defines the horizontal spatial extents coordinate system and the data product's horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal distance between successive elements of data in a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data resolution could be different in the two horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which is the minimum distance between points that an instrument can see as distinct.",
+      "oneOf": [{
+        "type": "object",
+        "title": "Description of the Resolution",
+        "additionalProperties": false,
+        "properties": {
+          "Description": {
+            "description": "This element holds a description about the resolution and coordinate system for people to read.",
+            "$ref": "#/definitions/DescriptionType"
+          },
+          "GeodeticModel": {
+            "description": "This element describes the geodetic model for the data product.",
+            "$ref": "#/definitions/GeodeticModelType"
+          }
+        },
+        "required": ["GeodeticModel"]
+      }, {
+        "type": "object",
+        "title": "Horizontal Data Resolution Information",
+        "additionalProperties": false,
+        "properties": {
+          "Description": {
+            "description": "This element holds a description about the resolution and coordinate system for people to read.",
+            "$ref": "#/definitions/DescriptionType"
+          },
+          "GeodeticModel": {
+            "description": "This element describes the geodetic model for the data product.",
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "HorizontalDataResolution": {
+            "description": "This class defines a number of the data products horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal distance between successive elements of data in a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data resolution could be different in the two horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which is the minimum distance between points that an instrument can see as distinct.",
+            "$ref": "#/definitions/HorizontalDataResolutionType"
+          }
+        },
+        "required": ["HorizontalDataResolution"]
+      }, {
+        "type": "object",
+        "title": "Local Coordinate System Information",
+        "additionalProperties": false,
+        "properties": {
+          "Description": {
+            "description": "This element holds a description about the resolution and coordinate system for people to read.",
+            "$ref": "#/definitions/DescriptionType"
+          },
+          "GeodeticModel": {
+            "description": "This element describes the geodetic model for the data product.",
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "LocalCoordinateSystem": {
+            "description": "This element describes the local coordinate system for the data product.",
+            "$ref": "#/definitions/LocalCoordinateSystemType"
+          }
+        },
+        "required": ["LocalCoordinateSystem"]
+      }]
+    },
+    "DescriptionType": {
+      "description": "This element defines what a description is.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    },
+    "GeodeticModelType": {
+      "description": "This element describes the geodetic model for the data product.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "HorizontalDatumName": {
+          "description": "The identification given to the reference system used for defining the coordinates of points.",
+          "$ref": "#/definitions/DatumNameType"
+        },
+        "EllipsoidName": {
+          "description": "Identification given to established representation of the Earth's shape.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "SemiMajorAxis": {
+          "description": "Radius of the equatorial axis of the ellipsoid.",
+          "type": "number"
+        },
+        "DenominatorOfFlatteningRatio": {
+          "description": "The ratio of the Earth's major axis to the difference between the major and the minor.",
+          "type": "number"
+        }
+      }
+    },
+    "DatumNameType": {
+      "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "HorizontalDataResolutionType": {
+      "description": "This class defines a number of the data products horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal distance between successive elements of data in a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data resolution could be different in the two horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which is the minimum distance between points that an instrument can see as distinct.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "VariesResolution": {
+          "description": "Varies Resolution object describes a data product that has a number of resolution values.",
+          "$ref": "#/definitions/HorizontalDataResolutionVariesType"
+        },
+        "PointResolution": {
+          "description": "Point Resolution object describes a data product that is from a point source.",
+          "$ref": "#/definitions/HorizontalDataResolutionPointType"
+        },
+        "NonGriddedResolutions": {
+          "description": "Non Gridded Resolutions object describes resolution data for non gridded data products.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HorizontalDataResolutionNonGriddedType"
+          },
+          "minItems": 1
+        },
+        "NonGriddedRangeResolutions": {
+          "description": "Non Gridded Range Resolutions object describes range resolution data for non gridded data products.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HorizontalDataResolutionNonGriddedRangeType"
+          },
+          "minItems": 1
+        },
+        "GriddedResolutions": {
+          "description": "Gridded Resolutions object describes resolution data for gridded data products.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HorizontalDataResolutionGriddedType"
+          },
+          "minItems": 1
+        },
+        "GriddedRangeResolutions": {
+          "description": "Gridded Range Resolutions object describes range resolution data for gridded data products.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HorizontalDataResolutionGriddedRangeType"
+          },
+          "minItems": 1
+        },
+        "GenericResolutions": {
+          "description": "Generic Resolutions object describes general resolution data for a data product where it is not known if a data product is gridded or not.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HorizontalDataGenericResolutionType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "HorizontalDataResolutionVariesType": {
+      "description": "Varies Resolution object describes a data product that has a number of resolution values.",
+      "type": "string",
+      "enum": ["Varies"]
+    },
+    "HorizontalDataResolutionPointType": {
+      "description": "Point Resolution object describes a data product that is from a point source.",
+      "type": "string",
+      "enum": ["Point"]
+    },
+    "HorizontalDataResolutionNonGriddedType": {
+      "description": "Non Gridded Resolutions object describes resolution data for non gridded data products.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "XDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "YDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Units of measure used for the XDimension and YDimension values.",
+          "$ref": "#/definitions/HorizontalDataResolutionUnitEnum"
+        },
+        "ViewingAngleType": {
+          "description": "This element describes the angle of the measurement with respect to the instrument that gives an understanding of the specified resolution.",
+          "$ref": "#/definitions/HorizontalResolutionViewingAngleType"
+        },
+        "ScanDirection": {
+          "description": "This element describes the instrument scanning direction.",
+          "$ref": "#/definitions/HorizontalResolutionScanDirectionType"
+        }
+      },
+      "anyOf": [{
+        "required": ["XDimension", "Unit"]
+      }, {
+        "required": ["YDimension", "Unit"]
+      }]
+    },
+    "HorizontalDataResolutionNonGriddedRangeType": {
+      "description": "Non Gridded Range Resolutions object describes range resolution data for non gridded data products.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "MinimumXDimension": {
+          "description": "The minimum, minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "MinimumYDimension": {
+          "description": "The minimum, minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "MaximumXDimension": {
+          "description": "The maximum, minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "MaximumYDimension": {
+          "description": "The maximum, minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Units of measure used for the XDimension and YDimension values.",
+          "$ref": "#/definitions/HorizontalDataResolutionUnitEnum"
+        },
+        "ViewingAngleType": {
+          "description": "This element describes the angle of the measurement with respect to the instrument that gives an understanding of the specified resolution.",
+          "$ref": "#/definitions/HorizontalResolutionViewingAngleType"
+        },
+        "ScanDirection": {
+          "description": "This element describes the instrument scanning direction.",
+          "$ref": "#/definitions/HorizontalResolutionScanDirectionType"
+        }
+      },
+      "anyOf": [{
+        "required": ["MinimumXDimension", "MaximumXDimension", "Unit"]
+      }, {
+        "required": ["MinimumYDimension", "MaximumYDimension", "Unit"]
+      }]
+    },
+    "HorizontalDataResolutionGriddedType": {
+      "description": "Gridded Resolutions object describes resolution data for gridded data products.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "XDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "YDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Units of measure used for the XDimension and YDimension values.",
+          "$ref": "#/definitions/HorizontalDataResolutionUnitEnum"
+        }
+      },
+      "anyOf": [{
+        "required": ["XDimension", "Unit"]
+      }, {
+        "required": ["YDimension", "Unit"]
+      }]
+    },
+    "HorizontalDataResolutionGriddedRangeType": {
+      "description": "Gridded Range Resolutions object describes range resolution data for gridded data products.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "MinimumXDimension": {
+          "description": "The minimum, minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "MinimumYDimension": {
+          "description": "The minimum, minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "MaximumXDimension": {
+          "description": "The maximum, minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "MaximumYDimension": {
+          "description": "The maximum, minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Units of measure used for the XDimension and YDimension values.",
+          "$ref": "#/definitions/HorizontalDataResolutionUnitEnum"
+        }
+      },
+      "anyOf": [{
+        "required": ["MinimumXDimension", "MaximumXDimension", "Unit"]
+      }, {
+        "required": ["MinimumYDimension", "MaximumYDimension", "Unit"]
+      }]
+    },
+    "HorizontalDataGenericResolutionType": {
+      "description": "Generic Resolutions object describes general resolution data for a data product where it is not known if a data product is gridded or not.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "XDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plane in the X axis. In most cases this is along the longitudinal axis.",
+          "type": "number"
+        },
+        "YDimension": {
+          "description": "The minimum difference between two adjacent values on a horizontal plan in the Y axis. In most cases this is along the latitudinal axis.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Units of measure used for the XDimension and YDimension values.",
+          "$ref": "#/definitions/HorizontalDataResolutionUnitEnum"
+        }
+      },
+      "anyOf": [{
+        "required": ["XDimension", "Unit"]
+      }, {
+        "required": ["YDimension", "Unit"]
+      }]
+    },
+    "HorizontalDataResolutionUnitEnum": {
+      "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
+      "type": "string",
+      "enum": ["Decimal Degrees", "Kilometers", "Meters", "Statute Miles", "Nautical Miles", "Not provided"]
+    },
+    "HorizontalResolutionViewingAngleType": {
+      "description": "This element describes the angle of the measurement with respect to the instrument that give an understanding of the specified resolution.",
+      "type": "string",
+      "enum": ["At Nadir", "Scan Extremes"]
+    },
+    "HorizontalResolutionScanDirectionType": {
+      "description": "This element describes the instrument scanning direction.",
+      "type": "string",
+      "enum": ["Along Track", "Cross Track"]
+    },
+    "LocalCoordinateSystemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "GeoReferenceInformation": {
+          "description": "The information provided to register the local system to the Earth (e.g. control points, satellite ephemeral data, and inertial navigation data).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Description": {
+          "description": "A description of the Local Coordinate System and geo-reference information.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    },
+    "TemporalExtentType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Information which describes the temporal range or extent of a specific collection.",
+      "properties": {
+        "PrecisionOfSeconds": {
+          "description": "The precision (position in number of places to right of decimal point) of seconds used in measurement.",
+          "type": "integer"
+        },
+        "EndsAtPresentFlag": {
+          "description": "Setting the Ends At Present Flag to 'True' indicates that a data collection which covers, temporally, a discontinuous range, currently ends at the present date.  Setting the Ends at Present flag to 'True' eliminates the need to continuously update the Range Ending Time for collections where granules are continuously being added to the collection inventory.",
+          "type": "boolean"
+        },
+        "RangeDateTimes": {
+          "description": "Stores the start and end date/time of a collection.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RangeDateTimeType"
+          },
+          "minItems": 1
+        },
+        "SingleDateTimes": {
+          "type": "array",
+          "items": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "PeriodicDateTimes": {
+          "description": "Temporal information about a collection having granules collected at a regularly occurring period.   Information includes the start and end dates of the period, duration unit and value, and cycle duration unit and value.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PeriodicDateTimeType"
+          },
+          "minItems": 1
+        },
+        "TemporalResolution": {
+          "$ref": "#/definitions/TemporalResolutionType"
+        }
+      },
+      "oneOf": [{
+        "required": ["RangeDateTimes"]
+      }, {
+        "required": ["SingleDateTimes"]
+      }, {
+        "required": ["PeriodicDateTimes"]
+      }]
+    },
+    "TemporalResolutionType": {
+      "oneOf": [{
+        "type": "object",
+        "title": "Contant or Varies Resolution",
+        "additionalProperties": false,
+        "description": "Describes the amount of time between measurements.",
+        "properties": {
+          "Unit": {
+            "description": "Describes a constant or varies temporal resolution.",
+            "type": "string",
+            "enum": ["Constant", "Varies"]
+          }
+        },
+        "required": ["Unit"]
+      }, {
+        "type": "object",
+        "title": "Numerical Resolution",
+        "additionalProperties": false,
+        "description": "Describes the amount of time between measurements.",
+        "properties": {
+          "Value": {
+            "description": "The temporal resolution value.",
+            "type": "number"
+          },
+          "Unit": {
+            "description": "Describes a constant or varies temporal resolution.",
+            "type": "string",
+            "enum": ["Second", "Minute", "Hour", "Day", "Week", "Month", "Year", "Diurnal"]
+          }
+        },
+        "required": ["Value", "Unit"]
+      }]
+    },
+    "RangeDateTimeType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Stores the start and end date/time of a collection.",
+      "properties": {
+        "BeginningDateTime": {
+          "description": "The time when the temporal coverage period being described began.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndingDateTime": {
+          "description": "The time when the temporal coverage period being described ended.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": ["BeginningDateTime"]
+    },
+    "PeriodicDateTimeType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Information about Periodic Date Time collections, including the name of the temporal period in addition to the start and end dates, duration unit and value, and cycle duration unit and value.",
+      "properties": {
+        "Name": {
+          "description": "The name given to the recurring time period. e.g. 'spring - north hemi.'",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "StartDate": {
+          "description": "The date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection coverage.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndDate": {
+          "description": "The date (day and time) of the end occurrence of this regularly occurring period which is relevant to the collection coverage.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "DurationUnit": {
+          "description": "The unit specification for the period duration.",
+          "$ref": "#/definitions/DurationUnitEnum"
+        },
+        "DurationValue": {
+          "description": "The number of PeriodDurationUnits in the RegularPeriodic period. e.g. the RegularPeriodic event 'Spring-North Hemi' might have a PeriodDurationUnit='MONTH' PeriodDurationValue='3' PeriodCycleDurationUnit='YEAR' PeriodCycleDurationValue='1' indicating that Spring-North Hemi lasts for 3 months and has a cycle duration of 1 year. The unit for the attribute is the value of the attribute PeriodDurationValue.",
+          "type": "integer"
+        },
+        "PeriodCycleDurationUnit": {
+          "description": "The unit specification of the period cycle duration.",
+          "$ref": "#/definitions/DurationUnitEnum"
+        },
+        "PeriodCycleDurationValue": {
+          "type": "integer"
+        }
+      },
+      "required": ["Name", "StartDate", "EndDate", "DurationUnit", "DurationValue", "PeriodCycleDurationUnit", "PeriodCycleDurationValue"]
+    },
+    "DurationUnitEnum": {
+      "type": "string",
+      "enum": ["DAY", "MONTH", "YEAR"]
+    }
+  }
+}
+  
+    

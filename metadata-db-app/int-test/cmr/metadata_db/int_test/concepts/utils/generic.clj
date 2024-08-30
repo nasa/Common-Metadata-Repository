@@ -56,3 +56,35 @@
                            :extra-fields extra-fields}
                           (dissoc attributes :extra-fields))]
     (concepts/create-any-concept provider-id concept-type uniq-num attributes)))
+
+(defmethod concepts/get-sample-metadata :visualization
+  [_concept-type]
+  (json/generate-string
+   {:Id "MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual",
+    :VisualizationType "tiles",
+    :Name "Land Cover Type (L3, IGBP, Annual, Best Available, MODIS, Aqua+Terra)",
+    :What {:whattile1 "a", :whattile2 "b"},
+    :How {:howtile1 "a", :howtile2 "b"},
+    :ConceptIds [{:type "STD",
+                  :value "C186286578-LPDAAC_ECS",
+                  :shortName "MCD12Q1",
+                  :title "MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m SIN Grid V006",
+                  :version "006",
+                  :dataCenter "LPDAAC_ECS"}],
+    :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/generics/visualization/v1.0.0",
+                            :Name "Visualization",
+                            :Version "1.0.0"}}))
+
+(defmethod concepts/create-concept :visualization
+  [concept-type & args]
+  (let [[provider-id uniq-num attributes] (concepts/parse-create-concept-args concept-type args)
+        native-id (str "vsl-native" uniq-num)
+        extra-fields (merge {:document-name "vsl-docname"
+                             :schema "visualization"}
+                            (:extra-fields attributes))
+        attributes (merge {:user-id (str "user" uniq-num)
+                           :format "application/json"
+                           :native-id native-id
+                           :extra-fields extra-fields}
+                          (dissoc attributes :extra-fields))]
+    (concepts/create-any-concept provider-id concept-type uniq-num attributes)))

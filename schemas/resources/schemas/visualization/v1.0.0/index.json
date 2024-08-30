@@ -1,0 +1,74 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+    "Name": "Generic-Index",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Visualization",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "VIS",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Identifier",
+      "Field": ".Identifier",
+      "Name": "Id",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Identifier",
+      "Field": ".Identifier",
+      "Name": "Identifier",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Schema Name as the Name field",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Schema Title as the Title field",
+      "Field": ".Title",
+      "Name": "Title",
+      "Mapping": "string"
+    },
+    {
+      "Description": "VisualizationType",
+      "Field": ".VisualizationType",
+      "Name": "Visualization-Type",
+      "Mapping": "string"
+    },
+    {    
+      "Description": "Visualization Source ConceptIds",
+      "Field": ".ConceptIds",
+      "Name": "Concept-Ids",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["value", "shortName"]}
+    },
+    {    
+      "Description": "Visualization Source ConceptIds in keywords",
+      "Field": ".ConceptIds",
+      "Name": "keyword",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["value"]}
+    },
+    {
+      "Description": "Identifier with the keywords",
+      "Field": ".Identifier",
+      "Name": "keyword",
+      "Mapping": "string"
+    }
+  ]
+}
