@@ -53,11 +53,12 @@
 
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
-  [context provider-ids]
+  [context _provider-ids]
   (let [condition (qm/string-conditions :consortiums ["CWIC"])
         query (qm/query {:concept-type :collection
                          :condition condition
-                         :page-size :unlimited})
+                         :page-size :unlimited
+                         :remove-source true})
         results (common-esi/execute-query context query)]
     (into {}
           (for [coll-id (map :_id (get-in results [:hits :hits]))]
@@ -65,12 +66,13 @@
 
 (defn get-opensearch-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
-  [context provider-ids]
+  [context _provider-ids]
   (let [condition (gc/or-conds (map #(qm/string-conditions :consortiums [%])
                                     (common-config/opensearch-consortiums)))
         query (qm/query {:concept-type :collection
                          :condition condition
-                         :page-size :unlimited})
+                         :page-size :unlimited
+                         :remove-source true})
         results (common-esi/execute-query context query)]
     (into {}
           (for [coll-id (map :_id (get-in results [:hits :hits]))]
@@ -141,11 +143,11 @@
                          (get-opensearch-collections context nil)))))))
 
 (defjob RefreshHasGranulesOrCwicMapJob
-  [ctx system]
+  [_ctx system]
   (refresh-has-granules-or-cwic-map {:system system}))
 
 (defjob RefreshHasGranulesOrOpenSearchMapJob
-  [ctx system]
+  [_ctx system]
   (refresh-has-granules-or-opensearch-map {:system system}))
 
 (defn refresh-has-granules-or-cwic-map-job
