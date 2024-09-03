@@ -1,6 +1,6 @@
 (ns cmr.search.test.unit.data.elastic-search-index-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index-name-cache :as idx-names-cache]
@@ -29,6 +29,7 @@
    :tag {:tags "1_tags"}
    :generic-grid {:generic-grid "1_generic_grid" :all-generic-grid-revisions "1_all_generic_grid_revisions"}
    :generic-data-quality-summary {:generic-data-quality-summary "1_generic_data_quality_summary" :all-generic-data-quality-summary-revisions "1_all_generic_data_quality_summary_revisions"}
+   :generic-visualization {:generic-visualization "1_generic_visualization" :all-generic-visualization-revisions "1_all_generic_visualization_revisions"}
    :collection {:collections-v2 "1_collections_v2" :all-collection-revisions "1_all_collection_revisions"}
    :subscription {:subscriptions "1_subscriptions" :all-subscription-revisions "1_all_subscription_revisions"}
    :rebalancing-collections ()})

@@ -1,0 +1,186 @@
+{
+  "$id": "https://example.com/umm-vis-tiles.schema.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UMM-Vis-Tiles",
+  "definitions": {
+    "What": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "what this vis is.",
+      "properties": {
+
+        "SupportsContinuousBrowsing": {
+          "description": "A boolean flag indicating whether the visualization layer supports “continuous browsing” across the anti-meridian.",
+          "type": "boolean"
+        },
+
+        "Dimension": {
+          "description": "dimension",
+          "type": "object"
+        },
+        "Format": {
+          "description": "layer format",
+          "type": "string"
+        },
+        "LegendURL": {
+          "description": "legend url",
+          "type": "array"
+        },
+        "ResourceURL": {
+          "description": "resource url",
+          "type": "object"
+        },
+        "Metadata": {
+          "description": "Metadata",
+          "type": "array"
+        },
+        "WGS84BoundingBox": {
+          "description": "WGS84 Bounding Box",
+          "type": "object"
+        },
+        "TileMatrixSetLink": {
+          "description": "tile matrix set link",
+          "type": "object",
+          "properties": {
+            "TileMatrixSet": {
+              "type": "string"
+            }
+          }
+        },
+
+        "measurement": {
+          "description": "The visualization layer’s measurement category",
+          "type": "string"
+        },
+        "layerPeriod": {
+          "description": "The visualization layer’s temporal resolution",
+          "type": "string",
+          "enum": [
+            "Subdaily",
+            "Daily",
+            "Multi-Day",
+            "4-Day",
+            "5-Day",
+            "7-Day",
+            "8-Day",
+            "16-Day",
+            "Weekly",
+            "Monthly",
+            "3-Month",
+            "Yearly"
+          ]
+        },
+        "transAntiMeridian": {
+          "description": "Whether, and how, the visualization layer provides representations that cross the antimeridian.",
+          "type": "boolean"
+        },
+        "daynight": {
+          "description": "Whether the visualization layer represents data captured during the day, night (or both) as perceived during time of data acquisition.",
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 2,
+          "items": {
+            "enum": [
+              "day",
+              "night"
+            ]
+          }
+        },
+        "orbitTracks": {
+          "description": "Corresponding orbit track layers",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "description": "Orbit track layer identifier(s)",
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "orbitDirection": {
+          "description": "Whether the visualization layer represents data from the ascending, descending, or both tracks of a satellite.",
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "description": "Orbit track direction",
+            "enum": [
+              "ascending",
+              "descending"
+            ]
+          }
+        },
+
+        "RetentionPeriod": {
+          "description": "TBD",
+          "type": "number"
+        },
+
+        "Ongoing": {
+          "description": "A boolean flag indicating whether the visualization layer. ",
+          "type": "boolean"
+        }
+
+      }
+
+    },
+
+    "How": {
+
+      "type": "object",
+      "additionalProperties": false,
+      "description": "what this vis is.",
+      "properties": {
+
+      "sourceData": {
+        "description": "source data used to create visualization",
+        "type": "array"
+      },
+
+      "projection": {
+        "description": "how reprojection is done. what source projection and output projection are",
+        "type": "object"
+      },
+      "regridding": {
+        "description": "how regridding is done. what source grid and output grid are",
+        "type": "object"
+      },
+      "sampling": {
+        "description": "interpolate or average out",
+        "type": "object"
+      },
+      "resolution": {
+        "description": "resolution of source data and resulting visualization",
+        "type": "object"
+      },
+      "qualityFlag": {
+        "description": "data value filtering, mask, etc.",
+        "type": "object"
+      },
+
+      "colorMap": {
+        "description": "color table",
+        "type": "object"
+      },
+      "range": {
+        "description": "min/max value",
+        "type": "object"
+      },
+      "scale": {
+        "description": "linear, logarithmic, etc.",
+        "type": "object"
+      },
+      "pixelStyle": {
+        "description": "shape of pixel when visualization is rendered",
+        "type": "object"
+      }
+
+    }
+
+    },
+
+    "graphics": {
+    }
+
+  },
+
+  "required": ["What", "How"]
+}
