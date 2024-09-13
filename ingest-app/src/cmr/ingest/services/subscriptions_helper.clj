@@ -56,17 +56,27 @@
 
 (defconfig email-server-port
   "The port number for email server."
-  {:default 25
+  {:default 465
    :type Long})
+
+(defconfig ses-user
+  "The port number for email server."
+  {:default ""
+   :type String})
+
+(defconfig ses-password
+  "The port number for email server."
+  {:default ""
+   :type String})
 
 (defconfig subscriptions-limit
   "The subscription limit for a single non-admin subscriber id."
   {:default 100
    :type Long})
 
-(defconfig mail-sender
+(defconfig ses-mail-sender
   "The email sender's email address."
-  {:default ""
+  {:default "noreply@nasa.gov"
    :type String})
 
 (defconfig email-subscription-processing-interval
@@ -243,8 +253,13 @@
      (when (seq subscriber-filtered-concept-refs)
        (let [concept-ref-locations (map :location subscriber-filtered-concept-refs)
              email-address (urs/get-user-email context subscriber-id)
-             email-content (create-email-content sub-type (mail-sender) email-address concept-ref-locations subscription)
-             email-settings {:host (email-server-host) :port (email-server-port)}]
+             email-content (create-email-content sub-type (ses-mail-sender) email-address concept-ref-locations subscription)
+             email-settings {:host (email-server-host)
+                             :port (email-server-port)
+                             :user (ses-user)
+                             :pass (ses-password)
+                             :ssl true
+                             :type "text/html; charset=utf-8"}]
          (try
            (send-email email-settings email-content)
            (info (str "Successfully processed subscription [" sub-id "].

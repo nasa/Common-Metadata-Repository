@@ -198,7 +198,7 @@
    :concept-id :string
    :keyword :keyword})
 
-(doseq [concept-type cc/get-generic-non-draft-concept-types-array]
+(doseq [concept-type (filterv #(not (string/includes? % "visualization")) cc/get-generic-non-draft-concept-types-array)]
   (defmethod common-params/param-mappings concept-type
     [_]
     {:name :string
@@ -206,6 +206,19 @@
      :provider :string
      :native-id :string
      :concept-id :string}))
+
+(defmethod common-params/param-mappings :visualization
+  [_]
+  {:name :string
+   :id :string
+   :identifier :string
+   :provider :string
+   :native-id :string
+   :concept-id :string
+   :visualization-type :string
+   :concept-ids :string
+   :keyword :string
+   :title :string})
 
 (doseq [concept-type cc/get-draft-concept-types-array]
   (defmethod common-params/param-mappings concept-type
@@ -254,25 +267,16 @@
   "Set of granule search parameter names."
   (set (keys (common-params/param-mappings :granule))))
 
-(defmulti tag-param->condition
+(defn tag-param->condition
   "Convert tag param and value into query condition"
-  (fn [param value pattern?]
-    param))
-
-(defmethod tag-param->condition :tag-key
   [param value pattern?]
-  (nf/parse-nested-condition :tags {param value} false pattern?))
-
-(defmethod tag-param->condition :tag-originator-id
-  [param value pattern?]
-  (nf/parse-nested-condition :tags {:originator-id value} false pattern?))
-
-(defmethod tag-param->condition :tag-data
-  [param value pattern?]
-  (let [conditions (for [[tag-key tag-value] value]
-                     (nf/parse-nested-condition :tags {:tag-key (name tag-key)
-                                                       :tag-value tag-value} false pattern?))]
-    (gc/and-conds conditions)))
+  (case param
+    :tag-key (nf/parse-nested-condition :tags {param value} false pattern?)
+    :tag-originator-id (nf/parse-nested-condition :tags {:originator-id value} false pattern?)
+    :tag-data (let [conditions (for [[tag-key tag-value] value]
+                                 (nf/parse-nested-condition :tags {:tag-key (name tag-key)
+                                                                   :tag-value tag-value} false pattern?))]
+                (gc/and-conds conditions))))
 
 (defmethod common-params/parameter->condition :tag-query
   [_context concept-type param value options]
@@ -303,7 +307,7 @@
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
 (defmethod common-params/parameter->condition :granule-concept-id
-  [context concept-type param value options]
+  [context concept-type _param value options]
   (let [values (if (sequential? value) value [value])
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
@@ -328,7 +332,7 @@
 ;; This will find granules which either have explicitly specified a value
 ;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod common-params/parameter->condition :inheritance
-  [context concept-type param value options]
+  [context _concept-type param value options]
   (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
@@ -341,7 +345,7 @@
         collection-cond]))))
 
 (defmethod common-params/parameter->condition :updated-since
-  [_context concept-type param value options]
+  [_context _concept-type param value _options]
   (cqm/map->DateRangeCondition
    {:field param
     :start-date (parser/parse-datetime
@@ -458,7 +462,7 @@
                      sort-key))))))
 
 (defmethod common-params/parse-query-level-params :collection
-  [concept-type params]
+  [_concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                  :collection params lp/param-aliases)
         query-attribs (reverse-has-granules-sort query-attribs)
@@ -510,7 +514,7 @@
          util/remove-nil-keys)]))
 
 (defmethod common-params/parse-query-level-params :granule
-  [concept-type params]
+  [_concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                 :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
@@ -541,39 +545,11 @@
              :result-features result-features
              :gran-specific-items-query? gran-specific-items-query?})]))
 
-(defmethod common-params/parse-query-level-params :variable
-  [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :variable params)]
-    [(dissoc params :all-revisions)
-     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
-
-(defmethod common-params/parse-query-level-params :service
-  [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :service params)]
-    [(dissoc params :all-revisions)
-     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
-
-(defmethod common-params/parse-query-level-params :tool
-  [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :tool params)]
-    [(dissoc params :all-revisions)
-     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
-
-(defmethod common-params/parse-query-level-params :subscription
-  [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :subscription params)]
-    [(dissoc params :all-revisions)
-     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
-
-(doseq [concept-type-key (cc/get-generic-concept-types-array)]
+(doseq [concept-type-key (conj (cc/get-generic-concept-types-array) :subscription :tool :service :variable)]
   (defmethod common-params/parse-query-level-params concept-type-key
-    [concept-type params]
+    [_concept-type params]
     (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 concept-type-key params)]
+                                  concept-type-key params)]
       [(dissoc params :all-revisions)
        (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})])))
 

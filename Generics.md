@@ -12,7 +12,8 @@ If adding a new document, you will need to update the defconf variable by either
              :data-quality-summary ["1.0.0"]
              :order-option ["1.0.0"]
              :service-entry ["1.0.0"]
-             :service-option ["1.0.0"]}
+             :service-option ["1.0.0"]
+			 :visualization ["1.0.0"]}
    		:parser #(json/parse-string % true)})
 
 When setting in an ENV or in AWS, use the JSON format:
@@ -21,7 +22,8 @@ When setting in an ENV or in AWS, use the JSON format:
     \"data-quality-summary\": [\"1.0.0\"],
     \"order-option\": [\"1.0.0\"],
     \"service-entry\": [\"1.0.0\"],
-    \"service-option\": [\"1.0.0\"]}"
+    \"service-option\": [\"1.0.0\"]
+	\"visualization\": [\"1.0.0\"]}"
 
 Each setting consists of a key, which is the name for the Generic which must be unique, and a list of version numbers. These values *must* match parts of a file system path under "schemas". For example, the order-option value must resolve to:
 
