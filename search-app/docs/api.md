@@ -3771,7 +3771,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tag association cannot be processed at all due to invalid input, tag association request will return failure status code 400 with the appropriate error message.
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, a 400 failure status code will be returned.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
@@ -3857,7 +3857,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer X
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 400 Bad Request
+HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 168
 
@@ -3890,7 +3890,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tag dissociation cannot be processed at all due to invalid input, tag dissociation request will return a failure status code with the appropriate error message.
+On occasions when tag dissociation cannot be processed at all due to invalid input, tag dissociation request will return status code 200 with appropriate error messages for each failed dissociation. If all the dissociations in the request fail, a 400 failure status code will be returned.
 
 #### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
 
@@ -4653,7 +4653,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXX
 '[{"concept_id": "C1200000005-PROV1", "data": {"order_option": "OO1200445588-PROV1"}},
   {"concept_id": "C1200000006-PROV1"}]'
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4678,20 +4678,21 @@ Content-Length: 168
 ]
 ```
 
-On occasions when service association cannot be processed at all due to invalid input, service association request will return a failure status code with the appropriate error message.
+On occasions when service association cannot be processed at all due to invalid input, service association request will return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, a 400 failure status code will be returned.
 
 #### <a name="service-dissociation"></a> Service Dissociation
 
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
 Service dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
+Service dissociation
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -4732,7 +4733,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return a failure status code with the appropriate error message.
+On occasions when service dissociation cannot be processed at all due to invalid input, service dissociation request will return status code 200 with appropriate error messages for each failed dissociation. If all the dissociations in the request fail, a 400 failure status code will be returned.
 
 ### <a name="tool"></a> Tool
 
@@ -5030,7 +5031,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXX
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -5064,7 +5065,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tool association cannot be processed at all due to invalid input, tool association request will return a failure status code with the appropriate error message.
+On occasions when tool association cannot be processed at all due to invalid input, tool association request will return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, a 400 failure status code will be returned.
 
 #### <a name="tool-dissociation"></a> Tool Dissociation
 
@@ -5077,7 +5078,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer X
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 400 BAD REQUEST
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 168
 
@@ -5118,7 +5119,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tool dissociation cannot be processed at all due to invalid input, tool dissociation request will return a failure status code with the appropriate error message.
+On occasions when tool dissociation cannot be processed at all due to invalid input, tool dissociation request will return status code 200 with appropriate error messages for each failed dissociation. If all the associations in the request fail, a 400 failure status code will be returned.
 
 ### <a name="subscription"></a> Subscription
 
