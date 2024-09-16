@@ -164,7 +164,7 @@
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c2-p1}
                                      {:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-error?
+        (tags/assert-tag-association-response-ok?
          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
                                  :revision-id 1}
           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
@@ -451,7 +451,7 @@
                        {:concept-id (:concept-id coll1)} ;; success
                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no tag association
-        (tags/assert-tag-dissociation-response-error?
+        (tags/assert-tag-dissociation-response-ok?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
           ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}

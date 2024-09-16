@@ -152,7 +152,7 @@
                       token tag-key
                       [{:concept-id concept-id :revision-id 5}
                        {:concept-id concept-id :revision-id revision-id}])]
-        (tags/assert-tag-association-response-error?
+        (tags/assert-tag-association-response-ok?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}
@@ -290,7 +290,7 @@
                       token tag-key
                       [{:concept-id concept-id :revision-id 5}
                        {:concept-id concept-id :revision-id revision-id}])]
-        (tags/assert-tag-dissociation-response-error?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}

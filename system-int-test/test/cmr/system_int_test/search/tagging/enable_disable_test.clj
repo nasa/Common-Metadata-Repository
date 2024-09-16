@@ -96,7 +96,8 @@
         _ (tags/create-tag token tag1)
         _ (tags/create-tag token tag2)]
     (testing "associate by query works before disable"
-      (let [response (tags/associate-by-query token tag1-key {:provider "PROV1"})]
+      (let [response (tags/associate-by-query token tag1-key {:provider "PROV1"})
+            _ (println "response: " response)]
         (is (= 200 (:status response)))))
 
     (testing "associate tag to collection works before disable"
