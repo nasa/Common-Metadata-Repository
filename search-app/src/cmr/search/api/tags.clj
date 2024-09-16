@@ -18,15 +18,15 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- has-error?
-  "Whether there's an error in [data]."
+(defn- all-data-contain-errors?
+  "Whether all entries in data contain errors."
   [data]
-  (some #(contains? % :errors) data))
+  (not (some #(nil? (:errors %)) data)))
 
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
-   (if (has-error? data)
+   (if (all-data-contain-errors? data)
      (tag-api-response 400 data)
      (tag-api-response 200 data)))
   ([status-code data]
