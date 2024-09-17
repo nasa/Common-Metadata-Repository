@@ -24,10 +24,10 @@
     :body (json/generate-string (util/snake-case-data data))
     :headers {"Content-Type" mt/json}}))
 
-(defn- results-contain-errors?
-  "Returns true if the results contain :errors"
+(defn- all-results-contain-errors?
+  "Returns true if the all results contain :errors"
   [results]
-  (seq (filter #(some? (:errors %)) results)))
+  (not (some #(nil? (:errors %)) results)))
 
 (defn association-results->status-code
   "Check for concept-types requiring error status to be returned. This is currently :service and :variable
@@ -35,7 +35,7 @@
   any are errors are present. Otherwise it will return 200"
   [concept-type results]
   (if (some #{concept-type} '(:variable :service :tool))
-    (if (results-contain-errors? results)
+    (if (all-results-contain-errors? results)
       400
       200)
     200))
