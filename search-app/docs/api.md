@@ -3771,7 +3771,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tag association cannot be processed at all due to invalid input, tag association request will return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, a 400 failure status code will be returned.
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return failure status code 400 with the appropriate error message.
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
