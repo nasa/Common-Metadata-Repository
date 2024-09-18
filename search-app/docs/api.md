@@ -3857,7 +3857,7 @@ curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer X
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
 
-HTTP/1.1 200 OK
+HTTP/1.1 400 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 168
 
