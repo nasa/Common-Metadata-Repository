@@ -47,7 +47,7 @@
 (defmethod atom-reference->json :collection
   [results concept-type reference]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
+        {:keys [id score title short-name version-id entry-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
@@ -63,6 +63,7 @@
                        :dataset_id dataset-id
                        :short_name short-name
                        :version_id version-id
+                       :entry_id entry-id
                        :original_format original-format
                        :collection_data_type collection-data-type
                        :data_center data-center

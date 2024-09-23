@@ -36,6 +36,7 @@
   [concept-type query]
   (let [atom-fields ["short-name"
                      "version-id"
+                     "entry-id"
                      "summary"
                      "update-time"
                      "entry-title"
@@ -137,6 +138,7 @@
          score :_score
          {short-name :short-name
           version-id :version-id
+          entry-id :entry-id
           summary :summary
           update-time :update-time
           entry-title :entry-title
@@ -193,6 +195,7 @@
             :title entry-title
             :short-name short-name
             :version-id version-id
+            :entry-id entry-id
             :summary summary
             :updated update-time
             :dataset-id entry-title
