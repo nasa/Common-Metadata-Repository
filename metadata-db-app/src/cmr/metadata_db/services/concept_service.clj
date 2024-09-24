@@ -22,6 +22,7 @@
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.provider-validation :as pv]
    [cmr.metadata-db.services.search-service :as search]
+   [cmr.metadata-db.services.subscriptions :as subscriptions]
    [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
@@ -828,6 +829,7 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
+            (subscriptions/delete-subscription context concept-type revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -915,6 +917,8 @@
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
+
+      (subscriptions/add-subscription context concept-type concept)
       concept)))
 
 (defn- delete-associated-tag-associations

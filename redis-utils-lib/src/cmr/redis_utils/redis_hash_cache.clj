@@ -6,8 +6,8 @@
   reset on that particular cache. TTL MUST be set if you expect your keys to be evicted automatically."
   (:require
    [cmr.common.hash-cache :as cache]
-   [cmr.redis-utils.redis-cache :as rc]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
+   [cmr.redis-utils.redis-cache :as rc]
    [taoensso.carmine :as carmine]))
 
 ;; Implements the CmrHashCache protocol by saving data in Redis.
@@ -32,7 +32,7 @@
 
   cache/CmrHashCache
   (get-map
-    [this key]
+    [_this key]
     ;; key is the cache-key 
     ;; hgetall returns a vector structure [[field1 value1 field2 value2 fieldN valueN]]
     ;; First pulls out the inner vector then conver it to {field value field value} hash 
@@ -46,7 +46,7 @@
                    {a b})))))
 
   (key-exists
-    [this key]
+    [_this key]
     ;; Parameters:
     ;    - key is the cache-key.
     ;    Returns:
@@ -59,7 +59,7 @@
         (> exists 0))))
 
   (get-keys
-    [this key]
+    [_this key]
     ;; key is the cache-key 
     ;; hkeys returns a vector structure [[key1 key2 ... keyn]] First pulls out the inner vector
     ;; returns a vector of keys.
@@ -68,7 +68,7 @@
           first)))
 
   (get-value
-    [this key field]
+    [_this key field]
     ;; key is the cache-key. Returns the value of the passed in field.
     (let [s-key (rc/serialize key)]
       (-> (wcar* s-key true read-connection :as-pipeline (carmine/hget s-key field))
@@ -77,37 +77,43 @@
   (get-values
     ;; key is the cache-key. Fields is either a vector or a list of fields.
     ;; returns a vector of values.
-    [this key fields]
+    [_this key fields]
     (let [s-key (rc/serialize key)]
       (map #(-> (wcar* s-key true read-connection :as-pipeline (carmine/hget s-key %1))
                 first)
            fields)))
 
   (reset
-    [this]
+    [_this]
     (doseq [the-key keys-to-track]
       (let [s-key (rc/serialize the-key)]
         (wcar* s-key false primary-connection (carmine/del s-key)))))
 
   (reset
-    [this key]
+    [_this key]
     (let [s-key (rc/serialize key)]
       (wcar* s-key false primary-connection (carmine/del s-key))))
 
   (set-value
-    [this key field value]
+    [_this key field value]
     (let [s-key (rc/serialize key)]
       ;; Store value in map to aid deserialization of numbers.
       (wcar* s-key false primary-connection (carmine/hset s-key field value))))
   
   (set-values
-    [this key field-value-map]
+    [_this key field-value-map]
     (let [s-key (rc/serialize key)]
       (doall (map #(wcar* s-key false primary-connection (carmine/hset s-key %1 (get field-value-map %1)))
                   (keys field-value-map)))))
 
+  (remove-value
+    [_this key field]
+    (let [s-key (rc/serialize key)]
+      ;; Remove field in cache
+      (wcar* s-key false primary-connection (carmine/hdel s-key field))))
+
   (cache-size
-    [this key]
+    [_this key]
     (let [s-key (rc/serialize key)]
       ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
       (if-let [size (wcar* s-key true read-connection (carmine/memory-usage s-key))]

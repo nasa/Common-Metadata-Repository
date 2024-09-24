@@ -42,7 +42,7 @@
         ;; Dev dockerfile manually creates /app/cmr-files to store the unzipped cmr jar so that drift
         ;; can find the migration files correctly
         ;; we had to force method change in drift to set the correct path
-        (if (not (instance? cmr.ingest.data.memory_db.ACLHashMemoryStore db))
+        (when (not (instance? cmr.ingest.data.memory_db.ACLHashMemoryStore db))
           (try
             ;; trying non-local path to find drift migration files
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
@@ -242,21 +242,17 @@
        (context ["/subscriptions"] []
          (POST "/"
            request
-           (subscriptions/create-subscription
-            provider-id request)))
+           (subscriptions/create-subscription request)))
        (context ["/subscriptions/:native-id" :native-id #".*$"] [native-id]
          (POST "/"
            request
-           (subscriptions/create-subscription-with-native-id
-            provider-id native-id request))
+           (subscriptions/create-subscription-with-native-id native-id request))
          (PUT "/"
            request
-           (subscriptions/create-or-update-subscription-with-native-id
-            provider-id native-id request))
+           (subscriptions/create-or-update-subscription-with-native-id native-id request))
          (DELETE "/"
            request
-           (subscriptions/delete-subscription
-            provider-id native-id request)))
+           (subscriptions/delete-subscription native-id request)))
 
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
        (context ["/:concept-type"

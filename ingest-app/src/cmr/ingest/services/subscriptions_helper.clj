@@ -280,6 +280,7 @@
   ([context revision-date-range]
    (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                             (remove :deleted)
+                            (remove #(:endpoint (:extra-fields %)))
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
      (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (nil? revision-date-range)))))
 
