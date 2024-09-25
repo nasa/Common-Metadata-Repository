@@ -2,7 +2,7 @@
   "Verifies the correct provider ingest permissions are enforced"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as dc]

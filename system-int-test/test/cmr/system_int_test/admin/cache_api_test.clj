@@ -3,14 +3,14 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.config :as common-config]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.cache-util :refer :all]
+   [cmr.system-int-test.utils.cache-util :refer [get-cache-value list-cache-keys list-caches-for-app refresh-cache]]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as t-config]))
@@ -19,13 +19,14 @@
   :each (ingest/reset-fixture
          {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (deftest cache-apis
   ;; login as a member of group 1
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
         admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
         normal-user-token (e/login (s/context) "user")
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))]
 
     (testing "list caches"
@@ -46,7 +47,8 @@
                                        "acls"
                                        "indexer-index-set-cache"
                                        "humanizer-cache"]
-        (url/mdb-read-caches-url) ["health"
+        (url/mdb-read-caches-url) ["subscription-cache"
+                                   "health"
                                    "token-imp"]
         (url/ingest-read-caches-url) ["token-user-ids"
                                       "launchpad-user"

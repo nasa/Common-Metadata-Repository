@@ -23,7 +23,16 @@
                :MetadataSpecification
                {:URL "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1"
                 :Name "UMM-Sub"
-                :Version "1.1"}}}
+                :Version "1.1"}}
+        "1.1.1" {:Name "someSub"
+                 :Type "granule"
+                 :SubscriberId "someSubId"
+                 :CollectionConceptId "C123-PROV1"
+                 :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"
+                 :MetadataSpecification
+                 {:URL "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1"
+                  :Name "UMM-Sub"
+                  :Version "1.1.1"}}}
        version))
 
 
