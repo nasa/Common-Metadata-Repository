@@ -318,6 +318,7 @@
       :dataset-id entry-title
       :short-name short-name
       :version-id version-id
+      :entry-id entry-id
       :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
       :collection-data-type collection-data-type
       :data-center (:provider-id (cu/parse-concept-id concept-id))
