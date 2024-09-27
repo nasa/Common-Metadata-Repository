@@ -311,7 +311,6 @@
   (let [parsed (json/parse-string (:metadata sub-concept) true)
         provider-id (get-provider-id parsed)
         subscriber-id (get-subscriber-id context parsed)
-        _ (println "The parsed subscription is:" parsed)
         parsed (if (and (= nil (:Query parsed))
                         (= "granule" (:Type parsed)))
                  (assoc parsed :Query (str "collection-concept-id=" (:CollectionConceptId parsed)))
