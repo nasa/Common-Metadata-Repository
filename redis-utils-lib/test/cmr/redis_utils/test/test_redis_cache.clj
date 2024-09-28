@@ -156,5 +156,8 @@
                (set [(get full-map "C1200000003-PROV1") (get full-map "C1200000002-PROV1")]))
              (set (h-cache/get-values rhcache cache-key '("C1200000003-PROV1" "C1200000002-PROV1"))))))
 
-    (testing "Testing getting size back from redis.")
-      (is (= java.lang.Long (type (h-cache/cache-size rhcache cache-key))))))
+    (testing "Testing getting size back from redis."
+      (is (= java.lang.Long (type (h-cache/cache-size rhcache cache-key)))))
+
+    (testing "Testing removing a field from redis."
+      (is (= 1 (h-cache/remove-value rhcache cache-key "C1200000003-PROV1"))))))

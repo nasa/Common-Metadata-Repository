@@ -96,7 +96,7 @@
   can sometimes be nil."
   [concept]
   (nil-fields-validation (apply dissoc (:extra-fields concept)
-                                [:delete-time :version-id :source-revision-id :associated-revision-id :target-provider-id :collection-concept-id])))
+                                [:delete-time :version-id :source-revision-id :associated-revision-id :target-provider-id :collection-concept-id :endpoint :mode])))
 
 (defn concept-id-validation
   [concept]

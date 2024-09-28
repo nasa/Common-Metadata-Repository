@@ -57,6 +57,10 @@
     [cache cache-key field-value-map]
      "Inserts a set of fields and values into a hashmap.")
 
+  (remove-value
+   [cache cache-key field]
+   "Removes the field from the hash cache.")
+
   (cache-size
    [cache cache-key]
    "Returns the size of the cache in bytes."))

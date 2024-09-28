@@ -22,7 +22,6 @@
   "update a subscription notification record, creating one if needed, complain
   if subscription id is not valid or not found"
   [context subscription-id]
-  (def context context)
   (let [errors (common-concepts/concept-id-validation subscription-id)
         db (mdb-util/context->db context)]
     (if (nil? errors)
