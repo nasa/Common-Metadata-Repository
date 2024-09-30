@@ -142,6 +142,7 @@
      :dataset-id (cx/string-at-path entry-elem [:datasetId])
      :short-name (cx/string-at-path entry-elem [:shortName])
      :version-id (cx/string-at-path entry-elem [:versionId])
+     :entry-id (cx/string-at-path entry-elem [:entryId])
      :summary (cx/string-at-path entry-elem [:summary])
      :original-format (cx/string-at-path entry-elem [:originalFormat])
      :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
