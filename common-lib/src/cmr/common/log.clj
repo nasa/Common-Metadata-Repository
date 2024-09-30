@@ -94,8 +94,7 @@
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  nil)
-  ;; `(tiber/report ~@body))
+  `(tiber/report ~@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Log macros like the above but using a format like all the cool kids do
@@ -130,8 +129,7 @@
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  nil)
-  ;; `(tiber/reportf ~@body))
+  `(tiber/reportf ~@body))
 
 (defrecord Logger
   [level ; The level to log out

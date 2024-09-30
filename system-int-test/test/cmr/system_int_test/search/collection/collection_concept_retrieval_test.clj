@@ -101,11 +101,11 @@
     (testing "retrieval of a deleted collection results in a 404"
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept
-                                       (:concept-id del-coll)
-                                       nil
-                                       {:throw-exceptions true
-                                        :headers {transmit-config/token-header
-                                                  user1-token}}))]
+                                      (:concept-id del-coll)
+                                      nil
+                                      {:throw-exceptions true
+                                       :headers {transmit-config/token-header
+                                                 user1-token}}))]
         (is (= 404 status))
         (is (= [(format "Concept with concept-id [%s] could not be found."
                         (:concept-id del-coll))]
