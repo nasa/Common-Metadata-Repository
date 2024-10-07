@@ -24,15 +24,15 @@
     :body (json/generate-string (util/snake-case-data data))
     :headers {"Content-Type" mt/json}}))
 
-(defn- results-contain-errors?
-  "Returns true if the results contain :errors"
+(defn- all-results-contain-errors?
+  "Returns true if every single result contains :errors"
   [results]
-  (seq (filter #(some? (:errors %)) results)))
+  (not (some #(nil? (:errors %)) results)))
 
 (defn- results->status-code
   "Return status code depending on if results contains error."
   [results]
-  (if (results-contain-errors? results)
+  (if (all-results-contain-errors? results)
     400
     200)) 
 

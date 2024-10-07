@@ -314,6 +314,11 @@
     (is (= (set (map :concept-id expected-colls))
            (set colls)))))
 
+(defn assert-tool-dissociation-response-ok?
+  "Assert the tool association response when status code is 200 is correct."
+  [coll-tool-associations response]
+  (assert-tool-association-response-ok? coll-tool-associations response false))
+
 (defn assert-tool-dissociation-bad-request
   "Assert the tool association response when status code is 400 is correct."
   [coll-tool-associations response]
