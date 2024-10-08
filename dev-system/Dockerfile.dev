@@ -1,0 +1,8 @@
+FROM clojure:temurin-17-lein-bullseye
+
+VOLUME /cmr
+ENV PATH /cmr/bin:$PATH
+
+WORKDIR /cmr
+
+RUN cmr build all

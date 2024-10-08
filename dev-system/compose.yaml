@@ -2,13 +2,13 @@ services:
   redis:
     container_name: cmr-redis
     image: docker.io/redis:7-bullseye
+    attach: false
     ports:
       - 6379:6379
-    networks:
-      - redis-network
   elasticsearch:
     container_name: cmr-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+    attach: false
     ports: 
       - 9210:9200
       - 9300:9300
@@ -16,10 +16,6 @@ services:
       - discovery.type=single-node
       - indices.breaker.total.use_real_memory=false
       - node.name=embedded-elastic
-    networks:
-      elasticsearch-network:
-        aliases:
-          - elasticsearch
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
       interval: 30s
@@ -28,14 +24,29 @@ services:
       start_period: 40s
   kibana:
     container_name: cmr-kibana
+    attach: false
+    image: docker.elastic.co/kibana/kibana:7.17.14
     depends_on: 
       - elasticsearch
-    image: docker.elastic.co/kibana/kibana:7.17.14
     ports:
       - 5601:5601
-    networks:
-      - elasticsearch-network
-
-networks:
-  elasticsearch-network: {}
-  redis-network: {}
+  cmr:
+    container_name: cmr
+    build: 
+      dockerfile: ./Dockerfile.dev
+    depends_on:
+    - elasticsearch
+    - redis
+    - kibana
+    stdin_open: true
+    tty: true
+    ports:
+      - 3011:3011
+      - 3006:3006
+      - 3004:3004
+      - 3002:3002
+      - 3001:3001
+      - 3003:3003
+      - 3009:3009
+    volumes:
+      - ..:/cmr
