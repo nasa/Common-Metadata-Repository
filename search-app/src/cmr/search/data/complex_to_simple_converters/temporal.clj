@@ -70,15 +70,18 @@
 (defn current-end-date
   "Returns the current end datetime for a given year and attributes of a periodic temporal condition"
   [current-year end-date start-day end-day end-year]
-  (let [adjusted-end-day (adjust-day current-year end-day)
-        adjusted-date-time (t/plus (t/date-time current-year) (t/days adjusted-end-day))
-        current-end (t/date-time current-year
-                                 (t/month adjusted-date-time)
-                                 (t/day adjusted-date-time)
-                                 (t/hour end-date)
-                                 (t/minute end-date)
-                                 (t/second end-date)
-                                 (t/milli end-date))]
+  (let [adjusted-end-day (when end-day 
+                           (adjust-day current-year end-day))
+        adjusted-date-time (when end-day
+                             (t/plus (t/date-time current-year) (t/days adjusted-end-day)))
+        current-end (when end-day
+                      (t/date-time current-year
+                                   (t/month adjusted-date-time)
+                                   (t/day adjusted-date-time)
+                                   (t/hour end-date)
+                                   (t/minute end-date)
+                                   (t/second end-date)
+                                   (t/milli end-date)))]
     (cond
       (nil? end-day)
       (if (and (= current-year end-year) end-date)
