@@ -62,7 +62,8 @@
 (defn- adjust-day 
   "Adjusts a given julian day based on whether the current year is a leap year."
   [current-year day]
-  (let [adjusted-day (if (is-leap-year? current-year)
+  (let [adjusted-day (if (and (is-leap-year? current-year) 
+                              (>= day 59))
                        day 
                        (dec day))]
     adjusted-day))
