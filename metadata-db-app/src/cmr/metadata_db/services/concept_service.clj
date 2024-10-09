@@ -793,7 +793,8 @@
                                                       :deleted true
                                                       :extra-fields (merge extra-fields
                                                                            {:endpoint (:EndPoint metadata-edn)
-                                                                            :mode (:Mode metadata-edn)})}))
+                                                                            :mode (:Mode metadata-edn)
+                                                                            :method (:Method metadata-edn)})}))
                           (merge previous-revision {:concept-id concept-id
                                                     :revision-id revision-id
                                                     :revision-date revision-date
