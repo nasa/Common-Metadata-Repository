@@ -19,6 +19,6 @@
       {params :params
        request-context :request-context}
       (update-subscription-notification-time request-context params))
-    (POST "/:subscription-concept-id/notification-time"
+    (POST "/refresh-subscription-cache"
       {request-context :request-context}
       (subscriptions/refresh-subscription-cache request-context))))
