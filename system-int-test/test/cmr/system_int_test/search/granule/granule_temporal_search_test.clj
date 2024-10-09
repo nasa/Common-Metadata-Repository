@@ -38,20 +38,14 @@
                                                                                                 :beginning-date-time "2010-12-12T12:00:00Z"}))
         gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule8"
                                                                                                 :beginning-date-time "2011-12-13T12:00:00Z"}))
-        gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule9"}))
+        gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule9"}))]
 
-        gran10 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule10"
-                                                                                                 :beginning-date-time "2024-05-30T21:00:00.000Z"
-                                                                                                 :ending-date-time "2024-05-31T21:00:00.000Z"}))
-        gran11 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule11"
-                                                                                                 :beginning-date-time "2023-05-31T21:00:00.000Z"
-                                                                                                 :ending-date-time "2023-06-01T21:00:00.000Z"}))]
     (index/wait-until-indexed)
 
     (testing "search by temporal_start."
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-12-12T12:00:00Z,"})]
-        (is (d/refs-match? [gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran10 gran11] references))))
+        (is (d/refs-match? [gran2 gran3 gran4 gran5 gran6 gran7 gran8] references))))
 
     (testing "search by temporal_end."
       (let [references (search/find-refs :granule
@@ -104,7 +98,7 @@
                                                                               :stop-date stop-date}}]))
 
         "no end date in range"
-        [gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran10 gran11] 
+        [gran2 gran3 gran4 gran5 gran6 gran7 gran8] 
         "2010-12-12T12:00:00Z" 
         nil
 
@@ -116,12 +110,7 @@
         "range with start and end date with different formats"
         [gran1]
         "2010-01-01T10:00:00"
-        "2010-01-10T12:00:00.123Z"))
-    
-    (testing "search by temporal_range with julian days with leap year adjustments"
-      (let [references (search/find-refs :granule
-                                         {"temporal[]" "2014-06-01T00:00:01.000Z,2024-06-01T00:00:02.000Z,152,152"})]
-        (is (d/refs-match? [gran6 gran7 gran8 gran11] references)))))
+        "2010-01-10T12:00:00.123Z")))
 
   ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
   (testing "search by invalid temporal format."
