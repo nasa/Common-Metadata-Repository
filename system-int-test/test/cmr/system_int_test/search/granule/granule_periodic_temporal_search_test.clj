@@ -1,15 +1,15 @@
 (ns cmr.system-int-test.search.granule.granule-periodic-temporal-search-test
   "Integration test for CMR granule periodic temporal search"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :refer [are2]]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]))
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -75,7 +75,7 @@
     (index/wait-until-indexed)
 
     (testing "Search granules with periodic temporal parameter"
-      (are2 [grans temporal-params]
+      (are3 [grans temporal-params]
             (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                              :page_size 100}))
 
@@ -140,28 +140,31 @@
                                                                             [(data-umm-cmn/temporal-extent
                                                                               {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
-                                                   :beginning-date-time "2012-01-01T00:00:00Z"
-                                                   :ending-date-time "2012-01-02T00:00:00Z"}))
+                                                                                                :beginning-date-time "2012-01-01T00:00:00Z"
+                                                                                                :ending-date-time "2012-01-02T00:00:00Z"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
-                                                   :beginning-date-time "2012-02-14T00:00:00Z"
-                                                   :ending-date-time "2012-02-18T00:00:00Z"}))
+                                                                                                :beginning-date-time "2012-02-14T00:00:00Z"
+                                                                                                :ending-date-time "2012-02-18T00:00:00Z"}))
         gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule3"
-                                                   :beginning-date-time "2012-04-08T00:00:00Z"
-                                                   :ending-date-time "2012-04-09T00:00:00Z"}))
+                                                                                                :beginning-date-time "2012-04-08T00:00:00Z"
+                                                                                                :ending-date-time "2012-04-09T00:00:00Z"}))
         gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule4"
-                                                   :beginning-date-time "2012-04-21T00:00:00Z"
-                                                   :ending-date-time "2012-04-22T00:00:00Z"}))
+                                                                                                :beginning-date-time "2012-04-21T00:00:00Z"
+                                                                                                :ending-date-time "2012-04-22T00:00:00Z"}))
         gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5"
-                                                   :beginning-date-time "2012-06-01T00:00:00Z"
-                                                   :ending-date-time "2012-06-02T00:00:00Z"}))
+                                                                                                :beginning-date-time "2012-06-01T00:00:00Z"
+                                                                                                :ending-date-time "2012-06-02T00:00:00Z"}))
+        gran5-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-1"
+                                                                                                :beginning-date-time "2012-05-31T00:00:00Z"
+                                                                                                :ending-date-time "2012-06-01T00:00:00Z"}))
         gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule6"
-                                                   :beginning-date-time "2012-12-21T00:00:00Z"
-                                                   :ending-date-time "2012-12-22T00:00:00Z"}))]
+                                                                                                :beginning-date-time "2012-12-21T00:00:00Z"
+                                                                                                :ending-date-time "2012-12-22T00:00:00Z"}))]
     (index/wait-until-indexed)
 
     (testing "periodic temporal on the start-year"
       (testing "start-day before end-day"
-        (are2 [grans temporal-params]
+        (are3 [grans temporal-params]
               (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                                :page_size 100}))
 
@@ -178,16 +181,16 @@
               "2012-06-15T00:00:00Z, 2015-02-01T00:00:00Z, 90, 120"))
 
       (testing "start-day after end-day"
-        (are2 [grans temporal-params]
+        (are3 [grans temporal-params]
               (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                                :page_size 100}))
 
               "start-date before end-day"
-              [gran5 gran6]
+              [gran5 gran5-1 gran6]
               "2012-02-01T00:00:00Z, 2015-02-01T00:00:00Z, 120, 90"
 
               "start-date between start-day and end-day"
-              [gran5 gran6]
+              [gran5 gran5-1 gran6]
               "2012-04-15T00:00:00Z, 2015-02-01T00:00:00Z, 120, 90"
 
               "start-date after start-day"
@@ -196,7 +199,7 @@
 
     (testing "periodic temporal on the end-year"
       (testing "start-day before end-day"
-        (are2 [grans temporal-params]
+        (are3 [grans temporal-params]
               (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                                :page_size 100}))
 
@@ -213,7 +216,7 @@
               "2000-02-01T00:00:00Z, 2012-06-15T00:00:00Z, 90, 120"))
 
       (testing "start-day after end-day"
-        (are2 [grans temporal-params]
+        (are3 [grans temporal-params]
               (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                                :page_size 100}))
 
@@ -226,11 +229,11 @@
               "2000-02-01T00:00:00Z, 2012-04-15T00:00:00Z, 120, 90"
 
               "end-date after start-day"
-              [gran1 gran2 gran5]
+              [gran1 gran2 gran5 gran5-1]
               "2000-02-01T00:00:00Z, 2012-06-15T00:00:00Z, 120, 90")))
 
     (testing "perodic temporal search on a single day"
-      (are2 [grans temporal-params]
+      (are3 [grans temporal-params]
             (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                              :page_size 100}))
 
@@ -245,6 +248,10 @@
             "match granule on end-datetime"
             [gran2]
             "2000-02-01T00:00:00Z, 2012-04-15T00:00:00Z, 49, 49"
+
+            "match granule on day after leap year"
+            [gran5]
+            "2012-06-01T00:01:00Z, 2024-06-01T00:02:00Z, 152, 152"
 
             "search by rolling temporal with end-date not intersect the day interval.
             This is a limitation of rolling temporal parameter search where searching on the end year
