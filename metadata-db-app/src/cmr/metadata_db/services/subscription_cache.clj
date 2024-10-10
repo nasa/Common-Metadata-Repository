@@ -4,8 +4,11 @@
 	<collection-concept-id> --> <ingest subscription map>
 
 	Example:
-	'C12344554-PROV1' --> { 'enabled' true|false
-                          'mode'    New|Update|Delete|All} "
+  {Collection concept id 1: {\"New\" 1
+                             \"Update\" 1}
+   Collection concept id 2: {\"New\" 2
+                             \"Update\" 1
+                             \"Delete\" 3}"
   (:require
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.redis-log-util :as rl-util]
@@ -46,4 +49,13 @@
         [tm value] (util/time-execution
                     (hash-cache/remove-value cache-client subscription-cache-key collection-concept-id))]
     (rl-util/log-redis-write-complete "ingest-subscription-cache remove-value" subscription-cache-key tm)
+    value))
+
+(defn get-keys
+  "Gets the collection-concept-ids from the cache."
+  [context]
+  (let [cache-client (hash-cache/context->cache context subscription-cache-key)
+        [tm value] (util/time-execution
+                    (hash-cache/get-keys cache-client subscription-cache-key))]
+    (rl-util/log-redis-read-complete "ingest-subscription-cache get-keys" subscription-cache-key tm)
     value))
