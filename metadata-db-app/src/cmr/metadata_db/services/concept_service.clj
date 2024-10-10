@@ -781,7 +781,6 @@
                                (= :subscription concept-type))
                          (:metadata previous-revision)
                          "")
-              _ (def metadata metadata)
               tombstone (if (= :subscription concept-type)
                           (let [metadata-edn (json/decode metadata true)
                                 extra-fields (:extra-fields previous-revision)]
