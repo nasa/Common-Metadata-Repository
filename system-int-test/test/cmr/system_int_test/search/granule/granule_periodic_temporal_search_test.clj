@@ -169,6 +169,24 @@
         gran5-3-2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-3-2"
                                                                                                     :beginning-date-time "2016-06-01T00:00:00Z"
                                                                                                     :ending-date-time "2016-06-02T00:00:00Z"}))
+        gran5-4-1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-1"
+                                                                                                    :beginning-date-time "2016-02-29T00:00:00Z"
+                                                                                                    :ending-date-time "2016-03-01T00:00:00Z"}))
+        gran5-4-2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-2"
+                                                                                                    :beginning-date-time "2016-03-01T00:00:00Z"
+                                                                                                    :ending-date-time "2016-03-02T00:00:00Z"}))
+        gran5-4-3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-3"
+                                                                                                    :beginning-date-time "2015-02-28T00:00:00Z"
+                                                                                                    :ending-date-time "2015-03-01T00:00:00Z"}))
+        gran5-4-4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-4"
+                                                                                                    :beginning-date-time "2015-03-01T00:00:00Z"
+                                                                                                    :ending-date-time "2015-03-02T00:00:00Z"}))
+        gran5-4-5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-5"
+                                                                                                    :beginning-date-time "2024-02-29T00:00:00Z"
+                                                                                                    :ending-date-time "2024-03-01T00:00:00Z"}))
+        gran5-4-6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5-4-6"
+                                                                                                    :beginning-date-time "2024-03-01T00:00:00Z"
+                                                                                                    :ending-date-time "2024-03-02T00:00:00Z"}))
         gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule6"
                                                                                                 :beginning-date-time "2012-12-21T00:00:00Z"
                                                                                                 :ending-date-time "2012-12-22T00:00:00Z"}))]
@@ -261,9 +279,13 @@
             [gran2]
             "2000-02-01T00:00:00Z, 2012-04-15T00:00:00Z, 49, 49"
 
-            "match granule on day after leap year"
+            "match granule on day on leap year"
             [gran5-1-2 gran5-2-2 gran5-3-2]
             "2012-06-01T00:01:00Z, 2024-06-01T00:02:00Z, 152, 152"
+
+            "match granule on day on leap year on Mar 1st"
+            [gran5-4-2 gran5-4-4 gran5-4-6]
+            "2012-03-01T00:01:00Z, 2024-03-01T00:02:00Z, 60, 60"
 
             "search by rolling temporal with end-date not intersect the day interval.
             This is a limitation of rolling temporal parameter search where searching on the end year

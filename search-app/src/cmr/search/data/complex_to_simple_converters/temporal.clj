@@ -119,14 +119,14 @@
                         current-start)
         current-end (current-end-date current-year end-date start-day end-day end-year)]
 
-    (when-not (t/before? current-end current-start)
-      (intersect-temporal->simple-conditions
-       (assoc
-        (qm/map->TemporalCondition {:start-date current-start
-                                    :end-date current-end
-                                    :limit-to-granules limit-to-granules})
-        :concept-type
-        concept-type)))))
+      (when-not (t/before? current-end current-start)
+        (intersect-temporal->simple-conditions
+        (assoc
+         (qm/map->TemporalCondition {:start-date current-start
+                                      :end-date current-end
+                                      :limit-to-granules limit-to-granules})
+         :concept-type
+         concept-type)))))
 
 (defn- periodic-temporal->simple-conditions
   "Convert a periodic temporal condition into a combination of simpler conditions
