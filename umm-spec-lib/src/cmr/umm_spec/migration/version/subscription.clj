@@ -30,4 +30,4 @@
   [_context subscription & _]
   (-> subscription
       (m-spec/update-version :subscription "1.1")
-      (dissoc :Mode :EndPoint)))
+      (dissoc :Mode :EndPoint :Method)))
