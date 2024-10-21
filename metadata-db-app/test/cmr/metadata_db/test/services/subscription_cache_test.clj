@@ -15,11 +15,11 @@
     (testing "Cache is empty"
       (is (nil? (hash-cache/get-map cache cache-key))))
     (testing "Add to the cache."
-      (is (= 1 (subscription-cache/set-value test-context "C12345-PROV1" {"New" 1
-                                                                          "Update" 2}))))
+      (is (= 1 (subscription-cache/set-value test-context "C12345-PROV1" {"enabled" true
+                                                                          "mode" "All"}))))
     (testing "Get a value"
-      (is (= {"New" 1
-              "Update" 2}
+      (is (= {"enabled" true
+              "mode" "All"} 
              (subscription-cache/get-value test-context "C12345-PROV1"))))
     (testing "Remove a value"
       (is (= 1 (subscription-cache/remove-value test-context "C12345-PROV1"))))

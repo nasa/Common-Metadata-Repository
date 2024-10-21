@@ -5,7 +5,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -168,7 +168,7 @@
                errors))))
 
     (testing "delete on PROV3, registered user is granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
-      (let [{:keys [status]} (ingest/delete-concept concept {:token user1-token})]
+      (let [{:keys [status errors]} (ingest/delete-concept concept {:token user1-token})]
         (is (= 200 status))))))
 
 (deftest umm-sub-1_0-subscription-ingest-test
@@ -182,7 +182,7 @@
     (testing "ingest of a new subscription concept"
       (let [concept (subscription-util/make-subscription-concept-with-umm-version
                      "1.0" {:CollectionConceptId (:concept-id coll1)})
-            {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+            {:keys [concept-id revision-id status]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))))
 
@@ -571,11 +571,10 @@
       (testing "create a subscription over a subscription's tombstone"
         (let [response (subscription-util/ingest-subscription
                         (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll1)}))
-              {:keys [status revision-id]} response]
+              {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (deftest roll-your-own-subscription-tests
   ;; Use cases coming from EarthData Search wanting to allow their users to create
   ;; subscriptions without the need to have any acls
@@ -678,7 +677,8 @@
                    :Name "sub-name2"
                    :native-id "sub2"
                    :CollectionConceptId (:concept-id coll1)})
-            {:keys [status]} (ingest/ingest-concept sub1-user1 {:token user1-token})]
+            {:keys [concept-id revision-id status]} (ingest/ingest-concept
+                                                     sub1-user1 {:token user1-token})]
 
         ;; verify subscription with user1 as subscriber is created successfully
         (is (= 201 status))
@@ -1035,7 +1035,7 @@
 
 (deftest query-uniqueness-test
   (let [sub-user-group-id (echo-util/get-or-create-group (system/context) "sub-group")
-        _ (echo-util/login (system/context) "sub-user" [sub-user-group-id])
+        sub-user-token (echo-util/login (system/context) "sub-user" [sub-user-group-id])
         coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                     (data-umm-c/collection {:ShortName "coll1"
                                                                             :EntryTitle "entry-title1"})
@@ -1045,8 +1045,8 @@
                                                                             :EntryTitle "entry-title2"})
                                                     {:token "mock-echo-system-token"})
 
-        _ (subscription-util/create-subscription-and-index
-           coll1 "test_sub1_prov1" "sub-user" "instrument=POSEIDON-2&platform=NOAA-7")
+        sub1 (subscription-util/create-subscription-and-index
+              coll1 "test_sub1_prov1" "sub-user" "instrument=POSEIDON-2&platform=NOAA-7")
         ;;should fail, since normalized-query will be identical to sub1
         sub2 (subscription-util/create-subscription-and-index
               coll1 "test_sub2_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
@@ -1054,8 +1054,8 @@
         sub3 (subscription-util/create-subscription-and-index
               coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")
         ;;Later on, we will delete this sub and supersede it
-        _ (subscription-util/create-subscription-and-index
-           coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")
+        sub4 (subscription-util/create-subscription-and-index
+              coll2 "test_sub4_prov1" "sub-user" "platform=NOAA-11")
         sub4-concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub4_prov1"}]
 
     (testing "check that only actual duplicate subscriptions failed"
@@ -1065,8 +1065,8 @@
       (let [sub3-concept {:provider-id "PROV1" :concept-type :subscription :native-id "test_sub3_prov1"}
             ;;delete sub3, and reingest it as-is.
             _ (ingest/delete-concept sub3-concept)
-            _ (subscription-util/create-subscription-and-index
-               coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")]
+            sub3-2 (subscription-util/create-subscription-and-index
+                    coll2 "test_sub3_prov1" "sub-user" "platform=NOAA-7&instrument=POSEIDON-2")]
         (is (not (:errors sub3)))))
     (testing "should be possible to replace a tombstoned concept with a new concept, with new native-id"
       (ingest/delete-concept sub4-concept)

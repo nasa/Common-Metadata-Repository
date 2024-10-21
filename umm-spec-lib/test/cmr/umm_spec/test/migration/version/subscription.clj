@@ -33,8 +33,7 @@
    :CollectionConceptId "C1200000005-PROV1"
    :Query "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78"
    :EndPoint "arn:aws:sqs:us-east-1:1234455667:TestSNSQueue"
-   :Mode ["New" "Update"]
-   :Method "ingest"
+   :Mode "All"
    :MetadataSpecification
    {:URL "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1"
     :Name "UMM-Sub"
@@ -48,7 +47,7 @@
   (is (thrown? clojure.lang.ExceptionInfo (migrate-subscription "1.1" "1.0" granule-subscription-concept-1_1))))
 
 (deftest migrate-1_1->1_1_1
-  (is (= (dissoc granule-subscription-concept-1_1_1 :Mode :EndPoint :Method)
+  (is (= (dissoc granule-subscription-concept-1_1_1 :Mode :EndPoint)
          (migrate-subscription "1.1" "1.1.1" granule-subscription-concept-1_1))))
 
 (deftest migrate-1_1_1->1_1

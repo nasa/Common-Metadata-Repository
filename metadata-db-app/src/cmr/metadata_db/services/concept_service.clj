@@ -1,7 +1,6 @@
 (ns cmr.metadata-db.services.concept-service
   "Services to support the business logic of the metadata db."
   (:require
-   [cheshire.core :as json]
    [clj-time.core :as t]
    [clojure.set :as set]
    [cmr.common.api.context :as cmn-context]
@@ -758,32 +757,6 @@
 
     :else nil))
 
-(defn create-tombstone-concept
-  "Helper function to create a tombstone concept by merging in parts of the
-  previous concept to the tombstone."
-  [metadata concept previous-revision]
-  (let [{:keys [concept-id revision-id revision-date user-id]} concept
-        {:keys [concept-type _]} (cu/parse-concept-id concept-id)]
-    (if (= :subscription concept-type)
-      (let [metadata-edn (json/decode metadata true)
-            extra-fields (:extra-fields previous-revision)]
-        (merge previous-revision {:concept-id concept-id
-                                  :revision-id revision-id
-                                  :revision-date revision-date
-                                  :user-id user-id
-                                  :metadata ""
-                                  :deleted true
-                                  :extra-fields (merge extra-fields
-                                                       {:endpoint (:EndPoint metadata-edn)
-                                                        :mode (:Mode metadata-edn)
-                                                        :method (:Method metadata-edn)})}))
-      (merge previous-revision {:concept-id concept-id
-                                :revision-id revision-id
-                                :revision-date revision-date
-                                :user-id user-id
-                                :metadata metadata
-                                :deleted true}))))
-
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
@@ -803,11 +776,15 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [metadata (if (or (cu/generic-concept? concept-type)
-                               (= :subscription concept-type))
+        (let [metadata (if (cu/generic-concept? concept-type)
                          (:metadata previous-revision)
                          "")
-              tombstone (create-tombstone-concept metadata concept previous-revision)]
+              tombstone (merge previous-revision {:concept-id concept-id
+                                                  :revision-id revision-id
+                                                  :revision-date revision-date
+                                                  :user-id user-id
+                                                  :metadata metadata
+                                                  :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)

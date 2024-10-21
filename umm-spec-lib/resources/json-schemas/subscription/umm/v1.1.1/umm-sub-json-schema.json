@@ -49,21 +49,9 @@
       "maxLength": 1024
     },
     "Mode": {
-      "description": "For the type of granule subscription the mode is whether to be notified of a new, update, or delete, granule.",
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["New", "Update", "Delete"]
-      },
-      "minItems": 1
-    },
-    "Method" : {
-      "description": "Describes how the subscription is executed. Notification send by the ingest stream. i.e. when a granule is ingested, or by a repeditive search.",
+      "description": "For the type of granule subscription the mode is whether to be notified of a new,update,delete, or all granules.",
       "type": "string",
-      "enum": [
-        "ingest",
-        "search"
-      ]
+      "enum": ["New", "Update", "Delete", "All"]
     },
     "MetadataSpecification": {
       "description": "Requires the client, or user, to add in schema information into every subscription record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",

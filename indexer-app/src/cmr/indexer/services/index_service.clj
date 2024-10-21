@@ -326,7 +326,6 @@
             (Long/parseLong (str milliseconds))
             all-value)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-time-to-visibility-log
   "Send either a JSON message as a report or the original log entry to info."
   [concept-id revision-id ms-durration all-revisions-index?]
@@ -338,16 +337,15 @@
   "Add a log message indicating the time it took to go from ingest to completed indexing."
   [{:keys [concept-id revision-id revision-date]} options]
   (let [now (tk/now)
-        rev-datetime (f/parse (f/formatters :date-time) revision-date)]
+        {:keys [all-revisions-index?]} options
+        rev-datetime (f/parse (f/formatters :date-time) revision-date)
+        ms-duration (t/in-millis (t/interval rev-datetime now))]
+
     ;; Guard against revision-date that is set to the future by a provider or a test.
-    ;; if the interval is set before with rev-datetime later an exception will be thrown.
     (if (t/before? rev-datetime now)
-      (let [{:keys [all-revisions-index?]} options
-            interval (t/interval rev-datetime now)
-            ms-duration (t/in-millis interval)]
-        ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
-        ;; Splunk searches used by ops.
-        (send-time-to-visibility-log concept-id revision-id ms-duration all-revisions-index?))
+      ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
+      ;; Splunk searches used by ops.
+      (send-time-to-visibility-log concept-id revision-id ms-duration all-revisions-index?)
       (warn (format
              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
              concept-id
@@ -835,7 +833,6 @@
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn publish-provider-event
   "Put a provider event on the message queue."
   [context msg]
@@ -884,7 +881,6 @@
   (es/update-indexes context params)
   (reset-index-set-mappings-cache context))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
