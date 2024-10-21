@@ -70,3 +70,9 @@
   use an external instance."
   {:default :in-memory
    :parser parse-dev-system-component-type})
+
+(defconfig dev-system-sqs-server-type
+  "Specifies whether dev system should run an in-memory SQS service
+  (elasticmq) or use an external instance."
+  {:default :in-memory
+   :parser parse-dev-system-component-type})

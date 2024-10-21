@@ -6,7 +6,7 @@
    [cmr.bootstrap.system :as bootstrap-system]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info warn error]]
    [cmr.common.system :as common-sys]
    [cmr.common.util :as u]
    [cmr.dev-system.config :as dev-config]
@@ -46,7 +46,7 @@
                      peek)]
       (info "Using system token" token)
       token)
-    (catch Exception e
+    (catch Exception _e
       (warn "Unable to extract the ECHO system read token from configuration.")
       transmit-config/mock-echo-system-token)))
 
@@ -140,11 +140,11 @@
     type))
 
 (defmethod create-db :in-memory
-  [type]
+  [_type]
   (memory/create-db))
 
 (defmethod create-db :external
-  [type]
+  [_type]
   nil)
 
 (defmulti create-echo
@@ -153,13 +153,15 @@
   (fn [type]
     type))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defmethod create-echo :in-memory
-  [type]
+  [_type]
   (transmit-config/set-urs-relative-root-url! "/urs")
   (mock-echo-system/create-system))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defmethod create-echo :external
-  [type]
+  [_type]
   (transmit-config/set-echo-rest-port! (dev-config/external-echo-port))
   (transmit-config/set-echo-system-token! (external-echo-system-token))
   (transmit-config/set-echo-rest-context! "/echo-rest"))
@@ -171,7 +173,7 @@
     type))
 
 (defmethod create-queue-broker :in-memory
-  [type]
+  [_type]
   (-> (indexer-config/queue-config)
       (rmq-conf/merge-configs (vp-config/queue-config))
       (rmq-conf/merge-configs (access-control-config/queue-config))
@@ -191,7 +193,7 @@
       (assoc :ttls ttls)))
 
 (defmethod create-queue-broker :aws
-  [type]
+  [_type]
   (-> (external-queue-config [])
       sqs/create-queue-broker))
 
@@ -230,18 +232,18 @@
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
-  (fn [db-type queue-broker]
+  (fn [db-type _queue-broker]
     db-type))
 
 (defmethod create-ingest-app :in-memory
-  [db-type queue-broker]
+  [_db-type queue-broker]
   (assoc (ingest-system/create-system)
          :db (ingest-data/create-db)
          :queue-broker queue-broker
          :scheduler (jobs/create-non-running-scheduler)))
 
 (defmethod create-ingest-app :external
-  [db-type queue-broker]
+  [_db-type queue-broker]
   (assoc (ingest-system/create-system)
          :queue-broker queue-broker))
 
