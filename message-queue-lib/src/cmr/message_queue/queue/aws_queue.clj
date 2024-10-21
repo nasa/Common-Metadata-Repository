@@ -5,6 +5,7 @@
   (:require
    [cmr.common.log :refer [error]])
   (:import
+   (software.amazon.awssdk.regions Region)
    (software.amazon.awssdk.services.sqs SqsClient)
    (software.amazon.awssdk.services.sqs.model CreateQueueRequest)
    (software.amazon.awssdk.services.sqs.model CreateQueueResponse)
@@ -21,9 +22,11 @@
   function can also be used to connect to elasticMQ for testing."
   ([]
    (-> (SqsClient/builder)
+       (.region Region/US_EAST_1)
        (.build)))
   ([override-endpoint-url]
    (-> (SqsClient/builder)
+       (.region Region/US_EAST_1)
        (.endpointOverride (java.net.URI. override-endpoint-url))
        (.build))))
 

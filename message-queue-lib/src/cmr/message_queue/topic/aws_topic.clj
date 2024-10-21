@@ -5,6 +5,7 @@
    [cmr.common.log :refer [error]]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol])
   (:import
+   (software.amazon.awssdk.regions Region)
    (software.amazon.awssdk.services.sns SnsClient)
    (software.amazon.awssdk.services.sns.model CreateTopicRequest)
    (software.amazon.awssdk.services.sns.model CreateTopicResponse)
@@ -76,9 +77,12 @@
    {:ok? true}))
 (record-pretty-printer/enable-record-pretty-printing AWSTopic)
 
-(def create-sns-client
+(defn create-sns-client
   "Create an AWS SNS service client."
-  (.build (SnsClient/builder)))
+  []
+  (-> (SnsClient/builder)
+      (.region Region/US_EAST_1)
+      (.build)))
 
 (defn create-sns-topic
   "Create an SNS topic in AWS."
@@ -98,7 +102,7 @@
   "Set up the AWS topic so that we can store the topic ARN to publish messages."
   [sns-name]
   (println "Setting up AWS-topic")
-  (let [sns-client create-sns-client
+  (let [sns-client (create-sns-client)
         topic-arn (create-sns-topic sns-client sns-name)]
     (->AWSTopic sns-client topic-arn)))
 
