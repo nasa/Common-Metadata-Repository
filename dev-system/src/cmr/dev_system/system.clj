@@ -21,6 +21,7 @@
    [cmr.message-queue.config :as rmq-conf]
    [cmr.message-queue.queue.memory-queue :as mem-queue]
    [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.message-queue.queue-server.embedded-sqs-server :as sqs-server]
    [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
    [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.system :as mdb-system]
@@ -133,6 +134,14 @@
 (defmethod create-redis :external
   [_]
   nil)
+
+(defn create-sqs-server
+  "Sets sqs server configuration values and returns an instance of a sqs-server component to run
+  in memory if applicable."
+  [type]
+  (case type
+    :in-memory (sqs-server/create-sqs-server)
+    nil))
 
 (defmulti create-db
   "Returns an instance of the database component to use."
@@ -266,17 +275,19 @@
    :echo (dev-config/dev-system-echo-type)
    :db (dev-config/dev-system-db-type)
    :message-queue (dev-config/dev-system-queue-type)
-   :redis (dev-config/dev-system-redis-type)})
+   :redis (dev-config/dev-system-redis-type)
+   :sqs-server (dev-config/dev-system-sqs-server-type)})
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [{:keys [elastic echo db message-queue redis]} (component-type-map)
+  (let [{:keys [elastic echo db message-queue redis sqs-server]} (component-type-map)
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
         elastic-server (create-elastic elastic)
         redis-server (create-redis redis)
+        sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
     {:instance-name (common-sys/instance-name "dev-system")
      :apps (u/remove-nil-keys
@@ -291,7 +302,8 @@
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker
-                        :redis-server redis-server})
+                        :redis-server redis-server
+                        :sqs-server sqs-server})
      :post-components {:control-server control-server}}))
 
 (defn- stop-components
