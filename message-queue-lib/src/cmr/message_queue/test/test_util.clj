@@ -1,7 +1,6 @@
 (ns cmr.message-queue.test.test-util
   "Namespace to test local sqs server"
   (:require
-   ;[clj-http.lite.client :as client]
    [clj-http.client :as client]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.message-queue.config :as config]

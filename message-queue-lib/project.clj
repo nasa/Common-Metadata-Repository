@@ -17,6 +17,7 @@
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
                  [software.amazon.awssdk/sns ~aws-java-sdk2-version]
                  [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
+                 [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [commons-logging "1.2"]

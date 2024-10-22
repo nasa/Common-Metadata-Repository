@@ -8,8 +8,7 @@
    [cmr.message-queue.test.test-util :as test-util]
    [cmr.message-queue.topic.aws-topic :as aws-topic]
    [cmr.message-queue.topic.local-topic :as local-topic]
-   [cmr.message-queue.topic.topic-protocol :as topic-protocol]
-   )
+   [cmr.message-queue.topic.topic-protocol :as topic-protocol])
   (:import
    (software.amazon.awssdk.services.sqs.model SqsException)))
 

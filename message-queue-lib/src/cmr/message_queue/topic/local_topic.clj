@@ -19,13 +19,11 @@
         msg-atts (queue/attributes-builder message-attributes)]
     (try
       (if filter
-        (when (or (and (= (:collection-concept-id message-attributes)
-                          (:collection-concept-id filter))
-                       (nil? (:mode filter)))
-                  (and (= (:collection-concept-id message-attributes)
-                          (:collection-concept-id filter))
+        (when (and (= (:collection-concept-id message-attributes)
+                      (:collection-concept-id filter))
+                   (or (nil? (:mode filter))
                        (some #(= (:mode message-attributes) %) (:mode filter))))
-          (queue/publish sqs-client queue-url message msg-atts))
+         (queue/publish sqs-client queue-url message msg-atts))
         (queue/publish sqs-client queue-url message msg-atts))
       (catch SqsException e
         (info (format "Exception caught publishing message to %s. Exception: %s. Please check if queue exists. Send message to %s."
