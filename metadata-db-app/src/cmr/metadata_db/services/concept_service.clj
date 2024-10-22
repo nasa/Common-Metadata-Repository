@@ -852,7 +852,7 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
-            (subscriptions/delete-subscription context concept-type revisioned-tombstone)
+            (subscriptions/change-subscription context concept-type revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -940,8 +940,7 @@
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
-
-      (subscriptions/add-subscription context concept-type concept)
+      (subscriptions/change-subscription context concept-type concept)
       concept)))
 
 (defn- delete-associated-tag-associations
