@@ -13,7 +13,7 @@
     subscription))
 
 (defmethod concepts/db-result->concept-map :subscription
-  [concept-type db provider-id result]
+  [_concept-type db provider-id result]
   (some-> (concepts/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :subscription)
           (assoc :provider-id (:provider_id result))
@@ -52,7 +52,7 @@
   (subscription-concept->insert-args concept))
 
 (defmethod concepts/after-save :subscription
-  [db provider sub]
+  [db _provider sub]
   (when (:deleted sub)
     ;; Cascade deletion to real deletes of subscription notifications. The intended functionality
     ;; since the subscription_notification row is purged is that, if this subscription were
