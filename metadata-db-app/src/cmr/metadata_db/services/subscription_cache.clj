@@ -1,14 +1,11 @@
 (ns cmr.metadata-db.services.subscription-cache
   "Defines common functions and defs for the subscription cache.
 	Structure of the hash-cache is as follows:
-	<collection-concept-id> --> <ingest subscription map>
+	<collection-concept-id> --> <ingest subscription vector>
 
 	Example:
-  {Collection concept id 1: {\"New\" 1
-                             \"Update\" 1}
-   Collection concept id 2: {\"New\" 2
-                             \"Update\" 1
-                             \"Delete\" 3}"
+  {Collection concept id 1: [\"New\" \"Update\"]
+   Collection concept id 2: [\"New\" \"Update\" \"Delete\"]"
   (:require
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.redis-log-util :as rl-util]
