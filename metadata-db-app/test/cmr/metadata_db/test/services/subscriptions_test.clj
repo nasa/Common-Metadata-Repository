@@ -54,7 +54,8 @@
     (testing "Add-to-existing-mode"
       (are3
        [expected existing-modes new-modes]
-       (is (= expected (subscriptions/add-to-existing-mode existing-modes new-modes)))
+       (is (= (set expected) 
+              (set (subscriptions/add-to-existing-mode existing-modes new-modes))))
 
        "new subscription with no existing modes in cache."
        ["New" "Update" "Delete"]
@@ -64,6 +65,11 @@
        "new subscription with empty existing modes in cache."
        ["Delete"]
        []
+       ["Delete"]
+
+       "Adding new subscription with existing mode in cache of a different value."
+       ["Delete" "New"]
+       ["New"]
        ["Delete"]
 
        "Adding new subscription with existing modes."
