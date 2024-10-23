@@ -62,9 +62,9 @@
        ["New" "Update" "Delete"]
 
        "new subscription with empty existing modes in cache."
-       ["New" "Update" "Delete"]
+       ["Delete"]
        []
-       ["New" "Update" "Delete"]
+       ["Delete"]
 
        "Adding new subscription with existing modes."
        ["New" "Delete"]
