@@ -11,7 +11,10 @@
    "ACTIVE" "onGoing"
    "PLANNED" "planned"
    "DEPRECATED" "deprecated"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
+   "NOT PROVIDED" "notprovided"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"})
 
 (defn generate-collection-progress
   "Returns ISO CollectionProgress element from UMM-C collection c."

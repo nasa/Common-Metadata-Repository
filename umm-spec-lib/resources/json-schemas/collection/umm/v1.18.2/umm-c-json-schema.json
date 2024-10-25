@@ -29,8 +29,8 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
     },
     "DOI": {
-        "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown use the second option.",
-        "$ref": "umm-cmn-json-schema.json#/definitions/DoiType"
+      "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown use the second option.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/DoiType"
     },
     "OtherIdentifiers": {
       "description": "Provides additional or provider defined identifiers of the collection.",
@@ -318,10 +318,10 @@
       "type": "boolean"
     },
     "EULAIdentifierType": {
-        "description": "Allows an End User License Agreement to be associated with a collection. This allows a service to check if an end user has accepted a EULA for this collection (data set) before it will allow data to be downloaded or used.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 40
+      "description": "Allows an End User License Agreement to be associated with a collection. This allows a service to check if an end user has accepted a EULA for this collection (data set) before it will allow data to be downloaded or used.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
     },
     "UseConstraintsType": {
       "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
@@ -343,7 +343,7 @@
             "items": {
               "$ref": "#/definitions/EULAIdentifierType"
             },
-            "minItems": 1   
+            "minItems": 1
           }
         },
         "required": ["Description"]
@@ -355,7 +355,7 @@
         "properties": {
           "Description": {
             "$ref": "#/definitions/UseConstraintsDescType"
-            },
+          },
           "LicenseURL": {
             "description": "This element holds the URL and associated information to access the License on the web. If this element is used the LicenseText element cannot be used.",
             "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
@@ -369,7 +369,7 @@
             "items": {
               "$ref": "#/definitions/EULAIdentifierType"
             },
-            "minItems": 1   
+            "minItems": 1
           }
         },
         "required": ["LicenseURL"]
@@ -397,12 +397,12 @@
             "items": {
               "$ref": "#/definitions/EULAIdentifierType"
             },
-            "minItems": 1   
+            "minItems": 1
           }
         },
         "required": ["LicenseText"]
       }
-     ]},
+      ]},
     "DirectoryNameType": {
       "type": "object",
       "additionalProperties": false,
@@ -1417,7 +1417,7 @@
     "CollectionProgressEnum": {
       "description": "This element describes the production status of the data set. There are five choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. DEPRECATED refers to data sets that have been retired, but still can be retrieved. Usually newer products exist that replace the retired data set. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a sixth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
       "type": "string",
-      "enum": ["ACTIVE", "PLANNED", "COMPLETE", "DEPRECATED", "NOT APPLICABLE", "NOT PROVIDED"]
+      "enum": ["ACTIVE", "PLANNED", "COMPLETE", "DEPRECATED", "NOT PROVIDED", "PREPRINT", "INREVIEW", "SUPERSEDED"]
     },
     "LocationKeywordType": {
       "description": "This element defines a hierarchical location list. It replaces SpatialKeywords. The controlled vocabulary for location keywords is maintained in the Keyword Management System (KMS). Each tier must have data in the tier above it.",
@@ -1427,11 +1427,11 @@
         "Category":{
           "description": "Top-level controlled keyword hierarchical level that contains the largest general location where the collection data was taken from.",
           "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
-          },
+        },
         "Type":{
           "description": "Second-tier controlled keyword hierarchical level that contains the regional location where the collection data was taken from",
           "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
-          },
+        },
         "Subregion1":{
           "description": "Third-tier controlled keyword hierarchical level that contains the regional sub-location where the collection data was taken from",
           "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
@@ -1811,7 +1811,7 @@
           "Type": {
             "description": "This element describes to what DOI is associated.",
             "type": "string",
-            "enum": ["Child Dataset", "Collaborative/Other Agency", "Field Campaign", "Parent Dataset", "Related Dataset"]
+            "enum": ["Child Dataset", "Collaborative/Other Agency", "Field Campaign", "Parent Dataset", "Related Dataset", "IsPreviousVersionOf", "IsNewVersionOf"]
           }
         },
         "required": ["DOI"]
@@ -1829,7 +1829,7 @@
           },
           "Title": {
             "description": "The title of the DOI landing page. The title describes the DOI object to a user, so they don't have to look it up themselves to understand the association.",
-           "$ref": "umm-cmn-json-schema.json#/definitions/TitleType"
+            "$ref": "umm-cmn-json-schema.json#/definitions/TitleType"
           },
           "Authority": {
             "description": "The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.",

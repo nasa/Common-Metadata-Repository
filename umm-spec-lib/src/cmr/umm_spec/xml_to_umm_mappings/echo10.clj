@@ -22,6 +22,7 @@
   (:import
    (clojure.data.xml Element)))
 
+;; TODO
 (def coll-progress-mapping
   "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
   {"COMPLETE" "COMPLETE"

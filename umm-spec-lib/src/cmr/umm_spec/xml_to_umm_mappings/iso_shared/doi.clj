@@ -125,7 +125,9 @@
    "fieldcampaign" "Field Campaign"
    "parentdataset" "Parent Dataset"
    "relateddataset" "Related Dataset"
-   "other" "Other"})
+   "other" "Other"
+   "ispreviousversionof" "IsPreviousVersionOf"
+   "isnewversionof" "IsNewVersionOf"})
 
 (defn parse-associated-dois
   "Parse out the associated DOIs from the ISO MENDS/SMAP document."

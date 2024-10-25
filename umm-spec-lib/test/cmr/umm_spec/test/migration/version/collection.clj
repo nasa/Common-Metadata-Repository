@@ -2962,7 +2962,9 @@
 ;; Test the migration of collections from 1.16.7 to 1.16.6.
 (deftest migrate-1-16-7-to-1-16-6
   (are3 [expected sample-collection]
-        (let [result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
+        (let [_ (print "sample collection is -- ") ;; {:CollectionDataType LOW_LATENCY}
+              _ (print sample-collection)
+              result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
           (is (= expected (:CollectionDataType result))))
 
         "Migrating CollectionDataType"
@@ -3835,3 +3837,21 @@
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
                                  :Name "UMM-C",
                                  :Version "1.18.0"}}))
+
+;; TODO
+;(deftest migrate-1-18-1-to-1-18-2
+;  ;; Test migration up from 1.18.1 to 1.18.2
+;         (are3 [expected sample-collection]
+;               (let [result (vm/migrate-umm {} :collection "1.18.1" "1.18.2" sample-collection)]
+;                    (is (= expected result)))
+;
+;               "Adding preprint to collectionprogress"
+;
+;
+;               )
+;)
+
+;; TODO
+;(deftest migrate-1-18-2-to-1-18-1
+;  ;; Test migration down from 1.18.2 to 1.18.1
+;)

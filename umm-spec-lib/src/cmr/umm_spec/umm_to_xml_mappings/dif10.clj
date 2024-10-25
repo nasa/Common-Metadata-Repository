@@ -13,12 +13,18 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
     [cmr.umm-spec.util :as u]))
 
+;; TODO?
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"COMPLETE" "COMPLETE"
    "ACTIVE" "IN WORK"
    "PLANNED" "PLANNED"
-   "DEPRECATED" "COMPLETE"})
+   "DEPRECATED" "COMPLETE"
+   "NOT PROVIDED" "NOT PROVIDED"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"
+   })
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"

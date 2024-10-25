@@ -740,4 +740,35 @@
   [_context collection & _]
   ;; File sizes from positive numbers to numbers, only need to migrate version. 
   (-> collection
-      (m-spec/update-version :collection "1.18.0"))) 
+      (m-spec/update-version :collection "1.18.0")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.2"]
+   [_context collection & _]
+   ;; Migrating up version 1.18.1 to 1.18.2
+   ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+   ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+   ;; Remove NOT APPLICABLE enum from CollectionProgress
+   (-> collection
+       (m-spec/update-version :collection "1.18.2")))
+
+;; TODO what does this method actually do? Is it to update the actual data?
+;(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
+;           [_context collection & _]
+;   ;; Migrating down version 1.18.2 to 1.18.1
+;   ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+;   ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+;   ;; Add back in NOT APPLICABLE enum in CollectionProgress
+;   (util/remove-nils-empty-maps-seqs
+;     (-> collection
+;         (m-spec/update-version :collection "1.18.1")
+;         (as-> rc
+;               (let [sct (get-in rc [:AssociatedDOIs :Type])]
+;                    (if (or (= "IsPreviousVersionOf" sct)
+;                            (= "IsNewVersionOf" sct))
+;                      (update-in rc [:AssociatedDOIs] dissoc :Type)
+;                      rc)))
+;         ;; Change CollectionProgress enum to NOT APPLICABLE if its value is PREPRINT, INREVIEW, or SUPERSEDED
+;         (let [CollectionProgress (:CollectionProgress collection)]
+;              (if (or (= "PREPRINT" CollectionProgress) (= "INREVIEW" CollectionProgress) (= "SUPERSEDED" CollectionProgress))
+;                (assoc collection :CollectionProgress "NOT APPLICABLE")
+;                collection)))))
