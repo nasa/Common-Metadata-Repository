@@ -748,27 +748,32 @@
    ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
    ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
    ;; Remove NOT APPLICABLE enum from CollectionProgress
-   (-> collection
-       (m-spec/update-version :collection "1.18.2")))
+   (m-spec/update-version collection :collection "1.18.2")
+   ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
+   (let [CollectionProgress (:CollectionProgress collection)]
+        (if (or (= "NOT APPLICABLE" CollectionProgress))
+          (assoc collection :CollectionProgress "NOT PROVIDED")
+          collection)))
 
-;; TODO what does this method actually do? Is it to update the actual data?
-;(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
-;           [_context collection & _]
-;   ;; Migrating down version 1.18.2 to 1.18.1
-;   ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
-;   ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
-;   ;; Add back in NOT APPLICABLE enum in CollectionProgress
-;   (util/remove-nils-empty-maps-seqs
-;     (-> collection
-;         (m-spec/update-version :collection "1.18.1")
-;         (as-> rc
-;               (let [sct (get-in rc [:AssociatedDOIs :Type])]
-;                    (if (or (= "IsPreviousVersionOf" sct)
-;                            (= "IsNewVersionOf" sct))
-;                      (update-in rc [:AssociatedDOIs] dissoc :Type)
-;                      rc)))
-;         ;; Change CollectionProgress enum to NOT APPLICABLE if its value is PREPRINT, INREVIEW, or SUPERSEDED
-;         (let [CollectionProgress (:CollectionProgress collection)]
-;              (if (or (= "PREPRINT" CollectionProgress) (= "INREVIEW" CollectionProgress) (= "SUPERSEDED" CollectionProgress))
-;                (assoc collection :CollectionProgress "NOT APPLICABLE")
-;                collection)))))
+(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
+           [_context collection & _]
+   ;; Migrating down version 1.18.2 to 1.18.1
+   ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+   ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+   ;; Add back in NOT APPLICABLE enum in CollectionProgress
+   (m-spec/update-version collection :collection "1.18.1")
+   ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
+   ;; TODO
+   ;(as-> rc
+   ;      (let [sct (get-in rc [:AssociatedDOIs :Type])]
+   ;           (if (or (= "IsPreviousVersionOf" sct)
+   ;                   (= "IsNewVersionOf" sct))
+   ;             (update-in rc [:AssociatedDOIs] dissoc :Type)
+   ;             rc)))
+   ;; Change CollectionProgress enum to COMPLETED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
+   (let [CollectionProgress (:CollectionProgress collection)]
+        (if (or (= "PREPRINT" CollectionProgress)
+                (= "INREVIEW" CollectionProgress)
+                (= "SUPERSEDED" CollectionProgress))
+          (assoc collection :CollectionProgress "COMPLETED")
+          collection)))
