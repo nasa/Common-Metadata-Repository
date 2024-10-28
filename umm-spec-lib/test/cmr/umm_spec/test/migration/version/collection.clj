@@ -3838,20 +3838,87 @@
                                  :Name "UMM-C",
                                  :Version "1.18.0"}}))
 
-;; TODO
-;(deftest migrate-1-18-1-to-1-18-2
-;  ;; Test migration up from 1.18.1 to 1.18.2
-;         (are3 [expected sample-collection]
-;               (let [result (vm/migrate-umm {} :collection "1.18.1" "1.18.2" sample-collection)]
-;                    (is (= expected result)))
-;
-;               "Adding preprint to collectionprogress"
-;
-;
-;               )
-;)
+(deftest migrate-1-18-1-to-1-18-2
+  ;; Test migration up from 1.18.1 to 1.18.2
+         (are3 [expected sample-collection]
+               (let [result (vm/migrate-umm {} :collection "1.18.1" "1.18.2" sample-collection)]
+                    (is (= expected result)))
 
-;; TODO
-;(deftest migrate-1-18-2-to-1-18-1
-;  ;; Test migration down from 1.18.2 to 1.18.1
-;)
+               "Removing NOT APPLICABLE CollectionProgress enum and replacing with NOT PROVIDED"
+               ;; expected
+               {:CollectionProgress    "NOT PROVIDED"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.2",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.2"}}
+               ;; sample-collection
+               {:CollectionProgress    "NOT APPLICABLE"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.1"}}))
+
+(deftest migrate-1-18-2-to-1-18-1
+  ;; Test migration down from 1.18.2 to 1.18.1
+         (are3 [expected sample-collection]
+               (let [result (vm/migrate-umm {} :collection "1.18.2" "1.18.1" sample-collection)]
+                    (is (= expected result)))
+
+               "Migrating AssociateDOI enum IsPreviousVersionOf and IsNewVersionOf back to Related Dataset"
+               ;; expected
+               {:AssociatedDOIs        [{:Type "Related Dataset"}
+                                        {:Type "Related Dataset"}
+                                        {:Type "Field Campaign"}]
+                :DOI                   {:DOI "10.5067/fake.record.01"}
+                :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+                :TemporalExtents       [{:EndsAtPresentFlag false
+                                         :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.1"}}
+               ;; sample-collection
+               {:AssociatedDOIs        [{:Type "IsPreviousVersionOf"}
+                                        {:Type "IsNewVersionOf"}
+                                        {:Type "Field Campaign"}]
+                :DOI                   {:DOI "10.5067/fake.record.01"}
+                :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+                :TemporalExtents       [{:EndsAtPresentFlag false
+                                         :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.2",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.2"}}
+               )
+
+               "Migrating CollectionProgress enum PREPRINT back to COMPLETED"
+               ;; expected
+               {:CollectionProgress    "COMPLETED"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.1"}}
+                ;; sample-collection
+               {:CollectionProgress    "PREPRINT"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.2",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.2"}}
+
+               "Migrating CollectionProgress enum PREPRINT back to COMPLETED"
+               ;; expected
+               {:CollectionProgress    "COMPLETED"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.1"}}
+               ;; sample-collection
+               {:CollectionProgress    "INREVIEW"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.2",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.2"}}
+
+               "Migrating CollectionProgress enum SUPERSEDED back to COMPLETED"
+               ;; expected
+               {:CollectionProgress    "COMPLETED"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.1"}}
+               ;; sample-collection
+               {:CollectionProgress    "SUPERSEDED"
+                :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.2",
+                                        :Name    "UMM-C",
+                                        :Version "1.18.2"}})

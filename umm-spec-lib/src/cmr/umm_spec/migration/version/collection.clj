@@ -748,32 +748,52 @@
    ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
    ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
    ;; Remove NOT APPLICABLE enum from CollectionProgress
-   (m-spec/update-version collection :collection "1.18.2")
-   ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
-   (let [CollectionProgress (:CollectionProgress collection)]
-        (if (or (= "NOT APPLICABLE" CollectionProgress))
-          (assoc collection :CollectionProgress "NOT PROVIDED")
-          collection)))
+   (-> collection
+       (m-spec/update-version :collection "1.18.2")
+       ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
+       (as-> coll (if (= "NOT APPLICABLE" (:CollectionProgress coll))
+                    (-> coll
+                        (update :CollectionProgress (constantly "NOT PROVIDED")))
+                    coll))))
+
+(defn- migrate-associated-doi-type-down
+       [associatedDOI]
+       (if (or (= "IsPreviousVersionOf" (:Type associatedDOI))
+               (= "IsNewVersionOf" (:Type associatedDOI)))
+               (-> associatedDOI
+                   (update :Type (constantly "Related Dataset"))
+                   (remove-nil-keys))
+               associatedDOI))
+
+(defn- migrate-collection-progress-down
+       [collectionProgress]
+
+       (if (nil? collectionProgress)
+         "NOT PROVIDED"
+         (if (or (= "PREPRINT" collectionProgress)
+                 (= "INREVIEW" collectionProgress)
+                 (= "SUPERSEDED" collectionProgress))
+           "COMPLETE"
+           collectionProgress)))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
            [_context collection & _]
-   ;; Migrating down version 1.18.2 to 1.18.1
-   ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
-   ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
-   ;; Add back in NOT APPLICABLE enum in CollectionProgress
-   (m-spec/update-version collection :collection "1.18.1")
-   ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
-   ;; TODO
-   ;(as-> rc
-   ;      (let [sct (get-in rc [:AssociatedDOIs :Type])]
-   ;           (if (or (= "IsPreviousVersionOf" sct)
-   ;                   (= "IsNewVersionOf" sct))
-   ;             (update-in rc [:AssociatedDOIs] dissoc :Type)
-   ;             rc)))
-   ;; Change CollectionProgress enum to COMPLETED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
-   (let [CollectionProgress (:CollectionProgress collection)]
-        (if (or (= "PREPRINT" CollectionProgress)
-                (= "INREVIEW" CollectionProgress)
-                (= "SUPERSEDED" CollectionProgress))
-          (assoc collection :CollectionProgress "COMPLETED")
-          collection)))
+           ;; Migrating down version 1.18.2 to 1.18.1
+           ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+           ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+           ;; Add back in NOT APPLICABLE enum in CollectionProgress
+           ;(m-spec/update-version collection :collection "1.18.1")
+
+           (-> collection
+               (m-spec/update-version :collection "1.18.1")
+               ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
+               (as-> coll (if (contains? coll :AssociatedDOIs)
+                            (-> coll
+                                (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down))
+                            coll))
+               ;; Change CollectionProgress enum to COMPLETED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
+               (as-> coll (if (contains? coll :CollectionProgress)
+                            (-> coll
+                                (update :CollectionProgress migrate-collection-progress-down))
+                            coll))))
+
