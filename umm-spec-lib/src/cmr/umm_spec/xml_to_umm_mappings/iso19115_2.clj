@@ -30,7 +30,6 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
    [cmr.umm-spec.versioning :as umm-spec-versioning]))
 
-;; TODO ISO doesn't have any mappings for inreview, preprint, and superseded in the docs, is that correct?
 (def coll-progress-mapping
   "Mapping from values supported for ISO19115 ProgressCode to UMM CollectionProgress."
   {"COMPLETED" "COMPLETE"
