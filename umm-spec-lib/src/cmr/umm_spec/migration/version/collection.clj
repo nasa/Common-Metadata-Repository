@@ -773,7 +773,7 @@
          (if (or (= "PREPRINT" collectionProgress)
                  (= "INREVIEW" collectionProgress)
                  (= "SUPERSEDED" collectionProgress))
-           "COMPLETE"
+           "PLANNED"
            collectionProgress)))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
@@ -791,7 +791,7 @@
                             (-> coll
                                 (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down))
                             coll))
-               ;; Change CollectionProgress enum to COMPLETED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
+               ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
                (as-> coll (if (contains? coll :CollectionProgress)
                             (-> coll
                                 (update :CollectionProgress migrate-collection-progress-down))

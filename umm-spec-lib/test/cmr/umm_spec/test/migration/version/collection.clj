@@ -3887,7 +3887,7 @@
 
                "Migrating CollectionProgress enum PREPRINT back to COMPLETED"
                ;; expected
-               {:CollectionProgress    "COMPLETED"
+               {:CollectionProgress    "PLANNED"
                 :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
                                         :Name    "UMM-C",
                                         :Version "1.18.1"}}
@@ -3899,7 +3899,7 @@
 
                "Migrating CollectionProgress enum PREPRINT back to COMPLETED"
                ;; expected
-               {:CollectionProgress    "COMPLETED"
+               {:CollectionProgress    "PLANNED"
                 :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
                                         :Name    "UMM-C",
                                         :Version "1.18.1"}}
@@ -3911,7 +3911,7 @@
 
                "Migrating CollectionProgress enum SUPERSEDED back to COMPLETED"
                ;; expected
-               {:CollectionProgress    "COMPLETED"
+               {:CollectionProgress    "PLANNED"
                 :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
                                         :Name    "UMM-C",
                                         :Version "1.18.1"}}
