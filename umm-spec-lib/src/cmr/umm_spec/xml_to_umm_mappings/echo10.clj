@@ -31,7 +31,10 @@
    "ACTIVE" "ACTIVE"
    "PLANNED" "PLANNED"
    "DEPRECATED" "DEPRECATED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
+   "NOT APPLICABLE" "NOT APPLICABLE"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"})
 
 (defn fields-from-temporal-resolution
   "Get the TemporalResolution and change the Value to number."

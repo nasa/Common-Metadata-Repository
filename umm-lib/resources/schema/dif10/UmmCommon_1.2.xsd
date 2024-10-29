@@ -580,6 +580,8 @@ technical contact
             <xs:enumeration value="Parent Dataset"/>
             <xs:enumeration value="Related Dataset"/>
             <xs:enumeration value="Other"/>
+            <xs:enumeration value="IsPreviousVersionOf"/>
+            <xs:enumeration value="IsNewVersionOf"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="AssociatedDOITypeOtherEnum">
