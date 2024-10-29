@@ -24,7 +24,6 @@
    [cmr.umm-spec.versioning :as umm-spec-versioning]
    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
-;; TODO how do we know which values are supported for this version?
 (def coll-progress-mapping
   "Mapping from values supported for DIF10 Data_Set_Progress to UMM CollectionProgress."
   {"COMPLETE" "COMPLETE"

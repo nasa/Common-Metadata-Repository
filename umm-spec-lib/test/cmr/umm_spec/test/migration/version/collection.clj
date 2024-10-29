@@ -2962,9 +2962,7 @@
 ;; Test the migration of collections from 1.16.7 to 1.16.6.
 (deftest migrate-1-16-7-to-1-16-6
   (are3 [expected sample-collection]
-        (let [_ (print "sample collection is -- ") ;; {:CollectionDataType LOW_LATENCY}
-              _ (print sample-collection)
-              result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
+        (let [result (vm/migrate-umm {} :collection "1.16.7" "1.16.6" sample-collection)]
           (is (= expected (:CollectionDataType result))))
 
         "Migrating CollectionDataType"
