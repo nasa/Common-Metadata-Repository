@@ -212,6 +212,7 @@
 ;; expected output with the result of the actual conversions. This test runs a record
 ;; through all of the supported formats.
 (declare umm-record metadata-format)
+;; TODO This test is failing
 (deftest roundtrip-generated-collection-records
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
@@ -228,6 +229,7 @@
           ;; 3. SwathWidthUnit doesn't exist in dif10 and echo10. Assumed unit is Kilometer
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
           ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
+          _ (println "metadata-format is " metadata-format)
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
           umm-record (js/parse-umm-c
                         (assoc umm-record
@@ -250,7 +252,12 @@
           actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
-          actual (convert-to-sets actual)]
+          actual (convert-to-sets actual)
+          ;_ (println "EXPECTED RECORD")
+          ;_ (println expected)
+          ;_ (println "ACTUAL RECORD")
+          ;_ (println actual)
+          ]
 
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
@@ -265,6 +272,7 @@
 ;; to UMM and then back to the other format then compares the
 ;; expected output with the result of the actual conversions. This test runs a record
 ;; through all of the supported formats.
+;;TODO this test is failing
 (deftest roundtrip-generated-collection-records-with-seed
   (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
