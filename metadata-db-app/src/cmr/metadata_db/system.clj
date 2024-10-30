@@ -10,19 +10,17 @@
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.message-queue.config :as queue-config]
+   [cmr.message-queue.pub-sub :as pub-sub]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.metadata-db.api.routes :as routes]
    [cmr.metadata-db.config :as config]
    [cmr.metadata-db.services.jobs :as mdb-jobs]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
    [cmr.metadata-db.services.util :as mdb-util]
-   [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -39,6 +37,7 @@
   "App logging level"
   {:default "info"})
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defn create-system
   "Returns a new instance of the whole application."
   ([]
@@ -60,6 +59,8 @@
                                       `system-holder [jvm-info/log-jvm-statistics-job
                                                       (cache-info/create-log-cache-info-job "metadata-db")])
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
+              :sns {:internal (pub-sub/create-topic (queue-config/cmr-internal-subscriptions-topic-name))
+                    :external (pub-sub/create-topic (queue-config/cmr-subscriptions-topic-name))}
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:access-control :echo-rest]))))
 

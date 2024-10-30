@@ -37,6 +37,7 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]

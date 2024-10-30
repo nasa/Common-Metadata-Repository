@@ -38,8 +38,7 @@
     (Thread/sleep (config/messaging-retry-delay))
     (recur queue-broker exchange-name msg)))
 
-(declare publish-message)
-(declare queue-broker exchange-name msg)
+(declare publish-message queue-broker exchange-name msg)
 (defn-timed publish-message
   "Publishes a message to an exchange Throws a service unavailable error if the message
   fails to be put on the queue.

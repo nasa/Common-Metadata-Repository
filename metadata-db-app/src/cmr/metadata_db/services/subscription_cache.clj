@@ -27,8 +27,11 @@
 (defn set-value
   "Set the collection concept id and its subscription map described at the top."
   [context field value]
-  (let [cache-client (hash-cache/context->cache context subscription-cache-key)]
-    (hash-cache/set-value cache-client subscription-cache-key field value)))
+  (let [cache-client (hash-cache/context->cache context subscription-cache-key)
+        [tm result] (util/time-execution
+                     (hash-cache/set-value cache-client subscription-cache-key field value))]
+    (rl-util/log-redis-write-complete "ingest-subscription-cache set-value" subscription-cache-key tm)
+    result))
 
 (defn get-value
   "Returns the collection-concept-id subscription map which is described at the top."
