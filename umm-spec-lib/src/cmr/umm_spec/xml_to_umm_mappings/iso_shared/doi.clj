@@ -115,7 +115,7 @@
 
 (def associated-doi-types
   "A list of other associated Types other than associated-metadata used to find associated-metadata data."
-  ["associateddoi" "childdataset" "collaborativeotheragency" "fieldcampaign" "parentdataset" "relateddataset" "other"])
+  ["associateddoi" "childdataset" "collaborativeotheragency" "fieldcampaign" "parentdataset" "relateddataset" "other" "ispreviousversionof" "isnewversionof"])
 
 (def associated-doi-code-umm-map
   "Map of associated DOI codes with their English names for the ISO code types."
