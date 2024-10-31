@@ -16,7 +16,8 @@
   (let [{:keys [subscription_concept_id last_notified_at aws_arn]} data]
     (j/with-db-transaction [conn db]
       {:subscription-concept-id subscription_concept_id
-       :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)
+       :last-notified-at (when last_notified_at
+                           (oracle/oracle-timestamp->str-time conn last_notified_at))
        :aws-arn aws_arn})))
 
 (defn subscription-exists?
