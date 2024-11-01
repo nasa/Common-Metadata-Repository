@@ -23,7 +23,7 @@
 
 (def non-associated-metadata-types
   "A list of other associated Types other than associated-metadata used to find associated-metadata data."
-  ["crossreference" "associateddoi" "childdataset" "collaborativeotheragency" "fieldcampaign" "parentdataset" "relateddataset" "other" "doipreviousversion"])
+  ["crossreference" "associateddoi" "childdataset" "collaborativeotheragency" "fieldcampaign" "parentdataset" "relateddataset" "other" "ispreviousversionof" "isnewversionof" "doipreviousversion"])
 
 (defn xml-elem->metadata-associations
   "Returns the metadata associations by parsing the given xml element"

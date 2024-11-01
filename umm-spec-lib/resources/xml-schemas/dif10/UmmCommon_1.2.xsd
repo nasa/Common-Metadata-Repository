@@ -570,7 +570,7 @@ technical contact
                 When set to other, then Description_Of_Other_Type is to be used.
 
                 Example Usage:
-                * Associcated_DOIs/Type = 'Other'
+                * Associated_DOIs/Type = 'Other'
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
@@ -580,6 +580,8 @@ technical contact
             <xs:enumeration value="Parent Dataset"/>
             <xs:enumeration value="Related Dataset"/>
             <xs:enumeration value="Other"/>
+            <xs:enumeration value="IsPreviousVersionOf"/>
+            <xs:enumeration value="IsNewVersionOf"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="AssociatedDOITypeOtherEnum">
