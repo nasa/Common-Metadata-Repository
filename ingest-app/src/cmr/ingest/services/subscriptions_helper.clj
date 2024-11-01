@@ -110,10 +110,11 @@
 #_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-update-subscription-notification-time!
   "Fires off an http call to update the time which the subscription last was processed"
-  [context sub-id]
-  (debug "send-update-subscription-notification-time with" sub-id)
-  (search/save-subscription-notification-time context sub-id))
+  [context sub-id last-notified-time]
+  (debug "send-update-subscription-notification-time with" sub-id )
+  (search/save-subscription-notification-time context sub-id last-notified-time))
 
+#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- filter-concept-refs-by-subscriber-id
   "Takes a list of concept references and a subscriber id and removes any concept that the user does
    not have read access to."
@@ -266,11 +267,16 @@
                       Sent subscription email to [" email-address "].
                       \nSubscription email contents: [" email-content "]."))
            (when update-notification-time?
-             (send-update-subscription-notification-time! context sub-id))
+             (send-update-subscription-notification-time! context sub-id (:end-time subscription)))
            (catch Exception e
              (error "Exception caught in email subscription: " sub-id "\n\n"
                     (.getMessage e) "\n\n" e))))))
    subscriber-filtered-concept-refs-list))
+
+(defn remove-ingest-subscriptions
+  "Remove ingest subscriptions since emails are not sent out for those."
+  [concept]
+  (:EndPoint (json/decode (:metadata concept) true)))
 
 (defn email-subscription-processing
   "Process email subscriptions and send email when found granules matching the collection and queries
@@ -280,7 +286,7 @@
   ([context revision-date-range]
    (let [subscriptions (->> (mdb/find-concepts context {:latest true} :subscription)
                             (remove :deleted)
-                            (remove #(:endpoint (:extra-fields %)))
+                            (remove remove-ingest-subscriptions)
                             (map #(select-keys % [:concept-id :extra-fields :metadata])))]
      (send-subscription-emails context (process-subscriptions context subscriptions revision-date-range) (nil? revision-date-range)))))
 

@@ -3,7 +3,6 @@
   (:require
    [clj-time.coerce :as cr]
    [clojure.java.jdbc :as j]
-   [cmr.common.time-keeper :as t] ;; don't use clj-time
    [cmr.oracle.connection :as oracle]))
 
 ; A note about prepared statments, with j/query using ? and [] is the same as
@@ -50,18 +49,17 @@
   "Create subscription notification record in Oracle."
   [db subscription-id]
   (let [sql (str "INSERT INTO cmr_sub_notifications"
-                 "(id, subscription_concept_id)"
-                 "VALUES (cmr_sub_notifications_seq.nextval, ?)")]
+                 "(id, subscription_concept_id, last_notified_at)"
+                 "VALUES (cmr_sub_notifications_seq.nextval, ?, NULL)")]
   (j/db-do-prepared db sql [subscription-id])))
 
 (defn update-sub-notification
   "Update a subscription notification in Oracle."
-  [db subscription-id]
+  [db subscription-id last-notified-time]
   (let [sql (str "UPDATE cmr_sub_notifications "
                  "SET last_notified_at = ? "
-                 "WHERE subscription_concept_id = ?")
-        now (t/now)]
-    (j/db-do-prepared db sql [(cr/to-sql-time now) subscription-id])))
+                 "WHERE subscription_concept_id = ?")]
+    (j/db-do-prepared db sql [(cr/to-sql-time last-notified-time) subscription-id])))
 
 (defn update-sub-not-with-aws-arn
   "Updates the subscription notification with the subscription arn.
@@ -91,6 +89,6 @@
   (println (save-sub-notification db "SUB1234-test"))
   (println (sub-notification-exists? db "SUB1234-test"))
   (println (get-sub-notification db "SUB1234-test"))
-  (println (update-sub-notification db "SUB1234-test"))
+  (println (update-sub-notification db "SUB1234-test" "2024-11-01T02:17:09.749Z"))
   (println (update-sub-not-with-aws-arn db "SUB1234-test" "arn:aws:sns:us-east-1:1234455667:SometestSubscription"))
   (println (delete-sub-notification db "SUB1234-test")) )
