@@ -1,6 +1,7 @@
 (ns cmr.transmit.search
   "Provide functions to invoke search app"
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.data.xml :as xml]
    [cmr.common.api.context :as ch]
@@ -21,16 +22,18 @@
 #_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-subscription-notification-time
  "make an http call to the database application"
- [context sub-id]
+ [context sub-id last-notified-time]
  (let [conn (config/context->app-connection context :metadata-db)
        request-url (str (conn/root-url conn) (format "/subscription/%s/notification-time" sub-id))
+       request-body {:last-notified-time last-notified-time}
        params (merge
                (config/conn-params conn)
                {:accept :xml
                 :headers (merge
                           (token-header context)
                           {:client-id config/cmr-client-id})
-                :throw-exceptions false})
+                :throw-exceptions false
+                :body (json/generate-string request-body)})
        response (client/put request-url params)
        {:keys [body]} response
        status (int (:status response))]
@@ -106,7 +109,7 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
-(declare validate-search-params)
+(declare validate-search-params context params concept-type)
 (defn-timed validate-search-params
   "Attempts to search granules using given params via a POST request. If the response contains a
   non-200 http code, returns the response body."

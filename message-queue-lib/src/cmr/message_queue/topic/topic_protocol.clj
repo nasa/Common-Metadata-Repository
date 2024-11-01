@@ -8,8 +8,12 @@
     [this subscription]
     "Subscribes to the given topic.")
   
+  (unsubscribe
+   [this subscription-id]
+   "Unsubscribes to the given topic.")
+
   (publish
-    [this message message-attributes]
+    [this message message-attributes subject]
     "Publishes a message on the topic. Returns true if the message was 
     successful. Otherwise returns false.")
 

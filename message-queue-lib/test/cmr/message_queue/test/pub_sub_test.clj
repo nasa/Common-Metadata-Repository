@@ -91,17 +91,19 @@
 
 (deftest subscribe-queue-to-topic
   (when (= "memory" (config/queue-type))
-    (let [topic (pub-sub/create-topic)
-          subscription (first (local-topic/setup-infrastructure topic))
+    (let [topic (pub-sub/create-topic "sns-name")
+          _ (local-topic/setup-infrastructure topic)
+          subscription (first @(:subscription-atom topic))
           message "test"
           message-attributes {"collection-concept-id" "C12345-PROV1"
-                              "mode" "New"} 
+                              "mode" "New"}
+          subject "A new granule"
           sqs-client (:sqs-client subscription)
           queue-url (:queue-url subscription)
           dead-letter-queue-url (:dead-letter-queue-url subscription)]
 
-      (is (= (keys subscription) '(:sqs-client :filter :queue-url :dead-letter-queue-url)))
-      (is (some? (topic-protocol/publish topic message message-attributes)))
+      (is (= (keys subscription) '(:sqs-client :queue-url :dead-letter-queue-url)))
+      (is (some? (topic-protocol/publish topic message message-attributes subject)))
 
       (when-let [messages (seq (queue/receive-messages sqs-client queue-url))]
         (is (= message (.body (first messages))))
@@ -109,7 +111,7 @@
 
       ;; Delete the queue to test the publish sending to dead letter queue.
       (queue/delete-queue sqs-client queue-url)
-      (is (some? (topic-protocol/publish topic message message-attributes)))
+      (is (some? (topic-protocol/publish topic message message-attributes subject)))
       (when-let [messages (seq (queue/receive-messages sqs-client dead-letter-queue-url))]
         (is (= message (.body (first messages))))
        (is (some? (queue/delete-messages sqs-client dead-letter-queue-url messages)))))))

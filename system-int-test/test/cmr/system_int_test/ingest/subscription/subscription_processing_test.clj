@@ -2,7 +2,7 @@
   "CMR subscription processing tests."
   (:require
    [clj-time.core :as t]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.access-control.test.util :as ac-util]
    [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -52,7 +52,7 @@
    integration tests. If send-subscription-emails is called in tests without send-email being mocked,
    errors will be returned when attempting to connect to the mail server in
    postal-core/send-message."
-  [email-settings email-content])
+  [_email-settings _email-content])
 
 (deftest ^:oracle subscription-job-manual-time-constraint-test
   "This test is used to validate that email-subscription-processing will use a
@@ -161,9 +161,9 @@
                                                        (data-umm-c/collection {:ShortName "coll1"
                                                                                :EntryTitle "entry-title1"})
                                                        {:token "mock-echo-system-token"})
-           gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
+           _ (create-granule-and-index "PROV1" coll1 "Granule1")
          ;; Setup subscriptions
-           sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
+           _ (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "Using the manual endpoint does not update last-notified-at for subscriptions"
          (let [system-context (system/context)
@@ -207,13 +207,13 @@
                                                                                :EntryTitle "entry-title1"})
                                                        {:token "mock-echo-system-token"})
 
-           coll2 (data-core/ingest-umm-spec-collection "PROV1"
-                                                       (data-umm-c/collection {:ShortName "coll2"
-                                                                               :EntryTitle "entry-title2"})
-                                                       {:token "mock-echo-system-token"})
+           _ (data-core/ingest-umm-spec-collection "PROV1"
+                                                   (data-umm-c/collection {:ShortName "coll2"
+                                                                           :EntryTitle "entry-title2"})
+                                                   {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
          ;; Setup subscriptions
-           sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
+           _ (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "First query executed does not have a last-notified-at and looks back 24 hours"
          (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -223,8 +223,6 @@
                             flatten
                             (map :concept-id))]
            (is (= (:concept-id gran1) (first results)))))
-
-       (dev-system/advance-time! 10)
 
        (testing "Second run finds only granules created since the last notification"
          (let [gran2 (create-granule-and-index "PROV1" coll1 "Granule2")
@@ -256,7 +254,7 @@
      (testing "Tests subscriber-id filtering in subscription email processing job"
        (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
            ;; User 1 is in group1
-             user1-token    (echo-util/login (system/context) "user1" [user1-group-id])
+             _              (echo-util/login (system/context) "user1" [user1-group-id])
              _              (echo-util/ungrant (system/context)
                                                (-> (access-control/search-for-acls (system/context)
                                                                                    {:provider      "PROV1"
@@ -317,14 +315,14 @@
                                                                   (data-umm-c/collection {:ShortName  "coll2"
                                                                                           :EntryTitle "entry-title2"})
                                                                   {:token "mock-echo-system-token"})
-             coll3          (data-core/ingest-umm-spec-collection "PROV1"
+             _              (data-core/ingest-umm-spec-collection "PROV1"
                                                                   (data-umm-c/collection
                                                                    {:ShortName  "coll3"
                                                                     :EntryTitle "entry-title3"
                                                                     :AccessConstraints (data-umm-c/access-constraints
                                                                                         {:Value 51 :Description "Those files are for British eyes only."})})
                                                                   {:token "mock-echo-system-token"})
-             coll4          (data-core/ingest-umm-spec-collection "PROV1"
+             _              (data-core/ingest-umm-spec-collection "PROV1"
                                                                   (data-umm-c/collection
                                                                    {:ShortName  "coll4"
                                                                     :EntryTitle "entry-title4"
@@ -358,7 +356,7 @@
                                                                                              {:granule-ur   "Granule1"
                                                                                               :access-value 33})
                                               {:token "mock-echo-system-token"})
-             gran2          (data-core/ingest "PROV1"
+             _              (data-core/ingest "PROV1"
                                               (data-granule/granule-with-umm-spec-collection coll1
                                                                                              (:concept-id coll1)
                                                                                              {:granule-ur   "Granule2"

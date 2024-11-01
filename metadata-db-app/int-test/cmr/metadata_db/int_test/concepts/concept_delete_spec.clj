@@ -19,14 +19,17 @@
             {concept-id2 :concept-id revision-id2 :revision-id} (util/save-concept concept2)
             {:keys [status revision-id] :as tombstone} (util/delete-concept concept-id)
             deleted-concept1 (:concept (util/get-concept-by-id-and-revision concept-id revision-id))
-            saved-concept1 (:concept (util/get-concept-by-id-and-revision concept-id (dec revision-id)))]
+            saved-concept1 (:concept (util/get-concept-by-id-and-revision concept-id (dec revision-id)))
+            metadata (if (= :subscription concept-type)
+                       (:metadata saved-concept1)
+                       "")]
         (is (= {:status 201 :revision-id 4}
                {:status status :revision-id revision-id}))
 
         (is (= (dissoc (assoc saved-concept1
                               :deleted true
-                              :metadata ""
                               :revision-id revision-id
+                              :metadata metadata
                               :user-id nil)
                        :revision-date :user-id :transaction-id)
                (dissoc deleted-concept1 :revision-date :user-id :transaction-id)))
@@ -88,7 +91,7 @@
         (is (= {:status 201
                 :revision-id 4
                 :deleted true
-                :metadata ""}
+                :metadata (:metadata stored-concept1)}
                {:status status
                 :revision-id revision-id
                 :deleted (:deleted stored-concept1)
