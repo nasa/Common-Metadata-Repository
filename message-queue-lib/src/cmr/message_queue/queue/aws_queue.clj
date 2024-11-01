@@ -11,7 +11,9 @@
    (software.amazon.awssdk.services.sqs.model CreateQueueResponse)
    (software.amazon.awssdk.services.sqs.model DeleteMessageRequest)
    (software.amazon.awssdk.services.sqs.model DeleteQueueRequest)
+   (software.amazon.awssdk.services.sqs.model GetQueueAttributesRequest)
    (software.amazon.awssdk.services.sqs.model MessageAttributeValue)
+   (software.amazon.awssdk.services.sqs.model QueueAttributeName)
    (software.amazon.awssdk.services.sqs.model ReceiveMessageRequest)
    (software.amazon.awssdk.services.sqs.model ReceiveMessageResponse)
    (software.amazon.awssdk.services.sqs.model SendMessageRequest)
@@ -145,11 +147,21 @@
                      queue-url
                      (.getMessage e))))))
 
+(defn get-queue-arn
+  "Gets the SQS ARN value from the queue. We need this value to subscribe the queue to an SNS topic."
+  [sqs-client queue-url]
+  (let [sqs-request (-> (GetQueueAttributesRequest/builder)
+                        (.queueUrl queue-url)
+                        (.attributeNames [QueueAttributeName/QUEUE_ARN])
+                        (.build))
+        response (.getQueueAttributes sqs-client sqs-request)]
+    (get (.attributesAsStrings response) "QueueArn")))
+
 (comment
   
   (let [sqs-client (create-sqs-client (cmr.message-queue.config/sqs-server-url))
         queue-url  (create-queue sqs-client (cmr.message-queue.config/cmr-internal-subscriptions-queue-name))
-        message-attributes (attributes-builder {"collection-concept-id" "C12345-PROV1"})
+        message-attributes (attributes-builder {"collection-concept-id" "C1200000065-PROV1"})
         message "A test message"
         _ (publish sqs-client queue-url message message-attributes)
         messages (receive-messages sqs-client queue-url)]
@@ -158,5 +170,4 @@
               (println (.receiptHandle %))
               (println (.messageAttributes %)))
          messages)
-    (delete-messages sqs-client queue-url messages))
-  )
+    (delete-messages sqs-client queue-url messages)))
