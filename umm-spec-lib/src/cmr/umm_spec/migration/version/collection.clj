@@ -768,13 +768,11 @@
 (defn- migrate-collection-progress-down
        [collectionProgress]
 
-       (if (nil? collectionProgress)
-         "NOT PROVIDED"
-         (if (or (= "PREPRINT" collectionProgress)
-                 (= "INREVIEW" collectionProgress)
-                 (= "SUPERSEDED" collectionProgress))
-           "PLANNED"
-           collectionProgress)))
+       (case collectionProgress
+             "PREPRINT" "PLANNED"
+             "INREVIEW" "PLANNED"
+             "SUPERSEDED" "COMPLETE"
+             collectionProgress))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
            [_context collection & _]
@@ -782,7 +780,6 @@
            ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
            ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
            ;; Add back in NOT APPLICABLE enum in CollectionProgress
-           ;(m-spec/update-version collection :collection "1.18.1")
 
            (-> collection
                (m-spec/update-version :collection "1.18.1")
@@ -791,7 +788,7 @@
                             (-> coll
                                 (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down))
                             coll))
-               ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW, or SUPERSEDED
+               ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW. And COMPLETE if enum value is SUPERSEDED
                (as-> coll (if (contains? coll :CollectionProgress)
                             (-> coll
                                 (update :CollectionProgress migrate-collection-progress-down))
