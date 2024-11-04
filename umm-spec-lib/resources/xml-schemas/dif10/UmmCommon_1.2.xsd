@@ -457,6 +457,9 @@ technical contact
             <xs:enumeration value="PLANNED"/>
             <xs:enumeration value="IN WORK"/>
             <xs:enumeration value="COMPLETE"/>
+            <xs:enumeration value="PREPRINT"/>
+            <xs:enumeration value="INREVIEW"/>
+            <xs:enumeration value="SUPERSEDED"/>
         </xs:restriction>
     </xs:simpleType>
 
