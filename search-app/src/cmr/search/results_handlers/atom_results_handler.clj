@@ -36,6 +36,7 @@
   [concept-type query]
   (let [atom-fields ["short-name"
                      "version-id"
+                     "entry-id"
                      "summary"
                      "update-time"
                      "entry-title"
@@ -137,6 +138,7 @@
          score :_score
          {short-name :short-name
           version-id :version-id
+          entry-id :entry-id
           summary :summary
           update-time :update-time
           entry-title :entry-title
@@ -193,6 +195,7 @@
             :title entry-title
             :short-name short-name
             :version-id version-id
+            :entry-id entry-id
             :summary summary
             :updated update-time
             :dataset-id entry-title
@@ -466,7 +469,7 @@
 (defmethod atom-reference->xml-element :collection
   [results concept-type reference]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
+        {:keys [id score title short-name version-id entry-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters organizations tags has-variables has-formats has-transforms has-combine
@@ -481,6 +484,7 @@
                (xml/element :echo:datasetId {} dataset-id)
                (xml/element :echo:shortName {} short-name)
                (xml/element :echo:versionId {} version-id)
+               (xml/element :echo:entryId {} entry-id)
                (xml/element :echo:originalFormat {} original-format)
                (when collection-data-type (xml/element :echo:collectionDataType {} collection-data-type))
                (xml/element :echo:dataCenter {} data-center)

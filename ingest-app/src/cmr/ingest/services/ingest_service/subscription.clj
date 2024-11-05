@@ -13,7 +13,10 @@
                   :collection-concept-id (:CollectionConceptId subscription)
                   :subscriber-id (:SubscriberId subscription)
                   :subscription-type (or (:Type subscription) "granule")
-                  :normalized-query (:normalized-query concept)}))
+                  :normalized-query (:normalized-query concept)
+                  :endpoint (:EndPoint subscription)
+                  :mode (:Mode subscription)
+                  :method (:Method subscription)}))
 
 (declare save-subscription)
 #_{:clj-kondo/ignore [:unresolved-symbol]}

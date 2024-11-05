@@ -102,7 +102,7 @@
   [concept-type json-entry]
   (let [tags (util/map-keys name (:tags json-entry))
         json-entry (util/map-keys->kebab-case json-entry)
-        {:keys [id title short-name version-id summary updated dataset-id collection-data-type
+        {:keys [id title short-name version-id entry-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score platforms
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
@@ -118,6 +118,7 @@
        :dataset-id dataset-id
        :short-name short-name
        :version-id version-id
+       :entry-id entry-id
        :original-format original-format
        :collection-data-type collection-data-type
        :data-center data-center

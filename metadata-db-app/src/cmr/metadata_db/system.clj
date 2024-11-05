@@ -19,6 +19,7 @@
    [cmr.metadata-db.api.routes :as routes]
    [cmr.metadata-db.config :as config]
    [cmr.metadata-db.services.jobs :as mdb-jobs]
+   [cmr.metadata-db.services.subscription-cache :as subscription-cache]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
@@ -52,7 +53,8 @@
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
-                       common-health/health-cache-key (common-health/create-health-cache)}
+                       common-health/health-cache-key (common-health/create-health-cache)
+                       subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
               :unclustered-scheduler (jobs/create-scheduler
                                       `system-holder [jvm-info/log-jvm-statistics-job

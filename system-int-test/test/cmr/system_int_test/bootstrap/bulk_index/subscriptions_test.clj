@@ -2,7 +2,7 @@
   "Integration test for CMR bulk index subscription operations."
   (:require
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
    [cmr.system-int-test.data2.core :as d]
@@ -57,11 +57,11 @@
                                                              1)
            ;; create a subscription on a different provider PROV2
            ;; and this subscription won't be indexed as a result of indexing subscriptions of PROV1
-           sub2 (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
-                                                              :Query "instrument=POSEIDON-3"
-                                                              :CollectionConceptId (:concept-id coll1)}
-                                                             {}
-                                                             1)]
+           _ (subscription/ingest-subscription-with-attrs {:provider-id "PROV2"
+                                                           :Query "instrument=POSEIDON-3"
+                                                           :CollectionConceptId (:concept-id coll1)}
+                                                          {}
+                                                          1)]
 
        ;; no index, no hits.
        (is (zero? (:hits (search/find-refs :subscription {}))))
@@ -154,7 +154,7 @@
        (index/wait-until-indexed)
 
        (testing "Subscription concepts are indexed."
-         (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
+         (let [{:keys [hits refs]} (search/find-refs :subscription {})]
            (is (= 6 hits))
            (is (= 6 (count refs)))
            ))))))
