@@ -229,9 +229,15 @@
     (testing "adding and deleting subscriptions from the cache calling add-delete-subscription"
       (let [db-contents '()]
         (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-contents)}
-          (is (= {:metadata {:CollectionConceptId "C12345-PROV1"}
+          (is (= {:metadata {:CollectionConceptId "C12345-PROV1"
+                             :EndPoint "ARN"
+                             :Mode ["New" "Delete"]
+                             :Method "ingest"}
                   :concept-type :subscription}
-                 (subscriptions/add-delete-subscription test-context {:metadata "{\"CollectionConceptId\":\"C12345-PROV1\"}"
+                 (subscriptions/add-delete-subscription test-context {:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
+                                                                                  \"EndPoint\":\"ARN\",
+                                                                                  \"Mode\":[\"New\", \"Delete\"],
+                                                                                  \"Method\":\"ingest\"}"
                                                                       :concept-type :subscription}))))))))
 
 (def db-result-1
@@ -567,9 +573,11 @@
                                :extra-fields {:parent-collection-id "C1200000002-PROV1"}}]
 
           ;; if successful, the subscription concept-id is returned for local topic.
+          (subscriptions/add-delete-subscription test-context sub-concept)
           (is (= (:concept-id sub-concept) (subscriptions/add-subscription test-context sub-concept)))
 
           ;; the subscription is replaced when the subscription already exists.
+          (subscriptions/add-delete-subscription test-context sub-concept)
           (is (= (:concept-id sub-concept) (subscriptions/add-subscription test-context sub-concept)))
 
           ;; For this test add the subscription to the internal topic to test publishing.
@@ -653,6 +661,7 @@
                                                   \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
                                                                                        \"Identifier\": \"Algorithm-1\"}]}}"
                                   :extra-fields {:parent-collection-id "C1200000002-PROV1"}}
+                 _ (subscriptions/add-delete-subscription test-context sub-concept)
                  subscription-arn (subscriptions/add-subscription test-context sub-concept)
                  sub-concept (assoc-in sub-concept [:extra-fields :aws-arn] subscription-arn)]
 
