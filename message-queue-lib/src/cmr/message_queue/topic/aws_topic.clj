@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.log :refer [error]]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.aws-queue :as aws-queue]
@@ -72,13 +73,13 @@
     filter policy is a hash map - for example:
     {\"collection-concept-id\": \"C12345-PROV1\"
      \"mode\": [\"New\", \"Update\"]}"
-  [sns-client subscription-arn subscription]
+  [sns-client subscription-arn subscription-metadata]
   ;; Turn the clojure filter policy to json
-  (when (or (:CollectionConceptId subscription)
-            (:Mode subscription))
+  (when (or (:CollectionConceptId subscription-metadata)
+            (:Mode subscription-metadata))
     (let [filters (util/remove-nil-keys
-                   {:collection-concept-id (:CollectionConceptId subscription)
-                    :mode (:Mode subscription)})
+                   {:collection-concept-id [(:CollectionConceptId subscription-metadata)]
+                    :mode (:Mode subscription-metadata)})
           filter-json (json/generate-string filters)
           sub-filter-request (-> (SetSubscriptionAttributesRequest/builder)
                                  (.subscriptionArn subscription-arn)
@@ -118,14 +119,16 @@
     (try
       (let [subscription-arn (subscribe-sqs-to-sns sns-client topic-arn (get-in subscription [:metadata :EndPoint]))]
         (when subscription-arn
-          (set-filter-policy sns-client subscription-arn subscription)
+          (set-filter-policy sns-client subscription-arn (:metadata subscription))
           (set-redrive-policy sns-client subscription-arn subscription-dead-letter-queue-arn))
         subscription-arn)
       (catch Exception e
-        (error (format "Exception caught trying to subscribe the queue %s to the %s SNS Topic. Exception: %s"
-                       (:EndPoint subscription)
-                       topic-arn
-                       (.getMessage e))))))
+        (let [msg (format "Exception caught trying to subscribe the queue %s to the %s SNS Topic. Exception: %s"
+                          (get-in subscription [:metadata :EndPoint])
+                          topic-arn
+                          (.getMessage e))]
+          (error msg)
+          (errors/throw-service-error :bad-aws-subscription msg)))))
 
   (unsubscribe
    [_this subscription-id]

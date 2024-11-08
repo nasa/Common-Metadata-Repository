@@ -29,25 +29,3 @@
       (errors/throw-service-error
         :not-found
         (msg/subscription-not-found subscription-id)))))
-
-(defn update-subscription-with-aws-arn
-  "Update the sub_notifications DB table with the subscription arn value."
-  [context subscription-id subscription-arn]
-  (let [errors (common-concepts/concept-id-validation subscription-id)
-        db (mdb-util/context->db context)]
-     (if (nil? errors)
-       (sub-note/update-sub-not-with-aws-arn db subscription-id subscription-arn)
-       (errors/throw-service-error
-        :not-found
-        (msg/subscription-not-found subscription-id)))))
-
-(defn get-subscription-aws-arn
-  "Get the subscription ARN value from the sub_notifications DB table."
-  [context subscription-id]
-  (let [errors (common-concepts/concept-id-validation subscription-id)
-        db (mdb-util/context->db context)]
-    (if (nil? errors)
-      (:aws-arn (sub-note/get-sub-notification db subscription-id))
-      (errors/throw-service-error
-       :not-found
-       (msg/subscription-not-found subscription-id)))))

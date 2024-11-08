@@ -609,9 +609,8 @@
         (let [sub-concept {:metadata concept-metadata
                            :deleted true
                            :concept-type :subscription
-                           :concept-id "SUB1200000005-PROV1"}
-              subscription-arn nil]
-          (is (= (:concept-id sub-concept) (subscriptions/delete-subscription test-context sub-concept subscription-arn)))
+                           :concept-id "SUB1200000005-PROV1"}]
+          (is (= (:concept-id sub-concept) (subscriptions/delete-subscription test-context sub-concept)))
           ;; Also remove subscription from internal queue.
           (let [topic (get-in test-context [:system :sns :internal])]
             (topic-protocol/unsubscribe topic sub-concept)))))))
@@ -654,10 +653,12 @@
                                                   \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
                                                                                        \"Identifier\": \"Algorithm-1\"}]}}"
                                   :extra-fields {:parent-collection-id "C1200000002-PROV1"}}
-                 subscription-arn (subscriptions/add-subscription test-context sub-concept)]
+                 subscription-arn (subscriptions/add-subscription test-context sub-concept)
+                 sub-concept (assoc-in sub-concept [:extra-fields :aws-arn] subscription-arn)]
+
              (is (some? subscription-arn))
              (when subscription-arn
-               (is (some? (subscriptions/delete-subscription test-context sub-concept subscription-arn))))
+               (is (some? (subscriptions/delete-subscription test-context sub-concept))))
 
              ;; publish message. this should publish to the internal queue
              (is (some? (subscriptions/work-potential-notification test-context granule-concept)))
