@@ -793,9 +793,6 @@
                                (= :subscription concept-type))
                          (:metadata previous-revision)
                          "")
-              subscription-arn (when (and subscriptions/subscriptions-enabled?
-                                      (= :subscription concept-type))
-                                 (sub-not/get-subscription-aws-arn context concept-id))
               tombstone (create-tombstone-concept metadata concept previous-revision)]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
@@ -843,7 +840,7 @@
                context (ingest-events/concept-delete-event revisioned-tombstone)))
             (when (and subscriptions/subscriptions-enabled?
                        (= :subscription concept-type))
-              (subscriptions/delete-subscription context revisioned-tombstone subscription-arn))
+              (subscriptions/delete-subscription context revisioned-tombstone))
             (subscriptions/work-potential-notification context revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
@@ -893,6 +890,17 @@
          context
          (ingest-events/associations-update-event associations))))))
 
+(defn set-subscription-arn
+  "Subscribes a subscription request to the CMR external topic and
+  saves the subscription ARN to the concept and returns the new concept."
+  [context concept-type concept]
+  (if (and subscriptions/subscriptions-enabled?
+           (= :subscription concept-type))
+    (if-let [subscription-arn (subscriptions/add-subscription context concept)]
+      (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
+      concept)
+    concept))
+
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -913,6 +921,7 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
+                       (set-subscription-arn context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -931,10 +940,9 @@
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
-      (when (and subscriptions/subscriptions-enabled?
-             (= :subscription concept-type))
-        (when-let [subscription-arn (subscriptions/add-subscription context concept)]
-          (sub-not/update-subscription-with-aws-arn context concept-id subscription-arn)))
+      ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
+      ;; above so now we can put it into the cache.
+      (subscriptions/add-delete-subscription context concept)
       (subscriptions/work-potential-notification context concept)
       concept)))
 
