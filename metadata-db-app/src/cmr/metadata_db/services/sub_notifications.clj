@@ -15,7 +15,9 @@
  (if (sub-note/subscription-exists? db subscription-id)
    (if (sub-note/sub-notification-exists? db subscription-id)
      (sub-note/update-sub-notification db subscription-id last-notified-time)
-     (sub-note/save-sub-notification db subscription-id))
+     (do
+       (sub-note/save-sub-notification db subscription-id)
+       (sub-note/update-sub-notification db subscription-id last-notified-time)))
    (errors/throw-service-error :not-found (msg/subscription-not-found subscription-id))))
 
 (defn update-subscription-notification
