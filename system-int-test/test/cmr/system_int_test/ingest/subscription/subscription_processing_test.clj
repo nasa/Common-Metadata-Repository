@@ -172,7 +172,7 @@
                params {:revision-date-range (str "2016-01-02T00:00:00Z," (t/now))}
                _manual-endpoint (jobs/trigger-email-subscription-processing system-context params)
                postjob-subscriptions (get-subscriptions)]
-           (is (nil? (get-in (first prejob-subscriptions) [:extra-fields :last-notified-at])))
+           (is (some? (get-in (first prejob-subscriptions) [:extra-fields :last-notified-at])))
            (is (= prejob-subscriptions postjob-subscriptions))))))))
 
 (deftest ^:oracle subscription-email-processing-time-constraint-test
