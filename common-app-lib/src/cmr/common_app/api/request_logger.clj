@@ -189,7 +189,10 @@
                              ;; do these last
                              "log-cost" (- (tk/now-ms) log-start)
                              "duration" (- (tk/now-ms) ring-start))
-                      (util/remove-nil-keys))]
+                      (util/remove-nil-keys))
+             note (if (contains? note "authorization")
+                    (assoc note "authorization" "****")
+                    note)]
          (report (json/generate-string note))
          response)))))
 
