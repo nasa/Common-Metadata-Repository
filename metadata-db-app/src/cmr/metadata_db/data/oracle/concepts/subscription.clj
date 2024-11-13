@@ -22,7 +22,7 @@
           (assoc-in [:extra-fields :subscription-type] (:subscription_type result))
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
-          (assoc-in [:extra-fields :aws-arn] (:awsarn result))
+          (assoc-in [:extra-fields :aws-arn] (:aws_arn result))
           (add-last-notified-at-if-present result db)
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
