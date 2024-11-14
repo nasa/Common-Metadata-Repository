@@ -8,7 +8,6 @@ COPY *.py .
 #Install the required packages
 RUN pip3 install boto3 Flask
 
-#EXPOSE 8089
 # Command to run the application
 CMD ["python", "subscription_worker.py"]
 
