@@ -1,14 +1,18 @@
 # Use python image
 FROM python:3.13-slim
+ARG AWS_REGION
+ARG QUEUE_URL
+ARG DEAD_LETTER_QUEUE_URL
+ARG SNS_NAME
+ARG SUB_DEAD_LETTER_QUEUE_URL
 
 #Set environment variables
-ENV AWS_REGION us-east-1
-ENV QUEUE_URL https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-queue-sit
-ENV DEAD_LETTER_QUEUE_URL https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-dead-letter-queue-sit
-ENV TIME_TO_NEXT_POLL 10
+ENV AWS_REGION=$AWS_REGION
+ENV QUEUE_URL=$QUEUE_URL
+ENV DEAD_LETTER_QUEUE_URL=$DEAD_LETTER_QUEUE_URL
 ENV LONG_POLL_TIME 10
-ENV SNS_NAME cmr-subscriptions-sit
-ENV SUB_DEAD_LETTER_QUEUE_URL https://sqs.us-east-1.amazonaws.com/832706493240/cmr-subscriptions-dead-letter-queue-sit
+ENV SNS_NAME=$SNS_NAME
+ENV SUB_DEAD_LETTER_QUEUE_URL=$SUB_DEAD_LETTER_QUEUE_URL
 
 #Set working directory
 WORKDIR /app
