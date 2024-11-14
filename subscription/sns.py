@@ -16,7 +16,7 @@ class Sns:
         try:
             topic = self.sns_resource.create_topic(Name=topic_name)
         except ClientError as error:
-            print("Count not get the topic ARN: {error}.")
+            print("Could not get the topic ARN: {error}.")
             stdout.flush()
             raise error
         else:

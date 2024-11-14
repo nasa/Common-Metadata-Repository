@@ -1,4 +1,4 @@
 #!/bin/bash
 
-pip install boto3 Flask
+pip3 install boto3 Flask
 python3 -m unittest -v

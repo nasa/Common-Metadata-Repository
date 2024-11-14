@@ -6,7 +6,7 @@ WORKDIR /app
 COPY *.py .
 
 #Install the required packages
-RUN pip install boto3 Flask
+RUN pip3 install boto3 Flask
 
 #EXPOSE 8089
 # Command to run the application

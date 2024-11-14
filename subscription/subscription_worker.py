@@ -20,26 +20,22 @@ def receive_message(sqs_client, queue_url):
         # Long Polling
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
-    if (len(response.get('Messages', [])) > 0):
+    if len(response.get('Messages', [])) > 0:
         print(f"Number of messages received: {len(response.get('Messages', []))}")
         stdout.flush()
     return response
 
 def delete_message(sqs_client, queue_url, receipt_handle):
-    response = sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+    sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
 def delete_messages(sqs_client, queue_url, messages):
     for message in messages.get("Messages", []):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
-def check_acls(message):
-    return True
-
 def process_messages(topic, messages):
     for message in messages.get("Messages", []):
-        if check_acls(message=message):
-            sns_client.publish_message(topic, message)
+        sns_client.publish_message(topic, message)
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """

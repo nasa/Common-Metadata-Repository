@@ -2,7 +2,7 @@
 
 This project contains the subscription-worker python tool. This tool reads messages from an AWS SQS queue, checks to see if the user has permission to view these records, and then publishes them to the cmr-subscription-{env} topic, so that external users can receive messages to their subscriptions.
 
-## To build and deploy this project manually
+## To build and deploy this project manually for AWS - this is not for local development.
 
 Cd into the subscription project.
 You will need to make sure that Docker is up and running.
