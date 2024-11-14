@@ -22,6 +22,7 @@
           (assoc-in [:extra-fields :subscription-type] (:subscription_type result))
           (assoc-in [:extra-fields :subscription-name] (:subscription_name result))
           (assoc-in [:extra-fields :subscriber-id] (:subscriber_id result))
+          (assoc-in [:extra-fields :aws-arn] (:aws_arn result))
           (add-last-notified-at-if-present result db)
           (assoc-in [:extra-fields :collection-concept-id]
                     (:collection_concept_id result))))
@@ -32,16 +33,17 @@
                  subscriber-id
                  collection-concept-id
                  normalized-query
-                 subscription-type]} :extra-fields
+                 subscription-type
+                 aws-arn]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (concepts/concept->common-insert-args concept)]
     [(concat cols ["provider_id" "user_id" "subscription_name"
                    "subscriber_id" "collection_concept_id" "normalized_query"
-                   "subscription_type"])
+                   "subscription_type" "aws_arn"])
      (concat values [provider-id user-id subscription-name
                      subscriber-id collection-concept-id normalized-query
-                     subscription-type])]))
+                     subscription-type aws-arn])]))
 
 (defmethod concepts/concept->insert-args [:subscription false]
   [concept _]

@@ -391,7 +391,9 @@
       (is (= (dissoc (expected-concept concept) :coll-concept-id)
              (dissoc stored-concept :revision-date :transaction-id :created-at :coll-concept-id)))
       (is (= (expected-concept concept)
-             (dissoc stored-concept :revision-date :transaction-id :created-at))))))
+             (util/dissoc-in
+              (dissoc stored-concept :revision-date :transaction-id :created-at)
+              [:extra-fields :aws-arn]))))))
 
 (defn is-tag-association-deleted?
   "Returns if the ta is marked as deleted in metadata-db"
