@@ -109,6 +109,7 @@
   "User guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
   "User Support" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "USER's GUIDE" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "USER'S GUIDE" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
   "VIEW DATA SET LANDING PAGE" {:URLContentType "CollectionURL", :Type "DATA SET LANDING PAGE"}
   "VIEW IMAGES" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "VIEW PROJECT HOME PAGE" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}

@@ -28,7 +28,10 @@
   "Mapping from values supported for DIF10 Data_Set_Progress to UMM CollectionProgress."
   {"COMPLETE" "COMPLETE"
    "IN WORK"  "ACTIVE"
-   "PLANNED" "PLANNED"})
+   "PLANNED" "PLANNED"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"})
 
 (defn- parse-characteristics
   [el]
