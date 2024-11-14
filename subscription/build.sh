@@ -1,1 +1,1 @@
-zip deployment_package.zip subscription_worker.py part_docker
+zip deployment_package.zip subscription_worker.py part1_docker part_docker
