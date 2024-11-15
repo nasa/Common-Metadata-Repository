@@ -128,7 +128,7 @@
                           topic-arn
                           (.getMessage e))]
           (error msg)
-          (errors/throw-service-error :bad-aws-subscription msg)))))
+          (errors/throw-service-error :invalid-data msg)))))
 
   (unsubscribe
    [_this subscription-id]
