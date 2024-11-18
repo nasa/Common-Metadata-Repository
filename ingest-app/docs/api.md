@@ -1087,16 +1087,16 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 
 NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscription ingest are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
 
-Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+Subscription allows a user to register some query conditions in the CMR and be notified when collections/granules matching the conditions are created, updated, or deleted in the CMR. By the end of 2024 there are two kinds of subscriptions. Those that are run by search queries and those that are processed on ingest. The ingest subscriptions are only for granules and notifications are sent out to a provided AWS SQS endpoint. The search subscriptions are run periodically using CMR search and notifiy users by email using the email address that is registered in Earthdata Login. For the search subscriptions, there are two types of subscriptions (identified by the `Type` field of the subscription):
 
 - collection subscription for users to be notified when collections are created/updated.
 - granule subscription for users to be notified when granules are created/updated.
 
-Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). There is a background job that processes the search subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
-`Type` is a required field in subscription request body. The valid values of `Type` are: `"collection"` or `"granule"`. It indicates if the subscription is a collection subscription or granule subscription. Subscriptions of type granule must supply a requisite CollectionConceptId, and subscriptions of type collection cannot have a CollectionConceptId field.
+`Type` is a required field in subscription request body. The valid values of `Type` are: `"collection"` or `"granule"`. It indicates if the subscription is a collection subscription or granule subscription. Subscriptions of type granule must supply a requisite CollectionConceptId, and subscriptions of type collection cannot have a CollectionConceptId field. When the CollectionConceptId field is used, the subscription subscriber must have read access to the collection, otherwise the ingest of the subscription will fail.
 
 If a native-id is not provided it will be generated. This is only supported for POST requests.
 POST requests may only be used for creating subscriptions.
@@ -1105,13 +1105,25 @@ If a SubscriberId is not provided, then the user ID associated with the token us
 
 EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
+For ingest subscriptions to be used there are three new fields that are requird in addition to the other fields already described. First though, the Type field must be set to `granule` as ingest subscriptions are only for granules. Because this is a granule subscription the CollectionConceptId must be set. The new fields are:
+
+Method is a new field and it designates between search subscriptions and ingest subscriptions. Thus the valid values for this field are either `search` or `ingest`. If this field is not used, then search is assumed.
+
+EndPoint describes to where notifications get sent. At this time only Amazon Web Services (AWS) Simple Query Service (SQS) Amazon Resource Names (ARN) are allowed. Ingest of subscriptions that do not use an AWS SQS ARN will fail. If search subscriptions are desired, do not use this field.
+
+Mode describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. The valid values are New, Update, Delete. Any combination of these values are valid and they are set using a json array. Here are some examples:
+  [`New`]
+  [`New`, `Update`]
+  [`Update`, `Delete`]
+  [`Update`]
+
 POST only may be used without a native-id at the following URL.
 `%CMR-ENDPOINT%/subscriptions`
 
 POST or PUT may be used with the following URL.
 `%CMR-ENDPOINT%/subscriptions/<native-id>`
 
-Query values should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
+Query values are currently only for search subscriptions and should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
 
     instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 
@@ -1124,7 +1136,7 @@ Subscription concept can be updated by sending an HTTP POST or PUT with the meta
 If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
 
 PUT requests should be used for updating subscriptions. Creation of subscriptions using PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
-
+Following are two examples that show how to update and create a search subscription.  The third example shows how to create an ingest subscription using PUT.
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
@@ -1132,6 +1144,7 @@ curl -XPUT \
   %CMR-ENDPOINT%/subscriptions/subscription123 \
   -d \
 "{\"Name\": \"someSubscription\",
+  \"Type\": \"granule\",
   \"SubscriberId\": \"someSubscriberId\",
   \"CollectionConceptId\": \"C1234-PROV1.\",
   \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
@@ -1144,9 +1157,29 @@ curl -XPOST \
   %CMR-ENDPOINT%/subscriptions \
   -d \
 "{\"Name\": \"someSubscription\",
+  \"Type\": \"granule\",
   \"SubscriberId\": \"someSubscriberId\",
   \"CollectionConceptId\": \"C1234-PROV1.\",
   \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+```
+
+```
+curl -XPUT \
+  -H "Content-type: application/vnd.nasa.cmr.umm+json" \
+  -H "Authorization:  XXXX" \
+  %CMR-ENDPOINT%/subscriptions/subscription123 \
+  -d \
+"{\"Name\": \"someSubscription\",
+  \"Type\": \"granule\",
+  \"SubscriberId\": \"someSubscriberId\",
+  \"CollectionConceptId\": \"C1234-PROV1\",
+  \"Method\": \"ingest\",
+  \"Mode\": [\"New\", \"Update\"],
+  \"EndPoint\": \"arn.aws.sqs.us-east-1.1234567890:Queue_Name\",
+  \"MetadataSpecification\": {
+     \"URL\":\"https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1\",
+     \"Name\": \"UMM-Sub\",
+     \"Version\": \"1.1.1\"}}"
 ```
 
 #### Successful Response in XML
