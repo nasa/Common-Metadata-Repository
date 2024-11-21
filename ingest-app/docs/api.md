@@ -1085,16 +1085,16 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 ## <a name="subscription"></a> Subscriptions
 A subscription allows a user to be notified when specific collections/granules are created, updated, or deleted. The collections/granules specified can be filtered by query conditions.
 
-There are two kinds of subscriptions: Search and Ingest
+There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-- Ingest subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out to a provided AWS SQS endpoint.
+- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
 
-- Search subscriptions run periodically via CMR search queries and notify users by the email address that is registered in Earthdata Login. There are two types of subscriptions (identified by the `Type` field of the subscription):
+- Batch Notification subscription processing is run periodically and execute CMR search queries, as defined by the subscription definition, and notify users by the email address that is registered in Earthdata Login. There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
 
-    - collection subscription for users to be notified when collections are created/updated.
-    - granule subscription for users to be notified when granules are created/updated.
+    - collection subscription for users to be notified when collections are created/updated, or
+    - granule subscription for users to be notified when granules are created/updated
 
-There is a configurable background job that processes the search subscriptions periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Batch subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
 
 ### <a name="create-subscription"></a> Create a Subscription
 #### <a name="subscription-endpoint"></a> /subscriptions
@@ -1112,7 +1112,7 @@ The response will include the [concept id](#concept-id) ,the [revision id](#revi
   - Can use without a native-id at the following URL: `%CMR-ENDPOINT%/subscriptions`
   - The native-id will be auto-generated
 
-##### Query Params for Search Subscriptions
+##### Query Params for Batch Notification Subscriptions
 
 Query values are currently only for search subscriptions and should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
 
@@ -1136,12 +1136,12 @@ The metadata sent in the body of the request is in JSON format and conforms to [
 - `EmailAddress`: [deprecated] was previously a required field, but is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 - `MetadataSpecification`: [required] Specifies which metadata version schema you are using for this subscription. Currently, that version is 1.1.1.
 
-##### Additional Data Fields for Ingest Subscriptions
+##### Additional Data Fields for Near-Real-Time Notification Subscriptions
 For ingest subscriptions to be used there are three new fields that are required in addition to the other fields already described. 
 - `Type`: [required] Must be set to `granule` because ingest subscriptions are only for granules.
 - `CollectionConceptId`: [required] Because type must be `granule`, we must set `CollectionConceptId` as well, as indicated in Data Fields section
-- `EndPoint`: describes where notifications get sent. At this time only AWS SQS ARN's are allowed. Ingest subscriptions that do not use an AWS SQS ARN will fail. If search subscriptions are desired, do not use this field.
-- `Mode`: describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. 
+- `EndPoint`: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. Ingest subscriptions that do not use an AWS SQS ARN will fail. If search subscriptions are desired, do not use this field.
+- `Mode`: [required] describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. 
   - Valid values: `New`, `Update`, `Delete`. Any combination of these values are valid and they are set using a json array. 
     - Examples:
       [`New`] or
@@ -1149,7 +1149,7 @@ For ingest subscriptions to be used there are three new fields that are required
       [`Update`, `Delete`] or
       [`Update`]
 
-##### Ingest Subscription POST Request
+##### NRT Notification Subscription POST Request
 
 ```
 curl  --request POST '%CMR-ENDPOINT%/ingest/subscriptions/my-native-id-of-my-subscription' \
@@ -1173,7 +1173,7 @@ curl  --request POST '%CMR-ENDPOINT%/ingest/subscriptions/my-native-id-of-my-sub
 '
 ```
 
-##### Ingest Subscription Successful Response in XML
+##### NRT Notification Subscription Successful Response in XML
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <result>
@@ -1183,7 +1183,7 @@ curl  --request POST '%CMR-ENDPOINT%/ingest/subscriptions/my-native-id-of-my-sub
 </result>
 ```
 
-##### Create search subscription with %CMR-ENDPOINT%/subscriptions URL (native-id will be autogenerated)
+##### Create Batch Notification subscription with %CMR-ENDPOINT%/subscriptions URL (native-id will be autogenerated)
 ```
 curl -XPOST \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
@@ -1208,7 +1208,7 @@ If a native-id is provided in a POST, and a subscription already exists for that
 
 PUT requests should be used for updating subscriptions. Creating subscriptions with PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
 
-##### Create search subscription with %CMR-ENDPOINT%/subscriptions/<native-id> URL
+##### Create Batch Notification subscription with %CMR-ENDPOINT%/subscriptions/<native-id> URL
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
@@ -1222,7 +1222,7 @@ curl -XPUT \
   \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
-##### Update ingest subscription with PUT
+##### Update NRT Notification subscription with PUT
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \

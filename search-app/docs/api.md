@@ -5124,16 +5124,16 @@ On occasions when tool dissociation cannot be processed at all due to invalid in
 
 A subscription allows a user to be notified when specific collections/granules are created, updated, or deleted. The collections/granules specified can be filtered by query conditions.
 
-There are two kinds of subscriptions: Search and Ingest
+There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-- Ingest subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out to a provided AWS SQS endpoint.
+- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
 
-- Search subscriptions run periodically via CMR search queries and notify users by the email address that is registered in Earthdata Login. There are two types of subscriptions (identified by the `Type` field of the subscription):
+- Batch Notification subscription processing is run periodically and execute CMR search queries, as defined by the subscription definition, and notify users by the email address that is registered in Earthdata Login. There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
 
-    - collection subscription for users to be notified when collections are created/updated.
-    - granule subscription for users to be notified when granules are created/updated.
+    - collection subscription for users to be notified when collections are created/updated, or
+    - granule subscription for users to be notified when granules are created/updated
 
-There is a configurable background job that processes the search subscriptions periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Batch subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
