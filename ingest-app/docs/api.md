@@ -1099,7 +1099,7 @@ Batch subscription notification processing is executed periodically, to see if t
 ### <a name="create-subscription"></a> Create a Subscription
 #### <a name="subscription-endpoint"></a> /subscriptions
 
-NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscription ingest are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
+NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscriptions are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
 
 ##### Method Options
 Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
@@ -1114,7 +1114,7 @@ The response will include the [concept id](#concept-id) ,the [revision id](#revi
 
 ##### Query Params for Batch Notification Subscriptions
 
-Query values are currently only for search subscriptions and should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
+Query values are currently only for Batch Notification subscriptions and should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
 
     instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 
@@ -1129,7 +1129,7 @@ The metadata sent in the body of the request is in JSON format and conforms to [
   - Valid values: `"collection"`,`"granule"`.  
   - "Type": "granule": must supply a requisite CollectionConceptId field. The subscriber must have read access to the collection here, or the subscription will fail.
   - "Type": "collection": cannot have a CollectionConceptId field.
-- `Method`: [required] designates between search subscriptions and ingest subscriptions
+- `Method`: [required] designates between search (Batch Notification) subscriptions and ingest (Near-Real-Time) subscriptions
   - Valid values: `search` or `ingest`.
   - Default: `search`
 - `SubscriberId`: [optional] If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
@@ -1137,10 +1137,10 @@ The metadata sent in the body of the request is in JSON format and conforms to [
 - `MetadataSpecification`: [required] Specifies which metadata version schema you are using for this subscription. Currently, that version is 1.1.1.
 
 ##### Additional Data Fields for Near-Real-Time Notification Subscriptions
-For ingest subscriptions to be used there are three new fields that are required in addition to the other fields already described. 
-- `Type`: [required] Must be set to `granule` because ingest subscriptions are only for granules.
+For NRT Notification subscriptions to be used there are three new fields that are required in addition to the other fields already described. 
+- `Type`: [required] Must be set to `granule` because NRT Notification subscriptions are only for granules.
 - `CollectionConceptId`: [required] Because type must be `granule`, we must set `CollectionConceptId` as well, as indicated in Data Fields section
-- `EndPoint`: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. Ingest subscriptions that do not use an AWS SQS ARN will fail. If search subscriptions are desired, do not use this field.
+- `EndPoint`: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. NRT Notification subscriptions that do not use an AWS SQS ARN will fail. If Batch Notification subscriptions are desired, do not use this field.
 - `Mode`: [required] describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. 
   - Valid values: `New`, `Update`, `Delete`. Any combination of these values are valid and they are set using a json array. 
     - Examples:
@@ -1261,7 +1261,7 @@ get a JSON response:
 
 ### <a name="delete-subscription"></a> Delete a Subscription
 
-Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
+Subscriptions can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
 
 The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
