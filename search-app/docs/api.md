@@ -5122,12 +5122,12 @@ On occasions when tool dissociation cannot be processed at all due to invalid in
 
 ### <a name="subscription"></a> Subscription
 
-Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+Subscription allows a user to register some query conditions in the CMR and be notified when collections/granules matching the conditions are created, updated, or deleted in the CMR. By the end of 2024 there are two kinds of subscriptions. Those that are run by search queries and those that are processed on ingest. The ingest subscriptions are only for granules and notifications are sent out to a provided AWS SQS endpoint. The search subscriptions are run periodically using CMR search and notifiy users by email using the email address that is registered in Earthdata Login. For the search subscriptions, there are two types of subscriptions (identified by the `Type` field of the subscription):
 
 - collection subscription for users to be notified when collections are created/updated.
 - granule subscription for users to be notified when granules are created/updated.
 
-Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the search subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 

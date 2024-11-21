@@ -2,7 +2,6 @@
   "Allows broadcast of ingest events via the message queue"
   (:require
    [cmr.common.concepts :as cc]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.services.queue :as queue]
    [cmr.metadata-db.config :as config]))
@@ -56,7 +55,7 @@
 
 (defn concept-delete-event
   "Creates an event representing a concept being deleted."
-  [{:keys [concept-id revision-id] :as concept}]
+  [{:keys [concept-id revision-id]}]
   {:action :concept-delete
    :concept-id concept-id
    :revision-id revision-id})
@@ -82,7 +81,7 @@
 
 (defn publish-tombstone-delete-msg
   "Publishes a message indicating a tombstone was removed/overwritten with updated concept"
-  [context concept-type concept-id revision-id]
+  [context concept-id revision-id]
   (when (config/publish-messages)
     (let [queue-broker (get-in context [:system :queue-broker])
           exchange-name (config/deleted-granule-exchange-name)

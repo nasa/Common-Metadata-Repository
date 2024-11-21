@@ -228,6 +228,18 @@
                <gml:identifier codeSpace="gov.nasa.esdis.umm">Other</gml:identifier>
             </gmx:CodeDefinition>
          </gmx:codeEntry>
+          <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_isPreviousVersionOf">
+               <gml:description>This collection has been superseded by the Associated DOI.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Is_Previous_Version_Of</gml:identifier>
+            </gmx:CodeDefinition>
+          </gmx:codeEntry>
+          <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_isNewVersionOf">
+               <gml:description>The collection supersedes the Associated DOI.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Is_New_Version_Of</gml:identifier>
+            </gmx:CodeDefinition>
+          </gmx:codeEntry>
          <gmx:codeEntry>
             <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_doiPreviousVersion">
                <gml:description>part of a set of larger works that is identified by a digital object identifier.</gml:description>

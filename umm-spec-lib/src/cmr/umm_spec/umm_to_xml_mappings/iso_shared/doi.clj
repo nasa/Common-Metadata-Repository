@@ -58,7 +58,9 @@
    "Field Campaign" ["fieldCampaign" "Field_Campaign"]
    "Parent Dataset" ["parentDataset" "Parent_Dataset"]
    "Related Dataset" ["relatedDataset" "Related_Dataset"]
-   "Other" ["other" "Other"]})
+   "Other" ["other" "Other"]
+   "IsPreviousVersionOf" ["isPreviousVersionOf" "Is_Previous_Version_Of"]
+   "IsNewVersionOf" ["isNewVersionOf" "Is_New_Version_Of"]})
 
 (defn generate-associated-dois
   "Generate from a UMM-C record the AssociatedDOIs into the ISO MENDS/SMAP form."

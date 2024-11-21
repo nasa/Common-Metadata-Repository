@@ -19,11 +19,11 @@
         msg-atts (queue/attributes-builder message-attributes)]
     (try
       (if filter
-        (when (and (= (:collection-concept-id message-attributes)
-                      (:collection-concept-id filter))
+        (when (and (= (message-attributes "collection-concept-id")
+                      (filter :collection-concept-id))
                    (or (nil? (:mode filter))
-                       (some #(= (:mode message-attributes) %) (:mode filter))))
-         (queue/publish sqs-client queue-url message msg-atts))
+                       (some #(= (message-attributes "mode") %) (:mode filter))))
+          (queue/publish sqs-client queue-url message msg-atts))
         (queue/publish sqs-client queue-url message msg-atts))
       (catch SqsException e
         (info (format "Exception caught publishing message to %s. Exception: %s. Please check if queue exists. Send message to %s."
@@ -37,6 +37,24 @@
                            (.getMessage e)
                            dead-letter-queue-url))))))))
 
+(defn infrastructure_setup?
+  "Check to see if the infrastructure has been setup"
+  [topic]
+  (seq @(:subscription-atom topic)))
+
+(defn setup-infrastructure
+  "Set up the local CMR internal subscription queue and dead letter queue and
+  subscribe then to the passed in topic. This function assumes that elasticmq
+  is up and running, or that the tests will start one."
+  [topic]
+  (when-not (infrastructure_setup? topic)
+    (let [sqs-client (queue/create-sqs-client (config/sqs-server-url))
+          subscription {:sqs-client sqs-client
+                        :queue-url (queue/create-queue sqs-client (config/cmr-internal-subscriptions-queue-name))
+                        :dead-letter-queue-url (queue/create-queue sqs-client (config/cmr-internal-subscriptions-dead-letter-queue-name))}]
+      (queue/create-queue sqs-client (config/cmr-subscriptions-dead-letter-queue-name))
+      (swap! (:subscription-atom topic) conj subscription))))
+
 (defrecord
  LocalTopic
  [;; An atom containing a list of subscriptions. A subscription is a map that 
@@ -45,11 +63,44 @@
 
   topic-protocol/Topic
   (subscribe
-    [_this subscription]
-    (swap! subscription-atom conj subscription))
+   [this subscription]
+   ;; to speed up development startup, the setup call is here and setup checks first to see if it is already setup.
+   ;; Otherwise on startup the system would have to wait for the elasticmq to start before it could continue with setting
+   ;; up the database slowing down all the tests.
+   (setup-infrastructure this)
+   (let [metadata (:metadata subscription)
+         sqs-client (queue/create-sqs-client (config/sqs-server-url))
+         sub {:sqs-client sqs-client
+              :filter (when (or (:CollectionConceptId metadata)
+                                (:Mode metadata))
+                        {:collection-concept-id (:CollectionConceptId metadata)
+                         :mode (:Mode metadata)})
+              :queue-url (:EndPoint metadata)
+              :dead-letter-queue-url (queue/create-queue sqs-client (config/cmr-subscriptions-dead-letter-queue-name))
+              :concept-id (:concept-id subscription)}]
+     (if-not (seq (filter #(= (:concept-id %) (:concept-id subscription))
+                          @subscription-atom))
+       (swap! subscription-atom conj sub)
+       (let [new-subs (filter #(not= (:concept-id %) (:concept-id subscription)) @subscription-atom)]
+         (reset! subscription-atom (conj new-subs sub))))
+     ;; instead of the full subscription list, pass back the subscription concept id.
+     (:concept-id subscription)))
+
+  (unsubscribe
+   [_this subscription-id]
+   ;; remove the subscription from the atom and send back the subscription id, not the atom contents.
+   (swap! subscription-atom (fn [subs]
+                              (doall
+                               (filter #(not= (:concept-id %) (:concept-id subscription-id))
+                                       subs))))
+   (:concept-id subscription-id))
 
   (publish
-   [_this message message-attributes]
+   [this message message-attributes _subject]
+   ;; to speed up development startup, the setup call is here and setup checks first to see if it is already setup.
+   ;; Otherwise on startup the system would have to wait for the elasticmq to start before it could continue with setting
+   ;; up the database slowing down all the tests.
+   (setup-infrastructure this)
    (doall (map #(publish-message % message message-attributes) @subscription-atom)))
   
   (health
@@ -63,21 +114,8 @@
   []
   (->LocalTopic (atom '())))
 
-(defn setup-infrastructure
-  "Set up the local CMR internal subscription queue and dead letter queue and
-  subscribe then to the passed in topic. This function assumes that elasticmq
-  is up and running, or that the tests will start one."
-  [topic]
-  (let [sqs-client (queue/create-sqs-client (config/sqs-server-url))
-        queue-url (queue/create-queue sqs-client (config/cmr-internal-subscriptions-queue-name))
-        dl-queue-url (queue/create-queue sqs-client (config/cmr-internal-subscriptions-dead-letter-queue-name))]
-    (topic-protocol/subscribe topic {:sqs-client sqs-client
-                                     :filter nil
-                                     :queue-url queue-url
-                                     :dead-letter-queue-url dl-queue-url})))
-
 (comment
   (def topic (setup-topic))
   (def subscription (setup-infrastructure topic))
-  (topic-protocol/publish topic "test" {"test" "test"})
+  (topic-protocol/publish topic "test" {"test" "test"} "test")
   (:subscription-atom topic))
