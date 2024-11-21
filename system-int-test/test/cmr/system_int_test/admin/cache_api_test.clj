@@ -26,7 +26,7 @@
         admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
         normal-user-token (e/login (s/context) "user")
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
-        _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
         _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))]
 
     (testing "list caches"

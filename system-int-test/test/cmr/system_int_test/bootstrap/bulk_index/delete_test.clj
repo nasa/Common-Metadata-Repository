@@ -1,15 +1,8 @@
 (ns cmr.system-int-test.bootstrap.bulk-index.delete-test
   "Integration test for CMR bulk index delete operations."
   (:require
-   [clj-time.coerce :as cr]
-   [clj-time.core :as t]
-   [clojure.java.jdbc :as j]
    [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.date-time-parser :as p]
-   [cmr.common.util :as util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.oracle.connection :as oracle]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -21,7 +14,6 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]
-   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]
    [cmr.umm.echo10.echo10-core :as echo10]))
 
@@ -124,8 +116,8 @@
                                   :native-id "coll1"
                                   :short-name "coll1"})
          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
-         ;; coll2 is a regualr collection that is ingested and will be deleted later
-         coll2 (d/ingest "PROV1" (dc/collection {:short-name "coll2" :entry-title "coll2"}))
+         ;; coll2 is a regular collection that is ingested and will be deleted later
+         coll2 (d/ingest "PROV1" (dc/collection {:short-name "coll2" :entry-title "coll2"}) {:validate-keywords false})
          ;; coll3 is a collection with an expired delete time
          umm3 (dc/collection {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"})
          xml3 (echo10/umm->echo10-xml umm3)
@@ -180,7 +172,8 @@
      ;; Verify that all of the ingest requests completed successfully
      (doseq [concept [coll1 coll2 coll3 gran1 gran2 gran3]] (is (= 201 (:status concept))))
      ;; bulk index all collections and granules
-     (bootstrap/bulk-index-provider "PROV1")
+     (println "GOT TO THIS PART OF THE TEST")
+     (bootstrap/bulk-index-provider "PROV1" {"cmr-validate-keywords" true})
      (index/wait-until-indexed)
 
      (testing "Expired documents are not indexed during bulk indexing"
