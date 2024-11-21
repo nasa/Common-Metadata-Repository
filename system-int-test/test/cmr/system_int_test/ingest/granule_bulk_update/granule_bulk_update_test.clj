@@ -18,7 +18,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest bulk-granule-update-test
-  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1") :validate-keywords false}
         coll1 (data-core/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
                                                :ShortName "short1"
@@ -30,14 +30,16 @@
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-1"
-                  :granule-ur "SC:AE_5DSno.002:30500511"})))
+                  :granule-ur "SC:AE_5DSno.002:30500511"})
+                {:validate-keywords false}))
         gran2 (ingest/ingest-concept
                (data-core/item->concept
                 (granule/granule-with-umm-spec-collection
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-2"
-                  :granule-ur "SC:AE_5DSno.002:30500512"})))
+                  :granule-ur "SC:AE_5DSno.002:30500512"}))
+               {:validate-keywords false})
         ;; this granule will fail bulk update as it is in ISO-SMAP format
         gran3 (ingest/ingest-concept
                (data-core/item->concept
@@ -46,7 +48,8 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-3"
                   :granule-ur "SC:AE_5DSno.002:30500513"})
-                :iso-smap))
+                :iso-smap)
+               {:validate-keywords false})
         ;; UMM-G granule
         gran4 (ingest/ingest-concept
                (data-core/item->concept
@@ -55,14 +58,16 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-4"
                   :granule-ur "SC:AE_5DSno.002:30500514"})
-                :umm-json))
+                :umm-json)
+               {:validate-keywords false})
         gran5 (ingest/ingest-concept
                (data-core/item->concept
                 (granule/granule-with-umm-spec-collection
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-5"
-                  :granule-ur "SC:AE_5DSno.002:30500515"})))]
+                  :granule-ur "SC:AE_5DSno.002:30500515"}))
+               {:validate-keywords false})]
 
     (index/wait-until-indexed)
 

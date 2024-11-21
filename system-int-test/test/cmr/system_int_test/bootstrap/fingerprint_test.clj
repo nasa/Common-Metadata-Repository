@@ -25,7 +25,8 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            var1 (variable/make-variable-concept
                  {:Name "Variable1"}
@@ -82,7 +83,7 @@
                     (get-in latest-revision-concept [:extra-fields :fingerprint]))))))
 
        (testing "update fingerprint of a deleted variable"
-         (let [{:keys [concept-id revision-id]} (ingest/delete-concept var2-concept)
+         (let [{:keys [_ _]} (ingest/delete-concept var2-concept)
                latest-revision-concept (mdb/get-concept var2-concept-id)]
            (is (= var2-concept-id (:concept-id latest-revision-concept)))
            (is (= 2 (:revision-id latest-revision-concept)))
@@ -110,12 +111,14 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            var1 (variable/make-variable-concept
                  {:Name "Variable1"}
@@ -137,7 +140,7 @@
            var2-concept (mdb/get-concept var2-concept-id)
            var2-fingerprint (get-in var2-concept [:extra-fields :fingerprint])
            var3-concept (mdb/get-concept var3-concept-id)
-           var3-fingerprint (get-in var3-concept [:extra-fields :fingerprint])
+           _ (get-in var3-concept [:extra-fields :fingerprint])
            ;; now change the fingerprint of var1 and var3 to a different vaule
            latest-var1 (-> var1-concept
                            (assoc :revision-id (inc (:revision-id var1-concept)))
@@ -202,12 +205,14 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            var1 (variable/make-variable-concept
                  {:Name "Variable1"}

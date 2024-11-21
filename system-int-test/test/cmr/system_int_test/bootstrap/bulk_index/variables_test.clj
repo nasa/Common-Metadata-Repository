@@ -28,12 +28,14 @@
                    "PROV1"
                    (data2-collection/collection {:entry-title "ET1"
                                                  :short-name "S1"
-                                                 :version-id "V1"}))
+                                                 :version-id "V1"})
+                   {:validate-keywords false})
             coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
             _ (index/wait-until-indexed)
             var1 (variable/make-variable-concept
                   {:Name "Variable1"}
@@ -47,7 +49,7 @@
             _ (core/disable-automatic-indexing)
             ;; The following is saved, but not indexed due to the above call
             {var1-concept-id :concept-id} (variable/ingest-variable-with-association var1)
-            {var2-concept-id :concept-id} (variable/ingest-variable-with-association var2)
+            {_ :concept-id} (variable/ingest-variable-with-association var2)
             {:keys [status errors]} (bootstrap/bulk-index-variables "PROV1" nil)]
 
         (is (= [401 ["You do not have permission to perform that action."]]
@@ -103,17 +105,20 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
            coll3 (data2-core/ingest
                   "PROV3"
                   (data2-collection/collection {:entry-title "ET3"
                                                 :short-name "S3"
-                                                :version-id "V3"}))
+                                                :version-id "V3"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            var1 (variable/make-variable-concept
                  {:Name "Variable1"}
@@ -167,17 +172,20 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
            coll3 (data2-core/ingest
                   "PROV3"
                   (data2-collection/collection {:entry-title "ET3"
                                                 :short-name "S3"
-                                                :version-id "V3"}))
+                                                :version-id "V3"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            var1 (variable/make-variable-concept
                  {:Name "Variable1"}
@@ -215,17 +223,20 @@
                   "PROV1"
                   (data2-collection/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                  {:validate-keywords false})
            coll2 (data2-core/ingest
                   "PROV2"
                   (data2-collection/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                  {:validate-keywords false})
            coll3 (data2-core/ingest
                   "PROV3"
                   (data2-collection/collection {:entry-title "ET3"
                                                 :short-name "S3"
-                                                :version-id "V3"}))
+                                                :version-id "V3"})
+                  {:validate-keywords false})
            _ (index/wait-until-indexed)
            ;; Disable message publishing so items are not indexed.
            _ (core/disable-automatic-indexing) 
