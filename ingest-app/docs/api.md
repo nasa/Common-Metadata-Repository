@@ -1087,14 +1087,15 @@ A subscription allows a user to be notified when specific collections/granules a
 
 There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
-
-- Batch Notification subscription processing is run periodically and execute CMR search queries, as defined by the subscription definition, and notify users by the email address that is registered in Earthdata Login. There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
+- Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
+   There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
 
     - collection subscription for users to be notified when collections are created/updated, or
-    - granule subscription for users to be notified when granules are created/updated
+    - granule subscription for users to be notified when granules are created/update
 
-Batch subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
+
+- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+
 
 ### <a name="create-subscription"></a> Create a Subscription
 #### <a name="subscription-endpoint"></a> /subscriptions
