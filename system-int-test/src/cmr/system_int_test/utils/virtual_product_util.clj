@@ -202,7 +202,8 @@
       (dc/collection
        {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
         :short-name "AST_L1A"})
-      :provider-id "LPDAAC_ECS")] {:validate-keywords false})))
+      :provider-id "LPDAAC_ECS")]
+    {:validate-keywords false})))
 
 ;;; Functions for use in assertions
 

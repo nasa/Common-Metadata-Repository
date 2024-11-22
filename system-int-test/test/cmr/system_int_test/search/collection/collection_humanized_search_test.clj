@@ -66,13 +66,15 @@
                                               :Platforms [(data-umm-cmn/platform
                                                            {:ShortName "TERRA"
                                                             :Instruments
-                                                            [(data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})]})]}))
+                                                            [(data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})]})]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              2
                                              {:ShortName "B"
                                               :Version "V2"
-                                              :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
+                                              :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              3
@@ -84,7 +86,8 @@
                                                                  :Term "Term1"}
                                                                 {:Category "Bio sphere"
                                                                  :Topic "Topic2"
-                                                                 :Term "Term2"}]}))]
+                                                                 :Term "Term2"}]})
+                                            {:validate-keywords false})]
 
     (index/wait-until-indexed)
     ;; Refresh the metadata cache
@@ -102,9 +105,9 @@
           (is (= report (get-cached-report))))))))
 
 (deftest search-by-platform-humanized
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-cmn/platform {:ShortName "Aqua"})]}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-cmn/platform {:ShortName "Aqua"})]}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized platform"
       (is (d/refs-match? [coll1 coll2]
@@ -125,18 +128,18 @@
         p2 (data-umm-cmn/platform {:ShortName "platform_2" :Instruments [i2]})
         p3 (data-umm-cmn/platform {:ShortName "platform_3" :Instruments [i3]})
 
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [p1]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [p2]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [p3]}))]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [p1]}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [p2]}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [p3]}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized instrument"
       (is (d/refs-match? [coll1 coll2]
                          (search/find-refs :collection {:instrument-h "GPS Receivers"}))))))
 
 (deftest search-by-project-humanized
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Projects (data-umm-cmn/projects "USGS SOFIA")}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Projects (data-umm-cmn/projects "USGS_SOFIA")}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-cmn/projects "OPENDAP")}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Projects (data-umm-cmn/projects "USGS SOFIA")}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Projects (data-umm-cmn/projects "USGS_SOFIA")}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-cmn/projects "OPENDAP")}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized project"
       (is (d/refs-match? [coll1 coll2]
@@ -161,9 +164,9 @@
                          (search/find-refs :collection {:data-center-h "NSIDC"}))))))
 
 (deftest search-by-processing-level-id-humanized
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ProcessingLevel {:Id "1T"}}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ProcessingLevel {:Id "L1T"}}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ProcessingLevel {:Id "3"}}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ProcessingLevel {:Id "1T"}}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ProcessingLevel {:Id "L1T"}}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ProcessingLevel {:Id "3"}}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized processing-level-id"
       (is (d/refs-match? [coll1 coll2]
@@ -185,11 +188,11 @@
         sk5 (data-umm-cmn/science-keyword {:Category "category1"
                                            :Topic "topic1"
                                            :Term "term1"})
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ScienceKeywords [sk1]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ScienceKeywords [sk2]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ScienceKeywords [sk3]}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:ScienceKeywords [sk4]}))
-        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:ScienceKeywords [sk5]}))]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ScienceKeywords [sk1]}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ScienceKeywords [sk2]}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ScienceKeywords [sk3]}) {:validate-keywords false})
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:ScienceKeywords [sk4]}) {:validate-keywords false})
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:ScienceKeywords [sk5]}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized science keyword"
       (is (d/refs-match? [coll1 coll3]
@@ -213,7 +216,7 @@
                   :AverageFileSizeUnit "MB"
                   :Fees "None currently"
                   :Format "NetCDF-3"}]}}
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection aadi1))]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection aadi1) {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search collections by humanized granule data format"

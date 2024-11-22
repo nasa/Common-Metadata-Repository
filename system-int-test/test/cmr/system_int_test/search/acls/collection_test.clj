@@ -360,14 +360,14 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
+  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10 :validate-keywords false})
         coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
-        coll2-1 (d/ingest "PROV1" coll2-umm)
+        coll2-1 (d/ingest "PROV1" coll2-umm {:validate-keywords false})
         ;; 2 versions of collection 2 will allow us to test the force reindex option after we
         ;; force delete the latest version of coll2-2
-        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
-        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
+        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2") {:validate-keywords false})
+        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10 :validate-keywords false})
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
 
         _ (index/wait-until-indexed)
         acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
@@ -414,7 +414,7 @@
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was
 ;; used. This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
         acl1 (e/grant-registered-users
               (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
         user1-token (e/login (s/context) "user1")
@@ -441,10 +441,12 @@
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1" [group1-concept-id])
         user2-token (e/login (s/context) "user2")
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                                :native-id "coll1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
-                                                :native-id "coll2"}))
+        coll1 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "coll1" :native-id "coll1"})
+                        {:validate-keywords false})
+        coll2 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "coll2" :native-id "coll2"})
+                        {:validate-keywords false})
         coll1-edited (-> coll1
                          (assoc :entry-title "coll1-edited")
                          (assoc :revision-id 2))]

@@ -22,7 +22,7 @@
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (data-umm-c/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (data-core/ingest "PROV1" collection {:allow-failure? true})]
+        response (data-core/ingest "PROV1" collection {:allow-failure? true :validate-keywords false})]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
@@ -36,7 +36,7 @@
     (let [bad-metadata (slurp (io/resource
                                 "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
           {:keys [status warnings]}
-          (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata))]
+          (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata) {:validate-keywords false})]
 
       (is (= 201 status))
       (is (string/includes? warnings
@@ -57,7 +57,7 @@
 (deftest nil-version-test
   (testing "Collections with nil versions are rejected"
     (let [concept (data-umm-c/collection-concept {:Version nil} :iso19115)
-          response (ingest/ingest-concept concept)]
+          response (ingest/ingest-concept concept {:validate-keywords false})]
       (is (= 201 
              (:status response))))))
 
@@ -68,7 +68,7 @@
                         :Purpose (apply str (repeat 12000 "y"))
                         :ProcessingLevel {:Id "1"}
                         :CollectionProgress "COMPLETE"})
-          ingest-response (data-core/ingest "PROV1" collection {:format :dif10})
+          ingest-response (data-core/ingest "PROV1" collection {:format :dif10 :validate-keywords false})
           validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :dif10))]
       (is (some? (re-find #"#/Platforms/0/ShortName: expected maxLength: 80, actual: 81" (:warnings ingest-response))))
       (is (some? (re-find #"#/Platforms/0/ShortName: expected maxLength: 80, actual: 81" (:warnings validation-response))))
@@ -96,7 +96,7 @@
                                           :DetailedVariable ""
                                           :Topic ""})]})]
       (are3 [collection]
-       (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true})
+       (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" collection {:format :umm-json :allow-failure? true :validate-keywords false})
              validation-response (ingest/validate-concept (data-umm-c/collection-concept collection :umm-json))]
          (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors ingest-response)))))
          (is (nil? (first (map #(re-find #"(ECMA|regex)" %) (:errors validation-response)))))
@@ -111,7 +111,7 @@
        "Invalid Science Keywords"
        science-keyword-collection)
       (testing "Explicitly test error messages - ShorName and LongName should fail the regex"
-        (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true})
+        (let [ingest-response (data-core/ingest-umm-spec-collection "PROV1" platform-collection {:format :umm-json :allow-failure? true :validate-keywords false})
               validation-response (ingest/validate-concept (data-umm-c/collection-concept platform-collection :umm-json))]
           (is (= (:errors ingest-response)
                  ["#/Platforms/0/LongName: expected minLength: 1, actual: 0"
@@ -127,7 +127,7 @@
                       :RelatedUrls [{:URL "htp://www.x.com"
                                      :URLContentType "DistributionURL"
                                      :Type "GET DATA"}]})
-        ingest-response (data-core/ingest "PROV1" collection)
+        ingest-response (data-core/ingest "PROV1" collection {:validate-keywords false})
         validation-response (ingest/validate-concept (data-umm-c/collection-concept collection))]
     (is (some? (re-find #"#: required key \[DataCenters\] not found"  (:warnings ingest-response))))
     (is (some? (re-find #"#: required key \[DataCenters\] not found" (:warnings validation-response))))
@@ -150,6 +150,7 @@
       (future (do (let [response (ingest/ingest-concept
                                    (data-umm-c/collection-concept
                                     {:concept-id "C1-PROV1"
-                                     :native-id "Same Native ID"}))]
+                                     :native-id "Same Native ID"})
+                                   {:validate-keywords false})]
                     (when (= 409 (:status response))
                       (println "409 returned, Errors:" (:errors response)))))))))

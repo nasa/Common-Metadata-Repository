@@ -129,7 +129,8 @@
                          {:AdditionalAttributes
                           [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                       {:allow-failure? true})]
+                       {:allow-failure? true
+                        :validate-keywords false})]
         (is (= {:status 422
 
                 :errors ["#: required key [DataCenters] not found"
@@ -153,7 +154,7 @@
                          {:AdditionalAttributes
                            [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                       {:allow-failure? true :validate-umm-c true})]
+                       {:allow-failure? true :validate-umm-c true :validate-keywords false})]
         (is (= {:status 422
                 :errors ["#: required key [DataCenters] not found"
                          "#: required key [ProcessingLevel] not found"
@@ -367,7 +368,7 @@
   (testing "Ingest and Ingest Validation with warning messages for all formats"
     (are3 [format collection warning-message]
           (do
-            (let [response (data-core/ingest-umm-spec-collection "PROV1" collection {:format format})]
+            (let [response (data-core/ingest-umm-spec-collection "PROV1" collection {:format format :validate-keywords false})]
               (is (#{200 201} (:status response)))
               (is (= warning-message (:warnings response))))
             (let [response (ingest/validate-concept (data-umm-c/collection-concept collection format))]
@@ -428,7 +429,8 @@
             (let [response (data-core/ingest-umm-spec-collection "PROV1"
                                                                  collection
                                                                  {:format format
-                                                                  :allow-failure? true})]
+                                                                  :allow-failure? true
+                                                                  :validate-keywords false})]
               (is (= 422 (:status response)))
               (is (= error-message (first (:errors response)))))
 
@@ -482,7 +484,8 @@
                                                              collection
                                                              {:format format
                                                               :allow-failure? true
-                                                              :validate-umm-c true})]
+                                                              :validate-umm-c true
+                                                              :validate-keywords false})]
           (is (= error-code (:status response)))
           (is (re-find error-matcher (prn-str (:errors response)))))
 

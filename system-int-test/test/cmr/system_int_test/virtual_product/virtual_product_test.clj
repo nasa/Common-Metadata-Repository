@@ -42,12 +42,14 @@
                           {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                            :short-name "AST_L1A"
                            :projects (dc/projects "proj1" "proj2" "proj3")})
-                        :provider-id "LPDAAC_ECS")])
+                        :provider-id "LPDAAC_ECS")]
+                     {:validate-keywords false})
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                (dg/granule ast-coll {:granule-ur granule-ur
-                                                                     :project-refs ["proj1"]}))
+                                                                     :project-refs ["proj1"]})
+                                               :validate-keywords false)
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
@@ -83,7 +85,8 @@
       (let [ast-l1a-gran-r2 (vp/ingest-source-granule "LPDAAC_ECS"
                                                       (assoc ast-l1a-gran
                                                              :project-refs ["proj2" "proj3"]
-                                                             :revision-id nil))]
+                                                             :revision-id nil)
+                                                      :validate-keywords false)]
         (index/wait-until-indexed)
         (testing "find none by original project"
           (is (= 0 (:hits (search/find-refs :granule {:project "proj1"})))))
@@ -104,7 +107,8 @@
 
     (testing "Recreate source granule"
       (let [ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
-                                                      (dissoc ast-l1a-gran :revision-id :concept-id))]
+                                                      (dissoc ast-l1a-gran :revision-id :concept-id)
+                                                      :validate-keywords false)]
         (index/wait-until-indexed)
         (testing "Find all granules"
           (vp/assert-matching-granule-urs
@@ -112,7 +116,7 @@
             (search/find-refs :granule {:page-size 50})))))))
 
 (deftest all-granules-in-virtual-product-test
-  (let [source-collections (vp/ingest-source-collections)
+  (let [source-collections (vp/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
@@ -126,7 +130,8 @@
                                      granule-ur (svm/sample-source-granule-urs
                                                   [provider-id entry-title])]
                                  (vp/ingest-source-granule provider-id
-                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
+                                                           (dg/granule source-coll {:granule-ur granule-ur})
+                                                           :validate-keywords false)))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
     (index/wait-until-indexed)
@@ -172,11 +177,12 @@
                         (dc/collection
                           {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                            :short-name "AST_L1A"})
-                        :provider-id "LPDAAC_ECS")])
+                        :provider-id "LPDAAC_ECS")]
+                     {:validate-keywords false})
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
-        ingest-result (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
+        ingest-result (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5) :validate-keywords false)
         _ (index/wait-until-indexed)
         vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
                                                   :granule {:entry-title (:entry-title %)
@@ -184,7 +190,7 @@
 
     ;; check revision ids are in sync after ingest/update operations
     (assert-virtual-gran-revision-id vp-colls 5)
-    (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
+    (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10) :validate-keywords false)
     (index/wait-until-indexed)
     (assert-virtual-gran-revision-id vp-colls 10)
 
@@ -202,11 +208,13 @@
                           (dc/collection
                             {:entry-title ast-entry-title
                              :short-name "AST_L1A"})
-                          :provider-id "LP_ALIAS")])
+                          :provider-id "LP_ALIAS")]
+                       {:validate-keywords false})
           vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
           granule-ur "SC:AST_L1A.003:2006227710"
           ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
-                                                 (dg/granule ast-coll {:granule-ur granule-ur}))
+                                                 (dg/granule ast-coll {:granule-ur granule-ur})
+                                                 :validate-keywords false)
           expected-virtual-granule-urs (vp/source-granule->virtual-granule-urs
                                          (assoc ast-l1a-gran :provider-id "LPDAAC_ECS"))
           all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-virtual-granule-urs)]
@@ -237,12 +245,15 @@
                         (dc/collection
                           {:entry-title ast-entry-title
                            :short-name "AST_L1A"})
-                        :provider-id "LPDAAC_ECS")] {:client-id "ECHO"})
+                        :provider-id "LPDAAC_ECS")]
+                     {:client-id "ECHO"
+                      :validate-keywords false})
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:client-id "ECHO" :validate-keywords false})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                (dg/granule ast-coll {:granule-ur granule-ur})
-                                               :client-id "ECHO")
+                                               :client-id "ECHO"
+                                               :validate-keywords false)
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
@@ -266,7 +277,8 @@
                        {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
                                           " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
                         :short-name "OMUVBd"})
-                      :provider-id "GES_DISC")])
+                      :provider-id "GES_DISC")]
+                    {:validate-keywords false})
         vp-colls (vp/ingest-virtual-collections [omi-coll] {:validate-keywords false})
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (string/split granule-ur #":")
@@ -280,7 +292,8 @@
                                    :related-urls source-related-urls
                                    :data-granule {:day-night "UNSPECIFIED"
                                                   :production-date-time "2013-07-27T07:43:14.000Z"
-                                                  :size 40}}))
+                                                  :size 40}})
+                        :validate-keywords false)
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
@@ -321,7 +334,7 @@
 (deftest virtual-products-disabled-source-collections-test
   (vp/with-disabled-source-collections
     disabled-source-colls
-    (let [source-collections (vp/ingest-source-collections)
+    (let [source-collections (vp/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
           enabled-source-collections (remove #(contains? disabled-source-colls (:entry-title %))
                                              source-collections)
           disabled-source-collections (filter #(contains? disabled-source-colls (:entry-title %))
@@ -341,7 +354,8 @@
                                        granule-ur (svm/sample-source-granule-urs
                                                     [provider-id entry-title])]
                                    (vp/ingest-source-granule provider-id
-                                                             (dg/granule source-coll {:granule-ur granule-ur}))))
+                                                             (dg/granule source-coll {:granule-ur granule-ur})
+                                                             :validate-keywords false)))
           expected-source-granules (remove #(contains? disabled-source-colls
                                                        (get-in % [:collection-ref :entry-title]))
                                            source-granules)
@@ -383,7 +397,8 @@
                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                              :short-name "AST_L1A"
                              :projects (dc/projects "proj1" "proj2" "proj3" umm-spec-util/not-provided)})
-                          :provider-id "LPDAAC_ECS")])
+                          :provider-id "LPDAAC_ECS")]
+                       {:validate-keywords false})
           vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
           granule-ur "SC:AST_L1A.003:2006227720"
           granule (vp/add-granule-attributes "LPDAAC_ECS"

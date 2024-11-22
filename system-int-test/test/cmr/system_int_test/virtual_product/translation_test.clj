@@ -50,25 +50,29 @@
                        (collection/collection
                         {:entry-title ast-entry-title
                          :short-name "AST_L1A"})
-                       :provider-id "LPDAAC_ECS")])
+                       :provider-id "LPDAAC_ECS")]
+                     {:validate-keywords false})
          [alias-ast-coll] (virtual-product-util/ingest-source-collections
                            [(assoc
                              (collection/collection
                               {:entry-title ast-entry-title
                                :short-name "AST_L1A"})
-                             :provider-id "LP_ALIAS")])
+                             :provider-id "LP_ALIAS")]
+                           {:validate-keywords false})
          vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll] {:validate-keywords false})
          alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll] {:validate-keywords false})
          ast-gran (virtual-product-util/ingest-source-granule
                    "LPDAAC_ECS"
                    (granule/granule
                     ast-coll
-                    {:granule-ur "SC:AST_L1A.003:2006227720"}))
+                    {:granule-ur "SC:AST_L1A.003:2006227720"})
+                   :validate-keywords false)
          alias-ast-gran (virtual-product-util/ingest-source-granule
                          "LP_ALIAS"
                          (granule/granule
                           alias-ast-coll
-                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
+                          {:granule-ur "SC:AST_L1A.003:2006227720"})
+                         :validate-keywords false)
          prov-ast-coll (data-core/ingest "PROV"
                                          (collection/collection
                                           {:entry-title ast-entry-title}))
@@ -257,7 +261,7 @@
         vp-colls (reduce (fn [new-colls source-coll]
                            (into new-colls (map #(assoc % :source-collection source-coll)
                                                 (virtual-product-util/ingest-virtual-collections
-                                                 [source-coll]))))
+                                                 [source-coll] {:validate-keywords false}))))
                          []
                          source-collections)
         _ (index/wait-until-indexed)
@@ -269,7 +273,8 @@
                             provider-id
                             (granule/granule
                              source-coll
-                             {:granule-ur granule-ur}))))
+                             {:granule-ur granule-ur})
+                            :validate-keywords false)))
         _ (index/wait-until-indexed)
         virt-gran-entries-by-src (into {} (map #(vector % (get-virtual-entries-by-source %)) src-grans))
         all-virt-entries (mapcat second virt-gran-entries-by-src)

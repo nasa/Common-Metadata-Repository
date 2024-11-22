@@ -273,7 +273,8 @@
                                  :Term "Term1"}]
               :concept-id "C1-PROV1")
         {:format :umm-json
-         :accept-format :json})
+         :accept-format :json
+         :validate-keywords false})
     (index/wait-until-indexed)
     (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
     (is (= 200 (:status (search/get-humanizers-report-raw)))))
@@ -294,7 +295,8 @@
                                  :Term "Term1"}]
               :concept-id "C1-PROV1")
         {:format :umm-json
-         :accept-format :json})
+         :accept-format :json
+         :validate-keywords false})
     (index/wait-until-indexed)
       (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 200 (:status (search/get-humanizers-report-raw {:regenerate true

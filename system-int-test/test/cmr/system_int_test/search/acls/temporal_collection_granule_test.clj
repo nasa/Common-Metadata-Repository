@@ -63,7 +63,8 @@
                             "PROV1"
                             (dc/collection {:entry-title (str "coll" (swap! coll-num inc))
                                             :single-date-time (tu/n->date-time-string n)})
-                            {:format metadata-format}))
+                            {:format metadata-format
+                             :validate-keywords false}))
         range-date-coll (fn [begin end metadata-format]
                           (d/ingest
                            "PROV1"
@@ -71,7 +72,8 @@
                                                :version-id "V1"
                                                :beginning-date-time (tu/n->date-time-string begin)
                                                :ending-date-time (tu/n->date-time-string end)})
-                           {:format metadata-format}))]
+                           {:format metadata-format
+                            :validate-keywords false}))]
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
@@ -82,19 +84,19 @@
 
     ;; Create collections
     (let [coll1 (single-date-coll 1 :echo10)
-          gran1 (d/ingest "PROV1" (dg/granule coll1))
+          gran1 (d/ingest "PROV1" (dg/granule coll1) {:validate-keywords false})
           coll2 (range-date-coll 2 3 :dif)
-          gran2 (d/ingest "PROV1" (dg/granule coll2))
+          gran2 (d/ingest "PROV1" (dg/granule coll2) {:validate-keywords false})
           coll3 (single-date-coll 4 :iso19115)
-          gran3 (d/ingest "PROV1" (dg/granule coll3))
+          gran3 (d/ingest "PROV1" (dg/granule coll3) {:validate-keywords false})
           coll4 (range-date-coll 5 6 :iso19115)
-          gran4 (d/ingest "PROV1" (dg/granule coll4))
+          gran4 (d/ingest "PROV1" (dg/granule coll4) {:validate-keywords false})
           coll5 (range-date-coll 3 nil :iso-smap) ;; no end date
-          gran5 (d/ingest "PROV1" (dg/granule coll5))
+          gran5 (d/ingest "PROV1" (dg/granule coll5) {:validate-keywords false})
           coll6 (single-date-coll 8 :iso-smap)
-          gran6 (d/ingest "PROV1" (dg/granule coll6))
+          gran6 (d/ingest "PROV1" (dg/granule coll6) {:validate-keywords false})
           coll7 (single-date-coll 9 :echo10)
-          gran7 (d/ingest "PROV1" (dg/granule coll7))
+          gran7 (d/ingest "PROV1" (dg/granule coll7) {:validate-keywords false})
           all-coll-concept-ids (map :concept-id [coll1 coll2 coll3 coll4 coll5 coll6 coll7])
           all-gran-concept-ids (map :concept-id [gran1 gran2 gran3 gran4 gran5 gran6 gran7])
 
@@ -208,7 +210,7 @@
         group2-concept-id (e/get-or-create-group (s/context) "group2")
         group3-concept-id (e/get-or-create-group (s/context) "group3")
         group4-concept-id (e/get-or-create-group (s/context) "group4")
-        collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
+        collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}) {:validate-keywords false})
         gran-num (atom 0)
         single-date-gran (fn [n metadata-format]
                            (d/ingest
@@ -216,7 +218,8 @@
                             (dg/granule collection
                                         {:granule-ur (str "gran" (swap! gran-num inc))
                                          :single-date-time (tu/n->date-time-string n)})
-                            {:format metadata-format}))
+                            {:format metadata-format
+                             :validate-keywords false}))
         range-date-gran (fn [begin end metadata-format]
                           (d/ingest
                            "PROV1"
@@ -224,7 +227,8 @@
                                        {:granule-ur (str "gran" (swap! gran-num inc))
                                         :beginning-date-time (tu/n->date-time-string begin)
                                         :ending-date-time (tu/n->date-time-string end)})
-                           {:format metadata-format}))]
+                           {:format metadata-format
+                            :validate-keywords false}))]
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 

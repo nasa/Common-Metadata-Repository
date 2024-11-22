@@ -39,7 +39,8 @@
                  :Platforms [(data-umm-c/platform {:ShortName "Usage"})]
                  :TemporalExtents [(data-common/temporal-extent
                                     {:beginning-date-time "2003-08-01T00:00:00Z"
-                                     :ending-date-time "2005-10-01T00:00:00Z"})]}))
+                                     :ending-date-time "2005-10-01T00:00:00Z"})]})
+               {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection
@@ -48,7 +49,8 @@
                  :EntryTitle "Elevation coll2"
                  :TemporalExtents [(data-common/temporal-extent
                                     {:beginning-date-time "2001-08-01T00:00:00Z"
-                                     :ending-date-time "2010-10-01T00:00:00Z"})]}))
+                                     :ending-date-time "2010-10-01T00:00:00Z"})]})
+               {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection
@@ -57,7 +59,8 @@
                  :EntryTitle "Elevation coll3"
                  :TemporalExtents [(data-common/temporal-extent
                                     {:beginning-date-time "2002-10-15T12:00:00Z"
-                                     :ends-at-present? true})]}))]
+                                     :ends-at-present? true})]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "Keyword and temporal"
@@ -202,25 +205,29 @@
                                               :Version "2"
                                               :EntryTitle "Elevation coll1"
                                               ;; Will get humanized to 1T
-                                              :ProcessingLevel {:Id "L1T"}}))
+                                              :ProcessingLevel {:Id "L1T"}})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              {:ShortName "Elevation L1"
                                               :Version "1"
                                               :EntryTitle "Elevation coll2"
-                                              :ProcessingLevel {:Id "2"}}))
+                                              :ProcessingLevel {:Id "2"}})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              {:ShortName "Elevation L4"
                                               :Version "4"
                                               :EntryTitle "Elevation coll3"
-                                              :ProcessingLevel {:Id "4"}}))
+                                              :ProcessingLevel {:Id "4"}})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              {:ShortName "Elevation NP"
                                               :Version "5"
                                               :EntryTitle "Elevation coll4"
-                                              :ProcessingLevel {:Id "Not provided"}}))]
+                                              :ProcessingLevel {:Id "Not provided"}})
+                                            {:validate-keywords false})]
     (index/wait-until-indexed)
     (is (d/refs-match-order? [coll3 coll2 coll1 coll4]
                              (search/find-refs :collection {:keyword "Elevation"})))

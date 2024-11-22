@@ -238,7 +238,8 @@
                     {:ShortName "This one is old and should be cleaned up"
                      :EntryTitle "Oldie"
                      :Projects (:Projects (fu/projects "OLD"))
-                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
+                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))})
+                   {:validate-keywords false})
 
             _ (dev-sys-util/freeze-time! (time/yesterday))
             coll8 (d/ingest-umm-spec-collection
@@ -246,7 +247,8 @@
                    (data-umm-spec/collection
                     {:ShortName "Yesterday's news"
                      :EntryTitle "Also an Oldie"
-                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
+                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))})
+                   {:validate-keywords false})
             _ (index/wait-until-indexed)
             _ (dev-sys-util/clear-current-time!)
 
@@ -270,7 +272,8 @@
        (data-umm-spec/collection
         {:EntryTitle "Secret Collection"
          :ScienceKeywords (:ScienceKeywords (fu/science-keywords gap-sk))})
-       {:format :umm-json})
+       {:format :umm-json
+        :validate-keywords false})
 
       (d/ingest-umm-spec-collection
        "PROV1"
@@ -279,7 +282,8 @@
          :EntryTitle "Terra Test Collection"
          :Projects (:Projects (fu/projects "Terra"))
          :Platforms [{:ShortName "AM-1"}]})
-       {:format :umm-json})
+       {:format :umm-json
+        :validate-keywords false})
 
       (index/wait-until-indexed)
       (index/reindex-suggestions)
@@ -307,7 +311,8 @@
      "PROV1"
      (data-umm-spec/collection
       {:EntryTitle "A boring collection"})
-     {:format :umm-json})
+     {:format :umm-json
+      :validate-keywords false})
 
     (index/wait-until-indexed)
     (try
