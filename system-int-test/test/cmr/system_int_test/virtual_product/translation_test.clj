@@ -57,8 +57,8 @@
                               {:entry-title ast-entry-title
                                :short-name "AST_L1A"})
                              :provider-id "LP_ALIAS")])
-         vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll])
-         alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll])
+         vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll] {:validate-keywords false})
+         alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll] {:validate-keywords false})
          ast-gran (virtual-product-util/ingest-source-granule
                    "LPDAAC_ECS"
                    (granule/granule
@@ -251,7 +251,7 @@
 ;; granules in the config file. All the virtual granule entries should be translated to corresponding
 ;; source entries by the end-point.
 (deftest all-virtual-granules-translate-entries-test
-  (let [source-collections (virtual-product-util/ingest-source-collections)
+  (let [source-collections (virtual-product-util/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]

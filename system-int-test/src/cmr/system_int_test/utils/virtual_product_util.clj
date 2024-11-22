@@ -222,7 +222,7 @@
         psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
         psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
         psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
-    (ingest-virtual-collections [ast-coll])
+    (ingest-virtual-collections [ast-coll] {:validate-keywords false})
     (are [granule-attrs expected-granule-urs]
         (let [params {"attribute[]" (format "string,%s,%s"
                                             svm/source-granule-ur-additional-attr-name

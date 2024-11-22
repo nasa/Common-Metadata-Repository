@@ -473,7 +473,7 @@
 (deftest ^:oracle rebalance-old-deleted-collection-back-to-small-collections-test
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (s/only-with-real-database
-   (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}))
+   (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}) {:validate-keywords false})
          _ (doseq [n (range 2)]
                     (ingest-granule-for-coll deleted-coll n))
          deleted-coll-concept (mdb/get-concept (:concept-id deleted-coll))]

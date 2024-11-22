@@ -30,16 +30,14 @@
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-1"
-                  :granule-ur "SC:AE_5DSno.002:30500511"})
-                {:validate-keywords false}))
+                  :granule-ur "SC:AE_5DSno.002:30500511"})))
         gran2 (ingest/ingest-concept
                (data-core/item->concept
                 (granule/granule-with-umm-spec-collection
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-2"
-                  :granule-ur "SC:AE_5DSno.002:30500512"}))
-               {:validate-keywords false})
+                  :granule-ur "SC:AE_5DSno.002:30500512"})))
         ;; this granule will fail bulk update as it is in ISO-SMAP format
         gran3 (ingest/ingest-concept
                (data-core/item->concept
@@ -48,8 +46,7 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-3"
                   :granule-ur "SC:AE_5DSno.002:30500513"})
-                :iso-smap)
-               {:validate-keywords false})
+                :iso-smap))
         ;; UMM-G granule
         gran4 (ingest/ingest-concept
                (data-core/item->concept
@@ -58,16 +55,14 @@
                  (:concept-id coll1)
                  {:native-id "gran-native1-4"
                   :granule-ur "SC:AE_5DSno.002:30500514"})
-                :umm-json)
-               {:validate-keywords false})
+                :umm-json))
         gran5 (ingest/ingest-concept
                (data-core/item->concept
                 (granule/granule-with-umm-spec-collection
                  coll1
                  (:concept-id coll1)
                  {:native-id "gran-native1-5"
-                  :granule-ur "SC:AE_5DSno.002:30500515"}))
-               {:validate-keywords false})]
+                  :granule-ur "SC:AE_5DSno.002:30500515"})))]
 
     (index/wait-until-indexed)
 

@@ -172,8 +172,7 @@
      ;; Verify that all of the ingest requests completed successfully
      (doseq [concept [coll1 coll2 coll3 gran1 gran2 gran3]] (is (= 201 (:status concept))))
      ;; bulk index all collections and granules
-     (println "GOT TO THIS PART OF THE TEST")
-     (bootstrap/bulk-index-provider "PROV1" {"cmr-validate-keywords" true})
+     (bootstrap/bulk-index-provider "PROV1")
      (index/wait-until-indexed)
 
      (testing "Expired documents are not indexed during bulk indexing"
