@@ -67,7 +67,7 @@
   rather than passing one in."
   [coll]
   (assert-valid-umm-spec-collection coll)
-  (let [response (d/ingest-umm-spec-collection "PROV1" (dissoc coll :revision-id))]
+  (let [response (d/ingest-umm-spec-collection "PROV1" (dissoc coll :revision-id) {:validate-keywords false})]
     (is (#{200 201} (:status response)))
     response))
 
@@ -89,7 +89,7 @@
   (assert-valid granule)
   ;; Granule is valid sent with parent collection
   (assert-granule-with-parent-collection-valid granule coll)
-  (let [response (d/ingest "PROV1" (dissoc granule :revision-id))]
+  (let [response (d/ingest "PROV1" (dissoc granule :revision-id) {:validate-keywords false})]
     (is (#{200 201} (:status response)))
     response))
 

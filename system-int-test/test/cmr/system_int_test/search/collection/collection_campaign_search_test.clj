@@ -13,13 +13,13 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-campaign-short-names
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}) {:validate-keywords false})
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}) {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI") :EntryTitle "C3" :ShortName "S3"}) {:validate-keywords false})
 
-        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))
-        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}))
-        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}))]
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}) {:validate-keywords false})
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}) {:validate-keywords false})
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}) {:validate-keywords false})]
 
     (index/wait-until-indexed)
 

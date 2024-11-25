@@ -109,7 +109,8 @@
                           (fu/processing-level-id "PL1")
                           (fu/projects "proj1" "PROJ2")
                           (fu/platforms fu/FROM_KMS 2 2 1)
-                          (fu/science-keywords sk1 sk2)}))
+                          (fu/science-keywords sk1 sk2)})
+                        {:validate-keywords false})
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -132,7 +133,8 @@
                  :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
                  :AccessConstraints (data-umm-spec/access-constraints
                                      {:Value 1 :Description "Those files are for British eyes only."})})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         coll6 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
@@ -140,10 +142,12 @@
                  :EntryTitle "Registered Collection"
                  :Projects (:Projects (fu/projects "DMSP 5B/F3"))
                  :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
         group2-concept-id (e/get-or-create-group (s/context) "group2")
         group3-concept-id (e/get-or-create-group (s/context) "group3")

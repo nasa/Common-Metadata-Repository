@@ -660,7 +660,8 @@
                                                                            :Topic "Topic1"
                                                                            :Term "Term1"
                                                                            :VariableLevel1 "Level3-1"
-                                                                           :DetailedVariable "Detail3"})]}))]
+                                                                           :DetailedVariable "Detail3"})]})
+                                            {:validate-keywords false})]
 
     (testing "Testing that a sub-category and two short name platform facets exist"
       (let [facets-result (search-and-return-v2-facets {:platforms-h
@@ -696,7 +697,8 @@
                                                                            :VariableLevel1 "Level1-1"
                                                                            :VariableLevel2 "Level1-2"
                                                                            :VariableLevel3 "Level1-3"
-                                                                           :DetailedVariable "Detail1"})]}))
+                                                                           :DetailedVariable "Detail1"})]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
@@ -707,7 +709,8 @@
                                                                                  :Term "Term2"
                                                                                  :VariableLevel1 "Level2-1"
                                                                                  :VariableLevel2 "Level2-2"
-                                                                                 :DetailedVariable "Detail2"})]}))
+                                                                                 :DetailedVariable "Detail2"})]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
@@ -717,7 +720,8 @@
                                                                                  :Topic "Topic3"
                                                                                  :Term "Term3"
                                                                                  :VariableLevel1 "Level3-1"
-                                                                                 :DetailedVariable "Detail3"})]}))
+                                                                                 :DetailedVariable "Detail3"})]})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
@@ -726,7 +730,8 @@
                                                                                 {:Category "Earth Science"
                                                                                  :Topic "Topic4"
                                                                                  :Term "Term4"
-                                                                                 :DetailedVariable "Detail4"})]}))]
+                                                                                 :DetailedVariable "Detail4"})]})
+                                            {:validate-keywords false})]
     (are3
      [query detailed-variable]
      (let [facets-result (search-and-return-v2-facets query)]
@@ -772,7 +777,8 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "NASA S-3B VIKING"
                                                                     :LongName "NASA S-3B VIKING"
-                                                                    :Type "Jet"})]}))
+                                                                    :Type "Jet"})]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
@@ -780,7 +786,8 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "AEROS-1"
                                                                     :LongName "AEROS-1"
-                                                                    :Type "Earth Observation Satellites"})]}))
+                                                                    :Type "Earth Observation Satellites"})]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
@@ -788,7 +795,8 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "Aqua"
                                                                     :LongName "Earth Observing System, Aqua"
-                                                                    :Type "Earth Observation Satellites"})]}))
+                                                                    :Type "Earth Observation Satellites"})]})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
@@ -796,7 +804,8 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "ISS"
                                                                     :LongName "International Space Station"
-                                                                    :Type "Space Stations/Crewed Spacecraft"})]}))]
+                                                                    :Type "Space Stations/Crewed Spacecraft"})]})
+                                            {:validate-keywords false})]
 
     (are3
      [query short-name]
@@ -842,7 +851,8 @@
                                                                            :VariableLevel1 "Level1-1"
                                                                            :VariableLevel2 "Level1-2"
                                                                            :VariableLevel3 "Level1-3"
-                                                                           :DetailedVariable "Detail1"})]}))
+                                                                           :DetailedVariable "Detail1"})]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
@@ -854,7 +864,8 @@
                                                                            :Topic "Topic2"
                                                                            :Term "Term2"
                                                                            :VariableLevel1 "Level2-1"
-                                                                           :VariableLevel2 "Level2-2"})]}))
+                                                                           :VariableLevel2 "Level2-2"})]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
@@ -868,7 +879,8 @@
                                                                          (umm-spec-common/science-keyword
                                                                           {:Category "Earth Science"
                                                                            :Topic "Topic2"
-                                                                           :Term "Term3"})]}))]
+                                                                           :Term "Term3"})]})
+                                            {:validate-keywords false})]
     ;; We only check the topic level science keywords facet for convenience since the whole
     ;; hierarchical structure of science keywords facet has been covered in all facets test.
     (testing "search by science-keywords param filters the other facets, but not science-keywords facets"
@@ -926,24 +938,28 @@
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
-                                                      :DataCenters [org1]}))
+                                                      :DataCenters [org1]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
-                                                      :DataCenters [org2]}))
+                                                      :DataCenters [org2]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
                                                       :DataCenters [org1 org2]
-                                                      :Projects (data-umm-spec/projects "proj3")}))
+                                                      :Projects (data-umm-spec/projects "proj3")})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
                                                       :VersionId "V4"
                                                       :DataCenters [org3]
-                                                      :Projects (data-umm-spec/projects "proj4")}))]
+                                                      :Projects (data-umm-spec/projects "proj4")})
+                                            {:validate-keywords false})]
     (testing "search by data-center parameter filters the other facets, but not Organizations facets"
       (let [facets-result (search-and-return-v2-facets
                            {:data-center-h ["NSIDC"]})]
@@ -996,21 +1012,25 @@
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
-                                                      :Platforms (data-umm-spec/platforms "P1")}))
+                                                      :Platforms (data-umm-spec/platforms "P1")})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
-                                                      :Platforms (data-umm-spec/platforms "P2")}))
+                                                      :Platforms (data-umm-spec/platforms "P2")})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
-                                                      :Platforms (data-umm-spec/platforms "P3")}))
+                                                      :Platforms (data-umm-spec/platforms "P3")})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
-                                                      :VersionId "V4"}))
+                                                      :VersionId "V4"})
+                                            {:validate-keywords false})
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         ;; create variables
@@ -1128,19 +1148,22 @@
                                                        :SpatialExtent spatial
                                                        :CollectionDataType "NEAR_REAL_TIME"
                                                        :Projects [{:ShortName "Proj1"
-                                                                   :LongName "Proj1 Long Name"}]}))
+                                                                   :LongName "Proj1 Long Name"}]})
+                                             {:validate-keywords false})
          coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                       {:EntryTitle "coll2"
                                                        :ShortName "S2"
                                                        :CollectionDataType "LOW_LATENCY"
                                                        :Projects [{:ShortName "Proj2"
-                                                                   :LongName "Proj2 Long Name"}]}))
+                                                                   :LongName "Proj2 Long Name"}]})
+                                             {:validate-keywords false})
          coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                       {:EntryTitle "coll3"
                                                        :ShortName "S3"
                                                        :CollectionDataType "EXPEDITED"
                                                        :Projects [{:ShortName "Proj3"
-                                                                   :LongName "Proj3 Long Name"}]}))]
+                                                                   :LongName "Proj3 Long Name"}]})
+                                             {:validate-keywords false})]
 
      (testing "Latency v2 facets"
        (let [;; search for collections without latency parameter.
@@ -1217,13 +1240,15 @@
                                                       :SpatialExtent spatial
                                                       :Projects [{:ShortName "Proj4"
                                                                   :LongName "Proj4 Long Name"}]})
-                                                    {:format :umm-json})
+                                                    {:format :umm-json
+                                                     :validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :Projects [{:ShortName "Proj3"
                                                                   :LongName "Proj3 Long Name"}]})
-                                                    {:format :umm-json})]
+                                                    {:format :umm-json
+                                                     :validate-keywords false})]
 
     (testing "search by horizontal data resolution. Parameter filters the other facets, but not
               this facet. This also tests the edge case where the record contains the value of

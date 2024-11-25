@@ -52,19 +52,19 @@
   []
   (let [;; Provider 1
         prov1-colls (doall (for [_ (range 0 prov1-collection-count)]
-                             (d/ingest "PROV1" (dc/collection))))
+                             (d/ingest "PROV1" (dc/collection) {:validate-keywords false})))
         prov1-granule-counts (map #(* prov1-grans-increment-count %) (range 1 (inc prov1-collection-count)))
         prov1-holdings (map (partial collection-holding "PROV1") prov1-colls prov1-granule-counts)
 
         ;; Provider 2
         prov2-colls (doall (for [_ (range 0 prov2-collection-count)]
-                             (d/ingest "PROV2" (dc/collection))))
+                             (d/ingest "PROV2" (dc/collection) {:validate-keywords false})))
         prov2-granule-counts (map #(* prov2-grans-increment-count %) (range 1 (inc prov2-collection-count)))
         prov2-holdings (map (partial collection-holding "PROV2") prov2-colls prov2-granule-counts)
 
         ;; Provider 3
         prov3-colls (doall (for [n (range 0 prov3-collection-count)]
-                             (d/ingest "PROV3" (dc/collection))))
+                             (d/ingest "PROV3" (dc/collection) {:validate-keywords false})))
         prov3-holdings (doall (map #(collection-holding "PROV3" % 0) prov3-colls))]
 
     ;; Create provider 1 granules
@@ -72,14 +72,14 @@
       (let [coll (nth prov1-colls n)
             granule-count (nth prov1-granule-counts n)]
         (dotimes [m granule-count]
-          (d/ingest "PROV1" (dg/granule coll)))))
+          (d/ingest "PROV1" (dg/granule coll) {:validate-keywords false}))))
 
     ;; Create provider 2 granules
     (dotimes [n prov2-collection-count]
       (let [coll (nth prov2-colls n)
             granule-count (nth prov2-granule-counts n)]
         (dotimes [m granule-count]
-          (d/ingest "PROV2" (dg/granule coll)))))
+          (d/ingest "PROV2" (dg/granule coll) {:validate-keywords false}))))
 
     (index/wait-until-indexed)
 

@@ -149,15 +149,18 @@
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
                                                      {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
-                                                                      :ShortName "NSIDC"})]}))
+                                                                      :ShortName "NSIDC"})]})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
                                                      {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
-                                                                      :ShortName "NASA/NSIDC_DAAC"})]}))
+                                                                      :ShortName "NASA/NSIDC_DAAC"})]})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
                                                      {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
-                                                                      :ShortName "ASF"})]}))]
+                                                                      :ShortName "ASF"})]})
+                                            {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by humanized organization"
       (is (d/refs-match? [coll1 coll2]

@@ -52,17 +52,17 @@
                                  :variable-level-1 "sedimentary rocks"
                                  :variable-level-2 "sedimentary rock physical/optical properties"
                                  :variable-level-3 "luminescence"})
-        coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}))
-        coll4 (d/ingest "PROV1" (dc/collection {:science-keywords [sk4]}))
-        coll5 (d/ingest "PROV1" (dc/collection {:science-keywords [sk5]}))
-        coll6 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3 sk5]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:science-keywords [sk4 sk5]}))
-        coll8 (d/ingest "PROV2" (dc/collection {:science-keywords [sk6]}))
-        coll9 (d/ingest "PROV2" (dc/collection {:science-keywords [sk7]}))
-        coll10 (d/ingest "PROV2" (dc/collection {}))
-        coll11 (d/ingest "PROV1" (dc/collection {:science-keywords [sk8 sk9]}))]
+        coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}) {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}) {:validate-keywords false})
+        coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}) {:validate-keywords false})
+        coll4 (d/ingest "PROV1" (dc/collection {:science-keywords [sk4]}) {:validate-keywords false})
+        coll5 (d/ingest "PROV1" (dc/collection {:science-keywords [sk5]}) {:validate-keywords false})
+        coll6 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3 sk5]}) {:validate-keywords false})
+        coll7 (d/ingest "PROV2" (dc/collection {:science-keywords [sk4 sk5]}) {:validate-keywords false})
+        coll8 (d/ingest "PROV2" (dc/collection {:science-keywords [sk6]}) {:validate-keywords false})
+        coll9 (d/ingest "PROV2" (dc/collection {:science-keywords [sk7]}) {:validate-keywords false})
+        coll10 (d/ingest "PROV2" (dc/collection {}) {:validate-keywords false})
+        coll11 (d/ingest "PROV1" (dc/collection {:science-keywords [sk8 sk9]}) {:validate-keywords false})]
 
     (index/wait-until-indexed)
 

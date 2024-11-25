@@ -53,7 +53,7 @@
                                                   ;; Whitespace here but not stripped out for expected
                                                   ;; results. It will be present in metadata.
                                                   :entry-title "   ET1   "})
-                          {:format :echo10})]
+                          {:format :echo10 :validate-keywords false})]
     (index/wait-until-indexed)
     (let [params {:concept-id (:concept-id c1-echo)}
           options {:accept nil
@@ -94,30 +94,31 @@
         _ (side/eval-form `(common-config/set-collection-umm-version!
                              umm-version/current-collection-version))
         c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
-                          {:format :echo10})
+                          {:format :echo10 :validate-keywords false})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
-                          {:format :echo10})
+                          {:format :echo10 :validate-keywords false})
         c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c3-dif"
                                                      :long-name "c3-dif"})
-                         {:format :dif})
+                         {:format :dif :validate-keywords false})
         c5-iso (d/ingest "PROV1" (dc/collection {:entry-title "c5-iso"})
-                         {:format :iso19115})
+                         {:format :iso19115 :validate-keywords false})
         c7-smap (d/ingest "PROV1" (dc/collection-smap {:entry-title "c7-smap"})
-                          {:format :iso-smap})
+                          {:format :iso-smap :validate-keywords false})
         c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c8-dif10"
                                                          :long-name "c8-dif10"})
-                           {:format :dif10})
+                           {:format :dif10 :validate-keywords false})
         c10-umm-json (d/ingest "PROV1"
                                exp-conv/example-collection-record
                                {:format :umm-json
-                                :accept-format :json})
+                                :accept-format :json
+                                :validate-keywords false})
         c10-umm-json (dissoc c10-umm-json :warnings)
         ;; An item ingested with and XML preprocessing line to ensure this is tested
         item (assoc (dc/collection {:entry-title "c11-echo"})
                     :provider-id "PROV1")
         concept (-> (d/item->concept item :echo10)
                     (update :metadata #(str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" %)))
-        response (ingest/ingest-concept concept)
+        response (ingest/ingest-concept concept {:validate-keywords false})
         _ (is (#{200 201} (:status response)))
         c11-echo (assoc item
                         :concept-id (:concept-id response)
@@ -157,7 +158,7 @@
     (testing "Ingesting newer metadata (not cached) is successfully retrieved"
       (let [c1-r2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                          :description "updated"})
-                                 {:format :echo10})
+                                 {:format :echo10 :validate-keywords false})
             all-colls [c1-r2-echo c2-echo c3-dif c5-iso c7-smap c8-dif10 c10-umm-json c11-echo]]
         (index/wait-until-indexed)
         (assert-found-by-format [c1-r2-echo c3-dif] :echo10 mt/echo10)
@@ -211,16 +212,17 @@
         _ (side/eval-form `(common-config/set-collection-umm-version!
                             umm-version/current-collection-version))
         c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
-                             {:format :echo10})
+                             {:format :echo10 :validate-keywords false})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
                                                               :description "updated"})
-                             {:format :echo10})
+                             {:format :echo10 :validate-keywords false})
         c2-echo (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "c2-echo"})
-                          {:format :echo10})
+                          {:format :echo10 :validate-keywords false})
         c10-umm-json (d/ingest "PROV1"
                                exp-conv/example-collection-record
                                {:format :umm-json
-                                :accept-format :json})
+                                :accept-format :json
+                                :validate-keywords false})
         c10-umm-json (dissoc c10-umm-json :warnings)
         latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
     (index/wait-until-indexed)
@@ -264,45 +266,46 @@
                                                   ;; Whitespace here but not stripped out for expected
                                                   ;; results. It will be present in metadata.
                                                   :entry-title "   ET1   "})
-                          {:format :echo10})
+                          {:format :echo10 :validate-keywords false})
         c2-echo (d/ingest "PROV2" (dc/collection {:short-name "S2"
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
-                          {:format :echo10})
+                          {:format :echo10 :validate-keywords false})
         c3-dif (d/ingest "PROV1" (dc/collection-dif {:short-name "S3"
                                                      :version-id "V3"
                                                      :entry-title "ET3"
                                                      :long-name "ET3"})
-                         {:format :dif})
+                         {:format :dif :validate-keywords false})
         c4-dif (d/ingest "PROV2" (dc/collection-dif {:short-name "S4"
                                                      :version-id "V4"
                                                      :entry-title "ET4"
                                                      :long-name "ET4"})
-                         {:format :dif})
+                         {:format :dif :validate-keywords false})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :version-id "V50"})
-                         {:format :iso19115})
+                         {:format :iso19115 :validate-keywords false})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :version-id "V6"})
-                         {:format :iso19115})
+                         {:format :iso19115 :validate-keywords false})
         c7-smap (d/ingest "PROV1" (dc/collection-smap {:short-name "S7"
                                                        :version-id "V7"})
-                          {:format :iso-smap})
+                          {:format :iso-smap :validate-keywords false})
         c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:short-name "S8"
                                                          :version-id "V8"
                                                          :entry-title "ET8"
                                                          :long-name "ET8"})
-                           {:format :dif10})
+                           {:format :dif10 :validate-keywords false})
         c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:short-name "S9"
                                                          :version-id "V9"
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
-                           {:format :dif10})
+                           {:format :dif10 :validate-keywords false})
 
         c10-umm-json (d/ingest "PROV1"
                                exp-conv/example-collection-record
                                {:format :umm-json
-                                :accept-format :json})
+                                :accept-format :json
+                                :validate-keywords false})
         c10-umm-json (dissoc c10-umm-json :warnings)
 
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
@@ -426,13 +429,13 @@
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
 (deftest dif-with-spatial
-  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif})
-        g1 (d/ingest "PROV1" (dg/granule c1))
+  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif :validate-keywords false})
+        g1 (d/ingest "PROV1" (dg/granule c1) {:validate-keywords false})
 
         ;; A collection with a granule spatial representation
         c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})})
-                     {:format :dif})
-        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
+                     {:format :dif :validate-keywords false})
+        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}) {:validate-keywords false})
 
 
         ;; A collections with a granule spatial representation and spatial data
@@ -441,8 +444,8 @@
                        {:spatial-coverage (dc/spatial {:gsr :geodetic
                                                        :sr :geodetic
                                                        :geometries [(m/mbr -10 9 0 -10)]})})
-                     {:format :dif})
-        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}))]
+                     {:format :dif :validate-keywords false})
+        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}) {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "spatial search for dif collections"
@@ -532,7 +535,8 @@
                                                                       (l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
                                                                       (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
                                                                       (m/mbr -180 90 180 -90)
-                                                                      (m/mbr -10 20 30 -40)]})}))
+                                                                      (m/mbr -10 20 30 -40)]})})
+                            {:validate-keywords false})
                   (update :entry-title string/trim))
         coll2 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset2"
@@ -553,18 +557,20 @@
                                         :spatial-coverage
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
-                                                     :geometries [polygon-without-holes]})}))
+                                                     :geometries [polygon-without-holes]})})
+                        {:validate-keywords false})
         coll3 (d/ingest "PROV1"
                         (dc/collection
                          {:entry-title "Dataset3"
                           :personnel [p3]
                           :science-keywords [sk1 sk2]
                           :spatial-coverage (dc/spatial {:gsr :orbit
-                                                         :orbit op1})}))
+                                                         :orbit op1})})
+                        {:validate-keywords false})
 
         coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"
                                                     :science-keywords [sk1 sk2]})
-                                {:format :dif})
+                                {:format :dif :validate-keywords false})
         coll6 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset6"
                                                 :short-name "ShortName#6"
                                                 :version-id "Version6"
@@ -579,7 +585,8 @@
                                                 (dc/spatial {:sr :cartesian
                                                              :gsr :cartesian
                                                              :geometries [(p/point 1 2)
-                                                                          (p/point -179.9 89.4)]})}))
+                                                                          (p/point -179.9 89.4)]})})
+                        {:validate-keywords false})
         coll7 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset7"
                                                 :short-name "ShortName#7"
                                                 :version-id "Version7"
@@ -593,7 +600,8 @@
                                                 (dc/spatial {:sr :cartesian
                                                              :gsr :cartesian
                                                              :geometries [(l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
-                                                                          (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])]})}))
+                                                                          (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])]})})
+                        {:validate-keywords false})
         coll8 (d/ingest "USGS_EROS" (dc/collection {:entry-title "Dataset8"
                                                     :short-name "ShortName#8"
                                                     :version-id "Version8"
@@ -606,11 +614,12 @@
                                                     (dc/spatial {:sr :cartesian
                                                                  :gsr :cartesian
                                                                  :geometries [(m/mbr -180 90 180 -90)
-                                                                              (m/mbr -10 20 30 -40)]})}))
+                                                                              (m/mbr -10 20 30 -40)]})})
+                        {:validate-keywords false})
         coll9 (d/ingest "PROV1"
                         (dc/collection-dif10 {:entry-title "Dataset9"
                                               :science-keywords [sk1 sk2]})
-                        {:format :dif10})
+                        {:format :dif10 :validate-keywords false})
         _ (index/wait-until-indexed)
         ;; coll5's revision-date is needed to populate "modified" field in opendata.
         umm-json-coll5 (search/find-concepts-umm-json :collection {:concept_id (:concept-id coll5)})
@@ -701,7 +710,8 @@
                                               :beginning-date-time "1970-01-01T12:00:00Z"
                                               :platforms [{:short-name "platform #1"
                                                            :long-name "platform #1"
-                                                           :type "t"}]}))
+                                                           :type "t"}]})
+                     {:validate-keywords false})
         c2 (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
                                               :version-id "V2"
                                               :long-name "world's longest name"
@@ -713,7 +723,8 @@
                                                            :type "good platform"}
                                                           {:short-name "platform #32"
                                                            :long-name "platform #32"
-                                                           :type "very good platform"}]}))])
+                                                           :type "very good platform"}]})
+                     {:validate-keywords false})])
   (index/wait-until-indexed)
   (testing "csv"
     (let [response (search/find-concepts-csv :collection {})]
@@ -773,7 +784,7 @@
           umm-attributes (merge related-urls data-centers)
           concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
-                          ingest/ingest-concept)
+                          ingest/ingest-concept {:validate-keywords false})
           _ (index/wait-until-indexed)
           atom-json-links (->> (search/find-concepts-json :collection {})
                                :results
@@ -858,10 +869,10 @@
           umm-attributes (merge related-urls data-centers)
           concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
-                          ingest/ingest-concept)
+                          ingest/ingest-concept {:validate-keywords false})
           concept-citation (-> (umm-spec-collection/collection 2 collection-citations)
                                (umm-spec-collection/collection-concept :umm-json)
-                               ingest/ingest-concept)
+                               ingest/ingest-concept {:validate-keywords false})
           _ (index/wait-until-indexed)
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
@@ -1013,7 +1024,7 @@
                  (:landingPage opendata-coll-5138-2))))))))
 
 (deftest formats-have-scores-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}) {:validate-keywords false})]
     (index/wait-until-indexed)
     (testing "XML references"
       (testing "XML has score for keyword search."
@@ -1099,18 +1110,19 @@
                 (dc/collection-dif
                   {:short-name "S-DIF9"
                    :organizations [distribution-org distribution-org-1]})
-                {:format :dif})
+                {:format :dif :validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection-dif10
                   {:short-name "S-DIF10"
                    :organizations [processing-org originating-org distribution-org archive-org]})
-                {:format :dif10})
+                {:format :dif10 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection
                  {:short-name "S-ECHO10"
-                  :organizations [processing-org archive-org]}))
+                  :organizations [processing-org archive-org]})
+                {:validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection
@@ -1122,12 +1134,13 @@
                 (dc/collection
                  {:short-name "S-ISO19115"
                   :organizations [archive-org]})
-                {:format :iso19115})
+                {:format :iso19115 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
                 {:format :umm-json
-                 :accept-format :json})
+                 :accept-format :json
+                 :validate-keywords false})
       (index/wait-until-indexed)
 
       (are3 [short-name expected-orgs]
@@ -1160,7 +1173,8 @@
 (deftest collection-concept-stac-retrieval-test
   (let [coll-metadata (slurp (io/resource "stac-test/C1299783579-LPDAAC_ECS.xml"))
         {coll-concept-id :concept-id} (ingest/ingest-concept
-                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata)
+                                       {:validate-keywords false})
         expected (-> "stac-test/collection_stac.json"
                      io/resource
                      slurp
@@ -1204,7 +1218,8 @@
     (let [coll1 (d/ingest "PROV1"
                           (dc/collection {:entry-title "Dataset1"
                                           :beginning-date-time "1970-01-01T12:00:00Z"
-                                          :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+                                          :spatial-coverage (dc/spatial {:gsr :geodetic})})
+                          {:validate-keywords false})
           coll-concept-id (:concept-id coll1)
           _ (index/wait-until-indexed)
           response (search/find-concepts-stac :collection {:concept-id coll-concept-id})
@@ -1219,7 +1234,7 @@
              (:errors ext-response))))))
 
 (deftest search-with-empty-json
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
+  (let [coll1 (d/ingest "PROV1" (dc/collection) {:validate-keywords false})
         coll-concept-id (:concept-id coll1)
         _ (index/wait-until-indexed)
         response1 (client/get

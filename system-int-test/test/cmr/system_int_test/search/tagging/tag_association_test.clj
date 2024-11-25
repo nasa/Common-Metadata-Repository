@@ -39,7 +39,8 @@
                                                   (collection/collection
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
-                                                    :entry-title (str "ET" n)}))))
+                                                    :entry-title (str "ET" n)})
+                                                  {:validate-keywords false})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag (tags/make-tag)
@@ -100,7 +101,8 @@
                                                   (collection/collection
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
-                                                    :entry-title (str "ET" n)}))))
+                                                    :entry-title (str "ET" n)})
+                                                  {:validate-keywords false})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag-key "tag1"
@@ -181,7 +183,8 @@
         tag (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
-                                      (collection/collection)))]
+                                      (collection/collection)
+                                      {:validate-keywords false}))]
     (testing "Associate tag using query sent with invalid content type"
       (are [associate-tag-fn request-json]
            (= {:status 400
@@ -243,7 +246,8 @@
                                      (collection/collection
                                       {:short-name (str "S" n)
                                        :version-id (str "V" n)
-                                       :entry-title (str "ET" n)})))
+                                       :entry-title (str "ET" n)})
+                                     {:validate-keywords false}))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -306,7 +310,8 @@
                                      (collection/collection
                                       {:short-name (str "S" n)
                                        :version-id (str "V" n)
-                                       :entry-title (str "ET" n)})))
+                                       :entry-title (str "ET" n)})
+                                     {:validate-keywords false}))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -374,7 +379,8 @@
         tag (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
-                                      (collection/collection)))]
+                                      (collection/collection)
+                                      {:validate-keywords false}))]
 
     (testing "Dissociate tag using query sent with invalid content type"
       (are [dissociate-tag-fn request-json]
@@ -417,8 +423,8 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with only some of the collections matching the query are associated with the tag is OK"
-    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
+    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}) {:validate-keywords false})
+          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}) {:validate-keywords false})
           token (echo-util/login (system/context) "user1")
           _ (index/wait-until-indexed)
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
@@ -432,9 +438,9 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with mixed success and failure response"
-    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
-          coll3 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET3"}))
+    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}) {:validate-keywords false})
+          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}) {:validate-keywords false})
+          coll3 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET3"}) {:validate-keywords false})
           token (echo-util/login (system/context) "user1")
           tag-key "tag1"
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
@@ -463,7 +469,7 @@
 (deftest association-retention-test
   (echo-util/grant-all (system/context)
                        (echo-util/coll-catalog-item-id "PROV1"))
-  (let [coll (data-core/ingest "PROV1" (collection/collection))
+  (let [coll (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false})
         token (echo-util/login (system/context) "user1")
         _ (index/wait-until-indexed)
         tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
@@ -478,14 +484,14 @@
       (assert-tag-associated [coll]))
 
     (testing "Tag still associated with collection after updating collection"
-      (let [updated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id))]
+      (let [updated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id) {:validate-keywords false})]
         (is (= 200 (:status updated-coll)))
         (index/wait-until-indexed)
         (assert-tag-associated [updated-coll])))
 
     (testing "Tag still associated with collection after deleting and recreating the collection"
       (is (= 200 (:status (ingest/delete-concept (data-core/item->concept coll)))))
-      (let [recreated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id))]
+      (let [recreated-coll (data-core/ingest "PROV1" (dissoc coll :revision-id) {:validate-keywords false})]
         (is (= 200 (:status recreated-coll)))
         (index/wait-until-indexed)
         (assert-tag-associated [recreated-coll])))
@@ -524,7 +530,7 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (for [n (range 1 4)]
-                              (data-core/ingest "PROV1" (collection/collection)))
+                              (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false}))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (echo-util/login (system/context) "user1")]
     (tags/create-tag token (tags/make-tag {:tag-key "tag1"}))
@@ -581,7 +587,7 @@
 (deftest associate-tags-with-data-test
   (echo-util/grant-all (system/context)
                        (echo-util/coll-catalog-item-id "PROV1"))
-  (let [coll (data-core/ingest "PROV1" (collection/collection))
+  (let [coll (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false})
         coll-concept-id (:concept-id coll)
         token (echo-util/login (system/context) "user1")
         tag-key "tag1"]

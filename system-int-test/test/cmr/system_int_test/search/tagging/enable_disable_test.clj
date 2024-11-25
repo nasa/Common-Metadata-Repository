@@ -87,7 +87,8 @@
                                                                       :entry-title "coll1"
                                                                       :entry-id "coll1"
                                                                       :version-id "V1"
-                                                                      :short-name "short1"}))
+                                                                      :short-name "short1"})
+                                              {:validate-keywords false})
         tag1-key "tag1"
         tag1 (tags/make-tag {:tag-key tag1-key})
         tag2-key "tag2"

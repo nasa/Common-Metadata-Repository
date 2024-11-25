@@ -49,7 +49,8 @@
          c1-p2 c2-p2 c3-p2] (for [p ["PROV1" "PROV2"]
                                   n (range 1 4)]
                               (data-core/ingest p (collection/collection
-                                                   {:entry-title (str "coll" n)})))
+                                                   {:entry-title (str "coll" n)})
+                                                {:validate-keywords false}))
 
         ;; Wait until collections are indexed so tags can be associated with them
         _ (index/wait-until-indexed)
@@ -202,8 +203,9 @@
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (data-core/ingest "PROV1"
                                                       (collection/collection
-                                                       {:entry-title (str "coll" n)})))
-        coll5 (data-core/ingest "PROV2" (collection/collection))
+                                                       {:entry-title (str "coll" n)})
+                                                      {:validate-keywords false}))
+        coll5 (data-core/ingest "PROV2" (collection/collection) {:validate-keywords false})
         all-prov1-colls [coll1 coll2 coll3 coll4]
 
         user1-token (echo-util/login (system/context) "user1")
@@ -370,7 +372,8 @@
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (data-core/ingest "PROV1"
                                                       (collection/collection
-                                                       {:entry-title (str "coll" n)})))
+                                                       {:entry-title (str "coll" n)})
+                                                      {:validate-keywords false}))
         all-prov1-colls [coll1 coll2 coll3 coll4]
         user1-token (echo-util/login (system/context) "user1")
         tag1 (tags/save-tag
@@ -429,7 +432,8 @@
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (data-core/ingest "PROV1"
                                                       (collection/collection
-                                                       {:entry-title (str "coll" n)})))
+                                                       {:entry-title (str "coll" n)})
+                                                      {:validate-keywords false}))
         all-prov1-colls [coll1 coll2 coll3 coll4]
         user1-token (echo-util/login (system/context) "user1")
         tag1 (tags/save-tag

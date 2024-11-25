@@ -487,7 +487,8 @@
         invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)]
     (testing "Invalid Geometries for ORBIT granule."
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata)
                                       {:validate-keywords false})]

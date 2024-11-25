@@ -398,7 +398,8 @@
                                           :TemporalExtents [(data-umm-cmn/temporal-extent
                                                              {:beginning-date-time "1965-12-12T12:00:00Z"
                                                               :ending-date-time "1967-12-12T12:00:00Z"})]})
-                  {:format coll-format})]
+                  {:format coll-format
+                   :validate-keywords false})]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
         (is (= 1 (:hits (search/find-refs :collection {:keyword (name coll-format)}))))))))

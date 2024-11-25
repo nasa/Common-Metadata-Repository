@@ -75,29 +75,36 @@
                          :validate-keywords false)
          prov-ast-coll (data-core/ingest "PROV"
                                          (collection/collection
-                                          {:entry-title ast-entry-title}))
+                                          {:entry-title ast-entry-title
+                                           :validate-keywords false}))
          prov-ast-gran (data-core/ingest "PROV"
                                          (granule/granule
                                           prov-ast-coll
-                                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
+                                          {:granule-ur "SC:AST_L1A.003:2006227720"
+                                           :validate-keywords false}))
 
          lpdaac-non-ast-coll (data-core/ingest "LPDAAC_ECS"
                                                (collection/collection
-                                                {:entry-title "non virtual entry title"}))
+                                                {:entry-title "non virtual entry title"
+                                                 :validate-keywords false}))
          lpdaac-non-ast-gran (data-core/ingest "LPDAAC_ECS"
                                                (granule/granule
                                                 lpdaac-non-ast-coll
-                                                {:granule-ur "granule-ur2"}))
+                                                {:granule-ur "granule-ur2"
+                                                 :validate-keywords false}))
          prov-coll (data-core/ingest "PROV"
                                      (collection/collection
-                                      {:entry-title "some other entry title"}))
+                                      {:entry-title "some other entry title"
+                                       :validate-keywords false}))
          prov-gran1 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur3"}))
+                                              {:granule-ur "granule-ur3"
+                                               :validate-keywords false}))
 
          prov-gran2 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur4"}))
+                                              {:granule-ur "granule-ur4"
+                                               :validate-keywords false}))
 
 
          _ (index/wait-until-indexed)
@@ -293,13 +300,15 @@
            (data-core/ingest "PROV"
                              (granule/granule
                               coll
-                              {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})))))
+                              {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})
+                             {:validate-keywords false}))))
 
 ;; This test is added for CMR-3508 to show that we can now handle translation of more than
 ;; 10 (default search page size) granules on a single collection during the translation
 (deftest translate-granule-entries-more-than-default-page-size-test
   (let [coll (data-core/ingest "PROV"
-                               (collection/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
+                               (collection/collection {:entry-title "MISR Level 2 Aerosol parameters V002"})
+                               {:validate-keywords false})
         grans (make-grans coll 12)
         gran->entry (fn [g]
                       {:concept-id (:concept-id g)

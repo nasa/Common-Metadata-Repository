@@ -27,7 +27,7 @@
     (are [accept warnings]
          (let [collection (data-umm-c/collection {})
                concept (data-umm-c/collection-concept collection :dif10)
-               response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
+               response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true :validate-keywords false})
                                          [:status :body])]
            (= {:status 200 :body warnings} response-map))
          :json

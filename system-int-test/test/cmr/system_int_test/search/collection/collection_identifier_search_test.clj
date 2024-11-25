@@ -470,13 +470,14 @@
 ;; Create 2 collection sets of which only 1 set has processing-level-id
 (deftest processing-level-search-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1] (doall (for [n (range 1 5)]
-                                           (d/ingest-umm-spec-collection
-                                            "PROV1" (data-umm-c/collection n {}))))
+                                           (d/ingest-umm-spec-collection "PROV1"
+                                                                         (data-umm-c/collection n {})
+                                                                         {:validate-keywords false})))
         ;; include processing level id
         [c1-p2 c2-p2 c3-p2 c4-p2] (doall (for [n (range 1 5)]
-                                           (d/ingest-umm-spec-collection
-                                            "PROV2" (data-umm-c/collection n
-                                            {:ProcessingLevel (umm-c/map->ProcessingLevelType {:Id (str n "B")})}))))
+                                           (d/ingest-umm-spec-collection "PROV2"
+                                                                         (data-umm-c/collection n {:ProcessingLevel (umm-c/map->ProcessingLevelType {:Id (str n "B")})})
+                                                                         {:validate-keywords false})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
     (index/wait-until-indexed)
     (testing "processing level search"

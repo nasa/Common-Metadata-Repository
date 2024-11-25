@@ -526,11 +526,11 @@
 
 (deftest collection-update-granule-spatial-representation-test
   (let [make-coll (fn [entry-title spatial-params]
-                    (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle entry-title
-                                                                                  :ShortName (d/unique-str "short-name")
-                                                                                  :SpatialExtent (when spatial-params
-                                                                                                   (data-umm-c/spatial spatial-params))}))
-                    {:validate-keywords false})
+                    (d/ingest-umm-spec-collection "PROV1"
+                                                  (data-umm-c/collection {:EntryTitle entry-title
+                                                                          :ShortName (d/unique-str "short-name")
+                                                                          :SpatialExtent (when spatial-params (data-umm-c/spatial spatial-params))})
+                                                  {:validate-keywords false}))
         make-gran (fn [coll spatial]
                     (d/ingest "PROV1"
                               (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage (when spatial (dg/spatial spatial))})
