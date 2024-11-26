@@ -67,10 +67,11 @@
            "-revision_date" (reverse [g1 g2 g3 g4 g5])))))
 
 (deftest granule-campaign-sorting-test
-  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                         {:Projects (data-umm-cmn/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")}))
+  (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection {:Projects (data-umm-cmn/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")})
+                                           {:validate-keywords false})
         make-gran (fn [& campaigns]
-                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:project-refs campaigns})))
+                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:project-refs campaigns}) {:validate-keywords false}))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -197,16 +198,17 @@
            "-end_date" [g8 g4 g3 g7 g6 g2 g1 g5 g11]))))
 
 (deftest granule-platform-sorting-test
-  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms
-                               (map #(data-umm-cmn/platform {:ShortName %})
-                                    ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
+  (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection {:Platforms (map #(data-umm-cmn/platform {:ShortName %}) ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})
+                                           {:validate-keywords false})
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
                               (dg/granule-with-umm-spec-collection
                                coll
                                (:concept-id coll)
                                {:platform-refs (map #(dg/platform-ref {:short-name %})
-                                                    platforms)})))
+                                                    platforms)}))
+                    {:validate-keywords false})
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -221,11 +223,9 @@
          "-platform" [g2 g5 g1 g4 g3])))
 
 (deftest granule-instrument-sorting-test
-  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms
-                               [(data-umm-cmn/platform
-                                  {:ShortName "platform"
-                                   :Instruments (map #(data-umm-cmn/instrument {:ShortName %})
-                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]}))
+  (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection {:Platforms [(data-umm-cmn/platform {:ShortName "platform" :Instruments (map #(data-umm-cmn/instrument {:ShortName %}) ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})
+                                           {:validate-keywords false})
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
                               (dg/granule-with-umm-spec-collection
@@ -235,7 +235,8 @@
                                 [(dg/platform-ref
                                   {:short-name "platform"
                                    :instrument-refs (map #(dg/instrument-ref {:short-name %})
-                                                         instruments)})]})))
+                                                         instruments)})]})
+                              {:validate-keywords false}))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -252,14 +253,16 @@
          "-instrument" [g2 g5 g1 g4 g3])))
 
 (deftest granule-sensor-sorting-test
-  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                 {:Platforms
-                  [(data-umm-cmn/platform
-                     {:ShortName "platform"
-                      :Instruments [(data-umm-cmn/instrument
-                                      {:ShortName "instrument"
-                                       :ComposedOf (map #(data-umm-cmn/instrument {:ShortName %})
-                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})]}))
+  (let [coll (d/ingest-umm-spec-collection "PROV1"
+                                           (data-umm-c/collection
+                                             {:Platforms
+                                              [(data-umm-cmn/platform
+                                                 {:ShortName "platform"
+                                                  :Instruments [(data-umm-cmn/instrument
+                                                                  {:ShortName "instrument"
+                                                                   :ComposedOf (map #(data-umm-cmn/instrument {:ShortName %})
+                                                                                 ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})]})
+                                           {:validate-keywords false})
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"
                               (dg/granule-with-umm-spec-collection
@@ -271,7 +274,8 @@
                                    :instrument-refs [(dg/instrument-ref
                                                       {:short-name "instrument"
                                                        :sensor-refs (map #(dg/sensor-ref {:short-name %})
-                                                                         sensors)})]})]})))
+                                                                         sensors)})]})]})
+                              {:validate-keywords false}))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")

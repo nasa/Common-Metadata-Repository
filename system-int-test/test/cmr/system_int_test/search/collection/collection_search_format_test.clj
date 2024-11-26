@@ -784,7 +784,7 @@
           umm-attributes (merge related-urls data-centers)
           concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
-                          ingest/ingest-concept {:validate-keywords false})
+                          (ingest/ingest-concept {:validate-keywords false}))
           _ (index/wait-until-indexed)
           atom-json-links (->> (search/find-concepts-json :collection {})
                                :results
@@ -869,10 +869,10 @@
           umm-attributes (merge related-urls data-centers)
           concept-umm (-> (umm-spec-collection/collection 1 umm-attributes)
                           (umm-spec-collection/collection-concept :umm-json)
-                          ingest/ingest-concept {:validate-keywords false})
+                          (ingest/ingest-concept {:validate-keywords false}))
           concept-citation (-> (umm-spec-collection/collection 2 collection-citations)
                                (umm-spec-collection/collection-concept :umm-json)
-                               ingest/ingest-concept {:validate-keywords false})
+                               (ingest/ingest-concept {:validate-keywords false}))
           _ (index/wait-until-indexed)
           opendata-5138-1 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-1)})
           opendata-5138-2 (search/find-concepts-opendata :collection {:concept_id (:concept-id concept-5138-2)})
@@ -1110,13 +1110,15 @@
                 (dc/collection-dif
                   {:short-name "S-DIF9"
                    :organizations [distribution-org distribution-org-1]})
-                {:format :dif :validate-keywords false})
+                {:format :dif
+                 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection-dif10
                   {:short-name "S-DIF10"
                    :organizations [processing-org originating-org distribution-org archive-org]})
-                {:format :dif10 :validate-keywords false})
+                {:format :dif10
+                 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection
@@ -1128,13 +1130,15 @@
                 (dc/collection
                  {:short-name "S-ISO-SMAP"
                   :organizations [processing-org archive-org]})
-                {:format :iso-smap})
+                {:format :iso-smap
+                 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (dc/collection
                  {:short-name "S-ISO19115"
                   :organizations [archive-org]})
-                {:format :iso19115 :validate-keywords false})
+                {:format :iso19115
+                 :validate-keywords false})
 
       (d/ingest "PROV1"
                 (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")

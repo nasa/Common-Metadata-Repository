@@ -36,7 +36,8 @@
                                      dg/spatial
                                      orbit
                                      nil)}
-                other-attribs))))))
+                other-attribs))
+       {:validate-keywords false}))))
 
 (deftest orbit-bug-CMR-4722
   (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
@@ -169,7 +170,8 @@
                         (dc/collection
                           {:entry-title "orbit-params1"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit orbit-parameters})}))
+                                                          :orbit orbit-parameters})})
+                        {:validate-keywords false})
         g1 (make-gran coll1 "gran1" 70.80471 50.0 :asc  50.0 :desc)
         g2 (make-gran coll1 "gran2" 70.80471 50.0 :desc -50.0 :desc)
         g3 (make-gran coll1 "gran3" 70.80471 -50.0 :desc -50.0 :asc)
@@ -259,17 +261,20 @@
                         (dc/collection
                           {:entry-title "orbit-params1"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op1})}))
+                                                          :orbit op1})})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params2"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op2})}))
+                                                          :orbit op2})})
+                        {:validate-keywords false})
         coll3 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params3"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op3-bad})}))
+                                                          :orbit op3-bad})})
+                        {:validate-keywords false})
         g1 (make-gran coll1 "gran1" -158.1 81.8 :desc  -81.8 :desc)
         g2 (make-gran coll1 "gran2" 177.16 -81.8 :asc 81.8 :asc)
         g3 (make-gran coll1 "gran3" 127.73 81.8 :desc -81.8 :desc)
@@ -380,12 +385,14 @@
                         (dc/collection
                           {:entry-title "orbit-params1"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op1})}))
+                                                          :orbit op1})})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params2"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op2})}))
+                                                          :orbit op2})})
+                        {:validate-keywords false})
         g1 (make-gran coll1 "gran1" 104.0852 50 :asc 50 :asc)
         g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
     (index/wait-until-indexed)

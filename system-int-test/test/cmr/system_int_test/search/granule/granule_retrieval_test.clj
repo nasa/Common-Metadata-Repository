@@ -21,20 +21,23 @@
 (deftest retrieve-granule-by-cmr-concept-id
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
-                                             {:Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")}))
+                                             {:Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")})
+                                            {:validate-keywords false})
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
-                                                    :project-refs ["ABC"]}))
+                                                    :project-refs ["ABC"]})
+                        {:validate-keywords false})
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
-                                                    :project-refs ["KLM"]}))
+                                                    :project-refs ["KLM"]})
+                        {:validate-keywords false})
         umm-gran (dg/granule-with-umm-spec-collection
                   coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                              :project-refs ["XYZ"]})
-        gran1 (d/ingest "PROV1" umm-gran)
-        del-gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        gran1 (d/ingest "PROV1" umm-gran {:validate-keywords false})
+        del-gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)) {:validate-keywords false})
         umm-gran (-> umm-gran
                      (assoc-in [:collection-ref :short-name] nil)
                      (assoc-in [:collection-ref :version-id] nil)
