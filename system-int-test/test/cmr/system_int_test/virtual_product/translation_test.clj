@@ -75,37 +75,34 @@
                          :validate-keywords false)
          prov-ast-coll (data-core/ingest "PROV"
                                          (collection/collection
-                                          {:entry-title ast-entry-title
-                                           :validate-keywords false}))
+                                          {:entry-title ast-entry-title})
+                                         {:validate-keywords false})
          prov-ast-gran (data-core/ingest "PROV"
                                          (granule/granule
                                           prov-ast-coll
-                                          {:granule-ur "SC:AST_L1A.003:2006227720"
-                                           :validate-keywords false}))
-
+                                          {:granule-ur "SC:AST_L1A.003:2006227720"})
+                                         {:validate-keywords false})
          lpdaac-non-ast-coll (data-core/ingest "LPDAAC_ECS"
                                                (collection/collection
-                                                {:entry-title "non virtual entry title"
-                                                 :validate-keywords false}))
+                                                {:entry-title "non virtual entry title"})
+                                               {:validate-keywords false})
          lpdaac-non-ast-gran (data-core/ingest "LPDAAC_ECS"
                                                (granule/granule
                                                 lpdaac-non-ast-coll
-                                                {:granule-ur "granule-ur2"
-                                                 :validate-keywords false}))
+                                                {:granule-ur "granule-ur2"})
+                                               {:validate-keywords false})
          prov-coll (data-core/ingest "PROV"
                                      (collection/collection
-                                      {:entry-title "some other entry title"
-                                       :validate-keywords false}))
+                                      {:entry-title "some other entry title"})
+                                     {:validate-keywords false})
          prov-gran1 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur3"
-                                               :validate-keywords false}))
-
+                                              {:granule-ur "granule-ur3"})
+                                      {:validate-keywords false})
          prov-gran2 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur4"
-                                               :validate-keywords false}))
-
+                                              {:granule-ur "granule-ur4"})
+                                      {:validate-keywords false})
 
          _ (index/wait-until-indexed)
          [source-granule alias-source-granule]   (map granule->entry [ast-gran alias-ast-gran])

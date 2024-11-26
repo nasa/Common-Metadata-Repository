@@ -551,14 +551,16 @@
                                                       :ShortName "S1"
                                                       :VersionId "V1"
                                                       :Platforms (data-umm-spec/platforms
-                                                                  (get-in sample-platforms [:diadem :short-name]))}))
+                                                                  (get-in sample-platforms [:diadem :short-name]))})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
                                                       :Platforms (data-umm-spec/platforms
                                                                   (get-in sample-platforms [:diadem :short-name])
-                                                                  (get-in sample-platforms [:dmsp :short-name]))}))
+                                                                  (get-in sample-platforms [:dmsp :short-name]))})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
@@ -566,7 +568,8 @@
                                                       :Platforms [(data-umm-spec/platform
                                                                    {:ShortName (get-in sample-platforms [:dmsp :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
-                                                      :Projects (umm-spec-common/projects "proj3")}))
+                                                      :Projects (umm-spec-common/projects "proj3")})
+                                            :validate-keywords false)
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
@@ -574,7 +577,8 @@
                                                       :Platforms [(data-umm-spec/platform
                                                                    {:ShortName (get-in sample-platforms [:smap :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I4"})]})]
-                                                      :Projects (umm-spec-common/projects "proj4")}))]
+                                                      :Projects (umm-spec-common/projects "proj4")})
+                                            {:validate-keywords false})]
     (testing "search by platform parameter filters the other facets, but not platforms facets"
       (let [facets-result (search-and-return-v2-facets
                            {:platforms-h {:0 (sample-platform-full :smap)}})

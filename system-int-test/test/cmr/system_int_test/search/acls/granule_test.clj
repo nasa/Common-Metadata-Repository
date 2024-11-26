@@ -30,7 +30,8 @@
    (d/ingest prov
              (dc/collection
                (merge {:entry-title (str "coll" n)}
-                      attribs)))))
+                      attribs))
+             {:validate-keywords false})))
 
 (defn make-gran
   ([n coll]
