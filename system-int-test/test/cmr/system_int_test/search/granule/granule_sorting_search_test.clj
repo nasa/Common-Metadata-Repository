@@ -207,8 +207,8 @@
                                coll
                                (:concept-id coll)
                                {:platform-refs (map #(dg/platform-ref {:short-name %})
-                                                    platforms)}))
-                    {:validate-keywords false})
+                                                    platforms)})
+                              {:validate-keywords false}))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")

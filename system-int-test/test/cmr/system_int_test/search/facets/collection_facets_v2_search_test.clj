@@ -569,7 +569,7 @@
                                                                    {:ShortName (get-in sample-platforms [:dmsp :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
                                                       :Projects (umm-spec-common/projects "proj3")})
-                                            :validate-keywords false)
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
