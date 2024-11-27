@@ -5126,14 +5126,17 @@ A subscription allows a user to be notified when specific collections/granules a
 
 There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-- Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
-  There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
-
-    - collection subscription for users to be notified when collections are created/updated, or
-    - granule subscription for users to be notified when granules are created/update
-
-
-- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+<ul>
+    <li>Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS). </li>
+    <ul>
+        <li>There are two types of batch process subscriptions (identified by the "Type" field of the subscription):</li>
+        <ul>
+            <li>collection subscription for users to be notified when collections are created/updated, or </li>
+            <li>granule subscription for users to be notified when granules are created/update</li>
+        </ul>
+    </ul>
+    <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+</ul>
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 

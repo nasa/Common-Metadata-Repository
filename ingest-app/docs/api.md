@@ -1087,31 +1087,38 @@ A subscription allows a user to be notified when specific collections/granules a
 
 There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-- Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS).
-   There are two types of batch process subscriptions (identified by the `Type` field of the subscription):
-
-    - collection subscription for users to be notified when collections are created/updated, or
-    - granule subscription for users to be notified when granules are created/update
-
-
-- Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
-
+<ul>
+    <li>Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS). </li>
+    <ul>
+        <li>There are two types of batch process subscriptions (identified by the "Type" field of the subscription):</li>
+        <ul>
+            <li>collection subscription for users to be notified when collections are created/updated, or </li>
+            <li>granule subscription for users to be notified when granules are created/update</li>
+        </ul>
+    </ul>
+    <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+</ul>
 
 ### <a name="create-subscription"></a> Create a Subscription
 #### <a name="subscription-endpoint"></a> /subscriptions
 
-NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscriptions are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
+NOTE: The `%CMR-ENDPOINT%/providers/{provider-id}/subscriptions` API routes for subscriptions are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
 
 ##### Method Options
 Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
 
 The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
-- POST or PUT may be used with the following URL: `%CMR-ENDPOINT%/subscriptions/<native-id>`
-- When using POST:
-  - May only be used for creating subscriptions
-  - Can use without a native-id at the following URL: `%CMR-ENDPOINT%/subscriptions`
-  - The native-id will be auto-generated
+<ul>
+    <li> POST or PUT may be used with the following URL: %CMR-ENDPOINT%/subscriptions/{native-id}</li>
+    <li> When using POST:
+    <ul>
+      <li>May only be used for creating subscriptions</li>
+      <li>Can use without a native-id at the following URL: %CMR-ENDPOINT%/subscriptions </li>
+      <li>The native-id will be auto-generated</li>
+    </ul>
+    </li>
+</ul>
 
 ##### Query Params for Batch Notification Subscriptions
 
@@ -1125,30 +1132,40 @@ If the query provided is invalid for granule searching, subscription creation wi
 ##### Data Fields
 The metadata sent in the body of the request is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). This metadata data body consists of specific fields below:
 
-- `Name`: [required] Name of subscription 
-- `Type`: [required] Indicates if the subscription is a collection subscription or granule subscription.
-  - Valid values: `"collection"`,`"granule"`.  
-  - "Type": "granule": must supply a requisite CollectionConceptId field. The subscriber must have read access to the collection here, or the subscription will fail.
-  - "Type": "collection": cannot have a CollectionConceptId field.
-- `Method`: [required] designates between search (Batch Notification) subscriptions and ingest (Near-Real-Time) subscriptions
-  - Valid values: `search` or `ingest`.
-  - Default: `search`
-- `SubscriberId`: [optional] If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.
-- `EmailAddress`: [deprecated] was previously a required field, but is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
-- `MetadataSpecification`: [required] Specifies which metadata version schema you are using for this subscription. Currently, that version is 1.1.1.
+<ul>
+    <li>Name: [required] Name of subscription </li>
+    <li>Type: [required] Indicates if the subscription is a collection subscription or granule subscription.</li>
+        <ul>
+            <li>Valid values: "collection","granule". </li>
+            <li>"Type": "granule": must supply a requisite CollectionConceptId field. The subscriber must have read access to the collection here, or the subscription will fail.</li>
+            <li>"Type": "collection": cannot have a CollectionConceptId field.</li>
+        </ul>  
+    <li>Method: [required] designates between search (Batch Notification) subscriptions and ingest (Near-Real-Time) subscriptions</li>
+        <ul>
+            <li>Valid values: "search" or "ingest".</li>
+            <li>Default: "search"</li>
+        </ul>
+    <li>SubscriberId: [optional] If a SubscriberId is not provided, then the user ID associated with the token used to ingest the subscription will be used as the SubscriberId.</li>
+    <li>EmailAddress: [deprecated] was previously a required field, but is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.</li>
+    <li>MetadataSpecification: [required] Specifies which metadata version schema you are using for this subscription. Currently, that version is 1.1.1.</li>
+</ul>
 
 ##### Additional Data Fields for Near-Real-Time Notification Subscriptions
 For NRT Notification subscriptions to be used there are three new fields that are required in addition to the other fields already described. 
-- `Type`: [required] Must be set to `granule` because NRT Notification subscriptions are only for granules.
-- `CollectionConceptId`: [required] Because type must be `granule`, we must set `CollectionConceptId` as well, as indicated in Data Fields section
-- `EndPoint`: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. NRT Notification subscriptions that do not use an AWS SQS ARN will fail. If Batch Notification subscriptions are desired, do not use this field.
-- `Mode`: [required] describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. 
-  - Valid values: `New`, `Update`, `Delete`. Any combination of these values are valid and they are set using a json array. 
-    - Examples:
-      [`New`] or
-      [`New`, `Update`] or
-      [`Update`, `Delete`] or
-      [`Update`]
+<ul>
+    <li>Type: [required] Must be set to "granule" because NRT Notification subscriptions are only for granules.</li>
+    <li>CollectionConceptId: [required] Because type must be "granule", we must set "CollectionConceptId" as well, as indicated in Data Fields section</li>
+    <li>EndPoint: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. NRT Notification subscriptions that do not use an AWS SQS ARN will fail. If Batch Notification subscriptions are desired, do not use this field.</li>
+    <li>Mode: [required] describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. </li>
+    <ul>
+        <li>Valid values: "New", "Update", "Delete". Any combination of these values are valid and they are set using a json array. </li>
+        <li> Examples: </li>
+              ["New"] or
+              ["New", "Update"] or
+              ["Update", "Delete"] or
+              ["Update"]
+        </ul>
+</ul>
 
 ##### NRT Notification Subscription POST Request
 
