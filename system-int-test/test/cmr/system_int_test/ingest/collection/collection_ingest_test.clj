@@ -309,8 +309,8 @@
         ;; ingest the collections/granules for test
         _ (data-core/ingest-umm-spec-collection "PROV1" coll1-1 {:format :dif :validate-keywords false})
         coll3 (data-core/ingest-umm-spec-collection "PROV1" coll1-3 {:format :dif :validate-keywords false})
-        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule1"}) {:validate-keywords false})
-        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule2"}) {:validate-keywords false})]
+        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule1"}))
+        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule2"}))]
     (index/wait-until-indexed)
 
     (testing "update the collection with a different entry-id is OK"
@@ -446,12 +446,12 @@
   (let [coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                     (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
                                                     {:validate-keywords false})
-        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)) {:validate-keywords false})
-        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)) {:validate-keywords false})
+        gran1 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        gran2 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
         coll2 (data-core/ingest-umm-spec-collection "PROV1"
                                                     (data-umm-c/collection {:EntryTitle "E2":ShortName "S2"})
                                                     {:validate-keywords false})
-        gran3 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll2 (:concept-id coll2)) {:validate-keywords false})]
+        gran3 (data-core/ingest "PROV1" (granule/granule-with-umm-spec-collection coll2 (:concept-id coll2)))]
     (index/wait-until-indexed)
 
     ;; delete collection

@@ -75,7 +75,7 @@
   ([coll shape temporal-attribs provider]
    (let [spatial-attribs (when shape {:spatial-coverage (dg/spatial shape)})
          gran-attribs (merge {} spatial-attribs temporal-attribs)]
-     (d/ingest provider (dg/granule coll gran-attribs) {:validate-keywords false}))))
+     (d/ingest provider (dg/granule coll gran-attribs)))))
 
 (defn- make-orbit-gran
   "Creates a granule which has spatial metadata defined by orbital parameters."

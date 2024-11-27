@@ -191,7 +191,7 @@
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
-                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true :validate-keywords false}))))))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
           "gran-Terra-coll1 success test"
           []
@@ -335,7 +335,7 @@
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
-                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true :validate-keywords false}))))))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
           "A granule ingested in collection A with OldName is permitted"
           []
@@ -460,7 +460,7 @@
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
-                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true :validate-keywords false}))))))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
           "A granule ingested in collection A with OldName is permitted"
           []
@@ -548,7 +548,7 @@
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
-                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true :validate-keywords false}))))))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
           "ECHO10 collection"
           []
           gran-for-echo10-coll
@@ -622,7 +622,7 @@
         coll (data-umm-c/collection coll-data)
         _ (d/ingest-umm-spec-collection "PROV1" coll {:format :echo10 :validate-keywords false})
         gran (dg/granule-with-umm-spec-collection coll (:concept-id coll)  gran-data)
-        _ (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true :validate-keywords false})]
+        _ (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})]
     (index/wait-until-indexed)
 
     (are [exp-errors metadata-format]
@@ -651,8 +651,7 @@
                      {:validate-keywords false})
                  gran-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
-                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata)
-                                    {:validate-keywords false})]
+                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
              (is (= 201 status)))))
 
 (deftest iso-smap-collection-echo10-granule
@@ -664,8 +663,7 @@
                      {:validate-keywords false})
                  gran-metadata (slurp (io/resource "iso-samples/cmr-4125-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
-                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata)
-                                    {:validate-keywords false})]
+                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
              (is (= 201 status)))))
 
 ;; Test specific to an issue ingesting an echo10 granule with a polygon in spatial data with
@@ -699,7 +697,7 @@
         coll1 (data-umm-c/collection coll-data1)
         _ (d/ingest-umm-spec-collection "PROV1" coll1 {:format :iso19115 :validate-keywords false})
         gran1 (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)  gran-data1)
-        granule-result (d/ingest "PROV1" gran1 {:format :echo10 :allow-failure? true :validate-keywords false})]
+        granule-result (d/ingest "PROV1" gran1 {:format :echo10 :allow-failure? true})]
      ;; The test is checking that the exception does not occur
      ;; 422 status is the expected behavior
      (is (= 422 (:status granule-result)))

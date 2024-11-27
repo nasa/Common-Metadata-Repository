@@ -89,7 +89,7 @@
   (assert-valid granule)
   ;; Granule is valid sent with parent collection
   (assert-granule-with-parent-collection-valid granule coll)
-  (let [response (d/ingest "PROV1" (dissoc granule :revision-id) {:validate-keywords false})]
+  (let [response (d/ingest "PROV1" (dissoc granule :revision-id))]
     (is (#{200 201} (:status response)))
     response))
 

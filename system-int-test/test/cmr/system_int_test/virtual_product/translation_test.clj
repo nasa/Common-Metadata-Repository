@@ -65,14 +65,12 @@
                    "LPDAAC_ECS"
                    (granule/granule
                     ast-coll
-                    {:granule-ur "SC:AST_L1A.003:2006227720"})
-                   :validate-keywords false)
+                    {:granule-ur "SC:AST_L1A.003:2006227720"}))
          alias-ast-gran (virtual-product-util/ingest-source-granule
                          "LP_ALIAS"
                          (granule/granule
                           alias-ast-coll
-                          {:granule-ur "SC:AST_L1A.003:2006227720"})
-                         :validate-keywords false)
+                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
          prov-ast-coll (data-core/ingest "PROV"
                                          (collection/collection
                                           {:entry-title ast-entry-title})
@@ -80,8 +78,8 @@
          prov-ast-gran (data-core/ingest "PROV"
                                          (granule/granule
                                           prov-ast-coll
-                                          {:granule-ur "SC:AST_L1A.003:2006227720"})
-                                         {:validate-keywords false})
+                                          {:granule-ur "SC:AST_L1A.003:2006227720"}))
+
          lpdaac-non-ast-coll (data-core/ingest "LPDAAC_ECS"
                                                (collection/collection
                                                 {:entry-title "non virtual entry title"})
@@ -89,20 +87,19 @@
          lpdaac-non-ast-gran (data-core/ingest "LPDAAC_ECS"
                                                (granule/granule
                                                 lpdaac-non-ast-coll
-                                                {:granule-ur "granule-ur2"})
-                                               {:validate-keywords false})
+                                                {:granule-ur "granule-ur2"}))
          prov-coll (data-core/ingest "PROV"
                                      (collection/collection
                                       {:entry-title "some other entry title"})
                                      {:validate-keywords false})
          prov-gran1 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur3"})
-                                      {:validate-keywords false})
+                                              {:granule-ur "granule-ur3"}))
+
          prov-gran2 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
-                                              {:granule-ur "granule-ur4"})
-                                      {:validate-keywords false})
+                                              {:granule-ur "granule-ur4"}))
+
 
          _ (index/wait-until-indexed)
          [source-granule alias-source-granule]   (map granule->entry [ast-gran alias-ast-gran])
@@ -277,8 +274,7 @@
                             provider-id
                             (granule/granule
                              source-coll
-                             {:granule-ur granule-ur})
-                            :validate-keywords false)))
+                             {:granule-ur granule-ur}))))
         _ (index/wait-until-indexed)
         virt-gran-entries-by-src (into {} (map #(vector % (get-virtual-entries-by-source %)) src-grans))
         all-virt-entries (mapcat second virt-gran-entries-by-src)
@@ -297,8 +293,7 @@
            (data-core/ingest "PROV"
                              (granule/granule
                               coll
-                              {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})
-                             {:validate-keywords false}))))
+                              {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})))))
 
 ;; This test is added for CMR-3508 to show that we can now handle translation of more than
 ;; 10 (default search page size) granules on a single collection during the translation

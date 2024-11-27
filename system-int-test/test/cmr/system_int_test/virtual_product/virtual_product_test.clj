@@ -48,8 +48,7 @@
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                (dg/granule ast-coll {:granule-ur granule-ur
-                                                                     :project-refs ["proj1"]})
-                                               :validate-keywords false)
+                                                                     :project-refs ["proj1"]}))
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
@@ -85,8 +84,7 @@
       (let [ast-l1a-gran-r2 (vp/ingest-source-granule "LPDAAC_ECS"
                                                       (assoc ast-l1a-gran
                                                              :project-refs ["proj2" "proj3"]
-                                                             :revision-id nil)
-                                                      :validate-keywords false)]
+                                                             :revision-id nil))]
         (index/wait-until-indexed)
         (testing "find none by original project"
           (is (= 0 (:hits (search/find-refs :granule {:project "proj1"})))))
@@ -107,8 +105,7 @@
 
     (testing "Recreate source granule"
       (let [ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
-                                                      (dissoc ast-l1a-gran :revision-id :concept-id)
-                                                      :validate-keywords false)]
+                                                      (dissoc ast-l1a-gran :revision-id :concept-id))]
         (index/wait-until-indexed)
         (testing "Find all granules"
           (vp/assert-matching-granule-urs
@@ -130,8 +127,7 @@
                                      granule-ur (svm/sample-source-granule-urs
                                                   [provider-id entry-title])]
                                  (vp/ingest-source-granule provider-id
-                                                           (dg/granule source-coll {:granule-ur granule-ur})
-                                                           :validate-keywords false)))
+                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
     (index/wait-until-indexed)
@@ -182,7 +178,7 @@
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
-        ingest-result (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5) :validate-keywords false)
+        ingest-result (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
         _ (index/wait-until-indexed)
         vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
                                                   :granule {:entry-title (:entry-title %)
@@ -190,7 +186,7 @@
 
     ;; check revision ids are in sync after ingest/update operations
     (assert-virtual-gran-revision-id vp-colls 5)
-    (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10) :validate-keywords false)
+    (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
     (index/wait-until-indexed)
     (assert-virtual-gran-revision-id vp-colls 10)
 
@@ -213,8 +209,7 @@
           vp-colls (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
           granule-ur "SC:AST_L1A.003:2006227710"
           ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
-                                                 (dg/granule ast-coll {:granule-ur granule-ur})
-                                                 :validate-keywords false)
+                                                 (dg/granule ast-coll {:granule-ur granule-ur}))
           expected-virtual-granule-urs (vp/source-granule->virtual-granule-urs
                                          (assoc ast-l1a-gran :provider-id "LPDAAC_ECS"))
           all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-virtual-granule-urs)]
@@ -252,8 +247,7 @@
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                (dg/granule ast-coll {:granule-ur granule-ur})
-                                               :client-id "ECHO"
-                                               :validate-keywords false)
+                                               :client-id "ECHO")
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
@@ -292,8 +286,7 @@
                                    :related-urls source-related-urls
                                    :data-granule {:day-night "UNSPECIFIED"
                                                   :production-date-time "2013-07-27T07:43:14.000Z"
-                                                  :size 40}})
-                        :validate-keywords false)
+                                                  :size 40}}))
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
@@ -354,8 +347,7 @@
                                        granule-ur (svm/sample-source-granule-urs
                                                     [provider-id entry-title])]
                                    (vp/ingest-source-granule provider-id
-                                                             (dg/granule source-coll {:granule-ur granule-ur})
-                                                             :validate-keywords false)))
+                                                             (dg/granule source-coll {:granule-ur granule-ur}))))
           expected-source-granules (remove #(contains? disabled-source-colls
                                                        (get-in % [:collection-ref :entry-title]))
                                            source-granules)

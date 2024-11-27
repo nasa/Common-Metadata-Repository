@@ -464,11 +464,11 @@
                                                       :ShortName "S3"
                                                       :Projects (data-umm-cmn/projects "USGS_SOFIA")})
                                             {:validate-keywords false})
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}) {:validate-keywords false})
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}) {:validate-keywords false})
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}) {:validate-keywords false})
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}) {:validate-keywords false})
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:project-refs ["USGS_SOFIA"]}) {:validate-keywords false})]
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:project-refs ["USGS_SOFIA"]}))]
 
     (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
@@ -532,9 +532,8 @@
                                                                           :SpatialExtent (when spatial-params (data-umm-c/spatial spatial-params))})
                                                   {:validate-keywords false}))
         make-gran (fn [coll spatial]
-                    (d/ingest "PROV1"
-                              (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage (when spatial (dg/spatial spatial))})
-                              {:validate-keywords false}))
+                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
+                                                                                            (when spatial (dg/spatial spatial))})))
 
         ;; Geodetic test collections
         coll-geodetic-no-grans (make-coll "coll-geodetic-no-grans" {:gsr "GEODETIC"})
@@ -791,12 +790,12 @@
                                                       :Platforms (data-umm-cmn/platforms "p4" "Terra")})
                                             {:validate-keywords false})]
     ;; CMR-3926 We need to make sure granules with no platfrom ref do not inherit their parent collection's instrument
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1") {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "p4")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "Terra")}) {:validate-keywords false})
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "p4")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "Terra")}))
     (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 
@@ -850,9 +849,9 @@
                                                      :Version "V1"
                                                      :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")})
                                            {:validate-keywords false})]
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}) {:validate-keywords false})
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
@@ -912,12 +911,12 @@
                                                       :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]})
                                             {:validate-keywords false})]
     ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1") {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}) {:validate-keywords false})
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}) {:validate-keywords false})
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
     (index/wait-until-indexed)
     (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (testing "Update collection successful cases"
@@ -1001,12 +1000,12 @@
                                                    (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}
 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map) {:validate-keywords false})
-        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" granule-map) {:validate-keywords false})]
+        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" granule-map))]
 
     (are3
       [coll-map gran-map]
       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map) {:validate-keywords false})
-            response2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" gran-map) {:validate-keywords false})
+            response2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" gran-map))
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))
         (is (= [201 nil] [(:status response2) (:errors response2)])))

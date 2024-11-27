@@ -26,18 +26,16 @@
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
-                                                    :project-refs ["ABC"]})
-                        {:validate-keywords false})
+                                                    :project-refs ["ABC"]}))
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
-                                                    :project-refs ["KLM"]})
-                        {:validate-keywords false})
+                                                    :project-refs ["KLM"]}))
         umm-gran (dg/granule-with-umm-spec-collection
                   coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                              :project-refs ["XYZ"]})
-        gran1 (d/ingest "PROV1" umm-gran {:validate-keywords false})
-        del-gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)) {:validate-keywords false})
+        gran1 (d/ingest "PROV1" umm-gran)
+        del-gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
         umm-gran (-> umm-gran
                      (assoc-in [:collection-ref :short-name] nil)
                      (assoc-in [:collection-ref :version-id] nil)

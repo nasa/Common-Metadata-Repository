@@ -29,9 +29,9 @@
 (deftest ^:oracle rebalance-collection-error-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
-         _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}) {:validate-keywords false})
+         _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
-         _ (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}) {:validate-keywords false})]
+         _ (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}))]
      (index/wait-until-indexed)
      (testing "no permission for start-rebalance-collection"
        (is (= {:status 401
@@ -149,7 +149,7 @@
 (defn ingest-granule-for-coll
   [coll n]
   (let [granule-ur (str (:entry-title coll) "_gran_" n)]
-    (d/ingest (:provider-id coll) (dg/granule coll {:granule-ur granule-ur}) {:validate-keywords false})))
+    (d/ingest (:provider-id coll) (dg/granule coll {:granule-ur granule-ur}))))
 
 (defn inc-provider-holdings-for-coll
   "Increments the number of granules expected for a collection in the expected provider holdings"

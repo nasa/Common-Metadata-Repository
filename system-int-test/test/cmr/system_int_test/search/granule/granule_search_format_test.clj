@@ -66,8 +66,7 @@
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10 :validate-keywords false})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
                                                        :producer-gran-id "p1"})
-                          {:format :echo10
-                           :validate-keywords false})]
+                          {:format :echo10})]
     (index/wait-until-indexed)
     (let [params {:concept-id (:concept-id g1-echo)}
           options {:accept nil
@@ -114,7 +113,7 @@
         echo10-gran (d/item->concept granule :echo10)
         iso19115-gran (d/item->concept granule :iso19115)
         umm-g-gran (d/item->concept granule :umm-json)
-        umm-g-gran-concept-id (:concept-id (ingest/ingest-concept umm-g-gran {:validate-keywords false}))]
+        umm-g-gran-concept-id (:concept-id (ingest/ingest-concept umm-g-gran))]
     (index/wait-until-indexed)
     (testing "Search UMM-G various formats"
       (util/are3 [format-key granule-concept-id expected-granule accept url-extension]
@@ -153,13 +152,13 @@
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10 :validate-keywords false})
         c2-smap (d/ingest "PROV2" (dc/collection) {:format :iso-smap :validate-keywords false})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
-                                                       :producer-gran-id "p1"}) {:format :echo10 :validate-keywords false})
+                                                       :producer-gran-id "p1"}) {:format :echo10})
         g2-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g2"
-                                                       :producer-gran-id "p2"}) {:format :echo10 :validate-keywords false})
+                                                       :producer-gran-id "p2"}) {:format :echo10})
         g1-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g3"
-                                                       :producer-gran-id "p3"}) {:format :iso-smap :validate-keywords false})
+                                                       :producer-gran-id "p3"}) {:format :iso-smap})
         g2-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g4"
-                                                       :producer-gran-id "p2"}) {:format :iso-smap :validate-keywords false})
+                                                       :producer-gran-id "p2"}) {:format :iso-smap})
         ;; An item ingested with and XML preprocessing line to ensure this is tested
         item (assoc (dg/granule c1-echo {:granule-ur "g5"
                                          :producer-gran-id "p5"})
@@ -397,8 +396,7 @@
                                                    :day-night "DAY"
                                                    :size 100
                                                    :cloud-cover 50
-                                                   :related-urls [ru1 ru2 ru3]})
-                        {:validate-keywords false})
+                                                   :related-urls [ru1 ru2 ru3]}))
         gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"
                                                    :beginning-date-time "2011-01-01T12:00:00Z"
                                                    :ending-date-time "2011-01-11T12:00:00Z"
@@ -406,16 +404,14 @@
                                                    :day-night "NIGHT"
                                                    :size 80
                                                    :cloud-cover 30
-                                                   :related-urls [ru1]})
-                        {:validate-keywords false})
+                                                   :related-urls [ru1]}))
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"
                                                    :beginning-date-time "2012-01-01T12:00:00Z"
                                                    :ending-date-time "2012-01-11T12:00:00Z"
                                                    :producer-gran-id "Granule #3"
                                                    :day-night "NIGHT"
                                                    :size 80
-                                                   :cloud-cover 30})
-                        {:validate-keywords false})]
+                                                   :cloud-cover 30}))]
 
     (index/wait-until-indexed)
 
@@ -536,7 +532,7 @@
                                   :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})
         gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
                                                    :spatial-coverage (dg/spatial (p/point 1 2))})
-                        {:format :iso-smap :validate-keywords false})
+                        {:format :iso-smap})
         ;; Granule #5 is added for CMR-1115, where a granule with orbit spatial but no
         ;; OrbitCalculatedSpatialDomains will not have polygon info in its atom/json representation.
         gran5 (make-gran coll3 {:granule-ur "OrbitGranuleWithoutOrbitCalculatedSpatialDomains"
@@ -634,7 +630,7 @@
                                                 :spatial-coverage (dc/spatial {:gsr :no-spatial})})
                         {:validate-keywords false})
         make-gran (fn [coll attribs]
-                    (d/ingest "PROV1" (dg/granule coll attribs) {:validate-keywords false}))
+                    (d/ingest "PROV1" (dg/granule coll attribs)))
 
         gran-echo (make-gran coll1 {:granule-ur "Granule1"
                                     :beginning-date-time "2010-01-01T12:00:00Z"
@@ -647,14 +643,14 @@
         gran-smap (d/ingest "PROV1"
                             (dg/granule coll1 {:granule-ur "Granule2"
                                                :related-urls [ru1 ru2 ru3]})
-                            {:format :iso-smap :validate-keywords false})
+                            {:format :iso-smap})
         gran-umm  (d/ingest "PROV1"
                             (dg/granule coll1 {:granule-ur "Granule3"
                                                :related-urls [ru1 ru2 ru3]})
-                            {:format :umm-json :validate-keywords false})
+                            {:format :umm-json})
         gran-no-ru (d/ingest "PROV1"
                              (dg/granule coll1 {:granule-ur "Granule4"})
-                             {:format :umm-json :validate-keywords false})]
+                             {:format :umm-json})]
 
     (index/wait-until-indexed)
 
@@ -724,20 +720,17 @@
                                                    :beginning-date-time "2010-01-01T12:00:00.000Z"
                                                    :ending-date-time "2010-01-11T12:00:00.000Z"
                                                    :spatial-coverage gran-spatial
-                                                   :cloud-cover 10.0})
-                        {:validate-keywords false})
+                                                   :cloud-cover 10.0}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
                                                    :beginning-date-time "2011-02-01T12:00:00.000Z"
                                                    :ending-date-time "2011-02-11T12:00:00.000Z"
                                                    :spatial-coverage gran-spatial
-                                                   :cloud-cover 20.0})
-                        {:validate-keywords false})
+                                                   :cloud-cover 20.0}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
                                                    :beginning-date-time "2012-01-01T12:00:00.000Z"
                                                    :ending-date-time "2012-01-11T12:00:00.000Z"
                                                    :spatial-coverage gran-spatial
-                                                   :cloud-cover 30.0})
-                        {:validate-keywords false})]
+                                                   :cloud-cover 30.0}))]
 
     (index/wait-until-indexed)
 
@@ -997,8 +990,7 @@
                                        {:validate-keywords false})
         gran-metadata (slurp (io/resource "stac-test/G1327299284-LPDAAC_ECS.xml"))
         {gran-concept-id :concept-id} (ingest/ingest-concept
-                                       (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata)
-                                       {:validate-keywords false})
+                                       (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
         expected (-> "stac-test/granule_stac.json"
                      io/resource
                      slurp
@@ -1047,8 +1039,7 @@
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00.000Z"
                                                    :ending-date-time "2010-01-11T12:00:00.000Z"
-                                                   :cloud-cover 10.0})
-                        {:validate-keywords false})
+                                                   :cloud-cover 10.0}))
         gran-concept-id (:concept-id gran1)
         expected-gran-err-msg (format "Granule [%s] without spatial info is not supported in STAC"
                                       gran-concept-id)]
@@ -1118,29 +1109,25 @@
                                                           "PROV1"
                                                           "aa"
                                                           :echo10
-                                                          (slurp (io/resource "stac-test/G2485638210-LPCLOUD-aa.echo10")))
-                                          {:validate-keywords false})
+                                                          (slurp (io/resource "stac-test/G2485638210-LPCLOUD-aa.echo10"))))
         {root-gran-concept-id :concept-id} (ingest/ingest-concept
                                             (ingest/concept :granule
                                                             "PROV1"
                                                             "root"
                                                             :echo10
-                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-root.echo10")))
-                                            {:validate-keywords false})
+                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-root.echo10"))))
         {neither-gran-concept-id :concept-id} (ingest/ingest-concept
                                                (ingest/concept :granule
                                                                "PROV1"
                                                                "neither"
                                                                :echo10
-                                                               (slurp (io/resource "stac-test/G2485638210-LPCLOUD-neither.echo10")))
-                                               {:validate-keywords false})
+                                                               (slurp (io/resource "stac-test/G2485638210-LPCLOUD-neither.echo10"))))
         {both-gran-concept-id :concept-id} (ingest/ingest-concept
                                             (ingest/concept :granule
                                                             "PROV1"
                                                             "both"
                                                             :echo10
-                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-both.echo10")))
-                                            {:validate-keywords false})]
+                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-both.echo10"))))]
 
     (index/wait-until-indexed)
     (testing "combined cloud cover is STAC format aa only"

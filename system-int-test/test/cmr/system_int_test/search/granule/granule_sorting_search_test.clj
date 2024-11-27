@@ -71,7 +71,7 @@
                                            (data-umm-c/collection {:Projects (data-umm-cmn/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")})
                                            {:validate-keywords false})
         make-gran (fn [& campaigns]
-                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:project-refs campaigns}) {:validate-keywords false}))
+                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:project-refs campaigns})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -207,8 +207,7 @@
                                coll
                                (:concept-id coll)
                                {:platform-refs (map #(dg/platform-ref {:short-name %})
-                                                    platforms)})
-                              {:validate-keywords false}))
+                                                    platforms)})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -235,8 +234,7 @@
                                 [(dg/platform-ref
                                   {:short-name "platform"
                                    :instrument-refs (map #(dg/instrument-ref {:short-name %})
-                                                         instruments)})]})
-                              {:validate-keywords false}))
+                                                         instruments)})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -274,8 +272,7 @@
                                    :instrument-refs [(dg/instrument-ref
                                                       {:short-name "instrument"
                                                        :sensor-refs (map #(dg/sensor-ref {:short-name %})
-                                                                         sensors)})]})]})
-                              {:validate-keywords false}))
+                                                                         sensors)})]})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")

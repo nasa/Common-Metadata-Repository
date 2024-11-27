@@ -63,17 +63,17 @@
         psa3 (dc/psa {:name "ts" :data-type :time-string})
         psa4 (dc/psa {:name "ds" :data-type :date-string})
         coll (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3 psa4]}) {:validate-keywords false})
-        gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [true])]}) {:validate-keywords false})
-        gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [false])]}) {:validate-keywords false})
+        gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [true])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [false])]}))
 
-        gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}) {:validate-keywords false})
-        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-02T01:02:03Z"])]}) {:validate-keywords false})
+        gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-02T01:02:03Z"])]}))
 
-        gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:03Z"])]}) {:validate-keywords false})
-        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:04Z"])]}) {:validate-keywords false})
+        gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:03Z"])]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:04Z"])]}))
 
-        gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}) {:validate-keywords false})
-        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}) {:validate-keywords false})]
+        gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
+        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
     (index/wait-until-indexed)
 
     (testing "granule psa search by string value"
@@ -105,22 +105,17 @@
 
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}) {:validate-keywords false})
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
-                                                                                 (dg/psa "bravo" ["cd" "bf"])]})
-                        {:validate-keywords false})
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]})
-                        {:validate-keywords false})
+                                                                                 (dg/psa "bravo" ["cd" "bf"])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]})
                         {:validate-keywords false})
-        gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]})
-                        {:validate-keywords false})
-        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]})
-                        {:validate-keywords false})
+        gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))
 
         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]})
                         {:validate-keywords false})
-        gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]})
-                        {:validate-keywords false})]
+        gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]}))]
     (index/wait-until-indexed)
     (testing "search by value"
       (are [items v options]
@@ -284,18 +279,14 @@
         psa3 (dc/psa {:name "charlie" :data-type :float :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}) {:validate-keywords false})
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10.5 123])
-                                                                                 (dg/psa "bravo" [-12])]})
-                        {:validate-keywords false})
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10.5 123])]})
-                        {:validate-keywords false})
+                                                                                 (dg/psa "bravo" [-12])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10.5 123])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]})
                         {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
-                                                                                 (dg/psa "bravo" [13.7 123])]})
-                        {:validate-keywords false})
-        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]})
-                        {:validate-keywords false})]
+                                                                                 (dg/psa "bravo" [13.7 123])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -377,17 +368,13 @@
         psa3 (dc/psa {:name "charlie" :data-type :int :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}) {:validate-keywords false})
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10 123])
-                                                                                 (dg/psa "bravo" [-12])]})
-                        {:validate-keywords false})
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10 123])]})
-                        {:validate-keywords false})
+                                                                                 (dg/psa "bravo" [-12])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10 123])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
-                                                                                 (dg/psa "bravo" [13 123])]})
-                        {:validate-keywords false})
-        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]})
-                        {:validate-keywords false})]
+                                                                                 (dg/psa "bravo" [13 123])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -480,24 +467,20 @@
                                                    [(dg/psa "alpha"
                                                             [(d/make-datetime 10) (d/make-datetime 123)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-datetime 0)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-datetime 0)])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "bravo"
-                                                            [(d/make-datetime 10) (d/make-datetime 123)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-datetime 10) (d/make-datetime 123)])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "alpha"
                                                             [(d/make-datetime 14)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-datetime 13) (d/make-datetime 123)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-datetime 13) (d/make-datetime 123)])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
-                                                            [(d/make-datetime 14)])]})
-                        {:validate-keywords false})]
+                                                            [(d/make-datetime 14)])]}))]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -597,24 +580,20 @@
                                                    [(dg/psa "alpha"
                                                             [(d/make-time 10) (d/make-time 23)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-time 0)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-time 0)])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "bravo"
-                                                            [(d/make-time 10) (d/make-time 23)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-time 10) (d/make-time 23)])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "alpha"
                                                             [(d/make-time 14)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-time 13) (d/make-time 23)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-time 13) (d/make-time 23)])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
-                                                            [(d/make-time 14)])]})
-                        {:validate-keywords false})]
+                                                            [(d/make-time 14)])]}))]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -714,24 +693,20 @@
                                                    [(dg/psa "alpha"
                                                             [(d/make-date 10) (d/make-date 23)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-date 0)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-date 0)])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "bravo"
-                                                            [(d/make-date 10) (d/make-date 23)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-date 10) (d/make-date 23)])]}))
 
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "alpha"
                                                             [(d/make-date 14)])
                                                     (dg/psa "bravo"
-                                                            [(d/make-date 13) (d/make-date 23)])]})
-                        {:validate-keywords false})
+                                                            [(d/make-date 13) (d/make-date 23)])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes
                                                    [(dg/psa "charlie"
-                                                            [(d/make-date 14)])]})
-                        {:validate-keywords false})]
+                                                            [(d/make-date 14)])]}))]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -831,22 +806,18 @@
         psa6 (dc/psa {:name "sigma" :data-type :string})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4 psa5 psa6]}) {:validate-keywords false})
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["atlantic"])]}) {:validate-keywords false})
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "beta" ["wind"])]}) {:validate-keywords false})
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["atlantic"])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "beta" ["wind"])]}))
         gran3 (d/ingest "PROV1" (dg/granule coll1
                                             {:product-specific-attributes [(dg/psa "alpha" ["pacific"])
-                                                                           (dg/psa "gamma" ["01:02:03Z"])]})
-                        {:validate-keywords false})
+                                                                           (dg/psa "gamma" ["01:02:03Z"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2
-                                            {:product-specific-attributes [(dg/psa "delta" ["rain"])]})
-                        {:validate-keywords false})
+                                            {:product-specific-attributes [(dg/psa "delta" ["rain"])]}))
 
-        gran5 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" ["01:02:03Z"])]})
-                        {:validate-keywords false})
+        gran5 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" ["01:02:03Z"])]}))
         gran6 (d/ingest "PROV1" (dg/granule coll2
                                             {:product-specific-attributes [(dg/psa "delta" ["cloud"])
-                                                                           (dg/psa "sigma" ["ocean"])]})
-                        {:validate-keywords false})]
+                                                                           (dg/psa "sigma" ["ocean"])]}))]
     (index/wait-until-indexed)
 
     (testing "granule psa search by names"

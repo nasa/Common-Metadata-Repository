@@ -72,14 +72,14 @@
       (let [coll (nth prov1-colls n)
             granule-count (nth prov1-granule-counts n)]
         (dotimes [m granule-count]
-          (d/ingest "PROV1" (dg/granule coll) {:validate-keywords false}))))
+          (d/ingest "PROV1" (dg/granule coll)))))
 
     ;; Create provider 2 granules
     (dotimes [n prov2-collection-count]
       (let [coll (nth prov2-colls n)
             granule-count (nth prov2-granule-counts n)]
         (dotimes [m granule-count]
-          (d/ingest "PROV2" (dg/granule coll) {:validate-keywords false}))))
+          (d/ingest "PROV2" (dg/granule coll)))))
 
     (index/wait-until-indexed)
 

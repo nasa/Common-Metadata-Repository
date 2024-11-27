@@ -17,14 +17,11 @@
                                             (data-umm-c/collection {:Projects (data-umm-cmn/projects "ABC" "XYZ" "PDQ" "RST")})
                                             {:validate-keywords false})
         gran1 (d/ingest "PROV1"
-                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1" :project-refs ["ABC"]})
-                        {:validate-keywords false})
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1" :project-refs ["ABC"]}))
         gran2 (d/ingest "PROV1"
-                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2" :project-refs ["ABC" "XYZ"]})
-                        {:validate-keywords false})
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2" :project-refs ["ABC" "XYZ"]}))
         gran3 (d/ingest "PROV1"
-                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule3" :project-refs ["PDQ" "RST"]})
-                        {:validate-keywords false})]
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule3" :project-refs ["PDQ" "RST"]}))]
     (index/wait-until-indexed)
 
     (testing "search by campaign"

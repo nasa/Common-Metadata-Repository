@@ -84,19 +84,19 @@
 
     ;; Create collections
     (let [coll1 (single-date-coll 1 :echo10)
-          gran1 (d/ingest "PROV1" (dg/granule coll1) {:validate-keywords false})
+          gran1 (d/ingest "PROV1" (dg/granule coll1))
           coll2 (range-date-coll 2 3 :dif)
-          gran2 (d/ingest "PROV1" (dg/granule coll2) {:validate-keywords false})
+          gran2 (d/ingest "PROV1" (dg/granule coll2))
           coll3 (single-date-coll 4 :iso19115)
-          gran3 (d/ingest "PROV1" (dg/granule coll3) {:validate-keywords false})
+          gran3 (d/ingest "PROV1" (dg/granule coll3))
           coll4 (range-date-coll 5 6 :iso19115)
-          gran4 (d/ingest "PROV1" (dg/granule coll4) {:validate-keywords false})
+          gran4 (d/ingest "PROV1" (dg/granule coll4))
           coll5 (range-date-coll 3 nil :iso-smap) ;; no end date
-          gran5 (d/ingest "PROV1" (dg/granule coll5) {:validate-keywords false})
+          gran5 (d/ingest "PROV1" (dg/granule coll5))
           coll6 (single-date-coll 8 :iso-smap)
-          gran6 (d/ingest "PROV1" (dg/granule coll6) {:validate-keywords false})
+          gran6 (d/ingest "PROV1" (dg/granule coll6))
           coll7 (single-date-coll 9 :echo10)
-          gran7 (d/ingest "PROV1" (dg/granule coll7) {:validate-keywords false})
+          gran7 (d/ingest "PROV1" (dg/granule coll7))
           all-coll-concept-ids (map :concept-id [coll1 coll2 coll3 coll4 coll5 coll6 coll7])
           all-gran-concept-ids (map :concept-id [gran1 gran2 gran3 gran4 gran5 gran6 gran7])
 

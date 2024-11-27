@@ -32,9 +32,8 @@
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:token provider-admin-update-token :validate-keywords false})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
-                                               (dg/granule ast-coll {:granule-ur granule-ur})
-                                               :token provider-admin-update-token
-                                               :validate-keywords false)
+                                    (dg/granule ast-coll {:granule-ur granule-ur})
+                                    :token provider-admin-update-token)
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)

@@ -29,38 +29,32 @@
         g1-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll1-echo {:granule-ur "g1"
                                                                       :producer-gran-id "p1"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         _ (dev-system-util/freeze-time! "2011-01-01T10:00:00Z")
         g2-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll1-echo {:granule-ur "g2"
                                                                       :producer-gran-id "p2"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
         g3-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll1-echo {:granule-ur "g3"
                                                                       :producer-gran-id "p3"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         _ (dev-system-util/freeze-time! "2013-01-01T10:00:00Z")
         g4-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll1-echo {:granule-ur "g4"
                                                                       :producer-gran-id "p4"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         _ (dev-system-util/freeze-time! "2014-01-01T10:00:00Z")
         g5-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll1-echo {:granule-ur "g5"
                                                                       :producer-gran-id "p5"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         _ (dev-system-util/freeze-time! "2015-01-01T10:00:00Z")
         g6-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll2-echo {:granule-ur "g6"
                                                                       :producer-gran-id "p6"})
-                                   {:format :echo10
-                                    :validate-keywords false})
+                                   {:format :echo10})
         coll1-grans [g1-echo g2-echo g3-echo g4-echo g5-echo]]
 
     (index/wait-until-indexed)

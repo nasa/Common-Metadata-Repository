@@ -430,12 +430,12 @@
 ; ingested and found
 (deftest dif-with-spatial
   (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif :validate-keywords false})
-        g1 (d/ingest "PROV1" (dg/granule c1) {:validate-keywords false})
+        g1 (d/ingest "PROV1" (dg/granule c1))
 
         ;; A collection with a granule spatial representation
         c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})})
                      {:format :dif :validate-keywords false})
-        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}) {:validate-keywords false})
+        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
 
 
         ;; A collections with a granule spatial representation and spatial data
@@ -445,7 +445,7 @@
                                                        :sr :geodetic
                                                        :geometries [(m/mbr -10 9 0 -10)]})})
                      {:format :dif :validate-keywords false})
-        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}) {:validate-keywords false})]
+        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}))]
     (index/wait-until-indexed)
 
     (testing "spatial search for dif collections"

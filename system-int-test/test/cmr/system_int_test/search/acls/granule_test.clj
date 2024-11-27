@@ -40,7 +40,7 @@
    (let [prov (:provider-id coll)
          attribs (merge {:granule-ur (str "gran" n)}
                         attribs)]
-     (d/ingest prov (dg/granule coll attribs) {:validate-keywords false}))))
+     (d/ingest prov (dg/granule coll attribs)))))
 
 (comment
   (do

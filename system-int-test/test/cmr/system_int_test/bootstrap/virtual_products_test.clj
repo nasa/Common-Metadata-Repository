@@ -117,8 +117,7 @@
                                        granule-ur (svm/sample-source-granule-urs
                                                     [provider-id entry-title])]
                                    (vp/ingest-source-granule provider-id
-                                                             (dg/granule source-coll {:granule-ur granule-ur})
-                                                             :validate-keywords false)))
+                                                             (dg/granule source-coll {:granule-ur granule-ur}))))
           all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                            (map :granule-ur source-granules))]
       (index/wait-until-indexed)
@@ -170,8 +169,7 @@
             granule-ur "SC:AST_L1A.003:2006227720"
             ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
                                                    (dg/granule ast-coll {:granule-ur granule-ur
-                                                                         :project-refs ["proj1"]})
-                                                   :validate-keywords false)
+                                                                         :project-refs ["proj1"]}))
             virtual-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
             all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) virtual-granule-urs)]
         (index/wait-until-indexed)
@@ -223,8 +221,7 @@
             granule-ur "SC:AST_L1A.003:2006227720"
             ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                    (dg/granule ast-coll {:granule-ur granule-ur
-                                                                         :project-refs ["proj1"]})
-                                                   :validate-keywords false)
+                                                                         :project-refs ["proj1"]}))
             virtual-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
             all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) virtual-granule-urs)]
         (index/wait-until-indexed)
@@ -265,8 +262,7 @@
                            "LPDAAC_ECS"
                            (dg/granule ast-coll
                                        {:granule-ur (format "SC:AST_L1A.003:%d" n)
-                                        :revision-id 5})
-                           :validate-keywords false)))
+                                        :revision-id 5}))))
           _          (bootstrap-and-index)
           v-granules (mapcat #(:refs
                                 (search/find-refs :granule

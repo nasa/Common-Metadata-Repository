@@ -36,8 +36,7 @@
                                      dg/spatial
                                      orbit
                                      nil)}
-                other-attribs))
-       {:validate-keywords false}))))
+                other-attribs))))))
 
 (deftest orbit-bug-CMR-4722
   (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
