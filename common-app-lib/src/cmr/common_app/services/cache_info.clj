@@ -9,10 +9,14 @@
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :refer [debug error]]))
 
+;; This is the cache size map validations. Cache keys can either be keywords
+;; or strings.
 (s/def ::cache-size-map
   (s/and map?
-            #(every? keyword? (keys %))
-            #(every? number? (vals %))))
+         (fn [m]
+           (every? #(or keyword? %
+                        string? %) (keys m)))
+         #(every? number? (vals %))))
 
 (defn human-readable-bytes
   [size]

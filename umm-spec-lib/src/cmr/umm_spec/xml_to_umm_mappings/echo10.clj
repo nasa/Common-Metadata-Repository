@@ -22,6 +22,7 @@
   (:import
    (clojure.data.xml Element)))
 
+
 (def coll-progress-mapping
   "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
   {"COMPLETE" "COMPLETE"
@@ -30,7 +31,10 @@
    "ACTIVE" "ACTIVE"
    "PLANNED" "PLANNED"
    "DEPRECATED" "DEPRECATED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
+   "NOT APPLICABLE" "NOT PROVIDED"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"})
 
 (defn fields-from-temporal-resolution
   "Get the TemporalResolution and change the Value to number."

@@ -21,3 +21,13 @@
   (errors/throw-service-errors
    :bad-request
    [(str "Cannot migrate UMM-Sub v1.1 to v1.0.")]))
+
+(defmethod interface/migrate-umm-version [:subscription "1.1" "1.1.1"]
+  [_context subscription & _]
+  (m-spec/update-version subscription :subscription "1.1.1"))
+
+(defmethod interface/migrate-umm-version [:subscription "1.1.1" "1.1"]
+  [_context subscription & _]
+  (-> subscription
+      (m-spec/update-version :subscription "1.1")
+      (dissoc :Mode :EndPoint :Method)))

@@ -22,6 +22,8 @@
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.provider-validation :as pv]
    [cmr.metadata-db.services.search-service :as search]
+   [cmr.metadata-db.services.sub-notifications :as sub-not]
+   [cmr.metadata-db.services.subscriptions :as subscriptions]
    [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
@@ -756,11 +758,23 @@
 
     :else nil))
 
+(defn create-tombstone-concept
+  "Helper function to create a tombstone concept by merging in parts of the
+  previous concept to the tombstone."
+  [metadata concept previous-revision]
+  (let [{:keys [concept-id revision-id revision-date user-id]} concept]
+    (merge previous-revision {:concept-id concept-id
+                              :revision-id revision-id
+                              :revision-date revision-date
+                              :user-id user-id
+                              :metadata metadata
+                              :deleted true})))
+
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
   (cv/validate-tombstone-request concept)
-  (let [{:keys [concept-id revision-id revision-date user-id skip-publication]} concept
+  (let [{:keys [concept-id revision-id skip-publication]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
@@ -775,15 +789,11 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [metadata (if (cu/generic-concept? concept-type)
+        (let [metadata (if (or (cu/generic-concept? concept-type)
+                               (= :subscription concept-type))
                          (:metadata previous-revision)
                          "")
-              tombstone (merge previous-revision {:concept-id concept-id
-                                                  :revision-id revision-id
-                                                  :revision-date revision-date
-                                                  :user-id user-id
-                                                  :metadata metadata
-                                                  :deleted true})]
+              tombstone (create-tombstone-concept metadata concept previous-revision)]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
@@ -828,6 +838,10 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
+            (when (and subscriptions/subscriptions-enabled?
+                       (= :subscription concept-type))
+              (subscriptions/delete-subscription context revisioned-tombstone))
+            (subscriptions/work-potential-notification context revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -876,6 +890,17 @@
          context
          (ingest-events/associations-update-event associations))))))
 
+(defn set-subscription-arn
+  "Subscribes a subscription request to the CMR external topic and
+  saves the subscription ARN to the concept and returns the new concept."
+  [context concept-type concept]
+  (if (and subscriptions/subscriptions-enabled?
+           (= :subscription concept-type))
+    (if-let [subscription-arn (subscriptions/add-subscription context concept)]
+      (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
+      concept)
+    concept))
+
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -896,6 +921,7 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
+                       (set-subscription-arn context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -905,8 +931,7 @@
                  (> revision-id 1))
         (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
           (when (util/is-tombstone? previous-concept)
-            (ingest-events/publish-tombstone-delete-msg
-             context concept-type concept-id revision-id))))
+            (ingest-events/publish-tombstone-delete-msg context concept-id revision-id))))
 
       ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
@@ -915,6 +940,10 @@
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
+      ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
+      ;; above so now we can put it into the cache.
+      (subscriptions/add-delete-subscription context concept)
+      (subscriptions/work-potential-notification context concept)
       concept)))
 
 (defn- delete-associated-tag-associations
@@ -1088,7 +1117,7 @@
                (= :granule concept-type))
       ;; Remove any reference to granule from deleted-granule index
       (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-        (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
+        (ingest-events/publish-tombstone-delete-msg context concept-id revision-id)))
     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
       ;; performs the cascading delete actions first
       (force-delete-cascading-events context concept-type concept-id (long revision-id)))

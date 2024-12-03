@@ -151,7 +151,7 @@
    ;; The title of the collection or service described by the metadata.
    EntryTitle
 
-   ;; This element describes the production status of the data set. There are five choices for Data
+   ;; This element describes the production status of the data set. There are multiple choices for Data
    ;; Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable
    ;; at the present time. For Example: The Hydro spacecraft has not been launched, but information
    ;; on planned data sets may be available. ACTIVE refers to data sets currently in production or
@@ -159,9 +159,13 @@
    ;; instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no
    ;; updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection
    ;; has been completed. DEPRECATED refers to data sets that have been retired, but still can be
-   ;; retrieved. Usually newer products exist that replace the retired data set. NOT APPLICABLE
-   ;; refers to data sets in which a collection progress is not applicable such as a calibration
-   ;; collection. There is a sixth value of NOT PROVIDED that should not be used by a data provider.
+   ;; retrieved. Usually newer products exist that replace the retired data set.
+   ;; PREPRINT: Refers to datasets which are made available prior to completion of validation and review processes to support manuscript publication processes and open science.
+   ;; Preprint datasets are provisional and should not be used for production applications.
+   ;; INREVIEW: Refers to datasets which are made available to support science team final review. In Review datasets are provisional and should not be used for production applications.
+   ;; Note that if restricted access is needed, an INREVIEW dataset may also have an Access Control List applied.
+   ;; SUPERSEDED: Refers to datasets which remain publicly available, but for which a newer version is available.
+   ;; There is a sixth value of NOT PROVIDED that should not be used by a data provider.
    ;; It is currently being used as a value when a correct translation cannot be done with the
    ;; current valid values, or when the value is not provided by the data provider.
    CollectionProgress

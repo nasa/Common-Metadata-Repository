@@ -18,7 +18,11 @@
   {"COMPLETE" "COMPLETE"
    "ACTIVE" "IN WORK"
    "PLANNED" "PLANNED"
-   "DEPRECATED" "COMPLETE"})
+   "DEPRECATED" "COMPLETE"
+   "PREPRINT" "PREPRINT"
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"
+   })
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"

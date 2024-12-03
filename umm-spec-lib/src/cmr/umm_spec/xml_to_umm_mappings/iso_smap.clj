@@ -33,7 +33,10 @@
    "ONGOING" "ACTIVE"
    "PLANNED" "PLANNED"
    "UNDERDEVELOPMENT" "PLANNED"
-   "NOT APPLICABLE" "NOT APPLICABLE"})
+   "INREVIEW" "INREVIEW"
+   "SUPERSEDED" "SUPERSEDED"
+   "PREPRINT" "PREPRINT"
+   "NOT APPLICABLE" "NOT PROVIDED"})
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"

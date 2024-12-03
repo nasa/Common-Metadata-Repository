@@ -310,7 +310,11 @@
   (perform-basic-validations sub-concept)
   (let [parsed (json/parse-string (:metadata sub-concept) true)
         provider-id (get-provider-id parsed)
-        subscriber-id (get-subscriber-id context parsed)]
+        subscriber-id (get-subscriber-id context parsed)
+        parsed (if (and (= nil (:Query parsed))
+                        (= "granule" (:Type parsed)))
+                 (assoc parsed :Query (str "collection-concept-id=" (:CollectionConceptId parsed)))
+                 parsed)]
     (when-not (= CMR_PROVIDER provider-id)
       (api-core/verify-provider-exists context provider-id))
     (validate-user-id context subscriber-id)
@@ -325,72 +329,66 @@
 
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
-  ([request]
-   (create-subscription nil request))
-  ([_provider-id request]
-   (let [{:keys [body content-type headers request-context]} request]
-     (common-ingest-checks request-context)
-     (let [tmp-subscription (body->subscription (str (UUID/randomUUID)) body content-type headers)
-           {:keys [concept parsed]} (validate-and-prepare-subscription-concept
-                                     request-context tmp-subscription)
-           provider-id (:provider-id concept)
-           subscriber-id (:SubscriberId parsed)
-           native-id (get-unique-native-id request-context parsed)
-           final-sub (assoc concept :native-id native-id)]
-       (check-ingest-permission request-context provider-id subscriber-id)
-       (perform-subscription-ingest request-context headers final-sub parsed)))))
+  [request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context)
+    (let [tmp-subscription (body->subscription (str (UUID/randomUUID)) body content-type headers)
+          {:keys [concept parsed]} (validate-and-prepare-subscription-concept
+                                    request-context tmp-subscription)
+          provider-id (:provider-id concept)
+          subscriber-id (:SubscriberId parsed)
+          native-id (get-unique-native-id request-context parsed)
+          final-sub (assoc concept :native-id native-id)]
+      (check-ingest-permission request-context provider-id subscriber-id)
+      (perform-subscription-ingest request-context headers final-sub parsed))))
 
 (defn create-subscription-with-native-id
   "Processes a request to create a subscription using the native-id provided."
-  ([native-id request]
-   (create-subscription-with-native-id nil native-id request))
-  ([_provider-id native-id request]
-   (validate-native-id-not-blank native-id)
-   (let [{:keys [body content-type headers request-context]} request]
-     (common-ingest-checks request-context)
-     (let [tmp-subscription (body->subscription native-id body content-type headers)
-           {:keys [concept parsed]} (validate-and-prepare-subscription-concept
-                                     request-context tmp-subscription)
-           provider-id (:provider-id concept)
-           subscriber-id (:SubscriberId parsed)]
-       (check-ingest-permission request-context provider-id subscriber-id)
-       (when (native-id-collision? request-context native-id)
-         (errors/throw-service-error
-          :conflict
-          (format "Subscription with native-id [%s] already exists." (util/html-escape native-id))))
-       (perform-subscription-ingest request-context headers concept parsed)))))
+  [native-id request]
+  (validate-native-id-not-blank native-id)
+  (let [{:keys [body content-type headers request-context]} request]
+    (common-ingest-checks request-context)
+    (let [tmp-subscription (body->subscription native-id body content-type headers)
+          {:keys [concept parsed]} (validate-and-prepare-subscription-concept
+                                    request-context tmp-subscription)
+          provider-id (:provider-id concept)
+          subscriber-id (:SubscriberId parsed)]
+      (check-ingest-permission request-context provider-id subscriber-id)
+      (when (native-id-collision? request-context native-id)
+        (errors/throw-service-error
+         :conflict
+         (format "Subscription with native-id [%s] already exists." (util/html-escape native-id))))
+      (perform-subscription-ingest request-context headers concept parsed))))
 
 (defn create-or-update-subscription-with-native-id
   "Processes a request to create or update a subscription. This function
   does NOT fail on collisions. This is mapped to PUT methods to preserve
   existing functionality."
-  ([native-id request]
-   (create-or-update-subscription-with-native-id nil native-id request))
-  ([_provider-id native-id request]
-   (validate-native-id-not-blank native-id)
-   (let [{:keys [body content-type headers request-context]} request
-         _ (common-ingest-checks request-context)
-         tmp-subscription (body->subscription native-id body content-type headers)
-         {:keys [concept parsed]} (validate-and-prepare-subscription-concept
-                                   request-context tmp-subscription)
-         provider-id (:provider-id concept)
-         subscriber-id (:SubscriberId parsed)
-         original-subscription (->> (mdb/find-concepts request-context
-                                                       {:native-id native-id
-                                                        :exclude-metadata false
-                                                        :latest true}
-                                                       :subscription)
-                                    (remove :deleted)
-                                    first)
-         old-subscriber (when original-subscription
-                          (get-in original-subscription [:extra-fields :subscriber-id]))]
-     (check-ingest-permission request-context provider-id subscriber-id old-subscriber)
-     (perform-subscription-ingest request-context headers concept parsed))))
+  [native-id request]
+  (validate-native-id-not-blank native-id)
+  (let [{:keys [body content-type headers request-context]} request
+        _ (common-ingest-checks request-context)
+        tmp-subscription (body->subscription native-id body content-type headers)
+        {:keys [concept parsed]} (validate-and-prepare-subscription-concept
+                                  request-context tmp-subscription)
+        provider-id (:provider-id concept)
+        subscriber-id (:SubscriberId parsed)
+        original-subscription (->> (mdb/find-concepts request-context
+                                                      {:native-id native-id
+                                                       :exclude-metadata false
+                                                       :latest true}
+                                                      :subscription)
+                                   (remove :deleted)
+                                   first)
+        old-subscriber (when original-subscription
+                         (get-in original-subscription [:extra-fields :subscriber-id]))]
+    (check-ingest-permission request-context provider-id subscriber-id old-subscriber)
+    (perform-subscription-ingest request-context headers concept parsed)))
 
 (defn- prepare-delete-request
   "Validate the native-id for delete,
   return [provider-id subscriber-id] if the delete request can be processed."
-  [context provider-id native-id]
+  [context native-id]
   (let [sub-concepts (mdb/find-concepts context
                                         {:native-id native-id
                                          :exclude-metadata false
@@ -402,9 +400,7 @@
           ;; there is a concept to delete, figure out the provider-id and subscriber-id
           (let [provider-id (if (= "collection" (get-in sub-concept [:extra-fields :subscription-type]))
                               CMR_PROVIDER
-                              (if provider-id
-                                provider-id
-                                (get-provider-id (json/parse-string (:metadata sub-concept) true))))
+                              (get-provider-id (json/parse-string (:metadata sub-concept) true)))
                 subscriber-id (get-in sub-concept [:extra-fields :subscriber-id])]
             [provider-id subscriber-id])
           (errors/throw-service-error
@@ -416,22 +412,20 @@
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."
-  ([native-id request]
-   (delete-subscription nil native-id request))
-  ([provider-id native-id request]
-   (let [{:keys [headers request-context]} request
-         _ (common-ingest-checks request-context)
-         [provider-id subscriber-id] (prepare-delete-request request-context provider-id native-id)
-         concept-attribs (-> {:provider-id provider-id
-                              :native-id native-id
-                              :concept-type :subscription}
-                             (api-core/set-revision-id headers)
-                             (api-core/set-user-id request-context headers))]
-     (check-ingest-permission request-context provider-id subscriber-id)
-     (info (format "Deleting subscription %s from client %s"
-                   (pr-str concept-attribs) (:client-id request-context)))
-     (api-core/generate-ingest-response headers
-                                        (api-core/format-and-contextualize-warnings-existing-errors
-                                          (ingest/delete-concept
-                                           request-context
-                                           concept-attribs))))))
+  [native-id request]
+  (let [{:keys [headers request-context]} request
+        _ (common-ingest-checks request-context)
+        [provider-id subscriber-id] (prepare-delete-request request-context native-id)
+        concept-attribs (-> {:provider-id provider-id
+                             :native-id native-id
+                             :concept-type :subscription}
+                            (api-core/set-revision-id headers)
+                            (api-core/set-user-id request-context headers))]
+    (check-ingest-permission request-context provider-id subscriber-id)
+    (info (format "Deleting subscription %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (api-core/generate-ingest-response headers
+                                       (api-core/format-and-contextualize-warnings-existing-errors
+                                        (ingest/delete-concept
+                                         request-context
+                                         concept-attribs)))))

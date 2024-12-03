@@ -2,6 +2,10 @@
   "The java aws sdk version to use."
   "1.12.663")
 
+(def aws-java-sdk2-version
+  "The java aws sdk version to use."
+  "2.28.19")
+
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
@@ -10,6 +14,10 @@
                  [clj-time "0.15.1"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
+                 [software.amazon.awssdk/regions ~aws-java-sdk2-version]
+                 [software.amazon.awssdk/sns ~aws-java-sdk2-version]
+                 [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
+                 [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [commons-logging "1.2"]
@@ -21,6 +29,7 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
+                 [org.testcontainers/testcontainers "1.19.7"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"

@@ -127,7 +127,7 @@
                         (:uri request)
                         (:headers request)
                         (default-format-fn request e))
-        status-code (type->http-status-code e-type)
+        status-code (or (type->http-status-code e-type) 500)
         [content-type response-body] (response-type-body
                                       errors results-format)]
     ;; Log exceptions for server errors

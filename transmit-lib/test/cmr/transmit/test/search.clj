@@ -3,6 +3,7 @@
    the functionality of the function called, but instead will check that the request includes a
    client id."
   (:require
+   [clj-time.core :as time]
    [clojure.test :refer [deftest is testing]]
    [clj-http.client :as client]
    [cmr.transmit.search :as search]))
@@ -24,7 +25,7 @@
                               (format "Failed testing %s" (:url arg)))
                           {:status 204 :body ""})]
       (with-redefs [client/request action-tester]
-        (let [result (search/save-subscription-notification-time context "sub-id-1")]
+        (let [result (search/save-subscription-notification-time context "sub-id-1" (str (time/now)))]
           (is (nil? result))))))
 
   (testing "check for client id"

@@ -1,0 +1,13 @@
+
+#Set working directory
+WORKDIR /app
+
+#Copy the application files
+COPY *.py .
+
+#Install the required packages
+RUN pip3 install boto3 Flask
+
+# Command to run the application
+CMD ["python", "subscription_worker.py"]
+

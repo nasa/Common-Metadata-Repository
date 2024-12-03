@@ -740,4 +740,57 @@
   [_context collection & _]
   ;; File sizes from positive numbers to numbers, only need to migrate version. 
   (-> collection
-      (m-spec/update-version :collection "1.18.0"))) 
+      (m-spec/update-version :collection "1.18.0")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.2"]
+   [_context collection & _]
+   ;; Migrating up version 1.18.1 to 1.18.2
+   ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+   ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+   ;; Remove NOT APPLICABLE enum from CollectionProgress
+   (-> collection
+       (m-spec/update-version :collection "1.18.2")
+       ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
+       (as-> coll (if (= "NOT APPLICABLE" (:CollectionProgress coll))
+                    (-> coll
+                        (update :CollectionProgress (constantly "NOT PROVIDED")))
+                    coll))))
+
+(defn- migrate-associated-doi-type-down
+       [associatedDOI]
+       (if (or (= "IsPreviousVersionOf" (:Type associatedDOI))
+               (= "IsNewVersionOf" (:Type associatedDOI)))
+               (-> associatedDOI
+                   (update :Type (constantly "Related Dataset"))
+                   (remove-nil-keys))
+               associatedDOI))
+
+(defn- migrate-collection-progress-down
+       [collectionProgress]
+
+       (case collectionProgress
+             "PREPRINT" "PLANNED"
+             "INREVIEW" "PLANNED"
+             "SUPERSEDED" "COMPLETE"
+             collectionProgress))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
+           [_context collection & _]
+           ;; Migrating down version 1.18.2 to 1.18.1
+           ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+           ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+           ;; Add back in NOT APPLICABLE enum in CollectionProgress
+
+           (-> collection
+               (m-spec/update-version :collection "1.18.1")
+               ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
+               (as-> coll (if (contains? coll :AssociatedDOIs)
+                            (-> coll
+                                (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down))
+                            coll))
+               ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW. And COMPLETE if enum value is SUPERSEDED
+               (as-> coll (if (contains? coll :CollectionProgress)
+                            (-> coll
+                                (update :CollectionProgress migrate-collection-progress-down))
+                            coll))))
+

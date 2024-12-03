@@ -5123,12 +5123,21 @@ On occasions when tool dissociation cannot be processed at all due to invalid in
 
 ### <a name="subscription"></a> Subscription
 
-Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+A subscription allows a user to be notified when specific collections/granules are created, updated, or deleted. The collections/granules specified can be filtered by query conditions.
 
-- collection subscription for users to be notified when collections are created/updated.
-- granule subscription for users to be notified when granules are created/updated.
+There are two kinds of subscriptions: Batch Notification and Near-Real-Time Notification
 
-Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+<ul>
+    <li>Batch Notification subscription notification processing is executed periodically, to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and will notify the subscription user with any matches. Notification of updates is via the email address associated with the SubscriberId's EarthData Login (URS). </li>
+    <ul>
+        <li>There are two types of batch process subscriptions (identified by the "Type" field of the subscription):</li>
+        <ul>
+            <li>collection subscription for users to be notified when collections are created/updated, or </li>
+            <li>granule subscription for users to be notified when granules are created/update</li>
+        </ul>
+    </ul>
+    <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+</ul>
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
