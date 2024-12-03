@@ -5,7 +5,8 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug)]
+   [cmr.search.api.association :as assoc]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -22,6 +23,23 @@
   "Whether there's an error in [data]."
   [data]
   (some #(contains? % :errors) data))
+
+
+;(defn- all-results-contain-errors?
+;  "Returns true if the all results contain :errors"
+;  [results]
+;  (not (some #(nil? (:errors %)) results)))
+
+;(defn tag-api-response
+;  "Creates a successful tag response with the given data response"
+;  ([data]
+;   (if (has-error? data)
+;     (tag-api-response 400 data)
+;     (tag-api-response 200 data)))
+;  ([status-code data]
+;   {:status status-code
+;    :body (json/generate-string (util/snake-case-data data))
+;    :headers {"Content-Type" mt/json}}))
 
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
@@ -81,7 +99,11 @@
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+  (println "******** INSIDE associate-tag-to-collections")
+  (let [result (tagging-service/associate-tag-to-collections context tag-key body)]
+    (if (assoc/all-results-contain-errors? result)
+      (tag-api-response 400 result)
+      (tag-api-response 200 result))))
 
 (defn dissociate-tag-to-collections
   "Dissociate the tag to a list of collections."
@@ -91,7 +113,10 @@
   (validate-tag-content-type headers)
   (debug (format "Dissociating tag [%s] from collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (tag-api-response (tagging-service/dissociate-tag-to-collections context tag-key body)))
+  (let [result (tagging-service/dissociate-tag-to-collections context tag-key body)]
+    (if (assoc/all-results-contain-errors? result)
+      (tag-api-response 400 result)
+      (tag-api-response 200 result))))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."

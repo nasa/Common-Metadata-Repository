@@ -24,7 +24,7 @@
     :body (json/generate-string (util/snake-case-data data))
     :headers {"Content-Type" mt/json}}))
 
-(defn- all-results-contain-errors?
+(defn all-results-contain-errors?
   "Returns true if the all results contain :errors"
   [results]
   (not (some #(nil? (:errors %)) results)))

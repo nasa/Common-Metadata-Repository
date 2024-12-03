@@ -5024,7 +5024,15 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
 #### <a name="tool-association"></a> Tool Association
 
-A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample tool association request and its response:
+A tool identified by its concept id can be associated with collections through a list of collection concept revisions. 
+The tool association request normally returns status code 200 with a response that consists of a list of individual tool 
+association responses, one for each tool association attempted to create. 
+Each individual tool association response has an `associated_item` field and either a `tool_association` field with the 
+tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error 
+message when the tool association failed. 
+The `associated_item` field value has the collection concept id and the optional revision id that is used to identify 
+the collection during tool association. Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL 
+for the collection's provider. Here is a sample tool association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -5065,7 +5073,9 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tool association cannot be processed at all due to invalid input, tool association request will return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, a 400 failure status code will be returned.
+On occasions when tool association cannot be processed at all due to invalid input, tool association request will 
+return status code 200 with appropriate error messages for each failed association. If all the associations in the request fail, 
+a 400 failure status code will be returned.
 
 #### <a name="tool-dissociation"></a> Tool Dissociation
 
@@ -5119,7 +5129,9 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tool dissociation cannot be processed at all due to invalid input, tool dissociation request will return status code 200 with appropriate error messages for each failed dissociation. If all the associations in the request fail, a 400 failure status code will be returned.
+On occasions when tool dissociation cannot be processed at all due to invalid input, tool dissociation request will 
+return status code 200 with appropriate error messages for each failed dissociation. If all the associations in the request fail, 
+a 400 failure status code will be returned.
 
 ### <a name="subscription"></a> Subscription
 
