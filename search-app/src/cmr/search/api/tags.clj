@@ -24,23 +24,6 @@
   [data]
   (some #(contains? % :errors) data))
 
-
-;(defn- all-results-contain-errors?
-;  "Returns true if the all results contain :errors"
-;  [results]
-;  (not (some #(nil? (:errors %)) results)))
-
-;(defn tag-api-response
-;  "Creates a successful tag response with the given data response"
-;  ([data]
-;   (if (has-error? data)
-;     (tag-api-response 400 data)
-;     (tag-api-response 200 data)))
-;  ([status-code data]
-;   {:status status-code
-;    :body (json/generate-string (util/snake-case-data data))
-;    :headers {"Content-Type" mt/json}}))
-
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
@@ -99,7 +82,6 @@
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (println "******** INSIDE associate-tag-to-collections")
   (let [result (tagging-service/associate-tag-to-collections context tag-key body)]
     (if (assoc/all-results-contain-errors? result)
       (tag-api-response 400 result)
