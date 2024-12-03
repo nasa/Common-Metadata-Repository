@@ -113,7 +113,7 @@
             (search/find-refs :granule {:page-size 50})))))))
 
 (deftest all-granules-in-virtual-product-test
-  (let [source-collections (vp/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
+  (let [source-collections (vp/ingest-source-collections (vp/source-collections) {:validate-keywords false})
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
@@ -327,7 +327,7 @@
 (deftest virtual-products-disabled-source-collections-test
   (vp/with-disabled-source-collections
     disabled-source-colls
-    (let [source-collections (vp/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
+    (let [source-collections (vp/ingest-source-collections (vp/source-collections) {:validate-keywords false})
           enabled-source-collections (remove #(contains? disabled-source-colls (:entry-title %))
                                              source-collections)
           disabled-source-collections (filter #(contains? disabled-source-colls (:entry-title %))

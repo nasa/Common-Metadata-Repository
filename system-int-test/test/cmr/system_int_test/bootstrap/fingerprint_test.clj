@@ -83,7 +83,7 @@
                     (get-in latest-revision-concept [:extra-fields :fingerprint]))))))
 
        (testing "update fingerprint of a deleted variable"
-         (let [{:keys [_ _]} (ingest/delete-concept var2-concept)
+         (let [_ (ingest/delete-concept var2-concept)
                latest-revision-concept (mdb/get-concept var2-concept-id)]
            (is (= var2-concept-id (:concept-id latest-revision-concept)))
            (is (= 2 (:revision-id latest-revision-concept)))
@@ -140,7 +140,6 @@
            var2-concept (mdb/get-concept var2-concept-id)
            var2-fingerprint (get-in var2-concept [:extra-fields :fingerprint])
            var3-concept (mdb/get-concept var3-concept-id)
-           _ (get-in var3-concept [:extra-fields :fingerprint])
            ;; now change the fingerprint of var1 and var3 to a different vaule
            latest-var1 (-> var1-concept
                            (assoc :revision-id (inc (:revision-id var1-concept)))

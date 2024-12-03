@@ -108,13 +108,11 @@
                                                                                  (dg/psa "bravo" ["cd" "bf"])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))
 
-        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]})
-                        {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "bravo" ["aa" "bf"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" ["az"])]}))
 
-        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]})
-                        {:validate-keywords false})
+        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}) {:validate-keywords false})
         gran5 (d/ingest "PROV1" (dg/granule coll3 {:product-specific-attributes [(dg/psa "case" ["UP"])]}))]
     (index/wait-until-indexed)
     (testing "search by value"
@@ -282,8 +280,7 @@
                                                                                  (dg/psa "bravo" [-12])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" [10.5 123])]}))
 
-        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]})
-                        {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}) {:validate-keywords false})
         gran3 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" [14])
                                                                                  (dg/psa "bravo" [13.7 123])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "charlie" [14])]}))]

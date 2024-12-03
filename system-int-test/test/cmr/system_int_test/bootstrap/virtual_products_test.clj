@@ -104,7 +104,7 @@
                           (dc/collection {:entry-title "ASTER L2 Surface Emissivity V003"
                                           :native-id "NID-1"}) {:validate-keywords false})
           _ (ingest/delete-concept (d/item->concept coll1 :echo10))
-          source-collections (vp/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
+          source-collections (vp/ingest-source-collections (vp/source-collections) {:validate-keywords false})
           ;; Ingest the virtual collections. For each virtual collection associate it with the source
           ;; collection to use later.
           vp-colls (reduce (fn [new-colls source-coll]

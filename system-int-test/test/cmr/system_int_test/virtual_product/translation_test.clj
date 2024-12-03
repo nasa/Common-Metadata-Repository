@@ -256,7 +256,7 @@
 ;; granules in the config file. All the virtual granule entries should be translated to corresponding
 ;; source entries by the end-point.
 (deftest all-virtual-granules-translate-entries-test
-  (let [source-collections (virtual-product-util/ingest-source-collections (cmr.system-int-test.utils.virtual-product-util/source-collections) {:validate-keywords false})
+  (let [source-collections (virtual-product-util/ingest-source-collections (virtual-product-util/source-collections) {:validate-keywords false})
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
