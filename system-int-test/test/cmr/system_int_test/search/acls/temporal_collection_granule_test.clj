@@ -63,7 +63,8 @@
                             "PROV1"
                             (dc/collection {:entry-title (str "coll" (swap! coll-num inc))
                                             :single-date-time (tu/n->date-time-string n)})
-                            {:format metadata-format}))
+                            {:format metadata-format
+                             :validate-keywords false}))
         range-date-coll (fn [begin end metadata-format]
                           (d/ingest
                            "PROV1"
@@ -71,7 +72,8 @@
                                                :version-id "V1"
                                                :beginning-date-time (tu/n->date-time-string begin)
                                                :ending-date-time (tu/n->date-time-string end)})
-                           {:format metadata-format}))]
+                           {:format metadata-format
+                            :validate-keywords false}))]
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
@@ -208,7 +210,7 @@
         group2-concept-id (e/get-or-create-group (s/context) "group2")
         group3-concept-id (e/get-or-create-group (s/context) "group3")
         group4-concept-id (e/get-or-create-group (s/context) "group4")
-        collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
+        collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}) {:validate-keywords false})
         gran-num (atom 0)
         single-date-gran (fn [n metadata-format]
                            (d/ingest
@@ -216,7 +218,8 @@
                             (dg/granule collection
                                         {:granule-ur (str "gran" (swap! gran-num inc))
                                          :single-date-time (tu/n->date-time-string n)})
-                            {:format metadata-format}))
+                            {:format metadata-format
+                             :validate-keywords false}))
         range-date-gran (fn [begin end metadata-format]
                           (d/ingest
                            "PROV1"
@@ -224,7 +227,8 @@
                                        {:granule-ur (str "gran" (swap! gran-num inc))
                                         :beginning-date-time (tu/n->date-time-string begin)
                                         :ending-date-time (tu/n->date-time-string end)})
-                           {:format metadata-format}))]
+                           {:format metadata-format
+                            :validate-keywords false}))]
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 

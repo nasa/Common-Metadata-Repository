@@ -185,7 +185,7 @@
 
 (deftest bulk-index-collections-with-tool-association-test
   (system/only-with-real-database
-   (let [coll1 (data-core/ingest "PROV1" (data-collection/collection {:entry-title "coll1"}))
+   (let [coll1 (data-core/ingest "PROV1" (data-collection/collection {:entry-title "coll1"}) {:validate-keywords false})
          coll1-concept-id (:concept-id coll1)
          token (echo-util/login (system/context) "user1")
          {tool1-concept-id :concept-id} (tool/ingest-tool-with-attrs

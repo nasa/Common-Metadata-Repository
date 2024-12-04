@@ -25,10 +25,12 @@
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                        {:validate-keywords false})
         ;; create services
         {serv1-concept-id :concept-id} (service-util/ingest-service-with-attrs
                                         {:native-id "serv1"
@@ -185,10 +187,12 @@
     (let [token (e/login (s/context) "user1")
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                   :short-name "S1"
-                                                  :version-id "V1"}))
+                                                  :version-id "V1"})
+                          {:validate-keywords false})
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
                                                   :short-name "S2"
-                                                  :version-id "V2"}))
+                                                  :version-id "V2"})
+                          {:validate-keywords false})
           ;; create services
           {serv1-concept-id :concept-id}
           (service-util/ingest-service-with-attrs
@@ -255,13 +259,16 @@
   (let [token (e/login (s/context) "user1")
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"
                                                 :short-name "S3"
-                                                :version-id "V3"}))
+                                                :version-id "V3"})
+                        {:validate-keywords false})
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "ET4"
                                                 :short-name "S4"
-                                                :version-id "V4"}))
+                                                :version-id "V4"})
+                        {:validate-keywords false})
         coll5 (d/ingest "PROV1" (dc/collection {:entry-title "ET5"
                                                 :short-name "S5"
-                                                :version-id "V5"}))
+                                                :version-id "V5"})
+                        {:validate-keywords false})
         ;; create services
         {serv8-concept-id :concept-id}
         (service-util/ingest-service-with-attrs
@@ -395,7 +402,8 @@
                                                  (d/ingest-umm-spec-collection
                                                   "PROV1"
                                                   (data-umm-c/collection n {})
-                                                  {:token token})))
+                                                  {:token token
+                                                   :validate-keywords false})))
         ;; index the collections so that they can be found during service association
         _ (index/wait-until-indexed)
         ;; create services
@@ -504,13 +512,16 @@
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
                                                 :short-name "S1"
-                                                :version-id "V1"}))
+                                                :version-id "V1"})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
                                                 :short-name "S2"
-                                                :version-id "V2"}))
+                                                :version-id "V2"})
+                        {:validate-keywords false})
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"
                                                 :short-name "S3"
-                                                :version-id "V3"}))
+                                                :version-id "V3"})
+                        {:validate-keywords false})
         ;; create services
         {serv1-concept-id :concept-id}
         (service-util/ingest-service-with-attrs

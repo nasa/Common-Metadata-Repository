@@ -11,7 +11,6 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
             [cmr.system-int-test.system :as s]
-            [cmr.umm.umm-granule :as umm-g]
             [cmr.virtual-product.config]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.common.util :refer [are2]]))
@@ -103,14 +102,14 @@
           ;; collections to test the edge case documented in CMR-2169
           coll1 (d/ingest "LPDAAC_ECS"
                           (dc/collection {:entry-title "ASTER L2 Surface Emissivity V003"
-                                          :native-id "NID-1"}))
+                                          :native-id "NID-1"}) {:validate-keywords false})
           _ (ingest/delete-concept (d/item->concept coll1 :echo10))
-          source-collections (vp/ingest-source-collections)
+          source-collections (vp/ingest-source-collections (vp/source-collections) {:validate-keywords false})
           ;; Ingest the virtual collections. For each virtual collection associate it with the source
           ;; collection to use later.
           vp-colls (reduce (fn [new-colls source-coll]
                              (into new-colls (map #(assoc % :source-collection source-coll)
-                                                  (vp/ingest-virtual-collections [source-coll]))))
+                                                  (vp/ingest-virtual-collections [source-coll] {:validate-keywords false}))))
                            []
                            source-collections)
           source-granules (doall (for [source-coll source-collections
@@ -164,8 +163,9 @@
                               {:entry-title entry-title
                                :short-name "AST_L1A"
                                :projects (dc/projects "proj1" "proj2" "proj3")})
-                            :provider-id "LP_ALIAS")])
-            vp-colls (vp/ingest-virtual-collections [ast-coll])
+                            :provider-id "LP_ALIAS")]
+                         {:validate-keywords false})
+            _ (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
             granule-ur "SC:AST_L1A.003:2006227720"
             ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
                                                    (dg/granule ast-coll {:granule-ur granule-ur
@@ -215,8 +215,9 @@
                                :short-name "AST_L1A"
                                :version-id "003"
                                :projects (dc/projects "proj1" "proj2" "proj3")})
-                            :provider-id "LPDAAC_ECS")])
-            vp-colls (vp/ingest-virtual-collections [ast-coll])
+                            :provider-id "LPDAAC_ECS")]
+                         {:validate-keywords false})
+            _ (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
             granule-ur "SC:AST_L1A.003:2006227720"
             ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                    (dg/granule ast-coll {:granule-ur granule-ur
@@ -254,13 +255,14 @@
 (deftest ^:oracle deleted-virtual-granules
   (s/only-with-real-database
     (let [ast-coll (vp/ingest-ast-coll)
-          vp-colls   (vp/ingest-virtual-collections [ast-coll])
+          vp-colls   (vp/ingest-virtual-collections [ast-coll] {:validate-keywords false})
           s-granules (doall
                        (for [n (range 10)]
                          (vp/ingest-source-granule
                            "LPDAAC_ECS"
-                           (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
-                                                 :revision-id 5}))))
+                           (dg/granule ast-coll
+                                       {:granule-ur (format "SC:AST_L1A.003:%d" n)
+                                        :revision-id 5}))))
           _          (bootstrap-and-index)
           v-granules (mapcat #(:refs
                                 (search/find-refs :granule

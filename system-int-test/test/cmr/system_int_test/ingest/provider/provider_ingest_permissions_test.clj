@@ -444,7 +444,7 @@
                                      "umm-var-guid2" "umm-var-user2")
           {update-token :token} (variable-util/setup-update-acl
                                  (s/context) "PROV1")
-          coll-concept-id (->> {:token update-token}
+          coll-concept-id (->> {:token update-token :validate-keywords false}
                                (d/ingest "PROV1" (dc/collection))
                                :concept-id)
           _ (index/wait-until-indexed)

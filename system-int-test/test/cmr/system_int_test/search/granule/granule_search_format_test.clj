@@ -6,7 +6,6 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.concepts :as cu]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.spatial.line-string :as l]
@@ -64,7 +63,7 @@
       (is (= (:concept-id (first (:items response))) (:concept-id gran-7340))))))
 
 (deftest simple-search-test
-  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10 :validate-keywords false})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
                                                        :producer-gran-id "p1"})
                           {:format :echo10})]
@@ -104,7 +103,8 @@
                     "PROV1"
                     (data-umm-c/collection {:EntryTitle "UMM-G-Test"
                                             :ShortName "U-G-T"
-                                            :Version "V1"}))
+                                            :Version "V1"})
+                    {:validate-keywords false})
         granule (dg/granule-with-umm-spec-collection
                  collection
                  (:concept-id collection)
@@ -149,8 +149,8 @@
         :native umm-g-gran-concept-id umm-g-gran nil "native"))))
 
 (deftest search-granules-in-xml-metadata
-  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
-        c2-smap (d/ingest "PROV2" (dc/collection) {:format :iso-smap})
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10 :validate-keywords false})
+        c2-smap (d/ingest "PROV2" (dc/collection) {:format :iso-smap :validate-keywords false})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
                                                        :producer-gran-id "p1"}) {:format :echo10})
         g2-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g2"
@@ -165,7 +165,7 @@
                     :provider-id "PROV1")
         concept (-> (d/item->concept item :echo10)
                     (update :metadata #(str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" %)))
-        response (ingest/ingest-concept concept)
+        response (ingest/ingest-concept concept {:validate-keywords false})
         _ (is (= 201 (:status response)))
         g5-echo (assoc item
                        :concept-id (:concept-id response)
@@ -387,8 +387,8 @@
   (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
         ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
         ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
-        coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
+        coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}) {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}) {:validate-keywords false})
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00Z"
                                                    :ending-date-time "2010-01-11T12:00:00Z"
@@ -452,10 +452,12 @@
                              :url "https://ghrc.nsstc.nasa.gov/opendap/ssmis/f16/daily/data/"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
-                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
-                                                :related-urls [ru4 ru5]}))
+                                                :related-urls [ru4 ru5]})
+                        {:validate-keywords false})
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "OrbitDataset"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
                                                 :spatial-coverage (dc/spatial {:gsr :orbit
@@ -463,10 +465,11 @@
                                                                                        :period 97.87
                                                                                        :swath-width 390.0
                                                                                        :start-circular-latitude -90.0
-                                                                                       :number-of-orbits 1.0}})}))
+                                                                                       :number-of-orbits 1.0}})})
+                        {:validate-keywords false})
 
         make-gran (fn [coll attribs]
-                    (d/ingest "PROV1" (dg/granule coll attribs)))
+                    (d/ingest "PROV1" (dg/granule coll attribs) {:validate-keywords false}))
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -624,7 +627,8 @@
         ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
-                                                :spatial-coverage (dc/spatial {:gsr :no-spatial})}))
+                                                :spatial-coverage (dc/spatial {:gsr :no-spatial})})
+                        {:validate-keywords false})
         make-gran (fn [coll attribs]
                     (d/ingest "PROV1" (dg/granule coll attribs)))
 
@@ -708,7 +712,8 @@
 (deftest search-granule-stac
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"
-                                                :spatial-coverage (dc/spatial {:gsr :geodetic})}))
+                                                :spatial-coverage (dc/spatial {:gsr :geodetic})})
+                        {:validate-keywords false})
         coll-concept-id (:concept-id coll1)
         gran-spatial (dg/spatial (m/mbr 10 30 20 0))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -981,7 +986,8 @@
 (deftest granule-concept-stac-retrieval-test
   (let [coll-metadata (slurp (io/resource "stac-test/C1299783579-LPDAAC_ECS.xml"))
         {coll-concept-id :concept-id} (ingest/ingest-concept
-                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata))
+                                       (ingest/concept :collection "PROV1" "foo" :echo10 coll-metadata)
+                                       {:validate-keywords false})
         gran-metadata (slurp (io/resource "stac-test/G1327299284-LPDAAC_ECS.xml"))
         {gran-concept-id :concept-id} (ingest/ingest-concept
                                        (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
@@ -1026,7 +1032,8 @@
 
 (deftest search-no-spatial-concept-stac
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :beginning-date-time "1970-01-01T12:00:00Z"}))
+                                                :beginning-date-time "1970-01-01T12:00:00Z"})
+                        {:validate-keywords false})
         coll-concept-id (:concept-id coll1)
         gran-spatial (dg/spatial (m/mbr 10 30 20 0))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -1095,7 +1102,8 @@
                                                        "PROV1"
                                                        "foo"
                                                        {:format :umm-json :version "1.17.0"}
-                                                       coll-metadata))
+                                                       coll-metadata)
+                                       {:validate-keywords false})
         {aa-gran-concept-id :concept-id} (ingest/ingest-concept
                                           (ingest/concept :granule
                                                           "PROV1"

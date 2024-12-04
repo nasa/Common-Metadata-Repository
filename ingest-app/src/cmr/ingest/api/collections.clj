@@ -16,7 +16,7 @@
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers]
-  {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
+  {:validate-keywords? (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
    :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
    :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))})
 

@@ -15,7 +15,8 @@
   (d/ingest-umm-spec-collection
    prov
    (data-umm-spec/collection-without-minimal-attribs
-    n (apply merge {:EntryTitle (str "coll" n)} attribs))))
+    n (apply merge {:EntryTitle (str "coll" n)} attribs))
+   {:validate-keywords false}))
 
 (defn projects
   [& project-names]

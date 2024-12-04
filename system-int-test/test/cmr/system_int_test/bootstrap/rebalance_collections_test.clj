@@ -3,7 +3,6 @@
    index to separate collection indexes"
   (:require
    [clojure.test :refer :all]
-   [clj-http.client :as client]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.system-int-test.data2.collection :as dc]
@@ -29,10 +28,10 @@
 
 (deftest ^:oracle rebalance-collection-error-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-         gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}))]
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+         _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+         _ (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}))]
      (index/wait-until-indexed)
      (testing "no permission for start-rebalance-collection"
        (is (= {:status 401
@@ -163,8 +162,8 @@
 ;; Rebalances a single collection with a single granule
 (deftest ^:oracle simple-rebalance-collection-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         gran1 (ingest-granule-for-coll coll1 1)
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+         _ (ingest-granule-for-coll coll1 1)
          expected-provider-holdings (-> coll1
                                         (select-keys [:provider-id :concept-id :entry-title])
                                         (assoc :granule-count 1)
@@ -209,11 +208,11 @@
 
 (deftest ^:oracle rebalance-collection-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
-         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
-         granules (doall (for [coll [coll1 coll2 coll3 coll4]
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
+         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
+         _ (doall (for [coll [coll1 coll2 coll3 coll4]
                                n (range 4)]
                            (ingest-granule-for-coll coll n)))
 
@@ -284,11 +283,11 @@
 ;; Tests rebalancing multiple collections at the same time.
 (deftest ^:oracle rebalance-multiple-collections-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
-         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
-         granules (doall (for [coll [coll1 coll2 coll3 coll4]
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
+         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
+         _ (doall (for [coll [coll1 coll2 coll3 coll4]
                                n (range 4)]
                            (ingest-granule-for-coll coll n)))
 
@@ -345,11 +344,11 @@
 
 (deftest ^:oracle rebalance-collection-after-other-collections-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
-         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
-         granules (doall (for [coll [coll1 coll2 coll3 coll4]
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
+         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
+         _ (doall (for [coll [coll1 coll2 coll3 coll4]
                                n (range 4)]
                            (ingest-granule-for-coll coll n)))
 
@@ -474,8 +473,8 @@
 (deftest ^:oracle rebalance-old-deleted-collection-back-to-small-collections-test
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (s/only-with-real-database
-   (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}))
-         granules (doseq [n (range 2)]
+   (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}) {:validate-keywords false})
+         _ (doseq [n (range 2)]
                     (ingest-granule-for-coll deleted-coll n))
          deleted-coll-concept (mdb/get-concept (:concept-id deleted-coll))]
 

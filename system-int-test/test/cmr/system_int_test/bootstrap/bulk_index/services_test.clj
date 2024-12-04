@@ -167,7 +167,7 @@
 
 (deftest ^:oracle bulk-index-collections-with-service-association-test
   (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
          coll1-concept-id (:concept-id coll1)
          token (e/login (s/context) "user1")
          {serv1-concept-id :concept-id} (service/ingest-service-with-attrs

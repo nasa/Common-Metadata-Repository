@@ -78,15 +78,17 @@
 
   ;; Ingest 2 early versions of coll1
   (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                    :projects (dc/projects "ESI_1")}))
+                                    :projects (dc/projects "ESI_1")})
+            {:validate-keywords false})
   (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                    :projects (dc/projects "ESI_2")}))
+                                    :projects (dc/projects "ESI_2")})
+            {:validate-keywords false})
 
   (let [umm-coll (dc/collection {:entry-title "coll1"
                                  :projects (dc/projects "ESI_3")})
-        coll1 (d/ingest "PROV1" umm-coll)
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
-        del-coll (d/ingest "PROV1" (dc/collection))
+        coll1 (d/ingest "PROV1" umm-coll {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}) {:validate-keywords false})
+        del-coll (d/ingest "PROV1" (dc/collection) {:validate-keywords false})
         ;; tokens
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
@@ -226,42 +228,51 @@
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   :entry-title "ET1"})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         c2-echo (d/ingest "PROV2" (dc/collection {:short-name "S2"
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         c3-dif (d/ingest "PROV1" (dc/collection-dif {:short-name "S3"
                                                      :version-id "V3"
                                                      :entry-title "ET3"
                                                      :long-name "ET3"})
-                         {:format :dif})
+                         {:format :dif
+                          :validate-keywords false})
         c4-dif (d/ingest "PROV2" (dc/collection-dif {:short-name "S4"
                                                      :version-id "V4"
                                                      :entry-title "ET4"
                                                      :long-name "ET4"})
-                         {:format :dif})
+                         {:format :dif
+                          :validate-keywords false})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :entry-id "S5"
                                                  :version-id "V5"})
-                         {:format :iso19115})
+                         {:format :iso19115
+                          :validate-keywords false})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :entry-id "S6"
                                                  :version-id "V6"})
-                         {:format :iso19115})
+                         {:format :iso19115
+                          :validate-keywords false})
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
                                                   :version-id "V7"})
-                          {:format :iso-smap})
+                          {:format :iso-smap
+                           :validate-keywords false})
         c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:short-name "S8"
                                                          :version-id "V8"
                                                          :entry-title "ET8"
                                                          :long-name "ET8"})
-                           {:format :dif10})
+                           {:format :dif10
+                            :validate-keywords false})
         c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:short-name "S9"
                                                          :version-id "V9"
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
-                           {:format :dif10})
+                           {:format :dif10
+                            :validate-keywords false})
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
     (index/wait-until-indexed)
 
@@ -368,18 +379,19 @@
         ;; to vars to make it easier to see what is being ingested.
 
         ;; Ingest a collection twice.
-        coll1-1 (d/ingest "PROV1" umm-coll1-1)
-        coll1-2 (d/ingest "PROV1" umm-coll1-2)
+        coll1-1 (d/ingest "PROV1" umm-coll1-1 {:validate-keywords false})
+        coll1-2 (d/ingest "PROV1" umm-coll1-2 {:validate-keywords false})
 
         ;; Ingest collection once, delete, then ingest again.
-        coll2-1 (d/ingest "PROV1" umm-coll2-1)
+        coll2-1 (d/ingest "PROV1" umm-coll2-1 {:validate-keywords false})
         _ (ingest/delete-concept (d/item->concept coll2-1))
-        coll2-3 (d/ingest "PROV1" umm-coll2-3)
+        coll2-3 (d/ingest "PROV1" umm-coll2-3 {:validate-keywords false})
 
         ;; Ingest a collection for PROV2 that is not visible to guests.
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
                                                 :version-id "v1"
-                                                :short-name "s1"}))]
+                                                :short-name "s1"})
+                        {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "retrieve metadata from search by concept-id/revision-id"
@@ -486,10 +498,12 @@
   (e/grant-registered-users (s/context) (e/gran-catalog-item-id "PROV3"))
   (let [coll1 (d/ingest "PROV3" (dc/collection {:short-name "S1"
                                                 :version-id "V1"
-                                                :entry-title "ET1"}))
+                                                :entry-title "ET1"})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV4" (dc/collection {:short-name "S2"
                                                 :version-id "V2"
-                                                :entry-title "ET2"}))
+                                                :entry-title "ET2"})
+                        {:validate-keywords false})
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
 

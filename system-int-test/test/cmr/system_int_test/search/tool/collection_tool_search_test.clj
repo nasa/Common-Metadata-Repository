@@ -135,11 +135,13 @@
   (let [token (e/login (s/context) "user1")
         coll1 (d/ingest "PROV1" (data2-collection/collection {:entry-title "ET1"
                                                               :short-name "S1"
-                                                              :version-id "V1"}))
+                                                              :version-id "V1"})
+                        {:validate-keywords false})
 
         coll2 (d/ingest "PROV1" (data2-collection/collection {:entry-title "ET2"
                                                               :short-name "S2"
-                                                              :version-id "V2"}))
+                                                              :version-id "V2"})
+                        {:validate-keywords false})
         ;; create tool
         {tool1-concept-id :concept-id} (tool-util/ingest-tool-with-attrs
                                          {:native-id "tl1"

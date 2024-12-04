@@ -10,17 +10,17 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-spatial-keywords
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV1" (dc/collection {:spatial-keywords []}))
-        coll3 (d/ingest "PROV1" (dc/collection {:spatial-keywords ["DC"]}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {}) {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:spatial-keywords []}) {:validate-keywords false})
+        coll3 (d/ingest "PROV1" (dc/collection {:spatial-keywords ["DC"]}) {:validate-keywords false})
 
-        coll4 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}))
-        coll5 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Detroit"]}))
-        coll6 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["LL"]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))
-        coll-angola (d/ingest "PROV2" (dc/collection {:spatial-keywords ["ANGOLA"]}))
-        coll-c-africa (d/ingest "PROV2" (dc/collection {:spatial-keywords ["central africa"]}))
-        coll-gaza (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Gaza Strip"]}))
+        coll4 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}) {:validate-keywords false})
+        coll5 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Detroit"]}) {:validate-keywords false})
+        coll6 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["LL"]}) {:validate-keywords false})
+        coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}) {:validate-keywords false})
+        coll-angola (d/ingest "PROV2" (dc/collection {:spatial-keywords ["ANGOLA"]}) {:validate-keywords false})
+        coll-c-africa (d/ingest "PROV2" (dc/collection {:spatial-keywords ["central africa"]}) {:validate-keywords false})
+        coll-gaza (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Gaza Strip"]}) {:validate-keywords false})
         coll-iso-sample (d/ingest-concept-with-metadata-file "iso-samples/cmr-4192-iso-collection.xml"
                                                              {:provider-id "PROV2"
                                                               :concept-type :collection
