@@ -5,7 +5,8 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug)]
+   [cmr.search.api.association :as assoc]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -81,7 +82,10 @@
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+  (let [result (tagging-service/associate-tag-to-collections context tag-key body)]
+    (if (assoc/all-results-contain-errors? result)
+      (tag-api-response 400 result)
+      (tag-api-response 200 result))))
 
 (defn dissociate-tag-to-collections
   "Dissociate the tag to a list of collections."
@@ -91,7 +95,10 @@
   (validate-tag-content-type headers)
   (debug (format "Dissociating tag [%s] from collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (tag-api-response (tagging-service/dissociate-tag-to-collections context tag-key body)))
+  (let [result (tagging-service/dissociate-tag-to-collections context tag-key body)]
+    (if (assoc/all-results-contain-errors? result)
+      (tag-api-response 400 result)
+      (tag-api-response 200 result))))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
