@@ -14,7 +14,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [ring/ring-core "1.10.0"]
+                 [ring/ring-core "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}

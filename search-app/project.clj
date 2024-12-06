@@ -29,7 +29,7 @@
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
                  [org.mozilla/rhino "1.7.12"]
                  [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.10.0"]
+                 [ring/ring-core "1.13.0"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is

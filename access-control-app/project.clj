@@ -38,7 +38,7 @@
                            [org.clojure/clojure "1.11.2"]
                            [org.clojure/tools.reader "1.3.2"]
                            [ring/ring-codec "1.1.3"]
-                           [ring/ring-core "1.10.0"]
+                           [ring/ring-core "1.13.0"]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
   :plugins [[lein-modules "0.3.11"]
@@ -58,7 +58,7 @@
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-codec "1.1.3"]
-                                  [ring/ring-jetty-adapter "1.10.0"]
+                                  [ring/ring-jetty-adapter "1.13.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]

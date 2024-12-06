@@ -9,7 +9,7 @@
    [ring.adapter.jetty :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
-   (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
+   (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)
    (org.eclipse.jetty.server.handler RequestLogHandler)
    (org.eclipse.jetty.server.handler.gzip GzipHandler)))
 
@@ -144,7 +144,7 @@
   (doto (RequestLogHandler.)
     (.setHandler existing-handler)
     (.setRequestLog
-      (doto (NCSARequestLog.)
+      (doto (CustomRequestLog.)
         (.setLogLatency true)
         (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
 

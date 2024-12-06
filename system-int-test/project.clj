@@ -35,7 +35,7 @@
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.10.0"]]
+                 [ring/ring-core "1.13.0"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"

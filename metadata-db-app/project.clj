@@ -21,7 +21,7 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
-                 [ring/ring-core "1.10.0"]
+                 [ring/ring-core "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]

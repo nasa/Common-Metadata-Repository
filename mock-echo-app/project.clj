@@ -8,7 +8,7 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [ring/ring-core "1.10.0"]
+                 [ring/ring-core "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
