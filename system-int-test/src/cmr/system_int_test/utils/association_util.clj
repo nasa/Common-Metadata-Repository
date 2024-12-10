@@ -98,3 +98,12 @@
         :body
         first
         :tool-association)))
+
+(defn add-individual-statuses
+  [list]
+  (let [new-list (atom '())]
+    (doseq [map-item list]
+      (if (or (contains? map-item :errors) (contains? map-item :warning))
+        (swap! new-list conj (assoc map-item :status 400))
+        (swap! new-list conj (assoc map-item :status 200))))
+    (reverse @new-list)))

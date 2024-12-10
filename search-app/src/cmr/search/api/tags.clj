@@ -24,6 +24,24 @@
   [data]
   (some #(contains? % :errors) data))
 
+(defn tag-association-results->status-code
+  "Check for concept-types requiring error status to be returned.
+  If the concept-type is error-sensitive the function will check for any errors in the results.
+  Will return:
+  - 200 OK -- if response has no errors
+  - 207 MULTI-STATUS -- if response has some errors and some successes
+  - 400 BAD REQUEST -- if response has all errors"
+  [results]
+    (let [result-count (count results)
+          num-errors (assoc/num-errors-in-assoc-results results)]
+      (if (= 0 result-count)
+        200
+        (if (= num-errors result-count)
+          400
+          (if (> num-errors 0)
+            207
+            200)))))
+
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
   ([data]
@@ -31,9 +49,13 @@
      (tag-api-response 400 data)
      (tag-api-response 200 data)))
   ([status-code data]
-   {:status status-code
-    :body (json/generate-string (util/snake-case-data data))
-    :headers {"Content-Type" mt/json}}))
+   (if (= 207 status-code)
+     {:status status-code
+      :body (json/generate-string (util/snake-case-data (cmr.search.api.association/add-individual-statuses data)))
+      :headers {"Content-Type" mt/json}}
+     {:status status-code
+      :body (json/generate-string (util/snake-case-data data))
+      :headers {"Content-Type" mt/json}})))
 
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
@@ -82,10 +104,9 @@
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (let [result (tagging-service/associate-tag-to-collections context tag-key body)]
-    (if (assoc/all-results-contain-errors? result)
-      (tag-api-response 400 result)
-      (tag-api-response 200 result))))
+  (let [result (tagging-service/associate-tag-to-collections context tag-key body)
+        status-code (tag-association-results->status-code result)]
+      (tag-api-response status-code result)))
 
 (defn dissociate-tag-to-collections
   "Dissociate the tag to a list of collections."
@@ -95,10 +116,9 @@
   (validate-tag-content-type headers)
   (debug (format "Dissociating tag [%s] from collections: %s by client: %s."
                 tag-key body (:client-id context)))
-  (let [result (tagging-service/dissociate-tag-to-collections context tag-key body)]
-    (if (assoc/all-results-contain-errors? result)
-      (tag-api-response 400 result)
-      (tag-api-response 200 result))))
+  (let [result (tagging-service/dissociate-tag-to-collections context tag-key body)
+        status-code (tag-association-results->status-code result)]
+    (tag-api-response status-code result)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."

@@ -2,7 +2,6 @@
   "This tests associating tags with collections."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are2] :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -40,12 +39,12 @@
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
                                                     :entry-title (str "ET" n)}))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        ;all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        ;all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag (tags/make-tag)
         tag-key (:tag-key tag)
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        _ (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
     (testing "Successfully Associate tag with collections"
@@ -101,12 +100,10 @@
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
                                                     :entry-title (str "ET" n)}))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        _ (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
     (testing "Associate tag with collections by concept-ids"
@@ -164,10 +161,9 @@
       (let [response (tags/associate-by-concept-ids
                       token tag-key [{:concept-id c2-p1}
                                      {:concept-id "C100-P5"}])]
-        (tags/assert-tag-association-response-error?
-         {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
-                                 :revision-id 1}
-          ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+        (tags/assert-tag-association-response-mixed?
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
+          ["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR" :revision-id 1}}
          response)))))
 
 (deftest associate-tag-failure-test
@@ -176,9 +172,9 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)
+        _ (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
-        tag (assoc tag :originator-id "user1")
+        _ (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
                                       (collection/collection)))]
@@ -254,7 +250,7 @@
         prov3-token (echo-util/login (system/context)
                                      "prov3-user"
                                      [group1-concept-id])
-        {:keys [concept-id]} (tags/create-tag token tag)
+        _ (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
@@ -310,14 +306,14 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
-        all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
+        _ (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
         prov3-token (echo-util/login (system/context)
                                      "prov3-user"
                                      [group1-concept-id])
-        {:keys [concept-id]} (tags/create-tag token tag)
+        _ (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
@@ -369,9 +365,9 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)
+        _ (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
-        tag (assoc tag :originator-id "user1")
+        _ (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
                                       (collection/collection)))]
@@ -418,13 +414,13 @@
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with only some of the collections matching the query are associated with the tag is OK"
     (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
+          _ (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
           token (echo-util/login (system/context) "user1")
           _ (index/wait-until-indexed)
-          tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
+          _ (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
-      (let [{:keys [status errors]} (tags/dissociate-by-query token "tag1" {:provider "PROV1"})]
+      (let [{:keys [status]} (tags/dissociate-by-query token "tag1" {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated [])))))
 
@@ -451,7 +447,7 @@
                        {:concept-id (:concept-id coll1)} ;; success
                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no tag association
-        (tags/assert-tag-dissociation-response-error?
+        (tags/assert-tag-dissociation-response-mixed?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
           ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}

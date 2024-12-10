@@ -78,10 +78,20 @@
                                                                          :revision-id coll2-revision-id}])
             tla2-concept-id (some #(when (:tool-association %) (get-in % [:tool-association :concept-id]))
                                   (:body assoc-response2))]
-        (is (= {:status 200, :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")], :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id tla1-concept-id, :revision-id 1}, :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
+        (is (= {:status 207, :body [{:status 400
+                                     :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")],
+                                     :associated-item {:concept-id coll1-concept-id}}
+                                    {:status 200,
+                                     :tool-association {:concept-id tla1-concept-id, :revision-id 1},
+                                     :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
                assoc-response1))
  
-        (is (= {:status 200, :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")], :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id tla2-concept-id, :revision-id 1}, :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
+        (is (= {:status 207, :body [{:status 400
+                                     :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")],
+                                     :associated-item {:concept-id coll1-concept-id}}
+                                    {:status 200
+                                     :tool-association {:concept-id tla2-concept-id, :revision-id 1},
+                                     :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
                assoc-response2))))
 
     (testing "dissociation-permission-test"
@@ -118,10 +128,18 @@
                                                                          [{:concept-id coll1-concept-id}
                                                                           {:concept-id coll2-concept-id
                                                                            :revision-id coll2-revision-id}])]
-        (is (= {:status 200, :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] or provider of service/tool to delete the association.")], :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id (last tla1-concept-ids), :revision-id 3}, :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
+        (is (= {:status 207, :body [{:status 400
+                                     :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] or provider of service/tool to delete the association.")],
+                                     :associated-item {:concept-id coll1-concept-id}}
+                                    {:status 200
+                                     :tool-association {:concept-id (last tla1-concept-ids), :revision-id 3},
+                                     :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
                dissoc-response1))
 
-        (is (= {:status 200, :body [{:tool-association {:concept-id (first tla2-concept-ids), :revision-id 2}, :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id (last tla2-concept-ids), :revision-id 3}, :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
+        (is (= {:status 200, :body [{:tool-association {:concept-id (first tla2-concept-ids), :revision-id 2},
+                                     :associated-item {:concept-id coll1-concept-id}}
+                                    {:tool-association {:concept-id (last tla2-concept-ids), :revision-id 3},
+                                     :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
                dissoc-response2))))
 
     (testing "service-association-permission-test"
@@ -143,17 +161,21 @@
                                                                          :revision-id coll2-revision-id}])
              sa2-concept-id (some #(when (:service-association %) (get-in % [:service-association :concept-id]))
                                   (:body assoc-response2))]
-        (is (= {:status 200
-                :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")]
+        (is (= {:status 207
+                :body [{:status 400
+                        :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")]
                         :associated-item {:concept-id coll1-concept-id}}
-                       {:service-association {:concept-id sa1-concept-id, :revision-id 1}
+                       {:status 200
+                        :service-association {:concept-id sa1-concept-id, :revision-id 1}
                         :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
                assoc-response1))
 
-        (is (= {:status 200
-                :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")]
+        (is (= {:status 207
+                :body [{:status 200
+                        :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")]
                         :associated-item {:concept-id coll1-concept-id}}
-                       {:service-association {:concept-id sa2-concept-id, :revision-id 1}
+                       {:status 400
+                        :service-association {:concept-id sa2-concept-id, :revision-id 1}
                         :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
                assoc-response2))))
 
@@ -191,10 +213,12 @@
                                                                          [{:concept-id coll1-concept-id}
                                                                           {:concept-id coll2-concept-id
                                                                            :revision-id coll2-revision-id}])]
-        (is (= {:status 200
-                :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] or provider of service/tool to delete the association.")]
+        (is (= {:status 207
+                :body [{:status 400
+                        :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] or provider of service/tool to delete the association.")]
                         :associated-item {:concept-id coll1-concept-id}} 
-                       {:service-association {:concept-id (last sa1-concept-ids), :revision-id 3}
+                       {:status 200
+                        :service-association {:concept-id (last sa1-concept-ids), :revision-id 3}
                         :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
                dissoc-response1))
 
