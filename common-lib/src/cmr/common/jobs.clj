@@ -113,7 +113,7 @@
   (doseq [[k v] quartz-clustering-properties]
     (System/setProperty (str "org.quartz." k) v))
 
-  (let [{{:keys [subprotocol subname user password]} :spec} db]
+  (let [{{:keys [subprotocol subname user password]} :spec} db] 
     (System/setProperty
       "org.quartz.dataSource.myDS.URL"
       (str "jdbc:" subprotocol ":" subname))

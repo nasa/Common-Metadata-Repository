@@ -68,7 +68,8 @@
         (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
        (.withStartupTimeout (Duration/ofSeconds 240)))
      {:elasticsearch container
-      :kibana kibana})))
+      :kibana kibana
+      :network network})))
 
 (defrecord ElasticServer
            [http-port
@@ -99,13 +100,16 @@
     [this _system]
     (let [containers (:containers this)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
-          ^FixedHostPortGenericContainer kibana (:kibana containers)]
+          ^FixedHostPortGenericContainer kibana (:kibana containers)
+          ^Network network (:network containers)]
       (when node
         (.stop node))
       (when (get-in this [:opts :data-dir])
         (util/delete-recursively (:data-dir this)))
       (when kibana
-        (.stop kibana)))
+        (.stop kibana))
+      (when network
+        (.close network)))
     (assoc this :containers nil)))
 
 (defn create-server

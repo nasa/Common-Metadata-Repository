@@ -181,12 +181,6 @@
   (println (slurp (io/resource "text/banner.txt")))
   :ok)
 
-(defn network-purge
-  "Tell docker to purge the network"
-  []
-  (println "Purging the docker networks, this may take a minute...")
-  (shell/sh "docker" "network" "prune" "-f"))
-
 (defn start
   "Starts the current development system, taking optional keyword arguments for
   various run modes (see the docstring for `set-modes!` for more details).
@@ -267,10 +261,7 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  (alter-var-root #'system (fn [s] (when s (system/stop s))))
-
-  ;; remove all the old connections from docker for the humans
-  (network-purge))
+  (alter-var-root #'system (fn [s] (when s (system/stop s)))))
 
 (defn reset
   "Resets the development environment, taking optional keyword arguments for
@@ -296,6 +287,7 @@
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
   [& {:keys [_elastic _echo _db _messaging _redis] :as new-modes}]
+  (println "Modes: " new-modes)
   (when-not (empty? new-modes)
     (apply set-modes! (mapcat seq new-modes)))
   ;; Stop the system integration test system

@@ -4,7 +4,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error]])
   (:import
-   (org.testcontainers.containers FixedHostPortGenericContainer Network)))
+   (org.testcontainers.containers FixedHostPortGenericContainer)))
 
 (def REDIS_DEFAULT_PORT 6379)
 
@@ -14,10 +14,9 @@
 
 (defn- build-redis
   "Setup redis docker image"
-  [http-port network]
+  [http-port]
   (doto (FixedHostPortGenericContainer. redis-image)
-    (.withFixedExposedPort (int http-port) REDIS_DEFAULT_PORT)
-    (.withNetwork network)))
+    (.withFixedExposedPort (int http-port) REDIS_DEFAULT_PORT)))
 
 (defrecord RedisServer
            [
@@ -29,8 +28,7 @@
   (start
     [this system]
     (debug "Starting Redis server on port" http-port)
-    (let [network (Network/newNetwork)
-          ^FixedHostPortGenericContainer redis (build-redis http-port network)]
+    (let [^FixedHostPortGenericContainer redis (build-redis http-port)]
       (try
         (.start redis)
         (assoc this :redis redis)

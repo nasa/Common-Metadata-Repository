@@ -45,9 +45,13 @@ services:
     - redis
     - kibana
     - sqs
-    stdin_open: true
-    tty: true
     working_dir: /cmr/dev-system
+    environment:
+      - CMR_DEV_SYSTEM_ELASTIC_TYPE=external
+      - CMR_DEV_SYSTEM_REDIS_TYPE=external
+      - CMR_DEV_SYSTEM_KIBANA_TYPE=external
+      - CMR_DEV_SYSTEM_DB_TYPE=external
+      - CMR_DEV_SYSTEM_SQS_SERVER_TYPE=external
     ports:
       - 3011:3011
       - 3006:3006

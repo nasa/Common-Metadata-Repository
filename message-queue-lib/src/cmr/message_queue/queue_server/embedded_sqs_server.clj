@@ -5,7 +5,7 @@
    [cmr.common.log :as log :refer [debug error]]
    [cmr.message-queue.config :as config])
   (:import
-   (org.testcontainers.containers FixedHostPortGenericContainer Network)))
+   (org.testcontainers.containers FixedHostPortGenericContainer)))
 
 (def ELASTIC_MQ_UI_PORT 9325)
 
@@ -15,9 +15,8 @@
 
 (defn- build-sqs-server
   "Setup elasticmq docker image and expose the service port and the UI port."
-  [http-port1 http-port2 network]
+  [http-port1 http-port2]
   (-> (FixedHostPortGenericContainer. elasticmq-image)
-      (.withNetwork network)
       (.withFixedExposedPort (Integer. http-port1) (Integer. http-port1))
       (.withFixedExposedPort (Integer. http-port2) (Integer. http-port2))))
 
@@ -28,8 +27,7 @@
   (start
     [this _system]
     (debug "Starting ElasticMQ server on ports" queue-port ui-port)
-    (let [network (Network/newNetwork)
-          ^FixedHostPortGenericContainer sqs-server (build-sqs-server queue-port ui-port network)]
+    (let [^FixedHostPortGenericContainer sqs-server (build-sqs-server queue-port ui-port)]
       (try
         (.start sqs-server)
         (assoc this :sqs-server sqs-server)
