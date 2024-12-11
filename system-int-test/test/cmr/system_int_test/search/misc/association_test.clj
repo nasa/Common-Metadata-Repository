@@ -171,10 +171,10 @@
                assoc-response1))
 
         (is (= {:status 207
-                :body [{:status 200
+                :body [{:status 400
                         :errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] to make the association.")]
                         :associated-item {:concept-id coll1-concept-id}}
-                       {:status 400
+                       {:status 200
                         :service-association {:concept-id sa2-concept-id, :revision-id 1}
                         :associated-item {:concept-id coll2-concept-id, :revision-id coll2-revision-id}}]}
                assoc-response2))))

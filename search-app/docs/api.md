@@ -3752,22 +3752,27 @@ Tag association by query only supports tagging the latest revision of collection
 Tag association by collections supports tagging any specified collection revisions. 
 
 Expected Response Status:
-- 200 OK -- if all associations succeeded
-- 207 MULTI-STATUS -- if some associations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all associations failed due to user error
+<ul>
+<li>200 OK -- if all associations succeeded</li>
+<li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+<li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
 
 Expected Response Body:
 The response body will consist of a list of tool association objects
 Each association object will have:
-- A `tagged_item` field
-  - The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association.
-- Either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. 
+<ul>
+    <li>A `tagged_item` field</li>
+    <ul>
+        <li>The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association.</li>
+    </ul>
+    <li>Either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. </li>
+</ul>
 
-- 
 - IMPORTANT: The tag and the collections must exist before they can be associated together. 
 
 
-Here is a sample tag association request and its response:
+Here is am example of a tag association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
@@ -3808,6 +3813,9 @@ Tags can be associated with collections by POSTing a JSON query for collections 
 All collections found will be _added_ to the current set of associated collections with a tag. 
 Tag associations are maintained throughout the life of a collection. 
 If a collection is deleted and re-added it will maintain its tags.
+
+Expected Response Status:
+- If query delivers no match, it will still return 200 OK with no associations made
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
@@ -3852,6 +3860,13 @@ If a collection is deleted and re-added it will maintain its tags.
 If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. 
 Tags cannot be associated on tombstoned collection revisions.
 
+Expected Response Status:
+<ul>
+    <li>200 OK -- if all associations succeeded</li>
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
+
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "revision_id": 2, "data": "APPROVED"},
@@ -3894,17 +3909,22 @@ Tag dissociation by collections supports tag dissociation from any specified col
 The tag dissociation response looks the same as tag association response. 
 
 Expected Response Status:
-- 200 OK -- if all dissociations succeeded
-- 207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all dissociations failed due to user error
+<ul>
+    <li>200 OK -- if all dissociations succeeded</li>
+    <li>207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all dissociations failed due to user error</li>
+</ul>
 
 Expected Response Body:
 The response body will consist of a list of tool association objects
 Each association object will have:
-- A `tagged_item` field
-  - The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation.
-- Either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. 
-
+<ul>
+    <li>A `tagged_item` field</li>
+    <ul>
+        <li>The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation.</li>
+    </ul>
+    <li>Either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. </li>
+</ul>
 
 Here is a sample tag dissociation request and its response:
 
@@ -3954,6 +3974,8 @@ Content-Length: 168
 
 Tags can be dissociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
+Expected Response Status:
+- If query delivers no match, it will still return 200 OK with no associations made
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
@@ -3989,8 +4011,15 @@ Content-Length: 168
 
 #### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
 
-Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to 
+`%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
 
+Expected Response Status:
+<ul>
+    <li>200 OK -- if all associations succeeded</li>
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
@@ -4708,16 +4737,22 @@ A service identified by its concept id can be associated with collections throug
 The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. 
 
 Expected Response Status:
-- 200 OK -- if all associations succeeded
-- 207 MULTI-STATUS -- if some associations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all associations failed due to user error
+<ul>
+    <li>200 OK -- if all associations succeeded</li>
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
 
 Expected Response Body:
 The response body will consist of a list of service association objects
 Each association object will have:
-- An `associated_item` field
-  - The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association.
-- Either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. 
+<ul>
+    <li>An `associated_item` field</li>
+        <ul>
+            <li>The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association.</li>
+        </ul>
+    <li>Either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed.</li>
+</ul>
 
 IMPORTANT: Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider.
 
@@ -4759,13 +4794,15 @@ Content-Length: 168
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
 
 Expected Response Status:
-- 200 OK -- if all associations succeeded
-- 207 MULTI-STATUS -- if some associations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all associations failed due to user error
+<ul>
+    <li>200 OK -- if all dissociations succeeded</li>
+    <li>207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all dissociations failed due to user error</li>
+</ul>
 
 IMPORTANT: Service dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
-Service dissociation example where some associations succeed and others failed due to user error
+Service dissociation example where some dissociations succeed and others failed due to user error
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
@@ -5112,22 +5149,28 @@ The tool association request normally returns status code 200 with a response th
 association responses, one for each tool association attempted to create. 
 
 Expected Response Status:
-- 200 OK -- if all associations succeeded
-- 207 MULTI-STATUS -- if some associations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all associations failed due to user error
+<ul>
+    <li>200 OK -- if all associations succeeded</li> 
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
 
 Expected Response Body:
 The response body will consist of a list of tool association objects
 Each association object will have:
-- An `associated_item` field
-  - The `associated_item` field value has the collection concept id and the optional revision id that is used to identify
-    the collection during tool association.
-- Either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded OR an `errors` field with detailed error message when the tool association failed. 
+<ul>
+    <li>An `associated_item` field</li>
+        <ul>
+            <li>The `associated_item` field value has the collection concept id and the optional revision id that is used to identify
+            the collection during tool association.</li>
+        </ul>
+    <li>Either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded OR an `errors` field with detailed error message when the tool association failed. </li>
+</ul>
 
 IMPORTANT: Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL 
 for the collection's provider. 
 
-Here is a sample tool association request and its response when collection C1200000005-PROV1 exists and C1200000006-PROV1 does not:
+Here is an example of a tool association request and its response when collection C1200000005-PROV1 exists and C1200000006-PROV1 does not:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -5140,23 +5183,23 @@ Content-Length: 168
 
 [
   {
-    "status": 200,
     "tool_association":{
       "concept_id":"TLA1200000009-CMR",
       "revision_id":1
     },
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
-    }
+    },
+    "status": 200
   },
   {
-    "status": 400,
     "errors":[
       "Collection [C1200000006-PROV1] does not exist or is not visible."
     ],
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
-    }
+    },
+    "status": 400
   },
   {
     "errors":[
@@ -5164,9 +5207,9 @@ Content-Length: 168
     ],
     "associated_item":{
       "concept_id":"C1200000007-PROV2"
-    }
+    },
+    "status": 400
   }
-
 ]
 ```
 
@@ -5175,9 +5218,11 @@ Content-Length: 168
 A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
 
 Expected Response Status:
-- 200 OK -- if all dissociations succeeded
-- 207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error
-- 400 BAD REQUEST -- if all dissociations failed due to user error
+<ul>
+    <li>200 OK -- if all dissociations succeeded</li>
+    <li>207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all dissociations failed due to user error</li>
+</ul>
 
 IMPORTANT: Tool dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
@@ -5193,41 +5238,41 @@ Content-Length: 168
 
 [
   {
-    "status": 200,
     "tool_association":{
       "concept_id":"TLA1200000009-CMR",
       "revision_id":2
     },
     "associated_item":{
       "concept_id":"C1200000005-PROV1"
-    }
+    },
+    "status": 200
   },
   {
-    "status": 200,
     "warnings":[
       "Tool [TL1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
     ],
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
-    }
+    },
+    "status": 400
   },
   {
-    "status": 400,
     "errors":[
       "Collection [C1200000007-PROV1] does not exist or is not visible."
     ],
     "associated_item":{
       "concept_id":"C1200000007-PROV1"
-    }
+    },
+    "status": 400
   },
   {
-    "status": 400,
     "errors":[
       "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000008-PROV2] or provider of service/tool to delete the association."
     ],
     "associated_item":{
       "concept_id":"C1200000008-PROV2"
-    }
+    },
+    "status": 400
   }
 ]
 ```
@@ -5696,7 +5741,7 @@ In the following example, "3" is optional for S1200000006-PROV1 and "revision_id
          {"concept_id": "V1200000005-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
 ```
 
- __Example Response__
+ __200 OK Example Response__
 
 Note: when two concepts are associated, their concept ids are sorted first. The one that appears at the later position is considered the associated_item.
 
@@ -5791,7 +5836,7 @@ curl -XDELETE \
            {"concept_id": "V1200000012-PROV1"}]'
 ```
 
- __Example Response__
+ __200 OK Example Response__
 
 ```
 [ {
