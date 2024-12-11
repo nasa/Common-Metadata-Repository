@@ -15,7 +15,8 @@
 
 (deftest search-by-keywords
   (let [coll1 (d/ingest "PROV2" (dc/collection {:entry-title "coll10"
-                                                :spatial-keywords ["in out"]}))]
+                                                :spatial-keywords ["in out"]})
+                        {:validate-keywords false})]
 
     (index/wait-until-indexed)
 

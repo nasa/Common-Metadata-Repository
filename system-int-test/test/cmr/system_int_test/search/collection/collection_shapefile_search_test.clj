@@ -42,7 +42,8 @@
                {:entry-title et
                 :spatial-coverage (dc/spatial {:gsr coord-sys
                                                :sr coord-sys
-                                               :geometries shapes})}))))
+                                               :geometries shapes})})
+              {:validate-keywords false})))
 
 (deftest collection-shapefile-search-test
   (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))

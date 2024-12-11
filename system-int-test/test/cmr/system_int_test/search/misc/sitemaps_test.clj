@@ -44,7 +44,8 @@
                                           (assoc :ShortName (str "s" n))
                                           (assoc :EntryTitle (str "Collection Item " n)))
                                       {:format :umm-json
-                                       :accept-format :json})))
+                                       :accept-format :json
+                                       :validate-keywords false})))
         _ (index/wait-until-indexed)
         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
                                      (d/ingest-umm-spec-collection
@@ -56,7 +57,8 @@
                                                        {:DOI (str "doi" n)
                                                         :Authority (str "auth" n)})))
                                       {:format :umm-json
-                                       :accept-format :json})))]
+                                       :accept-format :json
+                                       :validate-keywords false})))]
     (reset! test-collections
             {"PROV1" (map :concept-id [c1-p1 c2-p1 c3-p1])
              "PROV2" (map :concept-id [c1-p2 c2-p2 c3-p2])

@@ -35,15 +35,15 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa1 psa2 psa3]})
-               {:format :dif})
+               {:format :dif :validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa2 psa3]})
-               {:format :dif})
+               {:format :dif :validate-keywords false})
         coll3 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa3 psa4]})
-               {:format :dif})]
+               {:format :dif :validate-keywords false})]
     (index/wait-until-indexed)
     (are [v items]
          (data-core/refs-match? items (search/find-refs :collection {"attribute[]" v}))
@@ -73,15 +73,15 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa1 psa2]})
-               {:format :dif})
+               {:format :dif :validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa2 psa3]})
-               {:format :dif})
+               {:format :dif :validate-keywords false})
         coll3 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa4]})
-               {:format :dif})]
+               {:format :dif :validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search by value"
       (are [v items]
@@ -289,11 +289,13 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa1 psa2]}))
+                {:product-specific-attributes [psa1 psa2]})
+               {:validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa2 psa3]}))]
+                {:product-specific-attributes [psa2 psa3]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -418,11 +420,13 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa1 psa2]}))
+                {:product-specific-attributes [psa1 psa2]})
+               {:validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa2 psa3]}))]
+                {:product-specific-attributes [psa2 psa3]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -546,11 +550,13 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa1 psa2]}))
+                {:product-specific-attributes [psa1 psa2]})
+               {:validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa2 psa3]}))]
+                {:product-specific-attributes [psa2 psa3]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -699,11 +705,13 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa1 psa2]}))
+                {:product-specific-attributes [psa1 psa2]})
+               {:validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa2 psa3]}))]
+                {:product-specific-attributes [psa2 psa3]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search by value"
@@ -855,11 +863,13 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa1 psa2]}))
+                {:product-specific-attributes [psa1 psa2]})
+               {:validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection
-                {:product-specific-attributes [psa2 psa3]}))]
+                {:product-specific-attributes [psa2 psa3]})
+               {:validate-keywords false})]
 
     (index/wait-until-indexed)
 
@@ -1047,11 +1057,11 @@
         coll1 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa1]})
-               {:format :dif})
+               {:format :dif :validate-keywords false})
         coll2 (data-core/ingest
                "PROV1"
                (collection/collection-dif {:product-specific-attributes [psa2]})
-               {:format :dif})]
+               {:format :dif :validate-keywords false})]
     (index/wait-until-indexed)
     (are [matches a-name group pattern?]
          (data-core/refs-match? matches

@@ -21,7 +21,8 @@
   (let [coll1-1 (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "et1"
                                                            :version-id "v1"
                                                            :short-name "s1"})
-                          {:user-id "user1"})
+                          {:user-id "user1"
+                           :validate-keywords false})
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
@@ -30,14 +31,17 @@
                                  (ingest/delete-concept concept1 {:user-id "user2"}))
         coll1-3 (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "et1"
                                                            :version-id "v2"
-                                                           :short-name "s1"}))
+                                                           :short-name "s1"})
+                          {:validate-keywords false})
 
         coll2-1 (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "et2"
                                                            :version-id "v1"
-                                                           :short-name "s2"}))
+                                                           :short-name "s2"})
+                          {:validate-keywords false})
         coll2-2 (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "et2"
                                                            :version-id "v2"
-                                                           :short-name "s2"}))
+                                                           :short-name "s2"})
+                          {:validate-keywords false})
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
@@ -46,7 +50,8 @@
         coll3 (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "et3"
                                                          :version-id "v4"
                                                          :short-name "s1"})
-                        {:user-id "user3"})]
+                        {:user-id "user3"
+                         :validate-keywords false})]
     (index/wait-until-indexed)
     (testing "find collections in legacy UMM JSON format"
       (are3 [url-extension collections params]

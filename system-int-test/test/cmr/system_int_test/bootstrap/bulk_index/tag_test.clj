@@ -25,7 +25,7 @@
 (deftest ^:oracle bulk-index-collections-with-tag-association-test
   (s/only-with-real-database
     (let [[coll1 coll2] (for [n (range 1 3)]
-                          (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+                          (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)}) {:validate-keywords false}))
           ;; Wait until collections are indexed so tags can be associated with them
           _ (index/wait-until-indexed)
           user1-token (e/login (s/context) "user1")

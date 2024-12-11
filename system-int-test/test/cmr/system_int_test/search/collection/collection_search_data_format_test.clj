@@ -45,7 +45,7 @@
 
   (testing "ingest and search by data format of a collection with data formats."
     (let [concept (umm-spec-collection/collection-concept sample-data-format-collection-test)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:validate-keywords false})]
       (index/wait-until-indexed)
       (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 1

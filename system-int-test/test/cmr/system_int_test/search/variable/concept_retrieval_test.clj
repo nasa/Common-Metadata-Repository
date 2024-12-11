@@ -34,7 +34,8 @@
     (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection 
                                             {:entry-title "ET1"
                                              :short-name "S1"
-                                             :version-id "V1"}))
+                                             :version-id "V1"})
+                                   {:validate-keywords false})
           _ (index/wait-until-indexed)
           var-concept (variable/make-variable-concept
                        {:Name "var-to-be-deleted"}
@@ -58,7 +59,8 @@
   (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection
                                           {:entry-title "ET1"
                                            :short-name "S1"
-                                           :version-id "V1"}))
+                                           :version-id "V1"})
+                                 {:validate-keywords false})
         _ (index/wait-until-indexed)
         var1-name "variable1"
         var1-long-name "variable1-long-name"
@@ -136,7 +138,8 @@
   (let [coll1 (data2-core/ingest "PROV1" (data2-coll/collection
                                           {:entry-title "ET1"
                                            :short-name "S1"
-                                           :version-id "V1"}))
+                                           :version-id "V1"})
+                                 {:validate-keywords false})
         _ (index/wait-until-indexed)
         var1-name "variable1"
         var1-long-name "var1-long-name"

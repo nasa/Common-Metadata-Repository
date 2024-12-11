@@ -73,22 +73,26 @@
                                 (data-umm-c/collection {:ShortName "AMSR-L1A"
                                                         :EntryTitle "Relevancy 1"
                                                         :Version "3"
-                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]})
+                                {:validate-keywords false})
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AST_05"
                                                         :EntryId "Relevancy"
                                                         :EntryTitle "AST_05"
                                                         :Version "B"
                                                         :Projects (data-umm-c/projects "Relevancy")
-                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]})
+                                {:validate-keywords false})
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AG_VIRTUAL"
                                                         :EntryTitle "Relevancy 2"
-                                                        :Version "1"}))
+                                                        :Version "1"})
+                                {:validate-keywords false})
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AG_MAPSS"
                                                         :EntryTitle "Relevancy 3"
-                                                        :Version "2"}))
+                                                        :Version "2"})
+                                {:validate-keywords false})
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
     (is (= ["Relevancy 1" "Relevancy 2" "Relevancy 3" "AST_05"] (map :name results))))
@@ -149,16 +153,19 @@
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A" ;10
                                                         :EntryTitle "Relevancy 1"
-                                                        :Version "3"}))
+                                                        :Version "3"})
+                                {:validate-keywords false})
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AG_VIRTUAL" ; 100
                                                         :EntryTitle "Relevancy 2"
-                                                        :Version "1"}))
+                                                        :Version "1"})
+                                {:validate-keywords false})
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AG_MAPSS" ;30
                                                         :EntryTitle "Relevancy 3"
                                                         :Version "2"
-                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]})
+                                {:validate-keywords false})
   (index/wait-until-indexed)
   (testing "Sort by usage ascending"
     (let [results (:refs (search/find-refs :collection {:sort-key "usage-score"}))]

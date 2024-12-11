@@ -50,15 +50,17 @@
                        (collection/collection
                         {:entry-title ast-entry-title
                          :short-name "AST_L1A"})
-                       :provider-id "LPDAAC_ECS")])
+                       :provider-id "LPDAAC_ECS")]
+                     {:validate-keywords false})
          [alias-ast-coll] (virtual-product-util/ingest-source-collections
                            [(assoc
                              (collection/collection
                               {:entry-title ast-entry-title
                                :short-name "AST_L1A"})
-                             :provider-id "LP_ALIAS")])
-         vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll])
-         alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll])
+                             :provider-id "LP_ALIAS")]
+                           {:validate-keywords false})
+         vp-colls (virtual-product-util/ingest-virtual-collections [ast-coll] {:validate-keywords false})
+         alias-vp-colls (virtual-product-util/ingest-virtual-collections [alias-ast-coll] {:validate-keywords false})
          ast-gran (virtual-product-util/ingest-source-granule
                    "LPDAAC_ECS"
                    (granule/granule
@@ -71,7 +73,8 @@
                           {:granule-ur "SC:AST_L1A.003:2006227720"}))
          prov-ast-coll (data-core/ingest "PROV"
                                          (collection/collection
-                                          {:entry-title ast-entry-title}))
+                                          {:entry-title ast-entry-title})
+                                         {:validate-keywords false})
          prov-ast-gran (data-core/ingest "PROV"
                                          (granule/granule
                                           prov-ast-coll
@@ -79,14 +82,16 @@
 
          lpdaac-non-ast-coll (data-core/ingest "LPDAAC_ECS"
                                                (collection/collection
-                                                {:entry-title "non virtual entry title"}))
+                                                {:entry-title "non virtual entry title"})
+                                               {:validate-keywords false})
          lpdaac-non-ast-gran (data-core/ingest "LPDAAC_ECS"
                                                (granule/granule
                                                 lpdaac-non-ast-coll
                                                 {:granule-ur "granule-ur2"}))
          prov-coll (data-core/ingest "PROV"
                                      (collection/collection
-                                      {:entry-title "some other entry title"}))
+                                      {:entry-title "some other entry title"})
+                                     {:validate-keywords false})
          prov-gran1 (data-core/ingest "PROV" (granule/granule
                                               prov-coll
                                               {:granule-ur "granule-ur3"}))
@@ -251,13 +256,13 @@
 ;; granules in the config file. All the virtual granule entries should be translated to corresponding
 ;; source entries by the end-point.
 (deftest all-virtual-granules-translate-entries-test
-  (let [source-collections (virtual-product-util/ingest-source-collections)
+  (let [source-collections (virtual-product-util/ingest-source-collections (virtual-product-util/source-collections) {:validate-keywords false})
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
                            (into new-colls (map #(assoc % :source-collection source-coll)
                                                 (virtual-product-util/ingest-virtual-collections
-                                                 [source-coll]))))
+                                                 [source-coll] {:validate-keywords false}))))
                          []
                          source-collections)
         _ (index/wait-until-indexed)
@@ -294,7 +299,8 @@
 ;; 10 (default search page size) granules on a single collection during the translation
 (deftest translate-granule-entries-more-than-default-page-size-test
   (let [coll (data-core/ingest "PROV"
-                               (collection/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
+                               (collection/collection {:entry-title "MISR Level 2 Aerosol parameters V002"})
+                               {:validate-keywords false})
         grans (make-grans coll 12)
         gran->entry (fn [g]
                       {:concept-id (:concept-id g)

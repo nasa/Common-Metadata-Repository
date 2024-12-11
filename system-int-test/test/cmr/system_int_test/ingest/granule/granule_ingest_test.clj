@@ -40,13 +40,13 @@
 (deftest granule-referencing-collection-with-changing-concept-id-test
   (let [common-fields {:EntryTitle "coll1" :ShortName "short1" :Version "V1"}
         orig-coll (data-umm-c/collection-concept (assoc common-fields :native-id "native1"))
-        _ (ingest/ingest-concept orig-coll)
+        _ (ingest/ingest-concept orig-coll {:validate-keywords false})
 
         ;; delete the collection
         deleted-response (ingest/delete-concept orig-coll)
 
         ;; Create collection again with same details but a different native id
-        new-coll (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (assoc common-fields :native-id "native2")))
+        new-coll (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (assoc common-fields :native-id "native2")) {:validate-keywords false})
 
         ;; Create granules associated with the collection fields.
         gran1 (data-core/ingest "PROV1" (update-in (granule/granule-with-umm-spec-collection new-coll (:concept-id new-coll))
@@ -74,12 +74,14 @@
                  "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
                                                  :ShortName "short1"
                                                  :Version "V1"
-                                                 :native-id "native1"}))
+                                                 :native-id "native1"})
+                 {:validate-keywords false})
           coll2 (data-core/ingest-umm-spec-collection
                  "PROV1" (data-umm-c/collection {:EntryTitle "coll2"
                                                  :ShortName "short2"
                                                  :Version "V2"
-                                                 :native-id "native2"}))
+                                                 :native-id "native2"})
+                 {:validate-keywords false})
           gran1 (data-core/item->concept
                  (granule/granule-with-umm-spec-collection
                   coll1
@@ -127,14 +129,14 @@
 ;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
   (testing "ingest of a new granule"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a new granule with a revision id"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           granule (assoc (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection))) :revision-id 5)
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
@@ -144,7 +146,7 @@
 ;; Verify a new granule with concept-id is ingested successfully.
 (deftest granule-w-concept-id-ingest-test
   (testing "ingest of a new granule with concept-id present"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           supplied-concept-id "G1-PROV1"
           granule (data-core/item->concept
                     (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id supplied-concept-id}))
@@ -158,7 +160,7 @@
 ;; revision id is 1 greater on each subsequent ingest
 (deftest repeat-same-granule-ingest-test
   (testing "ingest same granule n times ..."
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           n 4
           granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
           created-granules (doall (take n (repeatedly n #(ingest/ingest-concept granule))))]
@@ -168,7 +170,7 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-granule-ingest-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
         granule-with-empty-body  (assoc granule :metadata "")
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
@@ -178,7 +180,7 @@
 
 ;; Verify that the accept header works
 (deftest granule-ingest-accept-header-response-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))]
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})]
     (testing "json response"
       (let [granule (data-core/item->concept
                      (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
@@ -222,7 +224,7 @@
 
 ;; Verify that the accept header works with deletions
 (deftest delete-granule-with-accept-header-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))]
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})]
     (testing "json response"
       (let [granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
             _ (ingest/ingest-concept granule)
@@ -241,7 +243,7 @@
 (deftest delete-granule-test
   (testing "It should be possible to delete existing concept and the operation without revision id should
            result in revision id 1 greater than max revision id of the concept prior to the delete"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
           ingest-result (ingest/ingest-concept granule)
           delete-result (ingest/delete-concept granule)
@@ -250,7 +252,7 @@
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))))
   (testing "Deleting existing concept with a revision-id should respect the revision id"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G2-PROV1"}))
           _ (ingest/ingest-concept granule)
           delete-result (ingest/delete-concept granule {:revision-id 5})
@@ -262,7 +264,7 @@
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest delete-non-existing-concept-gives-good-error-message-test
   (testing "granule"
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
           response (ingest/delete-concept granule {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
@@ -271,7 +273,7 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         granule (data-core/item->concept
                   (assoc (granule/granule-with-umm-spec-collection collection (:concept-id collection))
                          :format "application/echo10+xml; charset=utf-8"))
@@ -281,7 +283,7 @@
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
         response (ingest/ingest-concept (assoc granule :format "") {:accept-format :json :raw? true})
          status (:status response)
@@ -292,7 +294,7 @@
 
 ;; Verify ingest behaves properly if request contains invalid content type.
 (deftest invalid-content-type-ingest-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         granule (data-core/item->concept (granule/granule-with-umm-spec-collection collection (:concept-id collection)))
         response (ingest/ingest-concept (assoc granule :format "blah") {:accept-format :json :raw? true})
         status (:status response)
@@ -303,7 +305,7 @@
 
 ;; Verify deleting same granule twice returns a 404
 (deftest delete-same-granule-twice-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         granule (data-core/item->concept
                  (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
         ingest-result (ingest/ingest-concept granule)
@@ -319,7 +321,7 @@
 
 ;; Verify that attempts to ingest a granule whose parent does not exist result in a 422 error
 (deftest ingest-orphan-granule-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Coll1"}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Coll1"}) {:validate-keywords false})
         umm-granule (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"
                                                                                                    :granule-ur "Gran1"})
         granule (data-core/item->concept umm-granule)
@@ -332,7 +334,7 @@
 
 ;; Verify that granules with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-granule-with-slash-in-native-id-test
-  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+  (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
         umm-granule (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:native-id "Name/With/Slashes"})
         granule (data-core/item->concept umm-granule)
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
@@ -345,7 +347,7 @@
 
 (deftest granule-schema-validation-test
   (are3 [concept-format validation-errors]
-    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+    (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:validate-keywords false})
           concept (data-core/item->concept
                    (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:beginning-date-time "2010-12-12T12:00:00Z"})
                    concept-format)
@@ -372,7 +374,8 @@
 (deftest ingest-smap-iso-granule-test
   (let [collection (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                                                          :ShortName "S1"
-                                                                                         :Version "V1"}))]
+                                                                                         :Version "V1"})
+                                                         {:validate-keywords false})]
     (testing "Valid SMAP ISO granule with collection-ref attributes"
       (are3 [attrs]
         (let [granule (-> (granule/granule-with-umm-spec-collection collection (:concept-id collection) {:granule-ur "Gran1"})
@@ -437,7 +440,7 @@
                   :concept-id   coll-concept-id
                   :format       metadata-format
                   :metadata     cddis-umm}
-        ingest-collection-response (ingest/ingest-concept coll-map {:accept-format :json})
+        ingest-collection-response (ingest/ingest-concept coll-map {:accept-format :json :validate-keywords false})
         granule (data-core/item->concept
                  (granule/granule-with-umm-spec-collection (json/parse-string cddis-umm true)
                                                            coll-concept-id
@@ -464,7 +467,8 @@
         valid-gran-metadata (-> "iso-samples/valid-CMR-5129-gran.xml" io/resource slurp)]
     (testing "Invalid orbit"
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status]} (ingest/ingest-concept
                                (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))))
@@ -478,7 +482,8 @@
         invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)]
     (testing "Invalid Geometries for ORBIT granule."
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
@@ -491,7 +496,8 @@
         invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)]
     (testing "Invalid geographic description "
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
@@ -510,7 +516,7 @@
             :path ["OrbitCalculatedSpatialDomains" 1]}]]
     (testing "Invalid orbit calculated spatial domain"
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata) {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
@@ -521,7 +527,8 @@
         valid-gran-metadata (-> "iso-samples/5216_Valid_IsoSmap_Granule.xml" io/resource slurp)]
     (testing "Invalid orbit calculated spatial domain"
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap valid-gran-metadata))]
          (is (= 201 status))
@@ -538,7 +545,8 @@
            :path ["OrbitCalculatedSpatialDomains" 0]}]]
     (testing "Invalid orbit calculated spatial domain"
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
          (is (= 422 status))
@@ -549,7 +557,8 @@
         invalid-gran-metadata (-> "5216_Valid_Echo10_Granule.xml" io/resource slurp)]
     (testing "Invalid orbit calculated spatial domain"
       (ingest/ingest-concept
-        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+        (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+        {:validate-keywords false})
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :echo10 invalid-gran-metadata))]
          (is (= 201 status))
@@ -559,7 +568,8 @@
   (s/only-with-real-database
    (let [collection (data-core/ingest-umm-spec-collection
                      "PROV1"
-                     (data-umm-c/collection 1 {}))]
+                     (data-umm-c/collection 1 {})
+                     {:validate-keywords false})]
      (testing "DeleteTime in past results in validation error"
        (let [granule (granule/granule-with-umm-spec-collection
                       collection
@@ -570,7 +580,8 @@
                                       "PROV1"
                                       granule
                                       {:format :umm-json
-                                       :allow-failure? true})]
+                                       :allow-failure? true
+                                       :validate-keywords false})]
          (is (= 422 status))
          (is (= ["DeleteTime 2000-01-01T00:00:00.000Z is before the current time."]
                 errors))))
@@ -597,7 +608,8 @@
   (let [collection (data-core/ingest-umm-spec-collection
                     "PROV1" (data-umm-c/collection {:EntryTitle "correct"
                                                     :ShortName "S1"
-                                                    :Version "V1"}))]
+                                                    :Version "V1"})
+                    {:validate-keywords false})]
     (testing "Valid UMM-G granule with collection-ref attributes, default UMM-G version"
       (are3 [attrs]
         (let [granule (-> (granule/granule-with-umm-spec-collection

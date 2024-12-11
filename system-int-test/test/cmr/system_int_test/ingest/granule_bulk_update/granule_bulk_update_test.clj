@@ -18,7 +18,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest bulk-granule-update-test
-  (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+  (let [bulk-update-options {:token (echo-util/login (system/context) "user1") :validate-keywords false}
         coll1 (data-core/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
                                                :ShortName "short1"

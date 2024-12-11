@@ -168,9 +168,9 @@
                     :ending-date-time "1967-10-12T07:00:00.000-05:00"}
 
         echo10-coll1 (data-umm-c/collection coll-data1)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll1 {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll1 {:format :echo10 :validate-keywords false})
         echo10-coll2 (data-umm-c/collection coll-data2)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll2 {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll2 {:format :echo10 :validate-keywords false})
 
         gran-Terra-coll1 (dg/granule-with-umm-spec-collection echo10-coll1 (:concept-id echo10-coll1) gran-data1)
         gran-AM-1-coll1 (dg/granule-with-umm-spec-collection echo10-coll1 (:concept-id echo10-coll1) gran-data5)
@@ -322,9 +322,9 @@
                      :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-10-12T07:00:00.000-05:00"}
         echo10-coll-A (data-umm-c/collection coll-data-A)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-A {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-A {:format :echo10 :validate-keywords false})
         echo10-coll-B (data-umm-c/collection coll-data-B)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-B {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-B {:format :echo10 :validate-keywords false})
         gran-A-for-echo10-coll-A (dg/granule-with-umm-spec-collection echo10-coll-A (:concept-id echo10-coll-A) gran-data-A)
         gran-B-for-echo10-coll-A (dg/granule-with-umm-spec-collection echo10-coll-A (:concept-id echo10-coll-A) gran-data-B)
         gran-A-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-A)
@@ -447,9 +447,9 @@
                      :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-10-12T07:00:00.000-05:00"}
         echo10-coll-A (data-umm-c/collection coll-data-A)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-A {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-A {:format :echo10 :validate-keywords false})
         echo10-coll-B (data-umm-c/collection coll-data-B)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-B {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll-B {:format :echo10 :validate-keywords false})
         gran-A-for-echo10-coll-A (dg/granule-with-umm-spec-collection echo10-coll-A (:concept-id echo10-coll-A) gran-data-A)
         gran-B-for-echo10-coll-A (dg/granule-with-umm-spec-collection echo10-coll-A (:concept-id echo10-coll-A) gran-data-B)
         gran-A-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-A)
@@ -526,19 +526,19 @@
                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
         echo10-coll (data-umm-c/collection coll-data)
-        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" echo10-coll {:format :echo10 :validate-keywords false})
         dif-coll (data-umm-c/collection (assoc coll-data :EntryTitle "short_name2_version"
                                          :ShortName "short_name2"))
-        _ (d/ingest-umm-spec-collection "PROV1" dif-coll {:format :dif})
+        _ (d/ingest-umm-spec-collection "PROV1" dif-coll {:format :dif :validate-keywords false})
         dif10-coll (data-umm-c/collection (assoc coll-data :EntryTitle "short_name3_version"
                                            :ShortName "short_name3"))
-        _ (d/ingest-umm-spec-collection "PROV1" dif10-coll {:format :dif10})
+        _ (d/ingest-umm-spec-collection "PROV1" dif10-coll {:format :dif10 :validate-keywords false})
         iso19115-coll (data-umm-c/collection (assoc coll-data :EntryTitle "short_name4_version"
                                               :ShortName "short_name4"))
-        _ (d/ingest-umm-spec-collection "PROV1" iso19115-coll {:format :iso19115})
+        _ (d/ingest-umm-spec-collection "PROV1" iso19115-coll {:format :iso19115 :validate-keywords false})
         iso-smap-coll (data-umm-c/collection (assoc coll-data :EntryTitle "short_name5_version"
                                               :ShortName "short_name5"))
-        _ (d/ingest-umm-spec-collection "PROV1" iso-smap-coll {:format :iso-smap})
+        _ (d/ingest-umm-spec-collection "PROV1" iso-smap-coll {:format :iso-smap :validate-keywords false})
         gran-for-echo10-coll (dg/granule-with-umm-spec-collection echo10-coll (:concept-id echo10-coll) gran-data)
         gran-for-dif-coll (dg/granule-with-umm-spec-collection dif-coll (:concept-id dif-coll) gran-data)
         gran-for-dif10-coll (dg/granule-with-umm-spec-collection dif10-coll (:concept-id dif-coll) gran-data)
@@ -620,7 +620,7 @@
                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
         coll (data-umm-c/collection coll-data)
-        _ (d/ingest-umm-spec-collection "PROV1" coll {:format :echo10})
+        _ (d/ingest-umm-spec-collection "PROV1" coll {:format :echo10 :validate-keywords false})
         gran (dg/granule-with-umm-spec-collection coll (:concept-id coll)  gran-data)
         _ (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})]
     (index/wait-until-indexed)
@@ -628,7 +628,7 @@
     (are [exp-errors metadata-format]
          (= exp-errors
             (flatten (:errors (d/ingest-umm-spec-collection "PROV1" coll {:format metadata-format
-                                                                          :allow-failure? true}))))
+                                                                          :allow-failure? true :validate-keywords false}))))
          ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 1 granules."]
          :dif
 
@@ -647,7 +647,8 @@
            works correctly when the parent collection is in ISO19115 format"
            (let [coll-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-iso-collection.xml"))
                  _ (ingest/ingest-concept
-                     (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+                     (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata)
+                     {:validate-keywords false})
                  gran-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
                                     (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
@@ -658,7 +659,8 @@
            works correctly when the parent collection is in ISO SMAP format"
            (let [coll-metadata (slurp (io/resource "iso-samples/cmr-4125-iso-collection.xml"))
                  _ (ingest/ingest-concept
-                     (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
+                     (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata)
+                     {:validate-keywords false})
                  gran-metadata (slurp (io/resource "iso-samples/cmr-4125-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
                                     (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
@@ -693,7 +695,7 @@
                     :ending-date-time "1967-10-12T07:00:00.000-05:00"}
 
         coll1 (data-umm-c/collection coll-data1)
-        _ (d/ingest-umm-spec-collection "PROV1" coll1 {:format :iso19115})
+        _ (d/ingest-umm-spec-collection "PROV1" coll1 {:format :iso19115 :validate-keywords false})
         gran1 (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)  gran-data1)
         granule-result (d/ingest "PROV1" gran1 {:format :echo10 :allow-failure? true})]
      ;; The test is checking that the exception does not occur

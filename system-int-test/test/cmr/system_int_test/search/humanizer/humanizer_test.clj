@@ -207,7 +207,8 @@
                                              :Term "Term1"}]
                          :concept-id "C1-PROV1")
                   {:format :umm-json
-                   :accept-format :json})
+                   :accept-format :json
+                   :validate-keywords false})
 
           _ (index/wait-until-indexed)
           ;; Humanizers use the cached collection metadata - clear to make sure we have the latest
@@ -243,7 +244,8 @@
 
                              :concept-id "C2-PROV1")
                       {:format :umm-json
-                       :accept-format :json})
+                       :accept-format :json
+                       :validate-keywords false})
 
               _ (index/wait-until-indexed)
               _ (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
@@ -273,7 +275,8 @@
                                  :Term "Term1"}]
               :concept-id "C1-PROV1")
         {:format :umm-json
-         :accept-format :json})
+         :accept-format :json
+         :validate-keywords false})
     (index/wait-until-indexed)
     (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
     (is (= 200 (:status (search/get-humanizers-report-raw)))))
@@ -294,7 +297,8 @@
                                  :Term "Term1"}]
               :concept-id "C1-PROV1")
         {:format :umm-json
-         :accept-format :json})
+         :accept-format :json
+         :validate-keywords false})
     (index/wait-until-indexed)
       (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 200 (:status (search/get-humanizers-report-raw {:regenerate true

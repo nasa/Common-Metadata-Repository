@@ -21,7 +21,8 @@
 (deftest retrieve-granule-by-cmr-concept-id
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
-                                             {:Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")}))
+                                             {:Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")})
+                                            {:validate-keywords false})
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"

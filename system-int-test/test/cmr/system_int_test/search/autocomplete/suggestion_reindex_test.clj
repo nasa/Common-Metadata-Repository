@@ -109,7 +109,8 @@
                           (fu/processing-level-id "PL1")
                           (fu/projects "proj1" "PROJ2")
                           (fu/platforms fu/FROM_KMS 2 2 1)
-                          (fu/science-keywords sk1 sk2)}))
+                          (fu/science-keywords sk1 sk2)})
+                        {:validate-keywords false})
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
@@ -132,7 +133,8 @@
                  :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
                  :AccessConstraints (data-umm-spec/access-constraints
                                      {:Value 1 :Description "Those files are for British eyes only."})})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         coll6 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
@@ -140,10 +142,12 @@
                  :EntryTitle "Registered Collection"
                  :Projects (:Projects (fu/projects "DMSP 5B/F3"))
                  :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
         group2-concept-id (e/get-or-create-group (s/context) "group2")
         group3-concept-id (e/get-or-create-group (s/context) "group3")
@@ -238,7 +242,8 @@
                     {:ShortName "This one is old and should be cleaned up"
                      :EntryTitle "Oldie"
                      :Projects (:Projects (fu/projects "OLD"))
-                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
+                     :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))})
+                   {:validate-keywords false})
 
             _ (dev-sys-util/freeze-time! (time/yesterday))
             coll8 (d/ingest-umm-spec-collection
@@ -246,7 +251,8 @@
                    (data-umm-spec/collection
                     {:ShortName "Yesterday's news"
                      :EntryTitle "Also an Oldie"
-                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))}))
+                     :Platforms (:Platforms (fu/platforms "old AND stale" 2 1 1))})
+                   {:validate-keywords false})
             _ (index/wait-until-indexed)
             _ (dev-sys-util/clear-current-time!)
 
@@ -270,7 +276,8 @@
        (data-umm-spec/collection
         {:EntryTitle "Secret Collection"
          :ScienceKeywords (:ScienceKeywords (fu/science-keywords gap-sk))})
-       {:format :umm-json})
+       {:format :umm-json
+        :validate-keywords false})
 
       (d/ingest-umm-spec-collection
        "PROV1"
@@ -279,7 +286,8 @@
          :EntryTitle "Terra Test Collection"
          :Projects (:Projects (fu/projects "Terra"))
          :Platforms [{:ShortName "AM-1"}]})
-       {:format :umm-json})
+       {:format :umm-json
+        :validate-keywords false})
 
       (index/wait-until-indexed)
       (index/reindex-suggestions)
@@ -307,7 +315,8 @@
      "PROV1"
      (data-umm-spec/collection
       {:EntryTitle "A boring collection"})
-     {:format :umm-json})
+     {:format :umm-json
+      :validate-keywords false})
 
     (index/wait-until-indexed)
     (try

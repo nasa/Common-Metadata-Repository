@@ -31,22 +31,22 @@
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
         coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
 
-        _ (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        _ (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
+        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
         _ (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
-        coll3 (d/ingest "PROV2" (dc/collection {}))
-        coll4 (d/ingest "PROV3" (dc/collection {}))
+        coll3 (d/ingest "PROV2" (dc/collection {}) {:validate-keywords false})
+        coll4 (d/ingest "PROV3" (dc/collection {}) {:validate-keywords false})
         token (e/login (s/context) "user1")
         tag-key "tag1"]
 
@@ -161,22 +161,22 @@
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
         coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
 
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
+        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
         _ (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
-        coll3 (d/ingest "PROV2" (dc/collection {}))
-        coll4 (d/ingest "PROV3" (dc/collection {}))
+        coll3 (d/ingest "PROV2" (dc/collection {}) {:validate-keywords false})
+        coll4 (d/ingest "PROV3" (dc/collection {}) {:validate-keywords false})
         token (e/login (s/context) "user1")
         tag-key "tag1"]
 
@@ -298,11 +298,11 @@
 (deftest associate-dissociate-tag-with-collection-revisions-test
   ;; Grant all collections in PROV1
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
-        coll1-2 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
+        coll1-2 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
+        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
+        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
+        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
         token (e/login (s/context) "user1")]
     (tags/create-tag token (tags/make-tag {:tag-key "tag1"}))
     (tags/create-tag token (tags/make-tag {:tag-key "tag2"}))

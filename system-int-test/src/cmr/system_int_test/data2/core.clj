@@ -225,7 +225,7 @@
                   :native-id    (or native-id "native-id")
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
-        response (ingest/ingest-concept concept)]
+        response (ingest/ingest-concept concept {:validate-keywords false})]
     (if (= concept-type :granule)
       (merge (umm-legacy/parse-concept context concept) response)
       (merge (umm-spec/parse-metadata context concept) response))))

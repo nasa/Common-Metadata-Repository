@@ -18,11 +18,11 @@
 (deftest harvest-granules
   (let [format-key :echo10
         _ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
-        coll1-echo (data2-core/ingest "PROV1" (data2-collection/collection) {:format :echo10})
+        coll1-echo (data2-core/ingest "PROV1" (data2-collection/collection) {:format :echo10 :validate-keywords false})
         coll1-concept-id (:concept-id coll1-echo)
 
         _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
-        coll2-echo (data2-core/ingest "PROV1" (data2-collection/collection) {:format :echo10})
+        coll2-echo (data2-core/ingest "PROV1" (data2-collection/collection) {:format :echo10 :validate-keywords false})
         coll2-concept-id (:concept-id coll2-echo)
 
         _ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")

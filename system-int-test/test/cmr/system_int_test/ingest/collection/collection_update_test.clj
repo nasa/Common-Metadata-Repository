@@ -453,14 +453,17 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :Projects (data-umm-cmn/projects "p1" "p2" "p3" "p4")}))
+                                                     :Projects (data-umm-cmn/projects "p1" "p2" "p3" "p4")})
+                                           {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
-                                                      :Projects (data-umm-cmn/projects "p4")}))
+                                                      :Projects (data-umm-cmn/projects "p4")})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection3"
                                                       :ShortName "S3"
-                                                      :Projects (data-umm-cmn/projects "USGS_SOFIA")}))
+                                                      :Projects (data-umm-cmn/projects "USGS_SOFIA")})
+                                            {:validate-keywords false})
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
@@ -477,7 +480,8 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :Projects (apply data-umm-cmn/projects projects)}))
+                                                               :Projects (apply data-umm-cmn/projects projects)})
+                                                     {:validate-keywords false})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -495,7 +499,8 @@
                                                                :ShortName "S1"
                                                                :Version "V1"
                                                                :Projects (apply data-umm-cmn/projects projects)})
-                                 {:allow-failure? true})
+                                 {:allow-failure? true
+                                  :validate-keywords false})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
 
@@ -510,7 +515,8 @@
                                                               {:EntryTitle "parent-collection3"
                                                                :ShortName "S3"
                                                                :Projects (apply data-umm-cmn/projects projects)})
-                                 {:allow-failure? true})
+                                 {:allow-failure? true
+                                  :validate-keywords false})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -520,10 +526,11 @@
 
 (deftest collection-update-granule-spatial-representation-test
   (let [make-coll (fn [entry-title spatial-params]
-                    (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle entry-title
-                                                                                  :ShortName (d/unique-str "short-name")
-                                                                                  :SpatialExtent (when spatial-params
-                                                                                                   (data-umm-c/spatial spatial-params))})))
+                    (d/ingest-umm-spec-collection "PROV1"
+                                                  (data-umm-c/collection {:EntryTitle entry-title
+                                                                          :ShortName (d/unique-str "short-name")
+                                                                          :SpatialExtent (when spatial-params (data-umm-c/spatial spatial-params))})
+                                                  {:validate-keywords false}))
         make-gran (fn [coll spatial]
                     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
                                                                                             (when spatial (dg/spatial spatial))})))
@@ -559,7 +566,7 @@
                                   updated-coll (assoc updated-coll
                                                       :SpatialExtent (when new-spatial-params
                                                                        (data-umm-c/spatial new-spatial-params)))]
-                              (d/ingest-umm-spec-collection "PROV1" updated-coll {:allow-failure? true})))]
+                              (d/ingest-umm-spec-collection "PROV1" updated-coll {:allow-failure? true :validate-keywords false})))]
 
     (index/wait-until-indexed)
     (testing "Updates allowed with no granules"
@@ -774,12 +781,14 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :Platforms (data-umm-cmn/platforms "p1" "p2" "AM-1" "p4")}))
+                                                     :Platforms (data-umm-cmn/platforms "p1" "p2" "AM-1" "p4")})
+                                           {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
                                                       :ShortName "S2"
                                                       :Version "V2"
-                                                      :Platforms (data-umm-cmn/platforms "p4" "Terra")}))]
+                                                      :Platforms (data-umm-cmn/platforms "p4" "Terra")})
+                                            {:validate-keywords false})]
     ;; CMR-3926 We need to make sure granules with no platfrom ref do not inherit their parent collection's instrument
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
@@ -797,7 +806,8 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :Platforms (apply data-umm-cmn/platforms platforms)}))
+                                                               :Platforms (apply data-umm-cmn/platforms platforms)})
+                                                     {:validate-keywords false})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -818,7 +828,8 @@
                                                                :ShortName "S2"
                                                                :Version "V2"
                                                                :Platforms (apply data-umm-cmn/platforms platforms)})
-                                 {:allow-failure? true})
+                                 {:allow-failure? true
+                                  :validate-keywords false})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
 
@@ -836,7 +847,8 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")}))]
+                                                     :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")})
+                                           {:validate-keywords false})]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
@@ -848,7 +860,8 @@
                                                               {:EntryTitle "parent-collection"
                                                                :ShortName "S1"
                                                                :Version "V1"
-                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
+                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
+                                                     {:validate-keywords false})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -869,7 +882,8 @@
                                                              :ShortName "S2"
                                                              :Version "V2"
                                                              :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
-                               {:allow-failure? true})
+                               {:allow-failure? true
+                                :validate-keywords false})
             {:keys [status errors]} response]
         (is (= [422 expected-errors] [status errors])))
 
@@ -888,12 +902,14 @@
                                                      :ShortName "S1"
                                                      :Version "V1"
                                                      :Platforms [(data-umm-cmn/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
-                                                                 (data-umm-cmn/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+                                                                 (data-umm-cmn/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]})
+                                           {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
                                                       :ShortName "S2"
                                                       :Version "V2"
-                                                      :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+                                                      :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]})
+                                            {:validate-keywords false})]
     ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
@@ -911,7 +927,8 @@
                                                                 :ShortName "S1"
                                                                 :Version "V1"
                                                                 :Platforms [(apply data-umm-cmn/platform-with-instruments plat-instruments-1)
-                                                                            (apply data-umm-cmn/platform-with-instruments plat-instruments-2)]}))
+                                                                            (apply data-umm-cmn/platform-with-instruments plat-instruments-2)]})
+                                                     {:validate-keywords false})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -940,7 +957,8 @@
                                                                :ShortName "S2"
                                                                :Version "V2"
                                                                :Platforms [(apply data-umm-cmn/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
-                                                     {:allow-failure? true})
+                                                     {:allow-failure? true
+                                                      :validate-keywords false})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
 
@@ -981,12 +999,12 @@
                                                    (dg/psa "TIME" ["01:02:03Z"])
                                                    (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}
 
-        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map))
+        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map) {:validate-keywords false})
         gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" granule-map))]
 
     (are3
       [coll-map gran-map]
-      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map))
+      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map) {:validate-keywords false})
             response2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" gran-map))
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))
@@ -1027,7 +1045,8 @@
         updated-coll-metadata (-> "iso-samples/cmr-5871-coll-updated.xml" io/resource slurp)
         gran-metadata (-> "iso-samples/cmr-5871-gran.xml" io/resource slurp)]
     (ingest/ingest-concept
-     (ingest/concept :collection "PROV1" "coll1" :iso19115 coll-metadata))
+     (ingest/concept :collection "PROV1" "coll1" :iso19115 coll-metadata)
+     {:validate-keywords false})
     (let [{:keys [status]} (ingest/ingest-concept
                             (ingest/concept
                              :granule "PROV1" "gran1" :iso-smap gran-metadata))]
@@ -1036,5 +1055,6 @@
     (testing "Update collection child instrument name that not referenced in its granule is OK"
       (let [{:keys [status errors]} (ingest/ingest-concept
                                      (ingest/concept
-                                      :collection "PROV1" "coll1" :iso19115 updated-coll-metadata))]
+                                      :collection "PROV1" "coll1" :iso19115 updated-coll-metadata)
+                                     {:validate-keywords false})]
         (is (= [200 nil] [status errors]))))))

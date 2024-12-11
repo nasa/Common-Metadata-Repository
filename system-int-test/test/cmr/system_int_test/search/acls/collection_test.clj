@@ -40,19 +40,24 @@
   (let [guest-token (e/login-guest (s/context))
         c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         c1-dif (d/ingest "PROV1"
                          (dc/collection-dif {:entry-title "c1-dif" :access-value 1})
-                         {:format :dif})
+                         {:format :dif
+                          :validate-keywords false})
         c1-dif10 (d/ingest "PROV1"
                            (dc/collection-dif10 {:entry-title "c1-dif10" :access-value 1})
-                           {:format :dif10})
+                           {:format :dif10
+                            :validate-keywords false})
         c1-iso (d/ingest "PROV1"
                          (dc/collection {:entry-title "c1-iso" :access-value 1})
-                         {:format :iso19115})
+                         {:format :iso19115
+                          :validate-keywords false})
         c1-smap (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-smap" :access-value 1})
-                          {:format :iso-smap})]
+                          {:format :iso-smap
+                           :validate-keywords false})]
     (index/wait-until-indexed)
 
     ;;;;system token sees everything
@@ -65,33 +70,42 @@
   (let [guest-token (e/login-guest (s/context))
         c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                   :access-value 1})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         c2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c2-echo"
                                                   :access-value 0})
-                          {:format :echo10})
+                          {:format :echo10
+                           :validate-keywords false})
         c1-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c1-dif"
                                                      :access-value 1})
-                         {:format :dif})
+                         {:format :dif
+                          :validate-keywords false})
         c2-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c2-dif"
                                                      :access-value 0})
-                         {:format :dif})
+                         {:format :dif
+                          :validate-keywords false})
         c1-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c1-dif10"
                                                          :access-value 1})
-                           {:format :dif10})
+                           {:format :dif10
+                            :validate-keywords false})
         c2-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "c2-dif10"
                                                          :access-value 0})
-                           {:format :dif10})
+                           {:format :dif10
+                            :validate-keywords false})
         c1-iso (d/ingest "PROV1" (dc/collection {:entry-title "c1-iso"
                                                  :access-value 1})
-                         {:format :iso19115})
+                         {:format :iso19115
+                          :validate-keywords false})
         c2-iso (d/ingest "PROV1" (dc/collection {:entry-title "c2-iso"
                                                  :access-value 0})
-                         {:format :iso19115})
+                         {:format :iso19115
+                          :validate-keywords false})
         ;; access-value is not supported in ISO-SMAP, so it won't be found
         c1-smap (d/ingest "PROV1" (dc/collection {:entry-title "c1-smap"
                                                   :access-value 1})
-                          {:format :iso-smap})
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))]
+                          {:format :iso-smap
+                           :validate-keywords false})
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})]
     (index/wait-until-indexed)
 
     ;; grant restriction flag acl
@@ -120,18 +134,20 @@
                                  :variable-level-3 "Level1-3"
                                  :detailed-variable "Detail1"})
 
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :science-keywords [sk1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
-                                                :science-keywords [sk1]
-                                                :access-value 5.0}))
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :science-keywords [sk1]}) {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
+        coll4 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "coll4"
+                                        :science-keywords [sk1]
+                                        :access-value 5.0})
+                        {:validate-keywords false})
         ;; no permission granted on coll5
-        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"}))
+        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"}) {:validate-keywords false})
 
         ;; PROV2
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :science-keywords [sk1]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :science-keywords [sk1]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :science-keywords [sk1]}) {:validate-keywords false})
+        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :science-keywords [sk1]}) {:validate-keywords false})
         ;; A dif collection
         coll8 (d/ingest "PROV2" (dc/collection-dif
                                   {:entry-title "coll8"
@@ -139,36 +155,47 @@
                                    :short-name "S8"
                                    :version-id "V8"
                                    :long-name "coll8"})
-                        {:format :dif})
+                        {:format :dif
+                         :validate-keywords false})
         ;; added for atom results
         coll8 (assoc coll8 :original-format "DIF")
 
         ;; PROV3
-        coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9" :science-keywords [sk1]}))
-        coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
-                                                 :access-value 12.0}))
+        coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9" :science-keywords [sk1]}) {:validate-keywords false})
+        coll10 (d/ingest "PROV3"
+                         (dc/collection {:entry-title "coll10"
+                                         :access-value 12.0})
+                         {:validate-keywords false})
         ;; PROV4
         ;; group3 has permission to read this collection revision
-        coll11-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
-                                                   :native-id "coll11"
-                                                   :access-value 32.0}))
+        coll11-1 (d/ingest "PROV4"
+                           (dc/collection {:entry-title "coll11"
+                                           :native-id "coll11"
+                                           :access-value 32.0})
+                           {:validate-keywords false})
         ;; tombstone
         coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token (tc/echo-system-token)})
                         :entry-title "coll11"
                         :deleted true
                         :revision-id 2)
         ;; no permissions to read this revision since entry-title has changed
-        coll11-3 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
-                                                   :native-id "coll11"
-                                                   :access-value 34.0}))
+        coll11-3 (d/ingest "PROV4"
+                           (dc/collection {:entry-title "coll11"
+                                           :native-id "coll11"
+                                           :access-value 34.0})
+                           {:validate-keywords false})
         ;; group 3 has permission to read this collection revision
-        coll12-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll12"
-                                                   :access-value 32.0
-                                                   :native-id "coll12"}))
+        coll12-1 (d/ingest "PROV4"
+                           (dc/collection {:entry-title "coll12"
+                                           :access-value 32.0
+                                           :native-id "coll12"})
+                           {:validate-keywords false})
         ;; no permissions to read this collection since entry-title has changed
-        coll12-2 (d/ingest "PROV4" (dc/collection {:entry-title "coll12"
-                                                   :access-value 34.0
-                                                   :native-id "coll12"}))
+        coll12-2 (d/ingest "PROV4"
+                           (dc/collection {:entry-title "coll12"
+                                           :access-value 34.0
+                                           :native-id "coll12"})
+                           {:validate-keywords false})
         ;; no permision to see this tombstone since it has same entry-title as coll12-2
         coll12-3 (assoc (ingest/delete-concept (d/item->concept coll12-2))
                         :deleted true
@@ -360,14 +387,14 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
+  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10 :validate-keywords false})
         coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
-        coll2-1 (d/ingest "PROV1" coll2-umm)
+        coll2-1 (d/ingest "PROV1" coll2-umm {:validate-keywords false})
         ;; 2 versions of collection 2 will allow us to test the force reindex option after we
         ;; force delete the latest version of coll2-2
-        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
-        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
+        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2") {:validate-keywords false})
+        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10 :validate-keywords false})
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
 
         _ (index/wait-until-indexed)
         acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
@@ -414,7 +441,7 @@
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was
 ;; used. This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
         acl1 (e/grant-registered-users
               (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
         user1-token (e/login (s/context) "user1")
@@ -441,10 +468,12 @@
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1" [group1-concept-id])
         user2-token (e/login (s/context) "user2")
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                                :native-id "coll1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
-                                                :native-id "coll2"}))
+        coll1 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "coll1" :native-id "coll1"})
+                        {:validate-keywords false})
+        coll2 (d/ingest "PROV1"
+                        (dc/collection {:entry-title "coll2" :native-id "coll2"})
+                        {:validate-keywords false})
         coll1-edited (-> coll1
                          (assoc :entry-title "coll1-edited")
                          (assoc :revision-id 2))]

@@ -30,7 +30,8 @@
    (d/ingest prov
              (dc/collection
                (merge {:entry-title (str "coll" n)}
-                      attribs)))))
+                      attribs))
+             {:validate-keywords false})))
 
 (defn make-gran
   ([n coll]
@@ -343,10 +344,8 @@
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1" [group1-concept-id])
         user2-token (e/login (s/context) "user2")
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                                :native-id "coll1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
-                                                :native-id "coll2"}))
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1":native-id "coll1"}) {:validate-keywords false})
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :native-id "coll2"}) {:validate-keywords false})
         gran1 (make-gran 1 coll1)
         gran2 (make-gran 2 coll1)
         gran3 (make-gran 3 coll2)
@@ -365,8 +364,7 @@
     (d/assert-refs-match [] (search/find-refs :granule {:token guest-token
                                                         :concept-id (map :concept-id all-colls)}))
     ;; Update entry-title in collection.
-    (d/ingest "PROV1" (dc/collection {:entry-title "coll1-edited"
-                                      :native-id "coll1"}))
+    (d/ingest "PROV1" (dc/collection {:entry-title "coll1-edited" :native-id "coll1"}) {:validate-keywords false})
 
     (index/wait-until-indexed)
     (dev-sys-util/clear-caches)
