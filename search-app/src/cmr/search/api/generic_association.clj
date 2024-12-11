@@ -38,7 +38,6 @@
   [results]
   (let [result-count (count results)
         num-errors (assoc/num-errors-in-assoc-results results)]
-    (println "result count is " result-count "and num errors is " num-errors)
     (if (= 0 result-count)
       200
       (if (= num-errors result-count)

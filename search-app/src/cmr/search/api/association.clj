@@ -27,8 +27,6 @@
 (defn api-response
   "Creates an association response with the given data response"
   ([status-code data]
-   (println "api-response status-code = " status-code "data = " data)
-   (println "***** JSON PRINT = " (json/generate-string (util/snake-case-data (add-individual-statuses data))))
    (if (= 207 status-code)
      {:status status-code
       :body (json/generate-string (util/snake-case-data (add-individual-statuses data)))

@@ -258,7 +258,6 @@
 (defn assert-tag-association-response-mixed?
   "Assert the tag association response when status code is 207 multi-status response."
   [coll-tag-associations response]
-  (println "inside ASSERT-TAG-ASSOCIATION-RESPONSE-MIXED?")
    (let [{:keys [status body]} response
          expected-tag-assoc (map #(coll-tag-association->expected-tag-association % false)
                            coll-tag-associations)
