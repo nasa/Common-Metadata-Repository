@@ -3759,6 +3759,7 @@ Expected Response Status:
 </ul>
 
 Expected Response Body:
+
 The response body will consist of a list of tool association objects
 Each association object will have:
 <ul>
@@ -3916,6 +3917,7 @@ Expected Response Status:
 </ul>
 
 Expected Response Body:
+
 The response body will consist of a list of tool association objects
 Each association object will have:
 <ul>
@@ -4744,6 +4746,7 @@ Expected Response Status:
 </ul>
 
 Expected Response Body:
+
 The response body will consist of a list of service association objects
 Each association object will have:
 <ul>
@@ -5156,6 +5159,7 @@ Expected Response Status:
 </ul>
 
 Expected Response Body:
+
 The response body will consist of a list of tool association objects
 Each association object will have:
 <ul>
