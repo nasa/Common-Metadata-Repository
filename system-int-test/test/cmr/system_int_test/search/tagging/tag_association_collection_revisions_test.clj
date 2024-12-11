@@ -173,7 +173,7 @@
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+        _ (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
         coll3 (d/ingest "PROV2" (dc/collection {}))
         coll4 (d/ingest "PROV3" (dc/collection {}))
@@ -280,20 +280,19 @@
          {[concept-id revision-id] {:warnings [expected-msg]}}
          response)))
 
-    ;(testing "dissociate tag of collection revisions mixed response"
-    ;  ;; FIXME
-    ;  (let [concept-id (:concept-id coll1-1)
-    ;        revision-id (:revision-id coll1-1)
-    ;        response (tags/dissociate-by-concept-ids
-    ;                  token tag-key
-    ;                  [{:concept-id concept-id :revision-id 5}
-    ;                   {:concept-id concept-id :revision-id revision-id}])]
-    ;    (tags/assert-tag-dissociation-response-multi-status?
-    ;     {[concept-id 5]
-    ;      {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
-    ;                        concept-id)]}
-    ;      [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
-    ;     response)))
+    (testing "dissociate tag of collection revisions mixed response"
+      (let [concept-id (:concept-id coll1-1)
+            revision-id (:revision-id coll1-1)
+            response (tags/dissociate-by-concept-ids
+                      token tag-key
+                      [{:concept-id concept-id :revision-id 5}
+                       {:concept-id concept-id :revision-id revision-id}])]
+        (tags/assert-tag-dissociation-response-mixed?
+         {[concept-id 5]
+          {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
+                            concept-id)]}
+          [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
+         response)))
     ))
 
 (deftest associate-dissociate-tag-with-collection-revisions-test

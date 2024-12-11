@@ -39,8 +39,6 @@
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
                                                     :entry-title (str "ET" n)}))))
-        ;all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        ;all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag (tags/make-tag)
         tag-key (:tag-key tag)
         token (echo-util/login (system/context) "user1")
