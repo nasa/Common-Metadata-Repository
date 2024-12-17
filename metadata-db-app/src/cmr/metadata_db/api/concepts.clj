@@ -25,7 +25,8 @@
   ([context params concept-id]
    (get-concept context params concept-id nil))
   ([context params concept-id revision]
-   (let [include-umm-metadata (= "true" (:include_umm_metadata params))]
+   (let [_ (println "JYNA Inside get-concept for concept-id = " concept-id)
+         include-umm-metadata (= "true" (:include_umm_metadata params))]
      {:status 200
       :body (json/generate-string (concept-service/get-concept (assoc context :include-umm-metadata include-umm-metadata) concept-id (as-int revision)))
       :headers rh/json-header})))
@@ -80,7 +81,8 @@
 (defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
-  (let [concept (-> concept
+  (let [_ (println "JYNA inside save-concept-revision with params = " params "and concept = " concept)
+        concept (-> concept
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))
         ;; get variable-association and associated-item when applicable.
@@ -141,6 +143,7 @@
    :body (json/generate-string (concept-service/get-provider-holdings context))
    :headers rh/json-header})
 
+;; JYNA Save concepts is here
 (def concepts-api-routes
   (routes
     (context "/concepts" []
@@ -161,6 +164,7 @@
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))
       ;; remove a draft from the database
+             ;;JYNA this is where the force delete from indexer is going
       (DELETE "/force-delete-draft/:concept-id" {{:keys [concept-id] :as params} :params
                                                  request-context :request-context}
         (force-delete-draft request-context params concept-id nil))

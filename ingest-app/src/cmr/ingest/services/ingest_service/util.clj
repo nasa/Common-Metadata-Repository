@@ -55,7 +55,8 @@
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
   [context concept-attribs]
-  (let [{:keys [concept-type provider-id native-id]} concept-attribs
+  (let [_ (println "JYNA inside delete-concept")
+        {:keys [concept-type provider-id native-id]} concept-attribs
         existing-concept (first (mdb/find-concepts context
                                                    {:provider-id provider-id
                                                     :native-id native-id

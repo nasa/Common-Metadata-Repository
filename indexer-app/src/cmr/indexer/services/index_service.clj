@@ -697,12 +697,17 @@
   (fn [_context concept-id _revision-id _options]
     (cs/concept-id->type concept-id)))
 
+;; JYNA this is where the concept delete event goes to in indexer. Indexer picks it up and executes this func.
 (defmethod delete-concept :default
   [context concept-id revision-id options]
+  (println "INSIDE delete-concept :default")
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
+        ;; TODO JYNA this could also throw an error, because CD is already deleted by this point.
+        ;; CD's are not tombstoned, but permanently deleted, so this is why CD's have issues, but regular colls don't
+        ;; If concept is not found, can we still try to delete from elastic? We should put a try/catch here?
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
@@ -721,7 +726,7 @@
                               es-doc concept-id revision-id elastic-version elastic-options))]
             (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
             result)
-          ;; delete concept from primary concept index
+          ;; else delete concept from primary concept index
           (do
             (es/delete-document
              context index-names (concept-mapping-types concept-type)
@@ -739,8 +744,12 @@
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result)))))
       ;; For draft concept, after the index is deleted, remove it from database.
+      ;; Why are we removing it from database if it is already removed by the time the indexer picks up the delete event request?
       (when (cs/is-draft-concept? concept-type)
-        (meta-db/delete-draft context concept)))))
+        ;; TODO we could be deleting a non-existent draft which could throw an error too.. so in this case, we can wrap in a try/catch or funnel to a different flow
+        (println "JYNA this is a draft concept will force delete the draft")
+        (meta-db/delete-draft context concept))
+      )))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."

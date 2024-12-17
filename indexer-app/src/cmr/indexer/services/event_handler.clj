@@ -80,6 +80,7 @@
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (println "INSIDE handle-ingest-event JYNA with all-revisions-index = " all-revisions-index?)
   (when-not (= :humanizer (cc/concept-id->type concept-id))
     (let [[tm result] (util/time-execution
                         (indexer/delete-concept

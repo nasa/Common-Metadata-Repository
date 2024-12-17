@@ -325,6 +325,8 @@
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (info (format "Deleting %s %s from client %s"
                   (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+    (println (format "Deleting %s %s from client %s"
+                     (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers
                               (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept

@@ -262,15 +262,21 @@
    A 404 status is returned if the concept has already been deleted or removed from database."
   [request]
   (let [{:keys [route-params request-context params]} request
+        _ (println "JYNA inside delete-generic-document")
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
         concept-type (concept-type->singular route-params)
+        _ (println "delete-generic-document -- concept type = " concept-type)
         _ (if-not (is-draft-concept? request)
             (acl/verify-ingest-management-permission
              request-context :update :provider-object provider-id)
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))]
+    ;; JYNA -- does this actually delete doc from elastic search?
+    ;; This calls metadata-db POST /concepts with a :delete true revision which tombstones the concept in DB
+    ;; and then writes a delete concept event to ingest queue in func (defmethod save-concept-revision true
+    ;;
     (api-core/delete-concept concept-type provider-id native-id request)))
 
 (defn- extract-info-from-concept-id
@@ -323,16 +329,20 @@
 
 ;; This function is dynamic to test publish-draft.
 (defn- ^:dynamic publish-draft-concept
+  ;; JYNA -- this is where the magic happens
   "Publish a draft concept. i.e. Ingest the corresponding concept and delete the draft."
   ([request concept-id native-id]
    (publish-draft-concept request concept-id native-id nil nil))
   ([request concept-id native-id coll-concept-id coll-revision-id]
-   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
-         (extract-info-from-concept-id concept-id)
+   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]} (extract-info-from-concept-id concept-id)
+         ;; gets concept from oracle and uses that data to create a map of native_id and collection ingest request
+         _ (println "START getting collection concept data from ORACLE")
          info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
+         _ (println "END getting collection concept data from ORACLE")
          request (:request info)
          draft-native-id (:native-id info)
          ;;publish the concept-type-in-draft
+         _ (println "START publishing collection with ingest collection call")
          publish-result (case concept-type-in-draft
                           :collection (collections/ingest-collection provider-id native-id request)
                           :tool (tools/ingest-tool provider-id native-id request)
@@ -340,15 +350,18 @@
                           :variable (if coll-concept-id
                                       (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)
                                       (variables/ingest-variable provider-id native-id request))
-                          (create-generic-document request))]
+                          (create-generic-document request))
+         _ (println "END publishing collection with ingest collection call")]
      (if (contains? #{200 201} (:status publish-result))
        ;;construct request to delete the draft.
-       (let [delete-request (-> request
+       (let [_ (println "START publish result was successful. START delete of draft request.")
+             delete-request (-> request
                                 (assoc-in [:route-params :native-id] draft-native-id)
                                 (assoc-in [:route-params :concept-type] draft-concept-type)
                                 (assoc-in [:params :native-id] draft-native-id)
                                 (assoc-in [:params :concept-type] draft-concept-type))
-             delete-result (delete-generic-document delete-request)]
+             delete-result (delete-generic-document delete-request)
+             _ (println "END delete of draft request with status " (:status delete-result))]
          (if (= 200 (:status delete-result))
            publish-result
            (errors/throw-service-error
@@ -393,7 +406,7 @@
             ;; A variable draft does not have to be associated to a collection, if a collection concept id
             ;; does not exist, publish the variable anyway.
             (publish-draft-concept request concept-id native-id)))
-        (publish-draft-concept request concept-id native-id))
+        (publish-draft-concept request concept-id native-id)) ;; going in here
       (errors/throw-service-error
        :bad-request
        (format "Only draft can be published in this route. concept-id [%s] does not belong to a draft concept" concept-id)))))
