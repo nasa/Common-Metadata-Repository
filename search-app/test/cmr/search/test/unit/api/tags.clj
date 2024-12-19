@@ -9,8 +9,7 @@
 
 (deftest tag-association-results->status-code-test
   (util/are3 [input return-code]
-             (do
-               (is (= return-code (tags/tag-association-results->status-code input))))
+             (is (= return-code (tags/tag-association-results->status-code input)))
 
              "tags assoc has no errors, then returns 200 status code"
              '({:tag-association {:concept-id "TA1200000003-CMR", :revision-id 1}, :tagged-item {:concept-id "C1200000001-JM_PROV1"}})
@@ -26,8 +25,7 @@
 
 (deftest tag-api-response-test
   (util/are3 [status-code input expected]
-             (do
-               (is (= expected (tags/tag-api-response status-code input))))
+             (is (= expected (tags/tag-api-response status-code input)))
 
              "status-code 207 with errors and successes and warnings is given, returns response with separate status codes per association item"
              207

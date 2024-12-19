@@ -8,8 +8,7 @@
 
 (deftest generic-assoc-results->status-code-test
   (util/are3 [input status-code]
-             (do
-               (is (= status-code (gen-assoc/generic-assoc-results->status-code input))))
+             (is (= status-code (gen-assoc/generic-assoc-results->status-code input)))
 
              "generic-assoc: some errors and some successes, return 207"
              '({:generic-association {:concept-id "GA1200000026-CMR" :revision-id 1} :associated-item {:concept-id "C1200000013-PROV1"}}
@@ -28,8 +27,8 @@
 
 (deftest api-response-test
   (util/are3 [status-code input expected]
-             (do
-               (is (= expected (gen-assoc/api-response status-code input))))
+             (let [fun #'gen-assoc/api-response]
+               (is (= expected (fun status-code input))))
 
              "status-code 207 with errors and successes and warnings is given, returns response with separate status codes per association item"
              207

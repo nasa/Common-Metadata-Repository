@@ -16,7 +16,7 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn api-response
+(defn- api-response
   "Creates a successful association response with the given data response"
   [status-code data]
   (if (= 207 status-code)

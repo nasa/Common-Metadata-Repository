@@ -8,8 +8,7 @@
 
 (deftest association-results->status-code
   (util/are3 [concept-type input return-code]
-             (do
-               (is (= return-code (assoc/association-results->status-code concept-type input))))
+             (is (= return-code (assoc/association-results->status-code concept-type input)))
 
              ":service no errors returns 200"
              :service
@@ -87,8 +86,7 @@
 
 (deftest num-errors-in-result-test
   (util/are3 [input expected]
-             (do
-               (is (= expected (assoc/num-errors-in-assoc-results input))))
+             (is (= expected (assoc/num-errors-in-assoc-results input)))
 
              "input has no errors"
              '({:variable-association {:concept-id VA1200000017-CMR, :revision-id 1}, :associated-item {:concept-id C1200000012-PROV1}})
@@ -138,8 +136,7 @@
 
 (deftest add-individual-statuses-test
   (util/are3 [input expected]
-             (do
-               (is (= expected (assoc/add-individual-statuses input))))
+               (is (= expected (assoc/add-individual-statuses input)))
 
              "data contains mix of errors, successes and warnings, returns various statuses"
              '({:errors ["Collection [C1200465592-PROV1] does not exist or is not visible."], :associated-item {:concept-id "C1200465592-PROV1"}}
