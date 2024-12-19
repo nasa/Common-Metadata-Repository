@@ -7,18 +7,27 @@
    [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 (def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
 
+(def validate-keywords-default-true-enabled?
+  "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
+  (ingest-config/validate-keywords-default-true-enabled))
+
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers]
-  {:validate-keywords? (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
-   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
-   :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))})
+  (let [_ (println "validate-keywords-default-true-enabled = " validate-keywords-default-true-enabled?)
+        validate-keywords-value (if validate-keywords-default-true-enabled?
+                                  (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
+                                  (= "true" (get headers VALIDATE_KEYWORDS_HEADER)))]
+    {:validate-keywords? validate-keywords-value
+     :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
+     :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))}))
 
 (defn validate-collection
   [provider-id native-id request]
