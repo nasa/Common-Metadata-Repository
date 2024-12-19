@@ -115,17 +115,19 @@
   the topic."
   [context concept]
   (when-let [concept-edn (convert-concept-to-edn concept)]
-    (let [topic (get-in context [:system :sns :external])]
-      (topic-protocol/subscribe topic concept-edn))))
+    (when (ingest-subscription-concept? concept-edn)
+      (let [topic (get-in context [:system :sns :external])]
+        (topic-protocol/subscribe topic concept-edn)))))
 
 (defn delete-subscription
   "Remove the subscription from the cache and unsubscribe the subscription from
   the topic."
   [context concept]
   (when-let [concept-edn (add-delete-subscription context concept)]
-    (let [topic (get-in context [:system :sns :external])]
-      (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
-                                         :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])}))))
+    (when (ingest-subscription-concept? concept-edn)
+      (let [topic (get-in context [:system :sns :external])]
+        (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
+                                           :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])})))))
 
 ;;
 ;; The functions below are for refreshing the subscription cache if needed.
