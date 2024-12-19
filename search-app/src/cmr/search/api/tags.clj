@@ -34,13 +34,11 @@
   [results]
     (let [result-count (count results)
           num-errors (assoc/num-errors-in-assoc-results results)]
-      (if (= 0 result-count)
-        200
-        (if (= num-errors result-count)
-          400
-          (if (> num-errors 0)
-            207
-            200)))))
+      (cond
+        (zero? result-count) 200
+        (= num-errors result-count) 400
+        (pos? num-errors) 207
+        :else 200)))
 
 (defn tag-api-response
   "Creates a successful tag response with the given data response"
@@ -49,13 +47,12 @@
      (tag-api-response 400 data)
      (tag-api-response 200 data)))
   ([status-code data]
-   (if (= 207 status-code)
-     {:status status-code
-      :body (json/generate-string (util/snake-case-data (cmr.search.api.association/add-individual-statuses data)))
-      :headers {"Content-Type" mt/json}}
-     {:status status-code
-      :body (json/generate-string (util/snake-case-data data))
-      :headers {"Content-Type" mt/json}})))
+   (let [data-val (if (= 207 status-code)
+                    (assoc/add-individual-statuses data)
+                    data)]
+   {:status status-code
+    :body (json/generate-string (util/snake-case-data data-val))
+    :headers {"Content-Type" mt/json}})))
 
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"

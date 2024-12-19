@@ -38,13 +38,11 @@
   [results]
   (let [result-count (count results)
         num-errors (assoc/num-errors-in-assoc-results results)]
-    (if (= 0 result-count)
-      200
-      (if (= num-errors result-count)
-        400
-        (if (> num-errors 0)
-          207
-          200)))))
+    (cond
+      (zero? result-count) 200
+      (= num-errors result-count) 400
+      (pos? num-errors) 207
+      :else 200)))
 
 (defn associate-concept-to-concepts
   "Associate the given concept by concept type and concept id to a list of

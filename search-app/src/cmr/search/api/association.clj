@@ -16,6 +16,8 @@
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
 (defn add-individual-statuses
+  "When given a list of response entities, will set the http response status of each response entity based on its content.
+  Ex) If the response entity contains an error message, will set the status as 400."
   [list]
   (let [new-list (atom '())]
     (doseq [map-item list]
@@ -24,15 +26,16 @@
         (swap! new-list conj (assoc map-item :status 200))))
     (reverse @new-list)))
 
-(defn api-response
+(defn- api-response
   "Creates an association response with the given data response"
   ([status-code data]
-   (if (= 207 status-code)
+   ;; For association responses that partially fail we want to return a 207 and
+   ;; detail which associations failed and/or succeeded in the given body
+   (let [data-value (if (= 207 status-code)
+                      (add-individual-statuses data)
+                      data)]
      {:status status-code
-      :body (json/generate-string (util/snake-case-data (add-individual-statuses data)))
-      :headers {"Content-Type" mt/json}}
-     {:status status-code
-      :body (json/generate-string (util/snake-case-data data))
+      :body (json/generate-string (util/snake-case-data data-value))
       :headers {"Content-Type" mt/json}})))
 
 (defn num-errors-in-assoc-results

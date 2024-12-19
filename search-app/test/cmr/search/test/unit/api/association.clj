@@ -110,8 +110,8 @@
 
 (deftest api-response-test
   (util/are3 [status-code input expected]
-             (do
-               (is (= expected (assoc/api-response status-code input))))
+             (let [fun #'assoc/api-response]
+               (is (= expected (fun status-code input))))
 
              "status-code 207 with errors and successes and warnings is given, returns response with separate status codes per association item"
              207
