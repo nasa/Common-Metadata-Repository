@@ -15,29 +15,48 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- api-response
-  "Creates a successful association response with the given data response"
-  ([data]
-   (api-response 200 data))
-  ([status-code data]
-   {:status status-code
-    :body (json/generate-string (util/snake-case-data data))
-    :headers {"Content-Type" mt/json}}))
+(defn add-individual-statuses
+  "When given a list of response entities, will set the http response status of each response entity based on its content.
+  Ex) If the response entity contains an error message, will set the status as 400."
+  [list]
+  (map #(assoc % :status (if (or (:errors %) (:warning %)) 400 200))
+       list))
 
-(defn- results-contain-errors?
-  "Returns true if the results contain :errors"
+(defn- api-response
+  "Creates an association response with the given data response"
+  ([status-code data]
+   ;; For association responses that partially fail we want to return a 207 and
+   ;; detail which associations failed and/or succeeded in the given body
+   (let [data-value (if (= 207 status-code)
+                      (add-individual-statuses data)
+                      data)]
+     {:status status-code
+      :body (json/generate-string (util/snake-case-data data-value))
+      :headers {"Content-Type" mt/json}})))
+
+(defn num-errors-in-assoc-results
+  "Counts the number of errors in association-results"
   [results]
-  (seq (filter #(some? (:errors %)) results)))
+  (count (filter :errors results)))
 
 (defn association-results->status-code
-  "Check for concept-types requiring error status to be returned. This is currently :service and :variable
-  If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
-  any are errors are present. Otherwise it will return 200"
+  "Check for concept-types requiring error status to be returned.
+  If the concept-type is error-sensitive the function will check for any errors in the results.
+  Will return:
+  - 200 OK -- if response has no errors
+  - 207 MULTI-STATUS -- if response has some errors and some successes
+  - 400 BAD REQUEST -- if response has all errors"
   [concept-type results]
   (if (some #{concept-type} '(:variable :service :tool))
-    (if (results-contain-errors? results)
-      400
-      200)
+    (let [result-count (count results)
+          num-errors (num-errors-in-assoc-results results)]
+      (if (= 0 result-count)
+        200
+        (if (= num-errors result-count)
+          400
+          (if (> num-errors 0)
+            207
+            200))))
     200))
 
 (defn associate-concept-to-collections
