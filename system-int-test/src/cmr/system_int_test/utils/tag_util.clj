@@ -248,12 +248,8 @@
 
 (defn add-individual-statuses
   [list]
-  (let [new-list (atom '())]
-    (doseq [map-item list]
-      (if (or (contains? map-item :errors) (contains? map-item :warning))
-        (swap! new-list conj (assoc map-item :status 400))
-        (swap! new-list conj (assoc map-item :status 200))))
-    (reverse @new-list)))
+  [list]
+  (map #(assoc % :status (if (or (:errors %) (:warning %)) 400 200)) list))
 
 (defn assert-tag-association-response-mixed?
   "Assert the tag association response when status code is 207 multi-status response."

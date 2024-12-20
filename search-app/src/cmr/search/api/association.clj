@@ -19,12 +19,8 @@
   "When given a list of response entities, will set the http response status of each response entity based on its content.
   Ex) If the response entity contains an error message, will set the status as 400."
   [list]
-  (let [new-list (atom '())]
-    (doseq [map-item list]
-      (if (or (contains? map-item :errors) (contains? map-item :warning))
-        (swap! new-list conj (assoc map-item :status 400))
-        (swap! new-list conj (assoc map-item :status 200))))
-    (reverse @new-list)))
+  (map #(assoc % :status (if (or (:errors %) (:warning %)) 400 200))
+       list))
 
 (defn- api-response
   "Creates an association response with the given data response"
@@ -39,13 +35,9 @@
       :headers {"Content-Type" mt/json}})))
 
 (defn num-errors-in-assoc-results
-  "Counts num of errors in association-results"
+  "Counts the number of errors in association-results"
   [results]
-  (let [err-count (atom 0)]
-    (doseq [item results]
-      (if (contains? item :errors)
-        (swap! err-count inc)))
-    @err-count))
+  (count (filter :errors results)))
 
 (defn association-results->status-code
   "Check for concept-types requiring error status to be returned.
