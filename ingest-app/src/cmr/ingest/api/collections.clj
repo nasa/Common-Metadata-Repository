@@ -21,8 +21,7 @@
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers]
-  (let [_ (println "validate-keywords-default-true-enabled = " validate-keywords-default-true-enabled?)
-        validate-keywords-value (if validate-keywords-default-true-enabled?
+  (let [validate-keywords-value (if validate-keywords-default-true-enabled?
                                   (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
                                   (= "true" (get headers VALIDATE_KEYWORDS_HEADER)))]
     {:validate-keywords? validate-keywords-value
