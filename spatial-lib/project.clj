@@ -9,6 +9,7 @@
                  [org.clojure/math.combinatorics "0.1.4"]
                  [pjstadig/assertions "0.2.0"]
                  [primitive-math "0.1.4"]]
+  :main cmr.spatial.runner
   :plugins [[lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
