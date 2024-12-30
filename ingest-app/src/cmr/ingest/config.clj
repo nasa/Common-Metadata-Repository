@@ -7,6 +7,10 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]))
 
+(defconfig validate-keywords-default-true-enabled
+   "Flag for whether or not cmr-validate-keywords value is defaulted to true or false in backend when missing in ingest api headers"
+   {:default true :type Boolean})
+
 (defconfig progressive-update-enabled
   "Flag for whether or not collection progressive update is enabled."
   {:default true :type Boolean})
