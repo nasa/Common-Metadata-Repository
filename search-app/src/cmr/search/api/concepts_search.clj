@@ -226,7 +226,8 @@
   "Invokes query service to parse the parameters query, find results, and
   return the response"
   [ctx path-w-extension params headers body]
-  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+  (let [_ (println "INSIDE find-concepts-by-parameters")
+        concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)

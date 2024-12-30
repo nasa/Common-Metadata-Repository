@@ -908,7 +908,7 @@
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
-  (println "JYNA inside save-concept-revision FALSE for concept = " concept)
+  (println "JYNA inside save-concept-revision FALSE")
   (trace "concept:" (keys concept))
   (trace "provider id:" (:provider-id concept))
   (cv/validate-concept concept)

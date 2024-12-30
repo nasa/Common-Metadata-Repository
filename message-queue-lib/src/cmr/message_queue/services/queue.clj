@@ -47,8 +47,7 @@
   server. Otherwise failures to publish will be retried indefinitely."
   [queue-broker exchange-name msg]
   (debug (format "Publishing message: %s exchange: [%s]" msg exchange-name))
-  (let [_ (println (format "Publishing message: %s exchange: [%s]" msg exchange-name))
-        start-time (System/currentTimeMillis)]
+  (let [start-time (System/currentTimeMillis)]
     (try
       (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg)
                              (config/publish-queue-timeout-ms))

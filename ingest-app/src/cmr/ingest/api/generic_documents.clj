@@ -389,7 +389,8 @@
 (defn publish-draft
   "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
   [request concept-id native-id]
-  (let [draft-concept-type (:draft-concept-type (extract-info-from-concept-id concept-id))
+  (let [_ (println "Inside publish-draft main API func")
+        draft-concept-type (:draft-concept-type (extract-info-from-concept-id concept-id))
         content-type (:content-type request)
         body (:body request)
         body-map (when body

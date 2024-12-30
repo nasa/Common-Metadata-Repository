@@ -81,7 +81,7 @@
 (defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
-  (let [_ (println "JYNA inside save-concept-revision with params = " params "and concept = " concept)
+  (let [_ (println "JYNA inside save-concept-revision")
         concept (-> concept
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))

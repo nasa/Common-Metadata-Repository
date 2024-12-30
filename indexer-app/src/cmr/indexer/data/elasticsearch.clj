@@ -315,11 +315,13 @@
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
-    (let [conn (context->conn context)
+    (let [_ (println "save-document-in-elastic")
+          conn (context->conn context)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+          _ (println (format "es-helper/put with params: es-index %s es-type %s elastic-id %s elastic-version %s" es-index es-type elastic-id elastic-version))
           result (try-elastic-operation
-                  es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
+                  es-helper/put conn es-index es-type es-doc elastic-id elastic-version)] ;; For all revisions, it will just pick only the concept-id as the elastic-id. Ummm how is this tombstoning the document?
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
@@ -340,9 +342,11 @@
   ([context es-indexes es-type concept-id revision-id elastic-version]
    (delete-document context es-indexes es-type concept-id revision-id elastic-version nil))
   ([context es-indexes _es-type concept-id revision-id elastic-version options]
+   (println (format "delete-document params: es-indexes %s ^^^^ _es-type %s ^^^^ concept-id %s ^^^^ revision-id %s ^^^^ elastic-version %s ^^^^ options %s ^^^^ " es-indexes _es-type concept-id revision-id elastic-version options))
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
-     (let [{:keys [admin-token]} (context->es-config context)
+     (let [_ (println "delete document in elastic !!!!")
+           {:keys [admin-token]} (context->es-config context)
            {:keys [uri http-opts]} (context->conn context)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
@@ -350,6 +354,7 @@
                         (format "%s/%s/_doc/%s?version=%s&version_type=external_gte"
                                 uri es-index elastic-id elastic-version)
                         (format "%s/%s/_doc/%s" uri es-index elastic-id))
+           _ (println "delete-document: delete-url is " delete-url)
            response (client/delete delete-url
                                    (merge http-opts
                                           {:headers {"Authorization" admin-token

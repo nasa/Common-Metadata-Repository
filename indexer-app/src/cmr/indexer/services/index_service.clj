@@ -692,6 +692,8 @@
 ;; ***********************************************
 ;; Multi method delete-concept
 
+;; TODO maybe create a new delete-concept for just concept-type collection-draft which will delete the CD from both indices -- create a new pathway for it basically
+;; and then have publish-draft-concept only write to one queue... this way we aren't worried about the async issue and just do all the deletes at once
 (defmulti delete-concept
   "Delete the concept with the given id"
   (fn [_context concept-id _revision-id _options]
@@ -700,24 +702,29 @@
 ;; JYNA this is where the concept delete event goes to in indexer. Indexer picks it up and executes this func.
 (defmethod delete-concept :default
   [context concept-id revision-id options]
-  (println "INSIDE delete-concept :default")
+  (println (format "****** INSIDE delete-concept :default with params: concept-id %s, revision-id %s, options %s" concept-id revision-id options))
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
-        ;; TODO JYNA this could also throw an error, because CD is already deleted by this point.
-        ;; CD's are not tombstoned, but permanently deleted, so this is why CD's have issues, but regular colls don't
-        ;; If concept is not found, can we still try to delete from elastic? We should put a try/catch here?
+        ;; CDs are tombstoned when endpoint /publish is used so why would this throw an error? Now I need to look at real-world examples of what is going on
+        ;; Now we are seeing this throw errors Jyna, when we keep creating drafts and publishing to the same collection -- because of the two queues executing at diff times problem
+        ;; TODO do we really want this to fail if we can't find the concept in the db?
+
         concept (meta-db/get-concept context concept-id revision-id)
+        _ (println "****** delete-concept: THE CONCEPT RETURNED IN DELETE-CONCEPT. SHOULD BE TOMBSTONED CONCEPT.") ;; this gets back the :delete = true metadata from DB
+        _ (println (format "****** concept-id= %s, revision-id = %s, deleted = %s, format =%s, native-id = %s" (:concept-id concept) (:revisions-id concept) (:deleted concept) (:format concept) (:native-id concept)))
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
+      (println "****** delete-concept: Indexing is applicable")
       (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [es-doc (if (cs/generic-concept? concept-type)
+          (let [_ (println "****** delete-concept: all-revisions-index is true") ;; TODO jyna we go into this section
+                es-doc (if (cs/generic-concept? concept-type)
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
                          (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
                 [tm result] (util/time-execution
@@ -725,13 +732,17 @@
                               context index-names (concept-mapping-types concept-type)
                               es-doc concept-id revision-id elastic-version elastic-options))]
             (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
+            (println "****** Saving 'tombstoned' concept resulted in = " result)
+            ;; TODO: JYNA Not sure what is going on here... but not convinced that this 'save-document-in-elastic' func is actually deleting the document in elastic like we need it to here...
             result)
           ;; else delete concept from primary concept index
           (do
+            (println "****** delete-concept: all-revisions-index is false")
             (es/delete-document
              context index-names (concept-mapping-types concept-type)
              concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
+            ;; JYNA all these delete requests to ES are API calls -- are they synchronous?
             (when (= :granule concept-type)
               (let [[tm result] (util/time-execution
                                  (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
@@ -744,10 +755,8 @@
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result)))))
       ;; For draft concept, after the index is deleted, remove it from database.
-      ;; Why are we removing it from database if it is already removed by the time the indexer picks up the delete event request?
       (when (cs/is-draft-concept? concept-type)
-        ;; TODO we could be deleting a non-existent draft which could throw an error too.. so in this case, we can wrap in a try/catch or funnel to a different flow
-        (println "JYNA this is a draft concept will force delete the draft")
+        (println "****** JYNA this is a draft concept will force delete the draft")
         (meta-db/delete-draft context concept))
       )))
 
