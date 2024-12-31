@@ -1,25 +1,24 @@
 (ns cmr.system-int-test.utils.service-util
   "This contains utilities for testing services."
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clojure.test :refer [is]]
-   [cmr.common.mime-types :as mime-types]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
-   [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.search.results-handlers.atom-results-handler :as handler]
-   [cmr.system-int-test.data2.atom :as atom]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as du]
-   [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.ingest-util :as ingest-util]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as config]
-   [cmr.transmit.search :as transmit-search]
-   [cmr.umm-spec.versioning :as versioning]))
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clojure.test :refer [is]]
+    [cmr.common.mime-types :as mime-types]
+    [cmr.mock-echo.client.echo-util :as echo-util]
+    [cmr.system-int-test.utils.association-util :as assoc-util]
+    [cmr.search.results-handlers.atom-results-handler :as handler]
+    [cmr.system-int-test.data2.atom :as atom]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-json :as du]
+    [cmr.system-int-test.data2.umm-spec-service :as data-umm-s]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.ingest-util :as ingest-util]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as config]
+    [cmr.transmit.search :as transmit-search]
+    [cmr.umm-spec.versioning :as versioning]))
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
@@ -192,11 +191,23 @@
   ([coll-service-associations response]
    (assert-service-association-response-ok? coll-service-associations response true))
   ([coll-service-associations response error?]
-   (let [{:keys [status body errors]} response
-         expected-sas (map #(coll-service-association->expected-service-association % error?)
+   (let [{:keys [status body]} response
+         expected-service-assoc (map #(coll-service-association->expected-service-association % error?)
                            coll-service-associations)]
      (is (= [200
-             (set (comparable-service-associations expected-sas))]
+             (set (comparable-service-associations expected-service-assoc))]
+            [status (set (comparable-service-associations body))])))))
+
+(defn assert-service-association-response-mixed?
+  "Assert the service association response when status code is 200 is correct."
+  ([coll-service-associations response]
+   (assert-service-association-response-mixed? coll-service-associations response true))
+  ([coll-service-associations response error?]
+   (let [{:keys [status body]} response
+         expected-service-assoc (map #(coll-service-association->expected-service-association % error?)
+                                     coll-service-associations)
+         revised-expected-service-assoc (assoc-util/add-individual-statuses expected-service-assoc)]
+     (is (= [207 (set (comparable-service-associations revised-expected-service-assoc))]
             [status (set (comparable-service-associations body))])))))
 
 (defn assert-service-association-bad-request
@@ -204,7 +215,7 @@
   ([coll-service-associations response]
    (assert-service-association-bad-request coll-service-associations response true))
   ([coll-service-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body]} response
          expected-sas (map #(coll-service-association->expected-service-association % error?)
                            coll-service-associations)]
      (is (= [400
@@ -221,6 +232,11 @@
   "Assert the service association response when status code is 400 is correct."
   [coll-service-associations response]
   (assert-service-association-bad-request coll-service-associations response true))
+
+(defn assert-service-dissociation-response-mixed?
+  "Assert the service association response when status code is 207 is correct."
+  [coll-service-associations response]
+  (assert-service-association-response-mixed? coll-service-associations response true))
 
 (defn- search-for-service-associations
   "Searches for service associations in metadata db using the given parameters."
@@ -309,7 +325,7 @@
                                       expected-fields
                                       {:services serv-concept-ids
                                        :variables var-concept-ids})
-        options {:accept (mt/with-version mt/umm-json-results versioning/current-collection-version)}
+        options {:accept (mime-types/with-version mime-types/umm-json-results versioning/current-collection-version)}
         {:keys [entry-title]} coll
         response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
     (du/assert-umm-jsons-match
