@@ -98,3 +98,7 @@
         :body
         first
         :tool-association)))
+
+(defn add-individual-statuses
+  [list]
+  (map #(assoc % :status (if (or (:errors %) (:warning %)) 400 200)) list))
