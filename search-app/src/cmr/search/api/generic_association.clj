@@ -1,14 +1,15 @@
 (ns cmr.search.api.generic-association
   "Defines common functions used by associations among generic concepts in the CMR."
   (:require
-   [cheshire.core :as json]
-   [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.concepts :as common-concepts]
-   [cmr.common.log :refer (info)]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
-   [cmr.search.services.generic-association-service :as generic-assoc-service]
-   [compojure.core :refer :all]))
+    [cheshire.core :as json]
+    [cmr.common-app.api.enabled :as common-enabled]
+    [cmr.common.concepts :as common-concepts]
+    [cmr.common.log :refer (info)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as util]
+    [cmr.search.api.association :as assoc]
+    [cmr.search.services.generic-association-service :as generic-assoc-service]
+    [compojure.core :refer :all]))
 
 (defn- validate-association-content-type
   "Validates that content type sent with a association is JSON."
@@ -17,24 +18,31 @@
 
 (defn- api-response
   "Creates a successful association response with the given data response"
-  ([data]
-   (api-response 200 data))
-  ([status-code data]
-   {:status status-code
-    :body (json/generate-string (util/snake-case-data data))
-    :headers {"Content-Type" mt/json}}))
+  [status-code data]
+  (if (= 207 status-code)
+    {:status status-code
+     :body (json/generate-string (util/snake-case-data (assoc/add-individual-statuses data)))
+     :headers {"Content-Type" mt/json}}
+    {:status status-code
+     :body (json/generate-string (util/snake-case-data data))
+     :headers {"Content-Type" mt/json}}))
 
-(defn- results-contain-errors?
-  "Returns true if the results contain :errors"
+(defn generic-assoc-results->status-code
+  "Return status code depending on if results contains error.
+  Check for concept-types requiring error status to be returned.
+  If the concept-type is error-sensitive the function will check for any errors in the results.
+  Will return:
+  - 200 OK -- if response has no errors
+  - 207 MULTI-STATUS -- if response has some errors and some successes
+  - 400 BAD REQUEST -- if response has all errors"
   [results]
-  (seq (filter #(some? (:errors %)) results)))
-
-(defn- results->status-code
-  "Return status code depending on if results contains error."
-  [results]
-  (if (results-contain-errors? results)
-    400
-    200)) 
+  (let [result-count (count results)
+        num-errors (assoc/num-errors-in-assoc-results results)]
+    (cond
+      (zero? result-count) 200
+      (= num-errors result-count) 400
+      (pos? num-errors) 207
+      :else 200)))
 
 (defn associate-concept-to-concepts
   "Associate the given concept by concept type and concept id to a list of
@@ -47,7 +55,7 @@
                 concept-id revision-id body (:client-id context)))
   (let [concept-type (common-concepts/concept-id->type concept-id)
         results (generic-assoc-service/associate-to-concepts context concept-type concept-id revision-id body)
-        status-code (results->status-code results)]
+        status-code (generic-assoc-results->status-code results)]
     (api-response status-code results)))
 
 (defn dissociate-concept-from-concepts
@@ -60,5 +68,5 @@
                 concept-id revision-id body (:client-id context)))
   (let [concept-type (common-concepts/concept-id->type concept-id)
         results (generic-assoc-service/dissociate-from-concepts context concept-type concept-id revision-id body)
-        status-code (results->status-code results)]
+        status-code (generic-assoc-results->status-code results)]
     (api-response status-code results)))
