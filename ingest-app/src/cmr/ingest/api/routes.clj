@@ -255,7 +255,6 @@
            request
            (subscriptions/delete-subscription native-id request)))
 
-       ;; JYNA this is how collection-draft is created: /providers/JM_PROV1/collection-drafts/NativeID-CMR-10194-2
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
        (context ["/:concept-type"
                  :concept-type

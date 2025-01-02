@@ -486,8 +486,7 @@
 (defn-timed save-concept
   "Saves a concept in metadata db"
   [context concept]
-  (let [_ (println "JYNA inside save-concept in transmit-lib")
-        conn (config/context->app-connection context :metadata-db)
+  (let [conn (config/context->app-connection context :metadata-db)
         url (str (conn/root-url conn) "/concepts")
         concept-json-str (json/generate-string concept)
         params (merge

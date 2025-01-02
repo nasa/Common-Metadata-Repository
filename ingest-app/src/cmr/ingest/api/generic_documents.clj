@@ -262,12 +262,10 @@
    A 404 status is returned if the concept has already been deleted or removed from database."
   [request]
   (let [{:keys [route-params request-context params]} request
-        _ (println "JYNA inside delete-generic-document")
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
         concept-type (concept-type->singular route-params)
-        _ (println "delete-generic-document -- concept type = " concept-type)
         _ (if-not (is-draft-concept? request)
             (acl/verify-ingest-management-permission
              request-context :update :provider-object provider-id)
@@ -334,11 +332,9 @@
   ([request concept-id native-id]
    (publish-draft-concept request concept-id native-id nil nil))
   ([request concept-id native-id coll-concept-id coll-revision-id]
-   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]} (extract-info-from-concept-id concept-id)
-         ;; gets concept from oracle and uses that data to create a map of native_id and collection ingest request
-         _ (println "START getting collection concept data from ORACLE")
+   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
+         (extract-info-from-concept-id concept-id)
          info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
-         _ (println "END getting collection concept data from ORACLE")
          request (:request info)
          draft-native-id (:native-id info)
          ;;publish the concept-type-in-draft
@@ -354,14 +350,15 @@
          _ (println "END publishing collection with ingest collection call")]
      (if (contains? #{200 201} (:status publish-result))
        ;;construct request to delete the draft.
-       (let [_ (println "START publish result was successful. START delete of draft request.")
+       (let [
+             ;_ (println "START publish result was successful. START delete of draft request.")
              delete-request (-> request
                                 (assoc-in [:route-params :native-id] draft-native-id)
                                 (assoc-in [:route-params :concept-type] draft-concept-type)
                                 (assoc-in [:params :native-id] draft-native-id)
                                 (assoc-in [:params :concept-type] draft-concept-type))
              delete-result (delete-generic-document delete-request)
-             _ (println "END delete of draft request with status " (:status delete-result))]
+             ;_ (println "END delete of draft request with status " (:status delete-result))]
          (if (= 200 (:status delete-result))
            publish-result
            (errors/throw-service-error
@@ -389,8 +386,7 @@
 (defn publish-draft
   "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
   [request concept-id native-id]
-  (let [_ (println "Inside publish-draft main API func")
-        draft-concept-type (:draft-concept-type (extract-info-from-concept-id concept-id))
+  (let [draft-concept-type (:draft-concept-type (extract-info-from-concept-id concept-id))
         content-type (:content-type request)
         body (:body request)
         body-map (when body
@@ -407,7 +403,7 @@
             ;; A variable draft does not have to be associated to a collection, if a collection concept id
             ;; does not exist, publish the variable anyway.
             (publish-draft-concept request concept-id native-id)))
-        (publish-draft-concept request concept-id native-id)) ;; going in here
+        (publish-draft-concept request concept-id native-id))
       (errors/throw-service-error
        :bad-request
        (format "Only draft can be published in this route. concept-id [%s] does not belong to a draft concept" concept-id)))))

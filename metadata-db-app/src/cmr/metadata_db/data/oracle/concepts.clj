@@ -346,11 +346,9 @@
 
 (defn get-concept
   ([db concept-type provider concept-id]
-   (println "JYNA INSIDE get-concept with db transacations happening")
    (j/with-db-transaction
      [conn db]
      (let [table (tables/get-table-name provider concept-type)]
-       (println "table = " table)
        (db-result->concept-map concept-type conn (:provider-id provider)
                                (su/find-one conn (select '[*]
                                                          (from table)
@@ -425,7 +423,6 @@
        ;; Concept id native id pair was valid
        (let [{:keys [concept-type]} concept
              table (tables/get-table-name provider concept-type)
-             _ (println "TABLE NAME = " table + " BEING INSERTED FOR CONCEPT TYPE = " concept-type)
              seq-name (str table "_seq")
              [cols values] (concept->insert-args concept (:small provider))
              stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "

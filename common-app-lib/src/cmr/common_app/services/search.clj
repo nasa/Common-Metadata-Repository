@@ -115,8 +115,7 @@
   ;; use that if so. If the scroll-id is not set and scroll is set to 'defer' then store the
   ;; search results in the cache and return an empty result (with appropriate headers). Otherwise
   ;; do normal query/scrolling without using the cache.
-  (let [_ (println "INSIDE find-concepts...")
-        scroll-id (:scroll-id query)
+  (let [scroll-id (:scroll-id query)
         [results result-str] (or (pop-scroll-results-from-cache context scroll-id)
                                  (time-concept-search context query))]
     (if (and (not scroll-id) (= (:scroll query) "defer"))
