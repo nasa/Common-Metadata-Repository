@@ -117,7 +117,6 @@
 (def ingest-routes
   (routes
     ;; publish draft routes
-    ;; JYNA -- this is the route that starts it all
     (api-core/set-default-error-format
      :xml
      (context "/publish/:draft-id" [draft-id]

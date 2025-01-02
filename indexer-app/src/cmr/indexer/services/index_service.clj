@@ -697,84 +697,71 @@
   (fn [_context concept-id _revision-id _options]
     (cs/concept-id->type concept-id)))
 
-;(defmethod delete-concept :default
-;  [context concept-id revision-id options]
-;  (println (format "****** INSIDE delete-concept :default with params: concept-id %s, revision-id %s, options %s" concept-id revision-id options))
-;  ;; Assuming ingest will pass enough info for deletion
-;  ;; We should avoid making calls to metadata db to get the necessary info if possible
-;  (let [{:keys [all-revisions-index?]} options
-;        concept-type (cs/concept-id->type concept-id)
-;        _ (println "******* INSIDE delete-concept: concept-type is : " concept-type)
-;        ;; CDs are tombstoned when endpoint /publish is used so why would this throw an error? Now I need to look at real-world examples of what is going on
-;        ;; Now we are seeing this throw errors Jyna, when we keep creating drafts and publishing to the same collection -- because of the two queues executing at diff times problem
-;        ;; TODO do we really want this to fail if we can't find the concept in the db?
-;        concept (meta-db/get-concept context concept-id revision-id)
-;        _ (println "****** delete-concept: THE CONCEPT RETURNED IN DELETE-CONCEPT. SHOULD BE TOMBSTONED CONCEPT.") ;; this gets back the :delete = true metadata from DB
-;        _ (println (format "****** concept-id= %s, revision-id = %s, deleted = %s, format =%s, native-id = %s" (:concept-id concept) (:revisions-id concept) (:deleted concept) (:format concept) (:native-id concept)))
-;        elastic-version (get-elastic-version context concept)]
-;    (when (indexing-applicable? concept-type all-revisions-index?)
-;      (println (format "****** delete-concept: Indexing is applicable for concept-type: %s and all-revisions-index %s" concept-type all-revisions-index?))
-;      (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
-;      (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options)
-;            concept-mapping-types (idx-set/get-concept-mapping-types context)
-;            elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])
-;            _ (println "elastic-options = " elastic-options)]
-;        (if all-revisions-index?
-;          ;; save tombstone in all revisions collection index
-;          (let [_ (println "****** delete-concept: all-revisions-index is true") ;; TODO jyna we go into this section
-;                es-doc (if (cs/generic-concept? concept-type)
-;                         (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
-;                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
-;                [tm result] (util/time-execution
-;                             (es/save-document-in-elastic
-;                              context index-names (concept-mapping-types concept-type)
-;                              es-doc concept-id revision-id elastic-version elastic-options))]
-;            (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
-;            (println "****** Saving 'tombstoned' concept resulted in = " result)
-;            ;; TODO: JYNA Not sure what is going on here... but not convinced that this 'save-document-in-elastic' func is actually deleting the document in elastic like we need it to here...
-;            result)
-;          ;; else delete concept from primary concept index
-;          (do
-;            (println "****** delete-concept: all-revisions-index is false")
-;            (es/delete-document
-;             context index-names (concept-mapping-types concept-type)
-;             concept-id revision-id elastic-version elastic-options)
-;            ;; Index a deleted-granule document when granule is deleted
-;            ;; JYNA all these delete requests to ES are API calls -- are they synchronous?
-;            (when (= :granule concept-type)
-;              (let [[tm result] (util/time-execution
-;                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
-;                (debug (format "Timed function %s index-deleted-granule took %d ms." (str *ns*) tm))
-;                result))
-;            ;; propagate collection deletion to granules
-;            (when (= :collection concept-type)
-;              (let [[tm result] (util/time-execution
-;                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
-;                (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
-;                result))
-;            )))
-;      ;; For draft concept, after the index is deleted, remove it from database.
-;      (when (cs/is-draft-concept? concept-type)
-;        (println "****** JYNA this is a draft concept will force delete the draft")
-;        (meta-db/delete-draft context concept))
-;      )))
-
-(defn- delete-concept-helper
-  [context concept concept-id revision-id options]
+(defmethod delete-concept :original
+  [context concept-id revision-id options]
+  ;; Assuming ingest will pass enough info for deletion
+  ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
+        concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (println (format "****** delete-concept: Indexing is applicable for concept-type: %s and all-revisions-index %s" concept-type all-revisions-index?))
       (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [
-                ;_ (println "****** delete-concept: all-revisions-index is true")
-                es-doc (if (cs/generic-concept? concept-type)
+          (let [es-doc (if (cs/generic-concept? concept-type)
+                         (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
+                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
+                [tm result] (util/time-execution
+                             (es/save-document-in-elastic
+                              context index-names (concept-mapping-types concept-type)
+                              es-doc concept-id revision-id elastic-version elastic-options))]
+            (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
+            result)
+          ;; else delete concept from primary concept index
+          (do
+            (es/delete-document
+             context index-names (concept-mapping-types concept-type)
+             concept-id revision-id elastic-version elastic-options)
+            ;; Index a deleted-granule document when granule is deleted
+            (when (= :granule concept-type)
+              (let [[tm result] (util/time-execution
+                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
+                (debug (format "Timed function %s index-deleted-granule took %d ms." (str *ns*) tm))
+                result))
+            ;; propagate collection deletion to granules
+            (when (= :collection concept-type)
+              (let [[tm result] (util/time-execution
+                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
+                (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
+                result))
+            )))
+      ;; For draft concept, after the index is deleted, remove it from database.
+      (when (cs/is-draft-concept? concept-type)
+        (meta-db/delete-draft context concept))
+      )))
+
+(defn- delete-concept-default-helper
+  [context concept concept-id revision-id options]
+  (if (nil? concept)
+    (errors/throw-service-error
+      :not-found
+      (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
+
+  (let [{:keys [all-revisions-index?]} options
+        concept-type (cs/concept-id->type concept-id)
+        elastic-version (get-elastic-version context concept)]
+    (when (indexing-applicable? concept-type all-revisions-index?)
+      (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
+      (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options)
+            concept-mapping-types (idx-set/get-concept-mapping-types context)
+            elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
+        (if all-revisions-index?
+          ;; save tombstone in all revisions index
+          (let [es-doc (if (cs/generic-concept? concept-type)
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
                          (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
                 [tm result] (util/time-execution
@@ -782,17 +769,13 @@
                                 context index-names (concept-mapping-types concept-type)
                                 es-doc concept-id revision-id elastic-version elastic-options))]
             (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
-            ;(println "****** Saving 'tombstoned' concept resulted in = " result)
-            ;; TODO: JYNA Not sure what is going on here... but not convinced that this 'save-document-in-elastic' func is actually deleting the document in elastic like we need it to here...
             result)
           ;; else delete concept from primary concept index
           (do
-            ;(println "****** delete-concept: all-revisions-index is false")
             (es/delete-document
               context index-names (concept-mapping-types concept-type)
               concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
-            ;; JYNA all these delete requests to ES are API calls -- are they synchronous?
             (when (= :granule concept-type)
               (let [[tm result] (util/time-execution
                                   (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
@@ -806,32 +789,29 @@
                 result))
             ))))))
 
+(defn- delete-draft-concept
+  [context concept concept-id revision-id options]
+  (when concept
+    (delete-concept-default-helper context concept concept-id revision-id (assoc options :all-revisions-index? true))
+    (delete-concept-default-helper context concept concept-id revision-id (assoc options :all-revisions-index? false))
+    (try
+      (meta-db/delete-draft context concept)
+      (catch Exception e
+        (info (format "Force delete draft ran into exception for concept-id %s due to race condition between indexers
+        and deleting the draft in db. Will ignore this error. Error Msg: with msg: %s" concept-id (ex-message e)))
+        ))))
+
 (defmethod delete-concept :default
   [context concept-id revision-id options]
   (println (format "****** INSIDE delete-concept :default with params: concept-id %s, revision-id %s, options %s" concept-id revision-id options))
-  ;; Assuming ingest will pass enough info for deletion
-  ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [concept-type (cs/concept-id->type concept-id)
-        concept (meta-db/get-concept context concept-id revision-id)]
-    (delete-concept-helper context concept concept-id revision-id options)
-    (when (cs/is-draft-concept? concept-type)
-      (meta-db/delete-draft context concept))))
 
-(defmethod delete-concept :collection-draft
-  [context concept-id revision-id options]
-  (println (format "****** INSIDE delete-concept :collection-draft with params: concept-id %s, revision-id %s, options %s" concept-id revision-id options))
-  (let [concept (meta-db2/get-concept context concept-id revision-id)]
-    ;(if (nil? concept)
-    ;  (println "****** INSIDE delete-concept :collection-draft: CONCEPT WAS NIL. DOING NOTHING."))
-    (when (not (nil? concept))
-      ;(println "****** INSIDE delete-concept :collection-draft: concept was not nil")
-      (delete-concept-helper context concept concept-id revision-id (assoc options :all-revisions-index? true))
-      (delete-concept-helper context concept concept-id revision-id (assoc options :all-revisions-index? false))
-      ;; if both all revisions and revision is being processed, then this might have a race condition and throw an error because one deleted the concept before this process could
-      (try
-        (meta-db/delete-draft context concept)
-        (catch Exception e
-          (println "This either failed to delete or it was because it was already deleted. If already deleted then ignore this error."))))))
+  (let [concept-type (cs/concept-id->type concept-id)
+        concept (meta-db2/get-concept context concept-id revision-id)]
+    (if (cs/is-draft-concept? concept-type)
+      ;; do draft version
+      (delete-draft-concept context concept concept-id revision-id options)
+      ;; do default path
+      (delete-concept-default-helper context concept concept-id revision-id options))))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."

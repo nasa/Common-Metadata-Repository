@@ -14,10 +14,7 @@
   (when (config/publish-messages)
     (when-let [exchange-name-fn (config/concept-type->exchange-name-fn
                                  (cc/concept-id->type (:concept-id msg)))]
-      ;(println (format "INSIDE publish-event with exchange-name-fn = %s" exchange-name-fn))
       (let [queue-broker (get-in context [:system :queue-broker])]
-        ;(println "queue-broker = " queue-broker)
-        ;(println "msg = " msg)
         (when queue-broker
           (queue/publish-message queue-broker (exchange-name-fn) msg))))))
 

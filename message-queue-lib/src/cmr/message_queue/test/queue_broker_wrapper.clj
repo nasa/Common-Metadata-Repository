@@ -135,7 +135,6 @@
   [broker exchange-name msg]
   (let [queues (queue-protocol/get-queues-bound-to-exchange
                 (:queue-broker broker) exchange-name)
-        ;_ (println (format "queues bound to the exchange %s: %s" exchange-name queues))
         results (for [queue-name queues]
                   (publish-to-queue broker queue-name msg))]
     (every? identity results)))

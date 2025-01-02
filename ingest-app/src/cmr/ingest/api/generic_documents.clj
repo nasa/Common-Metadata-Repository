@@ -271,10 +271,6 @@
              request-context :update :provider-object provider-id)
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))]
-    ;; JYNA -- does this actually delete doc from elastic search?
-    ;; This calls metadata-db POST /concepts with a :delete true revision which tombstones the concept in DB
-    ;; and then writes a delete concept event to ingest queue in func (defmethod save-concept-revision true
-    ;;
     (api-core/delete-concept concept-type provider-id native-id request)))
 
 (defn- extract-info-from-concept-id
@@ -327,7 +323,6 @@
 
 ;; This function is dynamic to test publish-draft.
 (defn- ^:dynamic publish-draft-concept
-  ;; JYNA -- this is where the magic happens
   "Publish a draft concept. i.e. Ingest the corresponding concept and delete the draft."
   ([request concept-id native-id]
    (publish-draft-concept request concept-id native-id nil nil))
@@ -338,7 +333,6 @@
          request (:request info)
          draft-native-id (:native-id info)
          ;;publish the concept-type-in-draft
-         _ (println "START publishing collection with ingest collection call")
          publish-result (case concept-type-in-draft
                           :collection (collections/ingest-collection provider-id native-id request)
                           :tool (tools/ingest-tool provider-id native-id request)
@@ -346,19 +340,15 @@
                           :variable (if coll-concept-id
                                       (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)
                                       (variables/ingest-variable provider-id native-id request))
-                          (create-generic-document request))
-         _ (println "END publishing collection with ingest collection call")]
+                          (create-generic-document request))]
      (if (contains? #{200 201} (:status publish-result))
        ;;construct request to delete the draft.
-       (let [
-             ;_ (println "START publish result was successful. START delete of draft request.")
-             delete-request (-> request
+       (let [delete-request (-> request
                                 (assoc-in [:route-params :native-id] draft-native-id)
                                 (assoc-in [:route-params :concept-type] draft-concept-type)
                                 (assoc-in [:params :native-id] draft-native-id)
                                 (assoc-in [:params :concept-type] draft-concept-type))
-             delete-result (delete-generic-document delete-request)
-             ;_ (println "END delete of draft request with status " (:status delete-result))]
+             delete-result (delete-generic-document delete-request)]
          (if (= 200 (:status delete-result))
            publish-result
            (errors/throw-service-error

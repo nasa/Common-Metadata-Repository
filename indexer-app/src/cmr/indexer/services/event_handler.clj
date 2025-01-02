@@ -80,13 +80,11 @@
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  ;(println "INSIDE handle-ingest-event JYNA with all-revisions-index = " all-revisions-index?)
   (when-not (= :humanizer (cc/concept-id->type concept-id))
     (let [[tm result] (util/time-execution
                         (indexer/delete-concept
                          context concept-id revision-id {:ignore-conflict? true
                                                          :all-revisions-index? all-revisions-index?}))]
-      ;(println "Result of handle-ingest-event :concept-delete = " result)
       (debug (format (str "Timed function %s handle-ingest-event concept-delete for concept-id %s "
                           "revision-id %s all-revisions-index? %s took %d ms.")
                      (str *ns*) concept-id revision-id all-revisions-index? tm))

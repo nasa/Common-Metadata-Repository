@@ -773,11 +773,9 @@
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
-  ;(println "JYNA inside save-concept-revision true with tombstone for concept = " concept)
   (cv/validate-tombstone-request concept)
   (let [{:keys [concept-id revision-id skip-publication]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-        ;_ (println "JYNA concept-type = " concept-type "for concept-id = " concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-concept concept provider)
@@ -798,11 +796,8 @@
               tombstone (create-tombstone-concept metadata concept previous-revision)]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
-          (let [
-                ;_ (println "trying to save revisioned tombstone")
-                revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
-                                          (try-to-save db provider context))
-                ;_ (println "successfully saved revisioned tombstone")]
+          (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
+                                          (try-to-save db provider context))]
             ;; delete the associated variable associations if applicable
             (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
@@ -909,7 +904,6 @@
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
-  (println "JYNA inside save-concept-revision FALSE")
   (trace "concept:" (keys concept))
   (trace "provider id:" (:provider-id concept))
   (cv/validate-concept concept)
