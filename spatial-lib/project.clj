@@ -9,7 +9,10 @@
                  [org.clojure/math.combinatorics "0.1.4"]
                  [pjstadig/assertions "0.2.0"]
                  [primitive-math "0.1.4"]]
-  :main cmr.spatial.runner
+  ;; If making a standalone jar for this project, then commement the following line so that
+  ;; a main function will run from the jar. Doing this in the full context of CMR uberjar
+  ;; will not work as then it is not defined which function is the primary entry point
+  ;; :main cmr.spatial.runner
   :plugins [[lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
@@ -38,6 +41,8 @@
                                         ;  "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
+             :uberjar {:main cmr.spatial.runner
+                       :aot :all}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
              ;; all projects at the same time, use the same command but from the top-
