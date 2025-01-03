@@ -26,7 +26,7 @@
 
 (defconfig cmr-support-email
   "CMR support email address"
-  {:default "cmr-support@earthdata.nasa.gov"})
+  {:default "cmr-support@nasa.gov"})
 
 (defconfig es-unlimited-page-size
   "This is the number of items we will request from elastic search at a time when

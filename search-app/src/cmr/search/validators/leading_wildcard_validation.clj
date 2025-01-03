@@ -3,7 +3,8 @@
    query which cause high CPU usage."
   (:require
    [cmr.common.config :refer [defconfig]]
-   [cmr.search.services.query-walkers.condition-extractor :as extractor])
+   [cmr.search.services.query-walkers.condition-extractor :as extractor]
+   [cmr.common-app.config :as config])
   (:import
    (cmr.common.services.search.query_model StringCondition)))
 
@@ -33,9 +34,10 @@
         "maximum allowed amount of [%d]. The CMR allows searching with patterns containing the "
         "wildcards * and ?. Patterns which start with a wildcard are expensive to execute so the "
         "number of patterns that can be used in one query is limited. If you would like to find "
-        "alternative ways to query please ask the CMR Team at cmr-support@earthdata.nasa.gov. ")
+        "alternative ways to query please ask the CMR Team at %s. ")
    num-conditions
-   (max-number-of-leading-wildcard-patterns)))
+   (max-number-of-leading-wildcard-patterns)
+   (config/cmr-support-email)))
 
 (defn limit-number-of-leading-wildcard-patterns
   "Validates the query doesn't contain too many leading wildcard patterns."
