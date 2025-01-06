@@ -8,7 +8,7 @@ A spatial library for the CMR. A collection of functions for managing and calcul
 
 ## Command line Interface
 
-A command line interface is available for getting direct access to some of the functions inside the library. This is used to ensure that external processing tools can use the exact same algorithum as is being used in CMR. Currently only one function is exposed:
+A command line interface is available for getting direct access to some of the functions inside the library. This is used to ensure that external processing tools can use the exact same algorithm as is being used in CMR. Currently only one function is exposed:
 
 **find-lr**: "Finds the 'largest' interior rectangle (LR) of the polygon. This is not the provably largest interior rectangle for a polygon. It uses a simpler algorithm that works well for simple 4 point rings and less well for more points. It should always find a LR for any ring of arbitrary polygon."
 

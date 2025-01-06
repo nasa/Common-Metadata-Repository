@@ -2,7 +2,9 @@
   "Run tests for functions defined in the runner for this project. These are small utility
    functions only."
   (:require
+   [clojure.java.io :as io]
    [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.spatial.runner :as runner]))
 
 (deftest parse-polygon-test
@@ -73,3 +75,17 @@
 
       (is (<= (:west actual-result) (:east actual-result)) "West should be less than or equal to East")
       (is (<= (:south actual-result) (:north actual-result)) "South should be less than or equal to North"))))
+
+(deftest test-polygon-from-file->box
+  (testing "Testing really big polygon from a file"
+    (let [polygon-str (slurp (io/resource "multipolygon.txt"))
+          polygon-box (runner/polygon-string->box polygon-str)]
+      (util/are3
+       [expected given]
+       (is (= expected (polygon-box given))
+           (format "polygon-box field %s did not match" given))
+
+       "- west" -121.02395663928222 :west
+       "- east" -118.47151932092285 :east
+       "- south" 35.501922038989605 :south
+       "- north" 37.9313141796875 :north))))
