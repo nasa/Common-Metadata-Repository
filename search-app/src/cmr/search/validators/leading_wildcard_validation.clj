@@ -35,7 +35,7 @@
         "wildcards * and ?. Patterns which start with a wildcard are expensive to execute so the "
         "number of patterns that can be used in one query is limited. If you would like to find "
         "alternative ways to query please ask the CMR Team at %s. ")
-   num-conditions
+   (cmr.common.util/tee num-conditions)
    (max-number-of-leading-wildcard-patterns)
    (config/cmr-support-email)))
 
