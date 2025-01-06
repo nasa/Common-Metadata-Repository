@@ -72,13 +72,6 @@
       "@xlink:type": "simple"
     }
   ],
-  "ResourceURL": [
-    {
-      "Format": "image/png",
-      "ResourceType": "tile",
-      "Template": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
-    }
-  ],
   "Metadata": [
     {
       "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
