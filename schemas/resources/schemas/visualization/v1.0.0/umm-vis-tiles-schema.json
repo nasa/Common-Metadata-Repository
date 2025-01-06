@@ -3,7 +3,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "UMM-Vis-Tiles",
   "definitions": {
-    "What": {
+    "Specification": {
       "type": "object",
       "additionalProperties": false,
       "description": "what this vis is.",
@@ -28,7 +28,23 @@
         },
         "ResourceURL": {
           "description": "resource url",
-          "type": "object"
+          "type": "array",
+          "properties": {
+            "Format": {
+              "description": "The element provides the format (check GCMD Keywords for MimeType valids) of the resource used in the visualization.",
+              "type": "string"
+            },
+            "ResourceType": {
+              "description": "The type of resource used for the visualization.",
+              "type": "string"
+            },
+            "Template": {
+              "description": "The value is a URL template for the visualization.",
+              "type": "string"
+            },
+            "minItems": 1,
+            "required": ["Format", "ResourceType", "Template"]
+          }
         },
         "Metadata": {
           "description": "Metadata",
@@ -48,11 +64,11 @@
           }
         },
 
-        "measurement": {
+        "Measurement": {
           "description": "The visualization layer’s measurement category",
           "type": "string"
         },
-        "layerPeriod": {
+        "LayerPeriod": {
           "description": "The visualization layer’s temporal resolution",
           "type": "string",
           "enum": [
@@ -70,11 +86,11 @@
             "Yearly"
           ]
         },
-        "transAntiMeridian": {
+        "TransAntiMeridian": {
           "description": "Whether, and how, the visualization layer provides representations that cross the antimeridian.",
           "type": "boolean"
         },
-        "daynight": {
+        "DayNight": {
           "description": "Whether the visualization layer represents data captured during the day, night (or both) as perceived during time of data acquisition.",
           "type": "array",
           "uniqueItems": true,
@@ -86,7 +102,7 @@
             ]
           }
         },
-        "orbitTracks": {
+        "OrbitTracks": {
           "description": "Corresponding orbit track layers",
           "type": "array",
           "uniqueItems": true,
@@ -96,7 +112,7 @@
             "minLength": 1
           }
         },
-        "orbitDirection": {
+        "OrbitDirection": {
           "description": "Whether the visualization layer represents data from the ascending, descending, or both tracks of a satellite.",
           "type": "array",
           "maxItems": 2,
@@ -123,52 +139,52 @@
 
     },
 
-    "How": {
+    "Generation": {
 
       "type": "object",
       "additionalProperties": false,
       "description": "what this vis is.",
       "properties": {
 
-      "sourceData": {
+      "SourceData": {
         "description": "source data used to create visualization",
         "type": "array"
       },
 
-      "projection": {
+      "Projection": {
         "description": "how reprojection is done. what source projection and output projection are",
         "type": "object"
       },
-      "regridding": {
+      "Regridding": {
         "description": "how regridding is done. what source grid and output grid are",
         "type": "object"
       },
-      "sampling": {
+      "Sampling": {
         "description": "interpolate or average out",
         "type": "object"
       },
-      "resolution": {
+      "Resolution": {
         "description": "resolution of source data and resulting visualization",
         "type": "object"
       },
-      "qualityFlag": {
+      "QualityFlag": {
         "description": "data value filtering, mask, etc.",
         "type": "object"
       },
 
-      "colorMap": {
+      "ColorMap": {
         "description": "color table",
         "type": "object"
       },
-      "range": {
+      "Range": {
         "description": "min/max value",
         "type": "object"
       },
-      "scale": {
+      "Scale": {
         "description": "linear, logarithmic, etc.",
         "type": "object"
       },
-      "pixelStyle": {
+      "PixelStyle": {
         "description": "shape of pixel when visualization is rendered",
         "type": "object"
       }
@@ -182,5 +198,5 @@
 
   },
 
-  "required": ["What", "How"]
+  "required": ["Specification", "Generation"]
 }

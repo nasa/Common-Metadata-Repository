@@ -54,7 +54,7 @@
       "Name": "Concept-Ids",
       "Mapping": "string",
       "Indexer": "simple-array-field",
-      "Configuration": {"sub-fields": ["value", "shortName"]}
+      "Configuration": {"sub-fields": ["Value", "ShortName"]}
     },
     {    
       "Description": "Visualization Source ConceptIds in keywords",
@@ -62,7 +62,7 @@
       "Name": "keyword",
       "Mapping": "string",
       "Indexer": "simple-array-field",
-      "Configuration": {"sub-fields": ["value"]}
+      "Configuration": {"sub-fields": ["Value"]}
     },
     {
       "Description": "Identifier with the keywords",

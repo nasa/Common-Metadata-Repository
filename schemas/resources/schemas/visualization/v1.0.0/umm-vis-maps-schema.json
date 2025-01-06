@@ -1,34 +1,34 @@
 { "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "What": {
+    "Specification": {
       "title": "UMM-Vis-Maps", 
       "type": "object",
       "additionalProperties": false,
       "description": "Specifies the Map type.",
       "properties": {
-        "whatmap1": {
+        "SpecificationMap1": {
           "type": "string"
         },
-        "whatmap2": {
+        "SpecificationMap2": {
           "type": "string" 
         }
       },
-      "required": ["whatmap1", "whatmap2"]
+      "required": ["SpecificationMap1", "SpecificationMap2"]
     },
-    "How": {
+    "Generation": {
       "title": "UMM-Vis-Maps",
       "type": "object",
       "additionalProperties": false,
       "description": "Specifies the Map type.",
       "properties": {
-        "howmap1": {
+        "GenerationMap1": {
           "type": "string"
         },
-        "howmap2": {
+        "GenerationMap2": {
           "type": "string"
         }
       },
-      "required": ["howmap1", "howmap2"]
+      "required": ["GenerationMap1", "GenerationMap2"]
     }
   }
 }

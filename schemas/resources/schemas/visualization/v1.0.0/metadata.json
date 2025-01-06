@@ -36,7 +36,7 @@
     }
   ],
 
-  "What": {
+  "Specification": {
 
   "SupportsContinuousBrowsing": false,
 
@@ -72,6 +72,13 @@
       "@xlink:type": "simple"
     }
   ],
+  "ResourceURL": [
+    {
+      "Format": "image/png",
+      "ResourceType": "tile",
+      "Template": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
+    }
+  ],
   "Metadata": [
     {
       "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
@@ -103,26 +110,26 @@
   },
 
   "Ongoing": false,
-  "measurement": "Land Cover",
+  "Measurement": "Land Cover",
   "RetentionPeriod": -1,
-  "daynight": [
+  "DayNight": [
     "day"
   ],
-  "layerPeriod": "Yearly"
+  "LayerPeriod": "Yearly"
 
   },
 
-  "How": {
+  "Generation": {
   },
 
   "ConceptIds": [
     {
-      "type": "STD",
-      "value": "C186286578-LPDAAC_ECS",
-      "shortName": "MCD12Q1",
-      "title": "MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m SIN Grid V006",
-      "version": "006",
-      "dataCenter": "LPDAAC_ECS"
+      "Type": "STD",
+      "Value": "C186286578-LPDAAC_ECS",
+      "ShortName": "MCD12Q1",
+      "Title": "MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m SIN Grid V006",
+      "Version": "006",
+      "DataCenter": "LPDAAC_ECS"
     }
   ],
 

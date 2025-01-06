@@ -65,7 +65,7 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "type": {
+          "Type": {
             "description": "Identify whether the associated dataset is NRT or STD.",
             "type": "string",
             "enum": [
@@ -73,24 +73,24 @@
               "STD"
             ]
           },
-          "value": {
+          "Value": {
             "description": "The dataset's CMR concept id",
             "type": "string"
           },
-          "dataCenter": {
+          "DataCenter": {
             "type": "string"
           },
-          "shortName": {
+          "ShortName": {
             "type": "string"
           },
-          "title": {
+          "Title": {
             "type": "string"
           },
-          "version": {
+          "Version": {
             "type": "string"
           }
         },
-        "required": ["type", "value"]
+        "required": ["Type", "Value"]
       },
       "minItems": 1
     },
@@ -105,11 +105,11 @@
       "$ref": "#/definitions/MetadataSpecificationType"
     },
 
-    "What": {
+    "Specification": {
       "$comment": "must be here when additionalProperties==false. otherwise fails"
     },
 
-    "How": {
+    "Generation": {
       "$comment": "must be here when additionalProperties==false. otherwise fails"
     }
   },
@@ -117,8 +117,8 @@
     "Identifier",
     "Name",
     "VisualizationType",
-    "What",
-    "How",
+    "Specification",
+    "Generation",
     "ConceptIds", 
     "MetadataSpecification"
   ],  
@@ -132,11 +132,11 @@
       },
       "then": {
         "properties": {
-          "What": {
-            "$ref": "umm-vis-tiles-schema.json#/definitions/What"
+          "Specification": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/Specification"
           },
-          "How": {
-            "$ref": "umm-vis-tiles-schema.json#/definitions/How"
+          "Generation": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/Generation"
           }
         }
       }
@@ -150,11 +150,11 @@
       },
       "then": {
         "properties": {
-          "What": {
-            "$ref": "umm-vis-maps-schema.json#/definitions/What"
+          "Specification": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/Specification"
           },
-          "How": {
-            "$ref": "umm-vis-maps-schema.json#/definitions/How"
+          "Generation": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/Generation"
           }
         }
       }
