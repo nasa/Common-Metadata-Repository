@@ -757,7 +757,6 @@
         and deleting the draft in db. Will ignore this error. Error Msg: with msg: %s" concept-id (ex-message e)))))))
 
 (defmethod delete-concept :default
-  "Deletes concept indexes in elastic"
   [context concept-id revision-id options]
   (let [concept-type (cs/concept-id->type concept-id)
         concept (meta-db2/get-concept context concept-id revision-id)]
