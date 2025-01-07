@@ -29,13 +29,12 @@
   "Returns an error message to explain that there are too many wildcard patterns in the query."
   [num-conditions]
   (format
-   ;; NOTE: EDSC parses this error message. Do not change without coordinating with edsc developers.
    (str "The query contained [%d] conditions which used a leading wildcard. This is more than the "
         "maximum allowed amount of [%d]. The CMR allows searching with patterns containing the "
         "wildcards * and ?. Patterns which start with a wildcard are expensive to execute so the "
         "number of patterns that can be used in one query is limited. If you would like to find "
         "alternative ways to query please ask the CMR Team at %s. ")
-   (cmr.common.util/tee num-conditions)
+   num-conditions
    (max-number-of-leading-wildcard-patterns)
    (config/cmr-support-email)))
 
