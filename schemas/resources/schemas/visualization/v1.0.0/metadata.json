@@ -25,6 +25,27 @@
     }
   ],
 
+  "SpatialExtent":
+  {
+    "SpatialCoverageType": "HORIZONTAL",
+    "HorizontalSpatialDomain":
+    {
+      "Geometry":
+      {
+        "CoordinateSystem": "CARTESIAN",
+        "BoundingRectangles":
+        [
+          {
+            "WestBoundingCoordinate": -127.0,
+            "NorthBoundingCoordinate": 52.0,
+            "EastBoundingCoordinate": -65.0,
+            "SouthBoundingCoordinate": 23.0
+          }
+        ]
+      }
+    },
+    "GranuleSpatialRepresentation": "GEODETIC"
+  },
   "TemporalExtents": [
     {
       "RangeDateTimes": [
