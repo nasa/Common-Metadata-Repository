@@ -698,6 +698,7 @@
     (cs/concept-id->type concept-id)))
 
 (defn- delete-concept-default-helper
+  "A private func that deletes concept indexes in elastic"
   [context concept concept-id revision-id options]
   (if (nil? concept)
     (errors/throw-service-error
@@ -742,6 +743,9 @@
                 result))))))))
 
 (defn- delete-draft-concept
+  "A private func that deletes draft concept indexes in elastic. Is a separate func than the delete-concept-default-helper
+  because drafts are deleted permanently in the db which causes a race condition in index deletes here.
+  This func is a hot-fix to catch this race condition."
   [context concept concept-id revision-id options]
   (when concept
     (delete-concept-default-helper context concept concept-id revision-id (assoc options :all-revisions-index? true))
@@ -753,6 +757,7 @@
         and deleting the draft in db. Will ignore this error. Error Msg: with msg: %s" concept-id (ex-message e)))))))
 
 (defmethod delete-concept :default
+  "Deletes concept indexes in elastic"
   [context concept-id revision-id options]
   (let [concept-type (cs/concept-id->type concept-id)
         concept (meta-db2/get-concept context concept-id revision-id)]
