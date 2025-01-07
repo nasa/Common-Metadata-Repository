@@ -9,9 +9,10 @@
                  [org.clojure/math.combinatorics "0.1.4"]
                  [pjstadig/assertions "0.2.0"]
                  [primitive-math "0.1.4"]]
-  ;; If making a standalone jar for this project, then commement the following line so that
-  ;; a main function will run from the jar. Doing this in the full context of CMR uberjar
-  ;; will not work as then it is not defined which function is the primary entry point
+  ;; NOTE: If making a standalone jar for this project, then temporarily un-commement the following
+  ;; line so that the main function in runner.clj will run by default from the jar. Doing this in
+  ;; the parent context of the larger CMR uberjar will not work as in that case another function
+  ;; needs to be defined as the primary entry point.
   ;; :main cmr.spatial.runner
   :plugins [[lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
