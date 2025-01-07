@@ -36,7 +36,7 @@
         "alternative ways to query please ask the CMR Team at %s. ")
    num-conditions
    (max-number-of-leading-wildcard-patterns)
-   (config/cmr-support-email)))
+    (config/cmr-support-email)))
 
 (defn limit-number-of-leading-wildcard-patterns
   "Validates the query doesn't contain too many leading wildcard patterns."
