@@ -41,10 +41,10 @@
             "Template": {
               "description": "The value is a URL template for the visualization.",
               "type": "string"
-            },
-            "minItems": 1,
-            "required": ["Format", "ResourceType", "Template"]
-          }
+            }
+          },
+          "minItems": 1,
+          "required": ["Format", "ResourceType", "Template"]
         },
         "Metadata": {
           "description": "Metadata",
@@ -146,50 +146,50 @@
       "description": "what this vis is.",
       "properties": {
 
-      "SourceData": {
-        "description": "source data used to create visualization",
-        "type": "array"
-      },
+        "SourceData": {
+          "description": "source data used to create visualization",
+          "type": "array"
+        },
 
-      "Projection": {
-        "description": "how reprojection is done. what source projection and output projection are",
-        "type": "object"
-      },
-      "Regridding": {
-        "description": "how regridding is done. what source grid and output grid are",
-        "type": "object"
-      },
-      "Sampling": {
-        "description": "interpolate or average out",
-        "type": "object"
-      },
-      "Resolution": {
-        "description": "resolution of source data and resulting visualization",
-        "type": "object"
-      },
-      "QualityFlag": {
-        "description": "data value filtering, mask, etc.",
-        "type": "object"
-      },
+        "Projection": {
+          "description": "how reprojection is done. what source projection and output projection are",
+          "type": "object"
+        },
+        "Regridding": {
+          "description": "how regridding is done. what source grid and output grid are",
+          "type": "object"
+        },
+        "Sampling": {
+          "description": "interpolate or average out",
+          "type": "object"
+        },
+        "Resolution": {
+          "description": "resolution of source data and resulting visualization",
+          "type": "object"
+        },
+        "QualityFlag": {
+          "description": "data value filtering, mask, etc.",
+          "type": "object"
+        },
 
-      "ColorMap": {
-        "description": "color table",
-        "type": "object"
-      },
-      "Range": {
-        "description": "min/max value",
-        "type": "object"
-      },
-      "Scale": {
-        "description": "linear, logarithmic, etc.",
-        "type": "object"
-      },
-      "PixelStyle": {
-        "description": "shape of pixel when visualization is rendered",
-        "type": "object"
+        "ColorMap": {
+          "description": "color table",
+          "type": "object"
+        },
+        "Range": {
+          "description": "min/max value",
+          "type": "object"
+        },
+        "Scale": {
+          "description": "linear, logarithmic, etc.",
+          "type": "object"
+        },
+        "PixelStyle": {
+          "description": "shape of pixel when visualization is rendered",
+          "type": "object"
+        }
+
       }
-
-    }
 
     },
 

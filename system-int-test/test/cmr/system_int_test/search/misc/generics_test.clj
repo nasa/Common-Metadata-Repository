@@ -324,7 +324,7 @@
                   body (:body results)]
               (is (string/includes? body concept-id) "record not found")
               (is (= 200 status) "wrong http status")))
-          
+
            (testing "Searching with non-existent UMM JSON version in the url suffix for generics"
              (are3 [url-extension]
                    (let [{:keys [status body]} (search-request-version-url-extension plural-concept-type-name url-extension)]
@@ -334,16 +334,16 @@
 
                    "explicit UMM JSON version through suffix"
                    "umm_json_v9_9_9"))
-          
+
              (testing "Searching with existing UMM JSON version in the url suffix for generics"
                (are3 [url-extension]
                      (let [{:keys [status body]} (search-request-version-url-extension plural-concept-type-name url-extension)]
                        (is (= 200 status))
                        (is (is (string/includes? body concept-id) "record not found")))
-               
+
                "explicit UMM JSON version through suffix"
                (format "umm_json_v%s" (string/replace (generics/current-generic-version (keyword concept-type-string)) #"\." "_"))))
-           
+
            (testing "Searching with non-existent UMM JSON version for generics passing the accept header"
              (are3 [acceptHeader]
                    (let [{:keys [status body]} (search-request-version-accept-header plural-concept-type-name acceptHeader)]
@@ -353,7 +353,7 @@
 
                    "explicit UMM JSON version through suffix"
                    "application/vnd.nasa.cmr.umm+json;version=9.9.9"))
-           
+
            (testing "Searching with existing UMM JSON version for generics passing the accept header"
              (are3 [acceptHeader]
                    (let [results (search-request-version-accept-header plural-concept-type-name acceptHeader) status (:status results)

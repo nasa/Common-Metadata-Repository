@@ -48,7 +48,7 @@
       "Name": "Visualization-Type",
       "Mapping": "string"
     },
-    {    
+    {
       "Description": "Visualization Source ConceptIds",
       "Field": ".ConceptIds",
       "Name": "Concept-Ids",
@@ -56,7 +56,7 @@
       "Indexer": "simple-array-field",
       "Configuration": {"sub-fields": ["Value", "ShortName"]}
     },
-    {    
+    {
       "Description": "Visualization Source ConceptIds in keywords",
       "Field": ".ConceptIds",
       "Name": "keyword",

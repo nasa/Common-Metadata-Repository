@@ -1,7 +1,7 @@
 { "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "Specification": {
-      "title": "UMM-Vis-Maps", 
+      "title": "UMM-Vis-Maps",
       "type": "object",
       "additionalProperties": false,
       "description": "Specifies the Map type.",
@@ -10,7 +10,7 @@
           "type": "string"
         },
         "SpecificationMap2": {
-          "type": "string" 
+          "type": "string"
         }
       },
       "required": ["SpecificationMap1", "SpecificationMap2"]

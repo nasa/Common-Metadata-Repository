@@ -96,8 +96,8 @@
     },
 
     "VisualizationType": {
-       "type": "string",
-       "enum": ["tiles", "maps"]
+      "type": "string",
+      "enum": ["tiles", "maps"]
     },
 
     "MetadataSpecification": {
@@ -119,9 +119,9 @@
     "VisualizationType",
     "Specification",
     "Generation",
-    "ConceptIds", 
+    "ConceptIds",
     "MetadataSpecification"
-  ],  
+  ],
 
   "allOf": [
     {
@@ -169,7 +169,7 @@
       "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS). The valid values can be found at the KMS website: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.",
       "properties": {
         "Category": {
-         "$ref": "#/definitions/KeywordStringType"
+          "$ref": "#/definitions/KeywordStringType"
         },
         "Topic": {
           "$ref": "#/definitions/KeywordStringType"
@@ -225,4 +225,3 @@
     }
   }
 }
-  
