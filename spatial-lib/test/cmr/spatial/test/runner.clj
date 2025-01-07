@@ -1,4 +1,4 @@
-(ns cmr.spatial.test.runner-test
+(ns cmr.spatial.test.runner
   "Run tests for functions defined in the runner for this project. These are small utility
    functions only."
   (:require
