@@ -253,7 +253,7 @@ The CMR contains many more results than can be returned in a single response so 
 
 Note: In the event which an ingest or delete occurs between paging requests, the order of your results may change, causing inconsistent results across pages.
 
-You can not page past the 1 millionth item. Please contact the CMR Team at cmr-support@earthdata.nasa.gov if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
+You can not page past the 1 millionth item. Please contact the CMR Team at cmr-support@nasa.gov if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
 
 #### <a name="search-after"></a> Search After
 
@@ -3747,9 +3747,9 @@ Content-Length: 48
 
 #### <a name="tag-association"></a> Tag Association
 
-A tag can be associated with collections through either a JSON query or a list of collection concept revisions. 
-Tag association by query only supports tagging the latest revision of collections. 
-Tag association by collections supports tagging any specified collection revisions. 
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions.
+Tag association by query only supports tagging the latest revision of collections.
+Tag association by collections supports tagging any specified collection revisions.
 
 Expected Response Status:
 <ul>
@@ -3770,7 +3770,7 @@ Each association object will have:
     <li>Either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. </li>
 </ul>
 
-- IMPORTANT: The tag and the collections must exist before they can be associated together. 
+- IMPORTANT: The tag and the collections must exist before they can be associated together.
 
 
 Here is am example of a tag association request and its response:
@@ -3810,9 +3810,9 @@ On occasions when tag association cannot be processed at all due to invalid inpu
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. 
-All collections found will be _added_ to the current set of associated collections with a tag. 
-Tag associations are maintained throughout the life of a collection. 
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag.
+All collections found will be _added_ to the current set of associated collections with a tag.
+Tag associations are maintained throughout the life of a collection.
 If a collection is deleted and re-added it will maintain its tags.
 
 Expected Response Status:
@@ -3852,13 +3852,13 @@ Content-Length: 168
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. 
-User can also provide arbitrary JSON data which is optional during tag association. 
-The max length of JSON data used for tag association is 32KB. 
-All referenced collections will be _added_ to the current set of associated collections with a tag. 
-Tag associations are maintained throughout the life of a collection. 
-If a collection is deleted and re-added it will maintain its tags. 
-If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. 
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
+User can also provide arbitrary JSON data which is optional during tag association.
+The max length of JSON data used for tag association is 32KB.
+All referenced collections will be _added_ to the current set of associated collections with a tag.
+Tag associations are maintained throughout the life of a collection.
+If a collection is deleted and re-added it will maintain its tags.
+If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa.
 Tags cannot be associated on tombstoned collection revisions.
 
 Expected Response Status:
@@ -3904,10 +3904,10 @@ Content-Length: 168
 
 #### <a name="tag-dissociation"></a> Tag Dissociation
 
-A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. 
-Tag dissociation by query only supports tag dissociation of the latest revision of collections. 
-Tag dissociation by collections supports tag dissociation from any specified collection revisions. 
-The tag dissociation response looks the same as tag association response. 
+A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests.
+Tag dissociation by query only supports tag dissociation of the latest revision of collections.
+Tag dissociation by collections supports tag dissociation from any specified collection revisions.
+The tag dissociation response looks the same as tag association response.
 
 Expected Response Status:
 <ul>
@@ -4013,7 +4013,7 @@ Content-Length: 168
 
 #### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
 
-Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to 
+Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to
 `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
 
 Expected Response Status:
@@ -4735,8 +4735,8 @@ Access to service and service association is granted through the provider via th
 
 #### <a name="service-association"></a> Service Association
 
-A service identified by its concept id can be associated with collections through a list of collection concept revisions and an optional data payload in JSON format. 
-The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. 
+A service identified by its concept id can be associated with collections through a list of collection concept revisions and an optional data payload in JSON format.
+The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create.
 
 Expected Response Status:
 <ul>
@@ -5146,14 +5146,14 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
 #### <a name="tool-association"></a> Tool Association
 
-A tool identified by its concept id can be associated with collections through a list of collection concept revisions. 
+A tool identified by its concept id can be associated with collections through a list of collection concept revisions.
 
-The tool association request normally returns status code 200 with a response that consists of a list of individual tool 
-association responses, one for each tool association attempted to create. 
+The tool association request normally returns status code 200 with a response that consists of a list of individual tool
+association responses, one for each tool association attempted to create.
 
 Expected Response Status:
 <ul>
-    <li>200 OK -- if all associations succeeded</li> 
+    <li>200 OK -- if all associations succeeded</li>
     <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
     <li>400 BAD REQUEST -- if all associations failed due to user error</li>
 </ul>
@@ -5171,8 +5171,8 @@ Each association object will have:
     <li>Either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded OR an `errors` field with detailed error message when the tool association failed. </li>
 </ul>
 
-IMPORTANT: Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL 
-for the collection's provider. 
+IMPORTANT: Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL
+for the collection's provider.
 
 Here is an example of a tool association request and its response when collection C1200000005-PROV1 exists and C1200000006-PROV1 does not:
 
@@ -5725,7 +5725,7 @@ A concept can only be associated with another concept either with or without rev
 #### <a name="concept-associations"></a> Concept associations
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
-When the revision id is not present, the latest revision is assumed. 
+When the revision id is not present, the latest revision is assumed.
 
 Expected Response Status:
 - 200 OK -- if all associations succeeded
