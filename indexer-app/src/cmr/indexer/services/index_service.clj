@@ -697,13 +697,16 @@
   (fn [_context concept-id _revision-id _options]
     (cs/concept-id->type concept-id)))
 
-(defmethod delete-concept :default
-  [context concept-id revision-id options]
-  ;; Assuming ingest will pass enough info for deletion
-  ;; We should avoid making calls to metadata db to get the necessary info if possible
+(defn- delete-concept-default-helper
+  "A private func that deletes concept indexes in elastic"
+  [context concept concept-id revision-id options]
+  (if (nil? concept)
+    (errors/throw-service-error
+      :not-found
+      (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
+
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
-        concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
@@ -711,36 +714,57 @@
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
-          ;; save tombstone in all revisions collection index
+          ;; save tombstone in all revisions index
           (let [es-doc (if (cs/generic-concept? concept-type)
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
                          (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
                 [tm result] (util/time-execution
-                             (es/save-document-in-elastic
-                              context index-names (concept-mapping-types concept-type)
-                              es-doc concept-id revision-id elastic-version elastic-options))]
+                              (es/save-document-in-elastic
+                                context index-names (concept-mapping-types concept-type)
+                                es-doc concept-id revision-id elastic-version elastic-options))]
             (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
             result)
-          ;; delete concept from primary concept index
+          ;; else delete concept from primary concept index
           (do
             (es/delete-document
-             context index-names (concept-mapping-types concept-type)
-             concept-id revision-id elastic-version elastic-options)
+              context index-names (concept-mapping-types concept-type)
+              concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
               (let [[tm result] (util/time-execution
-                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
+                                  (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
                 (debug (format "Timed function %s index-deleted-granule took %d ms." (str *ns*) tm))
                 result))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (let [[tm result] (util/time-execution
-                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
+                                  (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
-                result)))))
-      ;; For draft concept, after the index is deleted, remove it from database.
-      (when (cs/is-draft-concept? concept-type)
-        (meta-db/delete-draft context concept)))))
+                result))))))))
+
+(defn- delete-draft-concept
+  "A private func that deletes draft concept indexes in elastic. Is a separate func than the delete-concept-default-helper
+  because drafts are deleted permanently in the db which causes a race condition in index deletes here.
+  This func is a hot-fix to catch this race condition."
+  [context concept concept-id revision-id options]
+  (when concept
+    (delete-concept-default-helper context concept concept-id revision-id (assoc options :all-revisions-index? true))
+    (delete-concept-default-helper context concept concept-id revision-id (assoc options :all-revisions-index? false))
+    (try
+      (meta-db/delete-draft context concept)
+      (catch Exception e
+        (info (format "Force delete draft ran into exception for concept-id %s due to race condition between indexers
+        and deleting the draft in db. Will ignore this error. Error Msg: with msg: %s" concept-id (ex-message e)))))))
+
+(defmethod delete-concept :default
+  [context concept-id revision-id options]
+  (let [concept-type (cs/concept-id->type concept-id)
+        concept (meta-db2/get-concept context concept-id revision-id)]
+    (if (cs/is-draft-concept? concept-type)
+      ;; do draft version
+      (delete-draft-concept context concept concept-id revision-id options)
+      ;; do default path
+      (delete-concept-default-helper context concept concept-id revision-id options))))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."
