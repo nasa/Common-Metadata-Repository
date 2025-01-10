@@ -247,16 +247,19 @@
 (def minimal-umm-c
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "A340-600" :LongName "Airbus A340-600" :Type "Jet"})]
-   :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
+                 {:ShortName "Airplane"
+                  :LongName "Airplane"
+                  :Type "Jet"})]
+   :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "1T"})
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
                     :ShortName "AARHUS-HYDRO"
                     :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
-                      {:Category "EARTH SCIENCE SERVICES"
-                       :Topic "DATA ANALYSIS AND VISUALIZATION"
-                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
+                       {:Category "EARTH SCIENCE"
+                        :Topic "ATMOSPHERE"
+                        :Term "AIR QUALITY",
+                        :VariableLevel1 "CARBON MONOXIDE"})]
    :SpatialExtent (umm-c/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
    :ShortName "short"
    :Version "V1"

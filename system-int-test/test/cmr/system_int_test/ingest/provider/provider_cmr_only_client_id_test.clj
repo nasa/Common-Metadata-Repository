@@ -19,7 +19,9 @@
   "Executes the given function with the concept and client-id and make sure the status code
   is correct. It will print out the executed function name when test fails."
   [func-var concept client-id]
-  (let [{:keys [status errors]} ((var-get func-var) concept {:client-id client-id})]
+  (let [{:keys [status errors]} ((var-get func-var) concept {:client-id client-id})
+        _ (println "Status returned = " status)
+        _ (println "Errors returned = " errors)]
     (is (#{200 201} status) (format "Failed in %s. with errors: %s" func-var errors))))
 
 (deftest collection-cmr-only-client-id-test
@@ -33,6 +35,7 @@
           concept (dissoc (d/item->concept coll1) :revision-id)]
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "any"))))
+  ;; TODO this test fails too sometimes
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client Echo"
     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "ET1"}) {:validate-keywords false})
           concept (dissoc (d/item->concept coll1) :revision-id)]
@@ -43,6 +46,7 @@
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "ECHO"))))
+  ;; TODO this is the problem test
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client other than Echo"
     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "ET1"}) {:validate-keywords false})
           concept (dissoc (d/item->concept coll1) :revision-id)]
