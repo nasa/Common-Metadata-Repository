@@ -682,3 +682,56 @@
                (is (= "G12345-PROV1" (:concept-id real-message)))
                (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys real-message)))
                (is (some? (queue/delete-messages sqs-client internal-queue-url messages))))))))))
+
+(deftest is-sqs-arn-test
+  (testing "sqs endpoint validation"
+    (are3 [expected endpoint]
+          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-sqs-arn]
+            (is (= expected (fun endpoint))))
+
+          "valid sqs endpoint"
+          true
+          "arn:aws:sqs:us-west-1:123456789:Test-Queue"
+
+          "valid sqs endpoint with any string after sqs: "
+          true
+          "arn:aws:sqs:anything after this is valid"
+
+          "invalid sqs endpoint"
+          false
+          "some string"
+
+          "invalid sqs endpoint - because partial"
+          false
+          "arn:aws:sns:blah blah")))
+
+(deftest is-valid-url-test
+  (testing "url string validation"
+    (are3 [expected endpoint]
+          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-subscription-endpoint-url]
+            (is (= expected (fun endpoint))))
+
+          "valid url -- with https prefix"
+          true
+          "https://www.google.com"
+
+          "invalid url - no https prefix"
+          false
+          "www.google.com"
+
+          "invalid url -- no www prefix"
+          false
+          "google.com"
+
+          "valid url -- with http prefix"
+          true
+          "http://www.google.com"
+
+          "invalid url - non-existent domain"
+          false
+          "hello.blach"
+
+          "invalid url - some string"
+          false
+          "this is just some string"
+          )))

@@ -2,12 +2,16 @@
   "Buisness logic for subscription processing."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [cmr.common.log :refer [debug info]]
+   [cmr.common.services.errors :as errors]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.search-service :as mdb-search]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
-   [cmr.transmit.config :as t-config]))
+   [cmr.transmit.config :as t-config])
+  (:import
+    (org.apache.commons.validator.routines UrlValidator)))
 
 (def subscriptions-enabled?
   "Checks to see if ingest subscriptions are enabled."
@@ -95,7 +99,7 @@
       (subscription-cache/remove-value context coll-concept-id))))
 
 ;;
-;; The functions below are for subscribing and unsubscribing and endpoint to the topic.
+;; The functions below are for subscribing and unsubscribing
 ;;
 
 (defn add-delete-subscription
@@ -110,14 +114,42 @@
         (change-subscription context concept-edn)
         concept-edn))))
 
+(defn- is-valid-sqs-arn
+  "Checks if given sqs arn is valid. Returns true or false."
+  [endpoint]
+  (some? (re-matches #"arn:aws:sqs:.*" endpoint)))
+
+(defn- is-valid-subscription-endpoint-url
+  "Checks if subscription endpoint destination is a valid url. Returns true or false."
+  [endpoint]
+  (let [default-validator (UrlValidator.)]
+    (.isValid default-validator endpoint)))
+
+(defn- send-sub-to-url-dest
+  "Sends subscription details to url given. Throws error if subscription is not successful."
+  [subscription-concept dest-endpoint]
+  (let [response (client/post dest-endpoint
+                              {:body (json/generate-string subscription-concept)
+                               :content-type "application/json"
+                               :throw-exceptions false})]
+    (when-not (= 200 (:status response))
+      (throw (Exception. (format "Failed to send subscription message to url %s. Response was: %s" dest-endpoint response))))))
+
 (defn add-subscription
   "Add the subscription to the cache and subscribe the subscription to
   the topic."
   [context concept]
   (when-let [concept-edn (convert-concept-to-edn concept)]
     (when (ingest-subscription-concept? concept-edn)
-      (let [topic (get-in context [:system :sns :external])]
-        (topic-protocol/subscribe topic concept-edn)))))
+      (let [endpoint (:EndPoint (:metadata concept-edn))]
+        (cond
+          (is-valid-sqs-arn endpoint) (let [topic (get-in context [:system :sns :external])]
+                                        (topic-protocol/subscribe topic concept-edn))
+          (is-valid-subscription-endpoint-url endpoint) (send-sub-to-url-dest concept-edn endpoint)
+          :else (errors/throw-service-error :bad-request
+                                            (format "Endpoint given for subscription was neither a valid sqs arn or a valid URL.
+                                            Invalid endpoint received was: %s" endpoint))
+          )))))
 
 (defn delete-subscription
   "Remove the subscription from the cache and unsubscribe the subscription from
@@ -125,16 +157,23 @@
   [context concept]
   (when-let [concept-edn (add-delete-subscription context concept)]
     (when (ingest-subscription-concept? concept-edn)
-      (let [topic (get-in context [:system :sns :external])]
-        (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
-                                           :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])})))))
+      (let [endpoint (:EndPoint (:metadata concept-edn))]
+        (cond
+          (is-valid-sqs-arn endpoint) (let [topic (get-in context [:system :sns :external])]
+                                        (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
+                                                                           :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])}))
+          (is-valid-subscription-endpoint-url endpoint) (send-sub-to-url-dest concept-edn endpoint)
+          :else (errors/throw-service-error :bad-request
+                                            (format "Endpoint given for subscription was neither a valid sqs arn or a valid URL.
+                                            Invalid endpoint received was: %s" endpoint)))
+        ))))
 
 ;;
 ;; The functions below are for refreshing the subscription cache if needed.
 ;;
 
 (defn create-subscription-cache-contents-for-refresh
-  "Go through all of the subscriptions and find the ones that are 
+  "Go through all the subscriptions and find the ones that are
   ingest subscriptions. Create the mode values for each collection-concept-id
   and put those into a map. The end result looks like:
   {Collection concept id 1: [\"New\" \"Update\"]
