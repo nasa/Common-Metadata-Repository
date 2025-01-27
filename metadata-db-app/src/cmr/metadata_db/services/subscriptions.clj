@@ -2,6 +2,7 @@
   "Buisness logic for subscription processing."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as str]
    [clj-http.client :as client]
    [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
@@ -125,6 +126,12 @@
   (let [default-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
     (.isValid default-validator endpoint)))
 
+(defn- is-local-test-queue
+  "Checks if subscription endpoint is a local url that point to the local queue -- this is for local tests.
+  Returns true or false."
+  [endpoint]
+  (some? (re-matches #"http://localhost:9324.*" endpoint)))
+
 (defn- send-sub-to-url-dest
   "Sends subscription details to url given. Throws error if subscription is not successful."
   [subscription-concept dest-endpoint]
@@ -143,6 +150,9 @@
     (when (ingest-subscription-concept? concept-edn)
       (let [endpoint (:EndPoint (:metadata concept-edn))]
         (cond
+          ;; local-queue is for checking for the specific url that tests use to call the local queue
+          (is-local-test-queue endpoint) (let [topic (get-in context [:system :sns :external])]
+                                      (topic-protocol/subscribe topic concept-edn))
           (is-valid-sqs-arn endpoint) (let [topic (get-in context [:system :sns :external])]
                                         (topic-protocol/subscribe topic concept-edn))
           (is-valid-subscription-endpoint-url endpoint) (send-sub-to-url-dest concept-edn endpoint)
@@ -159,6 +169,10 @@
     (when (ingest-subscription-concept? concept-edn)
       (let [endpoint (:EndPoint (:metadata concept-edn))]
         (cond
+          ;; local-queue is for checking for the specific url that tests use to call the local queue
+          (is-local-test-queue endpoint) (let [topic (get-in context [:system :sns :external])]
+                                      (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
+                                                                         :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])}))
           (is-valid-sqs-arn endpoint) (let [topic (get-in context [:system :sns :external])]
                                         (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
                                                                            :subscription-arn (get-in concept-edn [:extra-fields :aws-arn])}))
