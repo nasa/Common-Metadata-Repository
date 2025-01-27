@@ -2,7 +2,6 @@
   "Buisness logic for subscription processing."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as str]
    [clj-http.client :as client]
    [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
