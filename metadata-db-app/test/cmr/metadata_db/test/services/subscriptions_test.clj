@@ -711,6 +711,14 @@
           (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-subscription-endpoint-url]
             (is (= expected (fun endpoint))))
 
+          "valid local url -- with http prefix"
+          true
+          "http://localhost:9324/000000000000"
+
+          "valid local url -- with https prefix"
+          true
+          "https://localhost:9324/000000000000"
+
           "valid url -- with https prefix"
           true
           "https://www.google.com"

@@ -33,7 +33,7 @@
        (.build))))
 
 (defn create-queue
-  "Create an instance of a an AWS queue in either AWS or elasticMQ."
+  "Create an instance of an AWS queue in either AWS or elasticMQ."
   [sqs-client queue-name]
   (try
     (let [sqs-request (-> (CreateQueueRequest/builder)

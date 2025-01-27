@@ -84,7 +84,7 @@
   [subscription-concept]
   (let [method (:Method subscription-concept)
         endpoint (:EndPoint subscription-concept)
-        default-url-validator (UrlValidator.)]
+        default-url-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
 
     (if (= method "ingest")
       (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))

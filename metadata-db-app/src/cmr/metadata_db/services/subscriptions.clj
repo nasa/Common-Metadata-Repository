@@ -122,7 +122,7 @@
 (defn- is-valid-subscription-endpoint-url
   "Checks if subscription endpoint destination is a valid url. Returns true or false."
   [endpoint]
-  (let [default-validator (UrlValidator.)]
+  (let [default-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
     (.isValid default-validator endpoint)))
 
 (defn- send-sub-to-url-dest
