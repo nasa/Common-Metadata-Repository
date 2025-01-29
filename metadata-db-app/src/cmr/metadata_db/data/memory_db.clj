@@ -429,6 +429,7 @@
 (defn save-concept
   [db provider concept]
   {:pre [(:revision-id concept)]}
+  (println "INSIDE save-concept for IN-MEMORY DB: concepts = " concept)
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                      (when (= :variable-association (:concept-type concept))
                        (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]

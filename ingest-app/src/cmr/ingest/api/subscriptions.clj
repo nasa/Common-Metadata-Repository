@@ -20,7 +20,9 @@
    [cmr.transmit.search :as search]
    [cmr.transmit.urs :as urs])
   (:import
-   [java.util UUID]))
+   [java.util UUID])
+  (:import
+    (org.apache.commons.validator.routines UrlValidator)))
 
 (def ^:private CMR_PROVIDER
   "CMR provider-id, used by collection subscription."
@@ -76,6 +78,20 @@
                        {:token (config/echo-system-token)}
                        query-params)]
     (search-concept-refs-with-sub-params context search-params subscription-type)))
+
+(defn- validate-subscription-endpoint
+  "Validates the subscription endpoint for purposes of validation. Throws error if not valid."
+  [subscription-concept]
+  (let [method (:Method subscription-concept)
+        endpoint (:EndPoint subscription-concept)
+        default-url-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
+
+    (if (= method "ingest")
+      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))
+        (errors/throw-service-error
+          :bad-request
+          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
+          If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
 
 (defn- check-subscription-limit
   "Given the configuration for subscription limit, this valdiates that the user has no more than
@@ -272,7 +288,7 @@
 
 (defn- body->subscription
   "Returns the subscription concept for the given request body, etc.
-  This is the raw subscritpion that is ready for metadata validation,
+  This is the raw subscription that is ready for metadata validation,
   but still needs some sanitization to be saved to database."
   [native-id body content-type headers]
   (let [sub-concept (api-core/body->concept!
@@ -319,6 +335,7 @@
       (api-core/verify-provider-exists context provider-id))
     (validate-user-id context subscriber-id)
     (validate-query context parsed)
+    (validate-subscription-endpoint parsed)
     (let [parsed-metadata (assoc parsed :SubscriberId subscriber-id)]
       {:concept (assoc sub-concept
                        :metadata (json/generate-string parsed-metadata)
@@ -331,14 +348,17 @@
   "Processes a request to create a subscription. A native id will be generated."
   [request]
   (let [{:keys [body content-type headers request-context]} request]
+    (info "**** INSIDE create-subscription")
     (common-ingest-checks request-context)
     (let [tmp-subscription (body->subscription (str (UUID/randomUUID)) body content-type headers)
           {:keys [concept parsed]} (validate-and-prepare-subscription-concept
                                     request-context tmp-subscription)
+          _ (info "**** concept = " concept)
           provider-id (:provider-id concept)
           subscriber-id (:SubscriberId parsed)
           native-id (get-unique-native-id request-context parsed)
-          final-sub (assoc concept :native-id native-id)]
+          final-sub (assoc concept :native-id native-id)
+          _ (info "**** final-sub = " final-sub)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context headers final-sub parsed))))
 

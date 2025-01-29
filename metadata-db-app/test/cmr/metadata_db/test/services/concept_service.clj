@@ -254,3 +254,40 @@
 
        "sets a collection concept id."
        (dissoc example-concept :concept-id)))))
+
+;(deftest set-subscription-arn-test
+;  (testing "set-subscription-arn"
+;    (are3 [concept-type concept expected]
+;          (is (= expected (cs/set-subscription-arn nil concept-type concept)))
+;
+;          "non-subscription concept type returns un-changed concept"
+;          :granule
+;          {:metadata {:EndPoint ""}}
+;          {:metadata {:EndPoint ""}}
+;
+;          "empty endpoint returns un-changed concept"
+;          :subscription
+;          {:metadata {:EndPoint ""}}
+;          {:metadata {:EndPoint ""}}
+;
+;          "url endpoint returns un-changed concept"
+;          :subscription
+;          {:metadata {:EndPoint "https://www.endpoint.com"}}
+;          {:metadata {:EndPoint "https://www.endpoint.com"}}))
+;   (with-redefs [cmr.metadata-db.services.subscriptions/attach-subscription-to-topic (fn [context concept] "sqs:arn")]
+;     (testing "local test queue url endpoint returns changed concept"
+;       (let [concept {:metadata {:EndPoint "http://localhost:9324/000000000/"}}
+;             expected-concept {:metadata {:EndPoint "http://localhost:9324/000000000/"} :extra-fields {:aws-arn "sqs:arn"}}]
+;         (is (= expected-concept (cs/set-subscription-arn nil :subscription concept)))))
+;
+;     (testing "sqs arn endpoint returns changed concept"
+;       (let [concept {:metadata {:EndPoint "arn:aws:sqs:1234:Queue-Name"}}
+;             expected-concept {:metadata {:EndPoint "arn:aws:sqs:1234:Queue-Name"} :extra-fields {:aws-arn "sqs:arn"}}]
+;         (is (= expected-concept (cs/set-subscription-arn nil :subscription concept)))))))
+
+
+
+
+
+
+

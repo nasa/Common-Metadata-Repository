@@ -56,7 +56,7 @@
           result)))))
 
 (defn subscribe-sqs-to-sns
-  "Subscribes an AWS SQS to an AWS Topic."
+  "Subscribes an AWS SQS to an AWS SNS Topic."
   [sns-client topic-arn sqs-arn]
   (let [sub-request (-> (SubscribeRequest/builder)
                         (.protocol "sqs")
@@ -112,6 +112,7 @@
 
   subscription-dead-letter-queue-arn]
 
+  ;;TODO here is the func for subscribe
   ;; This will be filled in next sprint. CMR-10141
   topic-protocol/Topic
   (subscribe

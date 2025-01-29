@@ -35,7 +35,7 @@
       (is (nil? (hash-cache/get-map cache-client cache-key))))
     (testing "Testing if cache is enabled."
       (let [value (mdb-config/ingest-subscription-enabled)]
-        (is (= value subscriptions/subscriptions-enabled?))))
+        (is (= value subscriptions/ingest-subscriptions-enabled?))))
     (testing "Testing if a passed in concept is a subscription concept"
       (is (subscriptions/ingest-subscription-concept? {:concept-type :subscription
                                                        :deleted false
@@ -234,11 +234,11 @@
                              :Mode ["New" "Delete"]
                              :Method "ingest"}
                   :concept-type :subscription}
-                 (subscriptions/add-delete-subscription test-context {:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
+                 (subscriptions/add-or-delete-subscription-in-cache test-context {:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                                                                                   \"EndPoint\":\"ARN\",
                                                                                   \"Mode\":[\"New\", \"Delete\"],
                                                                                   \"Method\":\"ingest\"}"
-                                                                      :concept-type :subscription}))))))))
+                                                                      :concept-type         :subscription}))))))))
 
 (def db-result-1
   '({:revision-id 1
@@ -428,7 +428,7 @@
      ;;concept mode coll-concept-id
      [expected concept mode coll-concept-id]
      (is (= expected
-            (subscriptions/get-attributes-and-subject concept mode coll-concept-id)))
+            (subscriptions/create-attributes-and-subject-map concept mode coll-concept-id)))
 
      "Deleted concept"
      {:attributes {"collection-concept-id" "C12345-PROV1"
@@ -538,7 +538,7 @@
         (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys message)))
         (is (some? (queue/delete-messages sqs-client queue-url messages)))))))
 
-(deftest work-potential-notification-test
+(deftest publish-subscription-notification-test
   (let [cache-key subscription-cache/subscription-cache-key
         test-context {:system {:caches {cache-key (subscription-cache/create-cache-client)}
                                :sns {:internal (pub-sub/create-topic nil)
@@ -554,10 +554,10 @@
                                  queue-url)]
 
     (testing "Concept not a granule"
-      (is (nil? (subscriptions/work-potential-notification test-context {:concept-type :collection}))))
+      (is (nil? (subscriptions/publish-subscription-notification test-context {:concept-type :collection}))))
     (testing "Concept is a granule, but not in ingest subscription cache."
-      (is (nil? (subscriptions/work-potential-notification test-context {:concept-type :granule
-                                                                         :extra-fields {:parent-collection-id "C12349-PROV1"}}))))
+      (is (nil? (subscriptions/publish-subscription-notification test-context {:concept-type :granule
+                                                                         :extra-fields       {:parent-collection-id "C12349-PROV1"}}))))
     (testing "Concept will get published."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result)}
         (let [sub-concept {:metadata concept-metadata
@@ -573,21 +573,21 @@
                                :extra-fields {:parent-collection-id "C1200000002-PROV1"}}]
 
           ;; if successful, the subscription concept-id is returned for local topic.
-          (subscriptions/add-delete-subscription test-context sub-concept)
-          (is (= (:concept-id sub-concept) (subscriptions/add-subscription test-context sub-concept)))
+          (subscriptions/add-or-delete-subscription-in-cache test-context sub-concept)
+          (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
 
           ;; the subscription is replaced when the subscription already exists.
-          (subscriptions/add-delete-subscription test-context sub-concept)
-          (is (= (:concept-id sub-concept) (subscriptions/add-subscription test-context sub-concept)))
+          (subscriptions/add-or-delete-subscription-in-cache test-context sub-concept)
+          (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
 
           ;; For this test add the subscription to the internal topic to test publishing.
           (let [topic (get-in test-context [:system :sns :internal])
-                sub-concept-edn (subscriptions/add-delete-subscription test-context sub-concept)]
+                sub-concept-edn (subscriptions/add-or-delete-subscription-in-cache test-context sub-concept)]
             (topic-protocol/subscribe topic sub-concept-edn))
 
           ;; publish message. this should publish to 2 queues, the normal internal queue and to
           ;; the client-test-queue.
-          (is (some? (subscriptions/work-potential-notification test-context granule-concept)))
+          (is (some? (subscriptions/publish-subscription-notification test-context granule-concept)))
 
           ;; Get message from subscribed queue.
           (check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
@@ -598,7 +598,7 @@
 
           ;; Test sending to dead letter queue.
           (is (some? (queue/delete-queue sqs-client queue-url)))
-          (subscriptions/work-potential-notification test-context granule-concept)
+          (subscriptions/publish-subscription-notification test-context granule-concept)
 
           ;; Receive message from dead letter queue.
           (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
@@ -661,8 +661,8 @@
                                                   \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
                                                                                        \"Identifier\": \"Algorithm-1\"}]}}"
                                   :extra-fields {:parent-collection-id "C1200000002-PROV1"}}
-                 _ (subscriptions/add-delete-subscription test-context sub-concept)
-                 subscription-arn (subscriptions/add-subscription test-context sub-concept)
+                 _ (subscriptions/add-or-delete-subscription-in-cache test-context sub-concept)
+                 subscription-arn (subscriptions/attach-subscription-to-topic test-context sub-concept)
                  sub-concept (assoc-in sub-concept [:extra-fields :aws-arn] subscription-arn)]
 
              (is (some? subscription-arn))
@@ -670,7 +670,7 @@
                (is (some? (subscriptions/delete-subscription test-context sub-concept))))
 
              ;; publish message. this should publish to the internal queue
-             (is (some? (subscriptions/work-potential-notification test-context granule-concept)))
+             (is (some? (subscriptions/publish-subscription-notification test-context granule-concept)))
 
              (let [internal-queue-url "https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-queue-sit"
                    messages (queue/receive-messages sqs-client internal-queue-url)
@@ -682,3 +682,154 @@
                (is (= "G12345-PROV1" (:concept-id real-message)))
                (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys real-message)))
                (is (some? (queue/delete-messages sqs-client internal-queue-url messages))))))))))
+
+(deftest set-subscription-arn-if-applicable-test
+  (testing "set-subscription-arn returns un-changed concept"
+    (are3 [concept-type concept expected]
+          (is (= expected (subscriptions/set-subscription-arn-if-applicable nil concept-type concept)))
+
+          "non-subscription concept type returns un-changed concept"
+          :granule
+          {:metadata {:EndPoint ""}}
+          {:metadata {:EndPoint ""}}
+
+          "empty endpoint returns un-changed concept"
+          :subscription
+          {:metadata (json/encode {:EndPoint ""})}
+          {:metadata (json/encode {:EndPoint ""})}))
+  (with-redefs [cmr.metadata-db.services.subscriptions/attach-subscription-to-topic (fn [context concept] {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"}) :extra-fields {:aws-arn "SUB1234"}})]
+    (testing "local test queue url endpoint returns changed concept"
+      (let [concept {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"})}
+            expected-concept {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"}) :extra-fields {:aws-arn "SUB1234"}}]
+        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept)))))
+
+    (testing "http endpoint returns changed concept"
+      (let [concept {:metadata (json/encode {"EndPoint" "http://www.endpoint.com"})}
+            expected-concept {:metadata (json/encode {"EndPoint" "http://www.endpoint.com"}) :extra-fields {:aws-arn "http://www.endpoint.com"}}]
+        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept))))))
+
+  (with-redefs [cmr.metadata-db.services.subscriptions/attach-subscription-to-topic (fn [context concept] {:metadata (json/encode {"EndPoint" "arn:aws:sqs:1234:Queue-Name"}) :extra-fields {:aws-arn "sqs:arn"}})]
+    (testing "sqs arn endpoint returns changed concept"
+      (let [concept {:metadata (json/encode {:EndPoint "arn:aws:sqs:1234:Queue-Name"})}
+            expected-concept {:metadata (json/encode {"EndPoint" "arn:aws:sqs:1234:Queue-Name"}) :extra-fields {:aws-arn "sqs:arn"}}]
+        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept)))))))
+
+(deftest is-valid-sqs-arn-test
+  (testing "sqs endpoint validation for subscription endpoint"
+    (are3 [endpoint expected]
+          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-sqs-arn]
+            (is (= expected (fun endpoint))))
+
+          "valid sqs endpoint"
+          "arn:aws:sqs:us-west-1:123456789:Test-Queue"
+          true
+
+          "valid sqs endpoint with any string after sqs: "
+          "arn:aws:sqs:anything after this is valid"
+          true
+
+          "invalid sqs endpoint"
+          "some string"
+          false
+
+          "invalid sqs endpoint - because it's sns"
+          "arn:aws:sns:blah blah"
+          false
+
+          "given nil"
+          nil
+          false
+          )))
+
+(deftest is-valid-subscription-endpoint-url-test
+  (testing "url string validation for subscription endpoint"
+    (are3 [endpoint expected]
+          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-subscription-endpoint-url]
+            (is (= expected (fun endpoint))))
+
+          "valid local url -- with http prefix"
+          "http://localhost:9324/000000000000"
+          true
+
+          "valid local url -- with https prefix"
+          "https://localhost:9324/000000000000"
+          true
+
+          "valid url -- with https prefix"
+          "https://www.google.com"
+          true
+
+          "invalid url - no https prefix"
+          "www.google.com"
+          false
+
+          "invalid url -- no www prefix"
+          "google.com"
+          false
+
+          "valid url -- with http prefix"
+          "http://www.google.com"
+          true
+
+          "invalid url - non-existent domain"
+          "hello.blach"
+          false
+
+          "invalid url - some string"
+          "this is just some string"
+          false
+
+          "given nil"
+          nil
+          false
+          )))
+
+(deftest is-local-test-queue-test
+  (testing "is local test queue endpoint for subscription endpoint validation"
+    (are3 [endpoint expected]
+          (let [fun #'cmr.metadata-db.services.subscriptions/is-local-test-queue]
+            (is (= expected (fun endpoint))))
+
+          "given remote sns queue endpoint"
+          "http://localhost:9324"
+          true
+
+          "given longer remote sns queue endpoint"
+          "http://localhost:9324/000000000/test-queue"
+          true
+
+          "given random string"
+          "this is a random string"
+          false
+
+          "given empty string"
+          ""
+          false
+
+          "given nil"
+          nil
+          false
+
+          "given random url"
+          "http://www.random.com"
+          false
+          )))
+
+(deftest attach-subscription-to-topic-test
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] "subscription-arn")]
+      (testing "concept is not ingest subscription - returns un-changed concept"
+        (let [concept {:metadata (json/encode {:Method "search"})}]
+          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))
+        (testing "subscribing to topic succeeded -- returns updated concept with new aws-arn field"
+          (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}
+                expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
+                                  :extra-fields {:aws-arn "subscription-arn"}}]
+            (is (= expected-concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] nil)]
+      (testing "subscribing to topic returned nil - returns un-changed concept"
+        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
+          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] (throw (Exception. "some exception")))]
+      (testing "subscribing to topic failed and threw error - returns un-changed concept"
+        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
+          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))))

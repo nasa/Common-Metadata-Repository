@@ -1157,7 +1157,7 @@ For NRT Notification subscriptions to be used there are three new fields that ar
 <ul>
     <li>Type: [required] Must be set to "granule" because NRT Notification subscriptions are only for granules.</li>
     <li>CollectionConceptId: [required] Because type must be "granule", we must set "CollectionConceptId" as well, as indicated in Data Fields section</li>
-    <li>EndPoint: [required] describes where notifications get sent. At this time only AWS SQS ARN's are allowed. NRT Notification subscriptions that do not use an AWS SQS ARN will fail. If Batch Notification subscriptions are desired, do not use this field.</li>
+    <li>EndPoint: [required] describes where notifications get sent. At this time, only AWS SQS ARN's and HTTP/S URLs are allowed. HTTP/s URLs must be in the following full URL name format: https://www.websitename.com/123. If Batch Notification subscriptions are desired, do not use this field.</li>
     <li>Mode: [required] describes whether the notification is for New (ingested for the first time into the CMR) granules, Updated granules, or Deleted granules. </li>
     <ul>
         <li>Valid values: "New", "Update", "Delete". Any combination of these values are valid and they are set using a json array. </li>

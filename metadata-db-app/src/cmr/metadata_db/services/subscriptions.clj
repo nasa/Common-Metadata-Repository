@@ -7,9 +7,11 @@
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.search-service :as mdb-search]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
-   [cmr.transmit.config :as t-config]))
+   [cmr.transmit.config :as t-config])
+  (:import
+    (org.apache.commons.validator.routines UrlValidator)))
 
-(def subscriptions-enabled?
+(def ingest-subscriptions-enabled?
   "Checks to see if ingest subscriptions are enabled."
   (mdb-config/ingest-subscription-enabled))
 
@@ -23,7 +25,7 @@
 (defn granule-concept?
   "Checks to see if the passed in concept-type and concept is a granule concept."
   [concept-type]
-  (and subscriptions-enabled?
+  (and ingest-subscriptions-enabled?
        (= :granule concept-type)))
 
 ;;
@@ -98,32 +100,78 @@
 ;; The functions below are for subscribing and unsubscribing and endpoint to the topic.
 ;;
 
-(defn add-delete-subscription
+(defn add-or-delete-subscription-in-cache
   "Do the work to see if subscriptions are enabled and add/remove
   subscription from the cache. Return nil if subscriptions are not
   enabled or the concept converted to edn."
   [context concept]
-  (when (and subscriptions-enabled?
+  (when (and ingest-subscriptions-enabled?
              (= :subscription (:concept-type concept)))
     (let [concept-edn (convert-concept-to-edn concept)]
       (when (ingest-subscription-concept? concept-edn)
         (change-subscription context concept-edn)
         concept-edn))))
 
-(defn add-subscription
-  "Add the subscription to the cache and subscribe the subscription to
-  the topic."
+(defn- is-valid-sqs-arn
+  "Checks if given sqs arn is valid. Returns true or false."
+  [endpoint]
+  (if endpoint
+    (some? (re-matches #"arn:aws:sqs:.*" endpoint))
+    false))
+
+(defn- is-valid-subscription-endpoint-url
+  "Checks if subscription endpoint destination is a valid url. Returns true or false."
+  [endpoint]
+  (if endpoint
+    (let [default-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
+      (.isValid default-validator endpoint))
+    false))
+
+(defn- is-local-test-queue
+  "Checks if subscription endpoint is a local url that point to the local queue -- this is for local tests.
+  Returns true or false."
+  [endpoint]
+  (if endpoint
+    (some? (re-matches #"http://localhost:9324.*" endpoint))
+    false))
+
+(defn attach-subscription-to-topic
+  "If valid ingest subscription, will attach the subscription concept's sqs arn to external SNS topic
+  and will add the sqs arn used as an extra field to the concept"
   [context concept]
-  (when-let [concept-edn (convert-concept-to-edn concept)]
-    (when (ingest-subscription-concept? concept-edn)
-      (let [topic (get-in context [:system :sns :external])]
-        (topic-protocol/subscribe topic concept-edn)))))
+    (let [concept-edn (convert-concept-to-edn concept)
+          _ (println "concept-edn is " concept-edn)]
+      (if (ingest-subscription-concept? concept-edn)
+        (let [topic (get-in context [:system :sns :external])
+              ;; subscribes the given endpoint sqs arn in the concept to the external SNS topic
+               subscription-arn (topic-protocol/subscribe topic concept-edn)]
+          (if subscription-arn
+              (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
+              concept))
+        concept)))
+
+(defn set-subscription-arn-if-applicable
+  "If subscription has an endpoint that is an SQS ARN, then it will attach the SQS ARN to the CMR SNS external topic and
+  save the SQS ARN to the subscription concept.
+  Returns the concept with updates or the unchanged concept (if concept is not a subscription concept)"
+  [context concept-type concept]
+  (if (and ingest-subscriptions-enabled? (= :subscription concept-type))
+    (let [concept-edn (convert-concept-to-edn concept)
+          endpoint (get-in concept-edn [:metadata :EndPoint])]
+      (cond
+        (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (attach-subscription-to-topic context concept)
+        (is-valid-subscription-endpoint-url endpoint) (assoc-in concept [:extra-fields :aws-arn] endpoint)
+        :else concept
+        ))
+    ;; we return concept no matter what because not every concept that enters this func will be a subscription,
+    ;; and we don't consider that an error
+    concept))
 
 (defn delete-subscription
   "Remove the subscription from the cache and unsubscribe the subscription from
   the topic."
   [context concept]
-  (when-let [concept-edn (add-delete-subscription context concept)]
+  (when-let [concept-edn (add-or-delete-subscription-in-cache context concept)]
     (when (ingest-subscription-concept? concept-edn)
       (let [topic (get-in context [:system :sns :external])]
         (topic-protocol/unsubscribe topic {:concept-id (:concept-id concept-edn)
@@ -134,7 +182,7 @@
 ;;
 
 (defn create-subscription-cache-contents-for-refresh
-  "Go through all of the subscriptions and find the ones that are 
+  "Go through all the subscriptions and find the ones that are
   ingest subscriptions. Create the mode values for each collection-concept-id
   and put those into a map. The end result looks like:
   {Collection concept id 1: [\"New\" \"Update\"]
@@ -153,11 +201,11 @@
       result)))
 
 (defn refresh-subscription-cache
-  "Go through all of the subscriptions and create a map of collection concept ids and
+  "Go through all the subscriptions and create a map of collection concept ids and
   their mode values. Get the old keys from the cache and if the keys exist in the new structure
-  then update the cache with the new values. Otherwise delete the contents that no longer exists."
+  then update the cache with the new values. Otherwise, delete the contents that no longer exists."
   [context]
-  (when subscriptions-enabled?
+  (when ingest-subscriptions-enabled?
     (info "Starting refreshing the ingest subscription cache.")
     (let [subs (get-subscriptions-from-db context)
           new-contents (reduce create-subscription-cache-contents-for-refresh {} subs)
@@ -218,7 +266,7 @@
   [mode]
   (str mode " Notification"))
 
-(defn get-attributes-and-subject
+(defn create-attributes-and-subject-map
   "Determine based on the passed in concept if the granule is new, is an update
   or a delete. Use the passed in mode to determine if any subscription is interested
   in a notification. If they are then return the message attributes and subject, otherwise
@@ -245,19 +293,21 @@
     {:attributes (create-message-attributes coll-concept-id "Update")
      :subject (create-message-subject "Update")}))
 
-(defn work-potential-notification
-  "Publish a notification to the topic if the passed in concept is a granule
-  and a subscription is interested in being informed."
+(defn publish-subscription-notification
+  "Publish a notification to the topic if the passed-in concept is a granule
+  and a subscription is interested in being informed of the granule's actions."
   [context concept]
   (when (granule-concept? (:concept-type concept))
     (let [start (System/currentTimeMillis)
           coll-concept-id (:parent-collection-id (:extra-fields concept))
           sub-cache-map (subscription-cache/get-value context coll-concept-id)]
+      ;; if this granule's collection is found in subscription cache
       (when sub-cache-map
-        ;; Check the mode to see if the granule notification needs to be pushed.
+        ;; Check the mode to see if the granule notification needs to be pushed. Mode examples are 'new', 'update', 'delete'.
         (let [topic (get-in context [:system :sns :internal])
               message (create-notification concept)
-              {:keys [attributes subject]} (get-attributes-and-subject concept sub-cache-map coll-concept-id)]
+              ;; TODO Jyna will need to update this attributes and subject map for URL endpoints
+              {:keys [attributes subject]} (create-attributes-and-subject-map concept sub-cache-map coll-concept-id)]
           (when (and attributes subject)
             (let [result (topic-protocol/publish topic message attributes subject)
                   duration (- (System/currentTimeMillis) start)]

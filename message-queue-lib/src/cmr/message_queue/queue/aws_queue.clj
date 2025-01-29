@@ -33,7 +33,7 @@
        (.build))))
 
 (defn create-queue
-  "Create an instance of a an AWS queue in either AWS or elasticMQ."
+  "Create an instance of an AWS queue in either AWS or elasticMQ."
   [sqs-client queue-name]
   (try
     (let [sqs-request (-> (CreateQueueRequest/builder)
@@ -158,7 +158,7 @@
     (get (.attributesAsStrings response) "QueueArn")))
 
 (comment
-  
+
   (let [sqs-client (create-sqs-client (cmr.message-queue.config/sqs-server-url))
         queue-url  (create-queue sqs-client (cmr.message-queue.config/cmr-internal-subscriptions-queue-name))
         message-attributes (attributes-builder {"collection-concept-id" "C1200000065-PROV1"})
