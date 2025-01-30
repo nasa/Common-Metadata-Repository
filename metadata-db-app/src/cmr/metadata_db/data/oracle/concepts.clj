@@ -412,7 +412,6 @@
 
 (defn save-concept
   [db provider concept]
-  (println "INSIDE save-concept for ORACLE where concept = " concept)
   (try
     (j/with-db-transaction
      [conn db]

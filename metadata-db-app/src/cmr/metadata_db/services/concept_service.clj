@@ -838,9 +838,8 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
-            (when (and subscriptions/ingest-subscriptions-enabled?
-                       (= :subscription concept-type))
-              (subscriptions/delete-subscription context revisioned-tombstone))
+            (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
+              (subscriptions/delete-ingest-subscription context revisioned-tombstone))
             (subscriptions/publish-subscription-notification context revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
@@ -931,7 +930,7 @@
       (ingest-events/publish-event context (ingest-events/concept-update-event concept))
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
-      (subscriptions/add-or-delete-subscription-in-cache context concept) ;; TODO this is where the subscription cache stuff happens
+      (subscriptions/add-or-delete-ingest-subscription-in-cache context concept) ;; TODO this is where the subscription cache stuff happens
       (subscriptions/publish-subscription-notification context concept)
       concept)))
 

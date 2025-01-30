@@ -100,7 +100,7 @@
 ;; The functions below are for subscribing and unsubscribing and endpoint to the topic.
 ;;
 
-(defn add-or-delete-subscription-in-cache
+(defn add-or-delete-ingest-subscription-in-cache
   "Do the work to see if subscriptions are enabled and add/remove
   subscription from the cache. Return nil if subscriptions are not
   enabled or the concept converted to edn."
@@ -136,19 +136,14 @@
     false))
 
 (defn attach-subscription-to-topic
-  "If valid ingest subscription, will attach the subscription concept's sqs arn to external SNS topic
-  and will add the sqs arn used as an extra field to the concept"
-  [context concept]
-    (let [concept-edn (convert-concept-to-edn concept)
-          _ (println "concept-edn is " concept-edn)]
-      (if (ingest-subscription-concept? concept-edn)
-        (let [topic (get-in context [:system :sns :external])
-              ;; subscribes the given endpoint sqs arn in the concept to the external SNS topic
-               subscription-arn (topic-protocol/subscribe topic concept-edn)]
-          (if subscription-arn
-              (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
-              concept))
-        concept)))
+  "Will attach the subscription concept's sqs arn to external SNS topic OR will attach just the filter policies to the
+  external SNS topic depending on if this subscription is subscribing to SQS to Lambda"
+  [topic concept-edn endpoint]
+  (cond
+    (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (topic-protocol/subscribe-sqs topic concept-edn)
+    (is-valid-subscription-endpoint-url endpoint) (topic-protocol/subscribe-lambda topic concept-edn)
+    :else nil
+    ))
 
 (defn set-subscription-arn-if-applicable
   "If subscription has an endpoint that is an SQS ARN, then it will attach the SQS ARN to the CMR SNS external topic and
@@ -156,30 +151,33 @@
   Returns the concept with updates or the unchanged concept (if concept is not a subscription concept)"
   [context concept-type concept]
   (if (and ingest-subscriptions-enabled? (= :subscription concept-type))
-    (let [concept-edn (convert-concept-to-edn concept)
-          endpoint (get-in concept-edn [:metadata :EndPoint])]
-      (cond
-        (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (attach-subscription-to-topic context concept)
-        (is-valid-subscription-endpoint-url endpoint) (assoc-in concept [:extra-fields :aws-arn] endpoint)
-        :else concept
-        ))
+    (let [concept-edn (convert-concept-to-edn concept)]
+      (if (ingest-subscription-concept? concept-edn)
+        (let [endpoint (get-in concept-edn [:metadata :EndPoint])
+              topic (get-in context [:system :sns :external])
+              received-endpoint (attach-subscription-to-topic topic concept-edn endpoint)]
+          (if received-endpoint
+            (assoc-in concept [:extra-fields :aws-arn] endpoint)
+            concept)
+        concept)
     ;; we return concept no matter what because not every concept that enters this func will be a subscription,
     ;; and we don't consider that an error
     concept))
 
-(defn delete-subscription
+(defn delete-ingest-subscription
   "Remove the subscription from the cache and unsubscribe the subscription from
   the topic if applicable.
   Returns the subscription-arn."
   [context concept]
-  (when-let [concept-edn (add-or-delete-subscription-in-cache context concept)]
+  (when-let [concept-edn (add-or-delete-ingest-subscription-in-cache context concept)]
+    ;; delete ingest subscription sqs attachments
     (when (ingest-subscription-concept? concept-edn)
       (let [topic (get-in context [:system :sns :external])
             subscription-arn (get-in concept-edn [:extra-fields :aws-arn])
             subscription {:concept-id (:concept-id concept-edn)
                           :subscription-arn subscription-arn}]
         (if (or (is-valid-sqs-arn subscription-arn) (is-local-test-queue subscription-arn))
-          (topic-protocol/unsubscribe topic subscription)
+          (topic-protocol/unsubscribe-sqs topic subscription)
           subscription-arn)))))
 
 ;;
