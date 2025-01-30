@@ -820,11 +820,11 @@
       (testing "concept is not ingest subscription - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "search"})}]
           (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))
-        (testing "subscribing to topic succeeded -- returns updated concept with new aws-arn field"
-          (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}
-                expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
-                                  :extra-fields {:aws-arn "subscription-arn"}}]
-            (is (= expected-concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
+      (testing "subscribing to topic succeeded -- returns updated concept with new aws-arn field"
+        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}
+              expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
+                                :extra-fields {:aws-arn "subscription-arn"}}]
+          (is (= expected-concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
     (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] nil)]
       (testing "subscribing to topic returned nil - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
@@ -833,3 +833,45 @@
       (testing "subscribing to topic failed and threw error - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
           (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))))
+
+;;TODO fix this test
+;(deftest delete-subscription-test
+;  (let [context {:system {:sns {:external "default-topic"}}}]
+;    (with-redefs [cmr.message-queue.topic.topic-protocol/unsubscribe (fn [topic concept] "subscription-arn")]
+;      (testing "is valid sqs arn"
+;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
+;                       :extra-fields {:aws-arn "subscription-arn"}}
+;              concept-edn {:metadata {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"}
+;                           :extra-fields {:aws-arn "subscription-arn"}}
+;              expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
+;                                :extra-fields {:aws-arn "subscription-arn"}}]
+;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-subscription-in-cache (fn [context concept] concept-edn)]
+;            (is (= expected-concept (subscriptions/delete-subscription context concept)))
+;            )))
+;      (testing "is local test queue"
+;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "http://localhost:9324/000000000/test-queue"})
+;                       :extra-fields {:aws-arn "subscription-arn"}}
+;              concept-edn {:metadata {:Method "ingest" :EndPoint "http://localhost:9324/000000000/test-queue"}
+;                           :extra-fields {:aws-arn "subscription-arn"}}
+;              expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "http://localhost:9324/000000000/test-queue"})
+;                                :extra-fields {:aws-arn "subscription-arn"}}]
+;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-subscription-in-cache (fn [context concept] concept-edn)]
+;            (is (= expected-concept (subscriptions/delete-subscription context concept))))))
+;      (testing "is valid http url"
+;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "http://www.endpoint.com"})
+;                       :extra-fields {:aws-arn "http://www.endpoint.com"}}
+;              concept-edn {:metadata {:Method "ingest" :EndPoint "http://www.endpoint.com"}
+;                           :extra-fields {:aws-arn "http://www.endpoint.com"}}]
+;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-subscription-in-cache (fn [context concept] concept-edn)]
+;            (is (= concept (subscriptions/delete-subscription context concept)))))))
+;      (testing "is invalid endpoint"
+;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "random"})}
+;              concept-edn {:metadata {:Method "ingest" :EndPoint "random"}}]
+;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-subscription-in-cache (fn [context concept] concept-edn)]
+;            (is (= concept (subscriptions/delete-subscription context concept))))))
+;      (testing "non-ingest subscription concept given"
+;        (let [concept {:metadata (json/encode {:Method "search"})}
+;              concept-edn {:metadata {:Method "search"}}]
+;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-subscription-in-cache (fn [context concept] concept-edn)]
+;            (is (= concept (subscriptions/delete-subscription context concept))))))
+;    ))

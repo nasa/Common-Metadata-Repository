@@ -9,8 +9,8 @@
     "Subscribes to the given topic.")
   
   (unsubscribe
-   [this subscription-id]
-   "Unsubscribes to the given topic.")
+   [this subscription]
+   "Unsubscribes to the given topic. Subscription concept given must have :concept-id and :subscription-arn fields.")
 
   (publish
     [this message message-attributes subject]
