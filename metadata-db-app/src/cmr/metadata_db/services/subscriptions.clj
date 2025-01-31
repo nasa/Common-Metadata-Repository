@@ -84,18 +84,102 @@
         result
         (recur (rest subs) (add-to-existing-mode result (get-in sub [:metadata :Mode])))))))
 
+"
+({
+:revision-id 1,
+:deleted false,
+:format application/vnd.nasa.cmr.umm+json;version=1.1.1,
+:provider-id JM_PROV1,
+:subscription-type granule,
+:user-id ECHO_SYS,
+:transaction-id 5,
+:native-id jyna_ingest_subscription_23,
+:normalized-query bca0dee3632df33a114bd85059accb71,
+:concept-id SUB1200000003-JM_PROV1,
+:created-at 2025-01-31T17:41:16.480Z,
+:metadata {
+  :SubscriberId user2,
+  :CollectionConceptId C1200000001-JM_PROV1,
+  :EndPoint http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local,
+  :Mode [Update],
+  :EmailAddress jyna.maeng@nasa.gov,
+  :Query collection-concept-id=C1200000001-JM_PROV1,
+  :Name Ingest-Subscription-Test,
+  :Method ingest,
+  :Type granule,
+  :MetadataSpecification {:URL https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1, :Name UMM-Sub, :Version 1.1.1}
+  },
+:revision-date 2025-01-31T17:41:16.480Z,
+:extra-fields {
+  :aws-arn SUB1200000003-JM_PROV1,
+  :subscription-name Ingest-Subscription-Test,
+  :method ingest,
+  :collection-concept-id C1200000001-JM_PROV1,
+  :subscriber-id user2,
+  :subscription-type granule,
+  :mode [Update],
+  :normalized-query bca0dee3632df33a114bd85059accb71,
+  :endpoint http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local
+  },
+:concept-type :subscription
+}"
+
+(use 'clojure.set)
+(defn create-mode-to-endpoints-map
+  "Ex. {
+    new: ['sqs:arn:111', 'https://www.url1.com', 'https://www.url2.com'],
+    update: ['sqs:arn:111'],
+    delete: ['https://www.url1.com']
+  }"
+  [subscriptions]
+
+  (let [final-map (atom {})]
+    (doseq [sub subscriptions]
+      (let [temp-map (atom {})
+            modes (get-in sub [:metadata :Mode])
+            endpoint (get-in sub [:metadata :EndPoint])]
+        (doseq [mode modes]
+          (swap! temp-map assoc mode #{endpoint})
+          ;(println "temp-map so far is " @temp-map)
+          )
+        ;(println "temp-map at the end is " @temp-map)
+        (let [merged-map (merge-with union @final-map @temp-map)]
+          ;(println "merged-map is " merged-map)
+          (swap! final-map (fn [n] merged-map)))
+        )
+      ;(println "final-map so far is = " @final-map)
+      )
+    @final-map
+    )
+  )
+
+;(defn change-subscription
+;  "When a subscription is added or deleted, the collection-concept-id must be put into
+;  or deleted from the subscription cache. Get the subscriptions that match the collection-concept-id
+;  from the database and rebuild the modes list. Return 1 if successful 0 otherwise."
+;  [context concept-edn]
+;  (let [coll-concept-id (:CollectionConceptId (:metadata concept-edn))
+;        subs (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
+;    (if (seq subs)
+;      (subscription-cache/set-value context coll-concept-id (merge-modes subs))
+;      (subscription-cache/remove-value context coll-concept-id))))
+
+
 (defn change-subscription-in-cache
   "When a subscription is added or deleted, the collection-concept-id must be put into
   or deleted from the subscription cache. Get the subscriptions that match the collection-concept-id
   from the database and rebuild the modes list. Return 1 if successful 0 otherwise."
   [context concept-edn]
   (let [coll-concept-id (:CollectionConceptId (:metadata concept-edn))
-        filtered_subscription_concepts (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
-    (if (seq filtered_subscription_concepts)
-      (let [merged-modes (merge-modes filtered_subscription_concepts)
-            endpoint (get-in concept-edn [:metadata :EndPoint])]
-        (subscription-cache/set-value context coll-concept-id merged-modes))
-      (subscription-cache/remove-value context coll-concept-id))))
+        subscriptions-found-in-db (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
+    (println "***** subscriptions-found-in-db: " subscriptions-found-in-db)
+    ;; if subscriptions found in db, create new cache value and add it to the cache (this may overwrite past cache value)
+    (if (seq subscriptions-found-in-db)
+      (let [mode-to-endpoints-map (create-mode-to-endpoints-map subscriptions-found-in-db)]
+        (subscription-cache/set-value context coll-concept-id mode-to-endpoints-map))
+      ;; remove the entire subscription cache record if no active subscriptions for this collection was found in the db
+      (subscription-cache/remove-value context coll-concept-id)
+      )))
 
 ;;
 ;; The functions below are for subscribing and unsubscribing and endpoint to the topic.
