@@ -54,13 +54,13 @@
                                                                      \"Mode\":[\"New\"],
                                                                      \"Method\":\"ingest\"}",
                                                          :extra-fields {:collection-concept-id "C12345-PROV1"}}))}
-        (is (= 1 (subscriptions/change-subscription test-context {:concept-type :subscription
-                                                                  :deleted false
-                                                                  :metadata {:CollectionConceptId "C12345-PROV1"
+        (is (= 1 (subscriptions/change-subscription-in-cache test-context {:concept-type :subscription
+                                                                  :deleted               false
+                                                                  :metadata              {:CollectionConceptId "C12345-PROV1"
                                                                              :EndPoint "some-endpoint"
                                                                              :Mode ["New"]
                                                                              :Method "ingest"}
-                                                                  :extra-fields {:collection-concept-id "C12345-PROV1"}})))))
+                                                                  :extra-fields          {:collection-concept-id "C12345-PROV1"}})))))
     (testing "Delete a subscription from the cache"
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] '({:concept-type :subscription
                                                                                                    :deleted true
@@ -69,13 +69,13 @@
                                                                                                                \"Mode\":[\"New\"],
                                                                                                                \"Method\":\"ingest\"}",
                                                                                                    :extra-fields {:collection-concept-id "C12345-PROV1"}}))}
-        (is (= 1 (subscriptions/change-subscription test-context  {:concept-type :subscription
-                                                                   :deleted true
-                                                                   :metadata {:CollectionConceptId "C12345-PROV1"
+        (is (= 1 (subscriptions/change-subscription-in-cache test-context {:concept-type :subscription
+                                                                   :deleted              true
+                                                                   :metadata             {:CollectionConceptId "C12345-PROV1"
                                                                               :EndPoint "some-endpoint"
                                                                               :Mode ["New"]
                                                                               :Method "ingest"}
-                                                                   :extra-fields {:collection-concept-id "C12345-PROV1"}})))))
+                                                                   :extra-fields         {:collection-concept-id "C12345-PROV1"}})))))
     (testing "Add-to-existing-mode"
       (are3
        [expected existing-modes new-modes]
@@ -138,7 +138,7 @@
       (are3
        [expected example-record db-contents]
        (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-contents)}
-         (subscriptions/change-subscription test-context example-record)
+         (subscriptions/change-subscription-in-cache test-context example-record)
          (is (= expected (create-value-set (hash-cache/get-map cache-client cache-key)))))
 
        "Adding 1 subscription"
@@ -356,11 +356,11 @@
         cache-client (get-in test-context [:system :caches cache-key])]
     (hash-cache/reset cache-client cache-key)
     (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result-1)}
-      (subscriptions/change-subscription test-context {:metadata {:CollectionConceptId "C1200000002-PROV1"}}))
+      (subscriptions/change-subscription-in-cache test-context {:metadata {:CollectionConceptId "C1200000002-PROV1"}}))
     (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result-2)}
-      (subscriptions/change-subscription test-context {:metadata {:CollectionConceptId "C12346-PROV1"}}))
+      (subscriptions/change-subscription-in-cache test-context {:metadata {:CollectionConceptId "C12346-PROV1"}}))
     (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result-4)}
-      (subscriptions/change-subscription test-context {:metadata {:CollectionConceptId "C1200000003-PROV1"}}))
+      (subscriptions/change-subscription-in-cache test-context {:metadata {:CollectionConceptId "C1200000003-PROV1"}}))
     (testing "What is in the cache"
       (is (= {"C1200000002-PROV1" (set ["New" "Delete"])
               "C12346-PROV1" (set ["New" "Update"])
@@ -554,10 +554,10 @@
                                  queue-url)]
 
     (testing "Concept not a granule"
-      (is (nil? (subscriptions/publish-subscription-notification test-context {:concept-type :collection}))))
+      (is (nil? (subscriptions/publish-subscription-notification-if-applicable test-context {:concept-type :collection}))))
     (testing "Concept is a granule, but not in ingest subscription cache."
-      (is (nil? (subscriptions/publish-subscription-notification test-context {:concept-type :granule
-                                                                         :extra-fields       {:parent-collection-id "C12349-PROV1"}}))))
+      (is (nil? (subscriptions/publish-subscription-notification-if-applicable test-context {:concept-type :granule
+                                                                         :extra-fields                     {:parent-collection-id "C12349-PROV1"}}))))
     (testing "Concept will get published."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result)}
         (let [sub-concept {:metadata concept-metadata
@@ -583,11 +583,11 @@
           ;; For this test add the subscription to the internal topic to test publishing.
           (let [topic (get-in test-context [:system :sns :internal])
                 sub-concept-edn (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)]
-            (topic-protocol/subscribe-sqs topic sub-concept-edn))
+            (topic-protocol/subscribe topic sub-concept-edn))
 
           ;; publish message. this should publish to 2 queues, the normal internal queue and to
           ;; the client-test-queue.
-          (is (some? (subscriptions/publish-subscription-notification test-context granule-concept)))
+          (is (some? (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)))
 
           ;; Get message from subscribed queue.
           (check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
@@ -598,7 +598,7 @@
 
           ;; Test sending to dead letter queue.
           (is (some? (queue/delete-queue sqs-client queue-url)))
-          (subscriptions/publish-subscription-notification test-context granule-concept)
+          (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
 
           ;; Receive message from dead letter queue.
           (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
@@ -621,7 +621,7 @@
           (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
           ;; Also remove subscription from internal queue.
           (let [topic (get-in test-context [:system :sns :internal])]
-            (topic-protocol/unsubscribe-sqs topic sub-concept)))))))
+            (topic-protocol/unsubscribe topic sub-concept)))))))
 
  (defn work-potential-notification-with-real-aws
    "This function exists to manually test out the same code as
@@ -670,7 +670,7 @@
                (is (some? (subscriptions/delete-ingest-subscription test-context sub-concept))))
 
              ;; publish message. this should publish to the internal queue
-             (is (some? (subscriptions/publish-subscription-notification test-context granule-concept)))
+             (is (some? (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)))
 
              (let [internal-queue-url "https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-queue-sit"
                    messages (queue/receive-messages sqs-client internal-queue-url)
@@ -816,7 +816,7 @@
           )))
 
 (deftest attach-subscription-to-topic-test
-    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe-sqs (fn [topic concept] "subscription-arn")]
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] "subscription-arn")]
       (testing "concept is not ingest subscription - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "search"})}]
           (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))
@@ -825,11 +825,11 @@
               expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
                                 :extra-fields {:aws-arn "subscription-arn"}}]
           (is (= expected-concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
-    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe-sqs (fn [topic concept] nil)]
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] nil)]
       (testing "subscribing to topic returned nil - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
           (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
-    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe-sqs (fn [topic concept] (throw (Exception. "some exception")))]
+    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] (throw (Exception. "some exception")))]
       (testing "subscribing to topic failed and threw error - returns un-changed concept"
         (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
           (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))))
@@ -838,7 +838,7 @@
 (deftest delete-ingest-subscription-test
   (let [context {:system {:sns {:external "default-topic"}}}
         expected-subscription-arn "subscription-arn"]
-    (with-redefs [cmr.message-queue.topic.topic-protocol/unsubscribe-sqs (fn [topic concept] expected-subscription-arn)]
+    (with-redefs [cmr.message-queue.topic.topic-protocol/unsubscribe (fn [topic concept] expected-subscription-arn)]
       (testing "is valid sqs arn"
         (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
                        :extra-fields {:aws-arn "subscription-arn"}}

@@ -74,9 +74,8 @@
           (recur (rest ms) [mode]))))))
 
 (defn merge-modes
-  "Go through the list of subscriptions to see if any exist that match the
-  passed in collection-concept-id. Return true if any subscription exists
-  otherwise return false."
+  "Go through the list of subscriptions and combine the :modes found into one array.
+  Return the array of modes."
   [subscriptions]
   (loop [subs subscriptions
          result []]
@@ -85,15 +84,17 @@
         result
         (recur (rest subs) (add-to-existing-mode result (get-in sub [:metadata :Mode])))))))
 
-(defn change-subscription
+(defn change-subscription-in-cache
   "When a subscription is added or deleted, the collection-concept-id must be put into
   or deleted from the subscription cache. Get the subscriptions that match the collection-concept-id
   from the database and rebuild the modes list. Return 1 if successful 0 otherwise."
   [context concept-edn]
   (let [coll-concept-id (:CollectionConceptId (:metadata concept-edn))
-        subs (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
-    (if (seq subs)
-      (subscription-cache/set-value context coll-concept-id (merge-modes subs))
+        filtered_subscription_concepts (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
+    (if (seq filtered_subscription_concepts)
+      (let [merged-modes (merge-modes filtered_subscription_concepts)
+            endpoint (get-in concept-edn [:metadata :EndPoint])]
+        (subscription-cache/set-value context coll-concept-id merged-modes))
       (subscription-cache/remove-value context coll-concept-id))))
 
 ;;
@@ -105,11 +106,10 @@
   subscription from the cache. Return nil if subscriptions are not
   enabled or the concept converted to edn."
   [context concept]
-  (when (and ingest-subscriptions-enabled?
-             (= :subscription (:concept-type concept)))
+  (when (and ingest-subscriptions-enabled? (= :subscription (:concept-type concept)))
     (let [concept-edn (convert-concept-to-edn concept)]
       (when (ingest-subscription-concept? concept-edn)
-        (change-subscription context concept-edn)
+        (change-subscription-in-cache context concept-edn)
         concept-edn))))
 
 (defn- is-valid-sqs-arn
@@ -136,14 +136,19 @@
     false))
 
 (defn attach-subscription-to-topic
-  "Will attach the subscription concept's sqs arn to external SNS topic OR will attach just the filter policies to the
-  external SNS topic depending on if this subscription is subscribing to SQS to Lambda"
-  [topic concept-edn endpoint]
-  (cond
-    (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (topic-protocol/subscribe-sqs topic concept-edn)
-    (is-valid-subscription-endpoint-url endpoint) (topic-protocol/subscribe-lambda topic concept-edn)
-    :else nil
-    ))
+  "If valid ingest subscription, will attach the subscription concept's sqs arn to external SNS topic
+  and will add the sqs arn used as an extra field to the concept"
+  [context concept]
+    (let [concept-edn (convert-concept-to-edn concept)
+          _ (println "concept-edn is " concept-edn)]
+      (if (ingest-subscription-concept? concept-edn)
+        (let [topic (get-in context [:system :sns :external])
+              ;; subscribes the given endpoint sqs arn in the concept to the external SNS topic
+               subscription-arn (topic-protocol/subscribe topic concept-edn)]
+          (if subscription-arn
+              (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
+              concept))
+        concept)))
 
 (defn set-subscription-arn-if-applicable
   "If subscription has an endpoint that is an SQS ARN, then it will attach the SQS ARN to the CMR SNS external topic and
@@ -151,15 +156,13 @@
   Returns the concept with updates or the unchanged concept (if concept is not a subscription concept)"
   [context concept-type concept]
   (if (and ingest-subscriptions-enabled? (= :subscription concept-type))
-    (let [concept-edn (convert-concept-to-edn concept)]
-      (if (ingest-subscription-concept? concept-edn)
-        (let [endpoint (get-in concept-edn [:metadata :EndPoint])
-              topic (get-in context [:system :sns :external])
-              received-endpoint (attach-subscription-to-topic topic concept-edn endpoint)]
-          (if received-endpoint
-            (assoc-in concept [:extra-fields :aws-arn] endpoint)
-            concept)
-        concept)
+    (let [concept-edn (convert-concept-to-edn concept)
+          endpoint (get-in concept-edn [:metadata :EndPoint])]
+      (cond
+        (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (attach-subscription-to-topic context concept)
+        (is-valid-subscription-endpoint-url endpoint) (assoc-in concept [:extra-fields :aws-arn] endpoint)
+        :else concept
+        ))
     ;; we return concept no matter what because not every concept that enters this func will be a subscription,
     ;; and we don't consider that an error
     concept))
@@ -177,7 +180,7 @@
             subscription {:concept-id (:concept-id concept-edn)
                           :subscription-arn subscription-arn}]
         (if (or (is-valid-sqs-arn subscription-arn) (is-local-test-queue subscription-arn))
-          (topic-protocol/unsubscribe-sqs topic subscription)
+          (topic-protocol/unsubscribe topic subscription)
           subscription-arn)))))
 
 ;;
@@ -271,7 +274,7 @@
 
 (defn create-attributes-and-subject-map
   "Determine based on the passed in concept if the granule is new, is an update
-  or a delete. Use the passed in mode to determine if any subscription is interested
+  or delete. Use the passed in mode to determine if any subscription is interested
   in a notification. If they are then return the message attributes and subject, otherwise
   return nil."
   [concept mode coll-concept-id]
@@ -296,7 +299,7 @@
     {:attributes (create-message-attributes coll-concept-id "Update")
      :subject (create-message-subject "Update")}))
 
-(defn publish-subscription-notification
+(defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
   and a subscription is interested in being informed of the granule's actions."
   [context concept]

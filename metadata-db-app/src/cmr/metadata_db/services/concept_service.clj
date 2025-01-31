@@ -840,7 +840,7 @@
                context (ingest-events/concept-delete-event revisioned-tombstone)))
             (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
               (subscriptions/delete-ingest-subscription context revisioned-tombstone))
-            (subscriptions/publish-subscription-notification context revisioned-tombstone)
+            (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -931,7 +931,7 @@
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
       (subscriptions/add-or-delete-ingest-subscription-in-cache context concept) ;; TODO this is where the subscription cache stuff happens
-      (subscriptions/publish-subscription-notification context concept)
+      (subscriptions/publish-subscription-notification-if-applicable context concept)
       concept)))
 
 (defn- delete-associated-tag-associations

@@ -132,12 +132,12 @@
           (errors/throw-service-error :invalid-data msg)))))
 
   (unsubscribe
-   [_this subscription-id]
+   [_this subscription]
    (let [sub-request (-> (UnsubscribeRequest/builder)
-                         (.subscriptionArn (:subscription-arn subscription-id))
+                         (.subscriptionArn (:subscription-arn subscription))
                          (.build))]
      (.unsubscribe sns-client sub-request))
-   (:subscription-arn subscription-id))
+   (:subscription-arn subscription))
 
   (publish
     [_this message message-attributes subject]

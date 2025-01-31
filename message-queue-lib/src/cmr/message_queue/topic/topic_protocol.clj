@@ -9,7 +9,7 @@
     "Subscribes to the given topic.")
   
   (unsubscribe
-   [this subscription-id]
+   [this subscription]
    "Unsubscribes to the given topic.")
 
   (publish
