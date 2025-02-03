@@ -565,7 +565,7 @@
       "description": "Provides a DOI of the previous version of this collection. This allows users to find historical data for this collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown for their record, use the second option.",
       "properties": {
         "Version": {
-          "description": "This element stores the DOI (Digital Object Identifier) that identifies the prevoius version of this collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.",
+          "description": "The version number if one exists.",
           "$ref": "#/definitions/VersionType"
         },
         "Description": {
@@ -1084,7 +1084,7 @@
     "TemporalResolutionType": {
       "oneOf": [{
         "type": "object",
-        "title": "Contant or Varies Resolution",
+        "title": "Constant or Varies Resolution",
         "additionalProperties": false,
         "description": "Describes the amount of time between measurements.",
         "properties": {
@@ -1307,7 +1307,7 @@
                "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
-               "image/vnd.collada+xml", "application/x-vnd.iso.19139-2+xml", "text/html", "text/plain", "Not provided"]
+               "image/vnd.collada+xml", "application/x-vnd.iso.19139-2+xml", "text/html", "text/plain", "application/geo+json", "Not provided"]
     },
     "GetServiceTypeFormatEnum": {
       "type": "string",
