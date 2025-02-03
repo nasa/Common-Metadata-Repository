@@ -84,45 +84,6 @@
         result
         (recur (rest subs) (add-to-existing-mode result (get-in sub [:metadata :Mode])))))))
 
-"
-({
-:revision-id 1,
-:deleted false,
-:format application/vnd.nasa.cmr.umm+json;version=1.1.1,
-:provider-id JM_PROV1,
-:subscription-type granule,
-:user-id ECHO_SYS,
-:transaction-id 5,
-:native-id jyna_ingest_subscription_23,
-:normalized-query bca0dee3632df33a114bd85059accb71,
-:concept-id SUB1200000003-JM_PROV1,
-:created-at 2025-01-31T17:41:16.480Z,
-:metadata {
-  :SubscriberId user2,
-  :CollectionConceptId C1200000001-JM_PROV1,
-  :EndPoint http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local,
-  :Mode [Update],
-  :EmailAddress jyna.maeng@nasa.gov,
-  :Query collection-concept-id=C1200000001-JM_PROV1,
-  :Name Ingest-Subscription-Test,
-  :Method ingest,
-  :Type granule,
-  :MetadataSpecification {:URL https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1, :Name UMM-Sub, :Version 1.1.1}
-  },
-:revision-date 2025-01-31T17:41:16.480Z,
-:extra-fields {
-  :aws-arn SUB1200000003-JM_PROV1,
-  :subscription-name Ingest-Subscription-Test,
-  :method ingest,
-  :collection-concept-id C1200000001-JM_PROV1,
-  :subscriber-id user2,
-  :subscription-type granule,
-  :mode [Update],
-  :normalized-query bca0dee3632df33a114bd85059accb71,
-  :endpoint http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local
-  },
-:concept-type :subscription
-}"
 
 (use 'clojure.set)
 (defn create-mode-to-endpoints-map
@@ -334,7 +295,7 @@
                (:revision-id concept))
        "\""))
 
-(defn create-notification
+(defn create-notification-message-body
   "Create the notification when a subscription exists. Returns either a notification message or nil."
   [concept]
   (let [concept-edn (convert-concept-to-edn concept)
@@ -356,53 +317,107 @@
   [mode]
   (str mode " Notification"))
 
-(defn create-attributes-and-subject-map
-  "Determine based on the passed in concept if the granule is new, is an update
-  or delete. Use the passed in mode to determine if any subscription is interested
-  in a notification. If they are then return the message attributes and subject, otherwise
-  return nil."
-  [concept mode coll-concept-id]
+;(defn create-attributes-and-subject-map
+;  "Determine based on the passed in concept if the granule is new, is an update
+;  or delete. Use the passed in mode to determine if any subscription is interested
+;  in a notification. If they are then return the message attributes and subject, otherwise
+;  return nil."
+;  [concept mode coll-concept-id]
+;  (cond
+;    ;; Mode = Delete.
+;    (and (:deleted concept)
+;         (some #(= "Delete" %) mode))
+;    {:attributes (create-message-attributes coll-concept-id "Delete")
+;     :subject (create-message-subject "Delete")}
+;
+;    ;; Mode = New
+;    (and (not (:deleted concept))
+;         (= 1 (:revision-id concept))
+;         (some #(= "New" %) mode))
+;    {:attributes (create-message-attributes coll-concept-id "New")
+;     :subject (create-message-subject "New")}
+;
+;    ;; Mode = Update
+;    (and (not (:deleted concept))
+;         (pos? (compare (:revision-id concept) 1))
+;         (some #(= "Update" %) mode))
+;    {:attributes (create-message-attributes coll-concept-id "Update")
+;     :subject (create-message-subject "Update")}))
+
+;(defn publish-subscription-notification-if-applicable
+;  "Publish a notification to the topic if the passed-in concept is a granule
+;  and a subscription is interested in being informed of the granule's actions."
+;  [context concept]
+;  (when (granule-concept? (:concept-type concept))
+;    (let [start (System/currentTimeMillis)
+;          coll-concept-id (:parent-collection-id (:extra-fields concept))
+;          sub-cache-map (subscription-cache/get-value context coll-concept-id)]
+;      ;; if this granule's collection is found in subscription cache that means it has a subscription attached to it
+;      (when sub-cache-map
+;        ;; Check the mode to see if the granule notification needs to be pushed. Mode examples are 'new', 'update', 'delete'.
+;        (let [topic (get-in context [:system :sns :internal])
+;              message (create-notification-message-body concept)
+;              ;; TODO Jyna will need to update this attributes and subject map for URL endpoints
+;              {:keys [attributes subject]} (create-attributes-and-subject-map concept sub-cache-map coll-concept-id)]
+;          (when (and attributes subject)
+;            (let [result (topic-protocol/publish topic message attributes subject)
+;                  duration (- (System/currentTimeMillis) start)]
+;              (debug (format "Work potential subscription publish took %d ms." duration))
+;              result)))))))
+
+
+(defn- get-gran-concept-mode
+  [concept]
   (cond
-    ;; Mode = Delete.
-    (and (:deleted concept)
-         (some #(= "Delete" %) mode))
-    {:attributes (create-message-attributes coll-concept-id "Delete")
-     :subject (create-message-subject "Delete")}
-
+    (:deleted concept) "Delete"
     ;; Mode = New
-    (and (not (:deleted concept))
-         (= 1 (:revision-id concept))
-         (some #(= "New" %) mode))
-    {:attributes (create-message-attributes coll-concept-id "New")
-     :subject (create-message-subject "New")}
-
+    (and (not (:deleted concept)) (= 1 (:revision-id concept))) "New"
     ;; Mode = Update
-    (and (not (:deleted concept))
-         (pos? (compare (:revision-id concept) 1))
-         (some #(= "Update" %) mode))
-    {:attributes (create-message-attributes coll-concept-id "Update")
-     :subject (create-message-subject "Update")}))
+    (and (not (:deleted concept)) (pos? (compare (:revision-id concept) 1))) "Update"
+    ))
+
+(defn- create-message-attributes-map
+  [endpoint mode coll-concept-id]
+  (cond
+    (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (cond
+                                  (= "Delete" mode) {:attributes (create-message-attributes coll-concept-id "Delete")}
+                                  (= "New" mode) {:attributes (create-message-attributes coll-concept-id "New")}
+                                  (= "Update" mode) {:attributes (create-message-attributes coll-concept-id "Update")})
+    (is-valid-subscription-endpoint-url endpoint) {:attributes {"endpoint" endpoint
+                                                                "endpoint-type" "url"
+                                                                "mode" mode}}))
 
 (defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
   and a subscription is interested in being informed of the granule's actions."
   [context concept]
+  (println "***** INSIDE publish-subscription-notification-if-applicable")
   (when (granule-concept? (:concept-type concept))
     (let [start (System/currentTimeMillis)
           coll-concept-id (:parent-collection-id (:extra-fields concept))
+          _ (println "coll-concept-id = " coll-concept-id)
           sub-cache-map (subscription-cache/get-value context coll-concept-id)]
-      ;; if this granule's collection is found in subscription cache
+      ;; if this granule's collection is found in subscription cache that means it has a subscription attached to it
       (when sub-cache-map
-        ;; Check the mode to see if the granule notification needs to be pushed. Mode examples are 'new', 'update', 'delete'.
-        (let [topic (get-in context [:system :sns :internal])
-              message (create-notification concept)
-              ;; TODO Jyna will need to update this attributes and subject map for URL endpoints
-              {:keys [attributes subject]} (create-attributes-and-subject-map concept sub-cache-map coll-concept-id)]
-          (when (and attributes subject)
-            (let [result (topic-protocol/publish topic message attributes subject)
-                  duration (- (System/currentTimeMillis) start)]
-              (debug (format "Work potential subscription publish took %d ms." duration))
-              result)))))))
+        (let [gran-concept-mode (get-gran-concept-mode concept)
+              _ (println "gran-concept-mode = " gran-concept-mode)
+              endpoint-list (get sub-cache-map gran-concept-mode)
+              _ (println "endpoint-list = " endpoint-list)]
+          ;; for every endpoint in the list create a attributes/subject map and send it along its way
+          (doseq [endpoint endpoint-list]
+            (let [topic (get-in context [:system :sns :internal])
+                  coll-concept-id (:parent-collection-id (:extra-fields concept))
+                  message (create-notification-message-body concept)
+                  message-attributes-map (create-message-attributes-map endpoint gran-concept-mode coll-concept-id)
+                  _ (println "message-attributes-map = " message-attributes-map)
+                  subject-map {:subject (create-message-subject gran-concept-mode)}
+                  _ (println "subject map = " subject-map)]
+              (when (and message-attributes-map subject-map)
+                (let [result (topic-protocol/publish topic message message-attributes-map subject-map)
+                      duration (- (System/currentTimeMillis) start)]
+                  (debug (format "Subscription publish for endpoint %s took %d ms." endpoint duration))
+                  result)))
+            ))))))
 
 (comment
   (let [system (get-in user/system [:apps :metadata-db])]

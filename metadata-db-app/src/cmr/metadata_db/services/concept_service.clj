@@ -914,7 +914,7 @@
                        (subscriptions/set-subscription-arn-if-applicable context concept-type) ;; TODO this is where the subscription stuff happens
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
-                       (try-to-save db provider context)) ;; saving the subscription into the db here
+                       (try-to-save db provider context))
           revision-id (:revision-id concept)]
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
       (when (and (= :granule concept-type)

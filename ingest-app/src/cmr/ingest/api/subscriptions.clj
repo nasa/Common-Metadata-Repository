@@ -333,7 +333,7 @@
                  parsed)]
     (when-not (= CMR_PROVIDER provider-id)
       (api-core/verify-provider-exists context provider-id))
-    ;(validate-user-id context subscriber-id) ;; TODO temp comment out to bypass user id check
+    (validate-user-id context subscriber-id) ;; TODO temp comment out to bypass user id check
     (validate-query context parsed)
     (validate-subscription-endpoint parsed)
     (let [parsed-metadata (assoc parsed :SubscriberId subscriber-id)]
@@ -348,17 +348,14 @@
   "Processes a request to create a subscription. A native id will be generated."
   [request]
   (let [{:keys [body content-type headers request-context]} request]
-    (info "**** INSIDE create-subscription")
     (common-ingest-checks request-context)
     (let [tmp-subscription (body->subscription (str (UUID/randomUUID)) body content-type headers)
           {:keys [concept parsed]} (validate-and-prepare-subscription-concept
                                     request-context tmp-subscription)
-          _ (info "**** concept = " concept)
           provider-id (:provider-id concept)
           subscriber-id (:SubscriberId parsed)
           native-id (get-unique-native-id request-context parsed)
-          final-sub (assoc concept :native-id native-id)
-          _ (info "**** final-sub = " final-sub)]
+          final-sub (assoc concept :native-id native-id)]
       (check-ingest-permission request-context provider-id subscriber-id)
       (perform-subscription-ingest request-context headers final-sub parsed))))
 
