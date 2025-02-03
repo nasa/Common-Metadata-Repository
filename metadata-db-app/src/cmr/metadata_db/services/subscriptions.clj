@@ -203,10 +203,9 @@
   (if (and ingest-subscriptions-enabled? (= :subscription concept-type))
     (let [concept-edn (convert-concept-to-edn concept)
           endpoint (get-in concept-edn [:metadata :EndPoint])]
-      (cond
-        (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (attach-subscription-to-topic context concept)
-        (is-valid-subscription-endpoint-url endpoint) (assoc-in concept [:extra-fields :aws-arn] endpoint)
-        :else concept
+      (if (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint))
+        (attach-subscription-to-topic context concept)
+        concept
         ))
     ;; we return concept no matter what because not every concept that enters this func will be a subscription,
     ;; and we don't consider that an error
@@ -367,6 +366,7 @@
 
 
 (defn- get-gran-concept-mode
+  "Gets the granule concept's ingestion mode (i.e. Update, Delete, New, etc)"
   [concept]
   (cond
     (:deleted concept) "Delete"
@@ -377,6 +377,7 @@
     ))
 
 (defn- create-message-attributes-map
+  "Create message attribute map that SQS uses to filter out messages from the SNS topic."
   [endpoint mode coll-concept-id]
   (cond
     (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (cond
