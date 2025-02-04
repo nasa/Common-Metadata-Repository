@@ -221,10 +221,11 @@
     ;; delete ingest subscription sqs attachments
     (when (ingest-subscription-concept? concept-edn)
       (let [topic (get-in context [:system :sns :external])
+            endpoint (get-in concept-edn [:metadata :EndPoint])
             subscription-arn (get-in concept-edn [:extra-fields :aws-arn])
             subscription {:concept-id (:concept-id concept-edn)
                           :subscription-arn subscription-arn}]
-        (if (or (is-valid-sqs-arn subscription-arn) (is-local-test-queue subscription-arn))
+        (if (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint))
           (topic-protocol/unsubscribe topic subscription)
           subscription-arn)))))
 
@@ -251,6 +252,7 @@
           (assoc result coll-concept-id (add-to-existing-mode nil mode))))
       result)))
 
+;;TODO fix this. Refreshing cache requires for it to be the new structure.
 (defn refresh-subscription-cache
   "Go through all the subscriptions and create a map of collection concept ids and
   their mode values. Get the old keys from the cache and if the keys exist in the new structure
@@ -382,12 +384,12 @@
   [endpoint mode coll-concept-id]
   (cond
     (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (cond
-                                  (= "Delete" mode) {:attributes (create-message-attributes coll-concept-id "Delete")}
-                                  (= "New" mode) {:attributes (create-message-attributes coll-concept-id "New")}
-                                  (= "Update" mode) {:attributes (create-message-attributes coll-concept-id "Update")})
-    (is-valid-subscription-endpoint-url endpoint) {:attributes {"endpoint" endpoint
-                                                                "endpoint-type" "url"
-                                                                "mode" mode}}))
+                                  (= "Delete" mode) (create-message-attributes coll-concept-id "Delete")
+                                  (= "New" mode) (create-message-attributes coll-concept-id "New")
+                                  (= "Update" mode) (create-message-attributes coll-concept-id "Update"))
+    (is-valid-subscription-endpoint-url endpoint) {"endpoint" endpoint
+                                                   "endpoint-type" "url"
+                                                   "mode" mode}))
 
 (defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
@@ -397,30 +399,25 @@
   (when (granule-concept? (:concept-type concept))
     (let [start (System/currentTimeMillis)
           coll-concept-id (:parent-collection-id (:extra-fields concept))
-          _ (println "coll-concept-id = " coll-concept-id)
           sub-cache-map (subscription-cache/get-value context coll-concept-id)]
       ;; if this granule's collection is found in subscription cache that means it has a subscription attached to it
       (when sub-cache-map
         (let [gran-concept-mode (get-gran-concept-mode concept)
-              _ (println "gran-concept-mode = " gran-concept-mode)
               endpoint-list (get sub-cache-map gran-concept-mode)
-              _ (println "endpoint-list = " endpoint-list)]
-          ;; for every endpoint in the list create a attributes/subject map and send it along its way
+              result-array (atom [])]
+          ;; for every endpoint in the list create an attributes/subject map and send it along its way
           (doseq [endpoint endpoint-list]
             (let [topic (get-in context [:system :sns :internal])
                   coll-concept-id (:parent-collection-id (:extra-fields concept))
                   message (create-notification-message-body concept)
                   message-attributes-map (create-message-attributes-map endpoint gran-concept-mode coll-concept-id)
-                  _ (println "message-attributes-map = " message-attributes-map)
-                  subject-map {:subject (create-message-subject gran-concept-mode)}
-                  _ (println "subject map = " subject-map)]
-              (when (and message-attributes-map subject-map)
-                (let [result (topic-protocol/publish topic message message-attributes-map subject-map)
-                      duration (- (System/currentTimeMillis) start)
-                      _ (println "result is " result)]
+                  subject (create-message-subject gran-concept-mode)]
+              (when (and message-attributes-map subject)
+                (let [result (topic-protocol/publish topic message message-attributes-map subject)
+                      duration (- (System/currentTimeMillis) start)]
                   (debug (format "Subscription publish for endpoint %s took %d ms." endpoint duration))
-                  result)))
-            ))))))
+                  (swap! result-array (fn [n] (conj @result-array result)))))))
+          @result-array)))))
 
 (comment
   (let [system (get-in user/system [:apps :metadata-db])]

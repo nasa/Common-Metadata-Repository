@@ -139,10 +139,12 @@
        [expected example-record db-contents]
        (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-contents)}
          (subscriptions/change-subscription-in-cache test-context example-record)
-         (is (= expected (create-value-set (hash-cache/get-map cache-client cache-key)))))
+         ;(is (= expected (create-value-set (hash-cache/get-map cache-client cache-key)))))
+         (is (= expected (hash-cache/get-map cache-client cache-key))))
+
 
        "Adding 1 subscription"
-       {"C12345-PROV1" (set ["Update"])}
+       {"C12345-PROV1" {"Update" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -153,7 +155,7 @@
           :concept-type :subscription})
 
        "Adding duplicate subscription"
-       {"C12345-PROV1" (set ["Update"])}
+       {"C12345-PROV1" {"Update" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -164,7 +166,8 @@
           :concept-type :subscription})
 
        "Adding override subscription"
-       {"C12345-PROV1" (set ["New" "Delete"])}
+       {"C12345-PROV1" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -175,8 +178,10 @@
           :concept-type :subscription})
 
        "Adding new subscription that matches the one from before."
-       {"C12345-PROV1" (set ["New" "Delete"])
-        "C12346-PROV1" (set ["New" "Delete"])}
+       {"C12345-PROV1" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}
+        "C12346-PROV1" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12346-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12346-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -187,7 +192,8 @@
           :concept-type :subscription})
 
        "Removing 1 subscription"
-       {"C12346-PROV1" (set ["New" "Delete"])}
+       {"C12346-PROV1" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        ;; even though C12346-PROV1 is in the db, we are search only for
        ;; concepts with the collection-concept-id.
@@ -200,7 +206,8 @@
           :concept-type :subscription})
 
        "Removing same subscription"
-       {"C12346-PROV1" (set ["New" "Delete"])}
+       {"C12346-PROV1" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                                \"EndPoint\":\"some-endpoint\",
@@ -362,16 +369,22 @@
     (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result-4)}
       (subscriptions/change-subscription-in-cache test-context {:metadata {:CollectionConceptId "C1200000003-PROV1"}}))
     (testing "What is in the cache"
-      (is (= {"C1200000002-PROV1" (set ["New" "Delete"])
-              "C12346-PROV1" (set ["New" "Update"])
-              "C1200000003-PROV1" (set ["New" "Delete"])}
-             (create-value-set (hash-cache/get-map cache-client cache-key)))))
+      (is (= {"C1200000002-PROV1" {"New" (set ["some-endpoint"])
+                                   "Delete" (set ["some-endpoint"])}
+              "C12346-PROV1" {"New" (set ["some-endpoint"])
+                              "Update" (set ["some-endpoint"])}
+              "C1200000003-PROV1" {"New" (set ["some-endpoint"])
+                                   "Delete" (set ["some-endpoint"])}}
+             (hash-cache/get-map cache-client cache-key))))
     (testing "Cache needs to be updated."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context] db-result-3)}
         (subscriptions/refresh-subscription-cache test-context))
-      (is (= {"C1200000002-PROV1" (set ["New" "Update" "Delete"])
-              "C12346-PROV1" (set ["New" "Update"])}
-             (create-value-set (hash-cache/get-map cache-client cache-key)))))
+      (is (= {"C1200000002-PROV1" {"New" (set ["some-endpoint"])
+                                   "Update" (set ["some-endpoint"])
+                                   "Delete" (set ["some-endpoint"])}
+              "C12346-PROV1" {"New" (set ["some-endpoint"])
+                              "Update" (set ["some-endpoint"])}}
+             (hash-cache/get-map cache-client cache-key))))
     (testing "Testing no subscriptions"
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context] '())}
         (subscriptions/refresh-subscription-cache test-context))
@@ -579,52 +592,50 @@
           ;; the subscription is replaced when the subscription already exists.
           (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)
           (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
-          ;
+
           ;; For this test add the subscription to the internal topic to test publishing.
           (let [topic (get-in test-context [:system :sns :internal])
                 sub-concept-edn (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)]
             (topic-protocol/subscribe topic sub-concept-edn))
 
-          ;; publish message. this should publish to 2 queues, the normal internal queue and to
-          ;; the client-test-queue.
+          ;; publish message. this should publish to 2 queues, the normal internal queue and to the client-test-queue.
           (is (some? (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)))
-          ;;
-          ;; Get message from subscribed queue.
-          ;(check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
 
-          ;;; Get message from infrastructure internal queue.
-          ;(let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)]
-          ;  (check-messages-and-contents (queue/receive-messages sqs-client internal-queue-url) sqs-client internal-queue-url))
-          ;
-          ;;; Test sending to dead letter queue.
-          ;(is (some? (queue/delete-queue sqs-client queue-url)))
-          ;(subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
-          ;
-          ;;; Receive message from dead letter queue.
-          ;(let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
-          ;  (check-messages-and-contents (queue/receive-messages sqs-client dead-letter-queue-url) sqs-client dead-letter-queue-url))
-          ;
-          ;;; Just delete the message from the internal infrastructure queue.
-          ;(let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)
-          ;      messages (queue/receive-messages sqs-client internal-queue-url)]
-          ;  (is (some? messages))
-          ;  (when messages
-          ;    (is (some? (queue/delete-messages sqs-client internal-queue-url messages)))))
+          ;; Get message from subscribed queue.
+          (check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
+
+          ;; Get message from infrastructure internal queue.
+          (let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)]
+            (check-messages-and-contents (queue/receive-messages sqs-client internal-queue-url) sqs-client internal-queue-url))
+
+          ;; Test sending to dead letter queue.
+          (is (some? (queue/delete-queue sqs-client queue-url)))
+          (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
+
+          ;; Receive message from dead letter queue.
+          (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
+            (check-messages-and-contents (queue/receive-messages sqs-client dead-letter-queue-url) sqs-client dead-letter-queue-url))
+
+          ;; Just delete the message from the internal infrastructure queue.
+          (let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)
+                messages (queue/receive-messages sqs-client internal-queue-url)]
+            (is (some? messages))
+            (when messages
+              (is (some? (queue/delete-messages sqs-client internal-queue-url messages)))))
           ))
       )
 
-    ;(testing "Concept will be unsubscribed."
-    ;  (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] (conj '() (-> (first (set-db-result queue-url))
-    ;                                                                                                          (assoc :deleted true))))}
-    ;    (let [sub-concept {:metadata concept-metadata
-    ;                       :deleted true
-    ;                       :concept-type :subscription
-    ;                       :concept-id "SUB1200000005-PROV1"}]
-    ;      (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
-    ;      ;; Also remove subscription from internal queue.
-    ;      (let [topic (get-in test-context [:system :sns :internal])]
-    ;        (topic-protocol/unsubscribe topic sub-concept)))))
-
+    (testing "Concept will be unsubscribed."
+      (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] (conj '() (-> (first (set-db-result queue-url))
+                                                                                                              (assoc :deleted true))))}
+        (let [sub-concept {:metadata concept-metadata
+                           :deleted true
+                           :concept-type :subscription
+                           :concept-id "SUB1200000005-PROV1"}]
+          (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
+          ;; Also remove subscription from internal queue.
+          (let [topic (get-in test-context [:system :sns :internal])]
+            (topic-protocol/unsubscribe topic sub-concept)))))
     ))
 
  (defn work-potential-notification-with-real-aws
