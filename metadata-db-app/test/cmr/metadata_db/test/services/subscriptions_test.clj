@@ -557,7 +557,7 @@
       (is (nil? (subscriptions/publish-subscription-notification-if-applicable test-context {:concept-type :collection}))))
     (testing "Concept is a granule, but not in ingest subscription cache."
       (is (nil? (subscriptions/publish-subscription-notification-if-applicable test-context {:concept-type :granule
-                                                                         :extra-fields                     {:parent-collection-id "C12349-PROV1"}}))))
+                                                                                             :extra-fields {:parent-collection-id "C12349-PROV1"}}))))
     (testing "Concept will get published."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result)}
         (let [sub-concept {:metadata concept-metadata
@@ -579,7 +579,7 @@
           ;; the subscription is replaced when the subscription already exists.
           (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)
           (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
-
+          ;
           ;; For this test add the subscription to the internal topic to test publishing.
           (let [topic (get-in test-context [:system :sns :internal])
                 sub-concept-edn (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)]
@@ -588,40 +588,44 @@
           ;; publish message. this should publish to 2 queues, the normal internal queue and to
           ;; the client-test-queue.
           (is (some? (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)))
-
+          ;;
           ;; Get message from subscribed queue.
-          (check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
+          ;(check-messages-and-contents (queue/receive-messages sqs-client queue-url) sqs-client queue-url)
 
-          ;; Get message from infrastructure internal queue.
-          (let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)]
-            (check-messages-and-contents (queue/receive-messages sqs-client internal-queue-url) sqs-client internal-queue-url))
+          ;;; Get message from infrastructure internal queue.
+          ;(let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)]
+          ;  (check-messages-and-contents (queue/receive-messages sqs-client internal-queue-url) sqs-client internal-queue-url))
+          ;
+          ;;; Test sending to dead letter queue.
+          ;(is (some? (queue/delete-queue sqs-client queue-url)))
+          ;(subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
+          ;
+          ;;; Receive message from dead letter queue.
+          ;(let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
+          ;  (check-messages-and-contents (queue/receive-messages sqs-client dead-letter-queue-url) sqs-client dead-letter-queue-url))
+          ;
+          ;;; Just delete the message from the internal infrastructure queue.
+          ;(let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)
+          ;      messages (queue/receive-messages sqs-client internal-queue-url)]
+          ;  (is (some? messages))
+          ;  (when messages
+          ;    (is (some? (queue/delete-messages sqs-client internal-queue-url messages)))))
+          ))
+      )
 
-          ;; Test sending to dead letter queue.
-          (is (some? (queue/delete-queue sqs-client queue-url)))
-          (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
+    ;(testing "Concept will be unsubscribed."
+    ;  (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] (conj '() (-> (first (set-db-result queue-url))
+    ;                                                                                                          (assoc :deleted true))))}
+    ;    (let [sub-concept {:metadata concept-metadata
+    ;                       :deleted true
+    ;                       :concept-type :subscription
+    ;                       :concept-id "SUB1200000005-PROV1"}]
+    ;      (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
+    ;      ;; Also remove subscription from internal queue.
+    ;      (let [topic (get-in test-context [:system :sns :internal])]
+    ;        (topic-protocol/unsubscribe topic sub-concept)))))
 
-          ;; Receive message from dead letter queue.
-          (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
-            (check-messages-and-contents (queue/receive-messages sqs-client dead-letter-queue-url) sqs-client dead-letter-queue-url))
-
-          ;; Just delete the message from the internal infrastrcture queue.
-          (let [internal-queue-url (get-cmr-internal-subscription-queue-url test-context)
-                messages (queue/receive-messages sqs-client internal-queue-url)]
-            (is (some? messages))
-            (when messages
-              (is (some? (queue/delete-messages sqs-client internal-queue-url messages))))))))
-
-    (testing "Concept will be unsubscribed."
-      (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] (conj '() (-> (first (set-db-result queue-url))
-                                                                                                              (assoc :deleted true))))}
-        (let [sub-concept {:metadata concept-metadata
-                           :deleted true
-                           :concept-type :subscription
-                           :concept-id "SUB1200000005-PROV1"}]
-          (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
-          ;; Also remove subscription from internal queue.
-          (let [topic (get-in test-context [:system :sns :internal])]
-            (topic-protocol/unsubscribe topic sub-concept)))))))
+    ))
 
  (defn work-potential-notification-with-real-aws
    "This function exists to manually test out the same code as

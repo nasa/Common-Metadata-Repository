@@ -136,7 +136,8 @@
     (println "***** subscriptions-found-in-db: " subscriptions-found-in-db)
     ;; if subscriptions found in db, create new cache value and add it to the cache (this may overwrite past cache value)
     (if (seq subscriptions-found-in-db)
-      (let [mode-to-endpoints-map (create-mode-to-endpoints-map subscriptions-found-in-db)]
+      (let [mode-to-endpoints-map (create-mode-to-endpoints-map subscriptions-found-in-db)
+            _ (println "mode-to-endpoints-map = " mode-to-endpoints-map)]
         (subscription-cache/set-value context coll-concept-id mode-to-endpoints-map))
       ;; remove the entire subscription cache record if no active subscriptions for this collection was found in the db
       (subscription-cache/remove-value context coll-concept-id)
@@ -415,7 +416,8 @@
                   _ (println "subject map = " subject-map)]
               (when (and message-attributes-map subject-map)
                 (let [result (topic-protocol/publish topic message message-attributes-map subject-map)
-                      duration (- (System/currentTimeMillis) start)]
+                      duration (- (System/currentTimeMillis) start)
+                      _ (println "result is " result)]
                   (debug (format "Subscription publish for endpoint %s took %d ms." endpoint duration))
                   result)))
             ))))))
