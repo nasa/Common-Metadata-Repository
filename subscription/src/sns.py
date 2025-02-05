@@ -16,7 +16,7 @@ class Sns:
         try:
             topic = self.sns_resource.create_topic(Name=topic_name)
         except ClientError as error:
-            logger.error("Subscription Worker could not get the topic ARN: {error}.")
+            logger.error(f"Subscription Worker could not get the topic ARN: {error}.")
             raise error
         else:
             return topic

@@ -54,6 +54,7 @@ def poll_queue(running):
     sns_resource = boto3.resource("sns", region_name=AWS_REGION)
     sns_client = Sns(sns_resource)
     topic = sns_client.create_topic(SNS_NAME)
+    logger.info(f"The passed in topic name is {SNS_NAME}")
 
     access_control = AccessControl()
     while running.value:
