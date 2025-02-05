@@ -75,15 +75,9 @@
             modes (get-in sub [:metadata :Mode])
             endpoint (get-in sub [:metadata :EndPoint])]
         (doseq [mode modes]
-          (swap! temp-map assoc mode #{endpoint})
-          ;(println "temp-map so far is " @temp-map)
-          )
-        ;(println "temp-map at the end is " @temp-map)
+          (swap! temp-map assoc mode #{endpoint}))
         (let [merged-map (merge-with union @final-map @temp-map)]
-          ;(println "merged-map is " merged-map)
-          (swap! final-map (fn [n] merged-map))))
-      ;(println "final-map so far is = " @final-map)
-      )
+          (swap! final-map (fn [n] merged-map)))))
     @final-map))
 
 (defn change-subscription-in-cache
@@ -91,14 +85,11 @@
   Get the subscriptions that match the collection-concept-id from the database and rebuild the info map for this collection.
   Return 1 if successful 0 otherwise."
   [context concept-edn]
-  ;(println "*** INSIDE change-subscription-in-cache")
   (let [coll-concept-id (:CollectionConceptId (:metadata concept-edn))
         subscriptions-found-in-db (convert-and-filter-subscriptions (get-subscriptions-from-db context coll-concept-id))]
-    ;(println (format "***** collection %s , subscriptions-found-in-db: %s" coll-concept-id subscriptions-found-in-db))
     ;; if subscriptions found in db, create new cache value and add it to the cache (this may overwrite past cache value)
     (if (seq subscriptions-found-in-db)
       (let [mode-to-endpoints-map (create-mode-to-endpoints-map subscriptions-found-in-db)]
-        ;(println "mode-to-endpoints-map = " mode-to-endpoints-map)
         (subscription-cache/set-value context coll-concept-id {"Mode" mode-to-endpoints-map}))
       ;; remove the entire subscription cache record if no active subscriptions for this collection was found in the db
       (subscription-cache/remove-value context coll-concept-id))))
@@ -194,30 +185,26 @@
 (defn create-subscription-cache-contents-for-refresh
     "Go through all the subscriptions and find the ones that are
     ingest subscriptions. Create the mode values for each collection-concept-id
-    and put those into a map. The end result looks like:"
+    and put those into a map. The end result looks like:
+    { coll_1: {
+                Mode: {
+                        New: #(URL1, SQS1),
+                        Update: #(URL2)
+                       }
+               },
+      coll_2: {...}"
     [subscriptions]
-
-  ;(println "**** INSIDE create-subscription-cache-contents-for-refresh")
-  ;(println "subscriptions given = " subscriptions)
-  ;; {coll1 : {subscription-concept-1, subscription-concept-2}}
   (let [cache-map (atom {})
         coll-to-subscription-concept-map (atom {})]
     ;; order the subscriptions by collection and create a map collection to subscriptions
     (doseq [sub subscriptions]
-      ;(println "curr sub = " sub)
       (let [metadata-edn (:metadata sub)
             coll-concept-id  (:CollectionConceptId metadata-edn)
             sub-list (get @coll-to-subscription-concept-map coll-concept-id)]
-            ;(println "sub-list = " sub-list)
-            (swap! coll-to-subscription-concept-map conj {coll-concept-id (conj sub-list sub)})
-            ;(println "curr coll-to-subscription-concept-map = " @coll-to-subscription-concept-map)
-            ))
-    ;(println "coll-to-subscription-concept-map = " @coll-to-subscription-concept-map)
+            (swap! coll-to-subscription-concept-map conj {coll-concept-id (conj sub-list sub)})))
     ;;for every subscription list by the collection create a mode-to-endpoints-map and add it to the final cache map
     (doseq [[coll-id subscription-list] @coll-to-subscription-concept-map]
       (let [mode-to-endpoints-map (create-mode-to-endpoints-map subscription-list)]
-        ;(println (format "mode-to-endpoints-map %s for collection %s" mode-to-endpoints-map coll-id))
-        ;(println "curr cache-map = " @cache-map)
         (swap! cache-map assoc coll-id {"Mode" mode-to-endpoints-map})))
     @cache-map))
 
@@ -230,7 +217,6 @@
     (info "Starting refreshing the ingest subscription cache.")
     (let [subscriptions-from-db (convert-and-filter-subscriptions (get-subscriptions-from-db context))
           new-contents (create-subscription-cache-contents-for-refresh subscriptions-from-db)
-          ;_ (println "new-contents = " new-contents)
           cache-content-keys (subscription-cache/get-keys context)]
       ;; update the cache with the new values contained in the new-contents map.
       (doall (map #(subscription-cache/set-value context % (new-contents %)) (keys new-contents)))
@@ -316,33 +302,25 @@
   "Publish a notification to the topic if the passed-in concept is a granule
   and a subscription is interested in being informed of the granule's actions."
   [context concept]
-  ;(println "***** INSIDE publish-subscription-notification-if-applicable")
   (when (granule-concept? (:concept-type concept))
     (let [start (System/currentTimeMillis)
           coll-concept-id (:parent-collection-id (:extra-fields concept))
           sub-cache-map (subscription-cache/get-value context coll-concept-id)]
-      ;(println "sub-cache-map = " sub-cache-map)
       ;; if this granule's collection is found in subscription cache that means it has a subscription attached to it
       (when sub-cache-map
         (let [gran-concept-mode (get-gran-concept-mode concept)
               endpoint-list (get-in sub-cache-map ["Mode" gran-concept-mode])
               result-array (atom [])]
-          ;(println "endpoint-list = " endpoint-list)
           ;; for every endpoint in the list create an attributes/subject map and send it along its way
           (doseq [endpoint endpoint-list]
-            ;(println "current endpoint = " endpoint)
             (let [topic (get-in context [:system :sns :internal])
                   coll-concept-id (:parent-collection-id (:extra-fields concept))
                   message (create-notification-message-body concept)
                   message-attributes-map (create-message-attributes-map endpoint gran-concept-mode coll-concept-id)
                   subject (create-message-subject gran-concept-mode)]
-              ;(println "message is " message)
-              ;(println "message-attributes-map = " message-attributes-map)
-              ;(println "subject = " subject)
-              (when (and message-attributes-map subject)
+             (when (and message-attributes-map subject)
                 (let [result (topic-protocol/publish topic message message-attributes-map subject)
                       duration (- (System/currentTimeMillis) start)]
-                  ;(println "result is " result)
                   (debug (format "Subscription publish for endpoint %s took %d ms." endpoint duration))
                   (swap! result-array (fn [n] (conj @result-array result)))))))
           @result-array)))))
