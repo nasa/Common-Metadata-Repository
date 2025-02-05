@@ -57,9 +57,9 @@
         (is (= 1 (subscriptions/change-subscription-in-cache test-context {:concept-type :subscription
                                                                            :deleted false
                                                                            :metadata {:CollectionConceptId "C12345-PROV1"
-                                                                             :EndPoint "some-endpoint"
-                                                                             :Mode ["New"]
-                                                                             :Method "ingest"}
+                                                                                      :EndPoint "some-endpoint"
+                                                                                      :Mode ["New"]
+                                                                                      :Method "ingest"}
                                                                            :extra-fields {:collection-concept-id "C12345-PROV1"}})))))
     (testing "Delete a subscription from the cache"
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] '({:concept-type :subscription
@@ -72,74 +72,16 @@
         (is (= 1 (subscriptions/change-subscription-in-cache test-context {:concept-type :subscription
                                                                            :deleted true
                                                                            :metadata {:CollectionConceptId "C12345-PROV1"
-                                                                              :EndPoint "some-endpoint"
-                                                                              :Mode ["New"]
-                                                                              :Method "ingest"}
+                                                                                      :EndPoint "some-endpoint"
+                                                                                      :Mode ["New"]
+                                                                                      :Method "ingest"}
                                                                            :extra-fields {:collection-concept-id "C12345-PROV1"}})))))
-    (testing "Add-to-existing-mode"
-      (are3
-       [expected existing-modes new-modes]
-       (is (= (set expected) 
-              (set (subscriptions/add-to-existing-mode existing-modes new-modes))))
-
-       "new subscription with no existing modes in cache."
-       ["New" "Update" "Delete"]
-       nil
-       ["New" "Update" "Delete"]
-
-       "new subscription with empty existing modes in cache."
-       ["Delete"]
-       []
-       ["Delete"]
-
-       "Adding new subscription with existing mode in cache of a different value."
-       ["Delete" "New"]
-       ["New"]
-       ["Delete"]
-
-       "Adding new subscription with existing modes."
-       ["New" "Delete"]
-       ["New"]
-       ["New" "Delete"]
-
-       "Adding duplicate subscription with existing modes."
-       ["New" "Delete"]
-       ["New" "Delete"]
-       ["New" "Delete"]))
-
-    ;(testing "Merge modes"
-    ;  (are3
-    ;   [expected subscriptions]
-    ;   (is (= (set expected) (set (subscriptions/merge-modes subscriptions))))
-    ;
-    ;   "merge 1 mode."
-    ;   ["Update"]
-    ;   '({:metadata {:Mode ["Update"]}})
-    ;
-    ;   "Merge several modes"
-    ;   ["New" "Update" "Delete"]
-    ;   '({:metadata {:Mode ["Update"]}}
-    ;     {:metadata {:Mode ["New"]}}
-    ;     {:metadata {:Mode ["Delete"]}})
-    ;
-    ;   "Merge several modes 2"
-    ;   ["New" "Update" "Delete"]
-    ;   '({:metadata {:Mode ["Update"]}}
-    ;     {:metadata {:Mode ["New" "Delete"]}})
-    ;
-    ;   "Merge several modes 3 with duplicates."
-    ;   ["New" "Update" "Delete"]
-    ;   '({:metadata {:Mode ["Update"]}}
-    ;     {:metadata {:Mode ["New" "Delete"]}}
-    ;     {:metadata {:Mode ["New"]}}
-    ;     {:metadata {:Mode ["New" "Update"]}})))
 
     (testing "adding and removing subscriptions from the cache."
       (are3
        [expected example-record db-contents]
        (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-contents)}
          (subscriptions/change-subscription-in-cache test-context example-record)
-         ;(is (= expected (create-value-set (hash-cache/get-map cache-client cache-key)))))
          (is (= expected (hash-cache/get-map cache-client cache-key))))
 
 
@@ -245,7 +187,7 @@
                                                                                 \"EndPoint\":\"ARN\",
                                                                                   \"Mode\":[\"New\", \"Delete\"],
                                                                                   \"Method\":\"ingest\"}"
-                                                                                         :concept-type :subscription}))))))))
+                                                                      :concept-type :subscription}))))))))
 
 (def db-result-1
   '({:revision-id 1
@@ -468,53 +410,6 @@
       (is (= "Delete Notification"
              (subscriptions/create-message-subject mode))))))
 
-;(deftest get-attributes-and-subject-test
-;  (testing "Getting notificaiton attributes and subject."
-;    (are3
-;     ;;concept mode coll-concept-id
-;     [expected concept mode coll-concept-id]
-;     (is (= expected
-;            (subscriptions/create-attributes-and-subject-map concept mode coll-concept-id)))
-;
-;     "Deleted concept"
-;     {:attributes {"collection-concept-id" "C12345-PROV1"
-;                   "mode" "Delete"}
-;      :subject "Delete Notification"}
-;     {:deleted true}
-;     ["New" "Delete"]
-;     "C12345-PROV1"
-;
-;     "Deleted concept, but not looking for the mode."
-;     nil
-;     {:deleted true}
-;     ["New" "Update"]
-;     "C12345-PROV1"
-;
-;     "Deleted concept, but not looking for the mode, making sure no other condition is met."
-;     nil
-;     {:deleted true
-;      :revision-id 2}
-;     ["New" "Update"]
-;     "C12345-PROV1"
-;
-;     "New concept."
-;     {:attributes {"collection-concept-id" "C12345-PROV1"
-;                   "mode" "New"}
-;      :subject "New Notification"}
-;     {:deleted false
-;      :revision-id 1}
-;     ["New" "Update"]
-;     "C12345-PROV1"
-;
-;     "Update concept."
-;     {:attributes {"collection-concept-id" "C12345-PROV1"
-;                   "mode" "Update"}
-;      :subject "Update Notification"}
-;     {:deleted false
-;      :revision-id 3}
-;     ["New" "Update"]
-;     "C12345-PROV1")))
-
 (defn set-db-result
   "Sets the mock db result with a real queue endpoint to
   test real subscriptions and publishing of a message."
@@ -654,10 +549,7 @@
                 messages (queue/receive-messages sqs-client internal-queue-url)]
             (is (some? messages))
             (when messages
-              (is (some? (queue/delete-messages sqs-client internal-queue-url messages)))))
-          )
-        )
-      )
+              (is (some? (queue/delete-messages sqs-client internal-queue-url messages))))))))
 
     (testing "Concept will be unsubscribed."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] (conj '() (-> (first (set-db-result queue-url))
@@ -669,8 +561,7 @@
           (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
           ;; Also remove subscription from internal queue.
           (let [topic (get-in test-context [:system :sns :internal])]
-            (topic-protocol/unsubscribe topic sub-concept)))))
-    ))
+            (topic-protocol/unsubscribe topic sub-concept)))))))
 
  (defn work-potential-notification-with-real-aws
    "This function exists to manually test out the same code as
@@ -731,37 +622,6 @@
                (is (= "G12345-PROV1" (:concept-id real-message)))
                (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys real-message)))
                (is (some? (queue/delete-messages sqs-client internal-queue-url messages))))))))))
-
-;(deftest set-subscription-arn-if-applicable-test
-;  (testing "set-subscription-arn returns un-changed concept"
-;    (are3 [concept-type concept expected]
-;          (is (= expected (subscriptions/set-subscription-arn-if-applicable nil concept-type concept)))
-;
-;          "non-subscription concept type returns un-changed concept"
-;          :granule
-;          {:metadata {:EndPoint ""}}
-;          {:metadata {:EndPoint ""}}
-;
-;          "empty endpoint returns un-changed concept"
-;          :subscription
-;          {:metadata (json/encode {:EndPoint ""})}
-;          {:metadata (json/encode {:EndPoint ""})}))
-;  (with-redefs [cmr.metadata-db.services.subscriptions/attach-subscription-to-topic (fn [context concept] {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"}) :extra-fields {:aws-arn "SUB1234"}})]
-;    (testing "local test queue url endpoint returns changed concept"
-;      (let [concept {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"})}
-;            expected-concept {:metadata (json/encode {"EndPoint" "http://localhost:9324/000000000/"}) :extra-fields {:aws-arn "SUB1234"}}]
-;        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept)))))
-;
-;    (testing "http endpoint returns changed concept"
-;      (let [concept {:metadata (json/encode {"EndPoint" "http://www.endpoint.com"})}
-;            expected-concept {:metadata (json/encode {"EndPoint" "http://www.endpoint.com"}) :extra-fields {:aws-arn "http://www.endpoint.com"}}]
-;        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept))))))
-;
-;  (with-redefs [cmr.metadata-db.services.subscriptions/attach-subscription-to-topic (fn [context concept] {:metadata (json/encode {"EndPoint" "arn:aws:sqs:1234:Queue-Name"}) :extra-fields {:aws-arn "sqs:arn"}})]
-;    (testing "sqs arn endpoint returns changed concept"
-;      (let [concept {:metadata (json/encode {:EndPoint "arn:aws:sqs:1234:Queue-Name"})}
-;            expected-concept {:metadata (json/encode {"EndPoint" "arn:aws:sqs:1234:Queue-Name"}) :extra-fields {:aws-arn "sqs:arn"}}]
-;        (is (= expected-concept (subscriptions/set-subscription-arn-if-applicable nil :subscription concept)))))))
 
 (deftest is-valid-sqs-arn-test
   (testing "sqs endpoint validation for subscription endpoint"
@@ -863,64 +723,6 @@
           "http://www.random.com"
           false
           )))
-
-;(deftest attach-subscription-to-topic-test
-;    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] "subscription-arn")]
-;      (testing "concept is not ingest subscription - returns un-changed concept"
-;        (let [concept {:metadata (json/encode {:Method "search"})}]
-;          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))
-;      (testing "subscribing to topic succeeded -- returns updated concept with new aws-arn field"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}
-;              expected-concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
-;                                :extra-fields {:aws-arn "subscription-arn"}}]
-;          (is (= expected-concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
-;    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] nil)]
-;      (testing "subscribing to topic returned nil - returns un-changed concept"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
-;          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept))))))
-;    (with-redefs [cmr.message-queue.topic.topic-protocol/subscribe (fn [topic concept] (throw (Exception. "some exception")))]
-;      (testing "subscribing to topic failed and threw error - returns un-changed concept"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})}]
-;          (is (= concept (subscriptions/attach-subscription-to-topic {:system {:sns {:external "default-topic"}}} concept)))))))
-;
-;;;TODO fix this test
-;(deftest delete-ingest-subscription-test
-;  (let [context {:system {:sns {:external "default-topic"}}}
-;        expected-subscription-arn "subscription-arn"]
-;    (with-redefs [cmr.message-queue.topic.topic-protocol/unsubscribe (fn [topic concept] expected-subscription-arn)]
-;      (testing "is valid sqs arn"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"})
-;                       :extra-fields {:aws-arn "subscription-arn"}}
-;              concept-edn {:metadata {:Method "ingest" :EndPoint "arn:aws:sqs:1234:Queue-Name"}
-;                           :extra-fields {:aws-arn "subscription-arn"}}]
-;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-ingest-subscription-in-cache (fn [context concept] concept-edn)]
-;            (is (= expected-subscription-arn (subscriptions/delete-ingest-subscription context concept)))
-;            )))
-;      (testing "is local test queue"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "http://localhost:9324/000000000/test-queue"})
-;                       :extra-fields {:aws-arn "subscription-arn"}}
-;              concept-edn {:metadata {:Method "ingest" :EndPoint "http://localhost:9324/000000000/test-queue"}
-;                           :extra-fields {:aws-arn "subscription-arn"}}]
-;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-ingest-subscription-in-cache (fn [context concept] concept-edn)]
-;            (is (= expected-subscription-arn (subscriptions/delete-ingest-subscription context concept))))))
-;      (testing "is valid http url"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "http://www.endpoint.com"})
-;                       :extra-fields {:aws-arn "http://www.endpoint.com"}}
-;              concept-edn {:metadata {:Method "ingest" :EndPoint "http://www.endpoint.com"}
-;                           :extra-fields {:aws-arn "http://www.endpoint.com"}}]
-;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-ingest-subscription-in-cache (fn [context concept] concept-edn)]
-;            (is (= "http://www.endpoint.com" (subscriptions/delete-ingest-subscription context concept))))))
-;      (testing "is invalid endpoint"
-;        (let [concept {:metadata (json/encode {:Method "ingest" :EndPoint "random"}) :extra-fields {:aws-arn "random"}}
-;              concept-edn {:metadata {:Method "ingest" :EndPoint "random"} :extra-fields {:aws-arn "random"}}]
-;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-ingest-subscription-in-cache (fn [context concept] concept-edn)]
-;            (is (= "random" (subscriptions/delete-ingest-subscription context concept))))))
-;      (testing "non-ingest subscription concept given"
-;        (let [concept {:metadata (json/encode {:Method "search"})}
-;              concept-edn {:metadata {:Method "search"}}]
-;          (with-redefs [cmr.metadata-db.services.subscriptions/add-or-delete-ingest-subscription-in-cache (fn [context concept] concept-edn)]
-;            (is (= nil (subscriptions/delete-ingest-subscription context concept))))))
-;    )))
 
 (deftest create-mode-to-endpoints-map
   (testing "creating mode to endpoints map test"

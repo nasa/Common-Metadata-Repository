@@ -889,8 +889,6 @@
          context
          (ingest-events/associations-update-event associations))))))
 
-;; TODO jyna main concepts func
-;; TODO jyna saving subscription or granule or any other concept falls to this func
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]

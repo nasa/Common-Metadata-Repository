@@ -333,7 +333,7 @@
                  parsed)]
     (when-not (= CMR_PROVIDER provider-id)
       (api-core/verify-provider-exists context provider-id))
-    (validate-user-id context subscriber-id) ;; TODO temp comment out to bypass user id check
+    (validate-user-id context subscriber-id)
     (validate-query context parsed)
     (validate-subscription-endpoint parsed)
     (let [parsed-metadata (assoc parsed :SubscriberId subscriber-id)]
