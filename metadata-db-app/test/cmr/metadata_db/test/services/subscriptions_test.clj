@@ -107,32 +107,32 @@
        ["New" "Delete"]
        ["New" "Delete"]))
 
-    (testing "Merge modes"
-      (are3
-       [expected subscriptions]
-       (is (= (set expected) (set (subscriptions/merge-modes subscriptions))))
-
-       "merge 1 mode."
-       ["Update"]
-       '({:metadata {:Mode ["Update"]}})
-
-       "Merge several modes"
-       ["New" "Update" "Delete"]
-       '({:metadata {:Mode ["Update"]}}
-         {:metadata {:Mode ["New"]}}
-         {:metadata {:Mode ["Delete"]}})
-
-       "Merge several modes 2"
-       ["New" "Update" "Delete"]
-       '({:metadata {:Mode ["Update"]}}
-         {:metadata {:Mode ["New" "Delete"]}})
-
-       "Merge several modes 3 with duplicates."
-       ["New" "Update" "Delete"]
-       '({:metadata {:Mode ["Update"]}}
-         {:metadata {:Mode ["New" "Delete"]}}
-         {:metadata {:Mode ["New"]}}
-         {:metadata {:Mode ["New" "Update"]}})))
+    ;(testing "Merge modes"
+    ;  (are3
+    ;   [expected subscriptions]
+    ;   (is (= (set expected) (set (subscriptions/merge-modes subscriptions))))
+    ;
+    ;   "merge 1 mode."
+    ;   ["Update"]
+    ;   '({:metadata {:Mode ["Update"]}})
+    ;
+    ;   "Merge several modes"
+    ;   ["New" "Update" "Delete"]
+    ;   '({:metadata {:Mode ["Update"]}}
+    ;     {:metadata {:Mode ["New"]}}
+    ;     {:metadata {:Mode ["Delete"]}})
+    ;
+    ;   "Merge several modes 2"
+    ;   ["New" "Update" "Delete"]
+    ;   '({:metadata {:Mode ["Update"]}}
+    ;     {:metadata {:Mode ["New" "Delete"]}})
+    ;
+    ;   "Merge several modes 3 with duplicates."
+    ;   ["New" "Update" "Delete"]
+    ;   '({:metadata {:Mode ["Update"]}}
+    ;     {:metadata {:Mode ["New" "Delete"]}}
+    ;     {:metadata {:Mode ["New"]}}
+    ;     {:metadata {:Mode ["New" "Update"]}})))
 
     (testing "adding and removing subscriptions from the cache."
       (are3
@@ -144,7 +144,7 @@
 
 
        "Adding 1 subscription"
-       {"C12345-PROV1" {"Update" (set ["some-endpoint"])}}
+       {"C12345-PROV1" {"Mode" {"Update" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -155,7 +155,7 @@
           :concept-type :subscription})
 
        "Adding duplicate subscription"
-       {"C12345-PROV1" {"Update" (set ["some-endpoint"])}}
+       {"C12345-PROV1" {"Mode" {"Update" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -166,8 +166,8 @@
           :concept-type :subscription})
 
        "Adding override subscription"
-       {"C12345-PROV1" {"New" (set ["some-endpoint"])
-                        "Delete" (set ["some-endpoint"])}}
+       {"C12345-PROV1" {"Mode" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -178,10 +178,10 @@
           :concept-type :subscription})
 
        "Adding new subscription that matches the one from before."
-       {"C12345-PROV1" {"New" (set ["some-endpoint"])
-                        "Delete" (set ["some-endpoint"])}
-        "C12346-PROV1" {"New" (set ["some-endpoint"])
+       {"C12345-PROV1" {"Mode" {"New" (set ["some-endpoint"])
                         "Delete" (set ["some-endpoint"])}}
+        "C12346-PROV1" {"Mode" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12346-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12346-PROV1\",
                       \"EndPoint\":\"some-endpoint\",
@@ -192,8 +192,8 @@
           :concept-type :subscription})
 
        "Removing 1 subscription"
-       {"C12346-PROV1" {"New" (set ["some-endpoint"])
-                        "Delete" (set ["some-endpoint"])}}
+       {"C12346-PROV1" {"Mode" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        ;; even though C12346-PROV1 is in the db, we are search only for
        ;; concepts with the collection-concept-id.
@@ -206,8 +206,8 @@
           :concept-type :subscription})
 
        "Removing same subscription"
-       {"C12346-PROV1" {"New" (set ["some-endpoint"])
-                        "Delete" (set ["some-endpoint"])}}
+       {"C12346-PROV1" {"Mode" {"New" (set ["some-endpoint"])
+                        "Delete" (set ["some-endpoint"])}}}
        {:metadata {:CollectionConceptId "C12345-PROV1"}}
        '({:metadata "{\"CollectionConceptId\":\"C12345-PROV1\",
                                \"EndPoint\":\"some-endpoint\",
@@ -301,9 +301,36 @@
                     :collection-concept-id "C12346-PROV1"}
      :concept-type :subscription}))
 
+(def db-result-2-updated
+  '({:revision-id 1
+     :deleted false
+     :format "application/vnd.nasa.cmr.umm+json;version=1.1.1"
+     :provider-id "PROV1"
+     :user-id "ECHO_SYS"
+     :transaction-id "2000000010M"
+     :native-id "erichs_ingest_subscription2"
+     :concept-id "SUB1200000006-PROV1"
+     :metadata "{\"SubscriberId\":\"eereiter\",
+                 \"CollectionConceptId\":\"C12346-PROV1\",
+                 \"EndPoint\":\"some-endpoint-2\",
+                 \"Mode\":[\"New\"],
+                 \"Method\":\"ingest\",
+                 \"EmailAddress\":\"erich.e.reiter@nasa.gov\",
+                 \"Query\":\"collection-concept-id=C12346-PROV1\",
+                 \"Name\":\"Ingest-Subscription-Test\",
+                 \"Type\":\"granule\",
+                 \"MetadataSpecification\":{\"URL\":\"https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1\",\"Name\":\"UMM-Sub\",\"Version\":\"1.1.1\"}}"
+     :revision-date "2024-10-07T18:13:32.608Z"
+     :extra-fields {:normalized-query "76c6d7a828ef81efb3720638f335f65c"
+                    :subscription-type "granule"
+                    :subscription-name "Ingest-Subscription-Test"
+                    :subscriber-id "eereiter"
+                    :collection-concept-id "C12346-PROV1"}
+     :concept-type :subscription}))
+
 (def db-result-3
  (concat db-result-1
-         db-result-2
+         db-result-2-updated
          '({:revision-id 1
             :deleted false
             :format "application/vnd.nasa.cmr.umm+json;version=1.1.1"
@@ -369,26 +396,32 @@
     (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context _coll-concept-id] db-result-4)}
       (subscriptions/change-subscription-in-cache test-context {:metadata {:CollectionConceptId "C1200000003-PROV1"}}))
     (testing "What is in the cache"
-      (is (= {"C1200000002-PROV1" {"New" (set ["some-endpoint"])
-                                   "Delete" (set ["some-endpoint"])}
-              "C12346-PROV1" {"New" (set ["some-endpoint"])
-                              "Update" (set ["some-endpoint"])}
-              "C1200000003-PROV1" {"New" (set ["some-endpoint"])
-                                   "Delete" (set ["some-endpoint"])}}
+      (is (= {"C1200000002-PROV1" {"Mode"
+                                    {"New" (set ["some-endpoint"])
+                                    "Delete" (set ["some-endpoint"])}}
+              "C12346-PROV1" {"Mode"
+                              {"New" (set ["some-endpoint"])
+                              "Update" (set ["some-endpoint"])}}
+              "C1200000003-PROV1" {"Mode"
+                                   {"New" (set ["some-endpoint"])
+                                   "Delete" (set ["some-endpoint"])}}}
              (hash-cache/get-map cache-client cache-key))))
     (testing "Cache needs to be updated."
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context] db-result-3)}
         (subscriptions/refresh-subscription-cache test-context))
-      (is (= {"C1200000002-PROV1" {"New" (set ["some-endpoint"])
-                                   "Update" (set ["some-endpoint"])
-                                   "Delete" (set ["some-endpoint"])}
-              "C12346-PROV1" {"New" (set ["some-endpoint"])
-                              "Update" (set ["some-endpoint"])}}
+      ;; Update includes C1200000003-PROV1 was completely removed, and C1200000002-PROV1 mode Update was added and C12346-PROV1 lost its Update Mode and New Mode has a new endpoint
+      (is (= {"C1200000002-PROV1" {"Mode"
+                                   {"New" (set ["some-endpoint"])
+                                    "Update" (set ["some-endpoint"])
+                                    "Delete" (set ["some-endpoint"])}}
+              "C12346-PROV1" {"Mode"
+                              {"New" (set ["some-endpoint-2"])}}}
              (hash-cache/get-map cache-client cache-key))))
     (testing "Testing no subscriptions"
       (with-bindings {#'subscriptions/get-subscriptions-from-db (fn [_context] '())}
         (subscriptions/refresh-subscription-cache test-context))
-      (is (nil? (hash-cache/get-map cache-client cache-key))))))
+      (is (nil? (hash-cache/get-map cache-client cache-key))))
+    ))
 
 (deftest get-producer-granule-id-message-str-test
   (testing "Getting producer granule id for the subscription notification message"
@@ -622,7 +655,8 @@
             (is (some? messages))
             (when messages
               (is (some? (queue/delete-messages sqs-client internal-queue-url messages)))))
-          ))
+          )
+        )
       )
 
     (testing "Concept will be unsubscribed."
@@ -893,32 +927,15 @@
     (are3 [subscriptions expected]
           (is (= expected (subscriptions/create-mode-to-endpoints-map subscriptions)))
 
-          ;"given nil subscriptions"
-          ;nil
-          ;{}
-          ;
-          ;"given empty subscriptions"
-          ;(sequence [])
-          ;{}
+          "given nil subscriptions"
+          nil
+          {}
 
-          ;"given one subscription"
-          ;[{:revision-id 1,
-          ; :deleted false,
-          ; :subscription-type "granule",
-          ; :metadata {
-          ;            :CollectionConceptId "C1200000001-JM_PROV1",
-          ;            :EndPoint "http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local",
-          ;            :Mode ["New", "Update"],
-          ;            :Method "ingest",
-          ;            :Type "granule",
-          ;            },
-          ; :extra-fields {:aws-arn "SUB1200000003-JM_PROV1"},
-          ; :concept-type :subscription}]
-          ;{"New" ["http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local"]
-          ; "Update" ["http://localhost:9324/000000000000/cmr-internal-subscriptions-queue-local"]}
+          "given empty subscriptions"
+          []
+          {}
 
-          ;"given two subscriptions with two different endpoints and multiple modes each"
-          "given one subscription"
+          "given multiple subscriptions with two different endpoints and multiple modes each"
           [{:revision-id 1,
             :deleted false,
             :subscription-type "granule",
@@ -970,6 +987,4 @@
           {"New" #{"sqs:arn:1", "https://www.url1.com", "https://www.url2.com"}
            "Update" #{"sqs:arn:1"}
            "Delete" #{"https://www.url1.com"}}
-          ))
-
-  )
+          )))
