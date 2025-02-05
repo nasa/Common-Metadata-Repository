@@ -245,7 +245,8 @@
       (doall (map #(when-not (new-contents %)
                      (subscription-cache/remove-value context %))
                   cache-content-keys))
-      (info "Finished refreshing the ingest subscription cache."))))
+      (info "Finished refreshing the ingest subscription cache.")
+      {:status 200})))
 
 ;;
 ;; The functions below are for publishing messages to the topic.
