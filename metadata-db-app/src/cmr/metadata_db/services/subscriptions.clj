@@ -44,13 +44,11 @@
                                       :concept-type :subscription
                                       :collection-concept-id coll-concept-id})))
 
-;;TODO unit test
 (defn convert-concept-to-edn
   "Converts the passed in concept to edn"
   [subscription]
   (update subscription :metadata #(json/decode % true)))
 
-;; TODO unit test
 (defn convert-and-filter-subscriptions
   "Convert the metadata of the subscriptions to edn and then filter out the non
   ingest subscriptions."
@@ -143,13 +141,11 @@
     (some? (re-matches #"http://localhost:9324.*" endpoint))
     false))
 
-;;TODO unit test this
 (defn attach-subscription-to-topic
   "If valid ingest subscription, will attach the subscription concept's sqs arn to external SNS topic
   and will add the sqs arn used as an extra field to the concept"
   [context concept]
     (let [concept-edn (convert-concept-to-edn concept)]
-      ;(println "concept-edn is " concept-edn)
       (if (ingest-subscription-concept? concept-edn)
         (let [topic (get-in context [:system :sns :external])
               ;; subscribes the given endpoint sqs arn in the concept to the external SNS topic
@@ -159,8 +155,6 @@
               concept))
         concept)))
 
-
-;;TODO unit test this
 (defn set-subscription-arn-if-applicable
   "If subscription has an endpoint that is an SQS ARN, then it will attach the SQS ARN to the CMR SNS external topic and
   save the SQS ARN to the subscription concept.
@@ -176,7 +170,6 @@
     ;; and we don't consider that an error
     concept))
 
-;:TODO unit test
 (defn delete-ingest-subscription
   "Remove the subscription from the cache and unsubscribe the subscription from
   the topic if applicable.

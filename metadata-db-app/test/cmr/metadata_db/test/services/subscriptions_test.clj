@@ -790,3 +790,30 @@
            "Update" #{"sqs:arn:1"}
            "Delete" #{"https://www.url1.com"}}
           )))
+
+(deftest attach-subscription-to-topic
+    (let [concept-metadata "{\"CollectionConceptId\": \"C1200000002-PROV1\",
+                                   \"EndPoint\": \"some-endpoint\",
+                                   \"Mode\":[\"New\", \"Delete\"],
+                                   \"Method\":\"ingest\"}"
+          ingest-concept {:metadata concept-metadata
+                          :concept-type :subscription
+                          :concept-id "SUB1200000005-PROV1"}
+          context {:system {:sns {:external "external-sns-topic"}}}
+          non-ingest-concept {:metadata "{\"CollectionConceptId\": \"C1200000002-PROV1\",
+                                          \"Mode\":[\"New\", \"Delete\"],
+                                          \"Method\":\"search\"}"
+                              :concept-type :subscription
+                              :concept-id "SUB1200000005-PROV1"}]
+      (with-redefs [topic-protocol/subscribe (fn [topic concept-edn] "sns-subscription-arn")]
+        (testing "concept given is not ingest, will return input concept"
+          (is (= non-ingest-concept (subscriptions/attach-subscription-to-topic context non-ingest-concept))))
+        (testing "subscription succeeds, returns concept with aws-arn attached"
+          (is (= (assoc-in ingest-concept [:extra-fields :aws-arn] "sns-subscription-arn") (subscriptions/attach-subscription-to-topic context ingest-concept))))
+        )
+      (with-redefs [topic-protocol/subscribe (fn [topic concept-edn] (throw (Exception. "exception from AWS")))]
+        (testing "subscribe fails, will return concept without the aws-arn in extra fields and will NOT throw exception"
+          (is (thrown? Exception (subscriptions/attach-subscription-to-topic context ingest-concept)))))
+      (with-redefs [topic-protocol/subscribe (fn [topic concept-edn] nil)]
+        (testing "subscribe fails, will return concept without the aws-arn in extra fields and will NOT throw exception"
+          (is (= ingest-concept (subscriptions/attach-subscription-to-topic context ingest-concept)))))))
