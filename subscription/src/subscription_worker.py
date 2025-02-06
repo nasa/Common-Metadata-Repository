@@ -56,7 +56,6 @@ def poll_queue(running):
     logger.info(f"The passed in topic name is {SNS_NAME}")
     topic = sns_client.create_topic(SNS_NAME)
     
-
     access_control = AccessControl()
     while running.value:
         try:
