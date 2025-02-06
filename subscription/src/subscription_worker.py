@@ -100,3 +100,4 @@ if __name__ == "__main__":
     # Wait for the polling process to finish before exiting
     poll_process.join()
     logger.info("The subscription worker exited the polling loop.")
+
