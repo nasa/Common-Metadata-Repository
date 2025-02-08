@@ -25,10 +25,16 @@ class AccessControl:
     {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
     """
 
+    
     def __init__(self):
+        """ Sets up a class variable of url."""
         self.url = None
 
     def get_url_from_parameter_store(self):
+        """This function returns the URL for the accees control service. For local development the full URL can be provided. Otherwise the 
+        environment name that is used for the parameter store prefix is obtained from an environment variable. This variable is used to 
+        get the parameter store ingest values to construct the access control service URL."""
+
         # Access Control URL is for local development
         access_control_url = os.getenv("ACCESS_CONTROL_URL")
 
@@ -59,11 +65,16 @@ class AccessControl:
             logger.debug("Subscription Worker Access-Control URL:" + self.url)
 
     def get_url(self):
+        """This function returns the access control URL if it has already been constructed, otherwise it constructs the URL and then returns it."""
         if not self.url:
             self.get_url_from_parameter_store()
         return self.url
 
     def get_permissions(self, subscriber_id, concept_id):
+        """This function calls access control using a subscriber_id (a users earth data login name), and a CMR concept id. It gets the subscribers permission
+        set for a specific concept. access control returns None|Nil|Null back if the subscriber does not have any permissions for the concept.  Access control
+        returns a map that contains a concept id followed by an array of permissions the user has on that concept: {"C1200484253-CMR_ONLY":["read","update","delete","order"]}"""
+
         # Set the access-control permissions URL.
         url = f"{self.get_url()}/permissions"
 
