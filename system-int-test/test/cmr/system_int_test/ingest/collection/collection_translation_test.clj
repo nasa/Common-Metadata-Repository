@@ -121,7 +121,8 @@
       (is (= 200 status))))
 
   (testing (format "Translating umm-json to iso19115 produces the right codelist")
-    (let [input-format :umm-json
+    (let [input-format {:format :umm-json
+                        :version "1.18.2"}
           output-format :iso19115
           options {:skip-sanitize-umm-c false}
           input-json (slurp (io/resource "CMR-7557/test_data.json"))

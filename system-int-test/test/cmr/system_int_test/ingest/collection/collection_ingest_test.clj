@@ -5,7 +5,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.test.util :as test-util]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -792,7 +792,7 @@
   (testing "Ingest of a json collection with invalid mimetypes. This verifies that we validate mimetypes against kms."
     (let [coll-metadata (slurp (io/resource "CMR-7647/CMR-7647.json"))
           {:keys [status errors]} (ingest/ingest-concept
-                                   (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata)
+                                   (ingest/concept :collection "PROV1" "foo" {:format :umm-json :version "1.18.2"} coll-metadata)
                                    {:validate-keywords false})]
       (is (= 422 status))
       (is (= [["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>] are not a valid set together."]
