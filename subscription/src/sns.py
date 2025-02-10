@@ -1,7 +1,7 @@
 import boto3
 import json
-from sys import stdout
 from botocore.exceptions import ClientError
+from logger import logger
 
 class Sns:
     """Encapsulates AWS SNS topics."""
@@ -16,8 +16,7 @@ class Sns:
         try:
             topic = self.sns_resource.create_topic(Name=topic_name)
         except ClientError as error:
-            print("Could not get the topic ARN: {error}.")
-            stdout.flush()
+            logger.error(f"Subscription Worker could not get the topic ARN: {error}.")
             raise error
         else:
             return topic
@@ -40,8 +39,7 @@ class Sns:
             else:    
                 response = topic.publish(Subject=message_subject, Message=message_message)
         except ClientError as error:
-            print(f"Could not publish message to topic {topic}. {error}")
-            stdout.flush()
+            logger.error(f"Subscription Worker could not publish message to topic {topic}. {error}")
             raise error
         else:
             return response
