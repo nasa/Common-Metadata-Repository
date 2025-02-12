@@ -5,23 +5,25 @@ ARG QUEUE_URL
 ARG DEAD_LETTER_QUEUE_URL
 ARG SNS_NAME
 ARG SUB_DEAD_LETTER_QUEUE_URL
+ARG ENVIRONMENT_NAME
 
 #Set environment variables
 ENV AWS_REGION=$AWS_REGION
 ENV QUEUE_URL=$QUEUE_URL
 ENV DEAD_LETTER_QUEUE_URL=$DEAD_LETTER_QUEUE_URL
-ENV LONG_POLL_TIME 10
+ENV LONG_POLL_TIME=10
 ENV SNS_NAME=$SNS_NAME
 ENV SUB_DEAD_LETTER_QUEUE_URL=$SUB_DEAD_LETTER_QUEUE_URL
+ENV ENVIRONMENT_NAME=$ENVIRONMENT_NAME
 
 #Set working directory
 WORKDIR /app
 
 #Copy the application files
-COPY *.py .
+COPY src/*.py .
 
 #Install the required packages
-RUN pip3 install boto3 Flask
+RUN pip3 install boto3 Flask requests
 
 #EXPOSE 8089
 # Command to run the application
