@@ -12,7 +12,7 @@
   :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [netty-ring-adapter "4.1.118.Final"]
+                 [io.netty/netty-handler "4.1.118.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
