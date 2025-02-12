@@ -4,7 +4,7 @@
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.28.19")
+  "2.30.13")
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
