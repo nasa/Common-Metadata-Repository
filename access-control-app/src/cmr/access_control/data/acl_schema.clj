@@ -14,70 +14,82 @@
 
 (def system-any-acl-target "ANY_ACL")
 
-(def system-object-targets
+(def system-object-targets-with-definitions
   "A collection of valid system_object.target values."
-  ["SYSTEM_AUDIT_REPORT"
-   "METRIC_DATA_POINT_SAMPLE"
-   "SYSTEM_INITIALIZER"
-   "ARCHIVE_RECORD"
-   "ERROR_MESSAGE"
-   "TOKEN"
-   "TOKEN_REVOCATION"
-   "EXTENDED_SERVICE_ACTIVATION"
-   "ORDER_AND_ORDER_ITEMS"
-   "PROVIDER"
-   "TAG_GROUP"
-   "TAXONOMY"
-   "TAXONOMY_ENTRY"
-   "USER_CONTEXT"
-   "USER"
-   "GROUP"
-   system-any-acl-target
-   "EVENT_NOTIFICATION"
-   "EXTENDED_SERVICE"
-   "SYSTEM_OPTION_DEFINITION"
-   "SYSTEM_OPTION_DEFINITION_DEPRECATION"
-   "INGEST_MANAGEMENT_ACL"
-   "SYSTEM_CALENDAR_EVENT"
-   "DASHBOARD_ADMIN"
-   "DASHBOARD_ARC_CURATOR"
-   "DASHBOARD_MDQ_CURATOR"])
+  [{"SYSTEM_AUDIT_REPORT" "Audit log data"}
+   {"METRIC_DATA_POINT_SAMPLE" "Sample metrics"}
+   {"SYSTEM_INITIALIZER" "Init config"}
+   {"ARCHIVE_RECORD" "Archived data"}
+   {"ERROR_MESSAGE" "Error logs"}
+   {"TOKEN" "Auth tokens"}
+   {"TOKEN_REVOCATION" "Revoked tokens"}
+   {"EXTENDED_SERVICE_ACTIVATION" "Service status"}
+   {"ORDER_AND_ORDER_ITEMS" "Order details"}
+   {"PROVIDER" "Service provider info"}
+   {"TAG_GROUP" "Grouped tags"}
+   {"TAXONOMY" "Classification system"}
+   {"TAXONOMY_ENTRY" "Taxonomy item"}
+   {"USER_CONTEXT" "User environment"}
+   {"USER" "User profile"}
+   {"GROUP" "User group data"}
+   {system-any-acl-target "Universal ACL"}
+   {"EVENT_NOTIFICATION" "Event alerts"}
+   {"EXTENDED_SERVICE" "Additional services"}
+   {"SYSTEM_OPTION_DEFINITION" "System settings"}
+   {"SYSTEM_OPTION_DEFINITION_DEPRECATION" "Deprecated options"}
+   {"INGEST_MANAGEMENT_ACL" "Ingest permissions"}
+   {"SYSTEM_CALENDAR_EVENT" "Scheduled events"}
+   {"DASHBOARD_ADMIN" "Admin dashboard"}
+   {"DASHBOARD_ARC_CURATOR" "ARC curator view"}
+   {"DASHBOARD_MDQ_CURATOR" "MDQ curator view"}]
+)
+
+(def system-object-targets
+  "A collection of valid system_object.target values"
+  (vec (mapcat keys system-object-targets-with-definitions)))
+
+system-object-targets
 
 (def ingest-management-acl-target "INGEST_MANAGEMENT_ACL")
 (def provider-catalog-item-acl-target "CATALOG_ITEM_ACL")
 (def provider-object-acl-target "PROVIDER_OBJECT_ACL")
 
+(def provider-object-targets-with-definitions
+  "A collection of valid provider_object.target values."
+  [{"AUDIT_REPORT" "Access to audit reporting functionality"}
+   {"OPTION_ASSIGNMENT" "Ability to assign options"}
+   {"OPTION_DEFINITION" "Permission to define new options"}
+   {"OPTION_DEFINITION_DEPRECATION" "Authority to deprecate option definitions"}
+   {"DATASET_INFORMATION" "Access to dataset metadata and details"}
+   {"PROVIDER_HOLDINGS" "View of provider's data holdings"}
+   {"EXTENDED_SERVICE" "Access to extended service features"}
+   {"PROVIDER_ORDER" "Ability to manage provider orders"}
+   {"PROVIDER_ORDER_RESUBMISSION" "Permission to resubmit provider orders"}
+   {"PROVIDER_ORDER_ACCEPTANCE" "Authority to accept provider orders"}
+   {"PROVIDER_ORDER_REJECTION" "Authority to reject provider orders"}
+   {"PROVIDER_ORDER_CLOSURE" "Ability to close provider orders"}
+   {"PROVIDER_ORDER_TRACKING_ID" "Access to provider order tracking IDs"}
+   {"PROVIDER_INFORMATION" "View of provider information"}
+   {"PROVIDER_CONTEXT" "Access to provider context data"}
+   {"AUTHENTICATOR_DEFINITION" "Ability to define authenticators"}
+   {"PROVIDER_POLICIES" "Access to provider policy information"}
+   {"USER" "User account management permissions"}
+   {"GROUP" "Group management permissions"}
+   {"DASHBOARD_DAAC_CURATOR" "Access to DAAC curator dashboard"}
+   {provider-object-acl-target "Target for provider object ACLs"}
+   {provider-catalog-item-acl-target "Target for provider catalog item ACLs"}
+   {ingest-management-acl-target "Target for ingest management ACLs"}
+   {"DATA_QUALITY_SUMMARY_DEFINITION" "Ability to define data quality summaries"}
+   {"DATA_QUALITY_SUMMARY_ASSIGNMENT" "Permission to assign data quality summaries"}
+   {"PROVIDER_CALENDAR_EVENT" "Access to provider calendar events"}
+   {"NON_NASA_DRAFT_USER" "Permissions for non-NASA draft users"}
+   {"NON_NASA_DRAFT_APPROVER" "Authority to approve non-NASA drafts"}
+   {"SUBSCRIPTION_MANAGEMENT" "Ability to manage subscriptions"}]
+)
+
 (def provider-object-targets
   "A collection of valid provider_object.target values."
-  ["AUDIT_REPORT"
-   "OPTION_ASSIGNMENT"
-   "OPTION_DEFINITION"
-   "OPTION_DEFINITION_DEPRECATION"
-   "DATASET_INFORMATION"
-   "PROVIDER_HOLDINGS"
-   "EXTENDED_SERVICE"
-   "PROVIDER_ORDER"
-   "PROVIDER_ORDER_RESUBMISSION"
-   "PROVIDER_ORDER_ACCEPTANCE"
-   "PROVIDER_ORDER_REJECTION"
-   "PROVIDER_ORDER_CLOSURE"
-   "PROVIDER_ORDER_TRACKING_ID"
-   "PROVIDER_INFORMATION"
-   "PROVIDER_CONTEXT"
-   "AUTHENTICATOR_DEFINITION"
-   "PROVIDER_POLICIES"
-   "USER"
-   "GROUP"
-   "DASHBOARD_DAAC_CURATOR"
-   provider-object-acl-target
-   provider-catalog-item-acl-target
-   ingest-management-acl-target
-   "DATA_QUALITY_SUMMARY_DEFINITION"
-   "DATA_QUALITY_SUMMARY_ASSIGNMENT"
-   "PROVIDER_CALENDAR_EVENT"
-   "NON_NASA_DRAFT_USER"
-   "NON_NASA_DRAFT_APPROVER"
-   "SUBSCRIPTION_MANAGEMENT"])
+  (vec (mapcat keys provider-object-targets-with-definitions)))
 
 (def valid-permissions
   "A collection of valid permissions for group permissions"

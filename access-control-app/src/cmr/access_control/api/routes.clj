@@ -228,6 +228,24 @@
      :body (json/generate-string response)}))
 
 
+(defn get-permissions-with-definitions
+  "Return JSON for the supported ACL permissions with definitions."
+  [_context list-type _params]
+  (let [start-time (System/currentTimeMillis)
+        definitions (case list-type
+                      "system" acl-schema/system-object-targets-with-definitions
+                      "provider" acl-schema/provider-object-targets-with-definitions
+                      :everything {:system acl-schema/system-object-targets-with-definitions
+                                   :provider acl-schema/provider-object-targets-with-definitions}
+                      nil)
+        total-took (- (System/currentTimeMillis) start-time)
+        headers {common-routes/CORS_CUSTOM_EXPOSED_HEADER
+                 "CMR-Request-Id, X-Request-Id, CMR-Took"
+                 common-routes/TOOK_HEADER (str total-took)}]
+    (if (empty? definitions)
+      {:status 404 :headers headers :body "not found"}
+      {:status 200 :headers headers :body (json/generate-string definitions)})))
+
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
@@ -433,6 +451,18 @@
         (POST "/"
               {ctx :request-context params :params}
               (get-permissions ctx params)))
+
+      (context "/definitions/" []
+        (OPTIONS "/" [] (common-routes/options-response))
+
+        (GET "/"
+          {ctx :request-context params :params}
+          (get-permissions-with-definitions ctx :everything params)))
+
+      (context "/definitions/:list-type" [list-type]
+        (GET "/"
+          {ctx :request-context params :params}
+          (get-permissions-with-definitions ctx list-type params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
