@@ -4,7 +4,7 @@
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.30.13")
+  "2.28.19")
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
@@ -12,6 +12,7 @@
   :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
+                 [netty-ring-adapter "4.1.118.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
