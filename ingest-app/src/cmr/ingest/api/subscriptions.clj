@@ -20,9 +20,8 @@
    [cmr.transmit.search :as search]
    [cmr.transmit.urs :as urs])
   (:import
-   [java.util UUID])
-  (:import
-    (org.apache.commons.validator.routines UrlValidator)))
+   [java.util UUID]
+   (org.apache.commons.validator.routines UrlValidator)))
 
 (def ^:private CMR_PROVIDER
   "CMR provider-id, used by collection subscription."

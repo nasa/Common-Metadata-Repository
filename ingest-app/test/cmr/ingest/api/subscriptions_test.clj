@@ -1,9 +1,9 @@
 (ns cmr.ingest.api.subscriptions-test
   (:require
-    [clojure.string :as string]
-    [clojure.test :refer :all]
-    [cmr.common.util :as util]
-    [cmr.ingest.api.subscriptions :as subscriptions]))
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.ingest.api.subscriptions :as subscriptions]))
 
 (deftest generate-native-id-test
   (let [parsed {:Name "the_beginning"
