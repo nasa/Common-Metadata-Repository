@@ -2,12 +2,12 @@ import json
 import requests
 from logger import logger
 
-def handler(event, context):
+def handler(event: Dict[str, Any], context: Any) -> None:
     logger.debug(f""Received event: {json.dumps(event, indent=2)}"
     for record in event['Records']:
         process_message(record)
 
-def process_message(record):
+def process_message(record: Dict[str, Any]) ->None:
     try:
         message = record['Sns']['Message']
         message_attributes = record['Sns']['MessageAttributes']
@@ -18,7 +18,7 @@ def process_message(record):
         logger.error(f"An error occurred {e}")
         raise e
 
-def send_message(url, message):
+def send_message(url: str, message: Dict[str, Any]) -> None:
     # Prepare the data to be sent
 
     try:
