@@ -909,7 +909,7 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
-                       (subscriptions/set-subscription-arn-if-applicable context concept-type) ;; TODO this is where the subscription stuff happens
+                       (subscriptions/set-subscription-arn-if-applicable context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -928,7 +928,7 @@
       (ingest-events/publish-event context (ingest-events/concept-update-event concept))
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
-      (subscriptions/add-or-delete-ingest-subscription-in-cache context concept) ;; TODO this is where the subscription cache stuff happens
+      (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
       (subscriptions/publish-subscription-notification-if-applicable context concept)
       concept)))
 

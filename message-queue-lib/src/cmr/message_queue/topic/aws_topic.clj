@@ -112,8 +112,6 @@
 
   subscription-dead-letter-queue-arn]
 
-  ;;TODO here is the func for subscribe
-  ;; This will be filled in next sprint. CMR-10141
   topic-protocol/Topic
   (subscribe
     [_this subscription]
