@@ -8,7 +8,7 @@
 (defconfig collection-umm-version
   "Defines the latest collection umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.18.2"})
+  {:default "1.18.3"})
 
 (defconfig launchpad-token-enforced
   "Flag for whether or not launchpad token is enforced."
