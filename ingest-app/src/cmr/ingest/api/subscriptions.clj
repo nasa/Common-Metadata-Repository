@@ -129,7 +129,7 @@
         ;            (util/html-escape collection-concept-id) (util/html-escape collection-concept-id))))
 
         (if cache-content
-          (let [mode-map (get cache-content "Mode")
+          (let [mode-map (get cache-content :Mode)
                 _ (println "mode-map = " mode-map)]
             ;; check if any of the endpoints in each mode type is equal to the curr sqs endpoint, if so throw the error
             (doseq [modetoendpointset mode-map]

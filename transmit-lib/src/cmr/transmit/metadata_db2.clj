@@ -172,7 +172,7 @@
 (defn get-subscription-cache-content
   "Retrieves the cache contents of the ingest subscription cache."
   ([context coll-concept-id]
-   (get-latest-concept context coll-concept-id nil))
+   (get-subscription-cache-content context coll-concept-id nil))
   ([context coll-concept-id {:keys [raw? http-options]}]
    (println "*** INSIDE get-subscription-cache-content in mdb2")
    (let [
@@ -203,4 +203,4 @@
        200 (json/decode body true)
        ;; default
        (errors/internal-error!
-          (format "Get subscription cache content failed. status: %s body: %s" status body))))))
+          (format "Get subscription cache content failed for collection %s. status: %s body: %s" coll-concept-id status body))))))
