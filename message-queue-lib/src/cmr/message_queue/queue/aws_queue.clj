@@ -158,7 +158,7 @@
     (get (.attributesAsStrings response) "QueueArn")))
 
 (comment
-  
+
   (let [sqs-client (create-sqs-client (cmr.message-queue.config/sqs-server-url))
         queue-url  (create-queue sqs-client (cmr.message-queue.config/cmr-internal-subscriptions-queue-name))
         message-attributes (attributes-builder {"collection-concept-id" "C1200000065-PROV1"})
