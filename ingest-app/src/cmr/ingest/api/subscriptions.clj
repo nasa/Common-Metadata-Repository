@@ -118,114 +118,22 @@
                   (some? (re-matches #"http://localhost:9324.*" curr-endpoint))))
       (let [_ (println "this subscription is ingest and is sqs arn")
             collection-concept-id  (:CollectionConceptId subscription-concept)
-            ;;TODO Fix me I'm returning a 404
-            cache-content (metadata-db2/get-subscription-cache-content context collection-concept-id)
-            ;; TODO need to check that the response is 200
-            _ (println "^^ cache-content is = " cache-content)]
-        ;(if (not (= (:status cache-content) 200))
-        ;  (errors/throw-service-error
-        ;    :internal-error
-        ;    (format (str "Could not retrieve the cache contents to check for duplicate subscription sqs endpoint to collection concept id.")
-        ;            (util/html-escape collection-concept-id) (util/html-escape collection-concept-id))))
-
+            cache-content (metadata-db2/get-subscription-cache-content context collection-concept-id)]
         (if cache-content
           (let [mode-map (get cache-content :Mode)
                 _ (println "mode-map = " mode-map)]
             ;; check if any of the endpoints in each mode type is equal to the curr sqs endpoint, if so throw the error
             (doseq [modetoendpointset mode-map]
-              (println "mode = " (key modetoendpointset))
-              (println "endpointset = " (val modetoendpointset))
-              (if (some curr-endpoint (val modetoendpointset))
+              ;(println "mode = " (key modetoendpointset))
+              ;(println "endpointset = " (val modetoendpointset))
+              (if (some #{curr-endpoint} (val modetoendpointset))
                 (errors/throw-service-error
                   :conflict
                   (format (str "The collection [%s] has already subscribed to the given sqs arn by another user. "
-                               "Each Near Real Time subscription to a collection must have a unique sqs arn endpoint.
-                               You cannot have the same SQS queue subscribed to the same collection by multiple users,
-                               only one user can crate/update/delete subscription of the same client queue to the same collection.
-                               Please contact user %s to update/delete this subscription.")
-                          (util/html-escape collection-concept-id) (util/html-escape collection-concept-id)))
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-
-
-
-;(defn- check-subscription-for-collection-not-already-exist
-;  "Validates that the subscription with the same collection and same SQS endpoint does not already exist.
-;  Throws error if the same collection and same SQS endpoint already exists because creating duplicate collection
-;  with same SQS endpoint from a different user is not allowed."
-;  [context subscription-concept]
-;
-;  ;;check the cache for this collection and go through all the modes to see if the sqs arn exists in the set, if it does, throw an error
-;  ;; if the sqs endpoint for this collection already exists, throw error with message, else continue
-;
-;  ;; call the search api for subscription
-;
-;  (println "**** INSIDE validate-subscription-for-collection-does-not-already-exist")
-;  (println "subscription-concept given = " subscription-concept)
-;
-;  ;; This solution feels very long-winded. I would much rather create a new func that will pick up the information from the cache and check that way...
-;
-;  ;; This function is not tested throughly, will probably run into a lot of errors.
-;  (let [curr-endpoint (:EndPoint subscription-concept)
-;        curr-subscriber-id (:SubscriberId subscription-concept)]
-;    (if (and (= "ingest" (:Method subscription-concept))
-;             ((or (some? (re-matches #"arn:aws:sqs:.*" curr-endpoint))
-;                  (some? (re-matches #"http://localhost:9324.*" curr-endpoint)))))
-;      (let [collection-concept-id (:CollectionConceptId subscription-concept)
-;            options {}
-;            params {:collection_concept_id collection-concept-id}
-;            response (search/search-for-subscriptions
-;                       context params (merge options
-;                                             {:raw? true
-;                                              :http-options {:accept :json}}))
-;            _ (println "response is " response)
-;            status (:status response)
-;            ]
-;        ;; check the cache for this collection and see if its sqs endpoint matches the current endpoint -- we need to check the cache no matter what...
-;        ;; create a new function in cmr.transmit.metadata-db2 where we get the current subscriptions for this collection with endpoints from subscription cache
-;        ;; OR go through each search response and get latest concept info on each subscription item and check the endpoint column... so hitting elastic and db instead of cache... but using pre-existing api's...
-;
-;        ;; if this collection is attached to the given sqs arn already from a different user already then throw error
-;        (if (and (= status 200) (> (get-in response [:body :hits]) 0))
-;          (let [items (get-in response [:body :items])]
-;            (doseq [item items]
-;              (let [subscription-concept-id-found (:concept_id item)
-;                    subscriber-id-found (:subscriber_id item)
-;                    type (:type item)]
-;                (if (= type "granule")
-;                  (let [concept-from-db (metadata-db2/get-latest-concept context subscription-concept-id-found)
-;                        sqs-arn (get-in concept-from-db [:metadata :endpoint])]
-;                    (if ((= sqs-arn curr-endpoint) (not (= subscriber-id-found curr-subscriber-id)))
-;                      (errors/throw-service-error
-;                        :conflict
-;                        (format (str "The collection [%s] has already subscribed to the given sqs arn by user %s. "
-;                                     "Each Near Real Time subscription to a collection must have a unique sqs arn endpoint.
-;                                     You cannot have the same SQS queue subscribed to the same collection by multiple users,
-;                                     only one user can crate/update/delete subscription of the same client queue to the same collection.
-;                                     Please contact user %s to update/delete this subscription.")
-;                                (util/html-escape collection-concept-id) (util/html-escape subscriber-id-found) (util/html-escape collection-concept-id)))
-;                      )
-;                    )
-;                  )
-;                )
-;              )
-;            )
-;          )
-;        )
-;      )
-;    )
-;  )
-
-;; {:status 200, :body {:hits 1, :took 10, :items [{:concept_id SUB1200000003-JM_PROV1, :revision_id 1, :provider_id JM_PROV1, :native_id jyna_ingest_subscription_101, :type granule, :name Ingest-Subscription-Test, :subscriber_id ECHO_SYS, :collection_concept_id C1200000001-JM_PROV1}]}, :content-type :json}
-
-;;{:status 200, :body {:hits 2, :took 12, :items [{:concept_id SUB1200000004-JM_PROV1, :revision_id 1, :provider_id JM_PROV1, :native_id jyna_ingest_subscription_102, :type granule, :name Ingest-Subscription-Test, :subscriber_id user1, :collection_concept_id C1200000001-JM_PROV1} {:concept_id SUB1200000003-JM_PROV1, :revision_id 1, :provider_id JM_PROV1, :native_id jyna_ingest_subscription_101, :type granule, :name Ingest-Subscription-Test, :subscriber_id ECHO_SYS, :collection_concept_id C1200000001-JM_PROV1}]}, :content-type :json}
-
+                               "Each Near Real Time subscription to a collection must have a unique sqs arn endpoint."
+                               "You cannot have the same SQS queue subscribed to the same collection by multiple users,"
+                               "only one user can crate/update/delete subscription to the same end client queue to the same collection.")
+                          (util/html-escape collection-concept-id)))))))))))
 
 (defn- check-subscription-limit
   "Given the configuration for subscription limit, this valdiates that the user has no more than
