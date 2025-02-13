@@ -93,38 +93,22 @@
           "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
           If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
 
-;; TODO fix this func
-(defn- check-subscription-for-collection-not-already-exist
+(defn- check-endpoint-queue-for-collection-not-already-exist
   "Validates that the subscription with the same collection and same SQS endpoint does not already exist.
   Throws error if the same collection and same SQS endpoint already exists because creating duplicate collection
   with same SQS endpoint from a different user is not allowed."
   [context subscription-concept]
-
-  ;;check the cache for this collection and go through all the modes to see if the sqs arn exists in the set, if it does, throw an error
-  ;; if the sqs endpoint for this collection already exists, throw error with message, else continue
-
-  ;; call the search api for subscription
-
-  (println "**** INSIDE validate-subscription-for-collection-does-not-already-exist")
-  ;(println "subscription-concept given = " subscription-concept)
-
-  ;; This solution feels very long-winded. I would much rather create a new func that will pick up the information from the cache and check that way...
-
-  ;; This function is not tested throughly, will probably run into a lot of errors.
   (let [curr-endpoint (:EndPoint subscription-concept)]
     (if (and (= "ingest" (:Method subscription-concept))
              (or (some? (re-matches #"arn:aws:sqs:.*" curr-endpoint))
                   (some? (re-matches #"http://localhost:9324.*" curr-endpoint))))
-      (let [_ (println "this subscription is ingest and is sqs arn")
-            collection-concept-id  (:CollectionConceptId subscription-concept)
+      (let [collection-concept-id  (:CollectionConceptId subscription-concept)
             cache-content (metadata-db2/get-subscription-cache-content context collection-concept-id)]
         (if cache-content
-          (let [mode-map (get cache-content :Mode)
-                _ (println "mode-map = " mode-map)]
+          ;; cache-content format expected is something like: {:Mode {:Delete [sqs1 sqs2], :New [url1], :Update [url1]}}
+          (let [mode-map (get cache-content :Mode)]
             ;; check if any of the endpoints in each mode type is equal to the curr sqs endpoint, if so throw the error
             (doseq [modetoendpointset mode-map]
-              ;(println "mode = " (key modetoendpointset))
-              ;(println "endpointset = " (val modetoendpointset))
               (if (some #{curr-endpoint} (val modetoendpointset))
                 (errors/throw-service-error
                   :conflict
@@ -205,7 +189,7 @@
   (check-duplicate-subscription request-context concept parsed)
   (check-subscription-limit request-context concept parsed)
   (check-subscriber-collection-permission request-context parsed)
-  (check-subscription-for-collection-not-already-exist request-context parsed)
+  (check-endpoint-queue-for-collection-not-already-exist request-context parsed)
   (let [concept-with-user-id (api-core/set-user-id concept
                                                    request-context
                                                    headers)
@@ -375,7 +359,7 @@
                  parsed)]
     (when-not (= CMR_PROVIDER provider-id)
       (api-core/verify-provider-exists context provider-id))
-    ;(validate-user-id context subscriber-id) ;; TODO tempo comment out to allow for muliple non-existant users
+    (validate-user-id context subscriber-id)
     (validate-query context parsed)
     (validate-subscription-endpoint parsed)
     (let [parsed-metadata (assoc parsed :SubscriberId subscriber-id)]

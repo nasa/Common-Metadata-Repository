@@ -43,4 +43,37 @@
                {:EndPoint "iaminvalidendpoint", :Method "ingest"}
 
                "given method is ingest and endpoint is empty is invalid"
-               {:Endpoint "", :Method "ingest"})))
+               {:EndPoint "", :Method "ingest"})))
+
+(deftest check-subscription-for-collection-not-already-exist-test
+  (let [fun #'cmr.ingest.api.subscriptions/check-endpoint-queue-for-collection-not-already-exist
+        context nil]
+    (util/are3 [subscription-concept]
+               (is (= nil (fun context subscription-concept)))
+
+               "subscription concept not ingest type -- does nothing"
+               {:EndPoint "", :Method "search"}
+
+               "subscription concept not sqs arn nor local queue arn -- does nothing"
+               {:EndPoint "http://www.something.com", :Method "ingest"})
+
+    (let [subscription-concept {:EndPoint "arn:aws:sqs:blahblah" :Method "ingest" :CollectionConceptId "C123-PROV1"}
+          returned-cache-content {:Mode {:Delete ["sqs1" "sqs2"], :New ["url1"], :Update ["url1"]}}
+          returned-cache-content-with-duplicates {:Mode {:Delete ["sqs1" "sqs2"], :New ["url1" "arn:aws:sqs:blahblah"], :Update ["url1"]}}]
+
+      ;; method for getting cache-content returns error -- this method should bubble up that error
+      (with-redefs [cmr.transmit.metadata-db2/get-subscription-cache-content (fn [context collection-concept-id] (throw (Exception. "Exception was thrown from cache-content func")))]
+        (is (thrown? Exception (fun context subscription-concept))))
+
+      ;; returns nil cache-content -- does nothing
+      (with-redefs [cmr.transmit.metadata-db2/get-subscription-cache-content (fn [context collection-concept-id] nil)]
+        (is (nil? (fun context subscription-concept))))
+
+      ;; duplication collection to sqs queue not found -- does nothing
+      (with-redefs [cmr.transmit.metadata-db2/get-subscription-cache-content (fn [context collection-concept-id] returned-cache-content)]
+        (is (nil? (fun context subscription-concept))))
+
+      ;; duplicate collection to sqs queue found -- throws error
+      (with-redefs [cmr.transmit.metadata-db2/get-subscription-cache-content (fn [context collection-concept-id] returned-cache-content-with-duplicates)]
+        (is (thrown? Exception (fun context subscription-concept))))
+      )))

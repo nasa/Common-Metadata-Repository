@@ -5,7 +5,7 @@
    [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
-    [cmr.metadata-db.api.route-helpers :as rh]
+   [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.search-service :as mdb-search]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
@@ -328,7 +328,6 @@
                   (swap! result-array (fn [n] (conj @result-array result)))))))
           @result-array)))))
 
-;; TODO unit test this
 (defn get-cache-content
   [context params]
   (if-let [collection-concept-id (:collection-concept-id params)]
@@ -337,7 +336,6 @@
        :body (json/generate-string subscription-object)
        :headers rh/json-header})
     (errors/throw-service-error :bad-request "A collection concept id query parameter was required but was not provided.")))
-
 
 (comment
   (let [system (get-in user/system [:apps :metadata-db])]

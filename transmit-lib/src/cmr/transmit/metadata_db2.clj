@@ -43,12 +43,6 @@
   (str (conn/root-url conn)
        "/concept-id/" (name concept-type) "/" provider-id "/" (codec/url-encode native-id)))
 
-(defn- subscription-cache-url
-  ([conn]
-  (str (conn/root-url conn) "/subscription/cache-content"))
-  ([conn collection-concept-id]
-   (str (conn/root-url conn) "/subscription/cache-content?collection-concept-id=" collection-concept-id)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
 
@@ -168,18 +162,14 @@
 (h/defhealther get-metadata-db-health :metadata-db {:timeout-secs 2})
 
 
-;;TODO this function is returning a different result than the cache endpoint... why?
 (defn get-subscription-cache-content
   "Retrieves the cache contents of the ingest subscription cache."
   ([context coll-concept-id]
    (get-subscription-cache-content context coll-concept-id nil))
   ([context coll-concept-id {:keys [raw? http-options]}]
-   (println "*** INSIDE get-subscription-cache-content in mdb2")
    (let [
         conn (config/context->app-connection context :metadata-db)
-        _ (println "conn = " conn)
         request-url (str (conn/root-url conn) "/subscription/cache-content")
-        _ (println "request-url = " request-url)
         params (merge
                  (config/conn-params conn)
                  {:accept :json
@@ -190,13 +180,6 @@
                   :throw-exceptions false
                   :http-options (h/include-request-id context {})})
         response (client/get request-url params)
-        ; response (h/request context :metadata-db
-        ;                     {:url-fn #(subscription-cache-url % coll-concept-id)
-        ;                      :method :get
-        ;                      :raw? raw?
-        ;                      :use-system-token? true
-        ;                      :http-options (h/include-request-id context (merge {:accept :json} http-options))})
-         _ (println "response given = " response)
          {:keys [status body]} response
          status (int status)]
      (case status
