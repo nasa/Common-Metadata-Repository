@@ -1,4 +1,7 @@
 #!/bin/bash
 
-pip3 install boto3 Flask
-python3 -m unittest -v
+export PYTHONPATH=src
+export AWS_REGION="us-east-1"
+
+pip3 install boto3 Flask requests
+python3 -m unittest discover -v -s ./test -p "*_test.py"
