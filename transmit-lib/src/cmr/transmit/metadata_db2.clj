@@ -2,10 +2,14 @@
   "This contains functions for interacting with the metadata db API. It uses the newer transmit namespace
   style that concepts, and access control use"
   (:require
-   [cmr.transmit.config :as config]
-   [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]
-   [ring.util.codec :as codec]))
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [cmr.common.api.context :as ch]
+    [cmr.common.services.errors :as errors]
+    [cmr.transmit.config :as config]
+    [cmr.transmit.connection :as conn]
+    [cmr.transmit.http-helper :as h]
+    [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -156,3 +160,30 @@
 ;; Defines health check function
 (declare get-metadata-db-health)
 (h/defhealther get-metadata-db-health :metadata-db {:timeout-secs 2})
+
+
+(defn get-subscription-cache-content
+  "Retrieves the cache contents of the ingest subscription cache."
+  ([context coll-concept-id]
+   (get-subscription-cache-content context coll-concept-id nil))
+  ([context coll-concept-id {:keys [raw? http-options]}]
+   (let [
+        conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/subscription/cache-content")
+        params (merge
+                 (config/conn-params conn)
+                 {:accept :json
+                  :query-params {:collection-concept-id coll-concept-id}
+                  :headers (merge
+                             (ch/context->http-headers context)
+                             {:client-id config/cmr-client-id})
+                  :throw-exceptions false
+                  :http-options (h/include-request-id context {})})
+        response (client/get request-url params)
+         {:keys [status body]} response
+         status (int status)]
+     (case status
+       200 (json/decode body true)
+       ;; default
+       (errors/internal-error!
+          (format "Get subscription cache content failed for collection %s. status: %s body: %s" coll-concept-id status body))))))
