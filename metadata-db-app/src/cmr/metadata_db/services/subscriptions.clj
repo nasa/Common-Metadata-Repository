@@ -292,10 +292,11 @@
   "Create message attribute map that SQS uses to filter out messages from the SNS topic."
   [endpoint mode coll-concept-id]
   (cond
-    (or (is-valid-sqs-arn endpoint) (is-local-test-queue endpoint)) (cond
-                                  (= "Delete" mode) (create-message-attributes coll-concept-id "Delete")
-                                  (= "New" mode) (create-message-attributes coll-concept-id "New")
-                                  (= "Update" mode) (create-message-attributes coll-concept-id "Update"))
+    (or (is-valid-sqs-arn endpoint)
+        (is-local-test-queue endpoint)) (cond
+                                              (= "Delete" mode) (create-message-attributes coll-concept-id "Delete")
+                                              (= "New" mode) (create-message-attributes coll-concept-id "New")
+                                              (= "Update" mode) (create-message-attributes coll-concept-id "Update"))
     (is-valid-subscription-endpoint-url endpoint) {"endpoint" endpoint
                                                    "endpoint-type" "url"
                                                    "mode" mode}))
@@ -336,6 +337,7 @@
        :body (json/generate-string subscription-object)
        :headers rh/json-header})
     (errors/throw-service-error :bad-request "A collection concept id query parameter was required but was not provided.")))
+
 
 (comment
   (let [system (get-in user/system [:apps :metadata-db])]
