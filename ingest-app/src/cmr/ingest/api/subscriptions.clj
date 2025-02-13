@@ -119,17 +119,18 @@
       (let [_ (println "this subscription is ingest and is sqs arn")
             collection-concept-id  (:CollectionConceptId subscription-concept)
             ;;TODO Fix me I'm returning a 404
-            cache-content-response (metadata-db2/get-subscription-cache-content context collection-concept-id)
+            cache-content (metadata-db2/get-subscription-cache-content context collection-concept-id)
             ;; TODO need to check that the response is 200
-            _ (println "cache-content-response is = " cache-content-response)]
-        (if (not (= (:status cache-content-response) 200))
-          (errors/throw-service-error
-            :internal-error
-            (format (str "Could not retrieve the cache contents to check for duplicate subscription sqs endpoint to collection concept id.")
-                    (util/html-escape collection-concept-id) (util/html-escape collection-concept-id))))
+            _ (println "^^ cache-content is = " cache-content)]
+        ;(if (not (= (:status cache-content) 200))
+        ;  (errors/throw-service-error
+        ;    :internal-error
+        ;    (format (str "Could not retrieve the cache contents to check for duplicate subscription sqs endpoint to collection concept id.")
+        ;            (util/html-escape collection-concept-id) (util/html-escape collection-concept-id))))
 
-        (if-let [sub-cache-map (json/decode (:body cache-content-response))]
-          (let [mode-map (get sub-cache-map "Mode")]
+        (if cache-content
+          (let [mode-map (get cache-content "Mode")
+                _ (println "mode-map = " mode-map)]
             ;; check if any of the endpoints in each mode type is equal to the curr sqs endpoint, if so throw the error
             (doseq [modetoendpointset mode-map]
               (println "mode = " (key modetoendpointset))
