@@ -48,12 +48,7 @@
         (is (thrown? Exception (fun {:EndPoint "", :Method "ingest"})))
 
         ;; ;; given method is ingest, env is non-local and endpoint is local endpoint -- throws error
-        (is (thrown? Exception (fun {:EndPoint "http://localhost:8080", :Method "ingest"})))
-        )
-
-
-
-      )))
+        (is (thrown? Exception (fun {:EndPoint "http://localhost:8080", :Method "ingest"})))))))
 
 (deftest check-subscription-for-collection-not-already-exist-test
   (let [fun #'cmr.ingest.api.subscriptions/check-endpoint-queue-for-collection-not-already-exist
@@ -85,5 +80,4 @@
 
       ;; duplicate collection to sqs queue found -- throws error
       (with-redefs [cmr.transmit.metadata-db2/get-subscription-cache-content (fn [context collection-concept-id] returned-cache-content-with-duplicates)]
-        (is (thrown? Exception (fun context subscription-concept))))
-      )))
+        (is (thrown? Exception (fun context subscription-concept)))))))
