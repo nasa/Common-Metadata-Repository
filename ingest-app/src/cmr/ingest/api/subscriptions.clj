@@ -88,16 +88,15 @@
         curr-env (ingest-config/app-environment)
         url-validator (if (= curr-env "local")
                         (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)
-                        (UrlValidator.))
-        _ (println "current environment is = " curr-env)]
+                        (UrlValidator.))]
 
     (if (= method "ingest")
       (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint))
                   (.isValid url-validator endpoint))
         (errors/throw-service-error
           :bad-request
-          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
-          If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
+          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL."
+          "If it is a URL, make sure to give the full URL path like so: https://www.google.com. We do not accept local URLs.")))))
 
 (defn- check-endpoint-queue-for-collection-not-already-exist
   "Validates that the subscription with the same collection and same SQS endpoint does not already exist.
