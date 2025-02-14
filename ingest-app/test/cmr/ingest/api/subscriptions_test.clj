@@ -1,9 +1,10 @@
 (ns cmr.ingest.api.subscriptions-test
   (:require
-   [clojure.string :as string]
-   [clojure.test :refer :all]
-   [cmr.common.util :as util]
-   [cmr.ingest.api.subscriptions :as subscriptions]))
+    [clojure.string :as string]
+    [clojure.test :refer :all]
+    [cmr.common.util :as util]
+    [cmr.ingest.api.subscriptions :as subscriptions]
+    [cmr.ingest.config :as ingest-config]))
 
 (deftest generate-native-id-test
   (let [parsed {:Name "the_beginning"
@@ -28,22 +29,31 @@
                "given method is search and endpoint not given -- endpoint ignored"
                {:EndPoint "", :Method "search"}
 
-               "given method is ingest and sqs arn is valid"
+               "given method is ingest, env is local, and endpoint is sqs arn"
                {:EndPoint "arn:aws:sqs:us-east-1:000000000:Test-Queue", :Method "ingest"}
 
-               "given method is ingest and url is valid"
-               {:EndPoint "https://testwebsite.com", :Method "ingest"}))
+               "given method is ingest, env is local, and url is non-local"
+               {:EndPoint "https://testwebsite.com", :Method "ingest"}
+
+               "given method is ingest, env is local, url is local"
+               {:EndPoint "http://localhost:8080/localllllll", :Method "ingest"}))
 
   (testing "validate subscription endpoint str -- expected invalid"
-    (util/are3 [subscription-concept]
-               (let [fun #'cmr.ingest.api.subscriptions/validate-subscription-endpoint]
-                 (is (thrown? Exception (fun subscription-concept))))
+    (with-redefs [ingest-config/app-environment (fn [] "non-local")]
+      (let [fun #'cmr.ingest.api.subscriptions/validate-subscription-endpoint]
+        ;; given method is ingest, env is non-local and sqs arn -- throws error
+        (is (thrown? Exception (fun {:EndPoint "iaminvalidendpoint", :Method "ingest"})))
 
-               "given method is ingest and sqs arn is invalid"
-               {:EndPoint "iaminvalidendpoint", :Method "ingest"}
+        ;; given method is ingest, env is non-local and endpoint is empty -- throws error
+        (is (thrown? Exception (fun {:EndPoint "", :Method "ingest"})))
 
-               "given method is ingest and endpoint is empty is invalid"
-               {:EndPoint "", :Method "ingest"})))
+        ;; ;; given method is ingest, env is non-local and endpoint is local endpoint -- throws error
+        (is (thrown? Exception (fun {:EndPoint "http://localhost:8080", :Method "ingest"})))
+        )
+
+
+
+      )))
 
 (deftest check-subscription-for-collection-not-already-exist-test
   (let [fun #'cmr.ingest.api.subscriptions/check-endpoint-queue-for-collection-not-already-exist

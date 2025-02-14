@@ -11,6 +11,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.ingest.validation.validation :as v]
@@ -84,10 +85,15 @@
   [subscription-concept]
   (let [method (:Method subscription-concept)
         endpoint (:EndPoint subscription-concept)
-        default-url-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
+        curr-env (ingest-config/app-environment)
+        url-validator (if (= curr-env "local")
+                        (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)
+                        (UrlValidator.))
+        _ (println "current environment is = " curr-env)]
 
     (if (= method "ingest")
-      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))
+      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint))
+                  (.isValid url-validator endpoint))
         (errors/throw-service-error
           :bad-request
           "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
