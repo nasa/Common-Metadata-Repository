@@ -4,8 +4,7 @@
     [cheshire.core :as json]
     [clojure.test :refer [deftest is]]
     [clj-http.client :as client]
-    [cmr.transmit.metadata-db2 :as mdb2])
-  )
+    [cmr.transmit.metadata-db2 :as mdb2]))
 
 (deftest get-subscription-cache-content
   (let [context {:system :metadata-db}
@@ -23,5 +22,4 @@
       (is (= expected-content-cache (mdb2/get-subscription-cache-content context coll-concept-id))))
     ;; unsuccessful response throws an error
     (with-redefs [client/get (fn [request-url params] {:status 500})]
-      (is (thrown? Exception (mdb2/get-subscription-cache-content context coll-concept-id))))
-    ))
+      (is (thrown? Exception (mdb2/get-subscription-cache-content context coll-concept-id))))))

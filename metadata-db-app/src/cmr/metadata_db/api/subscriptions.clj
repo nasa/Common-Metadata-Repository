@@ -29,6 +29,6 @@
     (POST "/refresh-subscription-cache"
       {request-context :request-context}
       (subscriptions/refresh-subscription-cache request-context))
-    ;; get ingest subscription cache content for this specific collection
+    ;; get ingest subscription cache content for a specific collection
     (GET "/cache-content" {:keys [params request-context]}
       (subscriptions/get-cache-content request-context params))))
