@@ -5,7 +5,7 @@
    [clojure.string :as string]
    [cmr.metadata-db.services.sub-notifications :as sub-note]
    [cmr.metadata-db.services.subscriptions :as subscriptions]
-   [compojure.core :refer [PUT POST context]]))
+   [compojure.core :refer [PUT POST GET context]]))
 
 (defn- update-subscription-notification-time
   "Update a subscription notification time"
@@ -28,4 +28,7 @@
       (update-subscription-notification-time request-context params body))
     (POST "/refresh-subscription-cache"
       {request-context :request-context}
-      (subscriptions/refresh-subscription-cache request-context))))
+      (subscriptions/refresh-subscription-cache request-context))
+    ;; get ingest subscription cache content for a specific collection
+    (GET "/cache-content" {:keys [params request-context]}
+      (subscriptions/get-cache-content request-context params))))

@@ -11,12 +11,14 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.metadata-db2 :as metadata-db2]
    [cmr.transmit.search :as search]
    [cmr.transmit.urs :as urs])
   (:import
@@ -83,14 +85,43 @@
   [subscription-concept]
   (let [method (:Method subscription-concept)
         endpoint (:EndPoint subscription-concept)
-        default-url-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
+        curr-env (ingest-config/app-environment)
+        url-validator (if (= curr-env "local")
+                        (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)
+                        (UrlValidator.))]
 
     (if (= method "ingest")
-      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))
+      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint))
+                  (.isValid url-validator endpoint))
         (errors/throw-service-error
           :bad-request
-          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
-          If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
+          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL."
+          "If it is a URL, make sure to give the full URL path like so: https://www.google.com. We do not accept local URLs.")))))
+
+(defn- check-endpoint-queue-for-collection-not-already-exist
+  "Validates that the subscription with the same collection and same SQS endpoint does not already exist.
+  Throws error if the same collection and same SQS endpoint already exists because creating duplicate collection
+  with same SQS endpoint from a different user is not allowed."
+  [context subscription-concept]
+  (let [curr-endpoint (:EndPoint subscription-concept)]
+    (if (and (= "ingest" (:Method subscription-concept))
+             (or (some? (re-matches #"arn:aws:sqs:.*" curr-endpoint))
+                  (some? (re-matches #"http://localhost:9324.*" curr-endpoint))))
+      (let [collection-concept-id  (:CollectionConceptId subscription-concept)
+            cache-content (metadata-db2/get-subscription-cache-content context collection-concept-id)]
+        (if cache-content
+          ;; cache-content format expected is something like: {:Mode {:Delete [sqs1 sqs2], :New [url1], :Update [url1]}}
+          (let [mode-map (get cache-content :Mode)]
+            ;; check if any of the endpoints in each mode type is equal to the curr sqs endpoint, if so throw the error
+            (doseq [modetoendpointset mode-map]
+              (if (some #{curr-endpoint} (val modetoendpointset))
+                (errors/throw-service-error
+                  :conflict
+                  (format (str "The collection [%s] has already subscribed to the given sqs arn by another user. "
+                               "Each Near Real Time subscription to a collection must have a unique sqs arn endpoint."
+                               "You cannot have the same SQS queue subscribed to the same collection by multiple users,"
+                               "only one user can crate/update/delete subscription to the same end client queue to the same collection.")
+                          (util/html-escape collection-concept-id)))))))))))
 
 (defn- check-subscription-limit
   "Given the configuration for subscription limit, this valdiates that the user has no more than
@@ -163,6 +194,7 @@
   (check-duplicate-subscription request-context concept parsed)
   (check-subscription-limit request-context concept parsed)
   (check-subscriber-collection-permission request-context parsed)
+  (check-endpoint-queue-for-collection-not-already-exist request-context parsed)
   (let [concept-with-user-id (api-core/set-user-id concept
                                                    request-context
                                                    headers)
