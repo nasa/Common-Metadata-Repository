@@ -5,7 +5,7 @@
 mkdir -p package
 
 #pip3 install --platform=manylinux2014_x86_64 --target ./package --implementation cp --python-version 3.9 --only-binary=:all: --upgrade -r requirements.txt --no-compile
-pip3 install --target ./package --implementation cp --python-version 3.9 --only-binary=:all: --upgrade -r requirements.txt --no-compile
+pip3 install --target ./package -r requirements.txt --no-compile
 
 # Zip dependencies
 cd package
