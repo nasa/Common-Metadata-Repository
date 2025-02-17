@@ -3,9 +3,7 @@ import logging
 import sys
 from typing import Optional
 
-LOG_LEVEL: int = int(os.getenv("LOG_LEVEL"))
-if not LOG_LEVEL:
-    LOG_LEVEL = logging.INFO
+LOG_LEVEL: int = int(os.getenv("LOG_LEVEL", logging.INFO))
 
 def setup_logger(name: str, log_file: Optional[str] = None, level: int = logging.INFO) -> logging.Logger:
     """Function to setup as many loggers as you want"""
@@ -28,3 +26,4 @@ def setup_logger(name: str, log_file: Optional[str] = None, level: int = logging
 
 # Create a default logger
 logger = setup_logger(name='default_logger', level=LOG_LEVEL)
+
