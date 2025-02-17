@@ -23,7 +23,7 @@ Search API provides access to this metadata.
 ```brew install leiningen```
 
 ### Maven
-Maven is a package manager for Java and is used within CMR to deal with dependency mangement.
+Maven is a package manager for Java and is used within CMR to deal with dependency management.
 
 `brew install maven`
 
@@ -55,13 +55,13 @@ echo "export PATH=\$PATH:`pwd`/bin" >> ~/.profile
 echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
 ```
 
-**If you wish to not use the tool, simply replace all the command that start with `cmr` with `./bin/cmr` to run the scripts directly.**
+**If you wish to not use the tool, simply replace all the commands that start with `cmr` with `./bin/cmr` to run the scripts directly.**
 
 ### Environment Setup
 
 1. `./bin/cmr setup profile` and then update the new `./dev-system/profiles.clj` file, it will look something like this:
 
-When running CMR locally, the values in this file do not need to be change, CMR just expects that they exist.
+When running CMR locally, the values in this file do not need to be changed, CMR just expects that they exist.
 
    ``` clojure
    {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
@@ -114,7 +114,7 @@ Note: building uberjars will interfere with your repl. If you want to use your r
 `rm -f ./dev-system/target/`
 
 ## Using VS Code Calva extenstion
-VS Code has an extension that allows for easier develop of clojure applications.
+VS Code has an extension that allows for easier development of clojure applications.
 Developers can get setup via: [Getting Started with Calva](https://calva.io/getting-started/)
 
 ## Testing CMR
@@ -179,9 +179,8 @@ For serial execution use:
 ```
 > lein modules utest
 ```
-Alternativly unit tests can be run in parallel using the python script in
-[run_unit_tests.py][ut-script]. This script is meant to be called with by a
-build system such as Bamboo.
+Alternatively unit tests can be run in parallel using the python script in
+[run_unit_tests.py][ut-script]. This script is meant to be called with by with a build system such as Bamboo.
 
 ```
 > lein ci-utest
