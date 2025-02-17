@@ -180,7 +180,7 @@ For serial execution use:
 > lein modules utest
 ```
 Alternatively unit tests can be run in parallel using the python script in
-[run_unit_tests.py][ut-script]. This script is meant to be called with by with a build system such as Bamboo.
+[run_unit_tests.py][ut-script]. This script is meant to be called by a build system such as Bamboo.
 
 ```
 > lein ci-utest
