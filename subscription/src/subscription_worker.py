@@ -37,7 +37,7 @@ def process_messages(sns_client, topic, messages, access_control):
     """Proess the message by first checking if the subscriber has permission to 
        see the notification. If so send it on, otherwise send a log message."""
     for message in messages.get("Messages", []):
-        logger.debug(f"In Subscription worker process messages message: {message}")
+        logger.info(f"In Subscription worker process messages message: {message}")
 
         message_attributes = message['MessageAttributes']
         subscriber_id = message_attributes['subscriber']['Value']
