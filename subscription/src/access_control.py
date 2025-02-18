@@ -96,3 +96,27 @@ class AccessControl:
         else:
             # Request failed
             logger.warning(f"Subscription Worker getting Access Control permissions request using URL {url} with parameters {params} failed with status code: {response.status_code}")
+
+    def has_read_permission(self, subscriber_id, collection_concept_id):
+        """This function calls access control using a subscriber_id (a users earth data login name), and a CMR concept id. It gets the subscribers permission
+        set for a specific concept. access control returns None|Nil|Null back if the subscriber does not have any permissions for the concept.  Access control
+        returns a map that contains a concept id followed by an array of permissions the user has on that concept: {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
+        This function returns true if the read permission exists, false otherwise."""
+
+        try:
+            # Call the get_permissions function
+            permissions = self.get_permissions(self, subscriber_id, collection_concept_id)
+
+            # Check if the permissions is a dictionary
+            if isinstance(permissions, dict):
+                # Check if the collection_concept_id is in the permissions dictionary
+                if collection_concept_id in permissions:
+                    # Check if "read" is in the list of permissions for the collection
+                    return "read" in permissions[collection_concept_id]
+                else: return False
+            else: return False
+
+        except Exception as e:
+            # Handle any exceptions that may occur (e.g., network issues, API errors)
+            logger.error(f"Subscription Worker Access Control error getting permissions for subscriber {subscriber_id} on collection concept id {collection_concept_id}: {str(e)}")
+            return False

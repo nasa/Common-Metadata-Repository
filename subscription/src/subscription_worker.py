@@ -34,18 +34,19 @@ def delete_messages(sqs_client, queue_url, messages):
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
 def process_messages(sns_client, topic, messages, access_control):
+    """Proess the message by first checking if the subscriber has permission to 
+       see the notification. If so send it on, otherwise send a log message."""
     for message in messages.get("Messages", []):
+        logger.debug(f"In Subscription worker process messages message: {message}")
 
-        # Get the permission for the collection from access-control
-        # response = access_control.get_permissions(subscriber-id, collection-concept-id)
-        # Return is either None (Null or Nil) (if check on response is false) or
-        # {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
-        #if response and if array contains read:
-        #    publish message.
-        #else: 
-        #    log subscriber-id no longer has read access to collection-concept-id
+        message_attributes = message['MessageAttributes']
+        subscriber_id = message_attributes['subscriber']['Value']
+        collection_concept_id = message_attributes['collection-concept-id']['Value']
 
-        sns_client.publish_message(topic, message)
+        if (access_control.has_read_permission(subscriber_id, collection_concept_id)):
+            sns_client.publish_message(topic, message)
+        else:
+            logger.info(f"Subscription worker: {subscriber_id} does not have read permission to receive notifications for {collection_concept_id}.")
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """
