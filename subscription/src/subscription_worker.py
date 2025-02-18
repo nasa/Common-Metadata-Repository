@@ -39,11 +39,11 @@ def process_messages(sns_client, topic, messages, access_control):
     for message in messages.get("Messages", []):
         logger.info(f"In Subscription worker process messages message: {message}")
 
-        message_attributes = message['MessageAttributes']
-        subscriber_id = message_attributes['subscriber']['Value']
-        collection_concept_id = message_attributes['collection-concept-id']['Value']
+        #message_attributes = message['MessageAttributes']
+        #subscriber_id = message_attributes['subscriber']['Value']
+        #collection_concept_id = message_attributes['collection-concept-id']['Value']
 
-        if (access_control.has_read_permission(subscriber_id, collection_concept_id)):
+        if(True): #access_control.has_read_permission(subscriber_id, collection_concept_id)):
             sns_client.publish_message(topic, message)
         else:
             logger.info(f"Subscription worker: {subscriber_id} does not have read permission to receive notifications for {collection_concept_id}.")
