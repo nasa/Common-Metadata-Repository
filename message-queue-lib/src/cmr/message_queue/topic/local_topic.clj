@@ -74,7 +74,8 @@
               :filter (when (or (:CollectionConceptId metadata)
                                 (:Mode metadata))
                         {:collection-concept-id (:CollectionConceptId metadata)
-                         :mode (:Mode metadata)})
+                         :mode (:Mode metadata)
+                         :subscriber (:SubscriberId metadata)})
               :queue-url (:EndPoint metadata)
               :dead-letter-queue-url (queue/create-queue sqs-client (config/cmr-subscriptions-dead-letter-queue-name))
               :concept-id (:concept-id subscription)}]

@@ -302,7 +302,8 @@
       (is-valid-subscription-endpoint-url endpoint) {"endpoint" endpoint
                                                      "endpoint-type" "url"
                                                      "mode" mode
-                                                     "subscriber" subscriber}))
+                                                     "subscriber" subscriber
+                                                     "collection-concept-id" coll-concept-id}))
   )
 
 (defn publish-subscription-notification-if-applicable
