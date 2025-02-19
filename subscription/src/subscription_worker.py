@@ -45,8 +45,8 @@ def process_messages(sns_client, topic, messages, access_control):
         
         subscriber = message_attributes['subscriber']['Value']
         collection_concept_id = message_attributes['collection-concept-id']['Value']
-        print(f"Subscriber: {subscriber}")
-        print(f"collection_concept_id: {collection_concept_id}")
+        logger.info(f"Subscriber: {subscriber}")
+        logger.info(f"collection_concept_id: {collection_concept_id}")
         if(access_control.has_read_permission(subscriber, collection_concept_id)):
             sns_client.publish_message(topic, message)
         else:
