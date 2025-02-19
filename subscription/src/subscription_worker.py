@@ -1,6 +1,7 @@
 import boto3
 import multiprocessing
 import os
+import json
 from flask import Flask, jsonify
 from sns import Sns
 from botocore.exceptions import ClientError
@@ -38,15 +39,18 @@ def process_messages(sns_client, topic, messages, access_control):
        see the notification. If so send it on, otherwise send a log message."""
     for message in messages.get("Messages", []):
         logger.info(f"In Subscription worker process messages message: {message}")
-
-        #message_attributes = message['MessageAttributes']
-        #subscriber_id = message_attributes['subscriber']['Value']
-        #collection_concept_id = message_attributes['collection-concept-id']['Value']
-
-        if(True): #access_control.has_read_permission(subscriber_id, collection_concept_id)):
+        message_body_str = message["Body"]
+        message_body = json.loads(message_body_str)
+        message_attributes = message_body["MessageAttributes"]
+        
+        subscriber = message_attributes['subscriber']['Value']
+        collection_concept_id = message_attributes['collection-concept-id']['Value']
+        print(f"Subscriber: {subscriber}")
+        print(f"collection_concept_id: {collection_concept_id}")
+        if(access_control.has_read_permission(subscriber, collection_concept_id)):
             sns_client.publish_message(topic, message)
         else:
-            logger.info(f"Subscription worker: {subscriber_id} does not have read permission to receive notifications for {collection_concept_id}.")
+            logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """
