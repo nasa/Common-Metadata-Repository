@@ -105,7 +105,7 @@ class AccessControl:
 
         try:
             # Call the get_permissions function
-            permissions = self.get_permissions(self, subscriber_id, collection_concept_id)
+            permissions = self.get_permissions(subscriber_id, collection_concept_id)
 
             # Check if the permissions is a dictionary
             if isinstance(permissions, dict):
