@@ -2,21 +2,22 @@ import json
 import requests
 from logger import logger
 
-# This lambda is triggered through a subscription to the cmr-internal-subscription-sit SNS topic. It processes the events which are notifications that get sent
+# This lambda is triggered through a subscription to the cmr-internal-subscription-<env> SNS topic. It processes the events which are notifications that get sent
 # to an external URL.
 
-# Lambda's cannot handle Type hints in some cases. They are left as comments.
-# handler(event: Dict[str, Any], context: Any) -> None:
 def handler(event, context):
-    """The handler is the starting point that is triggered by an SNS topic subscription with a filter that designates tha the notification sent is a URL notification. """
+    """The handler is the starting point that is triggered by an SNS topic subscription with a filter that designates tha the notification sent is a URL notification.
+       Input: event: Dict[str, Any], context: Any
+       Returns: None"""
 
     logger.debug(f"Ingest notification lambda received event: {json.dumps(event, indent=2)}")
     for record in event['Records']:
         process_message(record)
 
-# process_message(record: Dict[str, Any]) ->None:
 def process_message(record):
-    """Processes the record in the event. """
+    """Processes the record in the event.
+       Input: record: Dict[str, Any]
+       Returns: None"""
 
     try:
         logger.info(f"Ingest notification lambda processing message - record: {record}")
@@ -29,9 +30,11 @@ def process_message(record):
         logger.error(f"Ingest notification lambda an error occurred {e} while trying to send the record: {record}")
         raise e
 
-# send_message(url: str, message: Dict[str, Any]) -> None:
 def send_message(url, message):
-    """Sends the passed message to the external URL. If not successful the message is put onto a dead letter queue."""
+    """Sends the passed message to the external URL. If not successful the message is put onto a dead letter queue.
+       Input: url: str, message: Dict[str, Any]
+       Returns: None"""
+
     # Prepare the data to be sent
 
     try:

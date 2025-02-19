@@ -3,9 +3,9 @@ This lambda is a test lambda meant to be run in SIT and WL.
 A user creates an ingest granule subscription. An example follows:
 {"Name": "Ingest-Subscription-Test-Sit-http",
  "Type": "granule",
- "SubscriberId": "eereiter",
+ "SubscriberId": "user1",
  "CollectionConceptId": "C1200463968-CMR_ONLY",
- "EndPoint": "http://internal-cmr-services-sit-internal-only-2141831226.us-east-1.elb.amazonaws.com:80/notification/tester",
+ "EndPoint": "http://<the-internal-loadbalancer-url>/notification/tester",
  "Mode": ["New", "Update", "Delete"],
  "Method": "ingest",
  "MetadataSpecification": {
@@ -19,8 +19,8 @@ Make sure the URL is the CMR internal load balancer followed by /notification/te
 
 Ingest a granule. 
 
-To verify that the notification is correct and that it was sent tunnel into the CMR internal load balancer
-then issue a get request to the load balancer with the correct tunnel port number such as
+To verify that the notification is correct and that it was sent through the tunnel into the CMR internal load balancer,
+issue a get request to the load balancer with the correct tunnel port number such as
 
 curl http://localhost:8081/notification/tester
 
@@ -33,20 +33,20 @@ curl -XPOST -H "Content-Type: application/json" http://localhost:8081/notificati
     {
       "EventSource": "aws:sns",
       "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:us-east-1:832706493240:cmr-subscriptions-sit:1f071817-9e7b-450e-b5a5-606bef7c5b71",
+      "EventSubscriptionArn": "arn:aws:sns:<region>:<account>:<SNS name>:<unique ID>",
       "Sns": {
         "Type": "Notification",
         "MessageId": "ed8c7ee0-c70a-5050-8ef9-1effe57d3dde",
-        "TopicArn": "arn:aws:sns:us-east-1:832706493240:cmr-subscriptions-sit",
+        "TopicArn": "arn:aws:sns:<region>:<account>:<sns name>",
         "Subject": "testing again",
         "Message": "testing again",
         "Timestamp": "2025-02-06T20:48:55.564Z",
         "SignatureVersion": "1",
-        "Signature": "iNvFhB7SvB2Um4xkJ4czhaDtQ9WMr3VWz91j9aBJclHQOSR1vznwdT6pJLJOj1fUA/C9JatNEnouUiPut+8DACZ8pVXfMw5bvHoyci63Y7z5gcmVIHpEMetn1Ms7SpgnuddrIoKpCN/tAQGrEfmzDlMbTXjRWrXpEs8xXsJ+Xq2Mp17FoMU00/JV/eAP8ktHX7TtS+dBGLsPd/QPY3eN5QYcmYAcoFd99Va4Qt6dMqOoH/fjIs1aCwnmD02MSnbjCWOgNSteZChnVAT/+l26krKoidHSop53guPt5KWNBGXTSy4Ouhq630qourN+AiVbKqzUtVypNTXas7iBEoT5Nw==",
-        "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-9c6465fa7f48f5cacd23014631ec1136.pem",
-        "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:832706493240:cmr-subscriptions-sit:1f071817-9e7b-450e-b5a5-606bef7c5b71",
+        "Signature": "iN...TXas7iBEoT5Nw==",
+        "SigningCertUrl": "https://sns.<region>.amazonaws.com/SimpleNotificationService-9...6.pem",
+        "UnsubscribeUrl": "https://sns.<region>.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=<subscription arn>",
         "MessageAttributes": {
-          "endpoint": "http://host.docker.internal:5001/store"
+          "endpoint": "URL"
         }
       }
     }
