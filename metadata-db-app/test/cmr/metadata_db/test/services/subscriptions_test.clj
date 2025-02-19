@@ -8,6 +8,7 @@
    [cmr.message-queue.pub-sub :as pub-sub]
    [cmr.message-queue.test.test-util :as sqs-test-util]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
+   [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
    [cmr.metadata-db.services.subscriptions :as subscriptions] 
@@ -817,3 +818,14 @@
       (with-redefs [topic-protocol/subscribe (fn [topic concept-edn] nil)]
         (testing "subscribe fails, will return concept without the aws-arn in extra fields and will NOT throw exception"
           (is (= ingest-concept (subscriptions/attach-subscription-to-topic context ingest-concept)))))))
+
+(deftest get-cache-content-test
+  ;; cache returns some value -- return 200 with cache content
+  (with-redefs [subscription-cache/get-value (fn [context collection-concept-id] {})]
+    (is (= {:status 200
+            :body (json/generate-string {})
+            :headers rh/json-header}
+           (subscriptions/get-cache-content nil {:collection-concept-id "C123-PROV1"}))))
+  ;; collection concept id not in params -- returns bad request exception
+  (with-redefs [subscription-cache/get-value (fn [context collection-concept-id] {})]
+    (is (thrown? Exception (subscriptions/get-cache-content nil {})))))
