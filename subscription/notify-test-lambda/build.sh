@@ -19,3 +19,4 @@ zip -r ../notify_test_lambda_deployment_package.zip . -x "__pycache__/*"
 cd ..
 
 rm -r package
+
