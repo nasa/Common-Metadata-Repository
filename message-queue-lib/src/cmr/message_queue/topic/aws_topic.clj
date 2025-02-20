@@ -80,7 +80,7 @@
     (let [filters (util/remove-nil-keys
                    {:collection-concept-id [(:CollectionConceptId subscription-metadata)]
                     :mode (:Mode subscription-metadata)
-                    :subscriber (:SubscriberId subscription-metadata)})
+                    :subscriber [(:SubscriberId subscription-metadata)]})
           filter-json (json/generate-string filters)
           sub-filter-request (-> (SetSubscriptionAttributesRequest/builder)
                                  (.subscriptionArn subscription-arn)
