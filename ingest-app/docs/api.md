@@ -1169,10 +1169,6 @@ For NRT Notification subscriptions to be used there are three new fields that ar
         </ul>
 </ul>
 
-NOTE: The same SQS endpoint cannot be used for the same collection more than once. 
-For example if you, USER 1, create a subscription with an SQS queue: SQS1 endpoint to filter UPDATE granule events from Collection 1, another user, USER 2, cannot create a new subscription with the same SQS1 queue endpoint to filter granules from Collection 1 again. 
-Ultimately, only ONE user can perform CRUD operations on the specific SQS endpoint used.
-
 ##### NRT Notification Subscription POST Request
 
 ```

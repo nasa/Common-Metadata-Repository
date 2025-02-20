@@ -154,8 +154,3 @@
 (defconfig validate-umm-var-keywords
   "Flag for whether or not to validate UMM-Var against KMS keywords."
   {:default false :type Boolean})
-
-(declare app-environment)
-(defconfig app-environment
-           "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
-           {:default "local"})
