@@ -8,12 +8,12 @@ pip3 install --target ./package -r requirements.txt --no-compile
 
 # Zip dependencies
 cd package
-zip -r ../notify_test_lambda_deployment_package.zip . -x "__pycache__/*"
+zip -r ../url_endpoint_test_lambda_deployment_package.zip . -x "__pycache__/*"
 cd ..
 
 # Add contents of src directory to the zip file
 cd src 
-zip -r ../notify_test_lambda_deployment_package.zip . -x "__pycache__/*"
+zip -r ../url_endpoint_test_lambda_deployment_package.zip . -x "__pycache__/*"
 
 # Return to the top directory
 cd ..

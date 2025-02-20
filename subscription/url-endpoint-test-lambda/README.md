@@ -1,4 +1,5 @@
-This lambda is a test lambda meant to be run in SIT and WL. 
+url-endpoint-test-lambda function is a test lambda meant to test subscriptions with a URL endpoint. 
+The test lambda will run in SIT and WL and it provides an endpoint that testers can use to test URL endpoint based subscriptions. 
 
 A user creates an ingest granule subscription. An example follows:
 {"Name": "Ingest-Subscription-Test-Sit-http",
