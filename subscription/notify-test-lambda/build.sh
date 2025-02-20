@@ -1,6 +1,6 @@
-# This script is used by the bamboo build project.
-
 #!/bin/bash
+
+# This script is used by the bamboo build project.
 
 mkdir -p package
 
