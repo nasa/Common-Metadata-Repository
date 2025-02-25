@@ -57,10 +57,10 @@ class AccessControl:
             context_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_RELATIVE_ROOT_URL"
 
             env_vars = Env_Vars
-            protocol = env_vars.get_var(protocol_param_name)
-            port = env_vars.get_var(port_param_name)
-            host = env_vars.get_var(host_param_name)
-            context = env_vars.get_var(context_param_name)
+            protocol = env_vars.get_var(name=protocol_param_name)
+            port = env_vars.get_var(name=port_param_name)
+            host = env_vars.get_var(name=host_param_name)
+            context = env_vars.get_var(name=context_param_name)
             self.url = f"{protocol}://{host}:{port}/{context}"
             logger.debug("Subscription Worker Access-Control URL:" + self.url)
 
