@@ -6,7 +6,7 @@ from logger import logger
 
 class AccessControl:
     """Encapsulates Access Control API.
-    This class needs the following environment variables set:
+    This class needs the following environment variables set with an exxample value:
     For local development:
     ACCESS_CONTROL_URL=http://localhost:3011/access-control
     
@@ -19,7 +19,7 @@ class AccessControl:
 
     Example Use of this class
     access_control = AccessControl()
-    response = access_control.get_permissions('eereiter', 'C1200484253-CMR_ONLY')
+    response = access_control.get_permissions('user1', 'C1200484253-CMR_ONLY')
     The call is the same as 'curl https://cmr.sit.earthdata.nasa.gov/access-control/permissions?user_id=eereiter&concept_id=C1200484253-CMR_ONLY'
     Return is either None (Null or Nil) (if check on response is false) or
     {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
@@ -55,6 +55,7 @@ class AccessControl:
             port_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PORT"
             host_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_HOST"
             context_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_RELATIVE_ROOT_URL"
+            logger.info(f"protocol_param_name: {protocol_param_name}")
 
             env_vars = Env_Vars()
             protocol = env_vars.get_var(name=protocol_param_name)

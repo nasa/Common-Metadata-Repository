@@ -12,7 +12,11 @@ class Env_Vars:
         self.ssm_client = boto3.client('ssm', region_name=os.getenv("AWS_REGION"))
     
     def get_var(self, name, decryption=False):
-        value = os.getenv(name)
+        logger.debug(f"Getting the environment variable called {name}")
+        parts = name.split('/')
+        os_name = next(part for part in reversed(parts) if part)
+
+        value = os.getenv(os_name)
 
         if not value:
             try:
