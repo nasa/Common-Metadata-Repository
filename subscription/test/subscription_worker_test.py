@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch, MagicMock
 import boto3
@@ -53,12 +54,53 @@ class TestSubscriptionWorker(unittest.TestCase):
         mock_access_control_instance = MagicMock()
         mock_access_control.return_value = mock_access_control_instance
 
-        #messages = {'Messages': [{'Body': 'test message'
-        #                          'MessageAttributes': {"type": "subscriber"
-        #                                                "Value": "user1"}}]}
-        #process_messages(mock_sns_instance, 'test-topic', messages, mock_access_control_instance)
+        mock_access_control_instance.has_read_permission.return_value = True
+
+#        messages = {'Messages': [{'Body': {'Type': 'Notification', 
+#                                           'MessageId': 'dfb70dfe-6f63-5cfc-9a5f-6dc731b504de', 
+#                                           'TopicArn': 'arn:name', 
+#                                           'Subject': 'Update Notification', 
+#                                           'Message': '{"concept-id": "G1200484365-PROV", "granule-ur": "gnss.rnx.gz.json", "producer-granule-id": "gnss.rnx.gz", "location": "http://localhost:3003/concepts/G1200484365-PROV/4"}', 
+#                                           'Timestamp': '2025-02-26T18:25:26.951Z', 
+#                                           'SignatureVersion': '1', 
+#                                           'Signature': 'HIQ==', 
+#                                           'SigningCertURL': 'https://sns.region.amazonaws.com/SNS-9.pem', 
+#                                           'UnsubscribeURL': 'https://sns.region.amazonaws.com/?Ac', 
+#                                           'MessageAttributes': {'mode': {'Type': 'String', 'Value': 'Update'},
+#                                                                 'collection-concept-id': {'Type': 'String', 'Value': 'C1200484363-PROV'}, 
+#                                                                 'endpoint': {'Type': 'String', 'Value': 'http://notification/tester'}, 
+#                                                                 'subscriber': {'Type': 'String', 'Value': 'user1_test'}, 
+#                                                                 'endpoint-type': {'Type': 'String', 'Value': 'url'}}}}]}
+        messages = {
+            'Messages': [{
+                'Body': json.dumps({
+                    'Type': 'Notification',
+                    'MessageId': 'dfb70dfe-6f63-5cfc-9a5f-6dc731b504de',
+                    'TopicArn': 'arn:name',
+                    'Subject': 'Update Notification',
+                    'Message': '{"concept-id": "G1200484365-PROV", "granule-ur": "gnss.rnx.gz.json", "producer-granule-id": "gnss.rnx.gz", "location": "http://localhost:3003/concepts/G1200484365-PROV/4"}',
+                    'Timestamp': '2025-02-26T18:25:26.951Z',
+                    'SignatureVersion': '1',
+                    'Signature': 'HIQ==',
+                    'SigningCertURL': 'https://sns.region.amazonaws.com/SNS-9.pem',
+                    'UnsubscribeURL': 'https://sns.region.amazonaws.com/?Ac',
+                    'MessageAttributes': {
+                        'mode': {'Type': 'String', 'Value': 'Update'},
+                        'collection-concept-id': {'Type': 'String', 'Value': 'C1200484363-PROV'},
+                        'endpoint': {'Type': 'String', 'Value': 'http://notification/tester'},
+                        'subscriber': {'Type': 'String', 'Value': 'user1_test'},
+                        'endpoint-type': {'Type': 'String', 'Value': 'url'}
+                    }
+                })
+            }]
+        }
+
+        process_messages(mock_sns_instance, 'test-topic', messages, mock_access_control_instance)
+
+        # Check if has_read_permission was called with correct arguments
+        mock_access_control_instance.has_read_permission.assert_called_once_with('user1_test', 'C1200484363-PROV')
         
-        #mock_sns_instance.publish_message.assert_called_once_with('test-topic', {'Body': 'test message'})
+        mock_sns_instance.publish_message.assert_called_once_with('test-topic', messages['Messages'][0])
 
 if __name__ == '__main__':
     unittest.main()
