@@ -16,6 +16,7 @@ LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "10")
 SNS_NAME = os.getenv("SNS_NAME")
 
 def receive_message(sqs_client, queue_url):
+    """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=1,
@@ -27,16 +28,19 @@ def receive_message(sqs_client, queue_url):
     return response
 
 def delete_message(sqs_client, queue_url, receipt_handle):
+    """ Calls the queue to delete a processed message. """
     sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
 def delete_messages(sqs_client, queue_url, messages):
+    """ Calls the queue to delete a list of processed messages. """
     for message in messages.get("Messages", []):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
 def process_messages(sns_client, topic, messages, access_control):
-    """Proess the message by first checking if the subscriber has permission to 
-       see the notification. If so send it on, otherwise send a log message."""
+    """ Processes a list of messages that was received from a queue. Check to see if ACLs pass for the granule.
+        If the checks pass then send the notification. """
+
     for message in messages.get("Messages", []):
         try:
             message_body = json.loads(message["Body"])
