@@ -40,7 +40,7 @@ class AccessControl:
 
         if access_control_url:
             self.url = access_control_url
-            logger.debug("Subscription Worker Access-Control URL:" + self.url)
+            logger.debug(f"Subscription Worker Access-Control URL: {self.url}")
             return
         else:
             # This block gets the access_control URL from the AWS parameter store.
@@ -66,7 +66,7 @@ class AccessControl:
             host = env_vars.get_var(name=host_param_name)
             context = env_vars.get_var(name=context_param_name)
             self.url = f"{protocol}://{host}:{port}/{context}"
-            logger.debug("Subscription Worker Access-Control URL:" + self.url)
+            logger.debug(f"Subscription Worker Access-Control URL: {self.url}")
 
     def get_url(self):
         """This function returns the access control URL if it has already been constructed, otherwise it constructs the URL and then returns it."""
@@ -95,7 +95,7 @@ class AccessControl:
         if response.status_code == 200:
             # Request was successful
             data = response.text
-            logger.debug("Response data:", data)
+            logger.debug(f"Response data: {data}")
             return data
         else:
             # Request failed
