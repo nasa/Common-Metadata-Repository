@@ -7,7 +7,7 @@ from logger import logger
 
 class AccessControl:
     """Encapsulates Access Control API.
-    This class needs the following environment variables set with an exxample value:
+    This class needs the following environment variables set with an example value:
     For local development:
     ACCESS_CONTROL_URL=http://localhost:3011/access-control
     
