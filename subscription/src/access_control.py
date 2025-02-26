@@ -40,6 +40,7 @@ class AccessControl:
 
         if access_control_url:
             self.url = access_control_url
+            logger.debug("Subscription Worker Access-Control URL:" + self.url)
             return
         else:
             # This block gets the access_control URL from the AWS parameter store.
@@ -50,7 +51,9 @@ class AccessControl:
                 raise ValueError("ENVIRONMENT_NAME environment variable is not set")
 
             # construct the access control parameter names from the environment variable
-            pre_fix = f"/{environment_name.lower()}/ingest/"
+            env_name = environment_name.lower()
+            logger.info(f"Environment Name converted is: {env_name}")
+            pre_fix = f"/{env_name}/ingest/"
             protocol_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PROTOCOL"
             port_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PORT"
             host_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_HOST"
