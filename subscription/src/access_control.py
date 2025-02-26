@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 from env_vars import Env_Vars
 from sys import stdout
@@ -110,6 +111,9 @@ class AccessControl:
         try:
             # Call the get_permissions function
             permissions = self.get_permissions(subscriber_id, collection_concept_id)
+            logger.info(f"The type of object the permissions is: {type(permissions)})
+            logger.info(f"If its json then turn it into a Dictionary: {json.load(permissions)})
+            
 
             # Check if the permissions is a dictionary
             if isinstance(permissions, dict):
