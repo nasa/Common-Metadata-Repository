@@ -66,7 +66,9 @@ class AccessControl:
             port = env_vars.get_var(name=port_param_name)
             host = env_vars.get_var(name=host_param_name)
             context = env_vars.get_var(name=context_param_name)
-            self.url = f"{protocol}://{host}:{port}/{context}"
+
+            # The context already contains the forward / so we don't need it here.
+            self.url = f"{protocol}://{host}:{port}{context}"
             logger.debug(f"Subscription Worker Access-Control URL: {self.url}")
 
     def get_url(self):
@@ -110,10 +112,11 @@ class AccessControl:
 
         try:
             # Call the get_permissions function
-            permissions = self.get_permissions(subscriber_id, collection_concept_id)
-            logger.info(f"The type of object the permissions is: {type(permissions)}")
-            logger.info(f"If its json then turn it into a Dictionary: {json.load(permissions)}")
+            permissions_str = self.get_permissions(subscriber_id, collection_concept_id)
+            logger.info(f"The type of object the permissions is: {type(permissions_str)}")
+            logger.info(f"If its json then turn it into a Dictionary: {json.loads(permissions_str)}")
             
+            permissions = json.loads(permissions_str)
 
             # Check if the permissions is a dictionary
             if isinstance(permissions, dict):
