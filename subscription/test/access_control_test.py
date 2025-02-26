@@ -61,32 +61,32 @@ class TestAccessControl(unittest.TestCase):
         result = self.access_control.get_permissions("user1", "C1200484253-CMR_ONLY")
         self.assertIsNone(result)
 
-#    @patch.object(AccessControl, 'get_permissions')
-#    def test_has_read_permission(self, mock_get_permissions):
+    @patch.object(AccessControl, 'get_permissions')
+    def test_has_read_permission(self, mock_get_permissions):
         # Test when user has read permission
-#        mock_get_permissions.return_value = {"C1200484253-CMR_ONLY": ["read", "update"]}
-#        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
-#        self.assertTrue(result)
+        mock_get_permissions.return_value = "{\"C1200484253-CMR_ONLY\": [\"read\", \"update\"]}"
+        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
+        self.assertTrue(result)
 
         # Test when user doesn't have read permission
-#        mock_get_permissions.return_value = {"C1200484253-CMR_ONLY": ["update"]}
-#        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
-#        self.assertFalse(result)
+        mock_get_permissions.return_value = "{\"C1200484253-CMR_ONLY\": [\"update\"]}"
+        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
+        self.assertFalse(result)
 
         # Test when concept_id is not in permissions
-#        mock_get_permissions.return_value = {"C1200484253-OTHER": ["read"]}
-#        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
-#        self.assertFalse(result)
+        mock_get_permissions.return_value = "{\"C1200484253-OTHER\": [\"read\"]}"
+        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
+        self.assertFalse(result)
 
         # Test when permissions is not a dictionary
-#        mock_get_permissions.return_value = None
-#        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
-#        self.assertFalse(result)
+        mock_get_permissions.return_value = None
+        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
+        self.assertFalse(result)
 
         # Test when get_permissions raises an exception
-#        mock_get_permissions.side_effect = Exception("API Error")
-#        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
-#        self.assertFalse(result)
+        mock_get_permissions.side_effect = Exception("API Error")
+        result = self.access_control.has_read_permission("user1", "C1200484253-CMR_ONLY")
+        self.assertFalse(result)
 
     @patch('access_control.logger') 
     @patch.object(AccessControl, 'get_permissions')

@@ -21,7 +21,7 @@ class AccessControl:
     Example Use of this class
     access_control = AccessControl()
     response = access_control.get_permissions('user1', 'C1200484253-CMR_ONLY')
-    The call is the same as 'curl https://cmr.sit.earthdata.nasa.gov/access-control/permissions?user_id=eereiter&concept_id=C1200484253-CMR_ONLY'
+    The call is the same as 'curl https://cmr.sit.earthdata.nasa.gov/access-control/permissions?user_id=user1&concept_id=C1200484253-CMR_ONLY'
     Return is either None (Null or Nil) (if check on response is false) or
     {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
     """
@@ -53,13 +53,11 @@ class AccessControl:
 
             # construct the access control parameter names from the environment variable
             env_name = environment_name.lower()
-            logger.info(f"Environment Name converted is: {env_name}")
             pre_fix = f"/{env_name}/ingest/"
             protocol_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PROTOCOL"
             port_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PORT"
             host_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_HOST"
             context_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_RELATIVE_ROOT_URL"
-            logger.info(f"protocol_param_name: {protocol_param_name}")
 
             env_vars = Env_Vars()
             protocol = env_vars.get_var(name=protocol_param_name)
@@ -113,17 +111,17 @@ class AccessControl:
         try:
             # Call the get_permissions function
             permissions_str = self.get_permissions(subscriber_id, collection_concept_id)
-            logger.info(f"The type of object the permissions is: {type(permissions_str)}")
-            logger.info(f"If its json then turn it into a Dictionary: {json.loads(permissions_str)}")
             
-            permissions = json.loads(permissions_str)
+            if permissions_str:
+                permissions = json.loads(permissions_str)
 
-            # Check if the permissions is a dictionary
-            if isinstance(permissions, dict):
-                # Check if the collection_concept_id is in the permissions dictionary
-                if collection_concept_id in permissions:
-                    # Check if "read" is in the list of permissions for the collection
-                    return "read" in permissions[collection_concept_id]
+                # Check if the permissions is a dictionary
+                if isinstance(permissions, dict):
+                    # Check if the collection_concept_id is in the permissions dictionary
+                    if collection_concept_id in permissions:
+                        # Check if "read" is in the list of permissions for the collection
+                        return "read" in permissions[collection_concept_id]
+                    else: return False
                 else: return False
             else: return False
 

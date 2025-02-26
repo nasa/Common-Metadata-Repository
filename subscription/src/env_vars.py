@@ -12,7 +12,11 @@ class Env_Vars:
         self.ssm_client = boto3.client('ssm', region_name=os.getenv("AWS_REGION"))
     
     def get_var(self, name, decryption=False):
-        logger.debug(f"Getting the environment variable called {name}")
+        """The name parameter looks like /sit/ingest/ENVIRONMENT_VAR. To check if the environment
+           variable exists strip off everything except for the actual variable name. Otherwise
+           go to the AWS ParameterStore and get the values."""
+
+        logger.debug(f"Subscription worker: Getting the environment variable called {name}")
         parts = name.split('/')
         os_name = next(part for part in reversed(parts) if part)
 

@@ -23,7 +23,7 @@ def receive_message(sqs_client, queue_url):
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
     if len(response.get('Messages', [])) > 0:
-        logger.info(f"Number of messages received: {len(response.get('Messages', []))}")
+        logger.debug(f"Number of messages received: {len(response.get('Messages', []))}")
     return response
 
 def delete_message(sqs_client, queue_url, receipt_handle):
@@ -38,19 +38,22 @@ def process_messages(sns_client, topic, messages, access_control):
     """Proess the message by first checking if the subscriber has permission to 
        see the notification. If so send it on, otherwise send a log message."""
     for message in messages.get("Messages", []):
-        logger.info(f"In Subscription worker process messages message: {message}")
-        message_body_str = message["Body"]
-        message_body = json.loads(message_body_str)
-        message_attributes = message_body["MessageAttributes"]
+        try:
+            message_body = json.loads(message["Body"])
+            message_attributes = message_body["MessageAttributes"]
+            logger.debug(f"Subscription worker: Received message including attributes: {message_body}")
+
+            subscriber = message_attributes['subscriber']['Value']
+            collection_concept_id = message_attributes['collection-concept-id']['Value']
+
+            if(access_control.has_read_permission(subscriber, collection_concept_id)):
+                logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
+                sns_client.publish_message(topic, message)
+            else:
+                logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
+        except Exception as e:
+            logger.error(f"Subscription worker: There is a problem process messages {message}. {e}")
         
-        subscriber = message_attributes['subscriber']['Value']
-        collection_concept_id = message_attributes['collection-concept-id']['Value']
-        logger.info(f"Subscriber: {subscriber}")
-        logger.info(f"collection_concept_id: {collection_concept_id}")
-        if(access_control.has_read_permission(subscriber, collection_concept_id)):
-            sns_client.publish_message(topic, message)
-        else:
-            logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """
@@ -77,7 +80,7 @@ def poll_queue(running):
                  delete_messages(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL, messages=dl_messages)
 
         except Exception as e:
-             logger.warning(f"An error occurred receiving or deleting messages: {e}")
+             logger.error(f"An error occurred receiving or deleting messages: {e}")
 
 app = Flask(__name__)
 @app.route('/shutdown', methods=['POST'])
