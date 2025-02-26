@@ -11,7 +11,7 @@ class AccessControl:
     ACCESS_CONTROL_URL=http://localhost:3011/access-control
     
     For AWS:
-    ENVIRONMENT_NAME=SIT
+    ENVIRONMENT_NAME=sit
     CMR_ACCESS_CONTROL_PROTOCOL=https
     CMR_ACCESS_CONTROL_PORT=3011
     CMR_ACCESS_CONTROL_HOST=cmr.sit.earthdata.nasa.gov
@@ -50,7 +50,7 @@ class AccessControl:
                 raise ValueError("ENVIRONMENT_NAME environment variable is not set")
 
             # construct the access control parameter names from the environment variable
-            pre_fix = f"/{environment_name}/ingest/"
+            pre_fix = f"/{environment_name.lower()}/ingest/"
             protocol_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PROTOCOL"
             port_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_PORT"
             host_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_HOST"
