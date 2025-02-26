@@ -56,7 +56,7 @@ class AccessControl:
             host_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_HOST"
             context_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_RELATIVE_ROOT_URL"
 
-            env_vars = Env_Vars
+            env_vars = Env_Vars()
             protocol = env_vars.get_var(name=protocol_param_name)
             port = env_vars.get_var(name=port_param_name)
             host = env_vars.get_var(name=host_param_name)
