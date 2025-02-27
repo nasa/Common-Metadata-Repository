@@ -30,9 +30,9 @@ class TestAccessControl(unittest.TestCase):
 
     def test_get_url(self):
         with patch.object(AccessControl, 'get_url_from_parameter_store') as mock_method:
-            self.access_control.url = "http://test-url.com"
+            self.access_control.url = "http://example.com"
             result = self.access_control.get_url()
-            self.assertEqual(result, "http://test-url.com")
+            self.assertEqual(result, "http://example.com")
             mock_method.assert_not_called()
 
         with patch.object(AccessControl, 'get_url_from_parameter_store') as mock_method:
@@ -47,7 +47,7 @@ class TestAccessControl(unittest.TestCase):
         mock_response.text = '{"C1200484253-CMR_ONLY":["read","update","delete","order"]}'
         mock_get.return_value = mock_response
 
-        self.access_control.url = "http://test-url.com"
+        self.access_control.url = "http://example.com"
         result = self.access_control.get_permissions("user1", "C1200484253-CMR_ONLY")
         self.assertEqual(result, '{"C1200484253-CMR_ONLY":["read","update","delete","order"]}')
 
@@ -57,7 +57,7 @@ class TestAccessControl(unittest.TestCase):
         mock_response.status_code = 404
         mock_get.return_value = mock_response
 
-        self.access_control.url = "http://test-url.com"
+        self.access_control.url = "http://example.com"
         result = self.access_control.get_permissions("user1", "C1200484253-CMR_ONLY")
         self.assertIsNone(result)
 
