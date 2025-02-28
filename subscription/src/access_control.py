@@ -26,7 +26,6 @@ class AccessControl:
     {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
     """
 
-    
     def __init__(self):
         """ Sets up a class variable of url."""
         self.url = None
@@ -60,10 +59,10 @@ class AccessControl:
             context_param_name = f"{pre_fix}CMR_ACCESS_CONTROL_RELATIVE_ROOT_URL"
 
             env_vars = Env_Vars()
-            protocol = env_vars.get_var(name=protocol_param_name)
-            port = env_vars.get_var(name=port_param_name)
-            host = env_vars.get_var(name=host_param_name)
-            context = env_vars.get_var(name=context_param_name)
+            protocol = env_vars.get_env_var_from_parameter_store(parameter_name=protocol_param_name)
+            port = env_vars.get_env_var_from_parameter_store(parameter_name=port_param_name)
+            host = env_vars.get_env_var_from_parameter_store(parameter_name=host_param_name)
+            context = env_vars.get_env_var_from_parameter_store(parameter_name=context_param_name)
 
             # The context already contains the forward / so we don't need it here.
             self.url = f"{protocol}://{host}:{port}{context}"
@@ -115,15 +114,12 @@ class AccessControl:
             if permissions_str:
                 permissions = json.loads(permissions_str)
 
-                # Check if the permissions is a dictionary
-                if isinstance(permissions, dict):
-                    # Check if the collection_concept_id is in the permissions dictionary
-                    if collection_concept_id in permissions:
-                        # Check if "read" is in the list of permissions for the collection
-                        return "read" in permissions[collection_concept_id]
-                    else: return False
-                else: return False
-            else: return False
+                # Check if the permissions is a dictionary and if 
+                # the collection_concept_id is in the permissions dictionary
+                if isinstance(permissions, dict) and collection_concept_id in permissions:
+                    # Check if "read" is in the list of permissions for the collection
+                    return "read" in permissions[collection_concept_id]
+            return False
 
         except Exception as e:
             # Handle any exceptions that may occur (e.g., network issues, API errors)

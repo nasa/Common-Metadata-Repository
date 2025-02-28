@@ -11,25 +11,22 @@ class Env_Vars:
     def __init__(self):
         self.ssm_client = boto3.client('ssm', region_name=os.getenv("AWS_REGION"))
     
-    def get_var(self, name, decryption=False):
+    def get_env_var_from_parameter_store(self, parameter_name, decryption=False):
         """The name parameter looks like /sit/ingest/ENVIRONMENT_VAR. To check if the environment
            variable exists strip off everything except for the actual variable name. Otherwise
            go to the AWS ParameterStore and get the values."""
 
-        logger.debug(f"Subscription worker: Getting the environment variable called {name}")
-        parts = name.split('/')
-        os_name = next(part for part in reversed(parts) if part)
-
-        value = os.getenv(os_name)
+        logger.debug(f"Subscription worker: Getting the environment variable called {parameter_name}")
+        value = os.getenv(parameter_name.split('/')[-1])
 
         if not value:
             try:
                 # Get the parameter value from AWS Parameter Store
-                response = self.ssm_client.get_parameter(Name=name, WithDecryption=decryption)
+                response = self.ssm_client.get_parameter(Name=parameter_name, WithDecryption=decryption)
                 return response['Parameter']['Value']
             
             except ClientError as e:
-                logger.error(f"Error retrieving parameter from AWS Parameter Store: {e}")
+                logger.error(f"Error retrieving parameter {parameter_name} from AWS Parameter Store: {e}")
                 raise
         else:
             return value

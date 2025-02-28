@@ -19,7 +19,7 @@ class TestAccessControl(unittest.TestCase):
     @patch('access_control.Env_Vars')
     def test_get_url_from_parameter_store_aws(self, mock_env_vars):
         mock_env_vars_instance = MagicMock()
-        mock_env_vars_instance.get_var.side_effect = [
+        mock_env_vars_instance.get_env_var_from_parameter_store.side_effect = [
             "https", "3011", "cmr.sit.earthdata.nasa.gov", "/access-control"
         ]
         mock_env_vars.return_value = mock_env_vars_instance
