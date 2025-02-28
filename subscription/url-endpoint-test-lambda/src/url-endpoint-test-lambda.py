@@ -1,4 +1,5 @@
 import json
+import os
 import boto3
 from botocore.exceptions import ClientError
 from sys import stdout
@@ -11,7 +12,7 @@ from sys import stdout
 # that you used in your tunnel.
 
 s3 = boto3.client('s3')
-BUCKET_NAME = 'cmr-notification-http-tester-bucket'
+BUCKET_NAME = os.getenv("BUCKET_NAME")
 FILE_NAME = 'notification-message.json'
 
 
