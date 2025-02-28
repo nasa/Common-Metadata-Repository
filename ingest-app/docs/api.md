@@ -1098,7 +1098,7 @@ There are two kinds of subscriptions: Batch Notification and Near-Real-Time Noti
             <li>granule subscription for users to be notified when granules are created/update</li>
         </ul>
     </ul>
-    <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
+    <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue or a URL.
 </ul>
 
 ### <a name="create-subscription"></a> Create a Subscription

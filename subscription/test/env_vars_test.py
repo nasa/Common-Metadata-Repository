@@ -10,7 +10,7 @@ class TestEnvVars(unittest.TestCase):
 
     @patch.dict(os.environ, {"TEST_VAR": "test_value"})
     def test_get_var_from_os(self):
-        value = self.env_vars.get_var("TEST_VAR")
+        value = self.env_vars.get_env_var_from_parameter_store("TEST_VAR")
         self.assertEqual(value, "test_value")
 
     @patch.dict(os.environ, {}, clear=True)
@@ -26,7 +26,7 @@ class TestEnvVars(unittest.TestCase):
 
         self.env_vars.ssm_client = mock_ssm
 
-        value = self.env_vars.get_var("SOME_VAR")
+        value = self.env_vars.get_env_var_from_parameter_store("SOME_VAR")
         self.assertEqual(value, "some_value")
         mock_ssm.get_parameter.assert_called_once_with(Name="SOME_VAR", WithDecryption=False)
 
@@ -43,7 +43,7 @@ class TestEnvVars(unittest.TestCase):
 
         self.env_vars.ssm_client = mock_ssm
 
-        value = self.env_vars.get_var('ENCRYPTED_VAR', decryption=True)
+        value = self.env_vars.get_env_var_from_parameter_store('ENCRYPTED_VAR', decryption=True)
         self.assertEqual(value, 'encrypted_value')
         mock_ssm.get_parameter.assert_called_once_with(Name='ENCRYPTED_VAR', WithDecryption=True)
 
@@ -60,7 +60,7 @@ class TestEnvVars(unittest.TestCase):
         self.env_vars.ssm_client = mock_ssm
 
         with self.assertRaises(ClientError):
-            self.env_vars.get_var('NONEXISTENT_VAR')
+            self.env_vars.get_env_var_from_parameter_store('NONEXISTENT_VAR')
 
 if __name__ == '__main__':
     unittest.main()
