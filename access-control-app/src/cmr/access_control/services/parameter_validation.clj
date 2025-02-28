@@ -77,7 +77,7 @@
   "Validates that when provider param is specified, target param is a valid enum value."
   [{:keys [provider target]}]
   (when (and provider (not (some #{target} acl-schema/provider-object-targets)))
-    [(str "Parameter [target] must be one of: " (pr-str acl-schema/provider-object-targets))]))
+   [(str "Parameter [target] must be one of: " (pr-str acl-schema/provider-object-targets))]))
 
 (defn- single-target-validation
   "Validates that only one target is specified."
@@ -109,7 +109,7 @@
     (try
       (when-let [page-num-i (pv/get-ivalue-from-params params :page-num)]
         (let [page-size (or (pv/get-ivalue-from-params params :page-size) pv/max-page-size)
-              page-size (if (= 0 page-size)
+              page-size (if (zero? page-size)
                           pv/max-page-size
                           page-size)
               valid-upper-bound (-> concept-ids
@@ -117,7 +117,7 @@
                                     (/ page-size)
                                     Math/ceil
                                     int)]
-          (when (and (> valid-upper-bound 0)
+          (when (and (pos? valid-upper-bound)
                      (< valid-upper-bound page-num-i))
             [(format "page_num must be a number less than or equal to %s" valid-upper-bound)])))
       (catch java.lang.ArithmeticException _e

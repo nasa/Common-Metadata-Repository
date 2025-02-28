@@ -194,7 +194,7 @@
   [context key-path acl]
   (let [provider-id (acls/acl->provider-id acl)]
     (when (and provider-id
-               (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
+               (not-any? #{provider-id} (map :provider-id (mdb/get-providers context))))
       {key-path [(msg/provider-does-not-exist provider-id)]})))
 
 (defn validate-grantable-permissions

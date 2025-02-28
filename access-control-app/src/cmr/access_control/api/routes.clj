@@ -109,350 +109,351 @@
 (defn- search-for-groups
   [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (group-service/search-for-groups ctx (dissoc params :token))
-      common-routes/search-response))
+  (common-routes/search-response
+   (group-service/search-for-groups ctx (dissoc params :token))))
+
 
 ;;; ACL Route Functions
 
-(defn- create-acl
-  "Returns a Ring response with the result of trying to create the ACL with the given request body."
-  [request-ctx headers body]
-  (validate-content-type headers)
-  (acl-schema/validate-acl-json body)
-  (try
+  (defn- create-acl
+    "Returns a Ring response with the result of trying to create the ACL with the given request body."
+    [request-ctx headers body]
+    (validate-content-type headers)
+    (acl-schema/validate-acl-json body)
+    (try
+      (->> (json/parse-string body)
+           util/map-keys->kebab-case
+           (acl-service/create-acl request-ctx)
+           util/map-keys->snake_case
+           api-response)
+      (catch com.fasterxml.jackson.core.JsonParseException e
+        (errors/throw-service-error :bad-request (str "Json parsing error: " (.getMessage e))))))
+
+  (defn- update-acl
+    "Returns a Ring response with the result of trying to update the ACL with the given concept id
+  and request body."
+    [ctx concept-id headers body]
+    (validate-content-type headers)
+    (acl-schema/validate-acl-json body)
     (->> (json/parse-string body)
          util/map-keys->kebab-case
-         (acl-service/create-acl request-ctx)
+         (acl-service/update-acl ctx concept-id (get headers "cmr-revision-id"))
          util/map-keys->snake_case
-         api-response)
-    (catch com.fasterxml.jackson.core.JsonParseException e
-      (errors/throw-service-error :bad-request (str "Json parsing error: " (.getMessage e))))))
+         api-response))
 
-(defn- update-acl
-  "Returns a Ring response with the result of trying to update the ACL with the given concept id
-  and request body."
-  [ctx concept-id headers body]
-  (validate-content-type headers)
-  (acl-schema/validate-acl-json body)
-  (->> (json/parse-string body)
-       util/map-keys->kebab-case
-       (acl-service/update-acl ctx concept-id (get headers "cmr-revision-id"))
-       util/map-keys->snake_case
-       api-response))
+  (defn- delete-acl
+    "Returns a Ring response with the result of trying to delete the ACL with the given concept id."
+    [ctx concept-id headers]
+    (api-response (acl-service/delete-acl ctx concept-id (get headers "cmr-revision-id"))))
 
-(defn- delete-acl
-  "Returns a Ring response with the result of trying to delete the ACL with the given concept id."
-  [ctx concept-id headers]
-  (api-response (acl-service/delete-acl ctx concept-id (get headers "cmr-revision-id"))))
+  (defn- get-acl
+    "Returns a Ring response with the metadata of the ACL identified by concept-id."
+    [ctx concept-id params]
+    (-> (acl-service/get-acl ctx concept-id params)
+        (util/map-keys->snake_case)
+        api-response))
 
-(defn- get-acl
-  "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [ctx concept-id params]
-  (-> (acl-service/get-acl ctx concept-id params)
-      (util/map-keys->snake_case)
-      api-response))
+  (defn- validate-search-after-value
+    "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
+    [search-after]
+    (try
+      (seq (json/parse-string search-after))
+      (catch Exception e
+        (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
+        (errors/throw-service-error
+         :bad-request
+         "search-after header value is invalid, must be in the form of a JSON array."))))
 
-(defn- validate-search-after-value
-  "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
-  [search-after]
-  (try
-    (seq (json/parse-string search-after))
-    (catch Exception e
-      (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
-      (errors/throw-service-error
-       :bad-request
-       "search-after header value is invalid, must be in the form of a JSON array."))))
+  (defn- search-for-acls
+    "Returns a Ring response with ACL search results for the given params."
+    [ctx headers params]
+    (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
+    (let [search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+          decoded-search-after (validate-search-after-value search-after)
+          ctx (assoc ctx :search-after decoded-search-after)]
+      (common-routes/search-response
+       (acl-search/search-for-acls ctx params))))
 
-(defn- search-for-acls
-  "Returns a Ring response with ACL search results for the given params."
-  [ctx headers params]
-  (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (let [search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
-        decoded-search-after (validate-search-after-value search-after)
-        ctx (assoc ctx :search-after decoded-search-after)]
-    (common-routes/search-response
-    (acl-search/search-for-acls ctx params))))
+  (defn- get-page
+    "Extracts a specific page from a vector of values based on the given page size and page number."
+    [vector page-size page-num]
+    (if (vector? vector)
+      (let [total-items (count vector)
+            start-index (min (* (dec page-num) page-size) total-items)
+            end-index (min (* page-num page-size) total-items)]
+        (subvec vector start-index end-index))
+      vector))
 
-(defn- get-page
-  "Extracts a specific page from a vector of values based on the given page size and page number."
-  [vector page-size page-num]
-  (if (vector? vector)
-    (let [total-items (count vector)
-          start-index (min (* (dec page-num) page-size) total-items)
-          end-index (min (* page-num page-size) total-items)]
-      (subvec vector start-index end-index))
-    vector))
-
-(defn get-permissions
-  "Formats a response for retrieving permissions based on the given parameters. When concept_id is present,
+  (defn get-permissions
+    "Formats a response for retrieving permissions based on the given parameters. When concept_id is present,
   only a chunk of the concept_id vector will be processed according to page_size and page_num."
-  [context params]
-  (-> params
-      (select-keys [:page_size :page_num :concept_id])
-      util/map-keys->kebab-case
-      pv/validate-page-size-and-num)
-  (let [start-time (System/currentTimeMillis)
-        {:keys [concept_id page_size page_num]} params
-        client-id (:client-id context)
+    [context params]
+    (-> params
+        (select-keys [:page_size :page_num :concept_id])
+        util/map-keys->kebab-case
+        pv/validate-page-size-and-num)
+    (let [start-time (System/currentTimeMillis)
+          {:keys [concept_id page_size page_num]} params
+          client-id (:client-id context)
         ;; Default and max page_size is 2000
-        page_size (if (and page_size
-                           (> (util/safe-read-string page_size) 0))
-                    (min (util/safe-read-string page_size) cpv/max-page-size)
-                    cpv/max-page-size)
+          page_size (if (and page_size
+                             (pos? (util/safe-read-string page_size)))
+                      (min (util/safe-read-string page_size) cpv/max-page-size)
+                      cpv/max-page-size)
         ;; Default page_num is 1
-        page_num (if page_num
-                   (util/safe-read-string page_num)
-                   1)
+          page_num (if page_num
+                     (util/safe-read-string page_num)
+                     1)
         ;; If concept_id is present, get the correct page and assoc that into params
-        params (if concept_id
-                 (do
-                   (info (format "get-permission called on concept_ids with page_size %s, page_num %s, with client-id %s"
-                                 page_size
-                                 page_num
-                                 client-id))
-                   (assoc params :concept_id (get-page concept_id page_size page_num)))
-                 (do
-                   (info (format "get-permission called with params %s, with client-id %s"
-                                 params
-                                 client-id))
-                   params))
-        response (acl-service/get-permissions context params)
-        total-took (- (System/currentTimeMillis) start-time)
-        headers {common-routes/CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Took"
-                 common-routes/HITS_HEADER (if (vector? concept_id)
-                                             (str (count concept_id))
-                                             "1")
-                 common-routes/TOOK_HEADER (str total-took)}]
-    {:status 200
-     :headers headers
-     :body (json/generate-string response)}))
+          params (if concept_id
+                   (do
+                     (info (format "get-permission called on concept_ids with page_size %s, page_num %s, with client-id %s"
+                                   page_size
+                                   page_num
+                                   client-id))
+                     (assoc params :concept_id (get-page concept_id page_size page_num)))
+                   (do
+                     (info (format "get-permission called with params %s, with client-id %s"
+                                   params
+                                   client-id))
+                     params))
+          response (acl-service/get-permissions context params)
+          total-took (- (System/currentTimeMillis) start-time)
+          headers {common-routes/CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Took"
+                   common-routes/HITS_HEADER (if (vector? concept_id)
+                                               (str (count concept_id))
+                                               "1")
+                   common-routes/TOOK_HEADER (str total-took)}]
+      {:status 200
+       :headers headers
+       :body (json/generate-string response)}))
 
 
-(defn- get-current-sids
-  "Returns a Ring response with the current user's sids"
-  [request-context params]
-  (pv/validate-current-sids-params params)
-  (let [result (acl-service/get-current-sids request-context params)]
-    {:status 200
-     :body (json/generate-string result)}))
+  (defn- get-current-sids
+    "Returns a Ring response with the current user's sids"
+    [request-context params]
+    (pv/validate-current-sids-params params)
+    (let [result (acl-service/get-current-sids request-context params)]
+      {:status 200
+       :body (json/generate-string result)}))
 
-(defn- reindex-groups
-  "Processes a request to reindex all groups"
-  [ctx]
-  (index/reindex-groups ctx)
-  {:status 200})
+  (defn- reindex-groups
+    "Processes a request to reindex all groups"
+    [ctx]
+    (index/reindex-groups ctx)
+    {:status 200})
 
-(defn- reindex-acls
-  "Processes a request to reindex all acls"
-  [ctx]
-  (index/reindex-acls ctx)
-  {:status 200})
+  (defn- reindex-acls
+    "Processes a request to reindex all acls"
+    [ctx]
+    (index/reindex-acls ctx)
+    {:status 200})
 
 ;;; Various Admin Route Functions
 
-(defn reset
-  "Resets the app state. Compatible with cmr.dev-system.control."
-  ([ctx]
-   (reset ctx true))
-  ([ctx bootstrap-data]
-   (cache/reset-caches ctx)
-   (index/reset (-> ctx :system :search-index))
-   (when bootstrap-data
-     (bootstrap/bootstrap (:system ctx)))))
+  (defn reset
+    "Resets the app state. Compatible with cmr.dev-system.control."
+    ([ctx]
+     (reset ctx true))
+    ([ctx bootstrap-data]
+     (cache/reset-caches ctx)
+     (index/reset (-> ctx :system :search-index))
+     (when bootstrap-data
+       (bootstrap/bootstrap (:system ctx)))))
 
-(def admin-api-routes
-  "The administrative control routes."
-  (routes
-    (POST "/reset" {ctx :request-context params :params}
-      (acl/verify-ingest-management-permission ctx :update)
-      (reset ctx (= (:bootstrap_data params) "true"))
-      {:status 204})
-    (POST "/db-migrate" {ctx :request-context}
-      (acl/verify-ingest-management-permission ctx :update)
-      (index/create-index-or-update-mappings (-> ctx :system :search-index))
-      {:status 204})))
+  (def admin-api-routes
+    "The administrative control routes."
+    (routes
+     (POST "/reset" {ctx :request-context params :params}
+       (acl/verify-ingest-management-permission ctx :update)
+       (reset ctx (= (:bootstrap_data params) "true"))
+       {:status 204})
+     (POST "/db-migrate" {ctx :request-context}
+       (acl/verify-ingest-management-permission ctx :update)
+       (index/create-index-or-update-mappings (-> ctx :system :search-index))
+       {:status 204})))
 
 ;;; S3 routes
 
-(defn- get-allowed-s3-buckets
-  "Returns a list of S3 buckets the given user_id has access to."
-  [context params]
-  (pv/validate-s3-buckets-params params)
-  (let [{user :user_id providers :provider} params
-        s3-list (acl-service/s3-buckets-for-user
-                 context
-                 user
-                 providers)]
-    {:status 200
-     :body (json/generate-string s3-list)}))
+  (defn- get-allowed-s3-buckets
+    "Returns a list of S3 buckets the given user_id has access to."
+    [context params]
+    (pv/validate-s3-buckets-params params)
+    (let [{user :user_id providers :provider} params
+          s3-list (acl-service/s3-buckets-for-user
+                   context
+                   user
+                   providers)]
+      {:status 200
+       :body (json/generate-string s3-list)}))
 
 ;;; Handler
-(defn build-routes [system]
-  (routes
-    (context (:relative-root-url system) []
-      admin-api-routes
+  (defn build-routes [system]
+    (routes
+     (context (:relative-root-url system) []
+       admin-api-routes
 
       ;; add routes for checking health of the application
-      (common-health/health-api-routes group-service/health)
+       (common-health/health-api-routes group-service/health)
 
       ;; add routes for enabling/disabling writes
-      (common-enabled/write-enabled-api-routes
-       #(acl/verify-ingest-management-permission % :update))
+       (common-enabled/write-enabled-api-routes
+        #(acl/verify-ingest-management-permission % :update))
 
       ;; add routes for accessing caches
-      common-routes/cache-api-routes
+       common-routes/cache-api-routes
 
       ;; Reindex all groups
-      (POST "/reindex-groups"
-            {ctx :request-context params :params}
-            (acl/verify-ingest-management-permission ctx :update)
-            (pv/validate-standard-params params)
-            (reindex-groups ctx))
+       (POST "/reindex-groups"
+         {ctx :request-context params :params}
+         (acl/verify-ingest-management-permission ctx :update)
+         (pv/validate-standard-params params)
+         (reindex-groups ctx))
 
       ;; Reindex all acls
-      (POST "/reindex-acls"
-            {ctx :request-context params :params}
-            (acl/verify-ingest-management-permission ctx :update)
-            (pv/validate-standard-params params)
-            (reindex-acls ctx))
+       (POST "/reindex-acls"
+         {ctx :request-context params :params}
+         (acl/verify-ingest-management-permission ctx :update)
+         (pv/validate-standard-params params)
+         (reindex-acls ctx))
 
-      (if (access-control-config/enable-cmr-groups)
-        (context "/groups" []
-          (OPTIONS "/"
-                   {params :params}
-                   (pv/validate-standard-params params)
-                   (common-routes/options-response))
+       (if (access-control-config/enable-cmr-groups)
+         (context "/groups" []
+           (OPTIONS "/"
+             {params :params}
+             (pv/validate-standard-params params)
+             (common-routes/options-response))
 
           ;; Search for groups
-          (GET "/"
-               {ctx :request-context params :params headers :headers}
-               (search-for-groups ctx headers params))
+           (GET "/"
+             {ctx :request-context params :params headers :headers}
+             (search-for-groups ctx headers params))
 
           ;; Create a group
-          (POST "/"
-                {ctx :request-context params :params headers :headers body :body}
-                (lt-validation/validate-launchpad-token ctx)
-                (pv/validate-create-group-route-params params)
-                (create-group ctx
-                              headers
-                              (slurp body)
-                              (or (:managing-group-id params)
-                                  (:managing_group_id params))))
+           (POST "/"
+             {ctx :request-context params :params headers :headers body :body}
+             (lt-validation/validate-launchpad-token ctx)
+             (pv/validate-create-group-route-params params)
+             (create-group ctx
+                           headers
+                           (slurp body)
+                           (or (:managing-group-id params)
+                               (:managing_group_id params))))
 
-          (context "/:group-id" [group-id]
-            (OPTIONS "/" _req (common-routes/options-response))
+           (context "/:group-id" [group-id]
+             (OPTIONS "/" _req (common-routes/options-response))
             ;; Get a group
-            (GET "/"
-                 {ctx :request-context params :params}
-                 (pv/validate-group-route-params params)
-                 (get-group ctx group-id))
+             (GET "/"
+               {ctx :request-context params :params}
+               (pv/validate-group-route-params params)
+               (get-group ctx group-id))
 
             ;; Delete a group
-            (DELETE "/"
-                    {ctx :request-context params :params}
-                    (lt-validation/validate-launchpad-token ctx)
-                    (pv/validate-group-route-params params)
-                    (delete-group ctx group-id))
+             (DELETE "/"
+               {ctx :request-context params :params}
+               (lt-validation/validate-launchpad-token ctx)
+               (pv/validate-group-route-params params)
+               (delete-group ctx group-id))
 
             ;; Update a group
-            (PUT "/"
+             (PUT "/"
+               {ctx :request-context params :params headers :headers body :body}
+               (lt-validation/validate-launchpad-token ctx)
+               (pv/validate-group-route-params params)
+               (update-group ctx headers (slurp body) group-id))
+
+             (context "/members" []
+               (OPTIONS "/" _req (common-routes/options-response))
+               (GET "/"
+                 {ctx :request-context params :params}
+                 (pv/validate-group-route-params params)
+                 (get-members ctx group-id))
+
+               (POST "/"
                  {ctx :request-context params :params headers :headers body :body}
                  (lt-validation/validate-launchpad-token ctx)
                  (pv/validate-group-route-params params)
-                 (update-group ctx headers (slurp body) group-id))
+                 (add-members ctx headers (slurp body) group-id))
 
-            (context "/members" []
-              (OPTIONS "/" _req (common-routes/options-response))
-              (GET "/"
-                   {ctx :request-context params :params}
-                   (pv/validate-group-route-params params)
-                   (get-members ctx group-id))
+               (DELETE "/"
+                 {ctx :request-context params :params headers :headers body :body}
+                 (lt-validation/validate-launchpad-token ctx)
+                 (pv/validate-group-route-params params)
+                 (remove-members ctx headers (slurp body) group-id)))))
+         (context "/groups" []))
 
-              (POST "/"
-                    {ctx :request-context params :params headers :headers body :body}
-                    (lt-validation/validate-launchpad-token ctx)
-                    (pv/validate-group-route-params params)
-                    (add-members ctx headers (slurp body) group-id))
-
-              (DELETE "/"
-                      {ctx :request-context params :params headers :headers body :body}
-                      (lt-validation/validate-launchpad-token ctx)
-                      (pv/validate-group-route-params params)
-                      (remove-members ctx headers (slurp body) group-id)))))
-        (context "/groups" []))
-
-      (context "/acls" []
-        (OPTIONS "/"
-                 {params :params}
-                 (pv/validate-standard-params params)
-                 (common-routes/options-response))
+       (context "/acls" []
+         (OPTIONS "/"
+           {params :params}
+           (pv/validate-standard-params params)
+           (common-routes/options-response))
 
         ;; Search for ACLs with either GET or POST
-        (GET "/"
-             {ctx :request-context params :params headers :headers}
-             (search-for-acls ctx headers params))
+         (GET "/"
+           {ctx :request-context params :params headers :headers}
+           (search-for-acls ctx headers params))
         ;; POST search is at a different route to avoid a collision with the ACL creation route
-        (POST "/search"
-              {ctx :request-context params :params headers :headers}
-              (search-for-acls ctx headers params))
+         (POST "/search"
+           {ctx :request-context params :params headers :headers}
+           (search-for-acls ctx headers params))
 
         ;; Create an ACL
-        (POST "/"
-              {ctx :request-context params :params headers :headers body :body}
-              (lt-validation/validate-launchpad-token ctx)
-              (pv/validate-standard-params params)
-              (create-acl ctx headers (slurp body)))
+         (POST "/"
+           {ctx :request-context params :params headers :headers body :body}
+           (lt-validation/validate-launchpad-token ctx)
+           (pv/validate-standard-params params)
+           (create-acl ctx headers (slurp body)))
 
-        (context "/:concept-id" [concept-id]
-          (OPTIONS "/" _req (common-routes/options-response))
+         (context "/:concept-id" [concept-id]
+           (OPTIONS "/" _req (common-routes/options-response))
 
           ;; Update an ACL
-          (PUT "/"
-               {ctx :request-context headers :headers body :body}
-               (lt-validation/validate-launchpad-token ctx)
-               (update-acl ctx concept-id headers (slurp body)))
+           (PUT "/"
+             {ctx :request-context headers :headers body :body}
+             (lt-validation/validate-launchpad-token ctx)
+             (update-acl ctx concept-id headers (slurp body)))
 
           ;; Delete an ACL
-          (DELETE "/"
-                  {ctx :request-context headers :headers}
-                  (lt-validation/validate-launchpad-token ctx)
-                  (delete-acl ctx concept-id headers))
+           (DELETE "/"
+             {ctx :request-context headers :headers}
+             (lt-validation/validate-launchpad-token ctx)
+             (delete-acl ctx concept-id headers))
 
           ;; Retrieve an ACL
-          (GET "/"
-               {ctx :request-context params :params}
-               (get-acl ctx concept-id params))))
-
-      (context "/permissions" []
-        (OPTIONS "/" [] (common-routes/options-response))
-
-        (GET "/"
+           (GET "/"
              {ctx :request-context params :params}
-             (get-permissions ctx params))
+             (get-acl ctx concept-id params))))
 
-        (POST "/"
-              {ctx :request-context params :params}
-              (get-permissions ctx params)))
+       (context "/permissions" []
+         (OPTIONS "/" [] (common-routes/options-response))
 
-      (context "/current-sids" []
-        (OPTIONS "/" [] (common-routes/options-response))
+         (GET "/"
+           {ctx :request-context params :params}
+           (get-permissions ctx params))
 
-        (if (access-control-config/enable-sids-get)
-          (GET "/"
-               {:keys [request-context params]}
-               (do
-                 (error (format "client [%s] Using GET instead of POST when requesting current sids"
-                                (:client-id request-context)))
-                 (get-current-sids request-context params)))
-          {:status 404})
+         (POST "/"
+           {ctx :request-context params :params}
+           (get-permissions ctx params)))
 
-        (POST "/"
-              {:keys [request-context body]}
-              (get-current-sids request-context (json/parse-string (slurp body) true))))
+       (context "/current-sids" []
+         (OPTIONS "/" [] (common-routes/options-response))
 
-      (context "/s3-buckets" []
-        (OPTIONS "/" [] (common-routes/options-response))
+         (if (access-control-config/enable-sids-get)
+           (GET "/"
+             {:keys [request-context params]}
+             (do
+               (error (format "client [%s] Using GET instead of POST when requesting current sids"
+                              (:client-id request-context)))
+               (get-current-sids request-context params)))
+           {:status 404})
 
-        (GET "/"
-             {ctx :request-context params :params}
-             (get-allowed-s3-buckets ctx params))))))
+         (POST "/"
+           {:keys [request-context body]}
+           (get-current-sids request-context (json/parse-string (slurp body) true))))
+
+       (context "/s3-buckets" []
+         (OPTIONS "/" [] (common-routes/options-response))
+
+         (GET "/"
+           {ctx :request-context params :params}
+           (get-allowed-s3-buckets ctx params))))))

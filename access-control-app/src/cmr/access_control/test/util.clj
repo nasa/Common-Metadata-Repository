@@ -223,9 +223,7 @@
   ([parent-collection-id attrs format-key]
    (let [short-name (str "gran" (swap! granule-num inc))
          version-id "v1"
-         provider-id (if (:provider-id attrs)
-                       (:provider-id attrs)
-                       "PROV1")
+         provider-id (or (:provider-id attrs) "PROV1")
          native-id short-name
          entry-id (str short-name "_" version-id)
          granule-ur (str short-name "ur")
@@ -268,8 +266,10 @@
   [options]
   (let [{:keys [native-id entry-title short-name access-value provider-id
                 temporal-range no-temporal temporal-singles format-key]} options
-        base-umm (-> example-collection-record
-                     (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
+        base-umm (assoc-in
+                  example-collection-record
+                  [:SpatialExtent :GranuleSpatialRepresentation]
+                  "NO_SPATIAL")
         umm (cond-> base-umm
               entry-title (assoc :EntryTitle entry-title)
               short-name (assoc :ShortName short-name)
