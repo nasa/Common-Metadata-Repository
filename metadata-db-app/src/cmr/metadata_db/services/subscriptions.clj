@@ -60,13 +60,21 @@
 
 (use 'clojure.set)
 (defn create-mode-to-endpoints-map
-  "Creates a mode-to-endpoints map given a list of subscriptions all for the same one collection.
-  Returns a map in this structure:
+  "Creates a list of endpoint sets associated to a mode. For each ingest subscription,
+  an endpoint set is created consisting first of the subscription's endpoint followed
+  by the subscriber-id. This set is then put on one or more lists that is associated
+  to each mode described in the subscription. The mode lists are merged together per
+  each collection concept id that exist in all of the ingest subscriptions.
+  This function returns a map in this structure:
   {
     new: [['sqs:arn:111', 'user1'], ['https://www.url1.com', 'user2'], ['https://www.url2.com', 'user3']],
     update: [['sqs:arn:111', 'user1']],
     delete: [['https://www.url1.com', 'user2']]
-  }"
+  }
+
+  This structure is used for fast lookups by mode. For a mode, each endpoint set is iterated over
+  using the subscriber id to check if the subscriber has read access. If they do then a notification
+  is sent to the endpoint."
   [subscriptions-of-same-collection]
 
   (let [final-map (atom {})]

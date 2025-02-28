@@ -625,14 +625,14 @@
                  subscription-arn (get-in sub-concept [:extra-fields :aws-arn])]
 
              (is (some? subscription-arn))
-            ; (when subscription-arn
-            ;   (println "Subscription ARN:" subscription-arn)
-            ;   (is (some? (subscriptions/delete-ingest-subscription test-context sub-concept))))
 
              ;; publish message. this should publish to the internal queue
              (is (some? (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)))
 
-             (let [internal-queue-url "https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-queue-sit"
+             (when subscription-arn
+               (is (some? (subscriptions/delete-ingest-subscription test-context sub-concept))))
+
+             (let [internal-queue-url "https://sqs.us-east-1.amazonaws.com/832706493240/cmr-internal-subscriptions-test-queue"
                    messages (queue/receive-messages sqs-client internal-queue-url)
                    message-str (.body (first messages))
                    message (json/decode message-str true)
