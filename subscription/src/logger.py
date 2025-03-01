@@ -2,9 +2,7 @@ import os
 import logging
 import sys
 
-LOG_LEVEL = os.getenv("LOG_LEVEL")
-if not LOG_LEVEL:
-    LOG_LEVEL = logging.INFO
+LOG_LEVEL = os.getenv("LOG_LEVEL", logging.INFO)
 
 def setup_logger(name, log_file=None, level=logging.INFO):
     """Function to setup as many loggers as you want"""

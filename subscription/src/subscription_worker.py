@@ -1,6 +1,7 @@
 import boto3
 import multiprocessing
 import os
+import json
 from flask import Flask, jsonify
 from sns import Sns
 from botocore.exceptions import ClientError
@@ -15,6 +16,7 @@ LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "10")
 SNS_NAME = os.getenv("SNS_NAME")
 
 def receive_message(sqs_client, queue_url):
+    """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=1,
@@ -22,30 +24,40 @@ def receive_message(sqs_client, queue_url):
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
     if len(response.get('Messages', [])) > 0:
-        logger.info(f"Number of messages received: {len(response.get('Messages', []))}")
+        logger.debug(f"Number of messages received: {len(response.get('Messages', []))}")
     return response
 
 def delete_message(sqs_client, queue_url, receipt_handle):
+    """ Calls the queue to delete a processed message. """
     sqs_client.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
 def delete_messages(sqs_client, queue_url, messages):
+    """ Calls the queue to delete a list of processed messages. """
     for message in messages.get("Messages", []):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
 def process_messages(sns_client, topic, messages, access_control):
+    """ Processes a list of messages that was received from a queue. Check to see if ACLs pass for the granule.
+        If the checks pass then send the notification. """
+
     for message in messages.get("Messages", []):
+        try:
+            message_body = json.loads(message["Body"])
+            message_attributes = message_body["MessageAttributes"]
+            logger.debug(f"Subscription worker: Received message including attributes: {message_body}")
 
-        # Get the permission for the collection from access-control
-        # response = access_control.get_permissions(subscriber-id, collection-concept-id)
-        # Return is either None (Null or Nil) (if check on response is false) or
-        # {"C1200484253-CMR_ONLY":["read","update","delete","order"]}
-        #if response and if array contains read:
-        #    publish message.
-        #else: 
-        #    log subscriber-id no longer has read access to collection-concept-id
+            subscriber = message_attributes['subscriber']['Value']
+            collection_concept_id = message_attributes['collection-concept-id']['Value']
 
-        sns_client.publish_message(topic, message)
+            if(access_control.has_read_permission(subscriber, collection_concept_id)):
+                logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
+                sns_client.publish_message(topic, message)
+            else:
+                logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
+        except Exception as e:
+            logger.error(f"Subscription worker: There is a problem process messages {message}. {e}")
+        
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """
@@ -72,7 +84,7 @@ def poll_queue(running):
                  delete_messages(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL, messages=dl_messages)
 
         except Exception as e:
-             logger.warning(f"An error occurred receiving or deleting messages: {e}")
+             logger.error(f"An error occurred receiving or deleting messages: {e}")
 
 app = Flask(__name__)
 @app.route('/shutdown', methods=['POST'])

@@ -60,22 +60,31 @@
 
 (use 'clojure.set)
 (defn create-mode-to-endpoints-map
-  "Creates a mode-to-endpoints map given a list of subscriptions all for the same one collection.
-  Returns a map in this structure:
+  "Creates a list of endpoint sets associated to a mode. For each ingest subscription,
+  an endpoint set is created consisting first of the subscription's endpoint followed
+  by the subscriber-id. This set is then put on one or more lists that is associated
+  to each mode described in the subscription. The mode lists are merged together per
+  each collection concept id that exist in all of the ingest subscriptions.
+  This function returns a map in this structure:
   {
-    new: ['sqs:arn:111', 'https://www.url1.com', 'https://www.url2.com'],
-    update: ['sqs:arn:111'],
-    delete: ['https://www.url1.com']
-  }"
+    new: [['sqs:arn:111', 'user1'], ['https://www.url1.com', 'user2'], ['https://www.url2.com', 'user3']],
+    update: [['sqs:arn:111', 'user1']],
+    delete: [['https://www.url1.com', 'user2']]
+  }
+
+  This structure is used for fast lookups by mode. For a mode, each endpoint set is iterated over
+  using the subscriber id to check if the subscriber has read access. If they do then a notification
+  is sent to the endpoint."
   [subscriptions-of-same-collection]
 
   (let [final-map (atom {})]
     (doseq [sub subscriptions-of-same-collection]
       (let [temp-map (atom {})
             modes (get-in sub [:metadata :Mode])
-            endpoint (get-in sub [:metadata :EndPoint])]
+            endpoint (get-in sub [:metadata :EndPoint])
+            subscriber (get-in sub [:metadata :SubscriberId])]
         (doseq [mode modes]
-          (swap! temp-map assoc mode #{endpoint}))
+          (swap! temp-map assoc mode #{[endpoint, subscriber]}))
         (let [merged-map (merge-with union @final-map @temp-map)]
           (swap! final-map (fn [n] merged-map)))))
     @final-map))
@@ -188,8 +197,8 @@
     and put those into a map. The end result looks like:
     { coll_1: {
                 Mode: {
-                        New: #(URL1, SQS1),
-                        Update: #(URL2)
+                        New: #([URL1, user1], [SQS1, user2]),
+                        Update: #([URL2, user3])
                        }
                },
       coll_2: {...}"
@@ -266,9 +275,10 @@
 (defn create-message-attributes
   "Create the notification message attributes so that the notifications can be
   filtered to the correct subscribing endpoint."
-  [collection-concept-id mode]
+  [collection-concept-id mode subscriber]
   {"collection-concept-id" collection-concept-id
-   "mode" mode})
+   "mode" mode
+   "subscriber" subscriber})
 
 (defn create-message-subject
   "Creates the message subject."
@@ -288,16 +298,21 @@
 
 (defn- create-message-attributes-map
   "Create message attribute map that SQS uses to filter out messages from the SNS topic."
-  [endpoint mode coll-concept-id]
-  (cond
-    (or (is-valid-sqs-arn endpoint)
-        (is-local-test-queue endpoint)) (cond
-                                              (= "Delete" mode) (create-message-attributes coll-concept-id "Delete")
-                                              (= "New" mode) (create-message-attributes coll-concept-id "New")
-                                              (= "Update" mode) (create-message-attributes coll-concept-id "Update"))
-    (is-valid-subscription-endpoint-url endpoint) {"endpoint" endpoint
-                                                   "endpoint-type" "url"
-                                                   "mode" mode}))
+  [endpoint-set mode coll-concept-id]
+  (let [endpoint (first endpoint-set)
+        subscriber (second endpoint-set)]
+    (cond
+      (or (is-valid-sqs-arn endpoint)
+          (is-local-test-queue endpoint)) (cond
+                                            (= "Delete" mode) (create-message-attributes coll-concept-id "Delete" subscriber)
+                                            (= "New" mode) (create-message-attributes coll-concept-id "New" subscriber)
+                                            (= "Update" mode) (create-message-attributes coll-concept-id "Update" subscriber))
+      (is-valid-subscription-endpoint-url endpoint) {"endpoint" endpoint
+                                                     "endpoint-type" "url"
+                                                     "mode" mode
+                                                     "subscriber" subscriber
+                                                     "collection-concept-id" coll-concept-id}))
+  )
 
 (defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
@@ -313,16 +328,16 @@
               endpoint-list (get-in sub-cache-map ["Mode" gran-concept-mode])
               result-array (atom [])]
           ;; for every endpoint in the list create an attributes/subject map and send it along its way
-          (doseq [endpoint endpoint-list]
+          (doseq [endpoint-set endpoint-list]
             (let [topic (get-in context [:system :sns :internal])
                   coll-concept-id (:parent-collection-id (:extra-fields concept))
                   message (create-notification-message-body concept)
-                  message-attributes-map (create-message-attributes-map endpoint gran-concept-mode coll-concept-id)
+                  message-attributes-map (create-message-attributes-map endpoint-set gran-concept-mode coll-concept-id)
                   subject (create-message-subject gran-concept-mode)]
              (when (and message-attributes-map subject)
                 (let [result (topic-protocol/publish topic message message-attributes-map subject)
                       duration (- (System/currentTimeMillis) start)]
-                  (debug (format "Subscription publish for endpoint %s took %d ms." endpoint duration))
+                  (debug (format "Subscription publish for endpoint %s took %d ms." (first endpoint-set) duration))
                   (swap! result-array (fn [n] (conj @result-array result)))))))
           @result-array)))))
 
