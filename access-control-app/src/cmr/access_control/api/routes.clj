@@ -42,12 +42,12 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- create-group-with-managing-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} create-group-with-managing-group
   "Helper function to invoke group service create-group function to pass in a managing group id."
   [ctx managing-group-id group]
   (group-service/create-group ctx group {:managing-group-id managing-group-id}))
 
-(defn- create-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} create-group
   "Processes a create group request."
   [ctx headers body managing-group-id]
   (validate-content-type headers)
@@ -58,14 +58,14 @@
        (util/map-keys->snake_case)
        api-response))
 
-(defn- get-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} get-group
   "Retrieves the group with the given concept-id."
   [ctx concept-id]
   (-> (group-service/get-group ctx concept-id)
       (util/map-keys->snake_case)
       api-response))
 
-(defn- update-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} update-group
   "Processes a request to update a group."
   [ctx headers body concept-id]
   (validate-content-type headers)
@@ -76,17 +76,17 @@
        (util/map-keys->snake_case)
        api-response))
 
-(defn- delete-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} delete-group
   "Deletes the group with the given concept-id."
   [ctx concept-id]
   (api-response (util/map-keys->snake_case (group-service/delete-group ctx concept-id))))
 
-(defn- get-members
+(defn- ^{:deprecated "No replacment, use EDL instead"} get-members
   "Handles a request to fetch group members"
   [ctx concept-id]
   (api-response (group-service/get-members ctx concept-id)))
 
-(defn- add-members
+(defn- ^{:deprecated "No replacment, use EDL instead"} add-members
   "Handles a request to add group members"
   [ctx headers body concept-id]
   (validate-content-type headers)
@@ -96,7 +96,7 @@
        (util/map-keys->snake_case)
        api-response))
 
-(defn- remove-members
+(defn- ^{:deprecated "No replacment, use EDL instead"} remove-members
   "Handles a request to remove group members"
   [ctx headers body concept-id]
   (validate-content-type headers)
@@ -106,7 +106,7 @@
        (util/map-keys->snake_case)
        api-response))
 
-(defn- search-for-groups
+(defn- ^{:deprecated "No replacment, use EDL instead"} search-for-groups
   [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (group-service/search-for-groups ctx (dissoc params :token))

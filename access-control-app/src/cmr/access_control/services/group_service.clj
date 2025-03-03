@@ -82,7 +82,7 @@
       concept)
     (errors/throw-service-error :not-found (g-msg/group-does-not-exist concept-id))))
 
-(defn- save-updated-group-concept
+(defn- ^{:deprecated "No replacment, use EDL instead"} save-updated-group-concept
   "Saves an updated group concept"
   [context existing-concept updated-group]
   (let [updated-concept (-> existing-concept
@@ -184,7 +184,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
 
-(defn create-group
+;; NOTE: this is also used by bootstrap.clj
+(defn ^{:deprecated "No replacment, use EDL instead"} create-group
   "Creates the group by saving it to Metadata DB. Returns a map of the concept id and revision id of
   the created group."
   ([context group]
@@ -229,7 +230,7 @@
   [context concept-id]
   (edn/read-string (:metadata (fetch-group-concept context concept-id))))
 
-(defn get-group
+(defn ^{:deprecated "No replacment, use EDL instead"} get-group
   "Retrieves a group with the given concept id."
   [context concept-id]
   (let [group (get-group-by-concept-id context concept-id)]
@@ -239,7 +240,7 @@
         (assoc :num-members (count (:members group)))
         (dissoc :members))))
 
-(defn delete-group
+(defn ^{:deprecated "No replacment, use EDL instead"} delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
   (common-enabled/validate-write-enabled context "access control")
@@ -248,7 +249,8 @@
     (auth/verify-can-delete-group context (assoc group :concept-id concept-id))
     (save-deleted-group-concept context group-concept)))
 
-(defn update-group
+
+(defn ^{:deprecated "No replacment, use EDL"} update-group
   "Updates an existing group with the given concept id"
   [context concept-id updated-group]
   (common-enabled/validate-write-enabled context "access control")
@@ -303,7 +305,7 @@
    :concept-id cpv/string-param-options
    :member #{:pattern :and}})
 
-(defn validate-group-search-params
+(defn ^{:deprecated "No replacment, use EDL instead"} validate-group-search-params
   "Validates the parameters for a group search. Returns the parameters or throws an error if invalid."
   [_context params]
   (let [[safe-params type-errors] (cpv/apply-type-validations
@@ -353,7 +355,7 @@
             (when (= (:include-members params) "true")
               {:result-features [:include-members]}))]))
 
-(defn search-for-groups
+(defn ^{:deprecated "No replacment, use EDL instead"} search-for-groups
   [context params]
   (let [[query-creation-time query] (u/time-execution
                                      (->> params
@@ -380,7 +382,8 @@
           (fn [existing-members]
             (vec (distinct (concat existing-members members))))))
 
-(defn add-members
+;; Note this function is also used by bootstrap.clj
+(defn ^{:deprecated "No replacment, use EDL instead"} add-members
   "Adds members to the group identified by the concept id persisting it to Metadata DB. Returns
   the new concept id and revision id."
   ([context concept-id members]
@@ -395,7 +398,7 @@
        (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id)))
      (save-updated-group-concept context existing-concept updated-group))))
 
-(defn- remove-members-from-group
+(defn- ^{:deprecated "No replacment, use EDL instead"} remove-members-from-group
   "Removes the members from the group."
   [group members]
   (update group
@@ -403,7 +406,7 @@
           (fn [existing-members]
             (vec (remove (set members) existing-members)))))
 
-(defn remove-members
+(defn ^{:deprecated "No replacment, use EDL instead"} remove-members
   "Removes members from the group identified by the concept id persisting it to Metadata DB. Returns
   the new concept id and revision id."
   [context concept-id members]
@@ -413,7 +416,7 @@
     (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id))
     (save-updated-group-concept context existing-concept updated-group)))
 
-(defn get-members
+(defn ^{:deprecated "No replacment, use EDL instead"} get-members
   "Gets the members in the group."
   [context concept-id]
   (let [concept (fetch-group-concept context concept-id)

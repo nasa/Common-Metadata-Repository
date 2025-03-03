@@ -135,7 +135,7 @@
   ;; Note: temporarily use :create permission for CMR-2585
   (verify-group-permission context "delete" :create group))
 
-(defn verify-can-update-group
+(defn ^{:deprecated "No replacment, use EDL instead"} verify-can-update-group
   "Throws service error if context user does not have permission to delete group map."
   [context group]
   ;; Note: temporarily use :create permission for CMR-2585
