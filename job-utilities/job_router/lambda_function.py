@@ -9,7 +9,7 @@ import os
 import sys
 
 import boto3
-from urllib3 import request
+import urllib3
 import jmespath
 
 def handler(event, _):
@@ -46,7 +46,7 @@ def handler(event, _):
 
         print("Sending to: " + "host.docker.internal:" + service_ports[service] + "/" + endpoint)
         try:
-            response = request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint, \
+            response = urllib3.request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint, \
                                        headers=headers, timeout=timeout)
             if response.status != 200:
                 print("Error received sending " + request_type + " to " + "host.docker.internal:" + service_ports[service] + "/" + endpoint \
@@ -72,7 +72,7 @@ def handler(event, _):
     if single_target:
         print("Running " + request_type + " on URL: " + cmr_url + '/' + service + '/' + endpoint)
 
-        response = request(request_type, cmr_url + '/' + service + '/' + endpoint,
+        response = urllib3.request(request_type, cmr_url + '/' + service + '/' + endpoint,
                                         headers=headers, timeout=timeout)
         if response.status != 200:
             print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint \
@@ -96,7 +96,7 @@ def handler(event, _):
         for task in task_ips:
             print("Running POST on URL: " + task + '/' + service + '/' + endpoint)
 
-            response = request(request_type, task + '/' + service + '/' + endpoint, \
+            response = urllib3.request(request_type, task + '/' + service + '/' + endpoint, \
                                headers=headers, timeout=timeout)
             if response.status != 200:
                 print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint \
