@@ -42,15 +42,19 @@ def handler(event, _):
         service_ports = json.load(json_file)
 
         token = 'mock-echo-system-token'
-        headers = {"Authorization": token, "client-id": "cmr-job-router"}
+        pool_manager = urllib3.PoolManager(num_pools=1, \
+                                           headers={"Authorization": token, \
+                                                    "client-id": "cmr-job-router"}, \
+                                           timeout=urllib3.Timeout(timeout))
 
-        print("Sending to: " + "host.docker.internal:" + service_ports[service] + "/" + endpoint)
+        print(f"Sending to: host.docker.internal:{service_ports[service]}/{endpoint}")
         try:
-            response = urllib3.request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint, \
-                                       headers=headers, timeout=timeout)
+            response = pool_manager.request(request_type, \
+                                    f"host.docker.internal:{service_ports[service]}/{endpoint}")
             if response.status != 200:
-                print("Error received sending " + request_type + " to " + "host.docker.internal:" + service_ports[service] + "/" + endpoint \
-                        + ": " + str(response.status) + " reason: " + response.reason)
+                print(f"Error received sending {request_type} to " \
+                      + f"host.docker.internal:{service_ports[service]}/{endpoint}: " \
+                      + f"{str(response.status)} reason: {response.reason}")
                 sys.exit(-1)
         except Exception as e:
             print("Ran into an error!")
@@ -64,41 +68,42 @@ def handler(event, _):
 
     cmr_url = elb_client.describe_load_balancers(Names=[cmr_lb_name])["LoadBalancers"][0]["DNSName"]
 
-    token = ssm_client.get_parameter(Name='/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN', \
+    token = ssm_client.get_parameter(Name=f"/{environment}/{service}/CMR_ECHO_SYSTEM_TOKEN", \
                                      WithDecryption=True)['Parameter']['Value']
 
-    headers = {"Authorization": token, "client-id": "cmr-job-router"}
+    pool_manager = urllib3.PoolManager(headers={"Authorization": token, \
+                                                "client-id": "cmr-job-router"}, \
+                                       timeout=urllib3.Timeout(timeout))
 
     if single_target:
-        print("Running " + request_type + " on URL: " + cmr_url + '/' + service + '/' + endpoint)
+        print(f"Running {request_type} on URL: {cmr_url}/{service}/{endpoint}")
 
-        response = urllib3.request(request_type, cmr_url + '/' + service + '/' + endpoint,
-                                        headers=headers, timeout=timeout)
+        response = pool_manager.request(request_type, f"{cmr_url}/{service}/{endpoint}")
         if response.status != 200:
-            print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint \
-                  + ": " + str(response.status) + " reason: " + response.reason)
+            print(f"Error received sending request to {cmr_url}/{service}/{endpoint}: " \
+                  + str(response.status) + f" reason: {response.reason}")
             sys.exit(-1)
     else:
         #Multi-target functionality is not fully implemented.
         #CMR-9688 has been made to finish this part out
         response = client.list_tasks(
-            cluster='cmr-service-'+environment,
-            serviceName=service+'-'+environment
+            cluster=f"cmr-service-{environment}",
+            serviceName=f"{service}-{environment}"
         )['taskArns']
 
         response = client.describe_tasks(
-            cluster='cmr-service-'+environment,
+            cluster=f"cmr-service-{environment}",
             tasks=response
         )
-        task_ips = jmespath.search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value", response)
+        task_ips = jmespath.search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value",\
+                                    response)
         task_ips = jmespath.search("[]", task_ips)
 
         for task in task_ips:
-            print("Running POST on URL: " + task + '/' + service + '/' + endpoint)
+            print(f"Running POST on URL: {task}/{service}/{endpoint}")
 
-            response = urllib3.request(request_type, task + '/' + service + '/' + endpoint, \
-                               headers=headers, timeout=timeout)
+            response = pool_manager.request(request_type, f"{task}/{service}/{endpoint}")
             if response.status != 200:
-                print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint \
-                      + ": " + str(response.status) + " reason: " + response.reason)
+                print(f"Error received sending {request_type} to {task}/{service}/{endpoint}: " \
+                      + f"{str(response.status)} reason: {response.reason}")
                 sys.exit(-1)
