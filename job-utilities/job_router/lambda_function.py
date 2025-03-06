@@ -22,7 +22,7 @@ def handler(event, _):
     """
     environment = os.getenv('CMR_ENVIRONMENT')
     cmr_lb_name = os.getenv('CMR_LB_NAME')
-    timeout = int(os.getenv('ROUTER_TIMEOUT', '30'))
+    timeout = int(os.getenv('ROUTER_TIMEOUT', '300'))
     service = event.get('service', 'bootstrap')
     endpoint = event.get('endpoint')
     single_target = event.get('single-target', True)
