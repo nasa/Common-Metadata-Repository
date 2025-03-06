@@ -9,7 +9,7 @@ import os
 import sys
 
 import boto3
-import urllib3
+from urllib3 import request
 import jmespath
 
 def handler(event, _):
@@ -22,6 +22,7 @@ def handler(event, _):
     """
     environment = os.getenv('CMR_ENVIRONMENT')
     cmr_lb_name = os.getenv('CMR_LB_NAME')
+    timeout = int(os.getenv('ROUTER_TIMEOUT', '30'))
     service = event.get('service', 'bootstrap')
     endpoint = event.get('endpoint')
     single_target = event.get('single-target', True)
@@ -41,13 +42,12 @@ def handler(event, _):
         service_ports = json.load(json_file)
 
         token = 'mock-echo-system-token'
-        pool_manager = urllib3.PoolManager(num_pools=1, \
-                                           headers={"Authorization": token}, \
-                                           timeout=urllib3.Timeout(15))
+        headers = {"Authorization": token, "client-id": "cmr-job-router"}
 
         print("Sending to: " + "host.docker.internal:" + service_ports[service] + "/" + endpoint)
         try:
-            response = pool_manager.request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint)
+            response = request(request_type, "host.docker.internal:" + service_ports[service] + "/" + endpoint, \
+                                       headers=headers, timeout=timeout)
             if response.status != 200:
                 print("Error received sending " + request_type + " to " + "host.docker.internal:" + service_ports[service] + "/" + endpoint \
                         + ": " + str(response.status) + " reason: " + response.reason)
@@ -67,12 +67,13 @@ def handler(event, _):
     token = ssm_client.get_parameter(Name='/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN', \
                                      WithDecryption=True)['Parameter']['Value']
 
-    pool_manager = urllib3.PoolManager(headers={"Authorization": token}, timeout=urllib3.Timeout(15))
+    headers = {"Authorization": token, "client-id": "cmr-job-router"}
 
     if single_target:
         print("Running " + request_type + " on URL: " + cmr_url + '/' + service + '/' + endpoint)
 
-        response = pool_manager.request(request_type, cmr_url + '/' + service + '/' + endpoint)
+        response = request(request_type, cmr_url + '/' + service + '/' + endpoint,
+                                        headers=headers, timeout=timeout)
         if response.status != 200:
             print("Error received sending request to " + cmr_url + '/' + service + '/' + endpoint \
                   + ": " + str(response.status) + " reason: " + response.reason)
@@ -95,7 +96,8 @@ def handler(event, _):
         for task in task_ips:
             print("Running POST on URL: " + task + '/' + service + '/' + endpoint)
 
-            response = pool_manager.request(request_type, task + '/' + service + '/' + endpoint)
+            response = request(request_type, task + '/' + service + '/' + endpoint, \
+                               headers=headers, timeout=timeout)
             if response.status != 200:
                 print("Error received sending " + request_type + " to " + task + '/' + service + '/' + endpoint \
                       + ": " + str(response.status) + " reason: " + response.reason)
