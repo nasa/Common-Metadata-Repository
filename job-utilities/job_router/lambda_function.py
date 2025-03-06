@@ -21,21 +21,24 @@ def handler(event, _):
     CMR_LB_NAME - The LB used for routing calls to CMR
     """
     environment = os.getenv('CMR_ENVIRONMENT')
-    cmr_lb_name = os.getenv('CMR_LB_NAME')
 
-    if environment is None:
+    if not environment:
         print("ERROR: CMR_ENVIRONMENT variable not set!")
-    if cmr_lb_name is None:
+    if not os.getenv("CMR_LB_NAME"):
         print("ERROR: CMR_LB_NAME variable not set!")
-    if environment is None or cmr_lb_name is None:
+    if environment is None or os.getenv("CMR_LB_NAME") is None:
         sys.exit(1)
 
     if environment == 'local':
         route_local(event=event)
     else:
-        route(host=cmr_lb_name, environment=environment, event=event)
+        route(environment=environment, event=event)
 
 def send_request(request_type, token, url):
+    """
+    Sends the request of given type with given token
+    to given url
+    """
     timeout = int(os.getenv('ROUTER_TIMEOUT', '300'))
 
     pool_manager = urllib3.PoolManager(headers={"Authorization": token, \
@@ -49,6 +52,9 @@ def send_request(request_type, token, url):
         sys.exit(-1)
 
 def route_local(event):
+    """
+    Handles the routing for a local request
+    """
     service = event.get('service', 'bootstrap')
     endpoint = event.get('endpoint')
     request_type = event.get('request-type', "GET")
@@ -68,7 +74,12 @@ def route_local(event):
             print(e)
             sys.exit(-1)
 
-def route(host, environment, event):
+def route(environment, event):
+    """
+    Handles routing for single target and multi target requests
+    on a deployed environment
+    """
+    host = os.getenv('CMR_LB_NAME')
     service = event.get('service', 'bootstrap')
     endpoint = event.get('endpoint')
     single_target = event.get('single-target', True)
