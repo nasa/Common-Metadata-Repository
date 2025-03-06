@@ -1,7 +1,7 @@
 #!/bin/bash
 mkdir package
 
-pip3 install --no-cache-dir --target ./package -r requirements.txt
+pip3 install --target ./package -r requirements.txt
 cd package
 
 zip -r ../deployment_package.zip .

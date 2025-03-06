@@ -42,7 +42,7 @@ def send_request(request_type, token, url):
     timeout = int(os.getenv('ROUTER_TIMEOUT', '300'))
 
     pool_manager = urllib3.PoolManager(headers={"Authorization": token, \
-                                                "client-id": "cmr-job-router"}, \
+                                                "Client-Id": "cmr-job-router"}, \
                                     timeout=urllib3.Timeout(timeout))
 
     response = pool_manager.request(request_type, url)
