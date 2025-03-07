@@ -225,7 +225,7 @@
                                                           :target "GROUP_MANAGEMENT"}}))
        result))))
 
-(defn get-group-by-concept-id
+(defn- get-group-by-concept-id
   "Retrieves a group with the given concept id, returns its parsed metadata."
   [context concept-id]
   (edn/read-string (:metadata (fetch-group-concept context concept-id))))
