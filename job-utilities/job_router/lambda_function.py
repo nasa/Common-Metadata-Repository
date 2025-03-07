@@ -10,7 +10,7 @@ import sys
 
 import boto3
 import urllib3
-import jmespath
+from jmespath import search
 
 def handler(event, _):
     """
@@ -69,7 +69,7 @@ def route_local(event):
             send_request(request_type=request_type,
                             token=token,
                             url=f"host.docker.internal:{service_ports[service]}/{endpoint}")
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-exception-caught; Not worried about this being too broad
             print("Ran into an error!")
             print(e)
             sys.exit(-1)
@@ -112,9 +112,9 @@ def route(environment, event):
             cluster=f"cmr-service-{environment}",
             tasks=response
         )
-        task_ips = jmespath.search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value",\
+        task_ips = search("tasks[*].attachments[0].details[?name=='privateIPv4Address'].value",\
                                     response)
-        task_ips = jmespath.search("[]", task_ips)
+        task_ips = search("[]", task_ips)
 
         for task in task_ips:
             print(f"Running POST on URL: {task}/{service}/{endpoint}")
