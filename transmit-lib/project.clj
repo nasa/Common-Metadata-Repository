@@ -4,7 +4,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
