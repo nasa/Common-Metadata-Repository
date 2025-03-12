@@ -9,7 +9,7 @@
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [crouton "0.1.2"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
@@ -34,8 +34,8 @@
                  [org.jsoup/jsoup "1.14.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.10.0"]]
+                 [ring/ring-codec "1.2.0"]
+                 [ring/ring-core "1.13.0"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
