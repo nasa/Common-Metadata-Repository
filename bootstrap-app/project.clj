@@ -25,6 +25,7 @@
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-codec "1.2.0"]
                  [ring/ring-core "1.13.0"]
+                 [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]
