@@ -1,0 +1,335 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ows:MetadataType": {
+      "$comment": "http://schemas.opengis.net/ows/1.1.0/owsCommon.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element either references or contains more metadata about the element that includes this element. To reference metadata stored remotely, at least the xlinks:href attribute in xlink:simpleAttrs shall be included. Either at least one of the attributes in xlink:simpleAttrs or a substitute for the AbstractMetaData element shall be included, but not both. An Implementation Specification can restrict the contents of this element to always be a reference or always contain metadata. (Informative: This element was adapted from the metaDataProperty element in GML 3.0.)",
+      "properties":  {
+        "xlink:Href": {
+          "$comment": "http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Role": {
+          "$comment": "http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Title": {
+          "$comment": "http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Type": {
+          "$comment": "http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "about": {
+          "type": "string"
+        }
+      }
+    },
+    "wmts:StyleType": {
+      "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Descriptive information for visualization appearance.",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "Abstract": {
+          "type": "string"
+        },
+        "Keywords": {
+          "$ref": "../definitions.json#/definitions/KeywordStringType"
+        },
+        "Identifier": {
+          "type": "string"
+        },
+        "LegendURL": {
+          "type": "array",
+          "description": "Zero or more LegendURL elements may be provided, providing an image(s) of a legend relevant to each Style of a Layer.",
+          "items": {
+            "$ref": "#/definitions/wmts:LegendURLType"
+          }
+        },
+        "IsDefault": {
+          "type": "boolean",
+          "description": "This style is used when no style is specified."
+        }
+      }
+    },
+
+    "wmts:LegendURLType": {
+      "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "An image of a legend relevant to a Style of a Layer. The Format element indicates the MIME type of the legend. minScaleDenominator and maxScaleDenominator attributes may be provided to indicate to the client which scale(s) (inclusive) the legend image is appropriate for. (If provided, these values must exactly match the scale denominators of available TileMatrixes.) width and height attributes may be provided to assist client applications in laying out space to display the legend.",
+      "properties": {
+        "xlink:Href": {
+          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Role": {
+          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Title": {
+          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "xlink:Type": {
+          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "type": "string"
+        },
+        "Format": {
+          "$ref": "#/definitions/ows:MimeType",
+          "description": "A supported output format for the legend image"
+        },
+        "MinScaleDenominator": {
+          "type": "number",
+          "description": "Denominator of the minimum scale (inclusive) for which this legend image is valid",
+          "exclusiveMinimum": 0
+        },
+        "MaxScaleDenominator": {
+          "type": "number",
+          "description": "Denominator of the maximum scale (exclusive) for which this legend image is valid",
+          "exclusiveMinimum": 0
+        },
+        "Width": {
+          "type": "integer",
+          "description": "Width (in pixels) of the legend image",
+          "minimum": 1
+        },
+        "Height": {
+          "type": "integer",
+          "description": "Height (in pixels) of the legend image",
+          "minimum": 1
+        }
+      }
+    },
+    "ows:MimeType": {
+      "type": "string",
+      "description": "A string representing a MIME type as defined in IETF RFC 2045 and 2046. The format is 'type/subtype', such as 'image/png', 'text/html', etc.",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&\\-^_.+]{0,126}/[a-zA-Z0-9][a-zA-Z0-9!#$&\\-^_.+]{0,126}$"
+    },
+    "wmts:DimensionType": {
+      "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Metadata about a particular dimension that the tiles of a layer are available.",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "Abstract": {
+          "type": "string"
+        },
+        "Keywords": {
+          "$ref": "../definitions.json#/definitions/KeywordStringType"
+        },
+        "Identifier": {
+          "type": "string"
+        },
+        "UOM": {
+          "type": "string",
+          "description": "Units of measure of dimensional axis."
+        },
+        "UnitSymbol": {
+          "type": "string",
+          "description": "Symbol of the units."
+        },
+        "Default": {
+          "type": "string",
+          "description": "Default value that will be used if a tile request does not specify a value or uses the keyword 'default'."
+        },
+        "Current": {
+          "type": "boolean",
+          "description": "A value of 1 indicates (a) that temporal data are normally kept current and (b) that the request value of this dimension accepts the keyword 'current'."
+        },
+        "Value": {
+          "type": "array",
+          "description": "Available value(s) for this dimension.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "wmts:TileMatrixSetLinkType": {
+      "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Metadata about the TileMatrixSet reference.",
+      "properties": {
+        "TileMatrixSet": {
+          "type": "string",
+          "description": "Reference to a tileMatrixSet"
+        },
+        "TileMatrixSetLimits": {
+          "$comment": "Experimental. Need more details",
+          "type": "string",
+          "description": "Indices limits for this tileMatrixSet. The absence of this element means that tile row and tile col indices are only limited by 0 and the corresponding tileMatrixSet maximum definitions."
+        }
+      }
+    },
+    "wmts:URLTemplateType": {
+      "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "WMTS URLTemplateType",
+      "properties": {
+        "Format": {
+          "type": "string",
+          "description": "Format of the resource representation that can be retrieved one resolved the URL template."
+        },
+        "ResourceType": {
+          "type": "string",
+          "description": "Resource type to be retrieved. The WMTS main standard only defines \"tile\" or \"FeatureInfo\" but others can be incorporated in the future."
+        },
+        "Template": {
+          "type": "string",
+          "description": "URL template. A template processor will be applied to substitute some variables between {} for their values and get a URL to a resource. We cound not use a anyURI type (that conforms the character restrictions specified in RFC2396 and excludes '{' '}' characters in some XML parsers) because this attribute must accept the '{' '}' caracters.",
+          "pattern": "([A-Za-z0-9\\-_\\.!~\\*'\\(\\);/\\?:@\\+:$,#\\{\\}=&]|%[A-Fa-f0-9][A-Fa-f0-9])+"
+        }
+      }
+    },
+
+    "ConceptIdType": {
+      "description": "CMR concept id of a concept.",
+      "type": "string",
+      "minLength": 4,
+      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+    },
+
+    "SourceDataType": {
+      "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies source data used to generate browse image.",
+      "properties": {
+        "Dataset": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Specifies dataset used.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "ConceptId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16
+            }
+          }
+        },
+        "ScienceParameter": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Specifies science parameter used.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "ConceptId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16
+            }
+          }
+        }
+      }
+    },
+    "ProjectionType": {
+      "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies projection.",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "enum": ["EPSG:3031", "EPSG:3413", "EPSG:4326"]
+        }
+      }
+    },
+    "GridType": {
+      "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies grid.",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "enum": ["EASE", "geographic"]
+        }
+      }
+    },
+    "SpatialResolutionTypeAlt": {
+      "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies resolution in one dimension.",
+      "properties": {
+          "Value": {
+            "type": "number"
+          },
+          "Unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+      },
+      "require": ["Value", "Unit"]
+    },
+    "SpatialResolutionNameTypeA": {
+      "type": "string",
+      "description": "Specifies spatial resolution as a meaningful well-formed string such as 1.0 degree x 2.0 degree.",
+      "pattern": "^(\\d+|\\d+\\.\\d+) degree x (\\d+|\\d+\\.\\d+) degree$"
+    },
+    "SpatialResolutionNameTypeB": {
+      "type": "string",
+      "description": "Specifies spatial resolution in names as used by projects like MODIS for long time.",
+      "enum": ["2km", "1km", "500m", "250m", "125m", "62.5m", "31.25m", "15.125m"]
+    },
+    "VisualizationLatencyType": {
+      "description": "The approximate latency between the end of data acquisition and visualization file availability for GIBS to ingest. This value may be minutes, hours, or days, depending on the appropriate units. A value of 'N/A' may be provided if not applicable (e.g. static historical products)",
+      "$comment": "Integer + Units or 'N/A'",
+      "type": "string",
+      "oneOf": [
+        {
+          "pattern": "(\\d+(\\.\\d+)?) (second|minute|hour|day|week|month|year)(s)?"
+        },
+        {
+          "enum": ["N/A"]
+        }
+      ]
+    },
+    "TextStringOrNaType": {
+      "$comment": "Text string or 'N/A'",
+      "oneOf": [
+        {
+          "type":"string",
+          "minLength": 8,
+          "maxLength": 256
+        },
+        {
+          "enum": ["N/A"]
+        }
+      ]
+    },
+    "IdentifierType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "TitleType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  }
+}
