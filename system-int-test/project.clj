@@ -48,7 +48,8 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [pjstadig/humane-test-output "0.9.0"]]
+                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [ring/ring-jetty-adapter "1.13.0"]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"

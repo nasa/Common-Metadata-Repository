@@ -25,7 +25,8 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [pjstadig/humane-test-output "0.9.0"]]
+                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [ring/ring-jetty-adapter "1.13.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)
