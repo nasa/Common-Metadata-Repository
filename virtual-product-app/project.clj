@@ -13,6 +13,7 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-core "1.13.0"]
+                 [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
