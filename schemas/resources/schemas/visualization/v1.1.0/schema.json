@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-Vis",
+  "type": "object",
+  "$comment": "set the following as false to enforce",
+  "additionalProperties": false,
+  "properties": {
+    "Identifier": {
+      "description": "The unique identifier for the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Name": {
+      "$comment": "This field is added by CMR team. Need to clarify.",
+      "description": "A name of the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Title": {
+      "description": "A short descriptive title of the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Subtitle": {
+      "description": "A short descriptive subtitle of the visualization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Description": {
+      "description": "A human readable description of the visualization written using HTML notation for advanced text.  The goal is to create descriptions for the science-minded public that may have an interest in finding out what the visualization shows, why it’s important, how it was created, etc...",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "ScienceKeywords": {
+      "description": "Earth Science keywords that are representative of the data being visualized. The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
+      "type": "array",
+      "items": {
+        "$ref": "definitions.json#/definitions/ScienceKeywordType"
+      },
+      "minItems": 0
+    },
+    "SpatialExtent": {
+      "$comment": "this one probably should be array, in order to handle case of discrete areas",
+      "$ref": "definitions.json#/definitions/SpatialExtentType"
+    },
+    "TemporalExtents": {
+      "description": "This class contains attributes which describe the temporal range of a specific layer. Temporal Extent includes a specification of the Temporal Range Type of the collection, which is one of Range Date Time, Single Date Time, or Periodic Date Time",
+      "type": "array",
+      "items": {
+        "$ref": "definitions.json#/definitions/TemporalExtentType"
+      },
+      "minItems": 1
+    },
+    "ConceptIds": {
+      "description": "Which CMR dataset(s) are represented by the visualization.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Type": {
+            "description": "Identify whether the associated dataset is NRT or STD.",
+            "type": "string",
+            "enum": [
+              "NRT",
+              "STD"
+            ]
+          },
+          "Value": {
+            "description": "The dataset's CMR concept id",
+            "type": "string"
+          },
+          "DataCenter": {
+            "type": "string"
+          },
+          "ShortName": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Version": {
+            "type": "string"
+          }
+        },
+        "required": ["Type", "Value"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+
+    "VisualizationType": {
+      "type": "string",
+      "enum": ["tiles", "maps"]
+    },
+
+    "Specification": {
+      "$comment": "must be here when additionalProperties==false. otherwise fails"
+    },
+
+    "Generation": {
+      "$comment": "must be here when additionalProperties==false. otherwise fails"
+    },
+
+    "MetadataSpecification": {
+      "description": "Required to add in schema information into every record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "definitions.json#/definitions/MetadataSpecificationType"
+    }
+
+  },
+
+  "required": [
+    "Identifier",
+    "VisualizationType",
+    "Name",
+    "Specification",
+    "Generation",
+    "ConceptIds",
+    "MetadataSpecification"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "VisualizationType": {"const": "tiles"}
+        }
+      },
+      "then": {
+        "properties": {
+          "Specification": {
+            "$ref": "tiles/schema.json#/properties/Specification"
+          },
+          "Generation": {
+            "$ref": "tiles/schema.json#/properties/Generation"
+          }
+        }
+      }
+    },
+
+    {
+      "if": {
+        "properties": {
+          "VisualizationType": {"const": "maps"}
+        }
+      },
+      "then": {
+        "properties": {
+          "Specification": {
+            "$ref": "maps/schema.json#/properties/Specification"
+          },
+          "Generation": {
+            "$ref": "maps/schema.json#/properties/Generation"
+          }
+        }
+      }
+    }
+
+  ]
+
+}

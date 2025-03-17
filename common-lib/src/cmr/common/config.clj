@@ -235,7 +235,7 @@
              :data-quality-summary-draft ["1.0.0"]
              :order-option-draft ["1.0.0"]
              :grid-draft ["1.0.0"]
-             :visualization ["1.0.0"]}
+             :visualization ["1.1.0"]}
    :parser #(json/parse-string % true)})
 
 (defconfig approved-pipeline-documentation
