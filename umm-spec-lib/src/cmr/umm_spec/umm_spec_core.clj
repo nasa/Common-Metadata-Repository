@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [cmr.common.log :as log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
    [cmr.common.xml.simple-xpath :as xpath]
@@ -105,6 +106,7 @@
   ([context concept-type fmt metadata]
    (parse-metadata context concept-type fmt metadata u/default-parsing-options))
   ([context concept-type fmt metadata options]
+   (debug (format "concept-type = %s, format-key = %s" concept-type (mt/format-key fmt)))
    (condp = [concept-type (mt/format-key fmt)]
      [:collection :umm-json] (umm-json/json->umm
                               context :collection metadata (umm-json-version :collection fmt))
@@ -123,7 +125,10 @@
      [:tool :umm-json]   (umm-json/json->umm
                           context :tool metadata (umm-json-version :tool fmt))
      [:subscription :umm-json]   (umm-json/json->umm
-                                  context :subscription metadata (umm-json-version :subscription fmt)))))
+                                  context :subscription metadata (umm-json-version :subscription fmt))
+     (do (debug "could not find match for concept with metadata.")
+         (debug "metadata is " metadata))
+     )))
 
 (defn- generate-umm-g-metadata
   "Generate UMM-G metadata from umm-lib granule model or UMM-G record."
