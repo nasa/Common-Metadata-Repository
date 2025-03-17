@@ -50,7 +50,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
-                           [ring/ring-codec "1.2.0"]]
+                           [ring/ring-codec "1.2.0"]
+                           [ring/ring-jetty-adapter "1.13.0"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
