@@ -3,7 +3,8 @@
   (:require
     [clojure.test :refer [deftest is testing]]
     [cmr.acl.core :as acl_core]
-    [cmr.common.util :refer [are3]]))
+    [cmr.common.util :refer [are3]]
+    [cmr.transmit.access-control :as access-control]))
 
 (deftest non-empty-string-test
   (testing "non-empty-string test"
@@ -69,7 +70,7 @@
 (deftest context->sids-test
   (testing "get sids from requesting it"
     (let [context {:keys ["params-token"]}]
-    (with-redefs [cmr.acl.core/request-sids (fn [context] [:guest])]
+    (with-redefs [cmr.acl.core/request-sids (fn [_context] [:guest])]
       (is (= (acl_core/context->sids context) [:guest]))))
   (testing "get sids from context"
     (let [context {:sids [:guest]}]
@@ -77,8 +78,8 @@
 
 (deftest get-permitting-acls-test
   (testing "Exception getting acls"
-    (with-redefs [cmr.transmit.access-control/acl-type->acl-key (fn [object-identity-type] (throw (Exception. "Exception to break test")))]
+    (with-redefs [access-control/acl-type->acl-key (fn [_object-identity-type] (throw (Exception. "Exception to break test")))]
       (is (nil? (acl_core/get-permitting-acls nil nil nil nil)))))
   (testing "Exception getting acls with 401 message"
-    (with-redefs [cmr.transmit.access-control/acl-type->acl-key (fn [object-identity-type] (throw (Exception. "Exception to break test with status 401")))]
+    (with-redefs [access-control/acl-type->acl-key (fn [_object-identity-type] (throw (Exception. "Exception to break test with status 401")))]
       (is (thrown? Exception (acl_core/get-permitting-acls nil nil nil nil))))))
