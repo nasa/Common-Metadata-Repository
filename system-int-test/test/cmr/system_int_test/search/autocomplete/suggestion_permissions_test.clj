@@ -95,7 +95,6 @@
            (s/context) 
            (e/coll-catalog-item-id "PROV1" (e/coll-id ["Public Collection"])))
 
-        ;; Create tokens for testing different access scenarios
         authorized-token (e/login (s/context) "authorized-user" [authorized-group-id])]
 
     ;; Delete second restricted collection collection, testing CMR-10362 solution 
@@ -120,15 +119,16 @@
      
     (testing "Authorized user should see suggestions for all collections"
       (let [authorized-results (extract-autocomplete-entries 
-                                (search/get-autocomplete-json "q=ORG" 
-                                                             {:headers {:authorization authorized-token}}))]
+                                (search/get-autocomplete-json 
+                                 "q=ORG" 
+                                 {:headers {:authorization authorized-token}}))]
         ;; Should find all organizations in the results except the deleted collection's organization
         (is (= #{"RESTRICTED-ORG" "PUBLIC-ORG" "RESTRICTED-ORG3"}
                 (->> authorized-results
                      (map :value)
                      set)))))
 
-    ;; Ungrant the authorized group        
+    ;; Delete all catalog item permissions, making all collections inaccessible      
     (e/ungrant-by-search (s/context) {:identity-type "catalog_item"})
 
     ;; Re-index the collections and suggestions
@@ -181,7 +181,8 @@
                    set)))
 
           ;; Because :contains-public-collections is true, unauthorized users should still see the restricted organization
-          ;; that is now public, the other restricted organizations and the public organization should not be visible
+          ;; that is now public even without permmissions specific to registered users or this users group, 
+          ;; the other restricted organizations and the public organization should not be visible
           (is (= #{"RESTRICTED-ORG"}
               (->> unauthorized-results
                    (map :value)
