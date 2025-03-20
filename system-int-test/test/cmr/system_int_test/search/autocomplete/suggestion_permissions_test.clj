@@ -173,16 +173,18 @@
                                      "q=RESTRICTED-ORG" 
                                      {:headers {:authorization unauthorized-token}}))]
 
-          ;; Should now contain the previously restricted organization for guest users, but not the other restricted organizations
-          ;; nor the public organization that had its permissions revoked
+          ;; Should now contain the previously restricted organization for guest users, 
+          ;; but not the other restricted organizations, nor the public organization that
+          ;; had its permissions revoked
           (is (= #{"RESTRICTED-ORG"}
               (->> guest-results
                    (map :value)
                    set)))
 
-          ;; Because :contains-public-collections is true, unauthorized users should still see the restricted organization
-          ;; that is now public even without permmissions specific to registered users or this users group, 
-          ;; the other restricted organizations and the public organization should not be visible
+          ;; Because :contains-public-collections is true, unauthorized users should still
+          ;; see the restricted organization that is now public even without permmissions
+          ;; specific to registered users or this users group, the other restricted
+          ;; organizations and the public organization should not be visible
           (is (= #{"RESTRICTED-ORG"}
               (->> unauthorized-results
                    (map :value)
