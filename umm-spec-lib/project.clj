@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
-  :dependencies [[commons-io "2.6"]
+  :dependencies [[commons-io "2.18.0"]
                  [commons-validator/commons-validator "1.7"]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

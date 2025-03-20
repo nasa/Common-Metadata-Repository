@@ -20,7 +20,7 @@
                  [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [commons-logging "1.2"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

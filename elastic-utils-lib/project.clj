@@ -7,7 +7,7 @@
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
