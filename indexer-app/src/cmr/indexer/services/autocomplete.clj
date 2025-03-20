@@ -170,15 +170,18 @@
   [context collections]
   (let [results (map (fn [collection]
                       (try
-                        [(cp/parse-concept context collection) nil]
+                        {:success (cp/parse-concept context collection)
+                         :concept-id (:concept-id collection)}
                         (catch Exception e
-                          (error (format "An error occurred while parsing collection for autocomplete with concept-id [%s]: %s"
-                                        (:concept-id collection)
-                                        (.getMessage e)))
-                          [nil (:concept-id collection)])))
-                    collections)
-        parsed-collections (keep first results)
-        failed-concept-ids (keep second results)]
+                          (error (format 
+                                  "An error occurred while parsing collection for autocomplete with concept-id [%s]: %s"
+                                  (:concept-id collection)
+                                  (.getMessage e)))
+                          {:failed true
+                           :concept-id (:concept-id collection)})))
+                     collections)
+        parsed-collections (map :success (remove :failed results))
+        failed-concept-ids (map :concept-id (filter :failed results))]
     [parsed-collections failed-concept-ids]))
 
 (defn- get-humanized-collections
