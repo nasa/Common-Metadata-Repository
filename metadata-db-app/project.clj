@@ -22,6 +22,7 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
+                 [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-core "1.13.0"]
                  [ring/ring-jetty-adapter "1.13.0"] ;; used by migration

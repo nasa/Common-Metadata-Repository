@@ -37,6 +37,7 @@
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            [org.clojure/clojure "1.11.2"]
                            [org.clojure/tools.reader "1.3.2"]
+                           [org.eclipse.jetty/jetty-http "11.0.24"]
                            [org.eclipse.jetty/jetty-util "11.0.24"]
                            [ring/ring-codec "1.2.0"]
                            [ring/ring-core "1.13.0"]

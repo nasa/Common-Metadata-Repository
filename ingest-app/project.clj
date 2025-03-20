@@ -34,6 +34,7 @@
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
+                 [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-codec "1.2.0"]
                  [ring/ring-core "1.13.0"]
@@ -57,7 +58,8 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {:dependencies [[org.eclipse.jetty/jetty-util "11.0.24"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "11.0.24"]
+                                     [org.eclipse.jetty/jetty-util "11.0.24"]]}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this
