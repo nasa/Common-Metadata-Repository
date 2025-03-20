@@ -42,8 +42,8 @@
                           "PROV1"
                           (data-umm-spec/collection
                           {:EntryTitle "Second Restricted Collection"
-                            :ShortName "SECOND RESTRICTED COLLECTION"
-                            :DataCenters [(data-umm-spec/data-center 
+                           :ShortName "SECOND RESTRICTED COLLECTION"
+                           :DataCenters [(data-umm-spec/data-center 
                                           {:Roles ["ARCHIVER"] 
                                            :ShortName "RESTRICTED-ORG2"})]})
                           {:format :umm-json
@@ -66,12 +66,12 @@
            "PROV1"
            (data-umm-spec/collection
            {:EntryTitle "Public Collection"
-           :ShortName "PUBLIC"
-           :DataCenters [(data-umm-spec/data-center 
-                         {:Roles ["ARCHIVER"] 
-                         :ShortName "PUBLIC-ORG"})]})
-           {:format :umm-json
-           :validate-keywords false})       
+            :ShortName "PUBLIC"
+            :DataCenters [(data-umm-spec/data-center 
+                          {:Roles ["ARCHIVER"] 
+                           :ShortName "PUBLIC-ORG"})]})
+            {:format :umm-json
+             :validate-keywords false})       
          
         ;; Grant explicit permission to only the authorized group for restricted collections
         _ (e/grant-group (s/context) 
