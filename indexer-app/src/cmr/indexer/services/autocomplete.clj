@@ -186,15 +186,15 @@
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         index (get-in index-names [:autocomplete :autocomplete])
         humanized-fields-fn (partial get-humanized-collections context)
-        parsed-concepts (->> collections
-                             (remove :deleted)
+        existing-collections (remove :deleted collections)
+        parsed-concepts (->> existing-collections
                              (map #(parse-collection context %))
                              (remove nil?))
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
                                         {:id (:concept-id collection)
                                          :permissions permissions}))
-                                    collections)
+                                    existing-collections)
         humanized-fields (map humanized-fields-fn parsed-concepts)
         humanized-fields-with-permissions (map merge collection-permissions humanized-fields)]
     (->> humanized-fields-with-permissions
