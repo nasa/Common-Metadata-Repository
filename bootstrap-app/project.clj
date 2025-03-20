@@ -22,6 +22,7 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]
+                 [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-codec "1.2.0"]
                  [ring/ring-core "1.13.0"]
