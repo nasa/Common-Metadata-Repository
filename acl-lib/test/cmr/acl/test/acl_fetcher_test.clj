@@ -2,7 +2,8 @@
   "test functions in acl-fetcher"
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cmr.acl.acl-fetcher :as acl-fetcher]))
+    [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.transmit.access-control :as access-control]))
 
 (def object-identity-types-ex
   [:system-object :provider-object :single-instance-object])
@@ -60,9 +61,9 @@
 
 (deftest get-all-acls-test
     (testing "when there is one page of results"
-      (with-redefs [cmr.transmit.access-control/search-for-acls (fn [context params] {:hits 10})]
+      (with-redefs [access-control/search-for-acls (fn [_context _params] {:hits 10})]
         (is (= (#'cmr.acl.acl-fetcher/get-all-acls {} object-identity-types-ex) [{:hits 10}]))))
     (testing "when there is more than one page of results"
-      (with-redefs [cmr.transmit.access-control/search-for-acls (fn [context params] {:hits 6000})]
+      (with-redefs [access-control/search-for-acls (fn [_context _params] {:hits 6000})]
         ;; should be 3 pages, so 3 item maps will be returned
         (is (= (#'cmr.acl.acl-fetcher/get-all-acls {} object-identity-types-ex) [{:hits 6000} {:hits 6000} {:hits 6000}])))))
