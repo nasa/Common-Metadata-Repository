@@ -229,6 +229,11 @@
   [elastic-store index-name type-name query]
   (es-helper/delete-by-query (:conn elastic-store) index-name type-name query))
 
+(defn delete-index
+  "Delete index"
+  [elastic-store index-name]
+  (es-helper/delete-index elastic-store index-name))
+
 (defn create-index-alias
   "Creates the alias for the index."
   [conn index alias-name]
