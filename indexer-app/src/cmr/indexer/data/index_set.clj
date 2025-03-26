@@ -35,27 +35,27 @@
 
 (defconfig elastic-tag-index-num-shards
   "Number of shards to use for the tags index."
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig elastic-variable-index-num-shards
   "Number of shards to use for the variables index."
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig elastic-service-index-num-shards
   "Number of shards to use for the services index."
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig elastic-tool-index-num-shards
   "Number of shards to use for the tools index."
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig elastic-autocomplete-index-num-shards
   "Number of shards to use for the autocomplete index"
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig elastic-subscription-index-num-shards
   "Number of shards to use for the subscriptions index"
-  {:default 5 :type Long})
+  {:default 1 :type Long})
 
 (defconfig collections-index-alias
   "The alias to use for the collections index."
