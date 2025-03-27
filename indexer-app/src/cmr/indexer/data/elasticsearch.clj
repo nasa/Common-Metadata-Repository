@@ -147,19 +147,31 @@
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
-    (if (or (= "true" (:force params))
-            (requires-update? existing-index-set expected-index-set))
-      (do
-        (info "Updating the index set to " (pr-str expected-index-set))
-        (index-set-svc/update-index-set context expected-index-set)
-        (info "Creating colleciton index alias.")
-        (esi/create-index-alias (context->conn context)
-                                (idx-set/collections-index)
-                                (idx-set/collections-index-alias)))
-      (do
-        (info "Ignoring upate indexes request because index set is unchanged.")
-        (info "Existing index set:" (pr-str existing-index-set))
-        (info "New index set:" (pr-str expected-index-set))))))
+    ;(if (or (= "true" (:force params))
+    ;        (requires-update? existing-index-set expected-index-set))
+    ;  (do
+    ;    (info "Updating the index set to " (pr-str expected-index-set))
+    ;    (index-set-svc/update-index-set context expected-index-set)
+    ;    (info "Creating colleciton index alias.")
+    ;    (esi/create-index-alias (context->conn context)
+    ;                            (idx-set/collections-index)
+    ;                            (idx-set/collections-index-alias)))
+    ;  (do
+    ;    (info "Ignoring upate indexes request because index set is unchanged.")
+    ;    (info "Existing index set:" (pr-str existing-index-set))
+    ;    (info "New index set:" (pr-str expected-index-set)))
+    ;
+    ;  )
+    ;; force index update to trigger
+    (do
+      (info "Updating the index set to " (pr-str expected-index-set))
+      (index-set-svc/update-index-set context expected-index-set)
+      (info "Creating colleciton index alias.")
+      (esi/create-index-alias (context->conn context)
+                              (idx-set/collections-index)
+                              (idx-set/collections-index-alias)))
+
+    ))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
