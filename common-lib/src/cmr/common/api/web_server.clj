@@ -9,9 +9,10 @@
    [ring.adapter.jetty :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
-   (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
+   (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)
    (org.eclipse.jetty.server.handler RequestLogHandler)
-   (org.eclipse.jetty.server.handler.gzip GzipHandler)))
+   (org.eclipse.jetty.server.handler.gzip GzipHandler)
+   (org.eclipse.jetty.server Slf4jRequestLogWriter)))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -144,7 +145,7 @@
   (doto (RequestLogHandler.)
     (.setHandler existing-handler)
     (.setRequestLog
-      (doto (NCSARequestLog.)
+      (doto (CustomRequestLog. (Slf4jRequestLogWriter.) CustomRequestLog/EXTENDED_NCSA_FORMAT)
         (.setLogLatency true)
         (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
 

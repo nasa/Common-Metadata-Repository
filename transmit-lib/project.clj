@@ -4,7 +4,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
@@ -13,6 +13,7 @@
                  [org.clojure/data.csv "0.1.4"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
+                 [ring/ring-jetty-adapter "1.13.0"]
                  [buddy/buddy-sign "3.4.333"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -22,7 +23,8 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [ring/ring-jetty-adapter "1.13.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
