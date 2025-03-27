@@ -52,7 +52,9 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     ;; ring is needed or this fails in sys int group3
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]
 
             ;; Kaocha test aliases
