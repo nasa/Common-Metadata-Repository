@@ -1,18 +1,13 @@
 (ns cmr.system-int-test.ingest.bulk-update.bulk-update-test
   "CMR bulk update. Test the actual update "
   (:require
-   [cheshire.core :as json]
    [clojure.test :refer :all]
    [clojure.java.io :as io]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.config :as ingest-config]
-   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -167,7 +162,7 @@
                              (data-umm-c/collection x attribs)
                              format)]]
        (:concept-id (ingest/ingest-concept
-                     (assoc collection :concept-id (generate-concept-id x "PROV1"))))))))
+                     (assoc collection :concept-id (generate-concept-id x "PROV1")) {:validate-keywords false}))))))
 
 (defn- ingest-collection-in-umm-json-format
   "Ingest a collection in UMM Json format and return a list of one concept-id.
@@ -179,7 +174,7 @@
                      (data-umm-c/collection 1 attribs)
                      :umm-json)]
     [(:concept-id (ingest/ingest-concept
-                   (assoc collection :concept-id (generate-concept-id 1 "PROV1"))))]))
+                   (assoc collection :concept-id (generate-concept-id 1 "PROV1")) {:validate-keywords false}))]))
 
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
@@ -318,11 +313,11 @@
                                         :Term "ENVIRONMENTAL IMPACTS1"
                                         :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
        ;; Initiate bulk update that shouldn't add any duplicates.
-       (ingest/bulk-update-collections "PROV1" duplicate-body)
+       (ingest/bulk-update-collections "PROV1" duplicate-body {:validate-keywords false})
        ;; Wait for queueing/indexing to catch up
        (index/wait-until-indexed)
        ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
          (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
@@ -370,7 +365,7 @@
                                           :Term "ENVIRONMENTAL IMPACTS1"
                                           :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
        ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
          (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
@@ -416,7 +411,7 @@
                                           :Term "ENVIRONMENTAL IMPACTS1"
                                           :VariableLevel1 "HEAVY METALS CONCENTRATION1"}]}]
        ;; Kick off bulk update
-       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
          (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
@@ -450,7 +445,7 @@
                                 :find-value {:ShortName "NSID"}
                                 :update-value {:ShortName "NSIDC"
                                                :Roles ["ORIGINATOR"]}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -481,7 +476,7 @@
                                 :find-value {:ShortName "atm"}
                                 :update-value {:ShortName "LVIS"
                                                :LongName nil}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -521,7 +516,7 @@
                                 :update-field "INSTRUMENTS"
                                 :find-value {:ShortName "atm"}
                                 :update-value [{:ShortName "LVIS"}]}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -561,7 +556,7 @@
                                 :find-value {:ShortName "a340-600-1"}
                                 :update-value {:ShortName "SMAP"
                                                :LongName nil}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -602,7 +597,7 @@
                                 :find-value {:ShortName "ShortName"}
                                 :update-value {:ShortName "New ShortName"
                                                :LongName nil}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -642,7 +637,7 @@
                                                :ContactInformation {:RelatedUrls [{:URLContentType "DataCenterURL"
                                                                                    :Type "HOME PAGE"
                                                                                    :URL "http://test.org/daac/index.html"}]}}}
-              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
           (index/wait-until-indexed)
           (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
@@ -691,7 +686,7 @@
                                          :Topic "ATMOSPHERE"
                                          :Term "AIR QUALITY"
                                          :VariableLevel1 "EMISSIONS"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
         (is (= "COMPLETE" (:task-status collection-response))))
@@ -724,7 +719,7 @@
                                          :Topic "ATMOSPHERE"
                                          :Term "AIR QUALITY"
                                          :VariableLevel1 "CARBON MONOXIDE"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
         (is (= "COMPLETE" (:task-status collection-response))))
@@ -758,7 +753,7 @@
                           :update-type "FIND_AND_REMOVE"
                           :update-field "INSTRUMENTS"
                           :find-value {:ShortName "atm"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
             collection-status (first (:collection-statuses collection-response))]
@@ -797,7 +792,7 @@
                                          :Topic "ATMOSPHERE"
                                          :Term "AIR QUALITY"
                                          :VariableLevel1 "EMISSIONS"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
         (is (= "COMPLETE" (:task-status collection-response))))
@@ -834,7 +829,7 @@
                           :update-value {:Category "EARTH SCIENCE"
                                          :Topic "OCEANS"
                                          :Term "MARINE SEDIMENTS"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
         (is (= "COMPLETE" (:task-status collection-response))))
@@ -873,7 +868,7 @@
                                 :results
                                 :items
                                 first))
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))
         _ (index/wait-until-indexed)
         new-concepts (doseq [concept-id concept-ids]
                        (-> (search/find-concepts-umm-json :collection
@@ -898,9 +893,11 @@
 
 (deftest bulk-update-update-all-tombstone-test
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                                                     :ShortName "S1"}))
+                                                                                     :ShortName "S1"})
+                                                     {:validate-keywords false})
         coll2 (data2-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
-                                                                                     :ShortName "S2"}))
+                                                                                     :ShortName "S2"})
+                                                     {:validate-keywords false})
         _ (index/wait-until-indexed)
         bulk-update-body1 {:concept-ids ["ALL"]
                            :update-type "FIND_AND_UPDATE"
@@ -922,7 +919,7 @@
                                           :VariableLevel1 "EMISSIONS"}}]
     ;; perform bulk update, verify that both collections are skipped because find-value is not found.
     (testing "all the non-deleted collections are included in update all case."
-      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1 {:validate-keywords false})
             _ (index/wait-until-indexed)
             collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
         (is (= "COMPLETE" (:task-status collection-response)))
@@ -935,14 +932,14 @@
     ;; perform another bulk update, verify that the deleted collection is not included when getting all
     ;; collections from the provider.
     (testing "Deleted collection is excluded in update all case."
-      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1 {:validate-keywords false})
             _ (index/wait-until-indexed)
             collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
         (is (= "Task completed with 1 SKIPPED out of 1 total collection update(s)." (:status-message collection-response)))))
     ;; perform a bulk update with the deleted collection's concept-id and a non-deleted collection's concept-id
     ;; The deleted one should fail the update.
     (testing "Deleted collection is failed in update concept-id case."
-      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body2)
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body2 {:validate-keywords false})
             _ (index/wait-until-indexed)
             collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))
             collection-statuses (:collection-statuses collection-response)]
@@ -958,7 +955,7 @@
     ;; perform another bulk update, verify that the deleted collections are not included when getting all
     ;; collections from the provider.
     (testing "All collections are deleted in update all case."
-      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1)
+      (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body1 {:validate-keywords false})
             _ (index/wait-until-indexed)]
         (is (= ["There are no collections that have not been deleted for provider [PROV1]."]
                (:errors response)))))))
@@ -974,7 +971,7 @@
                                          :Topic "ATMOSPHERE"
                                          :Term "AIR QUALITY"
                                          :VariableLevel1 "EMISSIONS"}}
-        response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+        response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
     (is (= 200 (:status response)))
     ;; Wait for queueing/indexing to catch up
     (index/wait-until-indexed)
@@ -994,8 +991,8 @@
                                          :Topic "ATMOSPHERE"
                                          :Term "AIR QUALITY"
                                          :VariableLevel1 "EMISSIONS"}}
-        response (ingest/bulk-update-collections "PROV1" bulk-update-body)
-        response2 (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+        response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})
+        response2 (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
     (is (= 200 (:status response)))
     (is (= 422 (:status response2)))
     (is (= ["Error creating bulk update task: Bulk update name needs to be unique within the provider."]
@@ -1004,7 +1001,7 @@
 (deftest bulk-update-xml-to-umm-failure-test
   (let [coll-metadata (slurp (io/resource "dif-samples/cmr-4455-collection.xml"))
         concept (ingest/ingest-concept
-                 (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))
+                 (ingest/concept :collection "PROV1" "foo" :dif coll-metadata) {:validate-keywords false})
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids [(:concept-id concept)]
                           :update-type "ADD_TO_EXISTING"
@@ -1014,7 +1011,7 @@
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
     ;; Kick off bulk update
-    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+    (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false})]
       (is (= 200 (:status response)))
       ;; Wait for queueing/indexing to catch up
       (index/wait-until-indexed)
@@ -1031,7 +1028,7 @@
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
-        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body {:validate-keywords false}))]
     (index/wait-until-indexed)
     (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
           collection-status (first (:collection-statuses collection-response))]

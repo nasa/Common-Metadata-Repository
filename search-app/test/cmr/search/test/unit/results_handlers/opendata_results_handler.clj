@@ -212,6 +212,6 @@
 
 
 (deftest config-email
-  (let [personnel->contact-email 
+  (let [personnel->contact-email
         (opendata-results-handler/personnel->contact-email nil)]
-    (is (= "cmr-support@earthdata.nasa.gov" personnel->contact-email))))
+    (is (= "cmr-support@nasa.gov" personnel->contact-email))))

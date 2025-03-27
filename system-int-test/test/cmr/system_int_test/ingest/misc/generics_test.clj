@@ -274,7 +274,7 @@
                     nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :post)
         cd-concept-id (:concept-id coll-draft)
         coll-published (ingest/publish-draft
-                        cd-concept-id coll-native-id {:format "application/vnd.nasa.cmr.umm+json"})
+                        cd-concept-id coll-native-id {:format "application/vnd.nasa.cmr.umm+json" :validate-keywords false})
         coll-concept-id (:concept-id coll-published)
 
         _ (index/wait-until-indexed)

@@ -51,7 +51,7 @@
 
 (defn assert-valid-umm-spec-collection
   [umm-spec-collection]
-  (let [response (ingest/validate-concept (d/umm-c-collection->concept umm-spec-collection))]
+  (let [response (ingest/validate-concept (d/umm-c-collection->concept umm-spec-collection) {:validate-keywords false})]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn assert-granule-with-parent-collection-valid
@@ -67,7 +67,7 @@
   rather than passing one in."
   [coll]
   (assert-valid-umm-spec-collection coll)
-  (let [response (d/ingest-umm-spec-collection "PROV1" (dissoc coll :revision-id))]
+  (let [response (d/ingest-umm-spec-collection "PROV1" (dissoc coll :revision-id) {:validate-keywords false})]
     (is (#{200 201} (:status response)))
     response))
 

@@ -33,18 +33,21 @@
                (umm-c/collection 1
                                  {:CollectionCitations [{:Creator "K. Hilburn"}
                                                         {:Creator "Nelkin"}]})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         coll2 (d/ingest-umm-spec-collection
                "PROV2"
                (umm-c/collection 2
                                  {:CollectionCitations [{:Creator "K. Hilburn, J. Ardizzone, and S. Gao"
                                                          :OtherCitationDetails "Sounder PEATE (Product Evaluation and Test Element) Team/Ruth Monarrez, JPL"}]})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         coll3 (d/ingest-umm-spec-collection
                "PROV3"
                (umm-c/collection 3 
                                  {:UseConstraints {:Description "PROV4" :FreeAndOpenData false}})
-               {:format :umm-json})
+               {:format :umm-json
+                :validate-keywords false})
         id1 (:concept-id coll1)
         id2 (:concept-id coll2)
         id3 (:concept-id coll3)]

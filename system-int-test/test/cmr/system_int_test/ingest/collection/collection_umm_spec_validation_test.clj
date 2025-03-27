@@ -129,7 +129,7 @@
                          {:AdditionalAttributes
                           [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                       {:allow-failure? true})]
+                       {:allow-failure? true :validate-keywords false})]
         (is (= {:status 422
 
                 :errors ["#: required key [DataCenters] not found"
@@ -143,7 +143,8 @@
     (testing "schema validation errors not returned"
       (side/eval-form `(ingest-config/set-return-umm-json-validation-errors! false))
       (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
+                                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]}
+                    {:validate-keywords false})))
 
   (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
     (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
@@ -207,7 +208,7 @@
             coll-attr
             ["AdditionalAttributes"]
             ["Additional Attributes must be unique. This contains duplicates named [bool]."]
-            {:validate-umm-c true})))
+            {:validate-umm-c true :validate-keywords false})))
 
   (testing "Additional Attribute validation"
     (assert-invalid
@@ -243,7 +244,8 @@
       {:Platforms [(data-umm-c/platform {:Instruments [(data-umm-c/instrument {:ShortName "I1"})
                                                        (data-umm-c/instrument {:ShortName "I1"})]})]}
       ["Platforms" 0 "Instruments"]
-      ["Instruments must be unique. This contains duplicates named [I1]."]))
+      ["Instruments must be unique. This contains duplicates named [I1]."]
+      {:validate-keywords false}))
 
   (testing "Spatial validation"
     (testing "Spatial enums"
@@ -363,14 +365,15 @@
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest umm-spec-validation-warnings
-  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.
+  ;; By default, the config return-umm-spec-validation-errors is true,
+  ;; so need to set it as false so we can get a successful 200 return status of the collection with warnings instead of errors.
   (testing "Ingest and Ingest Validation with warning messages for all formats"
     (are3 [format collection warning-message]
           (do
-            (let [response (data-core/ingest-umm-spec-collection "PROV1" collection {:format format})]
+            (let [response (data-core/ingest-umm-spec-collection "PROV1" collection {:format format :validate-keywords false})]
               (is (#{200 201} (:status response)))
               (is (= warning-message (:warnings response))))
-            (let [response (ingest/validate-concept (data-umm-c/collection-concept collection format))]
+            (let [response (ingest/validate-concept (data-umm-c/collection-concept collection format) {:validate-keywords false})]
               (is (= 200 (:status response)))
               (is (= warning-message (:warnings response)))))
 
@@ -381,12 +384,15 @@
           "umm-json Ingest and Ingest Validation for Invalid data date ranges"
           :umm-json (collection-invalid-data-date-ranges)
           "After translating item to UMM-C the metadata had the following issue(s): [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].;; [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past. latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past. earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future. Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z].;; [:Platforms 0] Platform short name [A340-600], long name [Airbus A340-600], and type [Aircraft] was not a valid keyword combination."
+
           "DIF10 Ingest and Ingest Validation"
           :dif10 (data-umm-c/collection-missing-properties-dif10 {})
           "After translating item to UMM-C the metadata had the following issue(s): #: required key [ProcessingLevel] not found;; #: required key [CollectionProgress] not found;; [:Platforms 0] Platform short name [A340-600], long name [Airbus A340-600], and type [] was not a valid keyword combination.;; [:Platforms 0 :Instruments 0] Instrument short name [Not provided] and long name [] was not a valid keyword combination.;; [:Projects 0] Project short name [Not provided] and long name [] was not a valid keyword combination."
+
           "DIF9 Ingest and Ingest Validation"
           :dif (data-umm-c/collection-missing-properties-dif {})
           "After translating item to UMM-C the metadata had the following issue(s): #: required key [ProcessingLevel] not found;; #: required key [TemporalExtents] not found;; #: required key [SpatialExtent] not found;; #: required key [Platforms] not found;; #: required key [CollectionProgress] not found"
+
           "ISO19115 Ingest and Ingest Validation"
           :iso19115 (data-umm-c/collection-missing-properties {})
           "After translating item to UMM-C the metadata had the following issue(s): #: required key [DataCenters] not found;; #: required key [ProcessingLevel] not found;; #: required key [ScienceKeywords] not found;; #: required key [TemporalExtents] not found;; #: required key [SpatialExtent] not found;; #: required key [Platforms] not found;; #: required key [CollectionProgress] not found"
@@ -397,7 +403,9 @@
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
-          "After translating item to UMM-C the metadata had the following issue(s): #: required key [Version] not found;; #: required key [ProcessingLevel] not found;; #: required key [TemporalExtents] not found;; #: required key [SpatialExtent] not found;; #: required key [Platforms] not found;; #: required key [CollectionProgress] not found")))
+          "After translating item to UMM-C the metadata had the following issue(s): #: required key [Version] not found;; #: required key [ProcessingLevel] not found;; #: required key [TemporalExtents] not found;; #: required key [SpatialExtent] not found;; #: required key [Platforms] not found;; #: required key [CollectionProgress] not found"))
+
+  )
 
 (deftest umm-spec-temporal-validation
   (testing "Invalid temporal extents"
@@ -428,7 +436,8 @@
             (let [response (data-core/ingest-umm-spec-collection "PROV1"
                                                                  collection
                                                                  {:format format
-                                                                  :allow-failure? true})]
+                                                                  :allow-failure? true
+                                                                  :validate-keywords false})]
               (is (= 422 (:status response)))
               (is (= error-message (first (:errors response)))))
 
@@ -482,7 +491,8 @@
                                                              collection
                                                              {:format format
                                                               :allow-failure? true
-                                                              :validate-umm-c true})]
+                                                              :validate-umm-c true
+                                                              :validate-keywords false})]
           (is (= error-code (:status response)))
           (is (re-find error-matcher (prn-str (:errors response)))))
 

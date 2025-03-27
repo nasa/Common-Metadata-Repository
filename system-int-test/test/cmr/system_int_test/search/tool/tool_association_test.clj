@@ -39,9 +39,8 @@
                                                          (collection/collection
                                                           {:short-name (str "S" n)
                                                            :version-id (str "V" n)
-                                                           :entry-title (str "ET" n)})))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+                                                           :entry-title (str "ET" n)})
+                                                         {:validate-keywords false}))))
         token (echo-util/login (system/context) "user1")
         {:keys [concept-id]} (tool-util/ingest-tool-with-attrs {:Name "tool1"})]
     (index/wait-until-indexed)
@@ -103,7 +102,7 @@
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id c2-p1}
                                         {:concept-id "C100-P5"}])]
-        (tool-util/assert-tool-association-bad-request
+        (tool-util/assert-tool-association-response-mixed?
          {[c2-p1] {:concept-id "TLA1200000028-CMR"
                    :revision-id 1}
           ["C100-P5"] {:errors ["User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C100-P5] to make the association."]}}
@@ -116,8 +115,8 @@
         tool-concept (tool-util/make-tool-concept {:native-id native-id
                                                    :Name "tool1"
                                                    :provider-id "PROV1"})
-        {:keys [concept-id revision-id]} (tool-util/ingest-tool tool-concept)
-        coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
+        {:keys [concept-id]} (tool-util/ingest-tool tool-concept)
+        coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false}))]
     (testing "Associate tool using query sent with invalid content type"
       (are [associate-tool-fn request-json]
         (= {:status 400,
@@ -173,7 +172,8 @@
                                            (data-core/ingest p (collection/collection
                                                                 {:short-name (str "S" n)
                                                                  :version-id (str "V" n)
-                                                                 :entry-title (str "ET" n)}))))
+                                                                 :entry-title (str "ET" n)})
+                                                             {:validate-keywords false})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -235,7 +235,7 @@
         token (echo-util/login (system/context) "user1")
         tool-concept (tool-util/make-tool-concept {:Name tool-name})
         {:keys [concept-id revision-id]} (tool-util/ingest-tool tool-concept)
-        coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
+        coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false}))]
 
     (testing "Dissociate tool using query sent with invalid content type"
       (are [dissociate-tool-fn request-json]
@@ -277,9 +277,9 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tool with mixed success and failure response"
-    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
-          coll3 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET3"}))
+    (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}) {:validate-keywords false})
+          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}) {:validate-keywords false})
+          coll3 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET3"}) {:validate-keywords false})
           token (echo-util/login (system/context) "user1")
           tool-name "tool1"
           {:keys [concept-id]} (tool-util/ingest-tool-with-attrs {:Name tool-name})
@@ -301,7 +301,7 @@
                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                        {:concept-id (:concept-id coll3)}])] ;; no tool association
 
-        (tool-util/assert-tool-dissociation-bad-request
+        (tool-util/assert-tool-dissociation-response-mixed?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
           ["C1200000012-PROV1"] {:concept-id "TLA1200000016-CMR" :revision-id 2}
           ["C1200000013-PROV1" 1] {:concept-id "TLA1200000017-CMR" :revision-id 2}
@@ -316,7 +316,7 @@
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
-                                     (data-core/ingest "PROV1" (collection/collection))))
+                                     (data-core/ingest "PROV1" (collection/collection) {:validate-keywords false})))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (echo-util/login (system/context) "user1")
         {tool1-concept-id :concept-id} (tool-util/ingest-tool-with-attrs

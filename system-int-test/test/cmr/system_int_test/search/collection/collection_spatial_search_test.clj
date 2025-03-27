@@ -37,7 +37,8 @@
                 {:entry-title et
                  :spatial-coverage (dc/spatial {:gsr coord-sys
                                                 :sr coord-sys
-                                                :geometries shapes})}))))
+                                                :geometries shapes})})
+              {:validate-keywords false})))
 
 (deftest excessive-points-line-spatial-search-test
   (let [whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))

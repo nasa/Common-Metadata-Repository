@@ -25,6 +25,27 @@
     }
   ],
 
+  "SpatialExtent":
+  {
+    "SpatialCoverageType": "HORIZONTAL",
+    "HorizontalSpatialDomain":
+    {
+      "Geometry":
+      {
+        "CoordinateSystem": "CARTESIAN",
+        "BoundingRectangles":
+        [
+          {
+            "WestBoundingCoordinate": -127.0,
+            "NorthBoundingCoordinate": 52.0,
+            "EastBoundingCoordinate": -65.0,
+            "SouthBoundingCoordinate": 23.0
+          }
+        ]
+      }
+    },
+    "GranuleSpatialRepresentation": "GEODETIC"
+  },
   "TemporalExtents": [
     {
       "RangeDateTimes": [
@@ -36,93 +57,95 @@
     }
   ],
 
-  "What": {
+  "Specification": {
 
-  "SupportsContinuousBrowsing": false,
+    "SupportsContinuousBrowsing": false,
 
-  "Dimension": {
-    "Current": "false",
-    "Default": "2018-01-01",
-    "Value": "2001-01-01/2018-01-01/P1Y",
-    "ows:Identifier": "Time",
-    "ows:UOM": "ISO8601"
-  },
-  "Format": "image/png",
-  "ResourceURL": {
-    "format": "image/png",
-    "resourceType": "tile",
-    "template": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
-  },
-  "LegendURL": [
-    {
-      "format": "image/svg+xml",
-      "height": "288",
-      "width": "288",
-      "xlink:href": "https://gibs.earthdata.nasa.gov/legends/MODIS_IGBP_Land_Cover_Type_V.svg",
-      "@xlink:role": "http://earthdata.nasa.gov/gibs/legend-type/vertical",
-      "@xlink:title": "GIBS Color Map Legend: Vertical",
-      "@xlink:type": "simple"
+    "Dimension": {
+      "Current": "false",
+      "Default": "2018-01-01",
+      "Value": "2001-01-01/2018-01-01/P1Y",
+      "ows:Identifier": "Time",
+      "ows:UOM": "ISO8601"
     },
-    { "@format": "image/svg+xml",
-      "@height": "270",
-      "@width": "270",
-      "@xlink:href": "https://gibs.earthdata.nasa.gov/legends/MODIS_IGBP_Land_Cover_Type_H.svg",
-      "@xlink:role": "http://earthdata.nasa.gov/gibs/legend-type/horizontal",
-      "@xlink:title": "GIBS Color Map Legend: Horizontal",
-      "@xlink:type": "simple"
-    }
-  ],
-  "Metadata": [
+    "Format": "image/png",
+    "LegendURL": [
+      {
+        "format": "image/svg+xml",
+        "height": "288",
+        "width": "288",
+        "xlink:href": "https://gibs.earthdata.nasa.gov/legends/MODIS_IGBP_Land_Cover_Type_V.svg",
+        "@xlink:role": "http://earthdata.nasa.gov/gibs/legend-type/vertical",
+        "@xlink:title": "GIBS Color Map Legend: Vertical",
+        "@xlink:type": "simple"
+      },
+      { "@format": "image/svg+xml",
+        "@height": "270",
+        "@width": "270",
+        "@xlink:href": "https://gibs.earthdata.nasa.gov/legends/MODIS_IGBP_Land_Cover_Type_H.svg",
+        "@xlink:role": "http://earthdata.nasa.gov/gibs/legend-type/horizontal",
+        "@xlink:title": "GIBS Color Map Legend: Horizontal",
+        "@xlink:type": "simple"
+      }
+    ],
+    "ResourceURL": [
+      {
+        "Format": "image/png",
+        "ResourceType": "tile",
+        "Template": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Combined_L3_IGBP_Land_Cover_Type_Annual/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"
+      }
+    ],
+    "Metadata": [
+      {
+        "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
+        "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap",
+        "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
+        "@xlink:type": "simple"
+      },
+      {
+        "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.0/MODIS_IGBP_Land_Cover_Type.xml",
+        "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.0",
+        "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
+        "@xlink:type": "simple"
+      },
+      {
+        "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
+        "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.3",
+        "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
+        "@xlink:type": "simple"
+      }
+    ],
+    "TileMatrixSetLink":
     {
-      "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
-      "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap",
-      "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
-      "@xlink:type": "simple"
+      "TileMatrixSet": "500m"
     },
-    {
-      "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.0/MODIS_IGBP_Land_Cover_Type.xml",
-      "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.0",
-      "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
-      "@xlink:type": "simple"
+    "WGS84BoundingBox": {
+      "crs": "urn:ogc:def:crs:OGC:2:84",
+      "LowerCorner": [-180, -90],
+      "UpperCorner": [180, 90]
     },
-    {
-      "@xlink:href": "https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_IGBP_Land_Cover_Type.xml",
-      "@xlink:role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.3",
-      "@xlink:title": "GIBS Color Map: Data - RGB Mapping",
-      "@xlink:type": "simple"
-    }
-  ],
-  "TileMatrixSetLink":
-  {
-    "TileMatrixSet": "500m"
-  },
-  "WGS84BoundingBox": {
-    "crs": "urn:ogc:def:crs:OGC:2:84",
-    "LowerCorner": [-180, -90],
-    "UpperCorner": [180, 90]
-  },
 
-  "Ongoing": false,
-  "measurement": "Land Cover",
-  "RetentionPeriod": -1,
-  "daynight": [
-    "day"
-  ],
-  "layerPeriod": "Yearly"
+    "Ongoing": false,
+    "Measurement": "Land Cover",
+    "RetentionPeriod": -1,
+    "DayNight": [
+      "day"
+    ],
+    "LayerPeriod": "Yearly"
 
   },
 
-  "How": {
+  "Generation": {
   },
 
   "ConceptIds": [
     {
-      "type": "STD",
-      "value": "C186286578-LPDAAC_ECS",
-      "shortName": "MCD12Q1",
-      "title": "MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m SIN Grid V006",
-      "version": "006",
-      "dataCenter": "LPDAAC_ECS"
+      "Type": "STD",
+      "Value": "C186286578-LPDAAC_ECS",
+      "ShortName": "MCD12Q1",
+      "Title": "MODIS/Terra+Aqua Land Cover Type Yearly L3 Global 500m SIN Grid V006",
+      "Version": "006",
+      "DataCenter": "LPDAAC_ECS"
     }
   ],
 

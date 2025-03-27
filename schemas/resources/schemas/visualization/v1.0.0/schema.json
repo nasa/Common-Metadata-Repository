@@ -65,7 +65,7 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "type": {
+          "Type": {
             "description": "Identify whether the associated dataset is NRT or STD.",
             "type": "string",
             "enum": [
@@ -73,31 +73,31 @@
               "STD"
             ]
           },
-          "value": {
+          "Value": {
             "description": "The dataset's CMR concept id",
             "type": "string"
           },
-          "dataCenter": {
+          "DataCenter": {
             "type": "string"
           },
-          "shortName": {
+          "ShortName": {
             "type": "string"
           },
-          "title": {
+          "Title": {
             "type": "string"
           },
-          "version": {
+          "Version": {
             "type": "string"
           }
         },
-        "required": ["type", "value"]
+        "required": ["Type", "Value"]
       },
       "minItems": 1
     },
 
     "VisualizationType": {
-       "type": "string",
-       "enum": ["tiles", "maps"]
+      "type": "string",
+      "enum": ["tiles", "maps"]
     },
 
     "MetadataSpecification": {
@@ -105,11 +105,11 @@
       "$ref": "#/definitions/MetadataSpecificationType"
     },
 
-    "What": {
+    "Specification": {
       "$comment": "must be here when additionalProperties==false. otherwise fails"
     },
 
-    "How": {
+    "Generation": {
       "$comment": "must be here when additionalProperties==false. otherwise fails"
     }
   },
@@ -117,11 +117,11 @@
     "Identifier",
     "Name",
     "VisualizationType",
-    "What",
-    "How",
-    "ConceptIds", 
+    "Specification",
+    "Generation",
+    "ConceptIds",
     "MetadataSpecification"
-  ],  
+  ],
 
   "allOf": [
     {
@@ -132,11 +132,11 @@
       },
       "then": {
         "properties": {
-          "What": {
-            "$ref": "umm-vis-tiles-schema.json#/definitions/What"
+          "Specification": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/Specification"
           },
-          "How": {
-            "$ref": "umm-vis-tiles-schema.json#/definitions/How"
+          "Generation": {
+            "$ref": "umm-vis-tiles-schema.json#/definitions/Generation"
           }
         }
       }
@@ -150,11 +150,11 @@
       },
       "then": {
         "properties": {
-          "What": {
-            "$ref": "umm-vis-maps-schema.json#/definitions/What"
+          "Specification": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/Specification"
           },
-          "How": {
-            "$ref": "umm-vis-maps-schema.json#/definitions/How"
+          "Generation": {
+            "$ref": "umm-vis-maps-schema.json#/definitions/Generation"
           }
         }
       }
@@ -169,7 +169,7 @@
       "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS). The valid values can be found at the KMS website: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.",
       "properties": {
         "Category": {
-         "$ref": "#/definitions/KeywordStringType"
+          "$ref": "#/definitions/KeywordStringType"
         },
         "Topic": {
           "$ref": "#/definitions/KeywordStringType"
@@ -225,4 +225,3 @@
     }
   }
 }
-  

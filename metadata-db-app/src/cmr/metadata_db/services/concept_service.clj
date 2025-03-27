@@ -443,7 +443,7 @@
 
 ;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic try-to-save
-  "Try to save a concept. The concept must include a revision-id. Ensures that revision-id and
+  "Try to save a concept in the db. The concept must include a revision-id. Ensures that revision-id and
   concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the
   concept if successful, otherwise throws an exception."
   [db provider context concept]
@@ -838,10 +838,9 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
-            (when (and subscriptions/subscriptions-enabled?
-                       (= :subscription concept-type))
-              (subscriptions/delete-subscription context revisioned-tombstone))
-            (subscriptions/work-potential-notification context revisioned-tombstone)
+            (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
+              (subscriptions/delete-ingest-subscription context revisioned-tombstone))
+            (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -890,17 +889,6 @@
          context
          (ingest-events/associations-update-event associations))))))
 
-(defn set-subscription-arn
-  "Subscribes a subscription request to the CMR external topic and
-  saves the subscription ARN to the concept and returns the new concept."
-  [context concept-type concept]
-  (if (and subscriptions/subscriptions-enabled?
-           (= :subscription concept-type))
-    (if-let [subscription-arn (subscriptions/add-subscription context concept)]
-      (assoc-in concept [:extra-fields :aws-arn] subscription-arn)
-      concept)
-    concept))
-
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
   [context concept]
@@ -921,7 +909,7 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
-                       (set-subscription-arn context concept-type)
+                       (subscriptions/set-subscription-arn-if-applicable context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -937,13 +925,11 @@
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
       (publish-service-associations-update-event context concept-type concept-id)
       (publish-tool-associations-update-event context concept-type concept-id)
-      (ingest-events/publish-event
-       context
-       (ingest-events/concept-update-event concept))
+      (ingest-events/publish-event context (ingest-events/concept-update-event concept))
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
-      (subscriptions/add-delete-subscription context concept)
-      (subscriptions/work-potential-notification context concept)
+      (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
+      (subscriptions/publish-subscription-notification-if-applicable context concept)
       concept)))
 
 (defn- delete-associated-tag-associations

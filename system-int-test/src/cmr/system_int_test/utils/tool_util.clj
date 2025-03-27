@@ -1,25 +1,24 @@
 (ns cmr.system-int-test.utils.tool-util
   "This contains utilities for testing tools."
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clojure.test :refer [is]]
-   [cmr.common.mime-types :as mime-types]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
-   [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.search.results-handlers.atom-results-handler :as handler]
-   [cmr.system-int-test.data2.atom :as atom]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-json :as du]
-   [cmr.system-int-test.data2.umm-spec-tool :as data-umm-t]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.ingest-util :as ingest-util]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as config]
-   [cmr.transmit.search :as transmit-search]
-   [cmr.umm-spec.versioning :as versioning]))
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clojure.test :refer [is]]
+    [cmr.common.mime-types :as mime-types]
+    [cmr.mock-echo.client.echo-util :as echo-util]
+    [cmr.search.results-handlers.atom-results-handler :as handler]
+    [cmr.system-int-test.data2.atom :as atom]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-json :as du]
+    [cmr.system-int-test.data2.umm-spec-tool :as data-umm-t]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.association-util :as assoc-util]
+    [cmr.system-int-test.utils.ingest-util :as ingest-util]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as config]
+    [cmr.transmit.search :as transmit-search]
+    [cmr.umm-spec.versioning :as versioning]))
 
 (def versioned-content-type
   "A versioned default content type used in the tests."
@@ -223,7 +222,7 @@
                                       expected-fields
                                       {:tools tool-concept-ids
                                        :variables var-concept-ids})
-        options {:accept (mt/with-version mt/umm-json-results versioning/current-collection-version)}
+        options {:accept (mime-types/with-version mime-types/umm-json-results versioning/current-collection-version)}
         {:keys [entry-title]} coll
         response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
     (du/assert-umm-jsons-match
@@ -270,11 +269,25 @@
   ([coll-tool-associations response]
    (assert-tool-association-response-ok? coll-tool-associations response true))
   ([coll-tool-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body]} response
          expected-sas (map #(coll-tool-association->expected-tool-association % error?)
                            coll-tool-associations)]
      (is (= [200
              (set (comparable-tool-associations expected-sas))]
+            [status (set (comparable-tool-associations body))])))))
+
+
+(defn assert-tool-association-response-mixed?
+  "Assert the tool association response when status code is 200 is correct."
+  ([coll-tool-associations response]
+   (assert-tool-association-response-mixed? coll-tool-associations response true))
+  ([coll-tool-associations response error?]
+   (let [{:keys [status body]} response
+         expected-sas (map #(coll-tool-association->expected-tool-association % error?)
+                           coll-tool-associations)
+         revised-expected-sas (assoc-util/add-individual-statuses expected-sas)]
+     (is (= [207
+             (set (comparable-tool-associations revised-expected-sas))]
             [status (set (comparable-tool-associations body))])))))
 
 (defn assert-tool-association-bad-request
@@ -282,12 +295,17 @@
   ([coll-tool-associations response]
    (assert-tool-association-bad-request coll-tool-associations response true))
   ([coll-tool-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body]} response
          expected-tas (map #(coll-tool-association->expected-tool-association % error?)
                            coll-tool-associations)]
      (is (= [400
              (set (comparable-tool-associations expected-tas))]
             [status (set (comparable-tool-associations body))])))))
+
+(defn assert-tool-dissociation-response-mixed?
+  "Assert the tool association response when status code is 207 is correct."
+  [coll-tool-associations response]
+  (assert-tool-association-response-mixed? coll-tool-associations response true))
 
 (defn- search-for-tool-associations
   "Searches for tool associations in metadata db using the given parameters."
@@ -305,7 +323,7 @@
   "Assert the collections found by the tool query matches the given collection revisions.
   Temporary using search metadata-db for tool associations. Will change to search search-app
   for collections once that is implemented in issues like CMR-4280."
-  [token query expected-colls]
+  [_ query expected-colls]
   (let [{:keys [status body]} (search-for-tool-associations (assoc query :latest true))
         colls (->> body
                    (filter #(false? (:deleted %)))

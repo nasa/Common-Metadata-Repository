@@ -24,7 +24,8 @@
   [n prov & attribs]
   (d/ingest-umm-spec-collection
    prov (data-umm-spec/collection-missing-properties-dif (apply merge {:EntryTitle (str "coll" n)} attribs))
-        {:format :dif}))
+        {:format :dif
+         :validate-keywords false}))
 
 (defn- grant-permissions
   "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
@@ -885,12 +886,14 @@
                                                 :platforms [(dc/platform
                                                               {:short-name "smap"
                                                                :instruments [(dc/instrument {:short-name "atm"})]})]
-                                                :organizations [(dc/org :archive-center "OR-STATE/eoarc")]}))
+                                                :organizations [(dc/org :archive-center "OR-STATE/eoarc")]})
+                        {:validate-keywords false})
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
                                                 :platforms [(dc/platform
                                                               {:short-name "sMaP"
                                                                :instruments [(dc/instrument {:short-name "aTM"})]})]
-                                                :organizations [(dc/org :archive-center "or-state/EOARC")]}))
+                                                :organizations [(dc/org :archive-center "or-state/EOARC")]})
+                        {:validate-keywords false})
         _ (index/wait-until-indexed)
         facet-results (:facets (search/find-refs :collection {:include-facets true}))]
     (are [value-counts field]

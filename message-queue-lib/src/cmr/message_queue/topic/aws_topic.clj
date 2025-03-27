@@ -56,7 +56,7 @@
           result)))))
 
 (defn subscribe-sqs-to-sns
-  "Subscribes an AWS SQS to an AWS Topic."
+  "Subscribes an AWS SQS to an AWS SNS Topic."
   [sns-client topic-arn sqs-arn]
   (let [sub-request (-> (SubscribeRequest/builder)
                         (.protocol "sqs")
@@ -79,7 +79,8 @@
             (:Mode subscription-metadata))
     (let [filters (util/remove-nil-keys
                    {:collection-concept-id [(:CollectionConceptId subscription-metadata)]
-                    :mode (:Mode subscription-metadata)})
+                    :mode (:Mode subscription-metadata)
+                    :subscriber [(:SubscriberId subscription-metadata)]})
           filter-json (json/generate-string filters)
           sub-filter-request (-> (SetSubscriptionAttributesRequest/builder)
                                  (.subscriptionArn subscription-arn)
@@ -112,7 +113,6 @@
 
   subscription-dead-letter-queue-arn]
 
-  ;; This will be filled in next sprint. CMR-10141
   topic-protocol/Topic
   (subscribe
     [_this subscription]
@@ -131,12 +131,12 @@
           (errors/throw-service-error :invalid-data msg)))))
 
   (unsubscribe
-   [_this subscription-id]
+   [_this subscription]
    (let [sub-request (-> (UnsubscribeRequest/builder)
-                         (.subscriptionArn (:subscription-arn subscription-id))
+                         (.subscriptionArn (:subscription-arn subscription))
                          (.build))]
      (.unsubscribe sns-client sub-request))
-   (:subscription-arn subscription-id))
+   (:subscription-arn subscription))
 
   (publish
     [_this message message-attributes subject]

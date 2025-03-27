@@ -21,7 +21,8 @@
                    (assoc :DOI (cm/map->DoiType
                                 {:DOI "doi1" :Authority "auth1"})))
                {:format :umm-json
-                :accept-format :json})
+                :accept-format :json
+                :validate-keywords false})
         coll2 (d/ingest-umm-spec-collection
                "PROV1"
                (-> exp-conv/curr-ingest-ver-example-collection-record
@@ -30,7 +31,8 @@
                    (assoc :DOI (cm/map->DoiType
                                 {:DOI "doi2" :Authority "auth2"})))
                {:format :umm-json
-                :accept-format :json})
+                :accept-format :json
+                :validate-keywords false})
         coll3 (d/ingest-umm-spec-collection
                "PROV1"
                (-> exp-conv/curr-ingest-ver-example-collection-record
@@ -40,7 +42,8 @@
                                 {:DOI "Not provided" :Authority "auth3"}))
                    (assoc :AssociatedDOIs nil))
                {:format :umm-json
-                :accept-format :json})
+                :accept-format :json
+                :validate-keywords false})
         no-doi (d/ingest-umm-spec-collection
                 "PROV1"
                 (-> exp-conv/curr-ingest-ver-example-collection-record
@@ -48,7 +51,8 @@
                     (assoc :EntryTitle "These Are Not The DOIs You're Looking For")
                     (assoc :AssociatedDOIs nil))
                 {:format :umm-json
-                 :accept-format :json})]
+                 :accept-format :json
+                 :validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "search collections by doi"
@@ -110,7 +114,8 @@
                    (assoc :ShortName "CMR3674SN1")
                    (assoc :EntryTitle "CMR3674ET1"))
                {:format :umm-json
-                :accept-format :json})]
+                :accept-format :json
+                :validate-keywords false})]
     (index/wait-until-indexed)
     (testing "search collections by associated doi"
       (are3 [items doi options]

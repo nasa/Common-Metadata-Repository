@@ -74,7 +74,8 @@
               :filter (when (or (:CollectionConceptId metadata)
                                 (:Mode metadata))
                         {:collection-concept-id (:CollectionConceptId metadata)
-                         :mode (:Mode metadata)})
+                         :mode (:Mode metadata)
+                         :subscriber (:SubscriberId metadata)})
               :queue-url (:EndPoint metadata)
               :dead-letter-queue-url (queue/create-queue sqs-client (config/cmr-subscriptions-dead-letter-queue-name))
               :concept-id (:concept-id subscription)}]
@@ -87,13 +88,13 @@
      (:concept-id subscription)))
 
   (unsubscribe
-   [_this subscription-id]
+   [_this subscription]
    ;; remove the subscription from the atom and send back the subscription id, not the atom contents.
    (swap! subscription-atom (fn [subs]
                               (doall
-                               (filter #(not= (:concept-id %) (:concept-id subscription-id))
+                               (filter #(not= (:concept-id %) (:concept-id subscription))
                                        subs))))
-   (:concept-id subscription-id))
+   (:concept-id subscription))
 
   (publish
    [this message message-attributes _subject]

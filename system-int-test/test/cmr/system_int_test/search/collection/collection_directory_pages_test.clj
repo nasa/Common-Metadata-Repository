@@ -132,7 +132,8 @@
                                              :ShortName (str "s" n)
                                              :EntryTitle (str "Collection Item " n))
                                        {:format :umm-json
-                                        :accept-format :json})))
+                                        :accept-format :json
+                                        :validate-keywords false})))
         _ (index/wait-until-indexed)
         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
                                      (d/ingest-umm-spec-collection
@@ -144,7 +145,8 @@
                                                     {:DOI (str "doi" n)
                                                      :Authority (str "auth" n)}))
                                        {:format :umm-json
-                                        :accept-format :json})))
+                                        :accept-format :json
+                                        :validate-keywords false})))
         _ (index/wait-until-indexed)
         ;; Let's create another collection that will put the total over the
         ;; default of 10 values so that we can ensure the :unlimited option
@@ -156,7 +158,8 @@
                                          :ShortName (str "s" n)
                                          :EntryTitle (str "Collection Item " n))
                                   {:format :umm-json
-                                   :accept-format :json})))
+                                   :accept-format :json
+                                   :validate-keywords false})))
         [admin-1 admin-2] (doall (for [n (range 110 113)]
                                    (d/ingest-umm-spec-collection
                                      "ONLYADMIN"
@@ -167,7 +170,8 @@
                                                   {:DOI (str "doi" n)
                                                    :Authority (str "auth" n)}))
                                      {:format :umm-json
-                                      :accept-format :json})))
+                                      :accept-format :json
+                                      :validate-keywords false})))
         someadmin-guest-colls (doall (for [n (range 120 123)]
                                       (d/ingest-umm-spec-collection
                                         "SOMEADMIN"
@@ -178,7 +182,8 @@
                                                      {:DOI (str "doi" n)
                                                       :Authority (str "auth" n)}))
                                         {:format :umm-json
-                                         :accept-format :json})))
+                                         :accept-format :json
+                                         :validate-keywords false})))
         someadmin-invisible-colls (doall (for [n (range 130 133)]
                                           (d/ingest-umm-spec-collection
                                             "SOMEADMIN"
@@ -189,7 +194,8 @@
                                                          {:DOI (str "doi" n)
                                                           :Authority (str "auth" n)}))
                                             {:format :umm-json
-                                             :accept-format :json})))]
+                                             :accept-format :json
+                                             :validate-keywords false})))]
 
     (reset! test-collections
             {"PROV1" (sort (map :concept-id [c1-p1 c2-p1 c3-p1]))

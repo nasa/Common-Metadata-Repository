@@ -60,7 +60,7 @@
                              spatial-attribs
                              temporal-attribs
                              other-attribs)]
-     (d/ingest provider (dc/collection coll-attribs)))))
+     (d/ingest provider (dc/collection coll-attribs) {:validate-keywords false}))))
 
 (defn- polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
@@ -124,7 +124,8 @@
                                                                :geometries [m/whole-world]
                                                                :gsr :orbit
                                                                :orbit orbit-parameters})}
-                               no-match-temporal)))
+                               no-match-temporal))
+                             {:validate-keywords false})
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 orbit-coll]]
 

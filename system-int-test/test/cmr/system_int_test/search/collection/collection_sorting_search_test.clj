@@ -57,7 +57,8 @@
                             :short-name entry-title
                             :version-id "1"
                             :beginning-date-time (d/make-datetime begin)
-                            :ending-date-time (d/make-datetime end)})))
+                            :ending-date-time (d/make-datetime end)})
+            {:validate-keywords false}))
 (defn delete-coll
   "Deletes the collection and returns a deleted version of it for sorting comparison."
   [coll]
@@ -162,7 +163,8 @@
   "Makes a minimal collection with a shortname and ingests it."
   [shortname]
   (d/ingest "PROV1"
-            (dc/collection {:short-name shortname})))
+            (dc/collection {:short-name shortname})
+            {:validate-keywords false}))
 
 (deftest shortname-sorting-test
   (let [c1 (make-coll-with-sn "Bob2")
@@ -287,19 +289,22 @@
         ;; 1 will have the least relevance
         coll1 (d/ingest "PROV1" (dc/collection
                                  (merge common-attribs
-                                        {:entry-title "coll1"})))
+                                        {:entry-title "coll1"}))
+                        {:validate-keywords false})
         ;; 2 has the most by having both spatial and temporal keywords that match the search term
         coll2 (d/ingest "PROV1" (dc/collection
                                  (merge common-attribs
                                         {:entry-title "coll2"
                                          :spatial-keywords ["wood"]
-                                         :temporal-keywords ["wood"]})))
+                                         :temporal-keywords ["wood"]}))
+                        {:validate-keywords false})
         ;; 3 has more than 1 but less than 2. It has spatial keywords that match the search term but
         ;; no temporal keywords
         coll3 (d/ingest "PROV1" (dc/collection
                                  (merge common-attribs
                                         {:entry-title "coll3"
-                                         :spatial-keywords ["wood"]})))]
+                                         :spatial-keywords ["wood"]}))
+                        {:validate-keywords false})]
     (index/wait-until-indexed)
 
     (testing "Keyword searching is by score"
@@ -352,7 +357,8 @@
   (let [make-collection (fn [& platforms]
                           (d/ingest "PROV1"
                                     (dc/collection
-                                      {:platforms (map #(dc/platform {:short-name %}) platforms)})))
+                                      {:platforms (map #(dc/platform {:short-name %}) platforms)})
+                                    {:validate-keywords false}))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -374,7 +380,8 @@
                             (dc/collection
                               {:platforms [(dc/platform
                                              {:instruments (map #(dc/instrument {:short-name %})
-                                                                instruments)})]})))
+                                                                instruments)})]})
+                            {:validate-keywords false}))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -398,7 +405,8 @@
                                              {:instruments
                                               [(dc/instrument
                                                  {:short-name (d/unique-str "instrument")
-                                                  :sensors (map #(dc/sensor {:short-name %}) sensors)})]})]})))
+                                                  :sensors (map #(dc/sensor {:short-name %}) sensors)})]})]})
+                            {:validate-keywords false}))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -430,42 +438,49 @@
                (data-umm-c/collection 1 {:EntryTitle "Dataset1"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time year-in-past})]}))
+                                                             :ending-date-time year-in-past})]})
+               {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 2 {:EntryTitle "Dataset2"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time year-in-future})]}))
+                                                             :ending-date-time year-in-future})]})
+               {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 3 {:EntryTitle "Dataset3"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time outside-ongoing})]}))
+                                                             :ending-date-time outside-ongoing})]})
+               {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 4 {:EntryTitle "Dataset4"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time inside-ongoing})]}))
+                                                             :ending-date-time inside-ongoing})]})
+               {:validate-keywords false})
         coll5 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 5 {:EntryTitle "Dataset5"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time today})]}))
+                                                             :ending-date-time today})]})
+               {:validate-keywords false})
         coll6 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 6 {:EntryTitle "Dataset6"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
-                                                            {:beginning-date-time "2010-01-01T12:00:00Z"})]}))
+                                                            {:beginning-date-time "2010-01-01T12:00:00Z"})]})
+               {:validate-keywords false})
         coll7 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection 7 {:EntryTitle "Dataset7"
                                          :TemporalExtents [(data-umm-cmn/temporal-extent
                                                             {:beginning-date-time "2010-01-01T12:00:00Z"
-                                                             :ending-date-time today})]}))]
+                                                             :ending-date-time today})]})
+               {:validate-keywords false})]
     (index/wait-until-indexed)
     (are [sort-key items]
       (sort-order-correct? items sort-key)
@@ -482,7 +497,8 @@
                                             :short-name cname
                                             :long-name (str cname "-long")
                                             :version-id "1"}
-                                           attribs))))
+                                           attribs))
+                                  {:validate-keywords false}))
 
         ;; community usage values assigned to the following collections
         alpha_1_10 (make-named-collection "alpha_a" {:short-name "alpha"})
@@ -552,7 +568,8 @@
                                             :short-name cname
                                             :long-name (str cname "-long")
                                             :version-id "1"}
-                                           attribs))))
+                                           attribs))
+                                  {:validate-keywords false}))
 
         _ (humanizer-util/ingest-community-usage-metrics non-version-usage-csv)
 

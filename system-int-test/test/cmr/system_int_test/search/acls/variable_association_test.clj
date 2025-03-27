@@ -26,7 +26,7 @@
                                (s/context) "PROV1")
         {create-token :token} (variable-util/setup-update-acl
                                (s/context) "PROV1" :create)
-        coll-concept-id (->> {:token update-token}
+        coll-concept-id (->> {:token update-token :validate-keywords false}
                              (d/ingest "PROV1" (dc/collection))
                              :concept-id)
         _ (index/wait-until-indexed)

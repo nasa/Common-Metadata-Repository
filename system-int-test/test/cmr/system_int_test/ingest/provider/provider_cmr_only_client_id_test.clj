@@ -7,8 +7,7 @@
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm.umm-granule :as umm-g]))
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "GES_DISC"}))
@@ -42,6 +41,7 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
+      (Thread/sleep 3000)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client other than Echo"
@@ -52,6 +52,7 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
+      (Thread/sleep 3000)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "any")))))
 
@@ -77,6 +78,7 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
+      (Thread/sleep 3000)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client other than Echo"
@@ -88,6 +90,7 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
+      (Thread/sleep 3000)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-success func concept "any")))))
 
@@ -114,6 +117,7 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
+      (Thread/sleep 3000)
       (assert-ingest-success #'ingest/validate-concept concept "Virtual-Product-Service")
       (assert-ingest-success #'ingest/ingest-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)

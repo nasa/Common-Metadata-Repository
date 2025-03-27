@@ -22,18 +22,18 @@
                        (search/find-refs :collection params {:snake-kebab? false})))
 
 (deftest search-collection-revisions-by-tag-test
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
         coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}) {:validate-keywords false})
 
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
+        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})
 
-        coll3 (d/ingest "PROV2" (dc/collection {}))
-        coll4-1 (d/ingest "PROV2" (dc/collection {:entry-title "et4"}))
+        coll3 (d/ingest "PROV2" (dc/collection {}) {:validate-keywords false})
+        coll4-1 (d/ingest "PROV2" (dc/collection {:entry-title "et4"}) {:validate-keywords false})
 
         token (e/login (s/context) "user1")
         tag1 (tags/save-tag token (tags/make-tag {:tag-key "tag1"}))
@@ -85,7 +85,7 @@
       (assert-collection-refs-found [coll4-1] {:tag-data {"tag2" "land"} :all-revisions true})
 
       ;; update the collection
-      (let [coll4-2 (d/ingest "PROV2" (dc/collection {:entry-title "et4"}))]
+      (let [coll4-2 (d/ingest "PROV2" (dc/collection {:entry-title "et4"}) {:validate-keywords false})]
         (index/wait-until-indexed)
 
         ;; Found the latest collection revision only without all-revisions true
@@ -100,7 +100,7 @@
       (assert-collection-refs-found [coll2-2] {:tag-data {"tag2" "cloud"} :all-revisions true})
 
       ;; update the collection
-      (let [coll2-3 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))]
+      (let [coll2-3 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}) {:validate-keywords false})]
         (index/wait-until-indexed)
 
         ;; Found no collections without all-revisions true

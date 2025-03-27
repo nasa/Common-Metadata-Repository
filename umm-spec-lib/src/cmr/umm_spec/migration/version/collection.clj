@@ -794,3 +794,24 @@
                                 (update :CollectionProgress migrate-collection-progress-down))
                             coll))))
 
+(defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.3"]
+  [_context collection & _]
+  ;; Migrating up version 1.18.2 to 1.18.3
+  (-> collection
+      (m-spec/update-version :collection "1.18.3")))
+
+(defn down-grade-geo-json-mime-type
+  "Replace MimeType geo+json with json as geo+json doesn't exist in the lower versions.
+  Otherwise leave the MimeType as is."
+  [service ]
+  (if (= "application/geo+json" (:MimeType service))
+    (assoc service :MimeType "application/json")
+    service))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.3" "1.18.2"]
+  [_context collection & _]
+  ;; Migrating down version 1.18.3 to 1.18.2
+  ;; Modify RelatedUrls GetService MimeType from geo+json to json
+  (-> collection
+      (m-spec/update-version :collection "1.18.2")
+      (util/update-in-all [:RelatedUrls :GetService] #(down-grade-geo-json-mime-type %))))

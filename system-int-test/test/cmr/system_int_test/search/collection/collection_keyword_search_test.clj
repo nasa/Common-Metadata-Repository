@@ -113,59 +113,67 @@
                                         :Type "PROJECT HOME PAGE"
                                         :Description "Home page of National Snow and Ice Data Center"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1"
-                                                                            :VersionDescription "VersionDescription"}))
+                                                                            :VersionDescription "VersionDescription"})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Mitch made a (merry-go-round)"
-                                                                            :ShortName "ABC!XYZ" :Version "V001"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}))
-        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}))
-        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll5" :ShortName "Space!Laser"}))
+                                                                            :ShortName "ABC!XYZ" :Version "V001"})
+                                            {:validate-keywords false})
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}) {:validate-keywords false})
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}) {:validate-keywords false})
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll5" :ShortName "Space!Laser"}) {:validate-keywords false})
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll6"
                                                                             :ShortName "S6"
                                                                             :DataCenters [org]
                                                                             :Projects pr2
-                                                                            :Platforms [p7]}))
-        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll7" :ShortName "S7" :Version "Laser"}))
-        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll8" :ShortName "S8" :ProcessingLevel {:Id "PDQ123"}}))
+                                                                            :Platforms [p7]})
+                                            {:validate-keywords false})
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll7" :ShortName "S7" :Version "Laser"}) {:validate-keywords false})
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll8" :ShortName "S8" :ProcessingLevel {:Id "PDQ123"}}) {:validate-keywords false})
 
-        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll09" :ShortName "S9" :ScienceKeywords [sk1 sk2]}))
+        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll09" :ShortName "S9" :ScienceKeywords [sk1 sk2]}) {:validate-keywords false})
 
 
         coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll10"
                                                                              :ShortName "S10"
                                                                              :SpatialKeywords ["in out"]
-                                                                             :ScienceKeywords [sk3]}))
+                                                                             :ScienceKeywords [sk3]})
+                                             {:validate-keywords false})
         coll11 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll11" :ShortName "S11" :Platforms [p2 p3 p5 p6]
-                                                                             :AdditionalAttributes [psa5]}))
+                                                                             :AdditionalAttributes [psa5]})
+                                             {:validate-keywords false})
         coll12 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll12" :ShortName "S12"
-                                                                             :AdditionalAttributes [psa1 psa2 psa3 psa4]}))
+                                                                             :AdditionalAttributes [psa1 psa2 psa3 psa4]})
+                                             {:validate-keywords false})
         coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13"
-                                                                             :TilingIdentificationSystems [tdcs1 tdcs2]}))
-        coll14 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll14" :ShortName "spoonA laser"}))
+                                                                             :TilingIdentificationSystems [tdcs1 tdcs2]})
+                                             {:validate-keywords false})
+        coll14 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll14" :ShortName "spoonA laser"}) {:validate-keywords false})
         coll15 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll15" :ShortName "S15" :ProcessingLevel {:Id  "plid1"}
                                                                              :CollectionDataType "SCIENCE_QUALITY" :Platforms [p1]
-                                                                             :Abstract "summary" :TemporalKeywords ["tk1" "tk2"]}))
-        coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll16" :ShortName "entryid4"}) {:format :dif})
+                                                                             :Abstract "summary" :TemporalKeywords ["tk1" "tk2"]})
+                                             {:validate-keywords false})
+        coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll16" :ShortName "entryid4"}) {:format :dif :validate-keywords false})
         ;;coll17 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:associated-difs ["DIF-1" "DIF-2"]}))
-        coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}))
-        coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}))
-        coll21 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll21" :ShortName "Laser"}))
+        coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}) {:validate-keywords false})
+        coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}) {:validate-keywords false})
+        coll21 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll21" :ShortName "Laser"}) {:validate-keywords false})
         coll22 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll22" :CollectionDataType "NEAR_REAL_TIME"
-                                                                             :ShortName "Mixed"}))
-        coll23 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll23" :ShortName "\"Quoted\" collection"}))
-        coll24 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll24" :ShortName "coll24" :Platforms [p4]}))
+                                                                             :ShortName "Mixed"}) {:validate-keywords false})
+        coll23 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll23" :ShortName "\"Quoted\" collection"}) {:validate-keywords false})
+        coll24 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll24" :ShortName "coll24" :Platforms [p4]}) {:validate-keywords false})
         ;; Adding personnel here to test keyword search using DataCenter contacts
         coll25 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll25" :ShortName "S25"
-                                                                             :RelatedUrls [url1 url2] :ContactPersons [personnel3]}))
+                                                                             :RelatedUrls [url1 url2] :ContactPersons [personnel3]}) {:validate-keywords false})
         coll-boost (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "boost"
                                                                                  :ShortName "boost"
                                                                                  :Platforms [pboost]
-                                                                                 :ScienceKeywords [skboost]}))
+                                                                                 :ScienceKeywords [skboost]}) {:validate-keywords false})
 
         coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26"
-                                                                             :ContactPersons [personnel1]}) {:format :dif10})
+                                                                             :ContactPersons [personnel1]}) {:format :dif10 :validate-keywords false})
         coll26-1 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26 one" :ShortName "S26 (sname one) \"sname one\""
-                                                                               :ContactPersons [personnel1]}) {:format :dif10})
-        coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
+                                                                               :ContactPersons [personnel1]}) {:format :dif10 :validate-keywords false})
+        coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10 :validate-keywords false})]
 
 
     (index/wait-until-indexed)
@@ -712,7 +720,8 @@
                                       :Subregion3 "GAZA STRIP"
                                       :DetailedLocation "Testing Detailed Location"})]))
                         {:format :umm-json
-                         :accept-format :json})
+                         :accept-format :json
+                         :validate-keywords false})
         coll2 (d/ingest "PROV1"
                         (-> exp-conv/curr-ingest-ver-example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
@@ -723,7 +732,8 @@
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
-                         :accept-format :json})
+                         :accept-format :json
+                         :validate-keywords false})
         coll3 (d/ingest-concept-with-metadata-file "data/iso_mends/no_spatial_iso_collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
@@ -834,43 +844,52 @@
 ;; sorting the results and then if short name is the same version is used for sorting the results
 (deftest search-by-keywords-relevancy-sorting-includes-short-name-and-version
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V5.1",
-                                  :ShortName "MOD04_L2",
-                                  :Version "5.1"}))
+                                                      {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V5.1",
+                                                       :ShortName "MOD04_L2",
+                                                       :Version "5.1"})
+                                            {:validate-keywords false})
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V5.1",
-                                  :ShortName "MYD04_L2",
-                                  :Version "5.1"}))
+                                                      {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V5.1",
+                                                       :ShortName "MYD04_L2",
+                                                       :Version "5.1"})
+                                            {:validate-keywords false})
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V006",
-                                  :ShortName "MYD04_L2",
-                                  :Version "6"}))
+                                                      {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V006",
+                                                       :ShortName "MYD04_L2",
+                                                       :Version "6"})
+                                            {:validate-keywords false})
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V006",
-                                  :ShortName "MOD04_L2",
-                                  :Version "6"}))
+                                                      {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V006",
+                                                       :ShortName "MOD04_L2",
+                                                       :Version "6"})
+                                            {:validate-keywords false})
         coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
-                                  :ShortName "MYD05_L2",
-                                  :Version "5.1"}))
+                                                      {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
+                                                       :ShortName "MYD05_L2",
+                                                       :Version "5.1"})
+                                            {:validate-keywords false})
         coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
-                                  :ShortName "MOD05_L2",
-                                  :Version "5.1"}))
+                                                      {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
+                                                       :ShortName "MOD05_L2",
+                                                       :Version "5.1"})
+                                            {:validate-keywords false})
         coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
-                                  :ShortName "MYD05_L2",
-                                  :Version "6"}))
+                                                      {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
+                                                       :ShortName "MYD05_L2",
+                                                       :Version "6"})
+                                            {:validate-keywords false})
         coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
-                                  :ShortName "MOD05_L2",
-                                  :Version "6"}))
+                                                      {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
+                                                       :ShortName "MOD05_L2",
+                                                       :Version "6"})
+                                            {:validate-keywords false})
         coll9 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "MODIS Aerosol Other",
-                                  :Projects [(data-umm-cmn/project "MODIS" "ignored")]
-                                  :Platforms [(data-umm-cmn/platform {:ShortName "MODIS"})]
-                                  :ShortName "Other",
-                                  :Version "1"}))]
+                                                      {:EntryTitle "MODIS Aerosol Other",
+                                                       :Projects [(data-umm-cmn/project "MODIS" "ignored")]
+                                                       :Platforms [(data-umm-cmn/platform {:ShortName "MODIS"})]
+                                                       :ShortName "Other",
+                                                       :Version "1"})
+                                            {:validate-keywords false})]
     (index/wait-until-indexed)
     (let [refs (search/find-refs :collection {:keyword "modis aerosol"})
           expected-order [coll9 ;; higher score
@@ -945,7 +964,7 @@
                    ["coll49" "choco or taco"]
                    ["coll50" "begin*end"]]
         colls (doall (for [[coll summary] coll-data]
-                       (d/ingest-umm-spec-collection "PROV3" (data-umm-c/collection (d/unique-num) {:EntryTitle coll :Abstract summary}))))]
+                       (d/ingest-umm-spec-collection "PROV3" (data-umm-c/collection (d/unique-num) {:EntryTitle coll :Abstract summary}) {:validate-keywords false})))]
     (index/wait-until-indexed)
     (are [keyword-str indexes]
          (let [refs (search/find-refs :collection {:keyword keyword-str :page_size 51})

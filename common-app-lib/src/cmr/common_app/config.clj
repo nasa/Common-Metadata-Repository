@@ -8,7 +8,7 @@
 (defconfig collection-umm-version
   "Defines the latest collection umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.18.2"})
+  {:default "1.18.3"})
 
 (defconfig launchpad-token-enforced
   "Flag for whether or not launchpad token is enforced."
@@ -26,7 +26,7 @@
 
 (defconfig cmr-support-email
   "CMR support email address"
-  {:default "cmr-support@earthdata.nasa.gov"})
+  {:default "cmr-support@nasa.gov"})
 
 (defconfig es-unlimited-page-size
   "This is the number of items we will request from elastic search at a time when

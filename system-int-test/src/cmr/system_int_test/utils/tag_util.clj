@@ -228,7 +228,7 @@
   ([coll-tag-associations response]
    (assert-tag-association-response-ok? coll-tag-associations response true))
   ([coll-tag-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
      (is (= [200
@@ -240,12 +240,26 @@
   ([coll-tag-associations response]
    (assert-tag-association-response-error? coll-tag-associations response true))
   ([coll-tag-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
-     (is (= [400
-             (set (comparable-tag-associations expected-tas))]
+     (is (= [400 (set (comparable-tag-associations expected-tas))]
             [status (set (comparable-tag-associations body))])))))
+
+(defn add-individual-statuses
+  [list]
+  [list]
+  (map #(assoc % :status (if (or (:errors %) (:warning %)) 400 200)) list))
+
+(defn assert-tag-association-response-mixed?
+  "Assert the tag association response when status code is 207 multi-status response."
+  [coll-tag-associations response]
+   (let [{:keys [status body]} response
+         expected-tag-assoc (map #(coll-tag-association->expected-tag-association % false)
+                           coll-tag-associations)
+         revised-expected-tag-assoc (add-individual-statuses expected-tag-assoc)]
+     (is (= [207 (set (comparable-tag-associations revised-expected-tag-assoc))]
+            [status (set (comparable-tag-associations body))]))))
 
 (defn assert-tag-dissociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."
@@ -256,6 +270,11 @@
   "Assert the tag association response when status code is 400 is correct."
   [coll-tag-associations response]
   (assert-tag-association-response-error? coll-tag-associations response false))
+
+(defn assert-tag-dissociation-response-mixed?
+  "Assert the tag association response when status code is 207 is correct."
+  [coll-tag-associations response]
+  (assert-tag-association-response-mixed? coll-tag-associations response))
 
 (defn assert-invalid-data-error
   "Assert tag association response when status code is 422 is correct"

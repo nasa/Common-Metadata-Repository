@@ -28,11 +28,13 @@
                                                                               :TemporalExtents
                                                                               [(data-umm-cmn/temporal-extent
                                                                                 {:beginning-date-time "2012-01-01T00:00:00Z"
-                                                                                 :ending-date-time "2012-02-14T12:00:00Z"})]}))
+                                                                                 :ending-date-time "2012-02-14T12:00:00Z"})]})
+                                              {:validate-keywords false})
           coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "AnotherCollectionV1"
                                                                               :ShortName "S2"
                                                                               :Version "V2"
-                                                                              :Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")}))
+                                                                              :Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")})
+                                              {:validate-keywords false})
           coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "OneCollectionV1"
                                                                               :ShortName "S3"
                                                                               :Version "V3"
@@ -41,12 +43,14 @@
                                                                                 :Coordinate1 {:MinimumValue 100
                                                                                               :MaximumValue 200}
                                                                                 :Coordinate2 {:MinimumValue 300
-                                                                                              :MaximumValue 400}}]}))
+                                                                                              :MaximumValue 400}}]})
+                                              {:validate-keywords false})
           coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "OtherCollectionV1"
                                                                               :ShortName "S4"
                                                                               :Version "V4"
                                                                               :SpatialExtent (data-umm-c/spatial
-                                                                                              {:gsr "GEODETIC"})}))
+                                                                                              {:gsr "GEODETIC"})})
+                                              {:validate-keywords false})
 
           coll1-cid (get-in coll1 [:concept-id])
           coll2-cid (get-in coll2 [:concept-id])
