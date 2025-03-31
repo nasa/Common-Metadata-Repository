@@ -166,6 +166,7 @@
   (try
     ;; We delete existing jobs and recreate them
     (when (qs/get-job scheduler job-key)
+      (qs/delete-trigger scheduler (str job-key ".trigger"))
       (qs/delete-job scheduler (qj/key job-key)))
     (qs/schedule scheduler quartz-job trigger)
     true
