@@ -886,9 +886,10 @@
            :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
+;; TODO this might be the index version number...
 (def index-set-id
   "The identifier of the one and only index set"
-  1)
+  2)
 
 (defn index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
