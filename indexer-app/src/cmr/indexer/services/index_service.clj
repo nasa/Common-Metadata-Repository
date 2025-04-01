@@ -663,20 +663,21 @@
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
   [context concept-mapping-types concept-id revision-id]
-  (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)
-          small-collections-index-name (:small_collections (:granule (:index-names (idx-set/get-concept-type-index-names context))))]
-    (if (= index small-collections-index-name)
-      (let [resp (es/delete-by-query
-                   context
-                   index
-                   (concept-mapping-types :granule)
-                   {:term {(query-field->elastic-field :collection-concept-id :granule)
-                           concept-id}})]
-         (when (not= (get resp :status) 200)
-           (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp))))
-      (let [resp (es/delete-index context index)]
-        (when (not= (get resp :status) 200)
-          (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
+  (let [small-collections-index-name (:small_collections (:granule (:index-names (idx-set/get-concept-type-index-names context))))]
+    (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
+      (if (= index small-collections-index-name)
+        (let [resp (es/delete-by-query
+                    context
+                    index
+                    (concept-mapping-types :granule)
+                    {:term {(query-field->elastic-field :collection-concept-id :granule)
+                            concept-id}})]
+          (when (not= (get resp :status) 200)
+            (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp))))
+        (let [resp (es/delete-index context index)]
+          (when (not= (get resp :status) 200)
+            (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
+
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
