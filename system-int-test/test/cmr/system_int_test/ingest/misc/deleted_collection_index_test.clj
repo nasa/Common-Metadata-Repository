@@ -9,7 +9,7 @@
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :once (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest deleted-collection-test-index
   (testing "Ingest granule, rebalance collection, delete collection"
