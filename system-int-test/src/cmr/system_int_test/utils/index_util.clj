@@ -171,3 +171,12 @@
                  {:connection-manager (s/conn-mgr)
                   :body (query-for-granules-by-collection coll)
                   :content-type "application/json"}))
+
+(defn check-index-exists
+  "Helpper to check if elasticsearch index exists."
+  [coll]
+  (let [index-name (string/replace (format "1_%s" (string/lower-case (:concept-id coll)))
+                                   #"-" "_")]
+    (client/head (format "%s/%s" (url/elastic-root) index-name)
+                 {:connection-manager (s/conn-mgr)
+                  :throw-exceptions false})))
