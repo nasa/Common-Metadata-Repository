@@ -1,1 +1,1 @@
-docker build -t cmr-docker -f Dockerfile.dev .
+docker build -t cmr-local -f Dockerfile.dev .

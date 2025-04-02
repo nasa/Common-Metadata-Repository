@@ -9,9 +9,3 @@ RUN apt-get update \
       unzip \
       zip \
  && rm -rf /var/lib/apt/lists/*
-
-COPY profiles.clj profiles.clj
-
-COPY ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar
-
-CMD ["java", "-jar", "-Xmx1g", "cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar"]

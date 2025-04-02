@@ -1,81 +1,98 @@
 services:
   redis:
-    container_name: cmr-redis
+    container_name: redis
     image: docker.io/redis:7-bullseye
     attach: false
     ports:
       - 6379:6379
-  elasticsearch01:
-    container_name: elasticsearch01
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+  elasticsearch:
+    container_name: elasticsearch
     attach: false
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
     ports: 
-      - 9210:9210
+      - 9210:9200
+      - 9300:9300
     environment:
-      - discovery.seed_hosts=elasticsearch02,elasticsearch03
-      - node.name=elasticsearch01
-      - cluster.name=embedded-elastic-cluster
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - cluster.routing.allocation.disk.threshold_enabled=false
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data01:/usr/share/elasticsearch/data
+      - discovery.type=single-node
+      - indices.breaker.total.use_real_memory=false
+      - node.name=embedded-elastic
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
-      interval: 30s
+      test: ["CMD", "curl", "-f", "http://elasticsearch:9200/_cluster/health?wait_for_status=green&timeout=50s"]
+      interval: 10s
       timeout: 3m
       retries: 6
       start_period: 40s
-  elasticsearch02:
-    container_name: elasticsearch02
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
-    attach: false
-    environment:
-      - discovery.seed_hosts=elasticsearch01,elasticsearch03
-      - node.name=elasticsearch02
-      - cluster.name=embedded-elastic-cluster
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-      - cluster.routing.allocation.disk.threshold_enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data02:/usr/share/elasticsearch/data
-  elasticsearch03:
-    container_name: elasticsearch03
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
-    attach: false
-    environment:
-      - discovery.seed_hosts=elasticsearch02,elasticsearch01
-      - node.name=elasticsearch03
-      - cluster.name=embedded-elastic-cluster
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - cluster.routing.allocation.disk.threshold_enabled=false
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data03:/usr/share/elasticsearch/data
+  # elasticsearch01:
+  #   container_name: elasticsearch01
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+  #   attach: false
+  #   ports: 
+  #     - 9210:9210
+  #   environment:
+  #     - discovery.seed_hosts=elasticsearch02,elasticsearch03
+  #     - node.name=elasticsearch01
+  #     - cluster.name=embedded-elastic-cluster
+  #     - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
+  #     - bootstrap.memory_lock=true
+  #     - cluster.routing.allocation.disk.threshold_enabled=false
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data01:/usr/share/elasticsearch/data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
+  #     interval: 30s
+  #     timeout: 3m
+  #     retries: 6
+  #     start_period: 40s
+  # elasticsearch02:
+  #   container_name: elasticsearch02
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+  #   attach: false
+  #   environment:
+  #     - discovery.seed_hosts=elasticsearch01,elasticsearch03
+  #     - node.name=elasticsearch02
+  #     - cluster.name=embedded-elastic-cluster
+  #     - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
+  #     - bootstrap.memory_lock=true
+  #     - xpack.security.enabled=false
+  #     - cluster.routing.allocation.disk.threshold_enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data02:/usr/share/elasticsearch/data
+  # elasticsearch03:
+  #   container_name: elasticsearch03
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+  #   attach: false
+  #   environment:
+  #     - discovery.seed_hosts=elasticsearch02,elasticsearch01
+  #     - node.name=elasticsearch03
+  #     - cluster.name=embedded-elastic-cluster
+  #     - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
+  #     - bootstrap.memory_lock=true
+  #     - cluster.routing.allocation.disk.threshold_enabled=false
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data03:/usr/share/elasticsearch/data
   kibana:
-    container_name: cmr-kibana
+    container_name: kibana
     attach: false
     image: docker.elastic.co/kibana/kibana:7.17.14
     depends_on: 
-      elasticsearch01:
+      elasticsearch:
         condition: service_healthy
     ports:
       - 5601:5601
@@ -89,11 +106,12 @@ services:
   cmr:
     container_name: cmr
     image: cmr-local
+    working_dir: /cmr/dev-system
     build:
       context: .
       dockerfile: Dockerfile.dev
     depends_on:
-      elasticsearch01:
+      elasticsearch:
         condition: service_healthy
       redis:
         condition: service_started
@@ -101,6 +119,7 @@ services:
         condition: service_started
       sqs:
         condition: service_started
+    attach: false
     stdin_open: true
     tty: true
     ports:
@@ -113,21 +132,20 @@ services:
       - 3009:3009
     environment:
       - CMR_DB_URL=thin:@host.docker.internal:1521/orcl
+      - CMR_ELASTIC_HOST=host.docker.internal
+      - CMR_SQS_SERVER_HOST=host.docker.internal
+      - CMR_REDIS_HOST=host.docker.internal
+      - CMR_REDIS_READ_HOST=host.docker.internal
       - CMR_DEV_SYSTEM_DB_TYPE=external
       - CMR_DEV_SYSTEM_ELASTIC_TYPE=external
       - CMR_DEV_SYSTEM_REDIS_TYPE=external
       - CMR_DEV_SYSTEM_SQS_SERVER_TYPE=external
-      - CMR_SYS_DB_PASSWORD=oracle
-      - CMR_BOOTSTRAP_PASSWORD=pass
-      - CMR_METADATA_DB_PASSWORD=oracle
-      - CMR_INGEST_PASSWORD=pass
-      - CMR_URS_PASSWORD=pass
+      - CMR_SYS_DB_PASSWORD
+      - CMR_BOOTSTRAP_PASSWORD
+      - CMR_METADATA_DB_PASSWORD
+      - CMR_INGEST_PASSWORD
+      - CMR_URS_PASSWORD
       - CMR_DEFAULT_JOB_START_DELAY=180000
-
-volumes:
-  data01:
-    driver: local
-  data02:
-    driver: local
-  data03:
-    driver: local
+    volumes:
+      - ~/.m2:/root/.m2
+      - ..:/cmr
