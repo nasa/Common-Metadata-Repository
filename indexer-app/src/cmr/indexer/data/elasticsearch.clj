@@ -375,7 +375,7 @@
                                                      :client-id t-config/cmr-client-id}
                                            :throw-exceptions false}))
            status (:status response)]
-       (if-not (some #{200 404} [status])
+       (when-not (some #{200 404} [status])
          (if (= 409 status)
            (if ignore-conflict?
              (info (str "Ignore conflict: " (str response)))

@@ -5,11 +5,9 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer [is]]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.indexer.config :as config]
+   [cmr.common.log :as log :refer (warn)]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.queue :as queue]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 

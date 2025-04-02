@@ -706,7 +706,7 @@
 (defn- delete-concept-default-helper
   "A private func that deletes concept indexes in elastic"
   [context concept concept-id revision-id options]
-  (if (nil? concept)
+  (when (nil? concept)
     (errors/throw-service-error
       :not-found
       (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
