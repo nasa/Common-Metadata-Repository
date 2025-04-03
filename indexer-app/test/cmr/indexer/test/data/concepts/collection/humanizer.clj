@@ -1,7 +1,7 @@
 (ns cmr.indexer.test.data.concepts.collection.humanizer
   "Tests for humanized keywords"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common-app.test.sample-humanizer :as sh]
@@ -27,7 +27,7 @@
   [f]
   (let [context create-context
         humanizer-cache (cache/context->cache context hf/humanizer-cache-key)]
-    (kms-lookup/create-kms-index context sample-keyword-map)
+    (kms-lookup/create-kms-index! context sample-keyword-map)
     (cache/set-value humanizer-cache hf/humanizer-cache-key sh/sample-humanizers)
     (f)))
 

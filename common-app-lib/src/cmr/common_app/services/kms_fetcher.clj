@@ -16,6 +16,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.log :refer [error]]
    [cmr.common.redis-log-util :as rl-util]
+   [cmr.common.services.errors :as srv-err]
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
@@ -51,6 +52,11 @@
   "The key used to store the KMS cache in the system cache map."
   :kms)
 
+(def kms-cache-ttl
+  "The Time-To-Live value, use nil to never expire."
+  nil)
+
+;; called by system.clj across several applications
 (defn create-kms-cache
   "Used to create the cache that will be used for caching KMS keywords. All applications caching
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
@@ -58,59 +64,56 @@
   []
   (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]
                                    :read-connection (redis-config/redis-read-conn-opts)
-                                   :primary-connection (redis-config/redis-conn-opts)}))
+                                   :primary-connection (redis-config/redis-conn-opts)
+                                   :ttl kms-cache-ttl}))
 
+;; Called indirectly by bootstrap. This may call KMS service directly through transmit.
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
   (try
-    (let [kms-cache (cache/context->cache context kms-cache-key)
-          _ (rl-util/log-redis-reading-start "kms-fetcher.fetch-gcmd-keywords-map" kms-cache-key)
-          [t1 kms-cache-value] (util/time-execution (cache/get-value kms-cache kms-cache-key))]
-      (rl-util/log-redis-read-complete "fetch-gcmd-keywords-map" kms-cache-key t1)
-      (kms-lookup/create-kms-index
-        context
-        (into {}
-              (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-                ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
-                ;; in this case use the cached value instead so that we don't wipe out the cache.
-                (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
-                  [keyword-scheme keyword-scheme-value]
-                  [keyword-scheme (get kms-cache-value keyword-scheme)])))))
+    (kms-lookup/create-kms-index!
+     context
+     (into {}
+           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+             [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))
     (catch Exception e
       (if (string/includes? (ex-message e) "Carmine connection error")
         (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
+;; This is only called by cmr.search.api.keywords (and tests). May be private in the future
 (defn get-kms-index
-  "Retrieves the GCMD keywords map from the cache."
+  "Retrieves the GCMD keywords map from the cache for search-app."
   [context]
   (try
     (when-not (:ignore-kms-keywords context)
       (let [cache (cache/context->cache context kms-cache-key)
             _ (rl-util/log-redis-reading-start kms-cache-key)
             [t1 kms-index] (util/time-execution (cache/get-value cache kms-cache-key))]
-        (if kms-index
-          (do
-            (rl-util/log-redis-read-complete "get-kms-index" kms-cache-key t1)
-            kms-index)
-          (let [[t1 kms-index] (util/time-execution (fetch-gcmd-keywords-map context))
-                [t2 _] (util/time-execution (cache/set-value cache kms-cache-key kms-index))]
-            (rl-util/log-data-gathering-stats "get-kms-index" kms-cache-key t1)
-            (rl-util/log-redis-write-complete "get-kms-index" kms-cache-key t2)
-            kms-index))))
+        ;; don't worry about finding a value, assume cache is correct and return what is found,
+        ;; an external process will sync the KMS cache
+        (rl-util/log-redis-read-complete "get-kms-index" kms-cache-key t1)
+        kms-index))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (error "get-kms-index found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
+;; This is only called by bootstrap and should not be used out side of that app
 (defn refresh-kms-cache
-  "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
-  timer to keep the cache fresh."
+  "Bootstrap calls for a refresh of the KMS keywords stored in the cache. This should be called
+   from a background job on a timer to keep the cache fresh."
   [context]
   (rl-util/log-refresh-start kms-cache-key)
-  (let [cache (cache/context->cache context kms-cache-key)
-        [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context))
-        [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
-    (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2)))
+  (try
+    (let [cache (cache/context->cache context kms-cache-key)
+          [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context))
+          [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
+      (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2))
+    (catch Exception e
+      ;; refresh-kms-cache is being called by a ring route so return a standard CMR error
+      (cmr.common.services.errors/throw-service-error
+       :bad-request
+       (.getLocalizedMessage e)))))

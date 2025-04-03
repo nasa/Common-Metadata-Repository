@@ -256,11 +256,12 @@
   ;; process is driven by the config value `kms_scheme_overrides`
   ;; which contains a string of JSON such as:
   ;;     "{\"platforms\":\"static\"}"
+  {:pre (config/context->app-connection context :kms)}
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
     (if (= "static" (string/lower-case gcmd-resource-name))
       ;; load the static file from the resource directory under indexer
-      (let [gcmd-resource-path (str (format "static_kms_keywords/%s.csv" (name keyword-scheme)))
+      (let [gcmd-resource-path (format "static_kms_keywords/%s.csv" (name keyword-scheme))
             data (slurp (io/resource gcmd-resource-path))
             data-as-rows (string/split-lines (or data ""))
             version-info (first (string/split (first data-as-rows) #","))
