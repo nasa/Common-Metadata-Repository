@@ -1169,9 +1169,10 @@ For NRT Notification subscriptions to be used there are three new fields that ar
         </ul>
 </ul>
 
-**IMPORTANT: There is limit to creating and updating subscriptions related to the specific scenario highlighted below:
-Currently, if User1 creates a subscription to Coll1 and then User2 creates a different subscription to the same Coll1 for the same queue, it will overwrite the first subscription for that specific queue.
-So please have each of your queues to have only one agreed upon subscription.
+IMPORTANT: There is limit to creating and updating subscriptions related to the specific scenario highlighted below:
+Currently, if <User 1> creates a subscription to <Collection 1> and then <User 2> creates a different subscription 
+to the same <Collection 1> for the same queue, it will overwrite the first subscription for that specific queue.
+So please, have each queue have only one agreed upon subscription.
 
 ##### NRT Notification Subscription POST Request
 
@@ -1232,9 +1233,10 @@ If a native-id is provided in a POST, and a subscription already exists for that
 
 PUT requests should be used for updating subscriptions. Creating subscriptions with PUT may be deprecated in the future. All PUT requests require a native-id to be part of the request URL.
 
-**IMPORTANT: There is limit to creating and updating subscriptions related to the specific scenario highlighted below:
-Currently, if User1 creates a subscription to Coll1 and then User2 creates a different subscription to the same Coll1 for the same queue, it will overwrite the first subscription for that specific queue.
-So please have each of your queues to have only one agreed upon subscription.
+IMPORTANT: There is limit to creating and updating subscriptions related to the specific scenario highlighted below:
+Currently, if <User 1> creates a subscription to <Collection 1> and then <User 2> creates a different subscription
+to the same <Collection 1> for the same queue, it will overwrite the first subscription for that specific queue.
+So please, have each queue have only one agreed upon subscription.
 
 ##### Create Batch Notification subscription with %CMR-ENDPOINT%/subscriptions/<native-id> URL
 ```
