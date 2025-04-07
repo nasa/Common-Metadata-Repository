@@ -63,7 +63,7 @@
 
 (defconfig collections-index
   "The index to use for the latest collection revisions."
-  {:default "1_collections_v2" :type String})
+  {:default "2_collections_v2" :type String})
 
 (def ^:private MAX_RESULT_WINDOW
   "Number of max results can be returned in an Elasticsearch query."

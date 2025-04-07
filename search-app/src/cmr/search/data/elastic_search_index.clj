@@ -101,55 +101,55 @@
 (defmethod common-esi/concept-type->index-info :collection
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 "2_all_collection_revisions"
                  (collections-index-alias))
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :autocomplete
   [context _ query]
-  {:index-name "1_autocomplete"
+  {:index-name "2_autocomplete"
    :type-name "suggestion"})
 
 (defmethod common-esi/concept-type->index-info :tag
   [context _ query]
-  {:index-name "1_tags"
+  {:index-name "2_tags"
    :type-name "tag"})
 
 (defmethod common-esi/concept-type->index-info :variable
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_variable_revisions"
-                 "1_variables")
+                 "2_all_variable_revisions"
+                 "2_variables")
    :type-name "variable"})
 
 (defmethod common-esi/concept-type->index-info :service
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_service_revisions"
-                 "1_services")
+                 "2_all_service_revisions"
+                 "2_services")
    :type-name "service"})
 
 (defmethod common-esi/concept-type->index-info :tool
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_tool_revisions"
-                 "1_tools")
+                 "2_all_tool_revisions"
+                 "2_tools")
    :type-name "tool"})
 
 (defmethod common-esi/concept-type->index-info :subscription
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_subscription_revisions"
-                 "1_subscriptions")
+                 "2_all_subscription_revisions"
+                 "2_subscriptions")
    :type-name "subscription"})
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod common-esi/concept-type->index-info concept-type
     [context _ query]
     {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type)
+                   (format "2_all_generic_%s_revisions" (string/replace (name concept-type)
                                                                         #"-" "_"))
-                   (format "1_generic_%s" (string/replace (name concept-type)
+                   (format "2_generic_%s" (string/replace (name concept-type)
                                                           #"-" "_")))
      :type-name (name concept-type)}))
 

@@ -470,7 +470,7 @@
   ;; Search is not a dependency of access-control and this must be
   ;; defined for collection search to work
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 "2_all_collection_revisions"
                  "collection_search_alias")
    :type-name "collection"})
 
