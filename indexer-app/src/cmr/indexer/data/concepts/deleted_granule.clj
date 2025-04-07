@@ -5,7 +5,7 @@
 
 (def deleted-granule-index-name
   "The name of the index in elastic search."
-  "1_deleted_granules")
+  "2_deleted_granules")
 
 (def deleted-granule-type-name
   "The name of the mapping type within the cubby elasticsearch index."

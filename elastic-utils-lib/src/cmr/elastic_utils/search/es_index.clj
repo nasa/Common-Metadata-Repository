@@ -28,7 +28,7 @@
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 "2_all_collection_revisions"
                  (es-config/collections-index-alias))
    :type-name "collection"})
 
