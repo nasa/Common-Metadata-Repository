@@ -886,10 +886,12 @@
            :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
-;; TODO this might be the index version number...
+;; TODO this is the index set version number -- not the index identifier
 (def index-set-id
   "The identifier of the one and only index set"
   2)
+
+;; TODO should we have a separate index set identifier? Or keep overwriting the one and only index set? Let's try adding it for now.
 
 (defn index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra

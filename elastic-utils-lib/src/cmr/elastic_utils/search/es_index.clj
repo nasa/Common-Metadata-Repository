@@ -221,11 +221,13 @@
 (defmethod send-query-to-elastic :default
   [context query]
   (let [elastic-query (q2e/query->elastic query)
+        _ (info "INSIDE send-query-to-elastic :default. elastic query is " elastic-query)
         {sort-params :sort
          aggregations :aggs
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
+        _ (info "INSIDE send-query-to-elastic :default with index-info = " index-info)
         query-map (-> elastic-query
                       (merge execution-params)
                       ;; rename search-after to search_after for ES execution
