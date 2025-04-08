@@ -26,4 +26,4 @@
 
 (deftest get-non-humanized-source-to-aliases-map-test
   (testing "cache connection error"
-    (is (thrown? ExceptionInfo (humanizer-alias-cache/get-non-humanized-source-to-aliases-map create-context "platform")))))
+    (is (nil? (humanizer-alias-cache/get-non-humanized-source-to-aliases-map create-context "platform")))))

@@ -124,6 +124,7 @@
            :d #{{:value "D2"
                  :uuid "a3d2"}}}}}))
 
+;;TODO: we should drop support :spatial-keywords-old as this effort should be done
 (deftest make-sure-nested-fields-mappings-exist
   (testing "Making sure the nested-fields-mapping list contains the new valid keywords"
     (let [valid-keywords (remove #{:spatial-keywords-old}

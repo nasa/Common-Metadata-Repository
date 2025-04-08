@@ -317,8 +317,8 @@
         (throw e)))))
 
 (defn lookup-by-umm-c-keyword
-  "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists in the cache.
-  Returns nil if a keyword is not found. Comparison is made case insensitively."
+  "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists
+   in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme umm-c-keyword]
   (try
     (when-not (:ignore-kms-keywords context)
@@ -338,9 +338,11 @@
         (error "lookup-by-umm-c-keyword found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
+;; Note, this still may not work with other tests
 (defn lookup-by-measurement
   "Takes a keyword as represented in UMM concepts as a map. Returns a map of invalid measurement
-   keywords. Comparison is made case insensitively."
+   keywords which are then returned as a message to the operator. Comparison is made case
+   insensitively."
   [context value]
   (try
     (when-not (:ignore-kms-keywords context)
@@ -351,16 +353,19 @@
                                                          :measurement-name))
             _ (rl-util/log-redis-read-complete "lookup-by-measurement" kms-measurement-cache-key tm)
             {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
-            measurements (if (seq MeasurementQuantities)
+            ;; build either a 3 or 2 item map depending on if we have Quantities
+            measurements-to-find (if (seq MeasurementQuantities)
                            (map (fn [quantity]
                                   {:context-medium MeasurementContextMedium
                                    :object MeasurementObject
                                    :quantity (:Value quantity)})
                                 MeasurementQuantities)
                            [{:context-medium MeasurementContextMedium
-                             :object MeasurementObject}])
-            invalid-measurements (remove #(get measurement-index %) measurements)]
-        (seq invalid-measurements)))
+                             :object MeasurementObject}])]
+        ;; remove will always return something when dealing with a nil keyword cache which we do not
+        ;; what if there is no cache at all. When we have a cache, then do the removes
+        (when measurement-index
+          (seq (remove #(get measurement-index %) measurements-to-find)))))
     (catch Exception e
       (if (string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)

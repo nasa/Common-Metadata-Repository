@@ -181,6 +181,7 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
+;;TODO: we should drop support :spatial-keywords-old as this effort should be done
 (defn- get-spatial-scheme-to-use
   "Figures out if the KMS is returning the subregion-3 or subregion-4 data for spatial-keywords."
   [subfield-names]
@@ -303,6 +304,7 @@
    :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
+  ;;TODO: we should drop support :spatial-keywords-old as this effort should be done
   (when-not (or (= keyword-scheme :spatial-keywords-old)
                 (:testing-for-nil-keyword-scheme-value context))
     (let [keywords

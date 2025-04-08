@@ -32,5 +32,11 @@
     (is (nil? (kms-lookup/lookup-by-umm-c-keyword create-context {} {})))))
 
 (deftest lookup-by-measurement-test
-  (testing "cache connection error"
-    (is (nil? (kms-lookup/lookup-by-measurement create-context "value")))))
+  (testing "not found response"
+    (let [expected {:context-medium "The Force" :object "Midichlorians" :quantity "Cell Count"}
+          actual (kms-lookup/lookup-by-measurement
+                                       create-context
+                                       {:MeasurementContextMedium "The Force"
+                                        :MeasurementObject "Midichlorians"
+                                        :MeasurementQuantities [{:Value "Cell Count"}]})]
+      (is (= expected (first actual))))))
