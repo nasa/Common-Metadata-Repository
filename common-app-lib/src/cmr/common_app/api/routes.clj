@@ -135,9 +135,9 @@
         (if result
           {:status 200
            :body (json/generate-string result)}
-           {:status 404
-            :body (json/generate-string
-                   {:error (format "missing key [%s] for cache [%s]" cache-key cache-name)})})))
+          {:status 404
+           :body (json/generate-string
+                  {:error (format "missing key [%s] for cache [%s]" cache-key cache-name)})})))
 
     (POST "/clear-cache" {:keys [request-context]}
       (acl/verify-ingest-management-permission request-context :update)

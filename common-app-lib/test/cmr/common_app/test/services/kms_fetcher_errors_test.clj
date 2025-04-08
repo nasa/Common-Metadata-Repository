@@ -1,17 +1,20 @@
 (ns cmr.common-app.test.services.kms-fetcher-errors-test
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
-    [clojure.test :refer [deftest is testing]]
-    [cmr.common-app.services.kms-fetcher :as kms-fetcher]))
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]))
 
 (def create-context
-  "Creates a testing concept with the KMS caches."
-   {:system {:caches {kms-fetcher/kms-cache-key (kms-fetcher/create-kms-cache)}}})
+  "Create a broken KMS cache connection so that we get an error"
+    (-> {:system {:caches {kms-fetcher/kms-cache-key (kms-fetcher/create-kms-cache)}}}
+        (update-in
+         [:system :caches :kms :read-connection :spec :host]
+         (constantly "example.gov"))))
 
 (deftest fetch-gcmd-keywords-map-test
   (testing "cache connection error"
     (let [fun #'kms-fetcher/fetch-gcmd-keywords-map]
-      (is (nil? (fun create-context))))))
+      (is (thrown? Exception (fun create-context))))))
 
 (deftest get-kms-index-test
   (testing "cache connection error"

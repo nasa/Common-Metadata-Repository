@@ -46,6 +46,14 @@
   {:default 1
    :type Long})
 
+(declare initialize-kms-on-boot)
+(defconfig initialize-kms-on-boot
+  "Set to the number of seconds to wait before trying to initialize the Keyword Managment System
+   keywords after starting up. Use a non-positive number to never start. This value may need to be
+   adjusted to give Redis more time to start up or to delay loading for performance reasons."
+  {:default 30
+   :type Long})
+
 (defn queue-config
   "Returns the queue configuration for the bootstrap application."
   []

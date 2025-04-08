@@ -37,11 +37,10 @@
     (run! #(-> % str touch-file) files)))
 
 (defn speak
-  "Says the specified text outloud."
-  ([text]
-   (speak "Victoria" text))
-  ([voice text]
-   (sh/sh "say" "-v" voice text)))
+  "Says the specified text outloud. This can be used for testing threads which may not print
+   out in a nice way."
+  [text]
+  (sh/sh "say" text))
 
 (defn copy-to-clipboard
   "Copies the string into the clipboard and returns the string"

@@ -64,3 +64,12 @@
    (if (:token context)
      (util/lazy-get context :user-id)
      (errors/throw-service-error :unauthorized msg))))
+
+(defn context->instance-name
+  "Returns the instance name for the given application. An instance name is used
+   to identify a running instance of a service in the logs in the case where
+   there may be many instances of of the same service."
+  [context]
+  (if (:system context)
+    (:instance-name (:system context))
+    (:instance-name context)))

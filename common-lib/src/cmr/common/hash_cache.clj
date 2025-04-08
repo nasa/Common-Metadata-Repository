@@ -46,7 +46,7 @@
     [cache]
     [cache cache-key]
     "Resets the cache back to its initial state. The first function relies on the hash map key was
-     passed in when the hash was created. the latter funtion just clears the hash map named by the
+     passed in when the hash was created. the latter function just clears the hash map named by the
      key.")
 
   (set-value
