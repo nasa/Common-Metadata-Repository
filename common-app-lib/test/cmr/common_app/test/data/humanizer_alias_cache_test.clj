@@ -10,10 +10,9 @@
 
 (def create-context-broken
   "Creates a testing concept with the KMS caches."
-  (-> {:system {:caches {humanizer-alias-cache/humanizer-alias-cache-key
-                         (humanizer-alias-cache/create-cache-client)}}}
+  (-> create-context
       (update-in
-       [:system :caches :kms-measurement-index :read-connection :spec :host]
+       [:system :caches :humanizer-alias-cache-by-field :read-connection :spec :host]
        (constantly "example.gov"))))
 
 (deftest create-humanizer-alias-map-test
@@ -35,5 +34,5 @@
 (deftest get-non-humanized-source-to-aliases-map-test
   (testing "cache connection error"
     (is (nil? (humanizer-alias-cache/get-non-humanized-source-to-aliases-map
-               create-context-broken
+               create-context
                "platform")))))
