@@ -11,6 +11,16 @@
                      kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                      kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
 
+(def create-context-broken
+  "Creates a testing concept with the KMS caches."
+  (-> {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                         kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
+                         kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
+                         kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}
+      (update-in
+       [:system :caches :kms-measurement-index :read-connection :spec :host]
+       (constantly "example.gov"))))
+
 (deftest lookup-by-short-name-test
   (testing "cache connection error"
     (is (nil? (kms-lookup/lookup-by-short-name create-context "keyword-scheme" "short-name")))))
@@ -32,11 +42,10 @@
     (is (nil? (kms-lookup/lookup-by-umm-c-keyword create-context {} {})))))
 
 (deftest lookup-by-measurement-test
-  (testing "not found response"
-    (let [expected {:context-medium "The Force" :object "Midichlorians" :quantity "Cell Count"}
-          actual (kms-lookup/lookup-by-measurement
-                                       create-context
-                                       {:MeasurementContextMedium "The Force"
-                                        :MeasurementObject "Midichlorians"
-                                        :MeasurementQuantities [{:Value "Cell Count"}]})]
-      (is (= expected (first actual))))))
+  (testing "cache connection error"
+    (let [actual (kms-lookup/lookup-by-measurement
+                  create-context-broken
+                  {:MeasurementContextMedium "The Force"
+                   :MeasurementObject "Midichlorians"
+                   :MeasurementQuantities [{:Value "Cell Count"}]})]
+      (is (nil? actual)))))

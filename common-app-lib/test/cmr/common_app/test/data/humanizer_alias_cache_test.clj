@@ -8,6 +8,14 @@
   "Creates a testing concept with the KMS caches."
   {:system {:caches {humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)}}})
 
+(def create-context-broken
+  "Creates a testing concept with the KMS caches."
+  (-> {:system {:caches {humanizer-alias-cache/humanizer-alias-cache-key
+                         (humanizer-alias-cache/create-cache-client)}}}
+      (update-in
+       [:system :caches :kms-measurement-index :read-connection :spec :host]
+       (constantly "example.gov"))))
+
 (deftest create-humanizer-alias-map-test
   (is (= {"platform" {"TERRA" ["AM-1" "am-1"] "FOO" ["old-foo1" "old-foo2"]}
           "tiling_system_name" {"TILE" ["tile-1" "tile-2"]}
@@ -26,4 +34,6 @@
 
 (deftest get-non-humanized-source-to-aliases-map-test
   (testing "cache connection error"
-    (is (nil? (humanizer-alias-cache/get-non-humanized-source-to-aliases-map create-context "platform")))))
+    (is (nil? (humanizer-alias-cache/get-non-humanized-source-to-aliases-map
+               create-context-broken
+               "platform")))))
