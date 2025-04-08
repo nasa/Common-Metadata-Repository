@@ -6,9 +6,10 @@
 
 (def create-context
   "Create a broken KMS cache connection so that we get an error"
-    (update-in create-context
-               [:system :caches :kms :read-connection :spec :host]
-               (constantly "example.gov")))
+    (-> {:system {:caches {kms-fetcher/kms-cache-key (kms-fetcher/create-kms-cache)}}}
+        (update-in
+         [:system :caches :kms :read-connection :spec :host]
+         (constantly "example.gov"))))
 
 (deftest fetch-gcmd-keywords-map-test
   (testing "cache connection error"
