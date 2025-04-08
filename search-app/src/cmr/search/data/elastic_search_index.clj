@@ -19,7 +19,7 @@
    [cmr.search.data.query-to-elastic]))
 
 ;; id of the index-set that CMR is using, hard code for now
-(def index-set-id 1)
+(def index-set-id 2)
 
 (declare collections-index-alias)
 (defconfig collections-index-alias
