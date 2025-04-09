@@ -10,7 +10,7 @@
    [cmr.transmit.indexer :as indexer]))
 
 ;; id of the index-set that CMR is using, hard code for now
-(def index-set-id 1)
+(def index-set-id 2)
 
 (def index-names-cache-key
   "The name of the cache for caching index names. It will contain a map of concept type to a map of
