@@ -46,7 +46,8 @@
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
         (doseq [[type-name] mapping]
-          (let [response (esi-helper/update-mapping
+          (let [_ (info "inside update-index, updating index: " index-name " with type-name = " type-name " and mapping = " mapping)
+                response (esi-helper/update-mapping
                            conn index-name (name type-name) {:mapping mapping})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "

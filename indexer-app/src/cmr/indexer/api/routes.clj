@@ -52,6 +52,7 @@
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-set request-context id)))
 
+      ;; FIXME migrate is going into this url for some reason
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
@@ -122,8 +123,9 @@
       ;; This is just an alias for /update-indexes to make it easy to update indexes
       ;; after a deployment using the same deployment code that other apps use for db-migrate.
       (POST "/db-migrate" {:keys [request-context params]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/update-indexes request-context params)
+        (print "disable db-migrate because it is inadvertantly deleting indexes and having issues with new index set changes")
+        ;(acl/verify-ingest-management-permission request-context :update)
+        ;(index-svc/update-indexes request-context params)
         {:status 200})
 
       ;; add routes for accessing caches

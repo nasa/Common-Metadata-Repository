@@ -5,7 +5,8 @@
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.transmit.config :as config])
+   [cmr.transmit.config :as config]
+   [cmr.common.log :as log :refer [info]])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
 
@@ -16,6 +17,7 @@
 (defn update-mapping
   "Register or modify specific mapping definition"
   [conn index-name-or-names _type-name opts]
+  (info "index mapping full url = " (rest/index-mapping-url conn (join-names index-name-or-names)))
   (let [{:keys [mapping]} opts]
     (rest/put conn
               (rest/index-mapping-url conn (join-names index-name-or-names))
