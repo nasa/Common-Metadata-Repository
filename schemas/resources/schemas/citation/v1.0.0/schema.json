@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Citation Metadata",
+  "description": "Citation metadata associated with a collection",
+  "type": "object",
+  "required": ["Name", "Identifier", "IdentifierType", "MetadataSpecification"],
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "The name of the cited resource",
+      "examples": ["Example Citation"]
+    },  
+    "Identifier": {
+      "type": "string",
+      "description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
+      "examples": ["10.5067/ABC123XYZ", "978-3-16-148410-0"]
+    },
+    "IdentifierType": {
+      "type": "string",
+      "description": "The type of identifier used",
+      "enum": ["DOI", "ISBN", "ARK", "Other"],
+      "examples": ["DOI"]
+    },
+    "ResolutionAuthority": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI used to resolve the identifier",
+      "examples": [
+        "https://doi.org",
+        "https://n2t.net",
+        "https://isbndb.com"
+      ]
+    },
+    "RelationshipType": {
+      "type": "string",
+      "description": "The nature of the relationship between the cited resource and the collection",
+      "enum": ["IsCitedBy", "IsReferencedBy", "IsIdentifiedBy", "Other"],
+      "examples": ["IsCitedBy"]
+    },
+    "MetadataSpecification": {
+      "description": "Required to add in schema information into every record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generics/citation/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Citation"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+
+}

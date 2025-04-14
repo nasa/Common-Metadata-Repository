@@ -1,0 +1,12 @@
+{
+  "Identifier": "10.1234/dataset.2023.456",
+  "IdentifierType": "DOI",
+  "ResolutionAuthority": "https://doi.org",
+  "RelationshipType": "IsCitedBy",
+  "Name": "Example Citation",
+  "MetadataSpecification": { 
+    "URL": "https://cdn.earthdata.nasa.gov/generics/citation/v1.0.0", 
+    "Name": "Citation", 
+    "Version": "1.0.0" 
+  } 
+}

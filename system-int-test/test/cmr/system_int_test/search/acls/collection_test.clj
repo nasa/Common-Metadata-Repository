@@ -18,7 +18,7 @@
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
                                               "provguid3" "PROV3" "provguid4" "PROV4"}
-                                             {:grant-all-search? false})
+                                             {:grant-all-search? true})
                        (search/freeze-resume-time-fixture)]))
 
 (comment
