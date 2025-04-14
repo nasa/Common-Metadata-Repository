@@ -904,7 +904,7 @@
 (defn update-indexes
   "Updates the index mappings and settings."
   [context params]
-  (info "inside update-indexes")
+  (print "update-indexes params = " params)
   (reset-index-set-mappings-cache context)
   (es/update-indexes context params)
   (reset-index-set-mappings-cache context))

@@ -41,18 +41,20 @@
 (defn update-index
   "Update elastic index"
   [{:keys [conn]} idx-w-config]
+  (info "inside update-index, index_set_elasticsearch.clj")
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (try
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
         (doseq [[type-name] mapping]
-          (let [_ (info "inside update-index, updating index: " index-name " with type-name = " type-name " and mapping = " mapping)
-                response (esi-helper/update-mapping
-                           conn index-name (name type-name) {:mapping mapping})]
-            (when-not (= {:acknowledged true} response)
-              (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                           (pr-str response))))))
+        (let [_ (info "index = " index-name " and type name = " type-name " does exist and will be updated with new mapping = " mapping)
+              response (esi-helper/update-mapping
+                         conn index-name (name type-name) {:mapping mapping})]
+          (when-not (= {:acknowledged true} response)
+            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                         (pr-str response))))))
         ;; The index does not exist. Create it.
+        ;; TODO Jyna why would an index not exist already by this point?
         (do
           (info "Index" index-name "does not exist so it will be created")
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
@@ -120,6 +122,7 @@
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
+  (info "inside save-document-in-elastic with es-index = " es-index " es-mapping type = " es-mapping-type " and doc id = " doc-id " and es-doc = " es-doc)
   (try
     (let [conn (get-in context [:system :db :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
