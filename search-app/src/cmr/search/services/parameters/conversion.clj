@@ -198,7 +198,7 @@
    :concept-id :string
    :keyword :keyword})
 
-(doseq [concept-type (filterv #(not (string/includes? % "visualization")) cc/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type (filterv #(not (some #{:visualization :citation} [%])) cc/get-generic-non-draft-concept-types-array)]
   (defmethod common-params/param-mappings concept-type
     [_]
     {:name :string
@@ -206,6 +206,18 @@
      :provider :string
      :native-id :string
      :concept-id :string}))
+
+(defmethod common-params/param-mappings :citation
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string
+   :resolution-authority :string
+   :identifier :string
+   :identifier-type :string
+   :relationship-type :string})
 
 (defmethod common-params/param-mappings :visualization
   [_]

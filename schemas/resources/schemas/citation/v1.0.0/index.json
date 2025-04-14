@@ -1,0 +1,58 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+    "Name": "Generic-Index",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Citation",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "CIT",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
+      "Field": ".Identifier",
+      "Name": "Id",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
+      "Field": ".Identifier",
+      "Name": "Identifier",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Schema Name as the Name field",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The type of identifier used",
+      "Field": ".IdentifierType",
+      "Name": "IdentifierType",
+      "Mapping": "string"
+    },
+    {
+      "Description": "URI used to resolve the identifier",
+      "Field": ".ResolutionAuthority",
+      "Name": "Resolution-Authority",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The nature of the relationship between the cited resource and the collection",
+      "Field": ".RelationshipType",
+      "Name": "Relationship-Type",
+      "Mapping": "string"
+    }
+  ]
+}
