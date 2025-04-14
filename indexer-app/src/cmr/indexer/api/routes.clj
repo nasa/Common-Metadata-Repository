@@ -116,6 +116,7 @@
 
       ;; Sends an update to the index set to update mappings and index settings.
       (POST "/update-indexes" {:keys [request-context params]}
+        (print "STARTING update-indexes...")
         (acl/verify-ingest-management-permission request-context :update)
         (index-svc/update-indexes request-context params)
         {:status 200})

@@ -200,11 +200,14 @@
   (info "Updating index-set" (pr-str index-set))
   (validate-requested-index-set context index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set)
-        es-store (context->es-store context)]
+        _ (info "indices with config = " indices-w-config)
+        es-store (context->es-store context)
+        _ (info "es store = " es-store)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
 
+    ;; TODO Jyna this is where the :concepts field is put back in and does something
     (index-requested-index-set context index-set)))
 
 (defn delete-index-set

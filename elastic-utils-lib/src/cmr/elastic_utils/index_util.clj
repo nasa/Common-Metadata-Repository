@@ -232,4 +232,6 @@
 (defn create-index-alias
   "Creates the alias for the index."
   [conn index alias-name]
-  (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}]))
+  (info "inside create-index-alias with index = " index " and alias name = " alias-name)
+  (let [update-resp (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}])]
+    (info "update alias response = " update-resp)))

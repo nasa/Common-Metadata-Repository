@@ -142,27 +142,32 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-        _ (info "existing index-set = " existing-index-set)
+  (info "inside update-indexes in elasticsearch.clj")
+  (let [;; existing index set is from the current context
+        existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
+        _ (info "existing index set = " existing-index-set)
+        ;; pull out the granule indexes from the existing index set
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        _ (info "extra granule indexes = " extra-granule-indexes)
         ;; We use the extra granule indexes from the existing configured index set when determining
-        ;; the expected index set.
-        expected-index-set (idx-set/index-set extra-granule-indexes)]
+        ;; the expected index set which is built based on a template from the index-set func
+        expected-index-set (idx-set/index-set extra-granule-indexes)
+        _ (info "expected index set = " expected-index-set)]
     (if (or (= "true" (:force params))
+            ;; compares the upper level index settings and mappings between the existing index set from and the expected index set, skips comparing the 'concepts' field
             (requires-update? existing-index-set expected-index-set))
       (do
-        (info "Updating the index set to " (pr-str expected-index-set))
+        (info "Difference found: Will update index set.")
+        ;; Using new expected index set, we are going to call ES to create or update the settings and mappings of the indices based on this
         (index-set-svc/update-index-set context expected-index-set)
-        (info "Creating colleciton index alias.")
+        (info "Creating collection index alias.")
         (esi/create-index-alias (context->conn context)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
-        (info "Ignoring upate indexes request because index set is unchanged.")
+        (info "Ignoring update indexes request because index set is unchanged.")
         (info "Existing index set:" (pr-str existing-index-set))
-        (info "New index set:" (pr-str expected-index-set)))
-
-      )))
+        (info "New index set:" (pr-str expected-index-set))))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
