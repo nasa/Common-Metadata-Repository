@@ -6,6 +6,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
@@ -32,12 +33,15 @@
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
+  (info "inside get-granule-index-names with cache-key = " cache-key)
   (let [cache (hcache/context->cache context cache-key)
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
-        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
+        _ (info "granule index names found = " granule-index-names)
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
+        _ (info "rebalancing collections found = " rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
