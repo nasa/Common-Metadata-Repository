@@ -5,6 +5,8 @@ services:
     attach: false
     ports:
       - 6379:6379
+    networks:
+      - cmr-network
   elasticsearch:
     container_name: elasticsearch
     attach: false
@@ -22,6 +24,9 @@ services:
       timeout: 3m
       retries: 6
       start_period: 40s
+    mem_limit: 4gb
+    networks:
+      - cmr-network
   # elasticsearch01:
   #   container_name: elasticsearch01
   #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
@@ -96,6 +101,8 @@ services:
         condition: service_healthy
     ports:
       - 5601:5601
+    networks:
+      - cmr-network
   sqs:
     container_name: elastic-sqs
     attach: false
@@ -103,6 +110,8 @@ services:
     ports:
       - 9324:9324
       - 9325:9325
+    networks:
+      - cmr-network
   cmr:
     container_name: cmr
     image: cmr-local
@@ -132,10 +141,10 @@ services:
       - 3009:3009
     environment:
       - CMR_DB_URL=thin:@host.docker.internal:1521/orcl
-      - CMR_ELASTIC_HOST=host.docker.internal
-      - CMR_SQS_SERVER_HOST=host.docker.internal
-      - CMR_REDIS_HOST=host.docker.internal
-      - CMR_REDIS_READ_HOST=host.docker.internal
+      - CMR_ELASTIC_HOST=elasticsearch
+      - CMR_SQS_SERVER_HOST=sqs
+      - CMR_REDIS_HOST=redis
+      - CMR_REDIS_READ_HOST=redis
       - CMR_DEV_SYSTEM_DB_TYPE=external
       - CMR_DEV_SYSTEM_ELASTIC_TYPE=external
       - CMR_DEV_SYSTEM_REDIS_TYPE=external
@@ -149,3 +158,8 @@ services:
     volumes:
       - ~/.m2:/root/.m2
       - ..:/cmr
+    networks:
+      - cmr-network
+
+networks:
+  cmr-network:

@@ -9,3 +9,5 @@ RUN apt-get update \
       unzip \
       zip \
  && rm -rf /var/lib/apt/lists/*
+
+ ENV PATH="$PATH:/cmr/bin"
