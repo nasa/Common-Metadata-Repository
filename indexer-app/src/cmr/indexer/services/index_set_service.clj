@@ -209,7 +209,12 @@
         _ (info "es store = " es-store)]
 
     (doseq [idx indices-w-config]
-      (es/update-index es-store idx))
+      (try
+        (es/update-index es-store idx)
+        (catch Exception e
+          (info "Update mapping did not work for index-name = " idx " going to skip and not throw error... here is the response: " (pr-str e))
+          ))
+      )
 
     ;; TODO Jyna this is where the :concepts field is put back in and does something
     (index-requested-index-set context index-set)))
