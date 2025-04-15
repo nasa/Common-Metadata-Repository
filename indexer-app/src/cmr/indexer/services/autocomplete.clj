@@ -164,14 +164,25 @@
     (anti-value? value)))
 
 (defn- parse-collection
-  "Parses collection into concepts. Returns nil on error."
-  [context collection]
-  (try
-    (cp/parse-concept context collection)
-    (catch Exception e
-      (error (format "An error occurred while parsing collection for autocomplete with concept-id [%s]: %s"
-                     (:concept-id collection)
-                     (.getMessage e))))))
+  "Parses collection into concepts. Returns a vector containing:
+   1. A list of successfully parsed collections
+   2. A list of concept IDs that failed to parse"
+  [context collections]
+  (let [results (map (fn [collection]
+                      (try
+                        {:success (cp/parse-concept context collection)
+                         :concept-id (:concept-id collection)}
+                        (catch Exception e
+                          (error (format 
+                                  "An error occurred while parsing collection for autocomplete with concept-id [%s]: %s"
+                                  (:concept-id collection)
+                                  (.getMessage e)))
+                          {:failed true
+                           :concept-id (:concept-id collection)})))
+                     collections)
+        parsed-collections (map :success (remove :failed results))
+        failed-concept-ids (map :concept-id (filter :failed results))]
+    [parsed-collections failed-concept-ids]))
 
 (defn- get-humanized-collections
   "Get the humanized fields for the passed in parsed-concept and remove the old flat platform
@@ -186,15 +197,14 @@
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         index (get-in index-names [:autocomplete :autocomplete])
         humanized-fields-fn (partial get-humanized-collections context)
-        parsed-concepts (->> collections
-                             (remove :deleted)
-                             (map #(parse-collection context %))
-                             (remove nil?))
+        existing-collections (remove :deleted collections)
+        [parsed-concepts failed-concept-ids] (parse-collection context existing-collections)
+        valid-collections (remove #(contains? (set failed-concept-ids) (:concept-id %)) existing-collections)
         collection-permissions (map (fn [collection]
                                       (let [permissions (collection-util/get-coll-permitted-group-ids context provider-id collection)]
                                         {:id (:concept-id collection)
                                          :permissions permissions}))
-                                    collections)
+                                    valid-collections)
         humanized-fields (map humanized-fields-fn parsed-concepts)
         humanized-fields-with-permissions (map merge collection-permissions humanized-fields)]
     (->> humanized-fields-with-permissions
