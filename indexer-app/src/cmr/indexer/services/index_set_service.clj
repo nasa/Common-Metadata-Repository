@@ -157,17 +157,21 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set]
+  (info "Inside index-requested-index-set")
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set))))
+        _ (info "index-set-w-es-index-names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
         es-doc {:index-set-id (get-in index-set [:index-set :id])
                 :index-set-name (get-in index-set [:index-set :name])
                 :index-set-request encoded-index-set-w-es-index-names}
+        _ (info "es-do = " es-doc)
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
-        idx-mapping-type (first (keys mapping))]
+        idx-mapping-type (first (keys mapping))
+        _ (info "idx-mapping-type = " idx-mapping-type)]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
 (defn create-index-set
