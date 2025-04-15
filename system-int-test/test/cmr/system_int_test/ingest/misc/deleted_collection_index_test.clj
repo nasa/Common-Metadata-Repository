@@ -14,8 +14,8 @@
 (deftest deleted-collection-test-index
   (testing "Ingest granule, rebalance collection, delete collection"
     (let [collection (data-core/ingest-umm-spec-collection "PROV1"
-                                                      (data-umm-c/collection {})
-                                                      {:validate-keywords false})]
+                                                           (data-umm-c/collection {})
+                                                           {:validate-keywords false})]
       (bootstrap/start-rebalance-collection (:concept-id collection))
       (index/wait-until-indexed)
       (bootstrap/finalize-rebalance-collection (:concept-id collection))

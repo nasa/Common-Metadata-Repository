@@ -85,7 +85,7 @@
   "Deletes an index from the elastic store"
   [conn index]
   (rest/delete conn
-             (rest/url-with-path conn index)))
+               (rest/url-with-path conn index)))
 
 (defn ^:private bulk-with-url
   "Construct the bulk URL and form body to specification provided by:
