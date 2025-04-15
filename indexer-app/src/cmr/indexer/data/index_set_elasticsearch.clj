@@ -51,8 +51,10 @@
               response (esi-helper/update-mapping
                          conn index-name (name type-name) {:mapping mapping})]
           (when-not (= {:acknowledged true} response)
-            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                         (pr-str response))))))
+            (info "Update mapping did not work for index-name = " index-name " going to skip and not throw error... here is the response: " (pr-str response))
+            ;(errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+            ;                             (pr-str response)))
+            )))
         ;; The index does not exist. Create it.
         ;; TODO Jyna why would an index not exist already by this point?
         (do
