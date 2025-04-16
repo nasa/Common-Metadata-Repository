@@ -28,7 +28,7 @@ system or URL. Stick to lower case letters. Each schema directory contains a
 directories start with "v" and use [Semantic Versioning][semver].
 Each version directory then contains at the minimal a `metadata.json` and
 `schema.json` file. These must be valid together when validated. Optionally
-there can be an `index.json` file or other documents needed to support CMR.
+there can be an `config.json` file or other documents needed to support CMR.
 
 Example:
 
@@ -36,7 +36,7 @@ Example:
     * CHANGELOG.md
     * README.md
     * v0.0.1/
-        * index.json
+        * config.json
         * metadata.json
         * schema.json
 

@@ -33,7 +33,7 @@ def test_index(schema_name):
   sub_folders = [f.path for f in os.scandir(schema_name) if f.is_dir()]
   for version in list(sub_folders):
     index_schema = f"{os.getcwd()}/index/v0.0.1/schema.json"
-    index = f"{os.getcwd()}/{version}/index.json"
+    index = f"{os.getcwd()}/{version}/config.json"
     ret = ret + validate_schema(jar, index_schema, index)
   return ret
 

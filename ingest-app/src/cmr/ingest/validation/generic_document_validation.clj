@@ -99,7 +99,7 @@
   [concept-type version]
   (try
     (if (generics/approved-generic? concept-type version)
-      (let [schema-json (generics/read-schema-index concept-type version)
+      (let [schema-json (generics/read-schema-config concept-type version)
             schema (json/parse-string schema-json true)]
         (fn [context concept]
           (validate-with-schema context concept schema)))

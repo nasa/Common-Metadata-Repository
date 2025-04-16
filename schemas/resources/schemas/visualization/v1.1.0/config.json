@@ -1,12 +1,12 @@
 {
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
-    "Name": "Generic-Index",
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
     "Version": "0.0.1"
   },
   "Generic": {
     "Name": "Visualization",
-    "Version": "1.0.0"
+    "Version": "1.1.0"
   },
   "SubConceptType": "VIS",
   "IndexSetup" : {
@@ -48,7 +48,7 @@
       "Name": "Visualization-Type",
       "Mapping": "string"
     },
-    {
+    {    
       "Description": "Visualization Source ConceptIds",
       "Field": ".ConceptIds",
       "Name": "Concept-Ids",
@@ -56,7 +56,7 @@
       "Indexer": "simple-array-field",
       "Configuration": {"sub-fields": ["Value", "ShortName"]}
     },
-    {
+    {    
       "Description": "Visualization Source ConceptIds in keywords",
       "Field": ".ConceptIds",
       "Name": "keyword",

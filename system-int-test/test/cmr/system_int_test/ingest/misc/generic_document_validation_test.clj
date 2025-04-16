@@ -42,7 +42,6 @@
                               "DOI"
                               {:ResolutionAuthority "https://doi.org"
                                :RelationshipType "IsCitedBy"})]
-      (println "Response for citation 1:" (pr-str citation1-response))
       (is (= 201 (:status citation1-response)))
       (index/wait-until-indexed)
 
