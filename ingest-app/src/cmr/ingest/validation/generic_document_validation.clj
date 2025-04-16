@@ -17,7 +17,7 @@
 
 (def SCHEMA_CACHE_TIME
   "The number of milliseconds schema validation functions will be cached."
-  (* 60 60 1000)) ;; 1 hour
+  (* 24 60 60 1000)) ;; 24 hours
 
 (defn create-schema-validation-cache
   "Creates a cache for schema validation functions."
@@ -43,8 +43,8 @@
             get-field-values (fn [c fs]
                                (let [metadata (json/parse-string (:metadata c) true)]
                                  (mapv #(let [field-path (rest (string/split % #"\."))
-                                              keyword-path (keyword (first field-path))]
-                                          (get-in metadata[keyword-path]))
+                                              keyword-path (mapv keyword field-path)]
+                                          (get-in metadata keyword-path))
                                        fs)))
 
             ;; Extract values for the specified fields from the current concept
@@ -52,7 +52,6 @@
 
             ;; Check if any other document in the collection has the same combination of values
             duplicate-concepts (filter (fn [existing-concept]
-                                         ;; Debug print to show values being compared
                                          (and (not= (:native-id existing-concept) (:native-id concept))
                                               (not= (:deleted existing-concept) true)
                                               (= (set (get-field-values existing-concept fields))
@@ -72,7 +71,10 @@
       [])))
 
 (defn- validate-by-type
-  "Validates fields based on validation type.
+  "Validates fields based on validation type. Any new validation added to the config.json
+   should be added here and implemented in the corresponding function. 
+   validation-value is here for possible future implementations but is not needed in the 
+   uniqueness validation.
    Returns a sequence of error messages if validation fails, empty sequence otherwise."
   [context concept validation-type fields validation-value]
   (case validation-type
@@ -98,14 +100,10 @@
   "Loads a single schema validation function for a concept type and version"
   [concept-type version]
   (try
-    (if (generics/approved-generic? concept-type version)
-      (let [schema-json (generics/read-schema-config concept-type version)
-            schema (json/parse-string schema-json true)]
-        (fn [context concept]
-          (validate-with-schema context concept schema)))
-      (do
-        (error "Schema version not approved for" concept-type "version" version)
-        nil))
+    (let [schema-json (generics/read-schema-config concept-type version)
+          schema (json/parse-string schema-json true)]
+      (fn [context concept]
+        (validate-with-schema context concept schema)))
     (catch Exception e
       (error "Error loading schema for" concept-type "version" version ":" (.getMessage e))
       nil)))
@@ -123,12 +121,12 @@
   []
   (info "Loading schema validation functions for all generic concept types")
   (let [generic-types (concepts/get-generic-concept-types-array)
-        validators (reduce (fn [validators concept-type]
+        validators (reduce (fn [vs concept-type]
                              (let [current-version (generics/current-generic-version concept-type)
                                    validator (load-schema-validation concept-type current-version)]
                                (if validator
-                                 (assoc validators [concept-type current-version] validator)
-                                 validators)))
+                                 (assoc vs [concept-type current-version] validator)
+                                 vs)))
                            {}
                            generic-types)]
     (info "Loaded" (count validators) "schema validators")
@@ -148,8 +146,10 @@
    Throws a :bad-request service error if validation fails."
   [context concept]
   (let [concept-type (:concept-type concept)
-        metadata-spec (extract-concept-metadata-spec concept)
-        version (or (:version metadata-spec)
+        version (or (:version (extract-concept-metadata-spec concept))
+                    ;; If version is not specified in metadata, use the current version
+                    ;; of the concept type, though it is likey that the concept failed
+                    ;; schema validation and we never reach this point. 
                     (generics/current-generic-version concept-type))
 
         ;; Get validation functions
@@ -163,4 +163,4 @@
 
     ;; Throw service errors if any validation errors are found
     (when (seq errors)
-      (errors/throw-service-errors :bad-request errors))))
+      (errors/throw-service-errors :invalid-data errors))))
