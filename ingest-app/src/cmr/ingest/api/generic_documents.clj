@@ -6,17 +6,18 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common.generics :as gconfig]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.config :as cfg]
+   [cmr.common.generics :as gconfig]
    [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
-   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.collections :as collections]
+   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.tools :as tools]
    [cmr.ingest.api.variables :as variables]
+   [cmr.ingest.validation.generic-document-validation :as generic-document-validation]
    [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
@@ -197,12 +198,27 @@
      :concept-id concept-id
      :revision-id revision-id}))
 
+(defn validate-business-rules
+  "Validates a concept against business rules defined in validation schemas."
+  [context concept]
+  (when concept
+    (let [concept-type (:concept-type concept)]
+      (when-not (common-concepts/is-draft-concept? concept-type)
+        (try
+          (generic-document-validation/validate-concept context concept)
+          (catch Exception e
+            (errors/throw-service-error
+             :invalid-data
+             (format "While validating the business rules for the record, the following error occurred: [%s]"
+                     (.getMessage e)))))))))
+
 (defn ingest-document
   "Ingest the concept into the database and the indexer through the database."
   [context concept headers]
   (info (format "Ingesting concept %s from client %s"
                 (api-core/concept->loggable-string concept)
                 (:client-id context)))
+  (validate-business-rules context concept)
   (let [save-concept-result (save-document context concept)
         concept-to-log (-> concept
                            (api-core/concept-with-revision-id save-concept-result)
