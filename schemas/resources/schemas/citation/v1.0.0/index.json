@@ -16,8 +16,7 @@
       "refresh_interval": "1s"
     }
   },
-  "Indexes":
-  [
+  "Indexes": [
     {
       "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
       "Field": ".Identifier",
@@ -53,6 +52,12 @@
       "Field": ".RelationshipType",
       "Name": "Relationship-Type",
       "Mapping": "string"
+    }
+  ],
+  "Validations": [
+    {
+      "Fields": [".Identifier", ".IdentifierType"],
+      "ValidationType": "unique"
     }
   ]
 }

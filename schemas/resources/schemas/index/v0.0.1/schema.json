@@ -24,6 +24,38 @@
             "uniqueItems": true,
             "minItems": 1,
             "items": {"$ref": "#/definitions/IndexType"}
+        },
+        "Validations": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "Fields": {
+                        "description": "The Field to validate, defined as a jq style path",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "examples": [".RootElement.SubElement"],
+                            "minLength": 1
+                        },
+                        "minItems": 1
+                    },
+                    "ValidationType": {
+                        "description": "The type of validation to perform on the field",
+                        "type": "string",
+                        "enum": ["unique" ,"regex", "length", "value"],
+                        "default": "regex"
+                    },
+                    "ValidationValue": {
+                        "$comment": "This is the value to validate against. The type of value depends on the ValidationType.",
+                        "type": ["string", "number"]
+                    }
+                },
+                "required": ["Fields", "ValidationType"]
+            }
         }
     },
     "required": ["MetadataSpecification", "Generic"],
