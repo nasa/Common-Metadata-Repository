@@ -1,14 +1,14 @@
 {
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
-    "Name": "Generic-Index",
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
     "Version": "0.0.1"
   },
   "Generic": {
-    "Name": "Order Option Draft",
+    "Name": "Service Draft",
     "Version": "1.0.0"
   },
-  "SubConceptType": "OOD",
+  "SubConceptType": "SD",
   "IndexSetup" : {
     "index": {
       "number_of_shards": 3,
@@ -19,7 +19,7 @@
   "Indexes":
   [
     {
-      "Description": "Draft Order Option Name",
+      "Description": "Draft Service Name",
       "Field": ".Name",
       "Name": "name",
       "Mapping": "string"

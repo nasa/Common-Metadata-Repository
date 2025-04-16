@@ -29,14 +29,14 @@ Each setting consists of a key, which is the name for the Generic which must be 
 
 	./{CMR-Root}/schemas/order-option/v0.0.1/
 		README.md
-		index.json
+		config.json
 		metadata.json
 		schema.json
 
 CMR will search for Generic definitions using the lower case value of the key (name) and the version number prefixed with a "v". Inside the directory there must be 4 files, three of which are directly read by CMR:
 
 * README.md - for humans
-* index.json - Search/Index configuration settings, must comply with [Index Schema][schema-index].
+* config.json - Search/Index/Validation configuration settings, must comply with [Config Schema][schema-config].
 * metadata.json - sample record, may be called by system-int-tests
 * schema.json - A schema document conforming to [JSON Schema][schema].
 
@@ -103,5 +103,5 @@ Copyright © 2014-2022 United States Government as represented by the Administra
 
 [schema]: https://json-schema.org "JSON Schema definition"
 [schema-other]: https://git.earthdata.nasa.gov/scm/emfd/otherschemas.git "Generic Schema Repository"
-[schema-index]: https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/Index "Index configuration definition"
+[schema-config]: https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/Config " "Generics Configuration definition"
 [semver]: https://semver.org "Information on semantic versioning"

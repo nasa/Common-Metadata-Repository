@@ -1,7 +1,7 @@
 {
    "$id": "https://earthdata.nasa.gov/schema/generics/index",
    "$schema": "http://json-schema.org/draft-07/schema#",
-   "title": "Generic-Index",
+   "title": "Generic-Config",
    "description": "This scheme defines how index configurations are to be defined. These index definitions support both Elastic and Graph-DB",
    "type": "object",
    "additionalProperties": false,
@@ -68,12 +68,12 @@
                 "URL": {
                     "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
                     "type": "string",
-                    "const": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1"
+                    "const": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1"
                 },
                 "Name": {
                     "description": "This element represents the name of the schema.",
                     "type": "string",
-                    "const": "Generic-Index"
+                    "const": "Generic-Config"
                 },
                 "Version": {
                     "description": "This element represents the version of the schema.",

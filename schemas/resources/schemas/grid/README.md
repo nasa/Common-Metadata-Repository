@@ -8,12 +8,12 @@ are in the development phase.
 
 ## Files
 
-| Schema                   | Implementation | Notes       |
-| ------------------------ | -------------- | ----------- |
-| schema.json              | metadata.json  | In progress |
-| Index/v0.0.1/schema.json | index.json     | Proposed    |
-| n/a                      | migration.py   | Proposed    |
-| n/a                      | validation.py  | Proposed    |
+| Schema                    | Implementation  | Notes       |
+| ------------------------- | --------------- | ----------- |
+| schema.json               | metadata.json   | In progress |
+| Config/v0.0.1/schema.json | config.json     | Proposed    |
+| n/a                       | migration.py    | Proposed    |
+| n/a                       | validation.py   | Proposed    |
 
 ## License
 
