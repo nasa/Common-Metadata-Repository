@@ -1,4 +1,4 @@
-# Index schema change Log
+# Config schema change Log
 
 ## [1.0.0]
 - 2022-??-??

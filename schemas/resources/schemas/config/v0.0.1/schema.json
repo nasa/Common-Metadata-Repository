@@ -34,7 +34,7 @@
                 "additionalProperties": false,
                 "properties": {
                     "Fields": {
-                        "description": "The Field to validate, defined as a jq style path",
+                        "description": "The field to validate, defined as a jq style path",
                         "type": "array",
                         "items": {
                             "type": "string",

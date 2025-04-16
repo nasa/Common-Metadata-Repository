@@ -204,13 +204,7 @@
   (when concept
     (let [concept-type (:concept-type concept)]
       (when-not (common-concepts/is-draft-concept? concept-type)
-        (try
-          (generic-document-validation/validate-concept context concept)
-          (catch Exception e
-            (errors/throw-service-error
-             :invalid-data
-             (format "While validating the business rules for the record, the following error occurred: [%s]"
-                     (.getMessage e)))))))))
+        (generic-document-validation/validate-concept context concept)))))
 
 (defn ingest-document
   "Ingest the concept into the database and the indexer through the database."
