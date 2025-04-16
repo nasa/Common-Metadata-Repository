@@ -4,7 +4,7 @@
 
 ### <a name="create-update-visualization-draft"></a> Create / Update a Visualization Draft
 
-Visualization Draft concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/visualization-drafts/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request.
+Visualization Draft concepts can be created or updated by sending an HTTP PUT or POST with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/visualization-drafts/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request.
 
 ```
     curl -XPOST \
@@ -26,7 +26,7 @@ Visualization Draft concepts can be created or updated by sending an HTTP PUT wi
         <existing-errors></existing-errors>
     </result>
 ```
-Subsequent ingests to the Visualization Draft record will result in updates to it's metadata as well as increment the revision-id of the record.
+Subsequent ingests to the Visualization Draft record will result in updates to its metadata as well as increment the revision-id of the record.
 
 #### Successful Response in JSON
 
