@@ -101,7 +101,7 @@
                               (meta-db/get-generic-associations-for-concept context concept))
         gen-name (csk/->kebab-case (get-in parsed-concept [:MetadataSpecification :Name] ""))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
+        index-data-file (format "schemas/%s/v%s/config.json" gen-name gen-ver)
         index-file-raw (slurp (io/resource index-data-file))
         index-data (json/parse-string index-file-raw true)
         schema-keys [:LongName
@@ -173,7 +173,7 @@
         version (generics/current-generic-version concept-type)
         gen-name (csk/->kebab-case (get-in parsed-concept [:MetadataSpecification :Name] ""))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        index-data-file (format "schemas/%s/v%s/index.json" (name concept-type) version)
+        index-data-file (format "schemas/%s/v%s/config.json" (name concept-type) version)
         index-file-raw (slurp (io/resource index-data-file))
         index-data (json/parse-string index-file-raw true)
         common-doc ;; fields common to all generic documents

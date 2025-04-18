@@ -4,10 +4,6 @@
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
-   [cmr.system-int-test.data2.collection :as data-collection]
-   [cmr.system-int-test.data2.core :as data-core]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-json :as data-umm-json]
    [cmr.system-int-test.search.misc.generic-association-test :as association-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.association-util :as association-util]
@@ -16,11 +12,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.service-util :as service-util]
-   [cmr.system-int-test.utils.tool-util :as tool-util]
-   [cmr.system-int-test.utils.tool-util :as tool]
-   [cmr.system-int-test.utils.variable-util :as variable-util]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.system-int-test.utils.service-util :as service-util]))
 
 (use-fixtures :each (join-fixtures
                      [(ingest/reset-fixture {"provguid1" "PROV1"

@@ -62,7 +62,8 @@
 (deftest basic-collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (data-umm-c/collection-concept {})
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:validate-keywords false})]
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:validate-keywords false})
+          _ (ingest/ingest-concept concept {:validate-keywords false})]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))

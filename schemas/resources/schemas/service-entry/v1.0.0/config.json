@@ -1,14 +1,14 @@
 {
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
-    "Name": "Generic-Index",
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
     "Version": "0.0.1"
   },
   "Generic": {
-    "Name": "Service Option",
+    "Name": "Service Entry",
     "Version": "1.0.0"
   },
-  "SubConceptType": "SO",
+  "SubConceptType": "SE",
   "Indexes":
   [
     {

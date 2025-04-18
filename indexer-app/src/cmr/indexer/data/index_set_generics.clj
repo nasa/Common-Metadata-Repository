@@ -15,7 +15,7 @@
    Parameters:
    * raw-json, json as a string to validate"
   [raw-json]
-  (let [schema-file (slurp (io/resource "schemas/index/v0.0.1/schema.json"))
+  (let [schema-file (slurp (io/resource "schemas/config/v0.0.1/schema.json"))
         schema-obj (js-validater/json-string->json-schema schema-file)]
     (js-validater/validate-json schema-obj raw-json)))
 
@@ -120,13 +120,13 @@
    if the file can't be read."
   [gen-name gen-version]
   (try
-    (-> "schemas/%s/v%s/index.json"
+    (-> "schemas/%s/v%s/config.json"
         (format (name gen-name) gen-version)
         (io/resource)
         (slurp))
     (catch Exception e
       (error
-       (format (str "The index.json file for schema [%s] version [%s] cannot be found. Please make sure that it exists."
+       (format (str "The config.json file for schema [%s] version [%s] cannot be found. Please make sure that it exists."
                     (.getMessage e))
                 gen-name
                 gen-version)))))
@@ -140,7 +140,7 @@
   (try
     (validate-index-against-schema raw-json)
     (catch java.lang.NullPointerException npe
-      (let [msg (format "%s : Null Pointer Exception while trying to validate index.json for %s."
+      (let [msg (format "%s : Null Pointer Exception while trying to validate config.json for %s."
                         (.getMessage npe)
                         schema)]
         (error msg)
@@ -169,7 +169,7 @@
    {:generic-grid
     {:indexes []
      :mapping {:properties {:index-key-name {:type 'type'}}}}}
-   If the matching index.json file is not valid, then that schema will be logged and skipped.
+   If the matching config.json file is not valid, then that schema will be logged and skipped.
    "
   []
   (reduce (fn [data gen-keyword]
@@ -191,7 +191,7 @@
                                    :settings generic-settings}]
                         :mapping {:properties (reduce mapping->index-key base-indexes index-list)}})
                 (do
-                  (error (format "Could not parse the index.json file for %s version %s."
+                  (error (format "Could not parse the config.json file for %s version %s."
                                  gen-name
                                  gen-ver))
                   data))))
@@ -200,7 +200,7 @@
 
 (comment
   ;; Since the change to distribute schemas files as a JAR makes it hard to test
-  ;; a bad index.json, add the following line after the index-definition-str
+  ;; a bad config.json, add the following line after the index-definition-str
   ;; declare in the let and run the function below
 
   ;index-definition-str (if (= :grid gen-keyword) "{bad-json}" index-definition-str)
