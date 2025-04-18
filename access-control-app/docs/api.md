@@ -180,6 +180,7 @@ For system, provider, and single instance identities, the grantable permissions 
 | `USER_CONTEXT`                         | read                         |
 | `USER`                                 | read, update, delete         |
 | `GROUP`                                | create, read                 |
+| `KEYWORD_MANAGEMENT_SYSTEM`            | create, read, update, delete |
 | `ANY_ACL`                              | create, read, update, delete |
 | `EVENT_NOTIFICATION`                   | delete                       |
 | `EXTENDED_SERVICE`                     | delete                       |
