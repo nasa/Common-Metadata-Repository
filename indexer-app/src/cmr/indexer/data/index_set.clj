@@ -984,6 +984,12 @@
        (map :name)
        (remove #(= % "small_collections"))))
 
+(defn index-set->reduced-extra-granule-indexes
+  "Takes an index set and a collection concept id and returns the extra granule indexes
+   minus the provided collection"
+  [index-set collection-concept-id]
+  (remove #(= % collection-concept-id) (index-set->extra-granule-indexes index-set)))
+
 (defn fetch-concept-type-index-names
   "Fetch a map containing index names for each concept type from index-set app along with the list
    of rebalancing collections"
@@ -1150,7 +1156,7 @@
          (get-granule-index-names-for-collection context coll-concept-id target-index-key))
 
        ;; Default
-       (if (some? (concept-type (common-generic/latest-approved-documents)))
+       (when (some? (concept-type (common-generic/latest-approved-documents)))
          ;; Generics are a bunch of document types, find out which one to work with
          ;; and return the index name for those
          (if all-revisions-index?

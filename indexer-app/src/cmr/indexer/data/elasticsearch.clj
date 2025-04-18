@@ -161,6 +161,23 @@
         (info "Existing index set:" (pr-str existing-index-set))
         (info "New index set:" (pr-str expected-index-set))))))
 
+(defn delete-index
+  "Delete an elastic index by name"
+  [context index]
+  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
+        expected-extra-granule-indexes (idx-set/index-set->reduced-extra-granule-indexes existing-index-set index)
+        expected-index-set (idx-set/index-set expected-extra-granule-indexes)]
+    (if (requires-update? existing-index-set expected-index-set)
+      (do
+        (info "Removing index to produce index set " (pr-str expected-index-set))
+        (index-set-svc/update-index-set context expected-index-set)
+        (info "Deleting collection index.")
+        (esi/delete-index (context->conn context) index))
+      (do
+        (info "Ignoring delete index request because index set is unchanged.")
+        (info "Existing index set: " (pr-str existing-index-set))
+        (info "Requested index deletion: " (pr-str index))))))
+
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
@@ -357,7 +374,7 @@
                                                      :client-id t-config/cmr-client-id}
                                            :throw-exceptions false}))
            status (:status response)]
-       (if-not (some #{200 404} [status])
+       (when-not (some #{200 404} [status])
          (if (= 409 status)
            (if ignore-conflict?
              (info (str "Ignore conflict: " (str response)))
