@@ -8,7 +8,7 @@
     "Name": "Visualization Draft",
     "Version": "1.1.0"
   },
-  "SubConceptType": "VID",
+  "SubConceptType": "VISD",
   "IndexSetup" : {
     "index": {
       "number_of_shards": 3,
