@@ -27,6 +27,7 @@
    [cmr.common.log :as log :refer (errorf info debug)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.common.util :as util]
    [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.concepts.granule :as g]
@@ -116,7 +117,7 @@
    exist."
   [system]
   (if (pos-int? (bootstrap-config/initialize-kms-on-boot))
-    (let [delay-ms (* 1000 (bootstrap-config/initialize-kms-on-boot))
+    (let [delay-ms (* util/seconds->milliseconds (bootstrap-config/initialize-kms-on-boot))
           context {:system system :client-id transmit-config/cmr-client-id}
           kms-future (future
                        (debug (format "refresh-kms-cache scheduled for %dms." delay-ms))

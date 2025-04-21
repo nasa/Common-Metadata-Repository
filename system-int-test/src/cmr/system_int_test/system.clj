@@ -9,6 +9,8 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.system :as common-sys]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.connection :as oracle]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -30,6 +32,18 @@
   [level]
   (reset! logging-level-atom level))
 
+(def connected-sevices
+  "Services to configure transmit lib to setup in the system object"
+  [:kms :echo-rest :search :access-control :urs :ingest :indexer :metadata-db])
+
+(def things-to-cache
+  "Redis caches"
+  {kf/kms-cache-key (kf/create-kms-cache)
+   kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+   kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+   kl/kms-location-cache-key (kl/create-kms-location-cache)
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)})
+
 (defn create-system
   "Returns a new instance of the whole application."
   [component-type-map]
@@ -42,10 +56,14 @@
              :conn-mgr (conn-mgr/make-reusable-conn-manager {})
              ;; An atom containing an integer that gets incremented to make unique numbers for items
              :unique-num-atom (atom 0)
+             :caches things-to-cache
              ;; A map of the components (echo, elastic, db, and message queue) to whether they are
              ;; in-memory or external
-             :component-type-map component-type-map}]
-    (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs :ingest :indexer :metadata-db])))
+             :component-type-map component-type-map}
+        system (transmit-config/system-with-connections sys connected-sevices)
+        context {:system system}]
+    (kf/refresh-kms-cache context)
+    system))
 
 (defn get-component-type-map
   "Returns the component-type-map from dev-system."
