@@ -19,6 +19,7 @@
    [cmr.search.data.elastic-relevancy-scoring]
    [cmr.search.data.query-to-elastic]))
 
+;; TODO index set id change was done
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 2)
 
