@@ -83,6 +83,7 @@ This element must be one of the following enum values:
 * `USER_CONTEXT`
 * `USER`
 * `GROUP`
+* `KEYWORD_MANAGEMENT_SYSTEM`
 * `ANY_ACL`
 * `EVENT_NOTIFICATION`
 * `EXTENDED_SERVICE`
