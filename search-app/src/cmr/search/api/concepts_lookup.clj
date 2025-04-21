@@ -139,12 +139,6 @@
           (find-concept-by-concept-id* ctx result-format concept-id revision-id)
           (find-concept-by-concept-id* ctx result-format concept-id))))))
 
-(def concept-id-reg-ex-matcher
-  "Using the concept prefixes, create a reg ex pattern so that the concept routes can
-  use it to build correct API routes."
-  (let [prefix-pattern (str "(" (clojure.string/join "|" (keys concepts/concept-prefix->concept-type)) ")")
-        regex-pattern (str prefix-pattern "\\d+-[A-Z0-9]+.*")]
-     regex-pattern))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
