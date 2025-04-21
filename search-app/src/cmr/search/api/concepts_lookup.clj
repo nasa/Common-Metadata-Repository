@@ -139,6 +139,12 @@
           (find-concept-by-concept-id* ctx result-format concept-id revision-id)
           (find-concept-by-concept-id* ctx result-format concept-id))))))
 
+(def concept-id-reg-ex-matcher
+  "Using the concept prefixes, create a reg ex pattern so that the concept routes can
+  use it to build correct API routes."
+  (let [prefix-pattern (str "(" (clojure.string/join "|" (keys concepts/concept-prefix->concept-type)) ")")
+        regex-pattern (str prefix-pattern "\\d+-[A-Z0-9]+.*")]
+     regex-pattern))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
@@ -148,7 +154,7 @@
   ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
   ;;       http://localhost:3003/concepts/C120000000-PROV1/2
   ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
-  (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
+  (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z]{1,4}[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
     ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
     ;; the endpoint. In this case, the Authorization header is used in the GET request.
     #_{:clj-kondo/ignore [:unused-binding]}
