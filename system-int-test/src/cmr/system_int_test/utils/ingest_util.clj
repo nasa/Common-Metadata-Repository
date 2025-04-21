@@ -7,13 +7,14 @@
    [clojure.test :refer [is]]
    [cmr.acl.core :as acl]
    [cmr.common-app.config :as common-config]
+   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as ingest-config]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.system :as sys]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.provider-util :as prov-util]
@@ -48,7 +49,7 @@
                {:body (json/generate-string provider)
                 :content-type :json
                 :throw-exceptions false
-                :connection-manager (s/conn-mgr)
+                :connection-manager (sys/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
@@ -76,7 +77,7 @@
 
 (defn get-providers-through-url
   [provider-url]
-  (-> (client/get provider-url {:connection-manager (s/conn-mgr)})
+  (-> (client/get provider-url {:connection-manager (sys/conn-mgr)})
       :body
       (json/decode true)))
 
@@ -94,7 +95,7 @@
   (let [{:keys [status]} (client/delete
                            (url/delete-provider-url provider-id)
                            {:throw-exceptions false
-                            :connection-manager (s/conn-mgr)
+                            :connection-manager (sys/conn-mgr)
                             :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (is (contains? #{204 404} status))))
 
@@ -106,7 +107,7 @@
    (let [{:keys [status body] :as response}
          (client/delete (url/ingest-provider-url provider-id)
                         {:throw-exceptions false
-                         :connection-manager (s/conn-mgr)
+                         :connection-manager (sys/conn-mgr)
                          :headers (merge {transmit-config/token-header (transmit-config/echo-system-token)}
                                          headers)})
          errors (:errors (json/decode body true))
@@ -125,7 +126,7 @@
               {:throw-exceptions false
                :body (json/generate-string (prov-util/minimum-provider->metadata-only params))
                :content-type :json
-               :connection-manager (s/conn-mgr)
+               :connection-manager (sys/conn-mgr)
                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn reindex-collection-permitted-groups
@@ -134,7 +135,7 @@
    (reindex-collection-permitted-groups nil))
   ([token]
    (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                               {:connection-manager (s/conn-mgr)
+                               {:connection-manager (sys/conn-mgr)
                                 :query-params {:token token}})]
      (is (= 200 (:status response))))))
 
@@ -144,7 +145,7 @@
    (reindex-all-collections nil))
   ([{:keys [force-version]}]
    (let [response (client/post (url/reindex-all-collections-url)
-                               {:connection-manager (s/conn-mgr)
+                               {:connection-manager (sys/conn-mgr)
                                 :query-params {:force_version force-version}})]
      (is (= 200 (:status response))))))
 
@@ -152,21 +153,21 @@
   "Tells ingest to run the cleanup-expired-collections job"
   []
   (let [response (client/post (url/cleanup-expired-collections-url)
-                              {:connection-manager (s/conn-mgr)})]
+                              {:connection-manager (sys/conn-mgr)})]
     (is (= 200 (:status response)))))
 
 (defn cleanup-bulk-granule-update-tasks
   "Tells ingest to run the trigger-bulk-granule-task-cleanup job"
   []
   (let [response (client/post (url/cleanup-granule-bulk-update-task-url)
-                              {:connection-manager (s/conn-mgr)})]
+                              {:connection-manager (sys/conn-mgr)})]
     (is (= 200 (:status response)))))
 
 (defn translate-metadata
   "Translates metadata using the ingest translation endpoint. Returns the response."
   ([concept-type input-format metadata output-format options]
    (client/post (url/translate-metadata-url concept-type)
-                {:connection-manager (s/conn-mgr)
+                {:connection-manager (sys/conn-mgr)
                  :throw-exceptions false
                  :body metadata
                  :query-params (:query-params options)
@@ -181,7 +182,7 @@
   ([concept-type input-version metadata output-version options]
    (let [format-base "application/vnd.nasa.cmr.umm+json;version="]
     (client/post (url/translate-metadata-url concept-type)
-                 {:connection-manager (s/conn-mgr)
+                 {:connection-manager (sys/conn-mgr)
                   :throw-exceptions false
                   :body metadata
                   :query-params (:query-params options)
@@ -295,7 +296,7 @@
   "Execute the http request defined by the given params map and returns the parsed ingest response."
   [params]
   (parse-ingest-response
-    (client/request (assoc params :throw-exceptions false :connection-manager (s/conn-mgr))) {}))
+    (client/request (assoc params :throw-exceptions false :connection-manager (sys/conn-mgr))) {}))
 
 (defn parse-map-response
   "Parse the response as a Clojure map, optionally providing a data validation
@@ -362,7 +363,7 @@
                  :content-type format
                  :headers headers
                  :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}
+                 :connection-manager (sys/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
@@ -391,7 +392,7 @@
                  :content-type format
                  :headers headers
                  :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}
+                 :connection-manager (sys/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
@@ -416,7 +417,7 @@
                         (json/generate-string options))
                 :headers headers
                 :throw-exceptions false
-                :connection-manager (s/conn-mgr)}]
+                :connection-manager (sys/conn-mgr)}]
     (parse-ingest-response (client/request params) options)))
 
 ;; Temporary function, this calls the subscription routes under the ingest root url, will be removed in CMR-8270
@@ -445,7 +446,7 @@
                  :content-type format
                  :headers headers
                  :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}
+                 :connection-manager (sys/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
@@ -465,7 +466,7 @@
                  :headers headers
                  :accept accept-format
                  :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}
+                 :connection-manager (sys/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
@@ -485,7 +486,7 @@
                  :headers headers
                  :accept accept-format
                  :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}
+                 :connection-manager (sys/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
@@ -505,7 +506,7 @@
                                   :multipart multipart-params
                                   :accept :json
                                   :throw-exceptions false
-                                  :connection-manager (s/conn-mgr)})
+                                  :connection-manager (sys/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -531,7 +532,7 @@
                      :headers headers
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                     :connection-manager (sys/conn-mgr)})
          status (:status response)]
      (if raw?
        response
@@ -623,7 +624,7 @@
          params {:method :post
                  :url (url/ingest-collection-bulk-update-url provider-id)
                  :body (json/generate-string request-body)
-                 :connection-manager (s/conn-mgr)
+                 :connection-manager (sys/conn-mgr)
                  :throw-exceptions false}
          params (merge params (when accept-format {:accept accept-format}))
          params (merge params (when headers {:headers headers}))
@@ -642,7 +643,7 @@
         params {:method :post
                 :url (url/ingest-granule-bulk-update-url provider-id)
                 :body (json/generate-string request-body)
-                :connection-manager (s/conn-mgr)
+                :connection-manager (sys/conn-mgr)
                 :throw-exceptions false}
         response (-> params
                      (merge (when accept-format {:accept accept-format}))
@@ -700,7 +701,7 @@
                       (url/ingest-granule-bulk-update-status-url provider-id)))
          params {:method :get
                  :url task-url
-                 :connection-manager (s/conn-mgr)
+                 :connection-manager (sys/conn-mgr)
                  :throw-exceptions false}
          params (merge params (when accept-format {:accept accept-format}))
          params (merge params (when token {:headers {transmit-config/token-header token}}))
@@ -712,7 +713,7 @@
   []
   (let [params {:method :post
                 :url (url/ingest-granule-bulk-update-task-status-url)
-                :connection-manager (s/conn-mgr)
+                :connection-manager (sys/conn-mgr)
                 :throw-exceptions false
                 :headers {transmit-config/token-header
                           (transmit-config/echo-system-token)}}]
@@ -793,7 +794,7 @@
                           (url/ingest-granule-bulk-update-task-status-url task-id))
         params {:method :get
                 :url task-status-url
-                :connection-manager (s/conn-mgr)
+                :connection-manager (sys/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when query-params {:query-params query-params}))
         params (merge params (when accept-format {:accept accept-format}))
@@ -819,7 +820,7 @@
 (defn get-ingest-update-acls
   "Get a token's system ingest management update ACLs."
   [token]
-  (-> (s/context)
+  (-> (sys/context)
       (assoc :token token)
       (acl/get-permitting-acls :system-object
                                echo-util/ingest-management-acl
@@ -865,10 +866,10 @@
                            :small small
                            :consortiums consortiums})
      ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up
-     (echo-util/create-providers (s/context) {provider-id provider-id})
+     (echo-util/create-providers (sys/context) {provider-id provider-id})
 
      (when grant-all-search?
-       (echo-util/grant (s/context)
+       (echo-util/grant (sys/context)
                         [echo-util/guest-read-ace
                          echo-util/registered-user-read-ace]
                         :catalog_item_identity
@@ -876,11 +877,11 @@
                                :collection_applicable true
                                :granule_applicable true)))
      (when grant-all-ingest?
-       (echo-util/grant-all-ingest (s/context) provider-id))
+       (echo-util/grant-all-ingest (sys/context) provider-id))
 
      (when grant-all-access-control?
-       (echo-util/grant-system-group-permissions-to-all (s/context))
-       (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id)))))
+       (echo-util/grant-system-group-permissions-to-all (sys/context))
+       (echo-util/grant-provider-group-permissions-to-all (sys/context) provider-id)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true
@@ -982,7 +983,7 @@
   provider ids."
   [provider-ids]
   (doseq [provider-id provider-ids]
-    (echo-util/grant (s/context)
+    (echo-util/grant (sys/context)
                      [echo-util/guest-read-ace
                       echo-util/registered-user-read-ace]
                      :catalog_item_identity
@@ -1001,8 +1002,10 @@
   "Clears caches in the ingest application"
   []
   (client/post (url/dev-system-clear-cache-url)
-               {:connection-manager (s/conn-mgr)
+               {:connection-manager (sys/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
   (client/post (url/ingest-clear-cache-url)
-               {:connection-manager (s/conn-mgr)
-                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+               {:connection-manager (sys/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+  ;; CMR no longer uses a layz load for cache, if you clear it, you fill it
+  (kf/refresh-kms-cache (sys/context)))

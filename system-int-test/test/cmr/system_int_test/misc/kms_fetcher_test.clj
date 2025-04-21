@@ -19,18 +19,21 @@
         kms-cache (cache/context->cache context kf/kms-cache-key)
         _  (#'kf/refresh-kms-cache context)
         kms-map (cache/get-value kms-cache kf/kms-cache-key)]
-    
+
     (testing "Testing that KMS keywords such as projects exist after normal loading."
       (is (some? (:projects kms-map))))
-    
+
     (testing "Test KMS keywords API returning nil for testing purposes."
       (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
         (is (nil? (trans-kms/get-keywords-for-keyword-scheme context :projects)))))
-    
-    ;; Test to make sure that if KMS keywords API returns nil for a keyword after 
+
+    ;; Test to make sure that if KMS keywords API returns nil for a keyword after
     ;; parsing, (KMS API is down) that previous cache value is used, so that we don't
     ;; wipe out the KMS keyword values in the cache.
-    (testing "Makes sure that KMS keywords are not wiped out."
-      (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
-        (#'kf/refresh-kms-cache context)
-        (is (some? (:projects (cache/get-value kms-cache kf/kms-cache-key))))))))
+    (comment
+      ;; We are no longer interested in this use case. KMS being down is now an external problem to
+      ;; CMR as the update script runs outside of CMR. CMR should assume it always has a cache.
+      (testing "Makes sure that KMS keywords are not wiped out."
+        (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
+          (#'kf/refresh-kms-cache context)
+          (is (some? (:projects (cache/get-value kms-cache kf/kms-cache-key)))))))))
