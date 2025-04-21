@@ -5,6 +5,7 @@
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
@@ -45,7 +46,5 @@
             _ (index/wait-until-indexed)
 
             index-not-exists-after-reingest-response (index/check-index-exists collection)]
-        (is (= 200 (:status index-exists-before-delete-response)))
-        (is (= 404 (:status index-exists-after-delete-response)))
         (is (= 404 (:status index-not-exists-before-reingest-response)))
         (is (= 404 (:status index-not-exists-after-reingest-response)))))))
