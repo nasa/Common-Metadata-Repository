@@ -36,6 +36,7 @@
       (bootstrap/finalize-rebalance-collection (:concept-id collection))
       (index/wait-until-indexed)
       (ingest/delete-concept (data-core/umm-c-collection->concept collection :echo10) {})
+      (index/wait-until-indexed)
       (let [index-not-exists-before-reingest-response (index/check-index-exists collection)
             new-collection (data-core/ingest-umm-spec-collection "PROV1"
                                                                  (data-umm-c/collection {})
