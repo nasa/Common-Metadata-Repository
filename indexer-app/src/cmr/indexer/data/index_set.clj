@@ -984,12 +984,6 @@
        (map :name)
        (remove #(= % "small_collections"))))
 
-(defn index-set->reduced-extra-granule-indexes
-  "Takes an index set and a collection concept id and returns the extra granule indexes
-   minus the provided collection"
-  [index-set collection-concept-id]
-  (remove #(= % collection-concept-id) (index-set->extra-granule-indexes index-set)))
-
 (defn fetch-concept-type-index-names
   "Fetch a map containing index names for each concept type from index-set app along with the list
    of rebalancing collections"

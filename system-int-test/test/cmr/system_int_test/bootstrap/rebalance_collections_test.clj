@@ -2,7 +2,7 @@
   "Tests rebalancing granule indexes by moving collections's granules from the small collections
    index to separate collection indexes"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.system-int-test.data2.collection :as dc]

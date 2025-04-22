@@ -41,7 +41,7 @@
             new-collection (data-core/ingest-umm-spec-collection "PROV1"
                                                                  (data-umm-c/collection {})
                                                                  {:validate-keywords false})
-            gran1 (data-core/ingest "PROV1" (update-in (granule/granule-with-umm-spec-collection new-collection (:concept-id new-collection))
+            _ (data-core/ingest "PROV1" (update-in (granule/granule-with-umm-spec-collection new-collection (:concept-id new-collection))
                                                        [:collection-ref]
                                                        dissoc :ShortName :Version))
             _ (index/wait-until-indexed)
