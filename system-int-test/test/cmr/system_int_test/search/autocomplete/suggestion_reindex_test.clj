@@ -291,6 +291,7 @@
 
       (index/wait-until-indexed)
       (index/reindex-suggestions)
+      (dev-sys-util/load-kms-redis-cache)
       (index/wait-until-indexed)
 
       (search/clear-caches)
