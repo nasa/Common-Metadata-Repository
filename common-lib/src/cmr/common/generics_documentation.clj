@@ -35,7 +35,8 @@
         (io/resource)
         (slurp))
     (catch Exception _e (info (format "generic %s was skipped" generic-keyword))
-           (str ""))))
+           ;;TODO: "pull-before-flight": condo suggested change - why empty string ed?
+           (str generic-keyword))))
 
 (defn all-generic-docs
   "Parse over all of the generic documents and return their combined markdown as a string
@@ -92,10 +93,11 @@
   (let [generic-markdown (read-generic-doc-file file-name generic-keyword generic-version)]
    (if (not= generic-markdown "")
      (-> generic-markdown
-             get-toc-headers-from-markdown
-             (as-> xs (map #(get-toc-data % (name file-name) (get options :spacer (fn [x] x))) xs))
-             (string/join))
-     (str ""))))
+         get-toc-headers-from-markdown
+         (as-> xs (map #(get-toc-data % (name file-name) (get options :spacer (fn [x] x))) xs))
+         (string/join))
+     ;;TODO: "pull-before-flight": condo suggested change - why empty string ed?
+     (str generic-keyword))))
 
 (defn all-generic-docs-toc
   "Parse over all of the generic documents and return their combined markdown as a string

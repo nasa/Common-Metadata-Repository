@@ -3,13 +3,13 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.provider-service :as provider-service]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [GET OPTIONS context]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants
@@ -68,7 +68,7 @@
       response-body (second response)
       hits 1
       provider-metadata (-> response-body
-                            :body 
+                            :body
                             (json/parse-string true)
                             (:metadata)
                             json/generate-string)
@@ -79,7 +79,7 @@
 
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be
-  just one value and it only returns the metadata however, if there is an error in the response, 
+  just one value and it only returns the metadata however, if there is an error in the response,
   then the body is returned as is."
   [result]
   (let [{:keys [status]} result
