@@ -62,8 +62,7 @@
   "Resets the index set mappings cache. It is important that the latest mappings are used whenever
   we try to update the indexes in Elasticsearch."
   [context]
-  (let [index-set-mappings-cache (get-in context [:system :caches idx-set/index-set-cache-key])]
-    (cache/reset index-set-mappings-cache)))
+  (cache/reset (get-in context [:system :caches idx-set/index-set-cache-key])))
 
 (defn get-index-names
   "Given a index set build list of index names."
@@ -374,7 +373,7 @@
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
         updated-index-set (remove-granule-index-from-index-set index-set concept-id)]
-      ;; Update the index set..
+    ;; Update the index-set and index-set cache
     (update-index-set context updated-index-set)
     (reset-index-set-mappings-cache context)))
 

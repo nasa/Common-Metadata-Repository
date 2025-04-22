@@ -165,7 +165,7 @@
   "Delete an elastic index by name"
   [context collection-concept-id index]
   (index-set-svc/remove-deleted-granule-index context idx-set/index-set-id collection-concept-id)
-  (info "Deleting granule index.")
+  (info (format "Deleting granule index %s from elastic" index))
   (try
     (esi/delete-index (context->conn context) index)
     (catch Throwable e
