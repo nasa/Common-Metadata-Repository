@@ -162,6 +162,7 @@
     (index/wait-until-indexed)
 
     (search/clear-caches)
+    (dev-sys-util/load-kms-redis-cache)
 
     (f)))
 
@@ -295,6 +296,7 @@
       (index/wait-until-indexed)
 
       (search/clear-caches)
+      (dev-sys-util/load-kms-redis-cache)
 
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=ice") [:feed :entry])
