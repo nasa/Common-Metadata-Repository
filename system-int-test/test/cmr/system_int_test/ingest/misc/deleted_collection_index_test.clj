@@ -42,8 +42,8 @@
                                                                  (data-umm-c/collection {})
                                                                  {:validate-keywords false})
             _ (data-core/ingest "PROV1" (update-in (granule/granule-with-umm-spec-collection new-collection (:concept-id new-collection))
-                                                       [:collection-ref]
-                                                       dissoc :ShortName :Version))
+                                                   [:collection-ref]
+                                                   dissoc :ShortName :Version))
             _ (index/wait-until-indexed)
 
             index-not-exists-after-reingest-response (index/check-index-exists collection)]
