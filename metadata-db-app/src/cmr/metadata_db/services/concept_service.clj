@@ -570,7 +570,7 @@
         (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
         (keep concepts-by-tuple concept-id-revision-id-tuples))
       ;; some concepts weren't found in the database
-      (keep #(if (concepts-by-tuple %) (concepts-by-tuple %) {:metadata nil}) concept-id-revision-id-tuples)))) 
+      (keep #(when (concepts-by-tuple %) (concepts-by-tuple %)) concept-id-revision-id-tuples)))) 
 
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
