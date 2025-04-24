@@ -221,7 +221,7 @@
 (defmethod send-query-to-elastic :default
   [context query]
   (let [elastic-query (q2e/query->elastic query)
-        _ (info "INSIDE send-query-to-elastic :default. elastic query is " elastic-query)
+        ;_ (info "INSIDE send-query-to-elastic :default. elastic query is " elastic-query)
         {sort-params :sort
          aggregations :aggs
          highlights :highlight :as execution-params} (query->execution-params query)
@@ -238,6 +238,11 @@
           "with sort" (pr-str sort-params)
           "with aggregations" (pr-str aggregations)
           "and highlights" (pr-str highlights))
+    (if (map? index-info)
+      (debug "Index visited is " (:index-name index-info))
+      (doseq [idx-name index-info]
+        (debug "Index visited is " idx-name))
+      )
     (when-let [scroll-id (:scroll-id query-map)]
       (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]
