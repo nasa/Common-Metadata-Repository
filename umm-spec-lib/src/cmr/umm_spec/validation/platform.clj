@@ -62,7 +62,6 @@
       ;; The case of 0 or greater than 3 shouldn't exist.  If it is either value then the validation
       ;; software is not working.
       (if-not (<= 1 platform-counts 3)
-        ;; TODO: "pull-before-flight" - send this to bamboo and remove comment on success - kondo change
         (errors/throw-service-error :invalid-data (Exception. "The platform validation checking for duplicates either has 0 or more than 3 elements, neither is valid. There is a software problem."))
         (case platform-counts
           1  (format "The Platform ShortName [%s] must be unique. This record contains duplicates." shortname)

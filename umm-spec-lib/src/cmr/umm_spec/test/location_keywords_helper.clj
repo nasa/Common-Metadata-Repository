@@ -36,6 +36,6 @@
   [f]
   (let [test-context create-context
         kms-cache (cache/context->cache test-context kf/kms-cache-key)]
-    (kms-lookup/create-kms-index! test-context sample-keyword-map)
+    (kms-lookup/create-kms-index test-context sample-keyword-map)
     (cache/set-value kms-cache kf/kms-cache-key sample-keyword-map))
     (f))

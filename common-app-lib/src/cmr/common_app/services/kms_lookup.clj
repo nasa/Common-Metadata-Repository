@@ -205,7 +205,7 @@
 ;; Candidate to make private as this function is currently used very little outside of the
 ;; common_app package (kms_lookup.clj) and several tests. Try to not call this function in any
 ;; actual code to limit how many apps directly manage KMS cache.
-(defn create-kms-index!
+(defn create-kms-index
   "Creates the KMS index structure to be used for fast lookups and stores these values in
    redis. Calling this function will CHANGE an external resource."
   [context kms-keywords-map]
@@ -353,7 +353,7 @@
                                                          :measurement-name))
             _ (rl-util/log-redis-read-complete "lookup-by-measurement" kms-measurement-cache-key tm)
             {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
-            ;; build either a 3 or 2 item map depending on if we have Quantities
+            ;; Build either a 3 or 2 item map depending on if we have Quantities
             measurements-to-find (if (seq MeasurementQuantities)
                            (map (fn [quantity]
                                   {:context-medium MeasurementContextMedium
@@ -362,8 +362,8 @@
                                 MeasurementQuantities)
                            [{:context-medium MeasurementContextMedium
                              :object MeasurementObject}])]
-        ;; remove will always return something when dealing with a nil keyword cache which we do not
-        ;; what if there is no cache at all. When we have a cache, then do the removes
+        ;; Remove will always return something when dealing with a nil keyword cache which we do not
+        ;; what if there is no cache at all. When we have a cache, then do the removes.
         (when measurement-index
           (seq (remove #(get measurement-index %) measurements-to-find)))))
     (catch Exception e

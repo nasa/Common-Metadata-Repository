@@ -68,7 +68,6 @@
         min-value (convert (Float/parseFloat (get range-part1 0)) unit-part1)
         max-value (if range-part2
                     (convert (Float/parseFloat (get range-part2 0)) (get range-part2 1))
-                    ;;TODO: "pull-before-flight": send to bamboo for testing, kondo suggestion
                     Float/MAX_VALUE)]
     [min-value max-value]))
 

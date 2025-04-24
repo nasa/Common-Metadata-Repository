@@ -50,7 +50,7 @@
 (defn redis-cache-fixture
   "Sets up the redis cache fixture to load data into the caches for testing."
   [f]
-  (kl/create-kms-index! context sample-map)
+  (kl/create-kms-index context sample-map)
   (f))
 
 (use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture

@@ -28,7 +28,6 @@
         (qm/map->OrbitNumberValueCondition numeric-map)
         (qm/map->OrbitNumberRangeCondition numeric-map)))
     (catch NumberFormatException _e
-      ;; TODO: "pull-before-flight": send to bamboo for testing, why not a function ; kondo suggestion
       (errors/internal-error! (msg/non-numeric-orbit-number-parameter)))))
 
 

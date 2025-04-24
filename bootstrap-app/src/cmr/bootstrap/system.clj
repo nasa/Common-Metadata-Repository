@@ -57,7 +57,7 @@
   "Required for jobs"
   (atom nil))
 
-(def things-to-cache
+(def application-caches
   "These are all the caches contain in this system collected here to clean up the construction of
    sys latter in this file."
   {acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -84,7 +84,7 @@
    has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key
    (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)})
 
-(def things-to-schedule
+(def jobs-to-schedule
   "Create all the schedules to be added to the sys latter."
   (jobs/create-scheduler
    `system-holder
@@ -163,8 +163,8 @@
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
-             :caches things-to-cache
-             :scheduler things-to-schedule
+             :caches application-caches
+             :scheduler jobs-to-schedule
              :queue-broker queue-broker}]
 
     ;; Attach other things to the system and return it.

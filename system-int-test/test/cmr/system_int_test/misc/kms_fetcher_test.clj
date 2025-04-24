@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.misc.kms-fetcher-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.cache :as cache]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
@@ -25,15 +25,4 @@
 
     (testing "Test KMS keywords API returning nil for testing purposes."
       (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
-        (is (nil? (trans-kms/get-keywords-for-keyword-scheme context :projects)))))
-
-    ;; Test to make sure that if KMS keywords API returns nil for a keyword after
-    ;; parsing, (KMS API is down) that previous cache value is used, so that we don't
-    ;; wipe out the KMS keyword values in the cache.
-    (comment
-      ;; We are no longer interested in this use case. KMS being down is now an external problem to
-      ;; CMR as the update script runs outside of CMR. CMR should assume it always has a cache.
-      (testing "Makes sure that KMS keywords are not wiped out."
-        (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
-          (#'kf/refresh-kms-cache context)
-          (is (some? (:projects (cache/get-value kms-cache kf/kms-cache-key)))))))))
+        (is (nil? (trans-kms/get-keywords-for-keyword-scheme context :projects)))))))

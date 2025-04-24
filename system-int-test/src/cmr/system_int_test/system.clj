@@ -36,7 +36,7 @@
   "Services to configure transmit lib to setup in the system object"
   [:kms :echo-rest :search :access-control :urs :ingest :indexer :metadata-db])
 
-(def things-to-cache
+(def application-caches
   "Redis caches"
   {kf/kms-cache-key (kf/create-kms-cache)
    kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
@@ -56,7 +56,7 @@
              :conn-mgr (conn-mgr/make-reusable-conn-manager {})
              ;; An atom containing an integer that gets incremented to make unique numbers for items
              :unique-num-atom (atom 0)
-             :caches things-to-cache
+             :caches application-caches
              ;; A map of the components (echo, elastic, db, and message queue) to whether they are
              ;; in-memory or external
              :component-type-map component-type-map}

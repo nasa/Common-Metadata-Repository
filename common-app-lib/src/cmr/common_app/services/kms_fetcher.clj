@@ -56,7 +56,7 @@
   "The Time-To-Live value, use nil to never expire."
   nil)
 
-;; called by system.clj across several applications
+;; Called by system.clj across several applications
 (defn create-kms-cache
   "Used to create the cache that will be used for caching KMS keywords. All applications caching
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
@@ -73,7 +73,7 @@
   as used in the KMS cache."
   [context]
   (try
-    (kms-lookup/create-kms-index!
+    (kms-lookup/create-kms-index
      context
      (into {}
            (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
@@ -85,14 +85,14 @@
 
 ;; This is only called by cmr.search.api.keywords (and tests). May be private in the future
 (defn get-kms-index
-  "Retrieves the GCMD keywords map from the cache for search-app."
+  "Retrieves the GCMD keywords map from the cache."
   [context]
   (try
     (when-not (:ignore-kms-keywords context)
       (let [cache (cache/context->cache context kms-cache-key)
             _ (rl-util/log-redis-reading-start kms-cache-key)
             [t1 kms-index] (util/time-execution (cache/get-value cache kms-cache-key))]
-        ;; don't worry about finding a value, assume cache is correct and return what is found,
+        ;; Do not worry about finding a value, assume cache is correct and return what is found,
         ;; an external process will sync the KMS cache
         (rl-util/log-redis-read-complete "get-kms-index" kms-cache-key t1)
         kms-index))
