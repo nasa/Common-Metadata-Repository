@@ -105,7 +105,6 @@
   ([context concept-type fmt metadata]
    (parse-metadata context concept-type fmt metadata u/default-parsing-options))
   ([context concept-type fmt metadata options]
-   (println "DEBUGZ: parse-metadata: " concept-type fmt metadata)
    (condp = [concept-type (mt/format-key fmt)]
      [:collection :umm-json] (umm-json/json->umm
                               context :collection metadata (umm-json-version :collection fmt))

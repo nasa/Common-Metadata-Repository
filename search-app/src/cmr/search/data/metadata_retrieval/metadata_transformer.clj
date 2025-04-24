@@ -201,7 +201,6 @@
   "Transforms a concept to the target format given returning metadata."
   [context concept target-format]
   {:pre [(not (:deleted concept))]}
-  (info "DEBUGZ: transform: Transforming concept " concept "to" target-format)
   (if (= target-format :native)
     (:metadata concept)
     (let [strategy (transform-strategy concept target-format)
@@ -219,9 +218,6 @@
   (if (= :native target-format)
     concepts
     (u/fast-map (fn [concept]
-                  (info (format "DEBUGZ: transform-concepts: concept: [%s] target-format: [%s]"
-                                (:concept-id concept)
-                                target-format))
                   (if (or (:deleted concept)
                           (cs/generic-concept? (:concept-type concept)))
                     ;; A deleted or generic concept needs no transformation.
