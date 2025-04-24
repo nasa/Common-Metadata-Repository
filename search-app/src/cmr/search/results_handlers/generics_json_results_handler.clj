@@ -24,7 +24,7 @@
     (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
           ;; Get Concepts from Metadata db
           [t1 concepts] (util/time-execution
-                         (doall (metadata-db/get-concepts mdb-context concept-tuples false)))]
+                         (doall (metadata-db/get-concepts mdb-context concept-tuples true)))]
       (debug "fetch of " (count concept-tuples) " concepts:" "get-concepts:" t1)
       concepts)))
 
