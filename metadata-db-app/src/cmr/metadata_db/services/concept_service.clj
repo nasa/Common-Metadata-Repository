@@ -531,7 +531,7 @@
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples allow-missing?]
   (debug (format "Getting [%d] concepts by concept-id/revision-id"
-                (count concept-id-revision-id-tuples)))
+                 (count concept-id-revision-id-tuples)))
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
@@ -565,7 +565,12 @@
         (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
         (keep concepts-by-tuple concept-id-revision-id-tuples))
       ;; some concepts weren't found in the database
-      (keep #(when (concepts-by-tuple %) (concepts-by-tuple %)) concept-id-revision-id-tuples)))) 
+      (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
+                                                   (set (keys concepts-by-tuple)))]
+        (errors/throw-service-errors
+         :not-found
+         (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
+              missing-concept-tuples))))))
 
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
