@@ -1,19 +1,20 @@
 (ns cmr.elastic-utils.search.es-index
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require
-   [cheshire.core :as json]
-   [clojure.set :as set]
-   [clojurewerkz.elastisch.rest.index :as esri]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info]]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.services.search.query-model :as qm]
-   [cmr.common.util :as util]
-   [cmr.elastic-utils.config :as es-config]
-   [cmr.elastic-utils.connect :as es]
-   [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-   [cmr.transmit.connection :as transmit-conn])
+    [cheshire.core :as json]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [clojurewerkz.elastisch.rest.index :as esri]
+    [cmr.common.lifecycle :as lifecycle]
+    [cmr.common.log :refer [debug info]]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.services.search.query-model :as qm]
+    [cmr.common.util :as util]
+    [cmr.elastic-utils.config :as es-config]
+    [cmr.elastic-utils.connect :as es]
+    [cmr.elastic-utils.es-helper :as es-helper]
+    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
    java.net.UnknownHostException))
@@ -228,6 +229,7 @@
         concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
         _ (info "INSIDE send-query-to-elastic :default with index-info = " index-info)
+        index-names (str/split (:index-name index-info) #",")
         query-map (-> elastic-query
                       (merge execution-params)
                       ;; rename search-after to search_after for ES execution
@@ -238,11 +240,8 @@
           "with sort" (pr-str sort-params)
           "with aggregations" (pr-str aggregations)
           "and highlights" (pr-str highlights))
-    (if (map? index-info)
-      (debug "Index visited is " (:index-name index-info))
-      (doseq [idx-name index-info]
-        (debug "Index visited is " idx-name))
-      )
+    (doseq [idx-name index-names]
+      (debug "Index visited is " idx-name))
     (when-let [scroll-id (:scroll-id query-map)]
       (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]
