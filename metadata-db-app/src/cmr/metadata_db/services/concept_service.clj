@@ -532,17 +532,20 @@
   [context concept-id-revision-id-tuples allow-missing?]
   (debug (format "Getting [%d] concepts by concept-id/revision-id"
                 (count concept-id-revision-id-tuples)))
+  (info "DEBUGZ: concept-id-revision-id-tuples: " concept-id-revision-id-tuples)
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
         providers (conj (provider-db/get-providers db) pv/cmr-provider)
         ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
+        _ (info "DEBUGZ: split tuples map: " (pr-str split-tuples-map))
         split-tuples-map (if allow-missing?
                            (filter-non-existent-providers split-tuples-map providers)
                            (do
                              (validate-providers-exist (keys split-tuples-map) providers)
                              split-tuples-map))
+        _ (info "DEBUGZ: split tuples map after filtering: " (pr-str split-tuples-map))
         concepts (apply concat
                         (for [[provider-id concept-type-tuples-map] split-tuples-map
                               [concept-type tuples] concept-type-tuples-map
@@ -558,6 +561,8 @@
                                     tuples))
                             (c/get-concepts db concept-type provider tuples))))
         ;; Create a map of tuples to concepts
+        _ (info "DEBUGZ: creating map of tuples with concepts: " (pr-str concepts))
+        _ (info "DEBUGZ: creating map of tuples with num concepts: " (count concepts))
         concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
     (if (or allow-missing? (= (count concepts) (count concept-id-revision-id-tuples)))
       ;; Return the concepts in the order they were requested
