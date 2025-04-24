@@ -1,4 +1,4 @@
-(def elastic-version "7.17.14")
+(def elastic-version "8.16.0")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -10,7 +10,7 @@
                  [commons-io "2.6"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 
                  [org.clojure/clojure "1.11.2"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.apache.commons/commons-compress "1.26.0"]

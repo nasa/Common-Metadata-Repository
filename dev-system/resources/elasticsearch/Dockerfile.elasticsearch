@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.16.0
 
 COPY es_libs /usr/share/elasticsearch/lib/
 COPY plugins /usr/share/elasticsearch/plugins/
