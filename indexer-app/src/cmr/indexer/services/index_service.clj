@@ -663,15 +663,27 @@
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
   [context concept-mapping-types concept-id revision-id]
-  (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
-    (let [resp (es/delete-by-query
-                context
-                index
-                (concept-mapping-types :granule)
-                {:term {(query-field->elastic-field :collection-concept-id :granule)
-                        concept-id}})]
-      (when (not= (get resp :status) 200)
-        (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp)))))
+  (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
+                                         (:index-names)
+                                         (:granule)
+                                         (:small_collections))]
+    (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
+      (if (= index small-collections-index-name)
+        (let [resp (es/delete-by-query
+                    context
+                    index
+                    (concept-mapping-types :granule)
+                    {:term {(query-field->elastic-field :collection-concept-id :granule)
+                            concept-id}})]
+          (when (not= (get resp :status) 200)
+            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp))))
+        ;; Instead of running a delete-by-query to remove all granules from
+        ;; a collection index, we are just deleting the index. This is
+        ;; in line with ES best practices
+        (let [resp (es/delete-granule-index context concept-id index)]
+          (when (not= (get resp :status) 200)
+            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
+
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
@@ -700,7 +712,7 @@
 (defn- delete-concept-default-helper
   "A private func that deletes concept indexes in elastic"
   [context concept concept-id revision-id options]
-  (if (nil? concept)
+  (when (nil? concept)
     (errors/throw-service-error
       :not-found
       (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
