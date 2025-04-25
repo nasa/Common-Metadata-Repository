@@ -107,8 +107,7 @@
         schema-keys [:LongName
                      :Version
                      :Description
-                     :RelatedURLs
-                     [:Specification :ProductIdentification :BestAvailableExternalIdentifier]]
+                     :RelatedURLs]
         keyword-values (keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)
         common-doc ;; fields common to all generic documents
