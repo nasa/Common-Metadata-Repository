@@ -63,6 +63,7 @@
                               "USER_CONTEXT"                    [r]
                               "USER"                            [r u d]
                               "GROUP"                           [c r]
+                              "KEYWORD_MANAGEMENT_SYSTEM"       [c r u d]
                               "ANY_ACL"                         [c r u d]
                               "EVENT_NOTIFICATION"              [d]
                               "EXTENDED_SERVICE"                [d]

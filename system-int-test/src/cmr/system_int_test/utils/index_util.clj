@@ -5,11 +5,9 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer [is]]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.indexer.config :as config]
+   [cmr.common.log :as log :refer (warn)]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.queue :as queue]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 
@@ -171,3 +169,12 @@
                  {:connection-manager (s/conn-mgr)
                   :body (query-for-granules-by-collection coll)
                   :content-type "application/json"}))
+
+(defn check-index-exists
+  "Helpper to check if elasticsearch index exists."
+  [coll]
+  (let [index-name (string/replace (format "1_%s" (string/lower-case (:concept-id coll)))
+                                   #"-" "_")]
+    (client/head (format "%s/%s" (url/elastic-root) index-name)
+                 {:connection-manager (s/conn-mgr)
+                  :throw-exceptions false})))
