@@ -32,6 +32,7 @@
    "USER_CONTEXT"
    "USER"
    "GROUP"
+   "KEYWORD_MANAGEMENT_SYSTEM"
    system-any-acl-target
    "EVENT_NOTIFICATION"
    "EXTENDED_SERVICE"

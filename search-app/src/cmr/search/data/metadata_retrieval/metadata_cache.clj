@@ -212,7 +212,7 @@
 
           ;; Get Concepts from Metadata db
           [t1 concepts] (u/time-execution
-                         (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
+                         (doall (metadata-db/get-concepts mdb-context concept-tuples true)))
 
           [t2 concepts] (u/time-execution
                          (cmn-coll-metadata-cache/concepts-without-xml-processing-inst concepts))
@@ -257,7 +257,7 @@
     (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
           ;; Get Concepts from Metadata db
           [t1 concepts] (u/time-execution
-                         (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
+                         (doall (metadata-db/get-concepts mdb-context concept-tuples true)))
           [t2 concepts] (u/time-execution
                          (metadata-transformer/transform-concepts context concepts target-format))
           [t3 concepts] (u/time-execution
