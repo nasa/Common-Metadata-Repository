@@ -71,12 +71,6 @@
       "Mapping": "string"
     },
     {
-      "Description": "Best Available External Identifier",
-      "Field": ".Specification.ProductIdentification.BestAvailableExternalIdentifier",
-      "Name": "BestAvailableExternalIdentifier",
-      "Mapping": "string"
-    },
-    {
       "Description": "Best Available External Identifier in keywords",
       "Field": ".Specification.ProductIdentification.BestAvailableExternalIdentifier",
       "Name": "keyword",
