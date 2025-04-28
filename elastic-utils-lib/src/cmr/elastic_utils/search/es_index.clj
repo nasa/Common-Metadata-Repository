@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as str]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info]]
