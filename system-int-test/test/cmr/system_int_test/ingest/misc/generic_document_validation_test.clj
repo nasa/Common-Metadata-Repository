@@ -1,13 +1,13 @@
 (ns cmr.system-int-test.ingest.misc.generic-document-validation-test
-   "Provides tests for generic document validation functionality."
-   (:require
-    [clojure.test :refer [deftest is testing use-fixtures]]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.system :as s]
-    [clojure.string :as string]
-    [cheshire.core :as json]))
+  "Provides tests for generic document validation functionality."
+  (:require
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [clojure.string :as string]
+   [cheshire.core :as json]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
@@ -19,6 +19,7 @@
              {:Name name
               :Identifier identifier
               :IdentifierType identifier-type
+              :ResolutionAuthority "https://doi.org"
               :MetadataSpecification
               {:URL "https://cdn.earthdata.nasa.gov/generics/citation/v1.0.0"
                :Name "Citation"
@@ -40,8 +41,10 @@
                               "Example Citation"
                               "10.5067/ABC123XYZ"
                               "DOI"
-                              {:ResolutionAuthority "https://doi.org"
-                               :RelationshipType "IsCitedBy"})]
+                              {:RelatedIdentifiers [{:RelationshipType "Cites"
+                                                     :RelatedIdentifierType "DOI"
+                                                     :RelatedIdentifier "10.5067/EFJ456MNP"
+                                                     :RelatedResolutionAuthority "https://doi.org"}]})]
       (is (= 201 (:status citation1-response)))
       (index/wait-until-indexed)
 
@@ -52,8 +55,10 @@
                                   "Different Citation Name"
                                   "10.5067/ABC123XYZ"
                                   "DOI"
-                                  {:ResolutionAuthority "https://doi.org"
-                                   :RelationshipType "IsReferencedBy"})]
+                                  {:RelatedIdentifiers [{:RelationshipType "Refers"
+                                                         :RelatedIdentifierType "DOI"
+                                                         :RelatedIdentifier "10.5067/EFJ456MNP"
+                                                         :RelatedResolutionAuthority "https://doi.org"}]})]
 
           (is (= 422 (:status duplicate-response)))
           (is (string/includes?
@@ -69,7 +74,11 @@
                                      "citation-3"
                                      "Another Citation"
                                      "10.5067/DIFFERENT"
-                                     "DOI")]
+                                     "DOI"
+                                     {:CitationMetadata
+                                      {:Title "Another Citation for DSL"
+                                       :Year 2022
+                                       :Type "journal-article"}})]
 
           (is (= 201 (:status different-id-response)))))
 
@@ -79,7 +88,11 @@
                                        "citation-4"
                                        "Yet Another Citation"
                                        "10.5067/ABC123XYZ"
-                                       "Other")]
+                                       "ISBN"
+                                       {:CitationMetadata
+                                        {:Title "Yet Another Citation for DSL"
+                                         :Year 2023
+                                         :Type "book"}})]
 
           (is (= 201 (:status different-type-response)))))
 
@@ -89,7 +102,11 @@
                                "citation-1"
                                "Updated Example Citation"
                                "10.5067/ABC123XYZ"
-                               "DOI")]
+                               "DOI"
+                               {:Abstract "This is an abstract for the updated citation."
+                                :ScienceKeywords [{:Category "EARTH SCIENCE"
+                                                   :Topic "ATMOSPHERE"
+                                                   :Term "AIR QUALITY"}]})]
 
           (is (= 200 (:status update-response)))))
 
@@ -109,7 +126,15 @@
                                    "citation-2-new"
                                    "Recreated Citation"
                                    "10.5067/ABC123XYZ"
-                                   "DOI")]
+                                   "DOI"
+                                   {:CitationMetadata
+                                    {:Title "Recreated Citation for DSL"
+                                     :Year 2024
+                                     :Type "journal-article"
+                                     :Author [{:ORCID "0000-0001-2345-6789"
+                                               :Given "John"
+                                               :Family "Smith"
+                                               :Sequence "first"}]}})]
 
             (is (= 201 (:status recreate-response)))
 
@@ -120,7 +145,12 @@
                                              "citation-prov2"
                                              "Cross Provider Citation"
                                              "10.5067/ABC123XYZ"
-                                             "DOI")]
+                                             "DOI"
+                                             {:RelatedIdentifiers
+                                              [{:RelationshipType "Describes"
+                                                :RelatedIdentifierType "DOI"
+                                                :RelatedIdentifier "10.5067/XYZ987ABC"
+                                                :RelatedResolutionAuthority "https://doi.org"}]})]
 
                 (is (= 422 (:status cross-provider-response)))
                 (is (string/includes?

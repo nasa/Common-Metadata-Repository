@@ -56,7 +56,7 @@
   ],
   "Validations": [
     {
-      "Fields": [".Identifier", ".IdentifierType"],
+      "Fields": [".Identifier", ".IdentifierType", ".ResolutionAuthority"],
       "ValidationType": "unique"
     }
   ]

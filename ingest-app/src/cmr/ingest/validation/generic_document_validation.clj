@@ -9,6 +9,7 @@
    [cmr.common.generics :as generics]
    [cmr.common.log :refer (info error)]
    [cmr.common.services.errors :as errors]
+   [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.transmit.metadata-db :as mdb]))
 
 (def schema-validation-cache-key
@@ -42,9 +43,8 @@
       (let [;; Helper function to extract field values from a concept
             get-field-values (fn [c fs]
                                (let [metadata (json/parse-string (:metadata c) true)]
-                                 (mapv #(let [field-path (rest (string/split % #"\."))
-                                              keyword-path (mapv keyword field-path)]
-                                          (get-in metadata keyword-path))
+                                 (mapv #(let [field-path (gen-util/jq->list % keyword)]
+                                          (get-in metadata field-path))
                                        fs)))
 
             ;; Extract values for the specified fields from the current concept
@@ -59,7 +59,9 @@
                                        existing-concepts)]
         (if (seq duplicate-concepts)
           (let [duplicate-concept-ids (map :concept-id duplicate-concepts)
-                field-names (mapv #(string/join "." (rest (string/split % #"\."))) fields)
+                field-names (mapv (fn [field-path]
+                                    (string/join "." (map name (gen-util/jq->list field-path))))
+                                  fields)
                 display-values (mapv str field-values)]
             (info "Duplicate concept IDs found: " duplicate-concept-ids)
             [(format "Values %s for fields %s must be unique for concept type %s. Duplicate concept IDs: %s"
@@ -119,7 +121,6 @@
 (defn- load-schema-validators
   "Loads all schema validators for all generic concept types"
   []
-  (info "Loading schema validation functions for all generic concept types")
   (let [generic-types (concepts/get-generic-concept-types-array)
         validators (reduce (fn [vs concept-type]
                              (let [current-version (generics/current-generic-version concept-type)
