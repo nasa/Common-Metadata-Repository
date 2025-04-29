@@ -46,16 +46,24 @@
                                  (mapv #(let [field-path (gen-util/jq->list % keyword)]
                                           (get-in metadata field-path))
                                        fs)))
-
-            ;; Extract values for the specified fields from the current concept
             field-values (get-field-values concept fields)
-
-            ;; Check if any other document in the collection has the same combination of values
+            ;; Helper to compare values with case-insensitivity for strings
+            case-insensitive-equal? (fn [s1 s2]
+                                      (if (and (string? s1) (string? s2))
+                                        (= (string/lower-case s1) (string/lower-case s2))
+                                        (= s1 s2)))
+            ;; Check if any other document has the same combination of values (case-insensitive)
             duplicate-concepts (filter (fn [existing-concept]
                                          (and (not= (:native-id existing-concept) (:native-id concept))
                                               (not= (:deleted existing-concept) true)
-                                              (= (set (get-field-values existing-concept fields))
-                                                 (set field-values))))
+                                              (let [existing-values (get-field-values existing-concept fields)]
+                                                (and
+                                                 (= (count field-values) (count existing-values))
+                                                 (every? (fn [i]
+                                                           (case-insensitive-equal?
+                                                            (nth field-values i)
+                                                            (nth existing-values i)))
+                                                         (range (count field-values)))))))
                                        existing-concepts)]
         (if (seq duplicate-concepts)
           (let [duplicate-concept-ids (map :concept-id duplicate-concepts)
