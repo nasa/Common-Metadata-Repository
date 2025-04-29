@@ -19,7 +19,7 @@
      (try
       (while (not (.isInterrupted (Thread/currentThread)))
         (job-fn)
-        (Thread/sleep (* util/seconds-in-milliseconds job-interval-secs)))
+        (Thread/sleep (* util/second-as-milliseconds job-interval-secs)))
       (catch InterruptedException _)))))
 
 (defrecord BackgroundJob

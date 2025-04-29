@@ -18,7 +18,7 @@
 
 (def LAUNCHPAD_USER_CACHE_TIME
   "The number of milliseconds launchpad token information will be cached."
-  (* 60 60 util/seconds-in-milliseconds))
+  (* 60 60 util/second-as-milliseconds))
 
 (defn create-launchpad-user-cache
   "Creates a cache for which launchpad token users are stored in memory."

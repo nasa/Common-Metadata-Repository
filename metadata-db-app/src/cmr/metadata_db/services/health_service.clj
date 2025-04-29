@@ -16,5 +16,5 @@
 (defn health
   "Returns the metadata-db health with timeout handling."
   [context]
-  (let [timeout-ms (* util/seconds-in-milliseconds (+ 1 (hh/health-check-timeout-seconds)))]
+  (let [timeout-ms (* util/second-as-milliseconds (+ 1 (hh/health-check-timeout-seconds)))]
     (hh/get-health #(health-fn context) timeout-ms)))

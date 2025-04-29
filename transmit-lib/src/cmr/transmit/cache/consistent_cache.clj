@@ -130,7 +130,7 @@
   "Takes the hash cache and makes it so that it will use it with a timeout."
   [hash-cache timeout]
   (fallback-cache/create-fallback-cache
-   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* util/seconds-in-milliseconds timeout)})
+   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* util/second-as-milliseconds timeout)})
    hash-cache))
 
 (defn expire-hash-cache-timeouts

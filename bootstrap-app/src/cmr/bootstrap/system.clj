@@ -117,7 +117,7 @@
    exist."
   [system]
   (if (pos-int? (bootstrap-config/initialize-kms-on-boot))
-    (let [delay-ms (* util/seconds-in-milliseconds (bootstrap-config/initialize-kms-on-boot))
+    (let [delay-ms (* util/second-as-milliseconds (bootstrap-config/initialize-kms-on-boot))
           context {:system system :client-id transmit-config/cmr-client-id}
           kms-future (future
                        (debug (format "refresh-kms-cache scheduled for %dms." delay-ms))

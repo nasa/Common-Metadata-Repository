@@ -13,7 +13,7 @@
 (def ELASTIC_CONNECTION_TIMOUT
   "The number of milliseconds to wait before timing out a connection attempt to elasticsearch.
   Currently set to 5 minutes."
-  (* 5 60 util/seconds-in-milliseconds))
+  (* 5 60 util/second-as-milliseconds))
 
 (defn- connect-with-config
   "Connects to ES with the given config"
@@ -82,5 +82,5 @@
   "Returns the elasticsearch health with timeout handling."
   [context elastic-key-in-context]
   (let [;; We add 1 second to allow get-elastic-health operation to timeout first
-        timeout-ms (* util/seconds-in-milliseconds (inc (hh/health-check-timeout-seconds)))]
+        timeout-ms (* util/second-as-milliseconds (inc (hh/health-check-timeout-seconds)))]
     (hh/get-health #(health-fn context elastic-key-in-context) timeout-ms)))

@@ -155,7 +155,7 @@
                           {:curr-val (first next-vals)
                            :next-vals (rest next-vals)}))))))
 
-(def seconds-in-milliseconds
+(def second-as-milliseconds
   "A constant to make code more clear when a number is being converted from seconds to milliseconds."
   1000)
 

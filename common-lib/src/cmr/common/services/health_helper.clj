@@ -13,7 +13,7 @@
 (defn get-health
   "Execute the health check function with timeout handling."
   ([function]
-   (get-health function (* util/seconds-in-milliseconds (health-check-timeout-seconds))))
+   (get-health function (* util/second-as-milliseconds (health-check-timeout-seconds))))
   ([function timeout-ms]
    (try
      (c-core/thunk-timeout function timeout-ms)

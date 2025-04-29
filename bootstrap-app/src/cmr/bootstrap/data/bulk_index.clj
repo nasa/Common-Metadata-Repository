@@ -27,9 +27,9 @@
   {1 100
    2 1000
    ;; 10 seconds
-   3 (* 10 util/seconds-in-milliseconds)
+   3 (* 10 util/second-as-milliseconds)
    ;; 5 minutes
-   4 (* 5 60 util/seconds-in-milliseconds)})
+   4 (* 5 60 util/second-as-milliseconds)})
 
 (def ^:private system-concept-types
   "The list of system concept types"

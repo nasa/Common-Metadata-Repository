@@ -29,7 +29,7 @@
   []
   (stl-cache/create-single-thread-lookup-cache
    (mem-cache/create-in-memory-cache :ttl {} {:ttl
-                                              (* util/seconds-in-milliseconds
+                                              (* util/second-as-milliseconds
                                                  (health-cache-time-seconds))})))
 
 (defn- generate-health-response

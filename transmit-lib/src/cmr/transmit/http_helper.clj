@@ -390,7 +390,7 @@
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}
                              {:ok? false :dependencies body#})))
-            timeout-ms# (* util/seconds-in-milliseconds (+ (get ~options :timeout-secs 0)
+            timeout-ms# (* util/second-as-milliseconds (+ (get ~options :timeout-secs 0)
                                    (hh/health-check-timeout-seconds)))]
         (hh/get-health health-fn# timeout-ms#)))))
 

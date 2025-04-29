@@ -42,7 +42,7 @@
 
 (def URS_CACHE_TIME
   "The number of milliseconds CMR client bearer token information will be cached."
-  (* 24 60 60 util/seconds-in-milliseconds))
+  (* 24 60 60 util/second-as-milliseconds))
 
 (defn create-urs-cache
   "Creates a cache for which CMR client bearer tokens are stored in memory."
