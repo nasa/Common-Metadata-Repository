@@ -9,7 +9,8 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [warn]]
    [cmr.common.mime-types :as mt]
-   [compojure.core :refer [GET OPTIONS context]]))
+   [compojure.core :refer [GET OPTIONS context]]
+   [cmr.common.util :as util]))
 
 (def health-cache-key
   "The key used to store the health cache in the system cache map."
@@ -27,7 +28,9 @@
   as metadata-db and redis."
   []
   (stl-cache/create-single-thread-lookup-cache
-   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 (health-cache-time-seconds))})))
+   (mem-cache/create-in-memory-cache :ttl {} {:ttl
+                                              (* util/seconds-in-milliseconds
+                                                 (health-cache-time-seconds))})))
 
 (defn- generate-health-response
   "Generates a health check response from the provided health information."

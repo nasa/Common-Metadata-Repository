@@ -8,7 +8,8 @@
   not running without returning an error. That way the caller does not need to know the current
   state, they only care that after the call the job is either started or stopped."
   (:require
-   [cmr.common.lifecycle :as lifecycle]))
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.util :as util]))
 
 (defn- create-thread-for-background-job
   "Returns a Thread object to use to run the background job."
@@ -18,7 +19,7 @@
      (try
       (while (not (.isInterrupted (Thread/currentThread)))
         (job-fn)
-        (Thread/sleep (* 1000 job-interval-secs)))
+        (Thread/sleep (* util/seconds-in-milliseconds job-interval-secs)))
       (catch InterruptedException _)))))
 
 (defrecord BackgroundJob

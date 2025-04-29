@@ -7,12 +7,13 @@
    [cmr.common.api.web-server :as web-server]
    [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
-   [cmr.common.services.health-helper :as hh]))
+   [cmr.common.services.health-helper :as hh]
+   [cmr.common.util :as util]))
 
 (def ELASTIC_CONNECTION_TIMOUT
-  "The number of milliseconds to wait before timeing out a connection attempt to elasticsearch.
+  "The number of milliseconds to wait before timing out a connection attempt to elasticsearch.
   Currently set to 5 minutes."
-  (* 5 60 1000))
+  (* 5 60 util/seconds-in-milliseconds))
 
 (defn- connect-with-config
   "Connects to ES with the given config"
@@ -81,5 +82,5 @@
   "Returns the elasticsearch health with timeout handling."
   [context elastic-key-in-context]
   (let [;; We add 1 second to allow get-elastic-health operation to timeout first
-        timeout-ms (* 1000 (inc (hh/health-check-timeout-seconds)))]
+        timeout-ms (* util/seconds-in-milliseconds (inc (hh/health-check-timeout-seconds)))]
     (hh/get-health #(health-fn context elastic-key-in-context) timeout-ms)))
