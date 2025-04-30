@@ -161,6 +161,17 @@
         (info "Existing index set:" (pr-str existing-index-set))
         (info "New index set:" (pr-str expected-index-set))))))
 
+(defn delete-granule-index
+  "Delete an elastic index by name"
+  [context collection-concept-id index]
+  (index-set-svc/remove-deleted-granule-index context idx-set/index-set-id collection-concept-id)
+  (info (format "Deleting granule index %s from elastic" index))
+  (try
+    (esi/delete-index (context->conn context) index)
+    (catch Throwable e
+      (error e (str "Failed to delete granule index: "
+                    (pr-str index))))))
+
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
@@ -357,7 +368,7 @@
                                                      :client-id t-config/cmr-client-id}
                                            :throw-exceptions false}))
            status (:status response)]
-       (if-not (some #{200 404} [status])
+       (when-not (some #{200 404} [status])
          (if (= 409 status)
            (if ignore-conflict?
              (info (str "Ignore conflict: " (str response)))
