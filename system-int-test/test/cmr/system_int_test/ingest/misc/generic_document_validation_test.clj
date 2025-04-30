@@ -63,7 +63,7 @@
           (is (= 422 (:status duplicate-response)))
           (is (string/includes?
                (:errors duplicate-response)
-               "Values 10.5067/ABC123XYZ, DOI for fields Identifier, IdentifierType must be unique"))
+               "Values 10.5067/ABC123XYZ, DOI, https://doi.org for fields Identifier, IdentifierType, ResolutionAuthority must be unique"))
           (is (string/includes?
                (:errors duplicate-response)
                (str "Duplicate concept IDs: " (get-in citation1-response [:concept-id]))))))
@@ -155,7 +155,7 @@
                 (is (= 422 (:status cross-provider-response)))
                 (is (string/includes?
                      (:errors cross-provider-response)
-                     "Values 10.5067/ABC123XYZ, DOI for fields Identifier, IdentifierType must be unique"))
+                     "Values 10.5067/ABC123XYZ, DOI, https://doi.org for fields Identifier, IdentifierType, ResolutionAuthority must be unique"))
                 (is (string/includes?
                      (:errors cross-provider-response)
                      (str "Duplicate concept IDs: " (get-in recreate-response [:concept-id]))))))))))))

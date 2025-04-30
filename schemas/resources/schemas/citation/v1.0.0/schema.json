@@ -42,7 +42,7 @@
           "RelationshipType": {
             "type": "string",
             "description": "The nature of the relationship between the resource and other resources",
-            "enum": ["Cites", "Refers", "Describes", "isIdenticalTo"],
+            "enum": ["Cites", "Refers", "Describes", "IsIdenticalTo"],
             "examples": ["Cites"]
           },
           "RelatedIdentifierType": {
