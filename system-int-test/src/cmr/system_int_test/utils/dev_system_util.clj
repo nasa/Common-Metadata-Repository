@@ -14,6 +14,11 @@
   {:connection-manager (s/conn-mgr)
    :query-params {:token "mock-echo-system-token"}})
 
+(defn load-kms-redis-cache
+  "Asks bootstrap to resets the KMS redis cache."
+  []
+  (client/post (url/bootstrap-refresh-kms) (admin-connect-options)))
+
 (defn reset
   "Resets the database, queues, and the elastic indexes"
   []
@@ -21,6 +26,7 @@
   (try
     (client/post (url/dev-system-reset-url) (admin-connect-options))
     (index/refresh-elastic-index)
+    (load-kms-redis-cache) ;; This will cause the redis cache to reload
     (catch Exception e
       (error "Failed to send reset to dev-system\n" e)
       (throw e))))

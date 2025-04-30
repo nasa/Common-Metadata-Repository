@@ -27,13 +27,13 @@
       (if value
         (qm/map->OrbitNumberValueCondition numeric-map)
         (qm/map->OrbitNumberRangeCondition numeric-map)))
-    (catch NumberFormatException e
-      (errors/internal-error! msg/non-numeric-orbit-number-parameter))))
+    (catch NumberFormatException _e
+      (errors/internal-error! (msg/non-numeric-orbit-number-parameter)))))
 
 
 ;; Converts orbit-number parameter into a query condition
 (defmethod p/parameter->condition :orbit-number
-  [_context concept-type param values options]
+  [_context _concept-type _param values _options]
   (if (string? values)
     (orbit-number-param-str->condition values)
     (orbit-number-param-map->condition values)))

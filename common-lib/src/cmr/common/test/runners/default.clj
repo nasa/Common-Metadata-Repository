@@ -76,8 +76,8 @@
         success? (zero? (+ num-failing num-error))]
     (when speak?
       (if success?
-        (du/speak "Samantha" "Success")
-        (du/speak "Daniel" "Test Failure")))
+        (du/speak "Success")
+        (du/speak "Test Failure")))
 
     (println "-------------------------------------------------------------------")
     (println "Slowest Tests:")

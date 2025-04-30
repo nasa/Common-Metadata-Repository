@@ -6,12 +6,12 @@
    [cmr.bootstrap.system :as system]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg]
-   [cmr.common.log :refer (debug info warn error)])
+   [cmr.common.log :refer (info)])
   (:gen-class))
 
 (defn -main
   "Starts the App."
-  [& args]
-  (let [system (system/start (system/create-system))]
+  [& _args]
+  (let [_system (system/start (system/create-system))]
     (info "Running bootstrap...")
     (cfg/check-env-vars)))

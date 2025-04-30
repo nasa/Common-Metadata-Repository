@@ -2,7 +2,7 @@
   "Contains functions for converting collection concept metadata into other formats."
   (:require
    [cheshire.core :as json]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as c-util]
@@ -87,13 +87,13 @@
     :current-format
     {(mt/mime-type->format (:format concept))
      (cx/remove-xml-processing-instructions (:metadata concept))}
-    
+
     :migrate-umm-json
     (transform-with-strategy-migrate-umm-json context concept strategy target-formats)
 
     :umm-spec
     (transform-with-strategy-umm-spec context concept strategy target-formats)
-    
+
     (errors/internal-error!
      (format "Unexpected transform strategy [%s] from concept of type [%s] to [%s]"
              strategy (:format concept) (pr-str target-formats)))))

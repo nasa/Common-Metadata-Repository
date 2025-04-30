@@ -155,6 +155,10 @@
                           {:curr-val (first next-vals)
                            :next-vals (rest next-vals)}))))))
 
+(def second-as-milliseconds
+  "A constant to make code more clear when a number is being converted from seconds to milliseconds."
+  1000)
+
 (defmacro time-execution
   "Times the execution of the body and returns a tuple of time it took and the
   results."

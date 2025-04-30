@@ -8,12 +8,13 @@
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.indexer.data.index-set :as indexer-index-set]
    [cmr.indexer.system :as indexer-system]
-   [cmr.transmit.indexer :as indexer]))
+   [cmr.transmit.indexer :as indexer]
+   [cmr.common.util :as util]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -177,7 +178,7 @@
   ;; Wait 3 seconds beyond the time that the indexer set cache consistency setting.
   (let [sleep-secs (+ 3 (indexer-system/index-set-cache-consistent-timeout-seconds))]
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
-    (Thread/sleep (* 1000 sleep-secs))))
+    (Thread/sleep (* util/second-as-milliseconds sleep-secs))))
 
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions

@@ -2,8 +2,7 @@
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]))
+    [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
 (def create-context
   "Creates a testing concept with the KMS caches."
@@ -12,11 +11,15 @@
                      kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                      kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
 
-(deftest load-cache-if-necessary-test
-  (testing "key-exists return exception"
-    (let [cache-key :test-hash-cache
-          rhcache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})]
-      (is (thrown? Exception (kms-lookup/load-cache-if-necessary nil rhcache cache-key))))))
+(def create-context-broken
+  "Creates a testing concept with the KMS caches."
+  (-> {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                         kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
+                         kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
+                         kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}
+      (update-in
+       [:system :caches :kms-measurement-index :read-connection :spec :host]
+       (constantly "example.gov"))))
 
 (deftest lookup-by-short-name-test
   (testing "cache connection error"
@@ -40,4 +43,9 @@
 
 (deftest lookup-by-measurement-test
   (testing "cache connection error"
-    (is (nil? (kms-lookup/lookup-by-measurement create-context "value")))))
+    (let [actual (kms-lookup/lookup-by-measurement
+                  create-context-broken
+                  {:MeasurementContextMedium "The Force"
+                   :MeasurementObject "Midichlorians"
+                   :MeasurementQuantities [{:Value "Cell Count"}]})]
+      (is (nil? actual)))))

@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.lifecycle :as lifecycle]
-   [taoensso.timbre :as tiber]
+   [taoensso.timbre :as timbre]
    [taoensso.timbre.appenders.core :as a-core]))
 
 (def ^:dynamic *request-id*
@@ -31,7 +31,7 @@
           (if-let [err (force ?err_)]
             ;; Setting :stacktrace-fonts here to an empty map prevents color
             ;; codes in exception stacktraces.
-            (str "\n" (tiber/stacktrace err {:stacktrace-fonts {}}))
+            (str "\n" (timbre/stacktrace err {:stacktrace-fonts {}}))
             "")))
 
 ;; Checkout the config before and after
@@ -39,17 +39,17 @@
   "Configures logging using Timbre."
   [{:keys [level file stdout-enabled?]}]
 
-  (tiber/set-level! (or level :warn))
-  (tiber/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
+  (timbre/set-level! (or level :warn))
+  (timbre/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
 
   ;; Enable file logging
   (when file
     ;; Make sure the log directory exists
     (.. (io/file file) getParentFile mkdirs)
-    (tiber/merge-config! {:appenders {:spit (a-core/spit-appender {:fname file})}}))
+    (timbre/merge-config! {:appenders {:spit (a-core/spit-appender {:fname file})}}))
 
   ;; Set the format for logging.
-  (tiber/merge-config!
+  (timbre/merge-config!
     {:output-fn log-formatter
      :appenders {:println {:enabled? stdout-enabled?}}}))
 
@@ -67,34 +67,34 @@
 (defmacro trace
   "Logs a message at the trace level."
   [& body]
-  `(tiber/trace ~@body))
+  `(timbre/trace ~@body))
 
 (defmacro debug
   "Logs a message at the debug level."
   [& body]
-  `(tiber/debug ~@body))
+  `(timbre/debug ~@body))
 
 (defmacro info
   "Logs a message at the info level."
   [& body]
-  `(tiber/info ~@body))
+  `(timbre/info ~@body))
 
 (defmacro warn
   "Logs a message at the warn level."
   [& body]
-  `(tiber/warn ~@body))
+  `(timbre/warn ~@body))
 
 (defmacro error
   "Logs a message at the error level."
   [& body]
-  `(tiber/error ~@body))
+  `(timbre/error ~@body))
 
 (defmacro report
   "Log a report level message. Report level logs differ from Error in that they
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  `(tiber/report ~@body))
+  `(timbre/report ~@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Log macros like the above but using a format like all the cool kids do
@@ -102,34 +102,34 @@
 (defmacro tracef
   "Logs a message at the trace level."
   [& body]
-  `(tiber/tracef ~@body))
+  `(timbre/tracef ~@body))
 
 (defmacro debugf
   "Logs a message at the debug level using a format."
   [& body]
-  `(tiber/debugf ~@body))
+  `(timbre/debugf ~@body))
 
 (defmacro infof
   "Logs a message at the info level."
   [& body]
-  `(tiber/infof ~@body))
+  `(timbre/infof ~@body))
 
 (defmacro warnf
   "Logs a message at the warn level."
   [& body]
-  `(tiber/warnf ~@body))
+  `(timbre/warnf ~@body))
 
 (defmacro errorf
   "Logs a message at the error level."
   [& body]
-  `(tiber/errorf ~@body))
+  `(timbre/errorf ~@body))
 
 (defmacro reportf
   "Log a report level message. Report level logs differ from Error in that they
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  `(tiber/reportf ~@body))
+  `(timbre/reportf ~@body))
 
 (defrecord Logger
   [level ; The level to log out
@@ -174,6 +174,7 @@
    this api to get the current version. We could query the level here, but it can change if using
    taoensso.timbre/with-log-level"
   []
-  (if-some [_ tiber/*config*]
-    (:min-level tiber/*config*)
+  #_:clj-kondo/ignore
+  (if-some [_ timbre/*config*]
+    (:min-level timbre/*config*)
     :warn))
