@@ -22,7 +22,7 @@
   combines them into one field"
   [settings data]
   (let [field-list (get settings :Field ".")
-        field-data (get-in data (gen-util/jq->list field-list keyword) {})
+        field-data (get-in data (generics/jq->list field-list keyword) {})
         config (get settings :Configuration {})
         sub-fields (get config :sub-fields {})
         layout (get config :format "%s=%s")
@@ -45,7 +45,7 @@
   the literal case, another is all lower case."
   [settings data]
   (let [field-list (get settings :Field ".")
-        field-data (get-in data (gen-util/jq->list field-list keyword) {})
+        field-data (get-in data (generics/jq->list field-list keyword) {})
         field-name (util/safe-lowercase (:Name settings))
         field-name-lower (str field-name "-lowercase")
         config (get settings :Configuration {})
@@ -64,7 +64,7 @@
   [settings data]
   (let [field-name (util/safe-lowercase (:Name settings))
         field-name-lower (str field-name "-lowercase")
-        value (get-in data (gen-util/jq->list (:Field settings) keyword))
+        value (get-in data (generics/jq->list (:Field settings) keyword))
         value-lower (util/safe-lowercase value)]
     {(keyword field-name) value
      (keyword field-name-lower) value-lower}))

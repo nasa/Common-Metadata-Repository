@@ -9,7 +9,6 @@
    [cmr.common.generics :as generics]
    [cmr.common.log :refer (info error)]
    [cmr.common.services.errors :as errors]
-   [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.transmit.metadata-db :as mdb]))
 
 (def schema-validation-cache-key
@@ -43,7 +42,7 @@
       (let [;; Helper function to extract field values from a concept
             get-field-values (fn [c fs]
                                (let [metadata (json/parse-string (:metadata c) true)]
-                                 (mapv #(let [field-path (gen-util/jq->list % keyword)]
+                                 (mapv #(let [field-path (generics/jq->list % keyword)]
                                           (get-in metadata field-path))
                                        fs)))
             field-values (get-field-values concept fields)
@@ -68,7 +67,7 @@
         (if (seq duplicate-concepts)
           (let [duplicate-concept-ids (map :concept-id duplicate-concepts)
                 field-names (mapv (fn [field-path]
-                                    (string/join "." (map name (gen-util/jq->list field-path))))
+                                    (string/join "." (map name (generics/jq->list field-path))))
                                   fields)
                 display-values (mapv str field-values)]
             (info "Duplicate concept IDs found: " duplicate-concept-ids)
