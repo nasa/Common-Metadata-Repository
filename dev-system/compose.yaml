@@ -128,7 +128,7 @@ services:
         condition: service_started
       sqs:
         condition: service_started
-    attach: false
+    attach: true
     stdin_open: true
     tty: true
     ports:
