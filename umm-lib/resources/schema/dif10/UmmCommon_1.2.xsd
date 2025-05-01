@@ -585,6 +585,7 @@ technical contact
             <xs:enumeration value="Other"/>
             <xs:enumeration value="IsPreviousVersionOf"/>
             <xs:enumeration value="IsNewVersionOf"/>
+            <xs:enumeration value="IsDescribedBy"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="AssociatedDOITypeOtherEnum">

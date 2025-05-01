@@ -4027,3 +4027,67 @@
         "Stepping down metadata specification and geo+json"
         sample-1-18-3-record-migrate-down
         sample-1-18-3-record))
+
+(deftest migrate-1-18-3-to-1-18-4
+  ;; Test migration up from 1.18.3 to 1.18.4
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.18.3" "1.18.4" sample-collection)]
+          (is (= expected result)))
+
+        "Stepping up metadata specification"
+        ;; expected
+        {:RelatedUrls [{:Description "Contact group related url description"
+                        :URLContentType "DistributionURL"
+                        :Type "GET DATA"
+                        :Subtype "ECHO"
+                        :URL "www.contact.group.foo.com"
+                        :GetService {:MimeType "application/html"
+                                     :FullName "Not provided"
+                                     :DataID "Not provided"
+                                     :Protocol "Not provided"}}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.4"}}
+        ;; sample-collection
+        {:RelatedUrls [{:Description "Contact group related url description"
+                        :URLContentType "DistributionURL"
+                        :Type "GET DATA"
+                        :Subtype "ECHO"
+                        :URL "www.contact.group.foo.com"
+                        :GetService {:MimeType "application/html"
+                                     :FullName "Not provided"
+                                     :DataID "Not provided"
+                                     :Protocol "Not provided"}}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.3",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.3"}}))
+
+(deftest migrate-1-18-4-to-1-18-3
+  ;; Test migration down from 1.18.4 to 1.18.3
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.18.4" "1.18.3" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating AssociateDOI enum IsPreviousVersionOf and IsNewVersionOf back to Related Dataset"
+        ;; expected
+        {:AssociatedDOIs        [{:Type "Related Dataset"}
+                                 {:Type "Field Campaign"}]
+         :DOI                   {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents       [{:EndsAtPresentFlag false
+                                  :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.3",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.3"}}
+        ;; sample-collection
+        {:AssociatedDOIs        [{:Type "IsDescribedBy"}
+                                 {:Type "Field Campaign"}]
+         :DOI                   {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents       [{:EndsAtPresentFlag false
+                                  :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.4"}}
+
+))

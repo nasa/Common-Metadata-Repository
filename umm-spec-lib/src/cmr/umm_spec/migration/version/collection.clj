@@ -756,7 +756,7 @@
                         (update :CollectionProgress (constantly "NOT PROVIDED")))
                     coll))))
 
-(defn- migrate-associated-doi-type-down
+(defn- migrate-associated-doi-type-down-to-1-18-1
        [associatedDOI]
        (if (or (= "IsPreviousVersionOf" (:Type associatedDOI))
                (= "IsNewVersionOf" (:Type associatedDOI)))
@@ -786,7 +786,7 @@
                ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
                (as-> coll (if (contains? coll :AssociatedDOIs)
                             (-> coll
-                                (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down))
+                                (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-1))
                             coll))
                ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW. And COMPLETE if enum value is SUPERSEDED
                (as-> coll (if (contains? coll :CollectionProgress)
@@ -815,3 +815,29 @@
   (-> collection
       (m-spec/update-version :collection "1.18.2")
       (util/update-in-all [:RelatedUrls :GetService] #(down-grade-geo-json-mime-type %))))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.3" "1.18.4"]
+  [_context collection & _]
+  ;; Migrating up version 1.18.3 to 1.18.4
+  (-> collection
+      (m-spec/update-version :collection "1.18.4")))
+
+(defn- migrate-associated-doi-type-down-to-1-18-3
+  [associatedDOI]
+  (if (= "IsDescribedBy" (:Type associatedDOI))
+    (-> associatedDOI
+        (update :Type (constantly "Related Dataset"))
+        (remove-nil-keys))
+    associatedDOI))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.4" "1.18.3"]
+  [_context collection & _]
+  ;; Migrating down version 1.18.4 to 1.18.3
+  ;; Remove AssociatedDOIs/Type enums: IsDescribedBy
+  (-> collection
+     (m-spec/update-version :collection "1.18.3")
+     ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
+     (as-> coll (if (contains? coll :AssociatedDOIs)
+                  (-> coll
+                      (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-3))
+                  coll))))
