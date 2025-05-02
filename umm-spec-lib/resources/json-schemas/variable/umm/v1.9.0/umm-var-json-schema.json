@@ -378,7 +378,7 @@
           "description": "The name of the dimension of the variable represented in the data field. For example, 'XDim.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 256
+          "maxLength": 80
         },
         "Size": {
           "oneOf": [{
