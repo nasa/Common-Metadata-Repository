@@ -279,6 +279,7 @@
           parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)
           feature-list (ArrayList.)]
       (try
+        #_{:clj-kondo/ignore [:unresolved-symbol]}
         (util/while-let [feature (.parse parser)]
           (when (> (feature-point-count feature) 0)
             (.add feature-list feature)))

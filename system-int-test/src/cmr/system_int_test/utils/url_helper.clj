@@ -609,6 +609,11 @@
   []
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/bootstrap-port)))
 
+(defn bootstrap-refresh-kms
+  "Reload the KMS redis cache"
+  []
+  (format "http://localhost:%s/caches/refresh/kms" (transmit-config/bootstrap-port)))
+
 (defn bootstrap-index-recently-replicated-url
   "URL to call the index recently replicated endpoint."
   []

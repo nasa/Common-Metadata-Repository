@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
+   [cmr.common.cache :as cache]
    [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
@@ -10,6 +11,7 @@
    [cmr.common.util :as util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
+   [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.services.messages :as m])
   (:import
    (clojure.lang ExceptionInfo)))
@@ -55,6 +57,12 @@
         {:index-name (gen-valid-index-name prefix-id idx-name)
          :settings settings
          :mapping mapping}))))
+
+(defn- reset-index-set-mappings-cache
+  "Resets the index set mappings cache. It is important that the latest mappings are used whenever
+  we try to update the indexes in Elasticsearch."
+  [context]
+  (cache/reset (get-in context [:system :caches idx-set/index-set-cache-key])))
 
 (defn get-index-names
   "Given a index set build list of index names."
@@ -359,6 +367,15 @@
       index-set
       [:index-set :granule :rebalancing-status]
       assoc (keyword concept-id) status))))
+
+(defn remove-deleted-granule-index
+  "Remove the deleted collection granule index from the index set."
+  [context index-set-id concept-id]
+  (let [index-set (get-index-set context index-set-id)
+        updated-index-set (remove-granule-index-from-index-set index-set concept-id)]
+    ;; Update the index-set and index-set cache
+    (update-index-set context updated-index-set)
+    (reset-index-set-mappings-cache context)))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-

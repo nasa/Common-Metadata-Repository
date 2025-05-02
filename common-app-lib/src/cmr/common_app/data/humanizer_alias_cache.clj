@@ -15,7 +15,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (debug info)]
+   [cmr.common.log :as log :refer (error debug info)]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
@@ -102,14 +102,19 @@
 	Returns: { 'TERRA' --> ['AM-1', 'am-1', 'AM 1']
 						 'OTHERPLATFORMS' --> ['otheraliases']}"
   [context humanizer-field-name]
-  (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
+  (try
+    (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
         [tm found-aliases-map] (util/time-execution
                                 (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name))]
     (rl-util/log-redis-read-complete "get-non-humanized-source-to-aliases-map" humanizer-alias-cache-key tm)
     (when (or (nil? found-aliases-map) (empty? found-aliases-map))
       ;; This can be a high volume log, over a million per day
       (debug (format "cache-miss: %s could not find map with humanizer-field-name [%s]" humanizer-alias-cache-key humanizer-field-name)))
-    found-aliases-map))
+    found-aliases-map)
+    (catch Exception e
+      (if (string/includes? (ex-message e) "Carmine connection error")
+        (error "get-non-humanized-source-to-aliases-map found redis carmine exception. Will return nil result." e)
+        (throw e)))))
 
 (defconfig humanizer-alias-cache-job-refresh-rate
   "Number of seconds between refreshes of the humanizer alias cache."

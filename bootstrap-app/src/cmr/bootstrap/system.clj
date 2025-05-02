@@ -24,9 +24,10 @@
    [cmr.common.cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.log :as log :refer (info)]
+   [cmr.common.log :as log :refer (errorf info debug)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.common.util :as util]
    [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.concepts.granule :as g]
@@ -55,6 +56,83 @@
 (def system-holder
   "Required for jobs"
   (atom nil))
+
+(def application-caches
+  "These are all the caches contain in this system collected here to clean up the construction of
+   sys latter in this file."
+  {acl/token-imp-cache-key (acl/create-token-imp-cache)
+   kf/kms-cache-key (kf/create-kms-cache)
+   kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+   kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+   kl/kms-location-cache-key (kl/create-kms-location-cache)
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+   provider-cache/cache-key (provider-cache/create-cache)
+   common-health/health-cache-key (common-health/create-health-cache)
+   cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
+   coll-gran-acls-caches/coll-by-concept-id-cache-key
+   (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
+
+   elastic-search-index-names-cache/index-names-cache-key
+   (elastic-search-index-names-cache/create-index-cache)
+
+   humanizer-alias-cache/humanizer-alias-cache-key
+   (humanizer-alias-cache/create-cache-client)
+
+   humanizer-report-service/humanizer-report-cache-key
+   (humanizer-report-service/create-humanizer-report-cache-client)
+
+   has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key
+   (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)})
+
+(def jobs-to-schedule
+  "Create all the schedules to be added to the sys latter."
+  (jobs/create-scheduler
+   `system-holder
+   [jvm-info/log-jvm-statistics-job
+    (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
+
+    (b-coll-metadata-cache/refresh-collections-metadata-cache-job
+     "bootstrap-collections-metadata-cache-refresh")
+
+    (b-coll-metadata-cache/update-collections-metadata-cache-job
+     "bootstrap-collections-metadata-cache-update")
+
+    (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job
+     "bootstrap-collections-for-gran-acls-cache-refresh")
+
+    (elastic-search-index-names-cache/refresh-index-names-cache-job
+     "bootstrap-elastic-search-index-names-cache")
+
+    (humanizer-alias-cache/refresh-humanizer-alias-cache-job
+     "bootstrap-humanizer-alias-cache-refresh")
+
+    (humanizer-report-service/refresh-humanizer-report-cache-job
+     "bootstrap-humanizer-report-cache-refresh")
+
+    (has-gran-or-cwic-results-feature/refresh-has-granules-or-cwic-map-job
+     "bootstrap-has-granules-or-cwic-map-cache-refresh")]))
+
+(defn- attach-startup-tasks
+  "Attach processes that need to run after the web service starts up if it has been configured to
+   exist."
+  [system]
+  (if (pos-int? (bootstrap-config/initialize-kms-on-boot))
+    (let [delay-ms (* util/second-as-milliseconds (bootstrap-config/initialize-kms-on-boot))
+          context {:system system :client-id transmit-config/cmr-client-id}
+          kms-future (future
+                       (debug (format "refresh-kms-cache scheduled for %dms." delay-ms))
+                       (try
+                         (Thread/sleep delay-ms)
+                         (cmr.common-app.services.kms-fetcher/refresh-kms-cache context)
+                         (debug "refresh-kms-cache thread has completed.")
+                         (catch InterruptedException ex
+                           (errorf "refresh-kms-cache sleep interrupted %s" ex))
+                         (catch Exception ex
+                           (errorf "refresh-kms-cache error: %s"
+                                   (.getLocalizedMessage ex)))))]
+      ;; Store the future in the system to ensure that it does not go out of scope before it is run.
+      (assoc system :kms-thread kms-future))
+    system))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -85,31 +163,15 @@
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
-             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
-                      kf/kms-cache-key (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
-                      kl/kms-location-cache-key (kl/create-kms-location-cache)
-                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
-                      provider-cache/cache-key (provider-cache/create-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)
-                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
-                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
-                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
-                      humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
-                      humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)
-                      has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)}
-             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
-                                                               (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
-                                                               (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
-                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
-                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
-                                                               (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
-                                                               (humanizer-alias-cache/refresh-humanizer-alias-cache-job "bootstrap-humanizer-alias-cache-refresh")
-                                                               (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")
-                                                               (has-gran-or-cwic-results-feature/refresh-has-granules-or-cwic-map-job "bootstrap-has-granules-or-cwic-map-cache-refresh")])
+             :caches application-caches
+             :scheduler jobs-to-schedule
              :queue-broker queue-broker}]
-    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
+
+    ;; Attach other things to the system and return it.
+    (-> sys
+        (transmit-config/system-with-connections
+         [:metadata-db :echo-rest :kms :indexer :access-control :search])
+        (attach-startup-tasks))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

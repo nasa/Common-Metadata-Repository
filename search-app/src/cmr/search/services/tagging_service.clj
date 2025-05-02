@@ -174,7 +174,7 @@
 (defn- tag-association->concept-map
   "Returns the concept map for inserting into metadata-db for the given tag association."
   [tag-association]
-  (let [{:keys [tag-key originator-id native-id user-id data errors]
+  (let [{:keys [tag-key originator-id native-id user-id data _errors]
          coll-concept-id :concept-id
          coll-revision-id :revision-id} tag-association]
     {:concept-type :tag-association

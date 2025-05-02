@@ -8,6 +8,10 @@
    [cmr.common.config :as cfg]
    [cmr.common.log :as log :refer [info]]))
 
+(def generic-not-found-value
+  "Value to return when no generic information is found in the file."
+  "")
+
 (defn latest-approved-documentation
   "Return a map of all the configured approved generics and their versions
    This list is to control the documentation portion of these
@@ -35,7 +39,7 @@
         (io/resource)
         (slurp))
     (catch Exception _e (info (format "generic %s was skipped" generic-keyword))
-           (str ""))))
+           generic-not-found-value)))
 
 (defn all-generic-docs
   "Parse over all of the generic documents and return their combined markdown as a string
@@ -90,12 +94,12 @@
    Returns: string"
   [file-name generic-keyword generic-version options]
   (let [generic-markdown (read-generic-doc-file file-name generic-keyword generic-version)]
-   (if (not= generic-markdown "")
-     (-> generic-markdown
-             get-toc-headers-from-markdown
-             (as-> xs (map #(get-toc-data % (name file-name) (get options :spacer (fn [x] x))) xs))
-             (string/join))
-     (str ""))))
+    (if (not= generic-markdown "")
+      (-> generic-markdown
+          get-toc-headers-from-markdown
+          (as-> xs (map #(get-toc-data % (name file-name) (get options :spacer (fn [x] x))) xs))
+          (string/join))
+      generic-not-found-value)))
 
 (defn all-generic-docs-toc
   "Parse over all of the generic documents and return their combined markdown as a string

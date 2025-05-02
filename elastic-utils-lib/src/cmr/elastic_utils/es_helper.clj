@@ -81,6 +81,12 @@
                                                 :ignore_unavailable))
                :body {:query query}})))
 
+(defn delete-index
+  "Deletes an index from the elastic store"
+  [conn index]
+  (rest/delete conn
+               (rest/url-with-path conn index)))
+
 (defn ^:private bulk-with-url
   "Construct the bulk URL and form body to specification provided by:
   https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html

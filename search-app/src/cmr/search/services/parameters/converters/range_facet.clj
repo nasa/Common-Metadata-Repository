@@ -68,7 +68,7 @@
         min-value (convert (Float/parseFloat (get range-part1 0)) unit-part1)
         max-value (if range-part2
                     (convert (Float/parseFloat (get range-part2 0)) (get range-part2 1))
-                    (Float/MAX_VALUE))]
+                    Float/MAX_VALUE)]
     [min-value max-value]))
 
 (defn validate-range-facet-str

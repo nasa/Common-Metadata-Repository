@@ -6,23 +6,33 @@
 
   For each of the supported keyword schemes we expect the short name to uniquely identify a row
   in the KMS. However we have found that the actual KMS does contain duplicates. Until the GCMD
-  enforces uniqueness we will track any duplicate short names so that we can make GCMD aware and
+  enforces uniqueness we will track any duplicate short names so thaqt we can make GCMD aware and
   they fix the entries.
 
   We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
   can be found in dev-system/resources/kms_examples."
+
+  ;; NOTE: while investigating the 'lazy load' KMS cache code :spatial-keywords-old was discovered
+  ;; to still exist. This effort was to support transition code for where location keywords were
+  ;; transitioned from a flat structure to a hierarchical structure. This change required a
+  ;; transition period in other products where CMR needed to support different location keywords in
+  ;; different environments. This period has passed and we are firmly on the new keywords with no
+  ;; plan to roll back. This is the reason you will not find a spatial-keywords-old cache in Redis.
+  ;; All code here around :spatial-keyword-old needs to be removed.
+  ;; See https://bugs.earthdata.nasa.gov/browse/CMR-10488
+
   (:require
-    [camel-snake-kebab.core :as csk]
-    [cheshire.core :as json]
-    [clj-http.client :as client]
-    [clojure.data.csv :as csv]
-    [clojure.java.io :as io]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [cmr.common.log :as log :refer (info warn error)]
-    [cmr.common.util :as util]
-    [cmr.transmit.config :as config]
-    [cmr.transmit.connection :as conn]))
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.data.csv :as csv]
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.log :as log :refer (info warn error)]
+   [cmr.common.util :as util]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (def keyword-scheme->leaf-field-name
   "Maps each keyword scheme to the subfield which identifies the keyword as a leaf node."
@@ -181,7 +191,12 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
-(defn- get-spatial-scheme-to-use
+(defn-
+  ^{:deprecated true
+    :doc "The need to support :spatial-keywords-old has passed as location keywords have been
+          transitioned in the KMS side. As such these function will be removed in
+          https://bugs.earthdata.nasa.gov/browse/CMR-10488."}
+  get-spatial-scheme-to-use
   "Figures out if the KMS is returning the subregion-3 or subregion-4 data for spatial-keywords."
   [subfield-names]
   (if (= (:spatial-keywords keyword-scheme->expected-field-names) subfield-names)
@@ -256,11 +271,12 @@
   ;; process is driven by the config value `kms_scheme_overrides`
   ;; which contains a string of JSON such as:
   ;;     "{\"platforms\":\"static\"}"
+  {:pre (config/context->app-connection context :kms)}
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
     (if (= "static" (string/lower-case gcmd-resource-name))
       ;; load the static file from the resource directory under indexer
-      (let [gcmd-resource-path (str (format "static_kms_keywords/%s.csv" (name keyword-scheme)))
+      (let [gcmd-resource-path (format "static_kms_keywords/%s.csv" (name keyword-scheme))
             data (slurp (io/resource gcmd-resource-path))
             data-as-rows (string/split-lines (or data ""))
             version-info (first (string/split (first data-as-rows) #","))

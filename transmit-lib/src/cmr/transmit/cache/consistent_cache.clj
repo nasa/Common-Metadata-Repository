@@ -49,7 +49,8 @@
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
    [cmr.redis-utils.config :as redis-config]
-   [cmr.redis-utils.redis-cache :as redis-cache])
+   [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.common.util :as util])
   (:import
    (cmr.common.cache.in_memory_cache InMemoryCache)))
 
@@ -129,7 +130,7 @@
   "Takes the hash cache and makes it so that it will use it with a timeout."
   [hash-cache timeout]
   (fallback-cache/create-fallback-cache
-   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 timeout)})
+   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* util/second-as-milliseconds timeout)})
    hash-cache))
 
 (defn expire-hash-cache-timeouts

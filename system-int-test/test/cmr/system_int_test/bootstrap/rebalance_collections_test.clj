@@ -2,7 +2,7 @@
   "Tests rebalancing granule indexes by moving collections's granules from the small collections
    index to separate collection indexes"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.system-int-test.data2.collection :as dc]
@@ -498,13 +498,10 @@
      ;; Rebalance to small-collections
      (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 0 :separate-index 0 :rebalancing-status "COMPLETE"} deleted-coll)
+     (assert-rebalance-status {:small-collections 0 :rebalancing-status "NOT_REBALANCING"} deleted-coll)
      (bootstrap/finalize-rebalance-collection (:concept-id deleted-coll))
 
-     ;; Remove index and search for granules
+     ;; Index is already removed, search for granules
      (index/wait-until-indexed)
-     (index/delete-elasticsearch-index deleted-coll)
-     (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 0 :rebalancing-status "NOT_REBALANCING"} deleted-coll)
      (is (= 0 (count (:refs (search/find-refs :granule {:concept-id (:concept-id deleted-coll)})))))))
   (side/eval-form `(tk/clear-current-time!)))

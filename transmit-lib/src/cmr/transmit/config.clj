@@ -299,8 +299,9 @@
       (get context (app-connection-system-key-name app-name))))
 
 (defn system-with-connections
-  "Adds connection keys to the system for the given applications. They will be added in a way
-  that can be retrieved with the context->app-connection function."
+  "Adds connection keys, with information like port numbers and URL to external resources, to the
+   system map for the applications listed. They will be added in a way that can be retrieved with
+   the context->app-connection function. All system.clj files will call this."
   [system app-names]
   (let [conn-info-map (app-conn-info)]
     (reduce (fn [sys app-name]

@@ -9,7 +9,8 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as common-util]
-   [cmr.transmit.urs :as urs]))
+   [cmr.transmit.urs :as urs]
+   [cmr.common.util :as util]))
 
 (def launchpad-user-cache-key
   "The cache key for a launchpad token cache."
@@ -17,7 +18,7 @@
 
 (def LAUNCHPAD_USER_CACHE_TIME
   "The number of milliseconds launchpad token information will be cached."
-  (* 60 60 1000))
+  (* 60 60 util/second-as-milliseconds))
 
 (defn create-launchpad-user-cache
   "Creates a cache for which launchpad token users are stored in memory."
