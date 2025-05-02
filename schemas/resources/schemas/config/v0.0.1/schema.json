@@ -1,5 +1,5 @@
 {
-   "$id": "https://earthdata.nasa.gov/schema/generics/index",
+   "$id": "https://earthdata.nasa.gov/schema/generics/config",
    "$schema": "http://json-schema.org/draft-07/schema#",
    "title": "Generic-Config",
    "description": "This scheme defines how index configurations are to be defined. These index definitions support both Elastic and Graph-DB",
