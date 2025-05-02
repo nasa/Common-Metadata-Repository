@@ -11,12 +11,14 @@
    (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
-  "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch:7.17.14")
+  "Official docker image documented at
+   https://www.docker.elastic.co/r/elasticsearch/elasticsearch:7.17.25"
+  "docker.elastic.co/elasticsearch/elasticsearch:7.17.25")
 
 (def ^:private kibana-official-docker-image
-  "Official kibana docker image."
-  "docker.elastic.co/kibana/kibana:7.17.14")
+  "Official kibana docker image documented at
+   https://www.docker.elastic.co/r/kibana/kibana:7.17.25"
+  "docker.elastic.co/kibana/kibana:7.17.25")
 
 (defn- build-kibana
   "Build kibana in an embedded docker."
