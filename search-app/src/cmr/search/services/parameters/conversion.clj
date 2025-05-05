@@ -217,7 +217,15 @@
    :resolution-authority :string
    :identifier :string
    :identifier-type :string
-   :relationship-type :string})
+   :relationship-type :string
+   :related-identifier :string
+   :title :string
+   :year :int
+   :type :string
+   :author-name :string
+   :author-orcid :string
+   :container :string
+   :keyword :string})
 
 (defmethod common-params/param-mappings :visualization
   [_]

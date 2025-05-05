@@ -176,10 +176,13 @@
             (let [gen-name (name gen-keyword)
                   gen-ver (last (gen-keyword (cfg/approved-pipeline-documents)))
                   index-definition-str (read-schema-definition gen-keyword gen-ver)
-                  index-definition (when-not (validate-index-against-schema-safe
-                                              index-definition-str
-                                              gen-name)
-                                    (json-parse-string-safe index-definition-str true))
+                  validation-result (validate-index-against-schema-safe index-definition-str gen-name)
+                  index-definition (if validation-result
+                                     (error (format "Validation failed for %s version %s: %s"
+                                                    gen-name
+                                                    gen-ver
+                                                    (pr-str validation-result)))
+                                     (json-parse-string-safe index-definition-str true))
                   index-list (gen-util/only-elastic-preferences (:Indexes index-definition))
                   generic-settings (get-settings index-definition)]
               (if index-definition
