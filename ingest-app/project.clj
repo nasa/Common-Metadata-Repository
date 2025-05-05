@@ -38,7 +38,8 @@
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]]
   :repl-options {:init-ns user}
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]

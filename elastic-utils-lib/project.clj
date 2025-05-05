@@ -18,7 +18,8 @@
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :resource-paths ["resources"]
   :global-vars {*warn-on-reflection* true}

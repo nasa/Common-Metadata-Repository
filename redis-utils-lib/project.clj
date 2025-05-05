@@ -18,7 +18,8 @@
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :global-vars {*warn-on-reflection* true}
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]

@@ -14,7 +14,8 @@
                  [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :repl-options {:init-ns user}
   :test-paths ["test" "int-test"]

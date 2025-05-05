@@ -6,7 +6,8 @@
                  [org.clojure/clojure "1.11.2"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]

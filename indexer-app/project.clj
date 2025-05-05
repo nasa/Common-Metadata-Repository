@@ -18,7 +18,8 @@
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]

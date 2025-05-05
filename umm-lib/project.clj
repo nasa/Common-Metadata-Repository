@@ -11,7 +11,8 @@
   :plugins [[lein-shell "0.5.0"]]
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]

@@ -8,7 +8,8 @@
                  [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]

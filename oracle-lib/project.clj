@@ -10,7 +10,8 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [sqlingvo "0.7.15"]]
   :plugins [[lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-server"
+  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
+                       "-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
