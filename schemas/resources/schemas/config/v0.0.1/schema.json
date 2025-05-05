@@ -1,7 +1,7 @@
 {
-   "$id": "https://earthdata.nasa.gov/schema/generics/index",
+   "$id": "https://earthdata.nasa.gov/schema/generics/config",
    "$schema": "http://json-schema.org/draft-07/schema#",
-   "title": "Generic-Index",
+   "title": "Generic-Config",
    "description": "This scheme defines how index configurations are to be defined. These index definitions support both Elastic and Graph-DB",
    "type": "object",
    "additionalProperties": false,
@@ -24,6 +24,38 @@
             "uniqueItems": true,
             "minItems": 1,
             "items": {"$ref": "#/definitions/IndexType"}
+        },
+        "Validations": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "Fields": {
+                        "description": "The field to validate, defined as a jq style path",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "examples": [".RootElement.SubElement"],
+                            "minLength": 1
+                        },
+                        "minItems": 1
+                    },
+                    "ValidationType": {
+                        "description": "The type of validation to perform on the field",
+                        "type": "string",
+                        "enum": ["unique" ,"regex", "length", "value"],
+                        "default": "regex"
+                    },
+                    "ValidationValue": {
+                        "$comment": "This is the value to validate against. The type of value depends on the ValidationType.",
+                        "type": ["string", "number"]
+                    }
+                },
+                "required": ["Fields", "ValidationType"]
+            }
         }
     },
     "required": ["MetadataSpecification", "Generic"],
@@ -36,12 +68,12 @@
                 "URL": {
                     "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
                     "type": "string",
-                    "const": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1"
+                    "const": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1"
                 },
                 "Name": {
                     "description": "This element represents the name of the schema.",
                     "type": "string",
-                    "const": "Generic-Index"
+                    "const": "Generic-Config"
                 },
                 "Version": {
                     "description": "This element represents the version of the schema.",

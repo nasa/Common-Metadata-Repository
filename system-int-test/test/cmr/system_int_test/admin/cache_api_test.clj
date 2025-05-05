@@ -68,7 +68,8 @@
                                       "xsl-transformer-templates"
                                       "providers"
                                       "urs"
-                                      "acls"]
+                                      "acls"
+                                      "schema-validation-functions"]
         (url/access-control-read-caches-url) ["acls"
                                               "health"
                                               "provider-cache"

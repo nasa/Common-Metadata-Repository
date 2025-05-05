@@ -1,0 +1,119 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Citation",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "CIT",
+  "IndexSetup": {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes": [
+    {
+      "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
+      "Field": ".Identifier",
+      "Name": "Id",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
+      "Field": ".Identifier",
+      "Name": "Identifier",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Schema Name as the Name field",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The type of identifier used",
+      "Field": ".IdentifierType",
+      "Name": "IdentifierType",
+      "Mapping": "string"
+    },
+    {
+      "Description": "URI used to resolve the identifier",
+      "Field": ".ResolutionAuthority",
+      "Name": "Resolution-Authority",
+      "Mapping": "string"
+    },
+    {
+      "Description": "The nature of the relationship between the cited resource and the collection",
+      "Field": ".RelationshipType",
+      "Name": "Relationship-Type",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Science Keywords in keywords",
+      "Field": ".ScienceKeywords",
+      "Name": "keyword",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["Category", "Topic", "Term", "VariableLevel1"]}
+    },
+    {
+      "Description": "Related Identifiers (dataset DOIs)",
+      "Field": ".RelatedIdentifiers",
+      "Name": "Related-Identifier",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["RelatedIdentifier"]}
+    },
+    {
+      "Description": "Citation Title",
+      "Field": ".CitationMetadata.Title",
+      "Name": "Title",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Publication Year",
+      "Field": ".CitationMetadata.Year",
+      "Name": "Year",
+      "Mapping": "int"
+    },
+    {
+      "Description": "Resource Type",
+      "Field": ".CitationMetadata.Type",
+      "Name": "Type",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Author Names",
+      "Field": ".CitationMetadata.Author",
+      "Name": "Author-Name",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["Family", "Given"]}
+    },
+    {
+      "Description": "Author ORCID",
+      "Field": ".CitationMetadata.Author",
+      "Name": "Author-ORCID",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["ORCID"]}
+    },
+    {
+      "Description": "Journal or Conference Name",
+      "Field": ".CitationMetadata.Container",
+      "Name": "Container",
+      "Mapping": "string"
+    }
+  ],
+  "Validations": [
+    {
+      "Fields": [".Identifier", ".IdentifierType", ".ResolutionAuthority"],
+      "ValidationType": "unique"
+    }
+  ]
+}
