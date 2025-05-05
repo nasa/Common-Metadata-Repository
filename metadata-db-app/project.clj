@@ -27,8 +27,8 @@
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -41,7 +41,8 @@
                                   [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}

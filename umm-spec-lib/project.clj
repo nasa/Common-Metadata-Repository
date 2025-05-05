@@ -13,8 +13,8 @@
                  [org.clojure/tools.reader "1.3.2"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
@@ -28,7 +28,8 @@
                                   [proto-repl "0.3.1"]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                                         ;                      ;; Use the following to enable JMX profiling with visualvm
                                         ;                      "-Dcom.sun.management.jmxremote"
                                         ;                      "-Dcom.sun.management.jmxremote.ssl=false"

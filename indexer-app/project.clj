@@ -18,8 +18,8 @@
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -27,7 +27,8 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.indexer.runner
                        :aot :all}

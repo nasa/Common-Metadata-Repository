@@ -33,8 +33,8 @@
                  [org.testcontainers/testcontainers "1.19.7"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :aot [cmr.message-queue.test.ExitException]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -43,7 +43,8 @@
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
              ;; This profile is used for linting and static analysis. To run for this

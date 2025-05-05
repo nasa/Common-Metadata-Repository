@@ -8,8 +8,8 @@
                  [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
@@ -20,7 +20,8 @@
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
                                   [clj-http "2.3.0"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
              :uberjar {:aot [cmr.schema-validation.json-schema]}

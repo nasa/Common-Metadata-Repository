@@ -13,8 +13,8 @@
                  [org.jruby/jruby-complete ~jruby-version]]
   :plugins [[lein-shell "0.5.0"]]
   :resource-paths ["resources"]
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
@@ -25,7 +25,8 @@
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test"]
                    :resource-paths ["resources" "test_resources" ~dev-gem-install-path]
                    :injections [(require 'pjstadig.humane-test-output)

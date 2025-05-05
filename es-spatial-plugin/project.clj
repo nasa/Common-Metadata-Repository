@@ -26,8 +26,8 @@
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/es-spatial-plugin"
-  :jvm-opts ^:replace ["-XX:-OmitStackTraceInFastThrow"
-                       "-server"
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :plugins [[lein-shell "0.5.0"]]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
