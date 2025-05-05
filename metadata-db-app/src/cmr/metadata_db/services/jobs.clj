@@ -48,9 +48,12 @@
   [_ctx system]
   (old-revision-concept-cleanup {:system system}))
 
+;; TODO Jyna -- remove metadata jobs so that they don't run during base case run
 (def jobs
   "A list of the jobs for metadata db"
-  [{:job-type ExpiredConceptCleanupJob
-    :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
-   {:job-type OldRevisionConceptCleanupJob
-    :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}])
+  [
+   ;{:job-type ExpiredConceptCleanupJob
+   ; :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
+   ;{:job-type OldRevisionConceptCleanupJob
+   ; :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}
+   ])
