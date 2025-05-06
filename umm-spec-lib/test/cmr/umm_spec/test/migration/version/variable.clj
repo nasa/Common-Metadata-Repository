@@ -151,10 +151,10 @@
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-var-generator)
             dest-version (gen/elements (v/versions :variable))]
-    (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata {}
-                                           umm-record dest-media-type)]
-      (empty? (core/validate-metadata :variable dest-media-type metadata)))))
+           (let [dest-media-type (str mt/umm-json "; version=" dest-version)
+                 metadata (core/generate-metadata {}
+                                                  umm-record dest-media-type)]
+             (empty? (core/validate-metadata :variable dest-media-type metadata)))))
 
 (deftest migrate-10->11
   (is (= (dissoc variable-concept-10 :Services)
@@ -237,10 +237,10 @@
           :LongName "variable 1"
           :DataType "float"}
          (migrate-variable "1.3" "1.2" (assoc-in variable-concept-13
-                                                            [:Characteristics]
-                                                            {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
-                                                             :IndexRanges {:LatRange [-45 45]
-                                                                           :LonRange [90 180]}})))))
+                                                 [:Characteristics]
+                                                 {:GroupPath "/MODIS_Grid_Daily_1km_LST/Data_Fields"
+                                                  :IndexRanges {:LatRange [-45 45]
+                                                                :LonRange [90 180]}})))))
 
 (deftest migrate-13->14
   (is (= variable-concept-14
@@ -285,7 +285,7 @@
 (deftest migrate-15->14
   (is (= variable-concept-14
          (migrate-variable "1.5" "1.4"
-                         (assoc variable-concept-14  :AcquisitionSourceName "OMI")))))
+                           (assoc variable-concept-14  :AcquisitionSourceName "OMI")))))
 
 (def variable-concept-15
   {:Name "var1"
@@ -331,21 +331,21 @@
                                          {:MeasurementName {:MeasurementObject "radiative_flux"}
                                           :MeasurementSource "OTHER"}])
          (migrate-variable "1.6" "1.5"
-                         (assoc variable-concept-15
-                                :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}
-                                             {:Name "y" :Size 0.0 :Type "CROSS_TRACK_DIMENSION"}]
-                                :MeasurementIdentifiers
-                                [{:MeasurementContextMedium "Atmosphere"
-                                  :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000810"
-                                  :MeasurementObject "Brightness"
-                                  :MeasurementQuantities
-                                  [{:Value "Temperature"
-                                    :MeasurementQuantityURI "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
-                                   {:Value "lumen"
-                                    :MeasurementQuantityURI "http://www.ontobee.org/ontology/lumen"}]}
-                                 {:MeasurementContextMedium "Surface"
-                                  :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000811"
-                                  :MeasurementObject "radiative_flux"}])))))
+                           (assoc variable-concept-15
+                                  :Dimensions [{:Name "x" :Size 0.0 :Type "DEPTH_DIMENSION"}
+                                               {:Name "y" :Size 0.0 :Type "CROSS_TRACK_DIMENSION"}]
+                                  :MeasurementIdentifiers
+                                  [{:MeasurementContextMedium "Atmosphere"
+                                    :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000810"
+                                    :MeasurementObject "Brightness"
+                                    :MeasurementQuantities
+                                    [{:Value "Temperature"
+                                      :MeasurementQuantityURI "http://www.ontobee.org/ontology/PATO?iri=http://purl.obolibrary.org/obo/PATO_0000146"}
+                                     {:Value "lumen"
+                                      :MeasurementQuantityURI "http://www.ontobee.org/ontology/lumen"}]}
+                                   {:MeasurementContextMedium "Surface"
+                                    :MeasurementContextMediumURI "http://purl.obolibrary.org/obo/ENVO_01000811"
+                                    :MeasurementObject "radiative_flux"}])))))
 
 (def variable-concept-16
   {:ValidRanges
@@ -507,7 +507,7 @@
              (assoc-in [:Characteristics :GroupPath] "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature")
              (assoc :AdditionalIdentifiers [{:Identifier "CF_Standard_Description",
                                              :Description
-                                             "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions.",}]))
+                                             "The sea surface subskin temperature is the temperature at the base of the conductive laminar sub-layer of the ocean surface, that is, at a depth of approximately 1 - 1.5 millimeters below the air-sea interface. For practical purposes, this quantity can be well approximated to the measurement of surface temperature by a microwave radiometer operating in the 6 - 11 gigahertz frequency range, but the relationship is neither direct nor invariant to changing physical conditions or to the specific geometry of the microwave measurements. Measurements of this quantity are subject to a large potential diurnal cycle due to thermal stratification of the upper ocean layer in low wind speed high solar irradiance conditions."}]))
          (migrate-variable "1.7" "1.6" variable-concept-17))))
 
 (deftest migrate-16->17
@@ -652,3 +652,21 @@
   ;; MetadataSpecification version is converted.
   (let [actual (migrate-variable "1.9.0" "1.8.2" variable-concept-1-9)]
     (is (= variable-concept-1-8-2 actual) "Document Match")))
+
+(deftest migrate-1-9-FillValues->1-8-2
+  ;; Test that the fill value correctly truncates fields
+  (let [metadata (-> variable-concept-1-9
+                     (assoc :FillValues
+                            [{:Type "SCIENCE_FILLVALUE" :Description "Short Value, leave alone"}
+                             {:Type "SCIENCE_FILLVALUE" :Description ""}
+                             {:Type "SCIENCE_FILLVALUE"
+                              :Description (apply str (repeatedly 200 #(char (+ (rand 26) 65))))}]))
+        actual (migrate-variable "1.9.0" "1.8.2" metadata)
+        first-description (:Description (first (:FillValues actual)))
+        second-description (:Description (second (:FillValues actual)))
+        last-description (:Description (last (:FillValues actual)))]
+
+    (is (= "Short Value, leave alone" first-description) "Should leave short ones alone")
+    (is (= "" second-description) "Handle empty strings")
+    (is (= 160 (count last-description)) "Long field made short")
+    (is (= "..." (subs last-description (- (count last-description) 3))) "Description should end with '...'")))

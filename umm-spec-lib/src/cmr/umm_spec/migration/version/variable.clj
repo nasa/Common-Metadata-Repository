@@ -15,7 +15,7 @@
         :ReportingConditions ReportingConditions}])))
 
 (def ^:private measurement-sources
- #{"CSDMS", "CF", "BODC", "OTHER"})
+  #{"CSDMS", "CF", "BODC", "OTHER"})
 
 (def ^:private fill-value-types
   #{"SCIENCE_FILLVALUE", "QUALITY_FILLVALUE", "ANCILLARY_FILLVALUE", "OTHER"})
@@ -267,9 +267,30 @@
   (-> umm-v
       (m-spec/update-version :variable "1.9.0")))
 
+
+(defn- truncate-a-field-pretty
+  "Migrate a field to a smaller size but when doing so append an ellipses at the end."
+  [field-path field-size metadata]
+  (map (fn [id]
+         (-> id
+             (update-in field-path
+                        (fn [field-value]
+                          (when (not-empty field-value)
+                            (if (> (count field-value) field-size)
+                              (str (util/trunc field-value (- field-size 3)) "...")
+                              field-value))))
+             util/remove-nil-keys))
+       metadata))
+
+
 (defmethod interface/migrate-umm-version [:variable "1.9.0" "1.8.2"]
   [_context umm-v & _]
   ;; Update the MetadataSpecification and remove InstanceInformation
   (-> umm-v
       (dissoc :InstanceInformation)
-      (m-spec/update-version :variable "1.8.2")))
+      (update-in [:FillValues]
+                 (fn [fill-values]
+                   (when fill-values
+                     (truncate-a-field-pretty :Description 160 fill-values))))
+      (m-spec/update-version :variable "1.8.2")
+      util/remove-nil-keys))
