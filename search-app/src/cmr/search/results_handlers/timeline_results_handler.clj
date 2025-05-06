@@ -28,12 +28,12 @@
                    {:date_histogram
                     {:field (q2e/query-field->elastic-field :start-date :granule)
                      :min_doc_count 1
-                     :interval interval-granularity}}
+                     :calendar_interval interval-granularity}}
                    :end-date-intervals
                     {:date_histogram
                      {:field (q2e/query-field->elastic-field :end-date :granule)
                       :min_doc_count 1
-                      :interval interval-granularity}}}}})
+                      :calendar_interval interval-granularity}}}}})
 
 (defmethod query-execution/pre-process-query-result-feature :timeline
   [context query feature]

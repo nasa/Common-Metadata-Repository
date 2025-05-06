@@ -54,4 +54,4 @@
     {:date_histogram
      {:field :start-date-doc-values
       :min_doc_count 1
-      :interval interval-granularity}}))
+      :calendar_interval interval-granularity}}))
