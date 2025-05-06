@@ -54,7 +54,7 @@
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
                        subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)}
-              ;:scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
+              :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
               :unclustered-scheduler (jobs/create-scheduler
                                       `system-holder [jvm-info/log-jvm-statistics-job
                                                       (cache-info/create-log-cache-info-job "metadata-db")])
