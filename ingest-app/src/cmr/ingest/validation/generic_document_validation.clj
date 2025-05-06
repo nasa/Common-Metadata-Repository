@@ -28,7 +28,9 @@
   "Fetch existing concepts of the given type from metadata-db for uniqueness validation"
   [context concept-type]
   (try
-    (mdb/find-concepts context {:latest true} concept-type)
+    (let [resp (mdb/find-concepts context {:latest true} concept-type)]
+      (info "DEBUGZ: " resp)
+      resp)
     (catch Exception e
       (error (str "Error fetching concepts for generic validations: " (.getMessage e)))
       []))) 
@@ -167,7 +169,6 @@
         ;; Only run validation if a validator is defined
         errors (when validator-fn
                  (validator-fn context concept))]
-    (info "Validating concept" concept "with schema version" version)
 
     ;; Throw service errors if any validation errors are found
     (when (seq errors)
