@@ -29,7 +29,7 @@
   [context concept-type]
   (try
     (let [resp (mdb/find-concepts context {:latest true} concept-type)]
-      (info "DEBUGZ: " resp)
+      (info "DEBUGZ: " (pr-str resp))
       resp)
     (catch Exception e
       (error (str "Error fetching concepts for generic validations: " (.getMessage e)))
@@ -43,6 +43,7 @@
     (if-let [existing-concepts (fetch-existing-concepts context concept-type)]
       (let [;; Helper function to extract field values from a concept
             get-field-values (fn [c fs]
+                               (info "DEBUGZ metadata: " (:metadata c))
                                (let [metadata (json/parse-string (:metadata c) true)]
                                  (mapv #(let [field-path (generics/jq->list % keyword)]
                                           (get-in metadata field-path))
