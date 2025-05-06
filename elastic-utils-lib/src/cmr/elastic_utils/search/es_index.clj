@@ -227,7 +227,7 @@
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
-        _ (info "INSIDE send-query-to-elastic :default with index-info = " index-info)
+        ;_ (info "INSIDE send-query-to-elastic :default with index-info = " index-info)
         index-names (str/split (:index-name index-info) #",")
         query-map (-> elastic-query
                       (merge execution-params)
