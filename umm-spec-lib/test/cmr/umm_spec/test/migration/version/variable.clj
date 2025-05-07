@@ -653,7 +653,7 @@
   (let [actual (migrate-variable "1.9.0" "1.8.2" variable-concept-1-9)]
     (is (= variable-concept-1-8-2 actual) "Document Match")))
 
-(deftest migrate-1-9-FillValues->1-8-2
+(deftest migrate-1-9-with-FillValues->1-8-2
   ;; Test that the fill value correctly truncates fields
   (let [metadata (-> variable-concept-1-9
                      (assoc :FillValues
@@ -665,7 +665,6 @@
         first-description (:Description (first (:FillValues actual)))
         second-description (:Description (second (:FillValues actual)))
         last-description (:Description (last (:FillValues actual)))]
-
     (is (= "Short Value, leave alone" first-description) "Should leave short ones alone")
     (is (= "" second-description) "Handle empty strings")
     (is (= 160 (count last-description)) "Long field made short")
