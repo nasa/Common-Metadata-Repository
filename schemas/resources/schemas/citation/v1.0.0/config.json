@@ -38,7 +38,7 @@
     {
       "Description": "The type of identifier used",
       "Field": ".IdentifierType",
-      "Name": "IdentifierType",
+      "Name": "Identifier-Type",
       "Mapping": "string"
     },
     {
