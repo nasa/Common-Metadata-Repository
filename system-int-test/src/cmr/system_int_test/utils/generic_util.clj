@@ -50,6 +50,15 @@
                              (io/resource)
                              (slurp)
                              (json/parse-string true)))
+(def citation (-> "schemas/citation/v1.0.0/metadata.json"
+                  (io/resource)
+                  (slurp)
+                  (json/parse-string true)))
+
+(def citation-draft (-> "schemas/citation-draft/v1.0.0/metadata.json"
+                        (io/resource)
+                        (slurp)
+                        (json/parse-string true)))
 
 (def variable-draft-without-private
   (-> "schemas/variable-draft/v1.0.0/metadata_with_private_data.json"

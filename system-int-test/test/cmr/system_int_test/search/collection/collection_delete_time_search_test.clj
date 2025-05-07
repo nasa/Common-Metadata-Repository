@@ -4,7 +4,6 @@
   (:require 
     [clj-time.core :as t]
     [clojure.test :refer :all]
-    [cmr.common.date-time-parser :as p]
     [cmr.common.time-keeper :as tk]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -26,8 +25,6 @@
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
-
-
 
 (deftest ^:in-memory-db collection-delete-time-test
   (s/only-with-in-memory-database
@@ -88,6 +85,4 @@
         (index/wait-until-indexed)
         (d/assert-refs-match [coll4 coll5 coll6] (search/find-refs :collection {}))
         (d/assert-refs-match [gran4 gran5 gran6] (search/find-refs :granule {}))))))
-
-
 
