@@ -1,6 +1,7 @@
 (ns cmr.ingest.validation.generic-document-validation
   "Provides functions to validate the ingest generic document"
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common.cache :as cache]
@@ -35,9 +36,7 @@
                   ;; TODO make search parameters part of the config.json for a concept instead of being hardcoded.
                   param-name (-> field-parts
                                  last
-                                 name
-                                 (string/replace #"([a-z])([A-Z])" "$1-$2")
-                                 string/lower-case
+                                 csk/->kebab-case
                                  keyword)]
               (if field-value
                 (assoc params param-name field-value)
