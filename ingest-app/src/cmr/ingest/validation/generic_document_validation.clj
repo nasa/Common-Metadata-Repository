@@ -9,7 +9,7 @@
    [cmr.common.generics :as generics]
    [cmr.common.log :refer (info error)]
    [cmr.common.services.errors :as errors]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.search :as search]))
 
 (def schema-validation-cache-key
   "The cache key for the schema validation functions cache."
@@ -24,61 +24,52 @@
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl SCHEMA_CACHE_TIME}))
 
-(defn- fetch-existing-concepts
-  "Fetch existing concepts of the given type from metadata-db for uniqueness validation"
-  [context concept-type]
-  (try
-    (let [resp (mdb/find-concepts context {:latest true} concept-type)]
-      (info "DEBUGZ: " (pr-str resp))
-      resp)
-    (catch Exception e
-      (error (str "Error fetching concepts for generic validations: " (.getMessage e)))
-      []))) 
+(defn- make-params-from-uniqueness-fields
+  "Creates search parameters from the uniqueness fields defined in the schema.
+   Converts JQ-style field paths to lowercase, hyphenated keywords for search parameters."
+  [metadata fields]
+  (reduce (fn [params field-path]
+            (let [field-parts (generics/jq->list field-path keyword)
+                  field-value (get-in metadata field-parts)
+                  ;; Get the last part of the path and convert to parameter name format
+                  ;; TODO make search parameters part of the config.json for a concept instead of being hardcoded.
+                  param-name (-> field-parts
+                                 last
+                                 name
+                                 (string/replace #"([a-z])([A-Z])" "$1-$2")
+                                 string/lower-case
+                                 keyword)]
+              (if field-value
+                (assoc params param-name field-value)
+                params)))
+          {}
+          fields))
 
 (defn- validate-uniqueness
   "Validates that the combination of field values is unique in the collection.
+   The fields need to also be valid search parameters.
    Returns a sequence of error messages if validation fails, empty sequence otherwise."
   [context concept fields]
-  (let [concept-type (:concept-type concept)]
-    (if-let [existing-concepts (fetch-existing-concepts context concept-type)]
-      (let [;; Helper function to extract field values from a concept
-            get-field-values (fn [c fs]
-                               (info "DEBUGZ metadata: " (:metadata c))
-                               (let [metadata (json/parse-string (:metadata c) true)]
-                                 (mapv #(let [field-path (generics/jq->list % keyword)]
-                                          (get-in metadata field-path))
-                                       fs)))
-            field-values (get-field-values concept fields)
-            ;; Helper to compare values with case-insensitivity for strings
-            case-insensitive-equal? (fn [s1 s2]
-                                      (if (and (string? s1) (string? s2))
-                                        (= (string/lower-case s1) (string/lower-case s2))
-                                        (= s1 s2)))
-            ;; Check if any other document has the same combination of values (case-insensitive)
-            duplicate-concepts (filter (fn [existing-concept]
-                                         (and (not= (:native-id existing-concept) (:native-id concept))
-                                              (not= (:deleted existing-concept) true)
-                                              (let [existing-values (get-field-values existing-concept fields)]
-                                                (and
-                                                 (= (count field-values) (count existing-values))
-                                                 (every? (fn [i]
-                                                           (case-insensitive-equal?
-                                                            (nth field-values i)
-                                                            (nth existing-values i)))
-                                                         (range (count field-values)))))))
-                                       existing-concepts)]
-        (if (seq duplicate-concepts)
-          (let [duplicate-concept-ids (map :concept-id duplicate-concepts)
-                field-names (mapv (fn [field-path]
-                                    (string/join "." (map name (generics/jq->list field-path))))
-                                  fields)
-                display-values (mapv str field-values)]
-            (info "Duplicate concept IDs found: " duplicate-concept-ids)
-            [(format "Values %s for fields %s must be unique for concept type %s. Duplicate concept IDs: %s"
-                     (string/join ", " display-values)
+  (let [concept-type (:concept-type concept)
+        native-id (:native-id concept)
+        metadata (json/parse-string (:metadata concept) true)
+        params (make-params-from-uniqueness-fields metadata fields)
+        search-result (search/search-for-generic-concepts context concept-type params)]
+    (if (< 0 (:hits search-result))
+      (let [existing-concepts (:items search-result)
+            duplicates (filter #(and (not= (get-in % [:meta :native-id]) native-id)
+                                     (not (get-in % [:meta :deleted])))
+                               existing-concepts)]
+        (if (seq duplicates)
+          (let [duplicate-concept-id (map #(get-in % [:meta :concept-id]) duplicates)
+                field-values (mapv #(get-in metadata (generics/jq->list % keyword)) fields)
+                field-names (mapv #(last (generics/jq->list % name)) fields)]
+            (info "Duplicate concept ID found: " duplicate-concept-id)
+            [(format "Values %s for fields %s must be unique for concept type %s. Duplicate concept ID: %s"
+                     (string/join ", " field-values)
                      (string/join ", " field-names)
-                     (str concept-type)
-                     (string/join ", " duplicate-concept-ids))])
+                     (name concept-type)
+                     (string/join ", " duplicate-concept-id))])
           []))
       [])))
 

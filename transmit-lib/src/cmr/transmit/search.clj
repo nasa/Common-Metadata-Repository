@@ -136,6 +136,31 @@
     (when-not (= status 200)
       body)))
 
+(defn search-for-generic-concepts
+  "Searches for generic concept types.
+   Returns search results for the specified generic concept type in umm_json format."
+  [context concept-type params]
+  (let [conn (config/context->app-connection context :search)
+        concept-type-str (name concept-type)
+        request-url (str (conn/root-url conn) "/" concept-type-str "s.umm_json")
+        token (:token params)
+        request-params (dissoc params :token)
+        headers (cond-> (merge (ch/context->http-headers context)
+                               {:client-id config/cmr-client-id})
+                  token (assoc config/token-header token))
+        request (merge
+                 (config/conn-params conn)
+                 {:query-params request-params
+                  :headers headers
+                  :throw-exceptions false})
+        response (client/get request-url request)
+        {:keys [status body]} response]
+    (if (= status 200)
+      (json/parse-string body true)
+      (errors/internal-error!
+       (format "Search for %s failed. Status: %s Body: %s"
+               concept-type-str status body)))))
+
 (declare search-for-collections)
 (hh/defsearcher search-for-collections :search
   (fn [conn]

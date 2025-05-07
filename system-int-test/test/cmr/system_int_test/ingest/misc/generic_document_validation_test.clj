@@ -66,7 +66,7 @@
                "Values 10.5067/ABC123XYZ, DOI, https://doi.org for fields Identifier, IdentifierType, ResolutionAuthority must be unique"))
           (is (string/includes?
                (:errors duplicate-response)
-               (str "Duplicate concept IDs: " (get-in citation1-response [:concept-id]))))))
+               (str "Duplicate concept ID: " (get-in citation1-response [:concept-id]))))))
 
       (testing "Different Identifier with same IdentifierType is allowed"
         (let [different-id-response (create-citation-document
@@ -138,6 +138,8 @@
 
             (is (= 201 (:status recreate-response)))
 
+            (index/wait-until-indexed)
+
             (testing "Cross-provider uniqueness"
               ;; Try to create a citation with the same identifier/type in a different provider
               (let [cross-provider-response (create-citation-document
@@ -158,4 +160,4 @@
                      "Values 10.5067/ABC123XYZ, DOI, https://doi.org for fields Identifier, IdentifierType, ResolutionAuthority must be unique"))
                 (is (string/includes?
                      (:errors cross-provider-response)
-                     (str "Duplicate concept IDs: " (get-in recreate-response [:concept-id]))))))))))))
+                     (str "Duplicate concept ID: " (get-in recreate-response [:concept-id]))))))))))))
