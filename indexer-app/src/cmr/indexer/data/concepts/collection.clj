@@ -362,7 +362,7 @@
             :native-id-lowercase (string/lower-case native-id)
             :user-id user-id
             :permitted-group-ids permitted-group-ids
-                               ;; If there's an entry in the collection granule aggregates then the collection has granules.
+            ;; If there's an entry in the collection granule aggregates then the collection has granules.
             :has-granules has-granules
             :has-granules-or-cwic (or
                                    has-granules
@@ -400,7 +400,7 @@
                                                 (string/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
-                           ;; hierarchical fields
+            ;; hierarchical fields
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
             :instruments instruments-nested
@@ -411,8 +411,8 @@
                                        [(:start-date extent)
                                         (:end-date extent)])
                                      temporal-extents-ranges)
-                               ;; added so that we can respect all collection temporal ranges in search
-                               ;; when limit_to_granules is set and there are no granules for the collection.
+            ;; added so that we can respect all collection temporal ranges in search
+            ;; when limit_to_granules is set and there are no granules for the collection.
             :limit-to-granules-temporals
             (if granule-start-date
               [{:start-date (index-util/date->elastic granule-start-date)
@@ -459,7 +459,7 @@
             :insert-time insert-time
             :created-at created-at
             :coordinate-system coordinate-system
-                           ;; fields added to support keyword searches including the quoted string case.
+            ;; fields added to support keyword searches including the quoted string case.
             :keyword2 (k/create-keywords-field concept-id collection
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
@@ -469,15 +469,15 @@
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)
             :project-ln-lowercase (map string/lower-case project-long-names)
             :temporal-keyword-lowercase (map string/lower-case temporal-keywords)
-                           ;; tags
+            ;; tags
             :tags tags
-                           ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
-                           ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
-                           ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
-                           ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
-                           ;;                                        "data": "NASA"},
-                           ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
-                           ;;                                      "data": "prod"}}
+            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
+            ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
+            ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
+            ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
+            ;;                                        "data": "NASA"},
+            ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
+            ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
                               (pr-str
@@ -495,7 +495,16 @@
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
             :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names
-            :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])}
+            :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])
+            :create-data-date (as-> collection c
+                                (get c :DataDates)
+                                (filter #(= "CREATE" (:Type %)) c)
+                                (when (seq c)
+                                  (->> c
+                                       (sort-by :Date)
+                                       first
+                                       :Date))
+                                (index-util/date->elastic c))}
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
            (collection-temporal-elastic context concept-id collection)
