@@ -4,23 +4,23 @@
 (defmulti parse-date
   "Returns the value from the date string that matches the provided interval.
   Example: (parse-date \"2017-01-01T00:00:00+0000\" :year) returns 2017."
-  (fn [datetime interval]
+  (fn [_datetime interval]
     interval))
 
 (defmethod parse-date :year
-  [datetime interval]
+  [datetime _interval]
   (second (re-find #"^(\d{4})-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :month
-  [datetime interval]
+  [datetime _interval]
   (second (re-find #"^\d{4}-(\d{2})-\d{2}T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :day
-  [datetime interval]
+  [datetime _interval]
   (second (re-find #"^\d{4}-\d{2}-(\d{2})T\d{2}:\d{2}:\d{2}.*Z$" datetime)))
 
 (defmethod parse-date :hour
-  [datetime interval]
+  [datetime _interval]
   (second (re-find #"^\d{4}-\d{2}-\d{2}T(\d{2}):\d{2}:\d{2}.*Z$" datetime)))
 
 (defn- time-intervals->next-interval
@@ -42,7 +42,7 @@
   "Returns the time interval to request in temporal facets based on the query parameters."
   [query-params]
   (let [field-reg-ex (re-pattern "temporal_facet.*")
-        temporal-facet-params (keep (fn [[k v]]
+        temporal-facet-params (keep (fn [[k _v]]
                                       (when (re-matches field-reg-ex k) k))
                                     query-params)]
     (time-intervals->next-interval (map keyword (get-subfields temporal-facet-params)))))
@@ -54,4 +54,4 @@
     {:date_histogram
      {:field :start-date-doc-values
       :min_doc_count 1
-      :interval interval-granularity}}))
+      :calendar_interval interval-granularity}}))

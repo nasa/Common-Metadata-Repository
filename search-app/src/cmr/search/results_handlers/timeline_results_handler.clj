@@ -28,15 +28,15 @@
                    {:date_histogram
                     {:field (q2e/query-field->elastic-field :start-date :granule)
                      :min_doc_count 1
-                     :interval interval-granularity}}
+                     :calendar_interval interval-granularity}}
                    :end-date-intervals
                     {:date_histogram
                      {:field (q2e/query-field->elastic-field :end-date :granule)
                       :min_doc_count 1
-                      :interval interval-granularity}}}}})
+                      :calendar_interval interval-granularity}}}}})
 
 (defmethod query-execution/pre-process-query-result-feature :timeline
-  [context query feature]
+  [_context query _feature]
   (let [{:keys [interval]} query
         temporal-cond (query/map->TemporalCondition (select-keys query [:start-date :end-date]))]
     (-> query
@@ -47,7 +47,7 @@
 
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :timeline]
-  [concept-type query]
+  [_concept-type _query]
   ;; Timeline results are aggregation results so we select no fields
   [])
 
@@ -220,9 +220,9 @@
                      (map (partial constrain-interval-to-user-range start-date end-date)))}))
 
 (defmethod elastic-results/elastic-results->query-results [:granule :timeline]
-  [context query elastic-results]
+  [_context query elastic-results]
   (let [{:keys [start-date end-date interval]} query
-        items (map (partial collection-bucket->intervals (:interval query) start-date end-date)
+        items (map (partial collection-bucket->intervals interval start-date end-date)
                    (get-in elastic-results [:aggregations :by-collection :buckets]))]
     (r-model/map->Results {:items items
                      :timed-out (:timed_out elastic-results)
@@ -245,7 +245,7 @@
   (update-in coll-result [:intervals] (partial map (partial interval->response-tuple query))))
 
 (defmethod qs/search-results->response [:granule :timeline]
-  [context query results]
+  [_context query results]
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]
     (json/generate-string response)))
