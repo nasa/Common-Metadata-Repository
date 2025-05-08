@@ -836,7 +836,7 @@
   ;; Remove AssociatedDOIs/Type enums: IsDescribedBy
   (-> collection
      (m-spec/update-version :collection "1.18.3")
-     ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
+     ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsDescribedBy
      (as-> coll (if (contains? coll :AssociatedDOIs)
                   (-> coll
                       (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-3))
