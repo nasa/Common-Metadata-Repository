@@ -296,7 +296,7 @@
           "description": "Description of the fill value of the variable in the data file.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 160
+          "maxLength": 200
         }
       },
       "required": ["Value", "Type"]
