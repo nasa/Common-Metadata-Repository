@@ -83,8 +83,8 @@
   "If description is nil, set to default of 'Not provided'"
   [attribute]
   (if (nil? (:Description attribute))
-     (assoc attribute :Description u/not-provided)
-     attribute))
+    (assoc attribute :Description u/not-provided)
+    attribute))
 
 (defn- add-related-urls
   "Add required RelatedUrls in version 1.8 if missing in version 1.9"
@@ -94,23 +94,23 @@
     (assoc c :RelatedUrls [u/not-provided-related-url])))
 
 (defn- migrate-sensor-to-instrument
- "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
+  "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
  the instrument"
- [instrument]
- (-> instrument
-     (assoc :ComposedOf (:Sensors instrument))
-     (assoc :NumberOfInstruments (:NumberOfSensors instrument))
-     (dissoc :Sensors)
-     (dissoc :NumberOfSensors)))
+  [instrument]
+  (-> instrument
+      (assoc :ComposedOf (:Sensors instrument))
+      (assoc :NumberOfInstruments (:NumberOfSensors instrument))
+      (dissoc :Sensors)
+      (dissoc :NumberOfSensors)))
 
 (defn- migrate-instrument-to-sensor
- "Migrate from 1.9 to 1.8 child instruments to sensors "
- [instrument]
- (-> instrument
-     (assoc :Sensors (:ComposedOf instrument))
-     (assoc :NumberOfSensors (:NumberOfInstruments instrument))
-     (dissoc :ComposedOf)
-     (dissoc :NumberOfInstruments)))
+  "Migrate from 1.9 to 1.8 child instruments to sensors "
+  [instrument]
+  (-> instrument
+      (assoc :Sensors (:ComposedOf instrument))
+      (assoc :NumberOfSensors (:NumberOfInstruments instrument))
+      (dissoc :ComposedOf)
+      (dissoc :NumberOfInstruments)))
 
 (defn- remove-format-descriptions
   "Remove FormatDescription from the passed in file information maps.
@@ -209,7 +209,7 @@
     (let [swath-width (get-swath-width collection)]
       (-> collection
           (update-in [:SpatialExtent :OrbitParameters] dissoc :Footprints :OrbitPeriod :SwathWidthUnit :OrbitPeriodUnit
-                                                              :InclinationAngleUnit :StartCircularLatitudeUnit)
+                     :InclinationAngleUnit :StartCircularLatitudeUnit)
           (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidth swath-width :Period period)))
     collection))
 
@@ -218,9 +218,9 @@
    otherwise remove entire tiling identification system (return nil)"
   [element]
   (when (and (util/str->num (get-in element [:Coordinate1 :MinimumValue]))
-           (util/str->num (get-in element [:Coordinate1 :MaximumValue]))
-           (util/str->num (get-in element [:Coordinate2 :MinimumValue]))
-           (util/str->num (get-in element [:Coordinate2 :MaximumValue])))
+             (util/str->num (get-in element [:Coordinate1 :MaximumValue]))
+             (util/str->num (get-in element [:Coordinate2 :MinimumValue]))
+             (util/str->num (get-in element [:Coordinate2 :MaximumValue])))
     (-> element
         (update-in [:Coordinate1 :MinimumValue] util/str->num)
         (update-in [:Coordinate1 :MaximumValue] util/str->num)
@@ -376,8 +376,8 @@
       ;; is nil, it will be turned into (:Description nil :LIcenseUrl nil :LicenseText nil) which will fail validation.
       (as-> coll (if-let [description (:UseConstraints c)]
                    (assoc coll :UseConstraints
-                               {:Description (umm-coll-models/map->UseConstraintsDescriptionType
-                                               {:Description description})})
+                          {:Description (umm-coll-models/map->UseConstraintsDescriptionType
+                                         {:Description description})})
                    coll))))
 
 (defmethod interface/migrate-umm-version [:collection "1.10" "1.9"]
@@ -502,7 +502,6 @@
       (update :PublicationReferences doi/migrate-pub-ref-up-to-1-16-1)
       util/remove-nils-empty-maps-seqs))
 
-
 (defmethod interface/migrate-umm-version [:collection "1.16.1" "1.16"]
   [_context c & _]
   (-> c
@@ -519,9 +518,9 @@
                             (assoc :Description (get-in c [:UseConstraints :Description :Description]))
                             (set/rename-keys {:LicenseUrl :LicenseURL})
                             util/remove-nils-empty-maps-seqs)]
-     (if use-constraints
-       (assoc c :UseConstraints use-constraints)
-       (dissoc c :UseConstraints))))
+    (if use-constraints
+      (assoc c :UseConstraints use-constraints)
+      (dissoc c :UseConstraints))))
 
 (defmethod interface/migrate-umm-version [:collection "1.16.2" "1.16.1"]
   [_context c & _]
@@ -545,7 +544,7 @@
   (-> c
       (update :RelatedUrls (fn [related-urls]
                              (into []
-                               (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
+                                   (remove #(= "GET CAPABILITIES" (:Type %)) related-urls))))
       util/remove-nils-empty-maps-seqs))
 
 ;; Migrations related to 1.16.4 --------------
@@ -665,12 +664,12 @@
   ;; Remove the EULAIdentifiers field in UseConstraints
   ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 down if they are numbers, otherwise remove entire tiling identification system
   (-> collection
-      (m-spec/update-version :collection "1.17.1") 
+      (m-spec/update-version :collection "1.17.1")
       (as-> coll (if (seq (get-in coll [:UseConstraints :EULAIdentifiers]))
                    (update-in coll [:UseConstraints] dissoc :EULAIdentifiers)
                    coll))
       (as-> coll (if (seq (get-in coll [:TilingIdentificationSystems]))
-                   (-> coll 
+                   (-> coll
                        (util/update-in-all [:TilingIdentificationSystems] migrate-tiling-id-systems-down)
                        (update :TilingIdentificationSystems util/remove-nils-empty-maps-seqs))
                    coll))))
@@ -723,18 +722,18 @@
        (update-in [:DOI] dissoc :PreviousVersion)
        (dissoc :DataMaturity :OtherIdentifiers :FileNamingConvention)
        (as-> rc
-         (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
-           (if (or (= "EARTH/GLOBAL" sct)
-                   (= "LUNAR" sct))
-             (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
-             rc))))))
+             (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
+               (if (or (= "EARTH/GLOBAL" sct)
+                       (= "LUNAR" sct))
+                 (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
+                 rc))))))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.0" "1.18.1"]
   [_context collection & _]
   ;; File sizes from numbers to positive numbers. only need to migrate version. 
   ;; If negative numbers or 0 were ingested in 1.18.0, warnings will be given when migrate to 1.18.1.
   (-> collection
-      (m-spec/update-version :collection "1.18.1"))) 
+      (m-spec/update-version :collection "1.18.1")))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.0"]
   [_context collection & _]
@@ -743,56 +742,56 @@
       (m-spec/update-version :collection "1.18.0")))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.1" "1.18.2"]
-   [_context collection & _]
-   ;; Migrating up version 1.18.1 to 1.18.2
-   ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
-   ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
-   ;; Remove NOT APPLICABLE enum from CollectionProgress
-   (-> collection
-       (m-spec/update-version :collection "1.18.2")
-       ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
-       (as-> coll (if (= "NOT APPLICABLE" (:CollectionProgress coll))
-                    (-> coll
-                        (update :CollectionProgress (constantly "NOT PROVIDED")))
-                    coll))))
+  [_context collection & _]
+  ;; Migrating up version 1.18.1 to 1.18.2
+  ;; Add AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+  ;; Add PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+  ;; Remove NOT APPLICABLE enum from CollectionProgress
+  (-> collection
+      (m-spec/update-version :collection "1.18.2")
+      ;; Change CollectionProgress to "NOT PROVIDED" if its value is "NOT APPLICABLE"
+      (as-> coll (if (= "NOT APPLICABLE" (:CollectionProgress coll))
+                   (-> coll
+                       (update :CollectionProgress (constantly "NOT PROVIDED")))
+                   coll))))
 
 (defn- migrate-associated-doi-type-down-to-1-18-1
-       [associatedDOI]
-       (if (or (= "IsPreviousVersionOf" (:Type associatedDOI))
-               (= "IsNewVersionOf" (:Type associatedDOI)))
-               (-> associatedDOI
-                   (update :Type (constantly "Related Dataset"))
-                   (remove-nil-keys))
-               associatedDOI))
+  [associatedDOI]
+  (if (or (= "IsPreviousVersionOf" (:Type associatedDOI))
+          (= "IsNewVersionOf" (:Type associatedDOI)))
+    (-> associatedDOI
+        (update :Type (constantly "Related Dataset"))
+        (remove-nil-keys))
+    associatedDOI))
 
 (defn- migrate-collection-progress-down
-       [collectionProgress]
+  [collectionProgress]
 
-       (case collectionProgress
-             "PREPRINT" "PLANNED"
-             "INREVIEW" "PLANNED"
-             "SUPERSEDED" "COMPLETE"
-             collectionProgress))
+  (case collectionProgress
+    "PREPRINT" "PLANNED"
+    "INREVIEW" "PLANNED"
+    "SUPERSEDED" "COMPLETE"
+    collectionProgress))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.1"]
-           [_context collection & _]
-           ;; Migrating down version 1.18.2 to 1.18.1
-           ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
-           ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
-           ;; Add back in NOT APPLICABLE enum in CollectionProgress
+  [_context collection & _]
+  ;; Migrating down version 1.18.2 to 1.18.1
+  ;; Remove AssociatedDOIs/Type enums: IsPreviousVersionOf and IsNewVersionOf
+  ;; Remove PREPRINT, INREVIEW, and SUPERSEDED enums to CollectionProgress
+  ;; Add back in NOT APPLICABLE enum in CollectionProgress
 
-           (-> collection
-               (m-spec/update-version :collection "1.18.1")
+  (-> collection
+      (m-spec/update-version :collection "1.18.1")
                ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsPreviousVersionOf and IsNewVersionOf
-               (as-> coll (if (contains? coll :AssociatedDOIs)
-                            (-> coll
-                                (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-1))
-                            coll))
+      (as-> coll (if (contains? coll :AssociatedDOIs)
+                   (-> coll
+                       (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-1))
+                   coll))
                ;; Change CollectionProgress enum to PLANNED if its enum value is PREPRINT, INREVIEW. And COMPLETE if enum value is SUPERSEDED
-               (as-> coll (if (contains? coll :CollectionProgress)
-                            (-> coll
-                                (update :CollectionProgress migrate-collection-progress-down))
-                            coll))))
+      (as-> coll (if (contains? coll :CollectionProgress)
+                   (-> coll
+                       (update :CollectionProgress migrate-collection-progress-down))
+                   coll))))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.2" "1.18.3"]
   [_context collection & _]
@@ -803,7 +802,7 @@
 (defn down-grade-geo-json-mime-type
   "Replace MimeType geo+json with json as geo+json doesn't exist in the lower versions.
   Otherwise leave the MimeType as is."
-  [service ]
+  [service]
   (if (= "application/geo+json" (:MimeType service))
     (assoc service :MimeType "application/json")
     service))
@@ -835,9 +834,10 @@
   ;; Migrating down version 1.18.4 to 1.18.3
   ;; Remove AssociatedDOIs/Type enums: IsDescribedBy
   (-> collection
-     (m-spec/update-version :collection "1.18.3")
-     ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsDescribedBy
-     (as-> coll (if (contains? coll :AssociatedDOIs)
-                  (-> coll
-                      (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-3))
-                  coll))))
+      (m-spec/update-version :collection "1.18.3")
+      ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsDescribedBy
+      (as-> coll (if (contains? coll :AssociatedDOIs)
+                   (-> coll
+                       (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-3))
+                   coll))))
+
