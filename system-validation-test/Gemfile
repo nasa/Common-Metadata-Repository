@@ -3,9 +3,10 @@
 source 'https://rubygems.org'
 
 group :test do
-  gem 'cucumber'
+  gem 'cucumber', '~> 9.2.1' 
   gem 'httparty'
   gem 'jsonpath'
   gem 'nokogiri', "= 1.18.3"
   gem 'rspec'
+  gem 'ffi', '~> 1.16.3'
 end
