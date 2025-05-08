@@ -20,7 +20,7 @@
                  [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [commons-logging "1.2"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -60,7 +60,9 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     ;; ring is needed or this fails in sys int group3
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
