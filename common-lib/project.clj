@@ -33,11 +33,10 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
-                 ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.9.6
+                 ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-io "11.0.24"]
-                 ;;[org.eclipse.jetty/jetty-servlets "11.0.24"]
                  [org.eclipse.jetty/jetty-server "11.0.24"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
