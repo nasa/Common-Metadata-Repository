@@ -267,16 +267,18 @@
   (-> umm-v
       (m-spec/update-version :variable "1.9.0")))
 
-(defn truncate-fill-value-descriptions
-  "Update the Description fields in the FillValues list to be no more than the specified target-size
-   and when truncating add an ellipsis to the end of the string. If FillValues doesn't exist, return
-   the document unchanged."
-  [document target-size]
-  (if (contains? document :FillValues)
-    (update document :FillValues
+(defn truncate-values-in-list
+  "Update the text of a field in a list to be no more than the specified target-size and when
+   truncating add an ellipsis to the end of the string. If the list does not exist, return the
+   document unchanged.
+   Example structures are:
+   {:Dimensions [{:Name \"atrack\" :Size 42 :Type \"ALONG_TRACK_DIMENSION\"}]}"
+  [document list-name sub-field target-size]
+  (if (contains? document list-name)
+    (update document list-name
             (fn [fill-values]
               (mapv (fn [fill-value]
-                      (update fill-value :Description
+                      (update fill-value sub-field
                               #(if (and % (> (count %) target-size))
                                  (str (subs % 0 (- target-size 3)) "...")
                                  %)))
@@ -288,6 +290,7 @@
   ;; Update the MetadataSpecification and remove InstanceInformation
   (-> umm-v
       (dissoc :InstanceInformation)
-      (truncate-fill-value-descriptions 160)
+      (truncate-values-in-list :FillValues :Description 160)
+      (truncate-values-in-list :Dimensions :Name 80)
       (m-spec/update-version :variable "1.8.2")
       util/remove-nil-keys))
