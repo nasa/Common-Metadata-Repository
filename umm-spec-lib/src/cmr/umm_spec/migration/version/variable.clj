@@ -15,7 +15,7 @@
         :ReportingConditions ReportingConditions}])))
 
 (def ^:private measurement-sources
- #{"CSDMS", "CF", "BODC", "OTHER"})
+  #{"CSDMS", "CF", "BODC", "OTHER"})
 
 (def ^:private fill-value-types
   #{"SCIENCE_FILLVALUE", "QUALITY_FILLVALUE", "ANCILLARY_FILLVALUE", "OTHER"})
@@ -267,9 +267,27 @@
   (-> umm-v
       (m-spec/update-version :variable "1.9.0")))
 
+(defn truncate-fill-value-descriptions
+  "Update the Description fields in the FillValues list to be no more than the specified target-size
+   and when truncating add an ellipsis to the end of the string. If FillValues doesn't exist, return
+   the document unchanged."
+  [document target-size]
+  (if (contains? document :FillValues)
+    (update document :FillValues
+            (fn [fill-values]
+              (mapv (fn [fill-value]
+                      (update fill-value :Description
+                              #(if (and % (> (count %) target-size))
+                                 (str (subs % 0 (- target-size 3)) "...")
+                                 %)))
+                    fill-values)))
+    document))
+
 (defmethod interface/migrate-umm-version [:variable "1.9.0" "1.8.2"]
   [_context umm-v & _]
   ;; Update the MetadataSpecification and remove InstanceInformation
   (-> umm-v
       (dissoc :InstanceInformation)
-      (m-spec/update-version :variable "1.8.2")))
+      (truncate-fill-value-descriptions 160)
+      (m-spec/update-version :variable "1.8.2")
+      util/remove-nil-keys))
