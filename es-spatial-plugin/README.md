@@ -195,4 +195,4 @@ crashing elastic search.
 
 ## License
 
-Copyright © 2021 NASA
+Copyright © 2021-2025 NASA
