@@ -246,6 +246,12 @@
                <gml:identifier codeSpace="gov.nasa.esdis.umm">DOI_Previous_Version</gml:identifier>
             </gmx:CodeDefinition>
          </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_isDescribedBy">
+               <gml:description>The collection is described by the associated DOI.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Is_Described_By</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
       </gmx:CodeListDictionary>
    </gmx:codelistItem>
 </gmx:CT_CodelistCatalogue>

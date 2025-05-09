@@ -403,10 +403,7 @@
 ;; DOI is not applicable or unknown for their record, use the second option.
 (defrecord PreviousVersionType
   [
-   ;; This element stores the DOI (Digital Object Identifier) that identifies the prevoius version
-   ;; of this collection. Note: The values should start with the directory indicator which in ESDIS'
-   ;; case is 10. If the DOI was registered through ESDIS, the beginning of the string should be
-   ;; 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.
+   ;; The version number if one exists.
    Version
 
    ;; Short description of the previous version.
