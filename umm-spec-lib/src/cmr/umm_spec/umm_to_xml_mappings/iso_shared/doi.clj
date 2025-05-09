@@ -60,7 +60,8 @@
    "Related Dataset" ["relatedDataset" "Related_Dataset"]
    "Other" ["other" "Other"]
    "IsPreviousVersionOf" ["isPreviousVersionOf" "Is_Previous_Version_Of"]
-   "IsNewVersionOf" ["isNewVersionOf" "Is_New_Version_Of"]})
+   "IsNewVersionOf" ["isNewVersionOf" "Is_New_Version_Of"]
+   "IsDescribedBy" ["isDescribedBy" "Is_Described_By"]})
 
 (defn generate-associated-dois
   "Generate from a UMM-C record the AssociatedDOIs into the ISO MENDS/SMAP form."
