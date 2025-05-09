@@ -87,6 +87,7 @@ Bring up Elastic Search 8.15.8:
     Note: it is best not to use a gui to create the file - upon another developer testing these instructions extra spaces
           were inserted and we had to fix the copy and paste errors.
 
+```
 services:
   elasticsearch:
     image: elasticsearch:8.15.5
@@ -115,6 +116,7 @@ services:
 
 networks:
  elasticsearch-network: {}
+```
 
 9) Note that you don't need the kibana section - as it just creates more junk in the logs to have to look at, so it is commented out.
    I included here so that others may see how to bring up both if they need it sometime in the future.
