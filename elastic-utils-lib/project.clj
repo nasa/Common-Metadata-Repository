@@ -1,4 +1,4 @@
-(def elastic-version "7.17.25")
+(def elastic-version "7.17.14")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -7,7 +7,7 @@
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.6"]
+                 [commons-io "2.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
@@ -47,7 +47,9 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     ;; ring is needed or this fails in sys int group3
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

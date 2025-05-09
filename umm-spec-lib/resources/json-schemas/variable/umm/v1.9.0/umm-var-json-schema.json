@@ -296,7 +296,7 @@
           "description": "Description of the fill value of the variable in the data file.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 160
+          "maxLength": 200
         }
       },
       "required": ["Value", "Type"]
@@ -378,7 +378,7 @@
           "description": "The name of the dimension of the variable represented in the data field. For example, 'XDim.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 256
         },
         "Size": {
           "oneOf": [{

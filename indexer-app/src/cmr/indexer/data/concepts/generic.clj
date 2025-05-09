@@ -22,7 +22,7 @@
   combines them into one field"
   [settings data]
   (let [field-list (get settings :Field ".")
-        field-data (get-in data (gen-util/jq->list field-list keyword) {})
+        field-data (get-in data (generics/jq->list field-list keyword) {})
         config (get settings :Configuration {})
         sub-fields (get config :sub-fields {})
         layout (get config :format "%s=%s")
@@ -45,7 +45,7 @@
   the literal case, another is all lower case."
   [settings data]
   (let [field-list (get settings :Field ".")
-        field-data (get-in data (gen-util/jq->list field-list keyword) {})
+        field-data (get-in data (generics/jq->list field-list keyword) {})
         field-name (util/safe-lowercase (:Name settings))
         field-name-lower (str field-name "-lowercase")
         config (get settings :Configuration {})
@@ -64,7 +64,7 @@
   [settings data]
   (let [field-name (util/safe-lowercase (:Name settings))
         field-name-lower (str field-name "-lowercase")
-        value (get-in data (gen-util/jq->list (:Field settings) keyword))
+        value (get-in data (generics/jq->list (:Field settings) keyword))
         value-lower (util/safe-lowercase value)]
     {(keyword field-name) value
      (keyword field-name-lower) value-lower}))
@@ -101,7 +101,7 @@
                               (meta-db/get-generic-associations-for-concept context concept))
         gen-name (csk/->kebab-case (get-in parsed-concept [:MetadataSpecification :Name] ""))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
+        index-data-file (format "schemas/%s/v%s/config.json" gen-name gen-ver)
         index-file-raw (slurp (io/resource index-data-file))
         index-data (json/parse-string index-file-raw true)
         schema-keys [:LongName
@@ -173,7 +173,7 @@
         version (generics/current-generic-version concept-type)
         gen-name (csk/->kebab-case (get-in parsed-concept [:MetadataSpecification :Name] ""))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        index-data-file (format "schemas/%s/v%s/index.json" (name concept-type) version)
+        index-data-file (format "schemas/%s/v%s/config.json" (name concept-type) version)
         index-file-raw (slurp (io/resource index-data-file))
         index-data (json/parse-string index-file-raw true)
         common-doc ;; fields common to all generic documents

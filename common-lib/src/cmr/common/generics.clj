@@ -69,7 +69,7 @@
   "Return the specific schema given the schema keyword name and version number.
    Throw an error if the file can't be read.
    Parameters:
-   * file-name: [metadata | index | schema]
+   * file-name: [metadata | config | schema]
    * generic-keyword: [:grid | ...]
    * generic-version: 0.0.1
    Returns: string"
@@ -101,21 +101,21 @@
   "Cached - Return the specific schema given the schema keyword name and version number.
    Throw an error if the file can't be read.
    Parameters:
-   * file-name: [metadata | index | schema]
+   * file-name: [metadata | config | schema]
    * generic-keyword: [:grid | ...]
    * generic-version: 0.0.1
    Returns: string"
   (memoize read-schema-file*))
 
-(defn read-schema-index
-  "Return the schema index configuration file given the schema name and version
+(defn read-schema-config
+  "Return the schema config file given the schema name and version
    number. Throw an error if the file can't be read.
    Parameters:
    * generic-keyword: [:grid | ...]
    * generic-version: 0.0.1
    Returns: string"
   [generic-keyword generic-version]
-  (read-schema-file "index" generic-keyword generic-version))
+  (read-schema-file "config" generic-keyword generic-version))
 
 (defn read-schema-specification
   "Return the schema specification file given the schema name and version number.
@@ -151,35 +151,35 @@
          schema-obj (js-validater/json-string->json-schema schema-file)]
      (js-validater/validate-json schema-obj raw-json throw?))))
 
-(defn validate-index-against-schema
+(defn validate-config-against-schema
   "Validate a document, returns an array of errors if there are problems
    Parameters:
    * raw-json, json as a string to validate
    Returns: list of errors or nil"
   [raw-json]
-  (validate-metadata-against-schema raw-json :index "0.0.1"))
+  (validate-metadata-against-schema raw-json :config "0.0.1"))
 
 (defn- approved-generic-concept-prefixes*
   "Return the active list of approved generic content types with the defined
-   prefix in the :SubConceptType field found in the index.json file. If field is
+   prefix in the :SubConceptType field found in the config.json file. If field is
    not defined, then X is used.
    Parameters: none, based off approved-documents?
    Return: {doc-type \"concept-prefix\"}"
   []
   (reduce (fn [data item]
             (let [generic-keyword (first item)
-                  index-raw (read-schema-index generic-keyword (second item))
-                  parse-errors (validate-index-against-schema index-raw)]
+                  config-raw (read-schema-config generic-keyword (second item))
+                  parse-errors (validate-config-against-schema config-raw)]
               (when-not (some? parse-errors)
                 (assoc data
                        generic-keyword
-                       (get (json/parse-string index-raw true) :SubConceptType "X")))))
+                       (get (json/parse-string config-raw true) :SubConceptType "X")))))
           {}
           (latest-approved-documents)))
 
 (def approved-generic-concept-prefixes
   "Cached - Return the active list of approved generic content types with the defined
-   prefix in the :SubConceptType field found in the index.json file. If field is
+   prefix in the :SubConceptType field found in the config.json file. If field is
    not defined, then X is used.
    Parameters: none, based off approved-documents?
    Return: {doc-type \"concept-prefix\"}"
@@ -197,3 +197,22 @@
   (->> (latest-approved-document-types)
        (map inf/plural)
        (string/join "|")))
+
+(defn jq->list
+  "To make configuration authoring simple for humans, fields of a JSON record are
+   to be denoted using a syntax simaler to the jq unix command. This syntax will
+   define a path into a nested set of fields. The jq path is passed in to this
+   function and will be converted to a list that can be used with the built in
+   clojure function get-in to retrive JSON field content.
+   Example: .Level1.Level2[1].Level3 -> [:Level1 :Level2 1 :Level3]"
+  ([jq-path] (jq->list jq-path str))
+  ([jq-path namer]
+   (into [] (map (fn
+                   [value]
+                   (if (every? #(Character/isDigit %) value)
+                     (Integer/parseInt value)
+                     (namer value)))
+                 (-> jq-path
+                     (string/replace #"^\." "")
+                     (string/replace #"\[(\d+)\]" ".$1")
+                     (string/split #"\."))))))

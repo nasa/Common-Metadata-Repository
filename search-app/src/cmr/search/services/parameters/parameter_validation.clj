@@ -363,7 +363,8 @@
     :has-granules-or-cwic
     :has-granules-or-opensearch
     :usage-relevancy-score
-    :ongoing})
+    :ongoing
+    :create-data-date})
 
 (defmethod cpv/valid-sort-keys :granule
   [_]
