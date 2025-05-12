@@ -3,7 +3,7 @@
   (:require
    [cmr.common.cache :as cache]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :refer (info debug)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as u]
@@ -101,6 +101,7 @@
   "Executes a search for concepts and returns the results while logging execution times."
   [context query]
   (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
+        _ (debug "INSIDE time-concept-search finished execute-query successfully")
         [result-gen-time result-str] (u/time-execution
                                       (search-results->response
                                        context query (assoc results :took query-execution-time)))]

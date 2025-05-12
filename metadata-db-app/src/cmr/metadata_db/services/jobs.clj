@@ -50,7 +50,9 @@
 
 (def jobs
   "A list of the jobs for metadata db"
-  [{:job-type ExpiredConceptCleanupJob
-    :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
-   {:job-type OldRevisionConceptCleanupJob
-    :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}])
+  [
+   ;{:job-type ExpiredConceptCleanupJob
+   ; :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
+   ;{:job-type OldRevisionConceptCleanupJob
+   ; :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}
+   ])

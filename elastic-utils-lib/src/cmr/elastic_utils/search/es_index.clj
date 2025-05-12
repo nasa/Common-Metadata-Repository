@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info]]
@@ -226,6 +227,7 @@
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
+        index-names (string/split (:index-name index-info) #",")
         query-map (-> elastic-query
                       (merge execution-params)
                       ;; rename search-after to search_after for ES execution
@@ -236,6 +238,8 @@
           "with sort" (pr-str sort-params)
           "with aggregations" (pr-str aggregations)
           "and highlights" (pr-str highlights))
+    (doseq [idx-name index-names]
+      (debug "Index visited is " idx-name))
     (when-let [scroll-id (:scroll-id query-map)]
       (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]

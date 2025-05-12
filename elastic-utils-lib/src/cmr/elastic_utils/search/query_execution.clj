@@ -5,6 +5,7 @@
    [cmr.elastic-utils.search.es-index :as idx]
    [cmr.elastic-utils.search.es-results-to-query-results :as rc]
    [cmr.elastic-utils.search.query-transform :as c2s]
+   [cmr.common.log :refer (debug)]
    [cmr.transmit.config :as tc]))
 
 ;; *************************************************************************************************
@@ -104,5 +105,7 @@
                                  (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)
                              (idx/execute-query context))
+        _ (debug "elastic results success. converting elastic to query results")
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]
+    (debug "elastic to query results success. starting post process query result features.")
     (post-process-query-result-features context query elastic-results query-results)))
