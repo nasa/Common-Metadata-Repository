@@ -150,48 +150,17 @@
                    all-buffers
                    current-buffer)))))))
 
-(comment
-  ;; TODO: remove this
-  ;(defn create-access-log-handler-old
-  ;  "Setup access logging for each application. Access log entries will go to stdout similar to
-  ;application logging. As a result the access log entries will be in the same log as the
-  ;application log."
-  ;  [existing-handler]
-  ;  (doto (RequestLogHandler.)
-  ;    (.setHandler existing-handler)
-  ;    (.setRequestLog
-  ;     (doto (CustomRequestLog. (Slf4jRequestLogWriter.) CustomRequestLog/EXTENDED_NCSA_FORMAT)
-  ;       (.setLogLatency true)
-  ;       (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
-  )
-
-;(defn create-access-log-handler
-;  "Setup access logging for each application. Access log entries will go to stdout similar to
-;  application logging. As a result the access log entries will be in the same log as the
-;  application log."
-;  [existing-handler]
-;  (let [log-writer (doto (Slf4jRequestLogWriter.)
-;                     (.setDateFormat "yyyy-MM-dd HH:mm:ss.SSS"))]
-;    (doto (RequestLogHandler.)
-;      (.setHandler existing-handler)
-;      (.setRequestLog
-;        (doto (CustomRequestLog. log-writer CustomRequestLog/EXTENDED_NCSA_FORMAT))))))
-
-
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
   application log."
   [existing-handler]
   (let [log-writer (Slf4jRequestLogWriter.)
-        date-format "yyyy-MM-dd HH:mm:ss.SSS"
         log-format (str CustomRequestLog/EXTENDED_NCSA_FORMAT " %{yyyy-MM-dd HH:mm:ss.SSS}t")]
     (doto (RequestLogHandler.)
       (.setHandler existing-handler)
       (.setRequestLog
         (CustomRequestLog. log-writer log-format)))))
-
-
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
@@ -271,7 +240,6 @@
   ([port routes-fn]
    (create-web-server port routes-fn use-web-compression? use-access-log))
   ([port routes-fn use-compression use-access-log-opt]
-   (printf "Here in web server %s %s\n" (if use-compression "t" "f") (if use-access-log-opt "t" "f"))
    (map->WebServer {:port port
                     :use-compression? use-compression
                     :use-access-log? use-access-log-opt

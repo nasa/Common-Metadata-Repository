@@ -4,6 +4,7 @@
    [cmr.access-control.system :as access-control-system]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.system :as bootstrap-system]
+   [cmr.common.api.web-server :as web-serv]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [info warn error]]
@@ -78,8 +79,8 @@
   "Update the web configuration options for the passed app system."
   [app-system]
   (-> app-system
-      (assoc-in [:web :use-compression?] (cmr.common.api.web-server/use-web-compression?))
-      (assoc-in [:web :use-access-log?] (cmr.common.api.web-server/use-access-log))))
+      (assoc-in [:web :use-compression?] (web-serv/use-web-compression?))
+      (assoc-in [:web :use-access-log?] (web-serv/use-access-log))))
 
 (defn- set-web-server-options
   "Modifies an app server instance to configure web server options, returning a
