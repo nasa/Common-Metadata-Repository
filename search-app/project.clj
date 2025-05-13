@@ -44,6 +44,7 @@
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
@@ -56,7 +57,8 @@
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :resource-paths ["resources" "test/resources"]
                    :source-paths ["src" "dev" "test"]
                    :injections [(require 'pjstadig.humane-test-output)

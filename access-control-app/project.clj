@@ -46,6 +46,7 @@
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -60,7 +61,8 @@
                                   [ring/ring-codec "1.1.3"]
                                   [ring/ring-jetty-adapter "1.10.0"]
                                   [ring-mock "0.1.5"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :test-paths ["test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)

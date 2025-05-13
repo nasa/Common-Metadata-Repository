@@ -53,6 +53,7 @@
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
@@ -62,7 +63,8 @@
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
                                   [clj-http "2.3.0"]]
-                   :jvm-opts ^:replace ["-server"]
+                   :jvm-opts ^:replace ["-server"
+                                        "-XX:-OmitStackTraceInFastThrow"]
                    ;; XXX Note that profiling can be kept in a profile,
                    ;;     with no need to comment/uncomment.
                    ;; Uncomment this to enable assertions. Turn off during performance tests.
