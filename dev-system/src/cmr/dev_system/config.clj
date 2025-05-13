@@ -29,16 +29,19 @@
   {:default 5601
    :type Long})
 
-(defconfig use-web-compression?
-  "Indicates whether the servers will use gzip compression. Disable this to
-  make tcpmon usable"
-  {:default true
-   :type Boolean})
+(comment
+  ;; TODO: Remove these or keep them
 
-(defconfig use-access-log
-  "Indicates whether the servers will use the access log."
- {:default false
-  :type Boolean})
+  (defconfig _use-web-compression?
+    "Indicates whether the servers will use gzip compression. Disable this to
+  make tcpmon usable"
+    {:default true
+     :type Boolean})
+
+  (defconfig _use-access-log
+    "Indicates whether the servers will use the access log."
+    {:default false
+     :type Boolean}))
 
 (defconfig dev-system-echo-type
   "Specifies whether dev system should run an in-memory mock ECHO or use an

@@ -19,6 +19,19 @@
   ring jetty adapter default of 8."
   8)
 
+(declare use-web-compression?)
+(defconfig use-web-compression?
+  "Indicates whether the servers will use gzip compression. Disable this to
+  make tcpmon usable"
+  {:default true
+   :type Boolean})
+
+(declare use-access-log)
+(defconfig use-access-log
+  "Indicates whether the servers will use the access log."
+  {:default true
+   :type Boolean})
+
 (declare MAX_THREADS)
 (defconfig MAX_THREADS
   "The maximum number of threads for Jetty to use to process requests. This was originally set to
@@ -137,17 +150,48 @@
                    all-buffers
                    current-buffer)))))))
 
+(comment
+  ;; TODO: remove this
+  ;(defn create-access-log-handler-old
+  ;  "Setup access logging for each application. Access log entries will go to stdout similar to
+  ;application logging. As a result the access log entries will be in the same log as the
+  ;application log."
+  ;  [existing-handler]
+  ;  (doto (RequestLogHandler.)
+  ;    (.setHandler existing-handler)
+  ;    (.setRequestLog
+  ;     (doto (CustomRequestLog. (Slf4jRequestLogWriter.) CustomRequestLog/EXTENDED_NCSA_FORMAT)
+  ;       (.setLogLatency true)
+  ;       (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
+  )
+
+;(defn create-access-log-handler
+;  "Setup access logging for each application. Access log entries will go to stdout similar to
+;  application logging. As a result the access log entries will be in the same log as the
+;  application log."
+;  [existing-handler]
+;  (let [log-writer (doto (Slf4jRequestLogWriter.)
+;                     (.setDateFormat "yyyy-MM-dd HH:mm:ss.SSS"))]
+;    (doto (RequestLogHandler.)
+;      (.setHandler existing-handler)
+;      (.setRequestLog
+;        (doto (CustomRequestLog. log-writer CustomRequestLog/EXTENDED_NCSA_FORMAT))))))
+
+
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
   application log."
   [existing-handler]
-  (doto (RequestLogHandler.)
-    (.setHandler existing-handler)
-    (.setRequestLog
-      (doto (CustomRequestLog. (Slf4jRequestLogWriter.) CustomRequestLog/EXTENDED_NCSA_FORMAT)
-        (.setLogLatency true)
-        (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
+  (let [log-writer (Slf4jRequestLogWriter.)
+        date-format "yyyy-MM-dd HH:mm:ss.SSS"
+        log-format (str CustomRequestLog/EXTENDED_NCSA_FORMAT " %{yyyy-MM-dd HH:mm:ss.SSS}t")]
+    (doto (RequestLogHandler.)
+      (.setHandler existing-handler)
+      (.setRequestLog
+        (CustomRequestLog. log-writer log-format)))))
+
+
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
@@ -225,9 +269,10 @@
   "Creates a new web server. Accepts argument of port and a routes function that should accept
   system argument and return compojure routes to use."
   ([port routes-fn]
-   (create-web-server port routes-fn true true))
-  ([port routes-fn use-compression use-access-log]
+   (create-web-server port routes-fn use-web-compression? use-access-log))
+  ([port routes-fn use-compression use-access-log-opt]
+   (printf "Here in web server %s %s\n" (if use-compression "t" "f") (if use-access-log-opt "t" "f"))
    (map->WebServer {:port port
                     :use-compression? use-compression
-                    :use-access-log? use-access-log
+                    :use-access-log? use-access-log-opt
                     :routes-fn routes-fn})))

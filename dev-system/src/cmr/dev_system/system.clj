@@ -78,8 +78,8 @@
   "Update the web configuration options for the passed app system."
   [app-system]
   (-> app-system
-      (assoc-in [:web :use-compression?] (dev-config/use-web-compression?))
-      (assoc-in [:web :use-access-log?] (dev-config/use-access-log))))
+      (assoc-in [:web :use-compression?] (cmr.common.api.web-server/use-web-compression?))
+      (assoc-in [:web :use-access-log?] (cmr.common.api.web-server/use-access-log))))
 
 (defn- set-web-server-options
   "Modifies an app server instance to configure web server options, returning a
