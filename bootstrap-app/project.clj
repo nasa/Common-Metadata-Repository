@@ -5,7 +5,7 @@
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-io "2.6"]
                  [compojure "1.6.1"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
@@ -22,11 +22,8 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]
-                 [org.eclipse.jetty/jetty-http "11.0.24"]
-                 [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-codec "1.2.0"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"]
+                 [ring/ring-codec "1.1.3"]
+                 [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]
@@ -38,8 +35,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [ring/ring-jetty-adapter "1.13.0"]]
+                                  [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.bootstrap.runner

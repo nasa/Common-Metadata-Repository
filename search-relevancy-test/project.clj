@@ -9,7 +9,7 @@
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-fileupload "1.3.3"]
-                 [commons-io "2.18.0"]
+                 [commons-io "2.6"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
@@ -50,9 +50,7 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.13.0"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

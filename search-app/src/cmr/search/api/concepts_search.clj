@@ -135,6 +135,24 @@
   {:type Boolean
    :default true})
 
+(defn- block-excessive-queries
+  "Temporary solution to prevent a specific query from overloading the CMR search resources."
+  [ctx concept-type result-format params]
+  (when (and (block-queries)
+             (= concept-type :granule)
+             (= :json result-format)
+             (= "MCD43A4" (:short_name params))
+             (contains? params ""))
+    (warn (format "Blocking %s query from client %s in format %s with params %s."
+                  (name concept-type)
+                  (:client-id ctx)
+                  (rfh/printable-result-format result-format)
+                  (pr-str params)))
+    (svc-errors/throw-service-error
+     :too-many-requests
+     (str "Excessive query rate. Please contact "
+          (common-app-config/cmr-support-email) "."))))
+
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
   [headers]
@@ -217,6 +235,7 @@
         ctx (assoc ctx :query-string body :scroll-id scroll-id :query-params params)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
+        _ (block-excessive-queries ctx concept-type result-format params)
         _ (validate-search-after-params ctx params)
         _ (validate-stac-params ctx concept-type headers params)
         log-message (format "Searching for %ss from client %s in format %s with params %s"

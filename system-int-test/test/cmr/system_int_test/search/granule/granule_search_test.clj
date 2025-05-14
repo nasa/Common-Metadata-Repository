@@ -535,6 +535,12 @@
               :errors [(smsg/mixed-arity-parameter-msg :concept-id)]}
              (search/make-raw-search-query :granule ".json?concept_id=G&concept_id[pattern]=true"))))))
 
+(deftest block-excessive-queries-test
+  (testing "Blocking those MCD43A4 queries"
+    (is (= {:status 429
+            :errors ["Excessive query rate. Please contact cmr-support@nasa.gov."]}
+           (search/make-raw-search-query :granule ".json?short_name=MCD43A4&&page_size=5")))))
+
 (deftest entry-title-with-preceeding-succeeding-whitespace-test
   (e/ungrant (int-s/context) "ACL1200000001-CMR")
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle " E1 "
