@@ -5,23 +5,34 @@
 
 (defrecord UMM-Sub
   [
-   ;; The name of the subscription.
-   Name
-
-   ;; The type of the subscription.
-   Type
-
    ;; The userid of the subscriber.
    SubscriberId
-
-   ;; The email address of the subscriber.
-   EmailAddress
 
    ;; The collection concept id of the granules subscribed.
    CollectionConceptId
 
+   ;; The subscription endpoint receiver that will consume the messages from CMRs topic.
+   EndPoint
+
+   ;; For the type of granule subscription the mode is whether to be notified of a new, update, or
+   ;; delete, granule.
+   Mode
+
+   ;; The email address of the subscriber.
+   EmailAddress
+
    ;; The search query for the granules that matches the subscription.
    Query
+
+   ;; The name of the subscription.
+   Name
+
+   ;; Describes how the subscription is executed. Notification send by the ingest stream. i.e. when
+   ;; a granule is ingested, or by a repeditive search.
+   Method
+
+   ;; The type of the subscription.
+   Type
 
    ;; Requires the client, or user, to add in schema information into every subscription record. It
    ;; includes the schema's name, version, and URL location. The information is controlled through
