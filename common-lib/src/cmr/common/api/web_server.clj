@@ -9,14 +9,28 @@
    [ring.adapter.jetty :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
-   (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
+   (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)
    (org.eclipse.jetty.server.handler RequestLogHandler)
-   (org.eclipse.jetty.server.handler.gzip GzipHandler)))
+   (org.eclipse.jetty.server.handler.gzip GzipHandler)
+   (org.eclipse.jetty.server Slf4jRequestLogWriter)))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
   ring jetty adapter default of 8."
   8)
+
+(declare use-web-compression?)
+(defconfig use-web-compression?
+  "Indicates whether the servers will use gzip compression. Disable this to
+  make tcpmon usable"
+  {:default true
+   :type Boolean})
+
+(declare use-access-log)
+(defconfig use-access-log
+  "Indicates whether the servers will use the access log."
+  {:default true
+   :type Boolean})
 
 (declare MAX_THREADS)
 (defconfig MAX_THREADS
@@ -141,12 +155,12 @@
   application logging. As a result the access log entries will be in the same log as the
   application log."
   [existing-handler]
-  (doto (RequestLogHandler.)
-    (.setHandler existing-handler)
-    (.setRequestLog
-      (doto (NCSARequestLog.)
-        (.setLogLatency true)
-        (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
+  (let [log-writer (Slf4jRequestLogWriter.)
+        log-format (str CustomRequestLog/EXTENDED_NCSA_FORMAT " %{yyyy-MM-dd HH:mm:ss.SSS}t")]
+    (doto (RequestLogHandler.)
+      (.setHandler existing-handler)
+      (.setRequestLog
+        (CustomRequestLog. log-writer log-format)))))
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
@@ -224,9 +238,9 @@
   "Creates a new web server. Accepts argument of port and a routes function that should accept
   system argument and return compojure routes to use."
   ([port routes-fn]
-   (create-web-server port routes-fn true true))
-  ([port routes-fn use-compression use-access-log]
+   (create-web-server port routes-fn use-web-compression? use-access-log))
+  ([port routes-fn use-compression use-access-log-opt]
    (map->WebServer {:port port
                     :use-compression? use-compression
-                    :use-access-log? use-access-log
+                    :use-access-log? use-access-log-opt
                     :routes-fn routes-fn})))
