@@ -70,7 +70,7 @@ def process_messages(sns_client, topic, messages, access_control, search):
                 print(f"The message_body['Message'] type is: {type(message_body['Message'])}")
                 message_msg = search.process_message(message_body['Message'])
                 print(f"The message_msg type is: {type(message_msg)}")
-                message_body['Message'] = json.loads(message_msg)
+                message_body['Message'] = message_msg
                 print(f"The message_body type is: {type(message_body)}")
                 message['Body'] = message_body
                 print(f"The message type is: {type(message)}")
