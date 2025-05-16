@@ -7,7 +7,7 @@
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer (debug info warn trace)]
+   [cmr.common.log :refer (debug error info warn trace)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
@@ -775,7 +775,7 @@
                               :metadata metadata
                               :deleted true})))
 
-;; true implies creation of tombstone for the revision
+;; true implies creation of tombstone for the revision - delete
 (defmethod save-concept-revision true
   [context concept]
   (cv/validate-tombstone-request concept)
@@ -843,9 +843,13 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
-            (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
-              (subscriptions/delete-ingest-subscription context revisioned-tombstone))
-            (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
+            ;; Do not let subscription errors fail the operation, use try/catch
+            (try
+              (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
+                (subscriptions/delete-ingest-subscription context revisioned-tombstone))
+              (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
+              (catch Exception e
+                (error "Error while processing subscriptions: " e)))
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -894,7 +898,7 @@
          context
          (ingest-events/associations-update-event associations))))))
 
-;; false implies creation of a non-tombstone revision
+;; false implies creation of a non-tombstone revision -- save/update
 (defmethod save-concept-revision false
   [context concept]
   (trace "concept:" (keys concept))
@@ -933,8 +937,12 @@
       (ingest-events/publish-event context (ingest-events/concept-update-event concept))
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
-      (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
-      (subscriptions/publish-subscription-notification-if-applicable context concept)
+      ;; Do not let subscription errors fail the operation, use try/catch
+      (try
+        (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
+        (subscriptions/publish-subscription-notification-if-applicable context concept)
+        (catch Exception e
+          (error "Error while processing subscriptions: " e)))
       concept)))
 
 (defn- delete-associated-tag-associations

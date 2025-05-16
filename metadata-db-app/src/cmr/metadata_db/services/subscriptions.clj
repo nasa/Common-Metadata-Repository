@@ -263,14 +263,20 @@
        "\""))
 
 (defn create-notification-message-body
-  "Create the notification when a subscription exists. Returns either a notification message or nil."
+  "Create the notification when a subscription exists.
+   * At this time concept-id, revision-id, granule-ur, and location are all that is needed of the
+     granule is needed as an external subscription process will pull other values meaning this code
+     will not need to translate the XML or JSON to find values for the subscription process.
+   * This function exists so that it can be tested as the output is expected in external software:
+     'subscription_worker'
+   * Returns a String containing JSON."
   [concept]
-  (let [concept-edn (convert-concept-to-edn concept)
-        pgi-str (get-producer-granule-id-message-str concept-edn)
-        granule-ur-str (str "\"granule-ur\": \"" (get-in concept-edn [:metadata :GranuleUR]) "\"")
-        g-concept-id-str (str "\"concept-id\": \"" (:concept-id concept-edn) "\"")
+  (let [granule-ur-str (get-in concept [:extra-fields :granule-ur])
+        concept-id-str (:concept-id concept)
+        revision-id-str (get concept :revision-id "1")
         location-str (get-location-message-str concept)]
-    (str "{" g-concept-id-str ", " granule-ur-str ", " (when pgi-str (str pgi-str ", ")) location-str "}")))
+    (format "{\"concept-id\": \"%s\", \"revision-id\": \"%s\", \"granule-ur\": \"%s\", %s}"
+            concept-id-str revision-id-str granule-ur-str location-str)))
 
 (defn create-message-attributes
   "Create the notification message attributes so that the notifications can be
