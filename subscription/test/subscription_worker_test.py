@@ -48,13 +48,17 @@ class TestSubscriptionWorker(unittest.TestCase):
 
     @patch('subscription_worker.Sns')
     @patch('subscription_worker.AccessControl')
-    def test_process_messages(self, mock_access_control, mock_sns):
+    @patch('subscription_worker.Search')
+    def test_process_messages(self, mock_access_control, mock_sns, mock_search):
         mock_sns_instance = MagicMock()
         mock_sns.return_value = mock_sns_instance
         mock_access_control_instance = MagicMock()
         mock_access_control.return_value = mock_access_control_instance
+        mock_search_instance = MagicMock()
+        mock_search.return_value = mock_search_instance
 
         mock_access_control_instance.has_read_permission.return_value = True
+        mock_search_instance.process_message.return_value = '{"concept-id": "G1200484365-PROV", "granule-ur": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01", "producer-granule-id": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01.nc", "location": "http://localhost:3003/concepts/G1200484365-PROV/39"}'
 
         messages = {
             'Messages': [{
@@ -63,7 +67,7 @@ class TestSubscriptionWorker(unittest.TestCase):
                     'MessageId': 'dfb70dfe-6f63-5cfc-9a5f-6dc731b504de',
                     'TopicArn': 'arn:name',
                     'Subject': 'Update Notification',
-                    'Message': '{"concept-id": "G1200484365-PROV", "granule-ur": "gnss.rnx.gz.json", "producer-granule-id": "gnss.rnx.gz", "location": "http://localhost:3003/concepts/G1200484365-PROV/4"}',
+                    'Message': '{"concept-id": "G1200484365-PROV", "granule-ur": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01", "producer-granule-id": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01.nc", "location": "http://localhost:3003/concepts/G1200484365-PROV/39"}',
                     'Timestamp': '2025-02-26T18:25:26.951Z',
                     'SignatureVersion': '1',
                     'Signature': 'HIQ==',
@@ -80,12 +84,18 @@ class TestSubscriptionWorker(unittest.TestCase):
             }]
         }
 
-        process_messages(mock_sns_instance, 'test-topic', messages, mock_access_control_instance)
+        process_messages(mock_sns_instance, 'test-topic', messages, mock_access_control_instance, mock_search_instance)
 
         # Check if has_read_permission was called with correct arguments
         mock_access_control_instance.has_read_permission.assert_called_once_with('user1_test', 'C1200484363-PROV')
         
         mock_sns_instance.publish_message.assert_called_once_with('test-topic', messages['Messages'][0])
+
+        body = messages['Messages'][0]['Body']
+        message = json.dumps(body['Message'])
+        (print(f"in test message type: {type(message)}"))
+
+        mock_search_instance.process_message.assert_called_once_with(message)
 
 if __name__ == '__main__':
     unittest.main()

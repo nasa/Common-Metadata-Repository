@@ -6,6 +6,7 @@ from flask import Flask, jsonify
 from sns import Sns
 from botocore.exceptions import ClientError
 from access_control import AccessControl
+from search import Search
 from logger import logger
 
 AWS_REGION = os.getenv("AWS_REGION")
@@ -37,26 +38,46 @@ def delete_messages(sqs_client, queue_url, messages):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
-def process_messages(sns_client, topic, messages, access_control):
+#def ensure_json_object(python_dict):
+    # Serialize to JSON string
+#    json_string = json.dumps(python_dict)
+    
+    # Deserialize back to Python object
+#    json_object = json.loads(json_string)
+    
+#    return json_object
+
+def process_messages(sns_client, topic, messages, access_control, search):
     """ Processes a list of messages that was received from a queue. Check to see if ACLs pass for the granule.
         If the checks pass then send the notification. """
 
     for message in messages.get("Messages", []):
         try:
+            print(f"The message type is: {type(message)}")
             message_body = json.loads(message["Body"])
+
+            print(f"The message_body type is: {type(message_body)}")
             message_attributes = message_body["MessageAttributes"]
             logger.debug(f"Subscription worker: Received message including attributes: {message_body}")
 
+            print(f"The message_attributes type is: {type(message_attributes)}")
             subscriber = message_attributes['subscriber']['Value']
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
             if(access_control.has_read_permission(subscriber, collection_concept_id)):
                 logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
+                print(f"The message_body['Message'] type is: {type(message_body['Message'])}")
+                message_msg = search.process_message(message_body['Message'])
+                print(f"The message_msg type is: {type(message_msg)}")
+                message_body['Message'] = json.loads(message_msg)
+                print(f"The message_body type is: {type(message_body)}")
+                message['Body'] = message_body
+                print(f"The message type is: {type(message)}")
                 sns_client.publish_message(topic, message)
             else:
                 logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
         except Exception as e:
-            logger.error(f"Subscription worker: There is a problem process messages {message}. {e}")
+            logger.error(f"Subscription worker: There is a problem in process messages {message}. {e}")
         
 
 def poll_queue(running):
@@ -69,18 +90,19 @@ def poll_queue(running):
     topic = sns_client.create_topic(SNS_NAME)
     
     access_control = AccessControl()
+    search = Search()
     while running.value:
         try:
              # Poll the SQS
              messages = receive_message(sqs_client=sqs_client, queue_url=QUEUE_URL)
 
              if messages:
-                 process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control)
+                 process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control, search=search)
                  delete_messages(sqs_client=sqs_client, queue_url=QUEUE_URL, messages=messages)
 
              dl_messages = receive_message(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL)
              if dl_messages:
-                 process_messages(sns_client=sns_client, topic=topic, messages=dl_messages, access_control=access_control)
+                 process_messages(sns_client=sns_client, topic=topic, messages=dl_messages, access_control=access_control, search=search)
                  delete_messages(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL, messages=dl_messages)
 
         except Exception as e:
