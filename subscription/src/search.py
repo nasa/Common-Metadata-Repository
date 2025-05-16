@@ -147,7 +147,7 @@ class Search:
             token_name = f"/{env_name}/ingest/CMR_ECHO_SYSTEM_TOKEN"
 
             env_vars = Env_Vars()
-            self.token = env_vars.get_env_var_from_parameter_store(token_name)
+            self.token = env_vars.get_env_var_from_parameter_store(token_name, True)
 
     def get_token(self):
         """This function returns the token if it has already been constructed, otherwise it gets the token and then returns it."""
@@ -167,7 +167,7 @@ class Search:
             "Authorization": self.get_token(),
             "Client-Id": "subscription-worker"
         }
-
+        print(f"Token is: {self.get_token()[-4:]}")
         # Make a GET request
         response = requests.get(url, headers=headers)
 
