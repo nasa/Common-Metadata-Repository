@@ -160,7 +160,10 @@ class Search:
             a granule by concept id in umm_json format."""
 
         # Set the search concepts URL.
-        url = f"{self.get_public_search_url()}/concepts/{concept_id}/{revision_id}.umm_json"
+        if revision_id:
+            url = f"{self.get_public_search_url()}/concepts/{concept_id}/{revision_id}.umm_json"
+        else:
+            url = f"{self.get_public_search_url()}/concepts/{concept_id}.umm_json"
 
         # Set the headers
         headers = {
@@ -212,7 +215,7 @@ class Search:
         message_dict = json.loads(message)
         print(f"Search process_message The message_dict type is: {type(message_dict)}")
         concept_id = message_dict["concept-id"]
-        revision_id = message_dict["revision-id"]
+        revision_id = message_dict.get("revision-id", None)
         print(f"Search process_message concept_id: {concept_id}")
         # Get the concept from search
         result = self.get_concept(concept_id, revision_id)
