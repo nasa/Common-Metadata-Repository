@@ -155,12 +155,12 @@ class Search:
             self.get_token_from_parameter_store()
         return self.token
 
-    def get_concept(self, concept_id):
+    def get_concept(self, concept_id, revision_id):
         """This function calls search using a token, and a CMR concept id to get
             a granule by concept id in umm_json format."""
 
         # Set the search concepts URL.
-        url = f"{self.get_public_search_url()}/concepts/{concept_id}.umm_json"
+        url = f"{self.get_public_search_url()}/concepts/{concept_id}/{revision_id}.umm_json"
 
         # Set the headers
         headers = {
@@ -186,7 +186,7 @@ class Search:
         Get the granule producer id from the metadata and create a string for the
         subscription notification message.
         """
-        identifiers = metadata["DataGranule"]['Identifiers'] #concept.get('DataGranule', {}).get('Identifiers', [])
+        identifiers = metadata["DataGranule"]['Identifiers']
         pgi = None
         for identifier in identifiers:
             if identifier.get('IdentifierType') == 'ProducerGranuleId':
@@ -196,56 +196,6 @@ class Search:
             return pgi
         else:
             return None
-
-    def create_notification_message_body(self, result_dict):
-        """Create the notification. Returns either a notification message json string or None.
-        The notification should look like
-        "{\"concept-id\": \"G1200484356-PROV\", \"granule-ur\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01\", \"producer-granule-id\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01.nc\", \"location\": \"http://localhost:3003/concepts/G1200484356-PROV/39\"}"
-        """
-        print(f"Result dict: {result_dict}")
-        concept_id = result_dict["concept_id"]
-        revision_id = result_dict["revision_id"]
-        metadata = result_dict["metadata"]
-
-        pgi = self.get_producer_granule_id(metadata)
-        
-        search_root_url = self.get_public_search_url()
-        location = f"{search_root_url}concepts/{concept_id}/{revision_id}"
-        granule_ur = metadata["GranuleUR"] #concept.get('metadata', {}).get('GranuleUR', '')
-        
-        message = {
-            "concept-id": concept_id,
-            "granule-ur": granule_ur,
-            "location": location
-        }
-
-        if pgi:
-            message.update({"producer-granule-id": pgi})
-        print(f"Message: {message}")
-        return message
-
-    def process_result(self, search_result):
-        """The search results contain XML, but the metadata is in JSON.
-        Parse out the XML to get the concept-id and revision-id and store it
-        in a map. Store the JSON metadata also in the map and return the map."""
-        # Split the input string into XML and JSON parts
-        xml_part, json_part = search_result.split('</result>')
-
-        # Parse the XML
-        root = ET.fromstring(xml_part + '</result>')
-        concept_id = root.find('concept-id').text
-        revision_id = root.find('revision-id').text
-
-        # Parse the JSON into dict.
-        json_data = json.loads(json_part)
-
-        # Create a dictionary with the extracted information
-        result = {
-            'concept_id': concept_id,
-            'revision_id': revision_id,
-            'metadata': json_data
-        }
-        return result
 
     def process_message(self, message):
         """This function gets the Message value from
@@ -262,16 +212,20 @@ class Search:
         message_dict = json.loads(message)
         print(f"Search process_message The message_dict type is: {type(message_dict)}")
         concept_id = message_dict["concept-id"]
+        revision_id = message_dict["revision-id"]
         print(f"Search process_message concept_id: {concept_id}")
         # Get the concept from search
-        result = self.get_concept(concept_id)
+        result = self.get_concept(concept_id, revision_id)
+
         print(f"Search process_message result: {result}")
 
-        # convert the result to a dict containing the concept-id, revision-id, and metadata.
-        result_dict = self.process_result(result)
-        print(f"Search process_message result_dict: {result_dict}")
+        # Parse the JSON into dict.
+        result_dict = json.loads(result)
 
-        # create and return json dict containing the concept-id, granule-ur, producer-granule-id, and the granule location.
-        new_message = self.create_notification_message_body(result_dict)
-        print (f"new_message: {new_message}")
-        return new_message
+        #Get the producer granule id
+        pgi = self.get_producer_granule_id(result_dict)
+        del message_dict['revision-id']
+        if pgi:
+            message_dict.update({"producer-granule-id": pgi})
+        print(f"Search process_message end message: {message_dict}")
+        return message_dict
