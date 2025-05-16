@@ -398,6 +398,7 @@
       (is (= "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\""
              (subscriptions/get-location-message-str concept))))))
 
+;; this test is needed for external process 'subscription_worker'
 (deftest create-notification-test
   (testing "Getting the notification for a concept."
     (let [concept {:concept-id "G12345-PROV1"
@@ -405,10 +406,7 @@
                    :metadata "{\"GranuleUR\": \"GranuleUR\",
                                \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
                                                                     \"Identifier\": \"Algorithm-1\"}]}}"}]
-      (is (= (str "{\"concept-id\": \"G12345-PROV1\", "
-                  "\"granule-ur\": \"GranuleUR\", "
-                  "\"producer-granule-id\": \"Algorithm-1\", "
-                  "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\"}")
+      (is (= (str "{\"concept-id\": \"G12345-PROV1\"}")
              (subscriptions/create-notification-message-body concept))))))
 
 (deftest create-message-attributes-test
