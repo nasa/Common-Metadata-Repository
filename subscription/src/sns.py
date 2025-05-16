@@ -26,9 +26,9 @@ class Sns:
         """ Publishes a message with attributes to the CMR external topic. Subscriptions
         can be filtered based on the message attributes. """
         print(f"publish_message message type: {type(message)}")
-        message_body_str = message["Body"]
-        print(f"publish_message body_str type: {type(message_body_str)}")
-        message_body = json.loads(message_body_str)
+        #message_body_str = message["Body"]
+        #print(f"publish_message body_str type: {type(message_body_str)}")
+        message_body = message["Body"]
         print(f"publish_message body type: {type(message_body)}")
         message_subject = message_body["Subject"]
         print(f"publish_message subject type: {type(message_subject)}")
