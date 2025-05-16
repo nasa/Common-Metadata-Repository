@@ -398,16 +398,31 @@
       (is (= "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\""
              (subscriptions/get-location-message-str concept))))))
 
-;; this test is needed for external process 'subscription_worker'
+;; The output of the function being tested is needed and expected for external process
+;; 'subscription_worker'
 (deftest create-notification-test
   (testing "Getting the notification for a concept."
-    (let [concept {:concept-id "G12345-PROV1"
+    (let [expected (str "{\"concept-id\": \"G12345-PROV1\"}")
+          concept {:concept-id "G12345-PROV1"
                    :revision-id 1
                    :metadata "{\"GranuleUR\": \"GranuleUR\",
                                \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
-                                                                    \"Identifier\": \"Algorithm-1\"}]}}"}]
-      (is (= (str "{\"concept-id\": \"G12345-PROV1\"}")
-             (subscriptions/create-notification-message-body concept))))))
+                                                                    \"Identifier\": \"Algorithm-1\"}]}}"}
+          xml-concept {:concept-id "G12345-PROV1"
+                       :revision-id 1
+                       :metadata
+                       "<Granule>
+                           <GranuleUR>
+                             S1A_S3_SLC__1SDH_20140615T034742_20140615T034807_001055_00107C_9928-SLC
+                           </GranuleUR>
+                           <DataGranule>
+                             <ProducerGranuleId>
+                               S1A_S3_SLC__1SDH_20140615T034742_20140615T034807_001055_00107C_9928
+                             </ProducerGranuleId>
+                           </DataGranule>
+                         </Granule>"}]
+      (is (= expected (subscriptions/create-notification-message-body concept)) "JSON test")
+      (is (= expected (subscriptions/create-notification-message-body xml-concept)) "XML test"))))
 
 (deftest create-message-attributes-test
   (testing "Creating the message attributes."
@@ -491,7 +506,7 @@
       (let [message-str (.body message)
             message (json/decode message-str true)]
         (is (= "G12345-PROV1" (:concept-id message)))
-        (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys message)))
+        (is (= '(:concept-id) (keys message)) "expected output for external subscription_worker")
         (is (some? (queue/delete-messages sqs-client queue-url messages)))))))
 
 (deftest publish-subscription-notification-test
