@@ -160,11 +160,12 @@ class Search:
             a granule by concept id in umm_json format."""
 
         # Set the search concepts URL.
-        url = f"{self.get_url()}/concepts/{concept_id}.umm_json"
+        url = f"{self.get_public_search_url()}/concepts/{concept_id}.umm_json"
 
         # Set the headers
         headers = {
-            "Authorization": self.get_token()
+            "Authorization": self.get_token(),
+            "Client-Id": "subscription-worker"
         }
 
         # Make a GET request
