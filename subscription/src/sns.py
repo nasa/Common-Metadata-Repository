@@ -34,7 +34,7 @@ class Sns:
         print(f"publish_message subject type: {type(message_subject)}")
         message_attributes = message_body["MessageAttributes"]
         print(f"publish_message attributes type: {type(message_attributes)}")
-        message_message = message_body["Message"]
+        message_message = json.dumps(message_body["Message"])
         print(f"publish_message messages type: {type(message_message)}")
         try:
             if message_attributes:
