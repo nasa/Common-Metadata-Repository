@@ -92,7 +92,7 @@ class TestSubscriptionWorker(unittest.TestCase):
         mock_sns_instance.publish_message.assert_called_once_with('test-topic', messages['Messages'][0])
 
         body = messages['Messages'][0]['Body']
-        message = json.dumps(body['Message'])
+        message = body['Message']
         (print(f"in test message type: {type(message)}"))
 
         mock_search_instance.process_message.assert_called_once_with(message)
