@@ -506,7 +506,7 @@
       (let [message-str (.body message)
             message (json/decode message-str true)]
         (is (= "G12345-PROV1" (:concept-id message)))
-        (is (= '(:concept-id) (keys message)) "expected output for external subscription_worker")
+        (is (= '(:concept-id :revision-id :granule-ur :location) (keys message)) "expected output for external subscription_worker")
         (is (some? (queue/delete-messages sqs-client queue-url messages)))))))
 
 (deftest publish-subscription-notification-test
