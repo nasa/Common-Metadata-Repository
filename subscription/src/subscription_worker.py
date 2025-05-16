@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from access_control import AccessControl
 from search import Search
 from logger import logger
+import traceback
 
 AWS_REGION = os.getenv("AWS_REGION")
 QUEUE_URL = os.getenv("QUEUE_URL")
@@ -78,7 +79,7 @@ def process_messages(sns_client, topic, messages, access_control, search):
                 logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
         except Exception as e:
             logger.error(f"Subscription worker: There is a problem in process messages {message}. {e}")
-        
+            traceback.print_exc()
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """

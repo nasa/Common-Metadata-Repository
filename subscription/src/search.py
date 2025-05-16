@@ -227,7 +227,8 @@ class Search:
 
         #Get the producer granule id
         pgi = self.get_producer_granule_id(result_dict)
-        del message_dict['revision-id']
+        if revision_id:
+            del message_dict['revision-id']
         if pgi:
             message_dict.update({"producer-granule-id": pgi})
         print(f"Search process_message end message: {message_dict}")
