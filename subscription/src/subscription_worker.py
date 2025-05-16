@@ -39,41 +39,25 @@ def delete_messages(sqs_client, queue_url, messages):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
-#def ensure_json_object(python_dict):
-    # Serialize to JSON string
-#    json_string = json.dumps(python_dict)
-    
-    # Deserialize back to Python object
-#    json_object = json.loads(json_string)
-    
-#    return json_object
-
 def process_messages(sns_client, topic, messages, access_control, search):
     """ Processes a list of messages that was received from a queue. Check to see if ACLs pass for the granule.
         If the checks pass then send the notification. """
 
     for message in messages.get("Messages", []):
         try:
-            print(f"The message type is: {type(message)}")
             message_body = json.loads(message["Body"])
 
-            print(f"The message_body type is: {type(message_body)}")
             message_attributes = message_body["MessageAttributes"]
             logger.debug(f"Subscription worker: Received message including attributes: {message_body}")
 
-            print(f"The message_attributes type is: {type(message_attributes)}")
             subscriber = message_attributes['subscriber']['Value']
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
             if(access_control.has_read_permission(subscriber, collection_concept_id)):
                 logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
-                print(f"The message_body['Message'] type is: {type(message_body['Message'])}")
                 message_msg = search.process_message(message_body['Message'])
-                print(f"The message_msg type is: {type(message_msg)}")
                 message_body['Message'] = message_msg
-                print(f"The message_body type is: {type(message_body)}")
                 message['Body'] = message_body
-                print(f"The message type is: {type(message)}")
                 sns_client.publish_message(topic, message)
             else:
                 logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")

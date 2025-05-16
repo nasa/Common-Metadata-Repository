@@ -16,10 +16,10 @@ class Search:
     For AWS:
     ENVIRONMENT_NAME=sit
     CMR_SEARCH_PROTOCOL=https
-    CMR_SEARCH_PORT=80
-    CMR_SEARCH_HOST=<internal load balancer>
-    CMR_SEARCH_RELATIVE_ROOT_URL=search
-    TOKEN=<token>
+    CMR_SEARCH_PORT=443
+    CMR_SEARCH_HOST=cmr.sit.earthdata.nasa.gov
+    CMR_SEARCH_RELATIVE_ROOT_URL=search/
+    TOKEN
 
     Example Use of this class
     search = Search()
@@ -31,53 +31,8 @@ class Search:
 
     def __init__(self):
         """ Sets up a class variable of url."""
-        self.url = None
         self.public_search_url = None
         self.token = None
-
-    def get_url_from_parameter_store(self):
-        """This function returns the URL for the search service. For local development the full URL can be provided. Otherwise the 
-        environment name that is used for the parameter store prefix is obtained from an environment variable. This variable is used to 
-        get the parameter store ingest values to construct the search service URL."""
-
-        # Search URL is for local development
-        search_url = os.getenv("SEARCH_URL")
-
-        if search_url:
-            self.url = search_url
-            logger.debug(f"Subscription Worker Search URL: {self.url}")
-            return
-        else:
-            # This block gets the search URL from the AWS parameter store.
-            environment_name = os.getenv("ENVIRONMENT_NAME")
-
-            if not environment_name:
-                logger.error("ENVIRONMENT_NAME environment variable is not set")
-                raise ValueError("ENVIRONMENT_NAME environment variable is not set")
-
-            # construct the search parameter names from the environment variable
-            env_name = environment_name.lower()
-            pre_fix = f"/{env_name}/ingest/"
-            protocol_param_name = f"{pre_fix}CMR_SEARCH_PROTOCOL"
-            port_param_name = f"{pre_fix}CMR_SEARCH_PORT"
-            host_param_name = f"{pre_fix}CMR_SEARCH_HOST"
-            context_param_name = f"{pre_fix}CMR_SEARCH_RELATIVE_ROOT_URL"
-
-            env_vars = Env_Vars()
-            protocol = env_vars.get_env_var_from_parameter_store(parameter_name=protocol_param_name)
-            port = env_vars.get_env_var_from_parameter_store(parameter_name=port_param_name)
-            host = env_vars.get_env_var_from_parameter_store(parameter_name=host_param_name)
-            context = env_vars.get_env_var_from_parameter_store(parameter_name=context_param_name)
-
-            # The context already contains the forward / so we don't need it here.
-            self.url = f"{protocol}://{host}:{port}{context}"
-            logger.debug(f"Subscription Worker Search URL: {self.url}")
-
-    def get_url(self):
-        """This function returns the search URL if it has already been constructed, otherwise it constructs the URL and then returns it."""
-        if not self.url:
-            self.get_url_from_parameter_store()
-        return self.url
 
     def get_public_search_url_from_parameter_store(self):
         """This function returns the URL for the public search service. For local development the full URL can be provided. Otherwise the 
@@ -170,7 +125,7 @@ class Search:
             "Authorization": self.get_token(),
             "Client-Id": "subscription-worker"
         }
-        print(f"Token is: {self.get_token()[-4:]}")
+
         # Make a GET request
         response = requests.get(url, headers=headers)
 
@@ -185,10 +140,7 @@ class Search:
             logger.warning(f"Subscription Worker getting search concept using URL {url} failed with status code: {response.status_code}")
 
     def get_producer_granule_id(self, metadata):
-        """
-        Get the granule producer id from the metadata and create a string for the
-        subscription notification message.
-        """
+        """Get the granule producer id from the metadata."""
         identifiers = metadata["DataGranule"]['Identifiers']
         pgi = None
         for identifier in identifiers:
@@ -202,25 +154,25 @@ class Search:
 
     def process_message(self, message):
         """This function gets the Message value from
-        a SQS message that contains: "{\"concept-id\": \"G1200484356-ERICH_PROV\"}"
-        Get the concept-id value, search for the concepts metadata, and
-        return a message string such as:
+        a SQS message that contains: 
         "{\"concept-id\": \"G1200484356-ERICH_PROV\",
+          \"revision-id\": \"1\",
           \"granule-ur\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01\",
-          \"producer-granule-id\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01.nc\",
           \"location\": \"http://localhost:3003/concepts/G1200484356-ERICH_PROV/39\"}"
+        
+        Get the concept-id value and the revision-id value if it exists, search for the concepts metadata, and
+        get the producer granule id and remove the revision-id. Return a message dictionary such as:
+        {\"concept-id\": \"G1200484356-ERICH_PROV\",
+         \"granule-ur\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01\",
+         \"producer-granule-id\": \"SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01.nc\",
+         \"location\": \"http://localhost:3003/concepts/G1200484356-ERICH_PROV/39\"}
         """
         # Get the granule concept-id from the message.
-        print(f"Search process_message The message type is: {type(message)}")
         message_dict = json.loads(message)
-        print(f"Search process_message The message_dict type is: {type(message_dict)}")
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)
-        print(f"Search process_message concept_id: {concept_id}")
         # Get the concept from search
         result = self.get_concept(concept_id, revision_id)
-
-        print(f"Search process_message result: {result}")
 
         # Parse the JSON into dict.
         result_dict = json.loads(result)
@@ -231,5 +183,4 @@ class Search:
             del message_dict['revision-id']
         if pgi:
             message_dict.update({"producer-granule-id": pgi})
-        print(f"Search process_message end message: {message_dict}")
         return message_dict

@@ -27,12 +27,6 @@ class TestSearch(unittest.TestCase):
         }
         self.search.get_public_search_url = lambda: "https://cmr.earthdata.nasa.gov/search/"
 
-    @patch('search.os.getenv')
-    def test_get_url_from_parameter_store(self, mock_getenv):
-        mock_getenv.return_value = 'http://localhost:3003/'
-        self.search.get_url_from_parameter_store()
-        self.assertEqual(self.search.url, 'http://localhost:3003/')
-
     @patch('search.requests.get')
     def test_get_concept(self, mock_get):
         mock_response = MagicMock()
@@ -62,11 +56,6 @@ class TestSearch(unittest.TestCase):
         mock_getenv.return_value = 'test-token'
         self.search.get_token_from_parameter_store()
         self.assertEqual(self.search.token, 'test-token')
-
-    def test_get_url(self):
-        self.search.url = 'http://test-url.com'
-        result = self.search.get_url()
-        self.assertEqual(result, 'http://test-url.com')
 
     def test_get_public_search_url(self):
         result = self.search.get_public_search_url()
@@ -111,8 +100,6 @@ class TestSearch(unittest.TestCase):
         result = search.process_message(input_message)
 
         # Assert
-        print(f"Test expect: {expected_output}")
-        print(f"Test result: {result}")
         self.assertEqual(result, expected_output)
         mock_get_concept.assert_called_once_with("G1200484356-ERICH_PROV", '1')
 

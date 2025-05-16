@@ -93,7 +93,6 @@ class TestSubscriptionWorker(unittest.TestCase):
 
         body = messages['Messages'][0]['Body']
         message = body['Message']
-        (print(f"in test message type: {type(message)}"))
 
         mock_search_instance.process_message.assert_called_once_with(message)
 
