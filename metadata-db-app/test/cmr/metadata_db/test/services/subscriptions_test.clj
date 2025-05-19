@@ -10,7 +10,7 @@
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
-   [cmr.metadata-db.services.subscriptions :as subscriptions] 
+   [cmr.metadata-db.services.subscriptions :as subscriptions]
    [cmr.redis-utils.test.test-util :as redis-test-util]
    [cmr.message-queue.queue.aws-queue :as queue]))
 
@@ -402,14 +402,19 @@
 ;; 'subscription_worker'
 (deftest create-notification-test
   (testing "Getting the notification for a concept."
-    (let [expected (str "{\"concept-id\": \"G12345-PROV1\"}")
+    (let [expected {"concept-id" "G12345-PROV1"
+                    "revision-id" "1"
+                    "granule-ur" "GranuleUR"
+                    "location" "http://localhost:3003/concepts/G12345-PROV1/1"}
           concept {:concept-id "G12345-PROV1"
                    :revision-id 1
+                   :extra-fields {:granule-ur "GranuleUR"}
                    :metadata "{\"GranuleUR\": \"GranuleUR\",
                                \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
                                                                     \"Identifier\": \"Algorithm-1\"}]}}"}
           xml-concept {:concept-id "G12345-PROV1"
                        :revision-id 1
+                       :extra-fields {:granule-ur "GranuleUR"}
                        :metadata
                        "<Granule>
                            <GranuleUR>
@@ -421,8 +426,8 @@
                              </ProducerGranuleId>
                            </DataGranule>
                          </Granule>"}]
-      (is (= expected (subscriptions/create-notification-message-body concept)) "JSON test")
-      (is (= expected (subscriptions/create-notification-message-body xml-concept)) "XML test"))))
+      (is (= expected (json/decode (subscriptions/create-notification-message-body concept))) "JSON test")
+      (is (= expected (json/decode (subscriptions/create-notification-message-body xml-concept))) "XML test"))))
 
 (deftest create-message-attributes-test
   (testing "Creating the message attributes."
