@@ -147,7 +147,8 @@ class Search:
 
     def get_producer_granule_id(self, metadata):
         """Get the granule producer id from the metadata."""
-        identifiers = metadata["DataGranule"]['Identifiers']
+        #identifiers = metadata["DataGranule"]['Identifiers']
+        identifiers = metadata.get('DataGranule').get('Identifiers')
         pgi = None
         for identifier in identifiers:
             if identifier.get('IdentifierType') == 'ProducerGranuleId':
