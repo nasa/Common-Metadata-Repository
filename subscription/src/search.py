@@ -133,7 +133,7 @@ class Search:
         except Exception as e:
             logger.error(f"Subscription worker Search: There is a problem in get_concept when getting concept from the CMR concept_id {concept_id} revision_id {revision_id}. {e}")
             logger.error(f"Subscription worker Search: Stack trace {traceback.print_exc()}")
-            raise
+            raise ValueError(f"Subscription worker Search: Stack trace {traceback.print_exc()}")
 
         # Check if the request was successful
         if response.status_code == 200:
