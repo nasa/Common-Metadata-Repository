@@ -132,7 +132,7 @@ class Search:
             response = requests.get(url, headers=headers)
         except Exception as e:
             logger.error(f"Subscription worker Search: There is a problem in get_concept when getting concept from the CMR concept_id {concept_id} revision_id {revision_id}. {e}")
-            traceback.print_exc()
+            logger.error(f"Subscription worker Search: Stack trace {traceback.print_exc()}")
             raise
 
         # Check if the request was successful

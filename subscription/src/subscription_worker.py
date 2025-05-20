@@ -63,7 +63,7 @@ def process_messages(sns_client, topic, messages, access_control, search):
                 logger.warning(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
         except Exception as e:
             logger.error(f"Subscription worker: There is a problem in process messages {message}. {e}")
-            traceback.print_exc()
+            logger.error(f"Subscription worker: Stack trace {traceback.print_exc()}")
 
 def poll_queue(running):
     """ Poll the SQS queue and process messages. """
