@@ -114,20 +114,26 @@ class Search:
         """This function calls search using a token, and a CMR concept id to get
             a granule by concept id in umm_json format."""
 
-        # Set the search concepts URL.
-        if revision_id:
-            url = f"{self.get_public_search_url()}/concepts/{concept_id}/{revision_id}.umm_json"
-        else:
-            url = f"{self.get_public_search_url()}/concepts/{concept_id}.umm_json"
+        try:
+            # Set the search concepts URL.
+            if revision_id:
+                url = f"{self.get_public_search_url()}/concepts/{concept_id}/{revision_id}.umm_json"
+            else:
+                url = f"{self.get_public_search_url()}/concepts/{concept_id}.umm_json"
 
-        # Set the headers
-        headers = {
-            "Authorization": self.get_token(),
-            "Client-Id": "subscription-worker"
-        }
+            # Set the headers
+            headers = {
+                "Authorization": self.get_token(),
+                "Client-Id": "subscription-worker",
+                "User-Agent": "subscription-worker"
+            }
 
-        # Make a GET request
-        response = requests.get(url, headers=headers)
+            # Make a GET request
+            response = requests.get(url, headers=headers)
+        except Exception as e:
+            logger.error(f"Subscription worker Search: There is a problem in get_concept when getting concept from the CMR concept_id {concept_id} revision_id {revision_id}. {e}")
+            traceback.print_exc()
+            raise
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -168,6 +174,7 @@ class Search:
          \"location\": \"http://localhost:3003/concepts/G1200484356-ERICH_PROV/39\"}
         """
         # Get the granule concept-id from the message.
+        print(f"Search process_message message type {type(message)}")
         message_dict = json.loads(message)
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)

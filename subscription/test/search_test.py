@@ -34,7 +34,7 @@ class TestSearch(unittest.TestCase):
         mock_response.text = json.dumps(self.test_input)
         mock_get.return_value = mock_response
 
-        self.search.url = 'http://test-url.com'
+        self.search.url = 'http://example.gov'
         self.search.token = 'test-token'
 
         result = self.search.get_concept('test-concept-id', '1')
@@ -47,9 +47,9 @@ class TestSearch(unittest.TestCase):
 
     @patch('search.os.getenv')
     def test_get_public_search_url_from_parameter_store(self, mock_getenv):
-        mock_getenv.return_value = 'http://public-search.com/'
+        mock_getenv.return_value = 'https://cmr.earthdata.nasa.gov/search/'
         self.search.get_public_search_url_from_parameter_store()
-        self.assertEqual(self.search.public_search_url, 'http://public-search.com/')
+        self.assertEqual(self.search.public_search_url, 'https://cmr.earthdata.nasa.gov/search/')
 
     @patch('search.os.getenv')
     def test_get_token_from_parameter_store(self, mock_getenv):

@@ -60,7 +60,7 @@ def process_messages(sns_client, topic, messages, access_control, search):
                 message['Body'] = message_body
                 sns_client.publish_message(topic, message)
             else:
-                logger.info(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
+                logger.warning(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
         except Exception as e:
             logger.error(f"Subscription worker: There is a problem in process messages {message}. {e}")
             traceback.print_exc()
@@ -82,8 +82,13 @@ def poll_queue(running):
              messages = receive_message(sqs_client=sqs_client, queue_url=QUEUE_URL)
 
              if messages:
-                 process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control, search=search)
-                 delete_messages(sqs_client=sqs_client, queue_url=QUEUE_URL, messages=messages)
+                 try:
+                     process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control, search=search)
+                     delete_messages(sqs_client=sqs_client, queue_url=QUEUE_URL, messages=messages)
+                 except Exception as e:
+                     # This exception has already been logged, but capturing the exception here so that the message won't be deleted if it can't be processed.
+                     # Do not do anything with the exception here so that we can process the dead letter queue.
+                     None
 
              dl_messages = receive_message(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL)
              if dl_messages:
