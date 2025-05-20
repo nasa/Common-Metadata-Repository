@@ -10,7 +10,7 @@
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.subscription-cache :as subscription-cache]
-   [cmr.metadata-db.services.subscriptions :as subscriptions] 
+   [cmr.metadata-db.services.subscriptions :as subscriptions]
    [cmr.redis-utils.test.test-util :as redis-test-util]
    [cmr.message-queue.queue.aws-queue :as queue]))
 
@@ -398,18 +398,36 @@
       (is (= "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\""
              (subscriptions/get-location-message-str concept))))))
 
+;; The output of the function being tested is needed and expected for external process
+;; 'subscription_worker'
 (deftest create-notification-test
   (testing "Getting the notification for a concept."
-    (let [concept {:concept-id "G12345-PROV1"
+    (let [expected {"concept-id" "G12345-PROV1"
+                    "revision-id" "1"
+                    "granule-ur" "GranuleUR"
+                    "location" "http://localhost:3003/concepts/G12345-PROV1/1"}
+          concept {:concept-id "G12345-PROV1"
                    :revision-id 1
+                   :extra-fields {:granule-ur "GranuleUR"}
                    :metadata "{\"GranuleUR\": \"GranuleUR\",
                                \"DataGranule\": {\"Identifiers\": [{\"IdentifierType\": \"ProducerGranuleId\",
-                                                                    \"Identifier\": \"Algorithm-1\"}]}}"}]
-      (is (= (str "{\"concept-id\": \"G12345-PROV1\", "
-                  "\"granule-ur\": \"GranuleUR\", "
-                  "\"producer-granule-id\": \"Algorithm-1\", "
-                  "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\"}")
-             (subscriptions/create-notification-message-body concept))))))
+                                                                    \"Identifier\": \"Algorithm-1\"}]}}"}
+          xml-concept {:concept-id "G12345-PROV1"
+                       :revision-id 1
+                       :extra-fields {:granule-ur "GranuleUR"}
+                       :metadata
+                       "<Granule>
+                           <GranuleUR>
+                             S1A_S3_SLC__1SDH_20140615T034742_20140615T034807_001055_00107C_9928-SLC
+                           </GranuleUR>
+                           <DataGranule>
+                             <ProducerGranuleId>
+                               S1A_S3_SLC__1SDH_20140615T034742_20140615T034807_001055_00107C_9928
+                             </ProducerGranuleId>
+                           </DataGranule>
+                         </Granule>"}]
+      (is (= expected (json/decode (subscriptions/create-notification-message-body concept))) "JSON test")
+      (is (= expected (json/decode (subscriptions/create-notification-message-body xml-concept))) "XML test"))))
 
 (deftest create-message-attributes-test
   (testing "Creating the message attributes."
@@ -493,7 +511,7 @@
       (let [message-str (.body message)
             message (json/decode message-str true)]
         (is (= "G12345-PROV1" (:concept-id message)))
-        (is (= '(:concept-id :granule-ur :producer-granule-id :location) (keys message)))
+        (is (= '(:concept-id :revision-id :granule-ur :location) (keys message)) "expected output for external subscription_worker")
         (is (some? (queue/delete-messages sqs-client queue-url messages)))))))
 
 (deftest publish-subscription-notification-test
