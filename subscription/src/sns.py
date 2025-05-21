@@ -25,11 +25,10 @@ class Sns:
     def publish_message(topic, message):
         """ Publishes a message with attributes to the CMR external topic. Subscriptions
         can be filtered based on the message attributes. """
-        message_body_str = message["Body"]
-        message_body = json.loads(message_body_str)
+        message_body = message["Body"]
         message_subject = message_body["Subject"]
         message_attributes = message_body["MessageAttributes"]
-        message_message = message_body["Message"]
+        message_message = json.dumps(message_body["Message"])
         try:
             if message_attributes:
                 att_dict = {}
