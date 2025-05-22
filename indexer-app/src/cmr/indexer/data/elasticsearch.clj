@@ -11,6 +11,7 @@
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.bulk :as cmr-bulk]
    [cmr.indexer.data.index-set :as idx-set]
@@ -29,11 +30,6 @@
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)
-
-(defn context->conn
-  "Returns the elastisch connection in the context"
-  [context]
-  (get-in context [:system :db :conn]))
 
 (defmulti get-elastic-version
   "Get the proper elastic document version for the concept based on type.
@@ -124,7 +120,7 @@
         (info "Index set does not exist so creating it.")
         (index-set-svc/create-index-set context expected-index-set)
         (info "Creating collection index alias.")
-        (esi/create-index-alias (context->conn context)
+        (esi/create-index-alias (indexer-util/context->conn context)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
@@ -153,7 +149,7 @@
         (info "Updating the index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context expected-index-set)
         (info "Creating colleciton index alias.")
-        (esi/create-index-alias (context->conn context)
+        (esi/create-index-alias (indexer-util/context->conn context)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
@@ -166,7 +162,7 @@
   [context collection-concept-id index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
-    (esi/delete-index (context->conn context) index)
+    (esi/delete-index (indexer-util/context->conn context) index)
     (catch Throwable e
       (error e (str "Failed to delete granule index: "
                     (pr-str index))))))
@@ -306,7 +302,7 @@
   [context docs]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          conn (context->conn context)
+          conn (indexer-util/context->conn context)
           response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response))))
 
@@ -317,7 +313,7 @@
   ([context docs {:keys [all-revisions-index?]}]
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (context->conn context)
+           conn (indexer-util/context->conn context)
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
@@ -325,7 +321,7 @@
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
-    (let [conn (context->conn context)
+    (let [conn (indexer-util/context->conn context)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
@@ -343,7 +339,7 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (es-helper/doc-get (context->conn context) es-index es-type elastic-id))
+  (es-helper/doc-get (indexer-util/context->conn context) es-index es-type elastic-id))
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
@@ -353,7 +349,7 @@
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
      (let [{:keys [admin-token]} (context->es-config context)
-           {:keys [uri http-opts]} (context->conn context)
+           {:keys [uri http-opts]} (indexer-util/context->conn context)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
            delete-url (if elastic-version
@@ -378,7 +374,7 @@
   "Delete document that match the given query"
   [context es-index _es-type query]
   (let [{:keys [admin-token]} (context->es-config context)
-        {:keys [uri http-opts]} (context->conn context)
+        {:keys [uri http-opts]} (indexer-util/context->conn context)
         delete-url (format "%s/%s/_delete_by_query" uri es-index)]
     (client/post delete-url
                  (merge http-opts

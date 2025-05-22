@@ -10,7 +10,8 @@
    [cmr.common.util :as util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
-   [cmr.indexer.services.messages :as m])
+   [cmr.indexer.services.messages :as m]
+   [cmr.indexer.indexer-util :as indexer-util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -34,10 +35,6 @@
    :tag
    :tool
    :variable])
-
-(defn context->es-store
-  [context]
-  (get-in context [:system :db]))
 
 (defn gen-valid-index-name
   "Join parts, lowercase letters and change '-' to '_'."
@@ -88,7 +85,7 @@
   [context]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
-        index-sets (es/get-index-sets (context->es-store context) index-name idx-mapping-type)]
+        index-sets (es/get-index-sets (indexer-util/context->es-store context) index-name idx-mapping-type)]
     (map #(select-keys (:index-set %) [:id :name :concepts])
          index-sets)))
 
@@ -97,7 +94,7 @@
   [context index-set-id]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)))
+    (es/index-set-exists? (indexer-util/context->es-store context) index-name idx-mapping-type index-set-id)))
 
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
@@ -138,7 +135,7 @@
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (when (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)
+    (when (es/index-set-exists? (indexer-util/context->es-store context) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
@@ -177,7 +174,7 @@
   (validate-requested-index-set context index-set false)
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
-        es-store (context->es-store context)]
+        es-store (indexer-util/context->es-store context)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
     ;; rollback index-set creation if index creation fails
@@ -200,7 +197,7 @@
   (info "Updating index-set" (pr-str index-set))
   (validate-requested-index-set context index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set)
-        es-store (context->es-store context)]
+        es-store (indexer-util/context->es-store context)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
@@ -214,7 +211,7 @@
   (let [index-names (get-index-names (get-index-set context index-set-id))
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (dorun (map #(es/delete-index (context->es-store context) %) index-names))
+    (dorun (map #(es/delete-index (indexer-util/context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
 (defn- add-rebalancing-collection
@@ -366,7 +363,7 @@
   [context]
   (let [{:keys [index-name]} config/idx-cfg-for-index-sets
         index-set-ids (es/get-index-set-ids
-                       (context->es-store context)
+                       (indexer-util/context->es-store context)
                        index-name
                        "_doc")]
     ;; delete indices assoc with index-set

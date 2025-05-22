@@ -59,3 +59,17 @@
              (rest/index-aliases-batch-url conn)
              {:content-type :json
               :body {:actions actions}}))
+
+(defn create-index-template
+  "create an index template"
+  [conn template-name opts]
+  (let [{:keys [index-patterns settings mappings aliases]} opts
+        template-url (rest/url-with-path conn "_index_template" template-name)
+        template (merge {:settings settings}
+                        (if mappings {:mappings mappings})
+                        (if aliases {:aliases aliases}))
+        body (merge {:index_patterns index-patterns
+                     :template template})]
+    (rest/post conn template-url
+               {:content-type :json
+                :body body})))
