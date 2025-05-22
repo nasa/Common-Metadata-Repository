@@ -11,7 +11,10 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [ring/ring-core "1.10.0"]
+                 [org.eclipse.jetty/jetty-http "11.0.24"]
+                 [org.eclipse.jetty/jetty-util "11.0.24"]
+                 [ring/ring-core "1.13.0"]
+                 [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -23,7 +26,8 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [pjstadig/humane-test-output "0.9.0"]]
+                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [ring/ring-jetty-adapter "1.13.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)
