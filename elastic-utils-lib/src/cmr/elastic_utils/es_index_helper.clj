@@ -66,8 +66,8 @@
   (let [{:keys [index-patterns settings mappings aliases]} opts
         template-url (rest/url-with-path conn "_index_template" template-name)
         template (merge {:settings settings}
-                        (if mappings {:mappings mappings})
-                        (if aliases {:aliases aliases}))
+                        (when mappings {:mappings mappings})
+                        (when aliases {:aliases aliases}))
         body (merge {:index_patterns index-patterns
                      :template template})]
     (rest/post conn template-url

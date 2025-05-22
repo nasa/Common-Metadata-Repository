@@ -1,16 +1,5 @@
 (ns cmr.indexer.indexer-util
-  "Provide util functions for indexer functionality"
-  (:require
-   [cheshire.core :as json]
-   [clojure.string :as string]
-   [cmr.common.config :as common-config]
-   [cmr.common.log :as log :refer [info]]
-   [cmr.common.rebalancing-collections :as rebalancing-collections]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.indexer.config :as config]
-   [cmr.indexer.data.index-set-elasticsearch :as es]
-   [cmr.indexer.services.messages :as m]))
+  "Provide util functions for indexer functionality")
 
 (defn context->es-store
   [context]

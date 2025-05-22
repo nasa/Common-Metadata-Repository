@@ -680,7 +680,7 @@
         ;; Instead of running a delete-by-query to remove all granules from
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
-        (let [resp (es/delete-granule-index context concept-id index)]
+        (let [resp (es/delete-granule-index context index)]
           (when (not= (get resp :status) 200)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
 

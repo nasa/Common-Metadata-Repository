@@ -159,7 +159,7 @@
 
 (defn delete-granule-index
   "Delete an elastic index by name"
-  [context collection-concept-id index]
+  [context index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
     (esi/delete-index (indexer-util/context->conn context) index)

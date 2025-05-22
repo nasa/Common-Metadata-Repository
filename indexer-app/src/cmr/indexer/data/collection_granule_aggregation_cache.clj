@@ -19,7 +19,6 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
-   [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.services.index-service :as index-service]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
