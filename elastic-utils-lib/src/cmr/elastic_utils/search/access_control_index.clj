@@ -7,6 +7,7 @@
    [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.elastic-utils.search.es-index :as esi]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -113,7 +114,7 @@
   "Unindexes all access groups owned by provider-id."
   [context provider-id]
   (info "Unindexing all groups for" provider-id)
-  (m/delete-by-query (esi/context->search-index context)
+  (es-helper/delete-by-query (esi/context->conn context)
                      group-index-name
                      group-type-name
                      ;; only :provider-id-lowercase is indexed, so to find the access group by
@@ -428,7 +429,7 @@
 (defn unindex-acls-by-provider
   "Removes all ACLs granting permissions to the specified provider ID from the index."
   [context provider-id]
-  (m/delete-by-query (esi/context->search-index context)
+  (es-helper/delete-by-query (esi/context->conn context)
                      acl-index-name
                      acl-type-name
                      {:term {:target-provider-id-lowercase (string/lower-case provider-id)}}))

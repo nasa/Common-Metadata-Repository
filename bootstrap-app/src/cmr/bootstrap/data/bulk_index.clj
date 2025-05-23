@@ -1,19 +1,21 @@
 (ns cmr.bootstrap.data.bulk-index
   "Functions to support concurrent bulk indexing."
   (:require
-    [clj-time.coerce :as time-coerce]
-    [clojure.core.async :as async :refer [<!!]]
-    [cmr.access-control.data.bulk-index :as ac-bulk-index]
-    [cmr.bootstrap.embedded-system-helper :as helper]
-    [cmr.common.concepts :as cc]
-    [cmr.common.log :refer (info warn error)]
-    [cmr.common.util :as util]
-    [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.index-set :as index-set]
-    [cmr.indexer.services.index-service :as index]
-    [cmr.indexer.services.index-set-service :as index-set-service]
-    [cmr.metadata-db.data.concepts :as db]
-    [cmr.metadata-db.data.providers :as p]))
+   [clj-time.coerce :as time-coerce]
+   [clojure.core.async :as async :refer [<!!]]
+   [cmr.access-control.data.bulk-index :as ac-bulk-index]
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.common.concepts :as cc]
+   [cmr.common.log :refer (info warn error)]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.index-set :as index-set]
+   [cmr.indexer.services.index-service :as index]
+   [cmr.indexer.services.index-set-service :as index-set-service]
+   [cmr.metadata-db.data.concepts :as db]
+   [cmr.metadata-db.data.providers :as p]))
 
 (def ^:private system-concept-provider
   "Provider name for indexing system concepts"
@@ -41,7 +43,7 @@
 
 (defn elastic-retry-handler
   "A custom http retry handler for use with elastic connections"
-  [ex try-count http-context]
+  [ex try-count _http-context]
   (when-let [sleep-time (elastic-http-try-count->wait-before-retry-time try-count)]
     (warn (format "Elasticsearch HTTP Request failed due to %s. %s try. Waiting %s ms before retrying."
                   (.getMessage ex) try-count sleep-time))
@@ -262,7 +264,7 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
-    (es/delete-by-query indexer-context "_all" "granule" query)))
+    (es-helper/delete-by-query (indexer-util/context->conn indexer-context) "_all" "granule" query)))
 
 (defmethod delete-concepts-by-id :default
   [system provider-id concept-type concept-ids]

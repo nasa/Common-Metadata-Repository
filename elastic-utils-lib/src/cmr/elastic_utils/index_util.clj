@@ -224,11 +224,6 @@
                                   {:refresh "true"}))]
      (es-helper/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
-(defn delete-by-query
-  "Delete document that match the given query"
-  [elastic-store index-name type-name query]
-  (es-helper/delete-by-query (:conn elastic-store) index-name type-name query))
-
 (defn delete-index
   "Delete index"
   [elastic-store index-name]

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.misc.deleted-collection-index-test
+(ns cmr.system-int-test.ingest.misc.deleted-granule-index-test
   "When a rebalanced collection is deleted, the index associated should be removed
    this namespace tests that functionality."
   (:require
@@ -12,7 +12,7 @@
 
 (use-fixtures :once (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest deleted-collection-test-index
+(deftest deleted-granule-test-index
   (testing "Ingest collection, rebalance collection, delete collection"
     (let [collection (data-core/ingest-umm-spec-collection "PROV1"
                                                            (data-umm-c/collection {})
@@ -27,7 +27,7 @@
             index-exists-after-delete-response (index/check-index-exists collection)]
         (is (= 200 (:status index-exists-before-delete-response)))
         (is (= 404 (:status index-exists-after-delete-response))))))
-  (testing "Ingest collection, rebalance collection, delete collection, ingest collection, ingest granule, check index doesn't exist"
+  (testing "Ingest collection, rebalance collection, delete collection, ingest collection, ingest granule, check index exists again"
     (let [collection (data-core/ingest-umm-spec-collection "PROV1"
                                                            (data-umm-c/collection {})
                                                            {:validate-keywords false})]
@@ -48,4 +48,4 @@
 
             index-not-exists-after-reingest-response (index/check-index-exists collection)]
         (is (= 404 (:status index-not-exists-before-reingest-response)))
-        (is (= 404 (:status index-not-exists-after-reingest-response)))))))
+        (is (= 200 (:status index-not-exists-after-reingest-response)))))))

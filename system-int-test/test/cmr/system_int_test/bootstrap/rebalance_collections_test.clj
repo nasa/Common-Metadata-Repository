@@ -498,7 +498,7 @@
      ;; Rebalance to small-collections
      (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 0 :rebalancing-status "NOT_REBALANCING"} deleted-coll)
+     (assert-rebalance-status {:small-collections 0 :separate-index 0 :rebalancing-status "COMPLETE"} deleted-coll)
      (bootstrap/finalize-rebalance-collection (:concept-id deleted-coll))
 
      ;; Index is already removed, search for granules

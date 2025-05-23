@@ -26,6 +26,7 @@
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.indexer.services.event-handler :as event-handler]
+   [cmr.indexer.services.template-service :as template-service]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
 
@@ -107,6 +108,7 @@
       (es/create-indexes context)
       (when (es/requires-update? context)
         (es/update-indexes context {}))
+      (template-service/make-templates context)
       (catch Exception e
         (common-sys/stop started-system component-order)
         (throw e)))
