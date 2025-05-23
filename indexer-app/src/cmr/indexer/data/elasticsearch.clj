@@ -369,17 +369,3 @@
              (info (str "Ignore conflict: " (str response)))
              (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
            (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))))
-
-(defn delete-by-query
-  "Delete document that match the given query"
-  [context es-index _es-type query]
-  (let [{:keys [admin-token]} (context->es-config context)
-        {:keys [uri http-opts]} (indexer-util/context->conn context)
-        delete-url (format "%s/%s/_delete_by_query" uri es-index)]
-    (client/post delete-url
-                 (merge http-opts
-                        {:headers {"Authorization" admin-token
-                                   "Confirm-delete-action" "true"
-                                   :client-id t-config/cmr-client-id}
-                         :content-type :json
-                         :body (json/generate-string {:query query})}))))

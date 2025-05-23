@@ -15,7 +15,9 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.config :as config]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
@@ -669,8 +671,8 @@
                                          (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
-        (let [resp (es/delete-by-query
-                    context
+        (let [resp (es-helper/delete-by-query
+                    (indexer-util/context->conn context)
                     index
                     (concept-mapping-types :granule)
                     {:term {(query-field->elastic-field :collection-concept-id :granule)
@@ -848,16 +850,16 @@
         ccmt (concept-mapping-types :collection)]
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
-      (es/delete-by-query
-       context
+      (es-helper/delete-by-query
+       (indexer-util/context->conn context)
        index
        ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
-      (es/delete-by-query
-       context
+      (es-helper/delete-by-query
+       (indexer-util/context->conn context)
        index-name
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
@@ -865,8 +867,8 @@
     ;; delete the variable,service,tool and subscription
     (doseq [concept-type [:service :subscription :tool :variable]]
       (doseq [index (vals (concept-type index-names))]
-        (es/delete-by-query
-         context
+        (es-helper/delete-by-query
+         (indexer-util/context->conn context)
          index
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
