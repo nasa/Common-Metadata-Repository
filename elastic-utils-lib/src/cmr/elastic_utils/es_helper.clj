@@ -82,7 +82,7 @@
                 (merge http-opts
                        {:headers {"Authorization" admin-token
                                   "Confirm-delete-action" "true"
-                                  :client-id (t-config/cmr-client-id)}
+                                  :client-id t-config/cmr-client-id}
                         :content-type :json
                         :body (json/generate-string {:query query})})))))
 
