@@ -1,6 +1,5 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
-   [cheshire.core :as json]
    [clj-http.client :as client]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]

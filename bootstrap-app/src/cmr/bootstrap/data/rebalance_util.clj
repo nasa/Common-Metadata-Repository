@@ -5,9 +5,7 @@
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
-   [cmr.indexer.data.elasticsearch :as indexer-es]
-   [cmr.indexer.data.index-set :as index-set]
-   [cmr.metadata-db.services.concept-service :as cs]))
+   [cmr.indexer.data.index-set :as index-set]))
 
 (def granule-mapping-type-name
   "The mapping type for granules in Elasticsearch"

@@ -43,7 +43,7 @@
 
 (defn elastic-retry-handler
   "A custom http retry handler for use with elastic connections"
-  [ex try-count http-context]
+  [ex try-count _http-context]
   (when-let [sleep-time (elastic-http-try-count->wait-before-retry-time try-count)]
     (warn (format "Elasticsearch HTTP Request failed due to %s. %s try. Waiting %s ms before retrying."
                   (.getMessage ex) try-count sleep-time))
