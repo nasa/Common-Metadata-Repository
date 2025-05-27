@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as http]
-   [clojure.string :as string] 
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]

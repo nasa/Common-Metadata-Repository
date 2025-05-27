@@ -2,6 +2,7 @@
   "Provide util functions for indexer functionality")
 
 (defn context->es-store
+  "Returns the elastic store object in the context"
   [context]
   (get-in context [:system :db]))
 
