@@ -1,14 +1,19 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
+   [cmr.common.log :as log :refer (info error)]
+   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.transmit.metadata-db :as meta-db]))
+   [cmr.transmit.metadata-db :as meta-db]
+   [cmr.indexer.indexer-util :as indexer-util]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
@@ -28,6 +33,10 @@
 (defconfig elastic-small-collections-index-num-shards
   "Number of shards to use for the small collections granule index."
   {:default 20 :type Long})
+
+(defconfig elastic-provider-granules-index-num-shards
+  "Number of shards to use for the small collections granule index."
+  {:default 1 :type Long})
 
 (defconfig elastic-deleted-granule-index-num-shards
   "Number of shards to use for the deleted granules index."
@@ -889,9 +898,36 @@
            :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
+(def granule-settings-for-provider-granules-index
+  {:index {:number_of_shards (elastic-provider-granules-index-num-shards),
+           :number_of_replicas 1,
+           :max_result_window MAX_RESULT_WINDOW,
+           :refresh_interval "1s"}})
+
 (def index-set-id
   "The identifier of the one and only index set"
   1)
+
+(comment
+  (index-set nil)
+  (for [idx ["1_c1232-PROV1"]]
+    {:name idx
+     :settings granule-settings-for-individual-indexes})
+  (concat [{:name "hello"
+          :settings 1}]
+        (for [idx ["1_c1232-PROV1"]]
+          {:name idx
+           :settings granule-settings-for-individual-indexes}))
+  )
+(def get-provider-granule-indexes
+  (try
+    (-> (io/resource "granule_index_config.json")
+        (slurp)
+        (json/parse-string true))
+    (catch Exception e
+      (error
+       (str "The granule_index_config.json file for reading provider granule indexes cannot be found. Please make sure that it exists."
+            (.getMessage e))))))
 
 (defn index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
@@ -924,11 +960,18 @@
                                             :settings deleted-granule-setting}]
                                           :mapping deleted-granule-mapping}
                         :granule {:indexes
-                                  (cons {:name "small_collections"
-                                         :settings granule-settings-for-small-collections-index}
-                                        (for [idx extra-granule-indexes]
-                                          {:name idx
-                                           :settings granule-settings-for-individual-indexes}))
+                                  (if (cfg/provider-granules)
+                                    (println "hi")
+                                    ;(concat get-provider-granule-indexes
+                                    ;      (for [idx extra-granule-indexes]
+                                    ;        {:name idx
+                                    ;         :settings granule-settings-for-individual-indexes}))
+                                    (cons {:name "small_collections"
+                                           :settings granule-settings-for-small-collections-index}
+                                          (for [idx extra-granule-indexes]
+                                            {:name idx
+                                             :settings granule-settings-for-individual-indexes})))
+                                  
                                   ;; This specifies the settings for new granule indexes that contain data for a single collection
                                   ;; This allows the index set application to know what settings to use when creating
                                   ;; a new granule index.
@@ -1011,7 +1054,11 @@
                              first
                              name)]
         {index-type (str mapping-type)}))))
-
+(comment
+  (es/get-index-set context index-set-id)
+  (get-in (index-set-es/get-index-set context 1) [:index-set :granule])
+  (fetch-concept-type-index-names context)
+  )
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app, returns a map of
    concept types which define what the top level field is in each mapping description.
@@ -1054,6 +1101,7 @@
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."
   [context]
+  (def context1 context)
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-indices (partial fetch-concept-type-index-names context))))
 
@@ -1064,15 +1112,78 @@
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
+(defn validate-granule-index-does-not-exist
+  "Validates that a granule index does not already exist in the index set for the given collection
+  concept ID."
+  [index-set collection-concept-id]
+  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)]
+    (when (contains? existing-index-names collection-concept-id)
+      (errors/throw-service-error
+       :bad-request
+       (format
+        "The collection [%s] already has a separate granule index."
+        collection-concept-id)))))
+
+(defn add-new-granule-provider-index
+  "Adds a new granule index for the given collection. Validates the collection
+  does not already have an index."
+  [index-set index-name]
+  (validate-granule-index-does-not-exist index-set index-name)
+  (update-in index-set [:index-set :granule :indexes]
+              conj
+              {:name index-name
+               :settings granule-settings-for-provider-granules-index}))
+
+;(defn update-index-set
+;  "Updates indices in the index set"
+;  [context index-set]
+;  (info "Updating index-set" (pr-str index-set))
+;  (let [es-store (indexer-util/context->es-store context)]
+;    (doseq [idx indices-w-config]
+;      (index-set-es/update-index es-store idx))
+
+;    (index-requested-index-set context index-set)))
+
+(comment
+  (let [index-set (index-set-es/get-index-set context index-set-id)]
+    (cmr.indexer.services.index-set-service/update-index-set context index-set)
+    )
+  
+  (println target-index-key)
+  update-index-set
+  (get-granule-index-names-for-collection context "C1200000001-PROV1" nil)
+  (let [index-names (get-concept-type-index-names context)]
+    (:granule index-names))
+  (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
+        indexes (:collection index-names)]
+    indexes)
+   ; (get indexes :small_collections))
+  (get-granule-index-names-for-provider context "prov1")
+ )
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a
    target-index-key can be specified which indicates that a specific index should be returned"
   ([context coll-concept-id]
    (get-granule-index-names-for-collection context coll-concept-id nil))
   ([context coll-concept-id target-index-key]
+   (def context context)
+   (def coll-concept-id coll-concept-id)
+   (def target-index-key target-index-key)
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
-         small-collections-index-name (get indexes :small_collections)]
+         small-collections-index-name (if (cfg/provider-granules)
+                                        (let [provider (cmr.common.util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
+                                              idx-name (str "granules_" provider)
+                                              idx (get indexes (keyword idx-name))]
+                                          (if idx
+                                            idx
+                                            (let [index-set (index-set-es/get-index-set context index-set-id)
+                                                  new-index-set (add-new-granule-provider-index index-set idx-name)]
+                                              (cmr.indexer.services.index-set-service/update-index-set context new-index-set)
+                                              (str "1_granules_" provider))))
+                                        (get indexes :small_collections))
+                                        ;(get indexes (keyword (str "granules_" (cmr.common.util/safe-lowercase (cs/concept-id->provider-id coll-concept-id)))))
+                                        ]
 
      (cond
        target-index-key
@@ -1163,9 +1274,12 @@
 (defn get-granule-index-names-for-provider
   "Return the granule index names for the input provider id"
   [context provider-id]
+  (def context context)
   (let [indexes (get-in (get-concept-type-index-names context) [:index-names :granule])
         filter-fn (fn [[k _v]]
-                    (or
+                    (if (cfg/provider-granules)
                       (.endsWith (name k) (str "_" provider-id))
-                      (= :small_collections k)))]
+                      (or
+                       (.endsWith (name k) (str "_" provider-id))
+                       (= :small_collections k))))]
     (map second (filter filter-fn indexes))))

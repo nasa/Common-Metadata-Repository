@@ -277,3 +277,8 @@
                (pr-str unknown-vars))
          true)
        false))))
+
+(defconfig provider-granules
+  "This sets the switch for using provider granule indexes instead of small-collections index."
+  {:default true
+   :type Boolean})

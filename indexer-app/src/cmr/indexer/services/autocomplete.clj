@@ -7,6 +7,8 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :as log :refer [info error]]
    [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
@@ -240,8 +242,10 @@
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         mapping-type (concept-mapping-types :collection)
         document-age (format "now-%dh/h" (autocomplete-suggestion-age-limit))]
-    (es/delete-by-query
-     context
+    ;(es/delete-by-query
+    ; context
+    (es-helper/delete-by-query
+     (indexer-util/context->conn context)
      index
      mapping-type
      {:range {(service/query-field->elastic-field :modified :suggestion) {:lt document-age}}})))

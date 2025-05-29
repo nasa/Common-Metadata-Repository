@@ -18,12 +18,14 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.indexer.data.elasticsearch :as es]
+   ;[cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-service :as index-service]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-   [cmr.transmit.metadata-db :as meta-db]))
+   [cmr.transmit.metadata-db :as meta-db]
+   [cmr.common.config :as cfg]))
 
 (def coll-gran-aggregate-cache-key
   "The cache key to use when storing with caches in the system."
@@ -99,12 +101,18 @@
          ;; forever.
          :granule-end-date (when-not some-with-no-end latest-end)}]))))
 
+(def small-collection-indexes
+  ""
+  (if (cfg/provider-granules)
+    "1_granules_*,1_c*"
+    "1_small_collections,1_c*")) ;; Searching all granule indexes
+
 (defn- fetch-coll-gran-aggregates
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
    concept id to collection information. The collection will only be in the map if it has granules."
   [context]
-  (-> (es-helper/search (es/context->conn context)
-                        "1_small_collections,1_c*" ;; Searching all granule indexes
+  (-> (es-helper/search (indexer-util/context->conn context)
+                        small-collection-indexes ;; Searching all granule indexes
                         ["granule"] ;; With the granule type.
                         {:query (esq/match-all)
                          :size 0
@@ -118,8 +126,8 @@
   [context granules-updated-in-last-n]
   (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
         revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
-    (-> (es-helper/search (es/context->conn context)
-                          "1_small_collections,1_c*" ;; Searching all granule indexes
+    (-> (es-helper/search (indexer-util/context->conn context)
+                          small-collection-indexes ;; Searching all granule indexes
                           ["granule"] ;; With the granule type.
                           {:query {:bool {:must (esq/match-all)
                                           :filter {:range {:revision-date-doc-values

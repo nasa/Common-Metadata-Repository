@@ -7,7 +7,9 @@
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
-   [clojurewerkz.elastisch.rest.utils :refer [join-names]]))
+   [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.transmit.config :as t-config]))
 
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
@@ -52,6 +54,16 @@
               :body document
               :query-params opts})))
 
+(defn post
+  "Creates or updates a document in the search index, using the provided document id"
+  ([conn index mapping-type id document]
+   (post conn index mapping-type id document nil))
+  ([conn index _mapping-type id document opts]
+   (rest/post conn (rest/record-url conn index "_doc" id)
+             {:content-type :json
+              :body document
+              :query-params opts})))
+
 (defn delete
   "Deletes document from the index."
   ([conn index mapping-type id]
@@ -71,15 +83,27 @@
   otherwise specifying a string suffices."
   ([conn index mapping-type query]
    (delete-by-query conn index mapping-type query nil))
-  ([conn index _mapping-type query opts]
-   (rest/post conn
-              (rest/delete-by-query-url
-               conn
-               (join-names index))
-              {:query-params (select-keys opts
-                                          (conj doc/optional-delete-query-parameters
-                                                :ignore_unavailable))
-               :body {:query query}})))
+  ([conn index _mapping-type query http-opts]
+    (let [admin-token (es-config/elastic-admin-token)
+          delete-url (rest/delete-by-query-url
+                      conn
+                      (join-names index))]
+      (http/post delete-url
+                 (merge http-opts
+                        {:headers {"Authorization" admin-token
+                                   "Confirm-delete-action" "true"
+                                   :client-id t-config/cmr-client-id}
+                         :content-type :json
+                         :body (json/generate-string {:query query})})))))
+  ;([conn index _mapping-type query opts]
+  ; (rest/post conn
+  ;            (rest/delete-by-query-url
+  ;             conn
+  ;             (join-names index))
+  ;            {:query-params (select-keys opts
+  ;                                        (conj doc/optional-delete-query-parameters
+  ;                                              :ignore_unavailable))
+  ;             :body {:query query}})))
 
 (defn delete-index
   "Deletes an index from the elastic store"

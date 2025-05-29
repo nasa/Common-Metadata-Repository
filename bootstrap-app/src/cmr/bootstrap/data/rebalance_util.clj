@@ -6,7 +6,8 @@
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.data.elasticsearch :as indexer-es]
    [cmr.indexer.data.index-set :as index-set]
-   [cmr.metadata-db.services.concept-service :as cs]))
+   [cmr.indexer.indexer-util :as indexer-util]))
+   ;[cmr.metadata-db.services.concept-service :as cs]))
 
 (def granule-mapping-type-name
   "The mapping type for granules in Elasticsearch"
@@ -21,7 +22,7 @@
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
   [indexer-context index-name concept-id]
-  (let [conn (indexer-es/context->conn indexer-context)
+  (let [conn (indexer-util/context->conn indexer-context)
         query (es-query-for-collection-concept-id concept-id)]
     (:count (es-helper/count-query conn index-name granule-mapping-type-name query))))
 
@@ -59,6 +60,10 @@
                      indexer-context index-set/index-set-id)
         small-coll-index (get-in index-names [:index-names :granule :small_collections])
         granule-mapping-type-name (-> index-set/granule-mapping keys first name)]
-    (indexer-es/delete-by-query
-     indexer-context small-coll-index granule-mapping-type-name
+    (es-helper/delete-by-query
+     (indexer-util/context->conn indexer-context)
+     small-coll-index
+     granule-mapping-type-name
      (es-query-for-collection-concept-id concept-id))))
+     ;indexer-context small-coll-index granule-mapping-type-name
+     ;(es-query-for-collection-concept-id concept-id))))

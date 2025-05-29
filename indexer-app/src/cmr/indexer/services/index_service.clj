@@ -15,7 +15,9 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.config :as config]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
@@ -27,7 +29,8 @@
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
-   [inflections.core :as inf])
+   [inflections.core :as inf]
+   [cmr.common.config :as cfg])
   ;; Required to get code loaded
   ;; These must be required here to make multimethod implementations available.
   ;; XXX This is not a good pattern for large software systems; we need to
@@ -512,6 +515,11 @@
                 generic-associations (es/parse-non-tombstone-associations
                                       context (:generic-associations associations))
                 concept-type (cs/concept-id->type concept-id)
+                _ (def context context)
+                _ (def concept-id concept-id)
+                _ (def revision-id revision-id)
+                _ (def options options)
+                _ (def concept concept)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc
@@ -538,6 +546,9 @@
              (debug end-log-msg)
              (info end-log-msg))))))))
 
+(comment
+(println concept)
+  )
 ;; **********************
 
 (defn- index-associated-collection
@@ -663,14 +674,19 @@
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
   [context concept-mapping-types concept-id revision-id]
-  (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
-                                         (:index-names)
-                                         (:granule)
-                                         (:small_collections))]
+  (let [small-collections-index-name (if (cfg/provider-granules)
+                                       (-> (idx-set/get-concept-type-index-names context)
+                                           (:index-names)
+                                           (:granule)
+                                           (get (keyword (str "granules_" (cmr.common.util/safe-lowercase (cs/concept-id->provider-id concept-id))))))
+                                       (-> (idx-set/get-concept-type-index-names context)
+                                           (:index-names)
+                                           (:granule)
+                                           (:small_collections)))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
-        (let [resp (es/delete-by-query
-                    context
+        (let [resp (es-helper/delete-by-query
+                    (indexer-util/context->conn context)
                     index
                     (concept-mapping-types :granule)
                     {:term {(query-field->elastic-field :collection-concept-id :granule)
@@ -680,7 +696,7 @@
         ;; Instead of running a delete-by-query to remove all granules from
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
-        (let [resp (es/delete-granule-index context concept-id index)]
+        (let [resp (es/delete-granule-index context index)]
           (when (not= (get resp :status) 200)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
 
@@ -722,7 +738,7 @@
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (get-concept-delete-log-string concept-type context concept-id revision-id all-revisions-index?))
-      (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options)
+      (let [index-names (idx-set/get-concept-index-names context concept-id revision-id options concept)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
@@ -848,16 +864,20 @@
         ccmt (concept-mapping-types :collection)]
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
-      (es/delete-by-query
-       context
+      ;(es/delete-by-query
+      ; context
+      (es-helper/delete-by-query
+       (indexer-util/context->conn context)
        index
        ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
-      (es/delete-by-query
-       context
+      ;(es/delete-by-query
+      ; context
+      (es-helper/delete-by-query
+       (indexer-util/context->conn context)
        index-name
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
@@ -865,8 +885,10 @@
     ;; delete the variable,service,tool and subscription
     (doseq [concept-type [:service :subscription :tool :variable]]
       (doseq [index (vals (concept-type index-names))]
-        (es/delete-by-query
-         context
+        (es-helper/delete-by-query
+         (indexer-util/context->conn context)
+        ;(es/delete-by-query
+        ; context
          index
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))

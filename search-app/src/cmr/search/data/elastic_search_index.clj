@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
-   [cmr.common.config :refer [defconfig]]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
@@ -39,11 +39,17 @@
                                   (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
-
+(comment 
+  (keyword "word")
+  )
 (defn- collection-concept-id->index-name
   "Return the granule index name for the input collection concept id"
   [indexes coll-concept-id]
-  (get indexes (keyword coll-concept-id) (get indexes :small_collections)))
+  (def indexes indexes)
+  (def coll-concept-id coll-concept-id)
+  (get indexes (keyword coll-concept-id) (if (cfg/provider-granules)
+                                           (get indexes (keyword (str "granule_" (concepts/concept-id->provider-id coll-concept-id))))
+                                           (get indexes :small_collections))))
 
 (defn- collection-concept-ids->index-names
   "Return the granule index names for the input collection concept ids"
@@ -54,8 +60,13 @@
 (defn- provider-ids->index-names
   "Return the granule index names for the input provider-ids"
   [context provider-ids]
-  (let [indexes (get-granule-index-names context)]
-    (cons (get indexes :small_collections)
+  (def context context)
+  (def provider-ids provider-ids)
+  (let [indexes (get-granule-index-names context)
+        granules (if (cfg/provider-granules)
+                   (map #(format "%d_granules_%s" index-set-id (string/lower-case %)) provider-ids)
+                   (get indexes :small_collections))]
+    (cons granules
           (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
                provider-ids))))
 
@@ -73,8 +84,11 @@
         excluded-collections-str (if (seq rebalancing-indexes)
                                    (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))
                                    "")]
-    (format "%d_c*,%d_small_collections,-%d_collections*%s"
-            index-set-id index-set-id index-set-id excluded-collections-str)))
+    (if (cfg/provider-granules)
+      (format "%d_c*,%d_granule_*,-%d_collections*%s"
+              index-set-id index-set-id index-set-id excluded-collections-str)
+      (format "%d_c*,%d_small_collections,-%d_collections*%s"
+              index-set-id index-set-id index-set-id excluded-collections-str))))
 
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
