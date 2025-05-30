@@ -328,7 +328,8 @@
   (print es-doc)
   (print options)
   (print elastic-version)
-  (save-document-in-elastic context es-indexes es-type es-doc concept-id revision-id elastic-version options)
+  (print es-indexes)
+  (save-document-in-elastic context ["1_granules_prov1"] es-type es-doc concept-id revision-id elastic-version options)
   (let [conn (indexer-util/context->conn context)
         {:keys [ignore-conflict? all-revisions-index?]} options]
     (get-elastic-id concept-id revision-id all-revisions-index?))

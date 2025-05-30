@@ -963,7 +963,9 @@
                                           :mapping deleted-granule-mapping}
                         :granule {:indexes
                                   (if (cfg/provider-granules)
-                                    (println "hi")
+                                    (for [idx extra-granule-indexes]
+                                       {:name idx
+                                        :settings granule-settings-for-individual-indexes})
                                     ;(concat get-provider-granule-indexes
                                     ;      (for [idx extra-granule-indexes]
                                     ;        {:name idx
