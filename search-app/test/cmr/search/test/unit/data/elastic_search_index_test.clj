@@ -1,6 +1,7 @@
 (ns cmr.search.test.unit.data.elastic-search-index-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.common.config :as cfg]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index-name-cache :as idx-names-cache]
@@ -21,7 +22,9 @@
    :deleted-granule {:deleted_granules "1_deleted_granules"}
    :tool {:tools "1_tools" :all-tool-revisions "1_all_tool_revisions"}
    :generic-collection-draft {:generic-collection-draft "1_generic_collection_draft" :all-generic-collection-draft-revisions "1_all_generic_collection_draft_revisions"}
-   :granule {:small_collections "1_small_collections"}
+   :granule (if (cfg/provider-granules)
+              {}
+              {:small_collections "1_small_collections"})
    :generic-order-option-draft {:generic-order-option-draft "1_generic_order_option_draft" :all-generic-order-option-draft-revisions "1_all_generic_order_option_draft_revisions"}
    :generic-data-quality-summary-draft {:generic-data-quality-summary-draft "1_generic_data_quality_summary_draft" :all-generic-data-quality-summary-draft-revisions "1_all_generic_data_quality_summary_draft_revisions"}
    :generic-variable-draft {:generic-variable-draft "1_generic_variable_draft" :all-generic-variable-draft-revisions "1_all_generic_variable_draft_revisions"}
@@ -44,23 +47,32 @@
     (hash-cache/set-values cache cache-key cached-index-names)
 
     (testing "Testing get granule index names"
-      (is (= {:small_collections "1_small_collections"}
-             (#'search-index/get-granule-index-names context))))
+      (if (cfg/provider-granules)
+        (is (= {}
+               (#'search-index/get-granule-index-names context)))
+        (is (= {:small_collections "1_small_collections"}
+               (#'search-index/get-granule-index-names context)))))
 
     (testing "collection concept id to index name"
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :concept-id ["C1200000001-PROV1"] true)
                              :page-size 1})]
-        (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
+        (if (cfg/provider-granules)
+          (is (= "1_granules_prov1,1_c*_prov1" (#'search-index/get-granule-indexes context query)))
+          (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query))))))
 
     (testing "provider id to index name"
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :provider ["PROV1"] true)
                              :page-size 2})]
-        (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
+        (if (cfg/provider-granules)
+          (is (= "1_granules_prov1,1_c*_prov1" (#'search-index/get-granule-indexes context query)))
+          (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query))))))
 
     (testing "all granule to index name"
       (let [query (qm/query {:concept-type :granule
                               :condition (qm/string-conditions :provider-id ["PROV1"] true)
                               :page-size 3})]
-         (is (= "1_c*,1_small_collections,-1_collections*" (#'search-index/get-granule-indexes context query)))))))
+        (if (cfg/provider-granules)
+          (is (= "1_c*,1_granules_*,-1_collections*" (#'search-index/get-granule-indexes context query)))
+          (is (= "1_c*,1_small_collections,-1_collections*" (#'search-index/get-granule-indexes context query))))))))

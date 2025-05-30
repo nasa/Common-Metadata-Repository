@@ -1,6 +1,7 @@
 (ns cmr.indexer.test.data.elasticsearch
   (:require
    [clojure.test :refer :all]
+   [cmr.common.config :as cfg]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as i]
    [cmr.indexer.data.index-set-generics :as index-set-gen]))
@@ -20,16 +21,23 @@
      :deleted-granule {:indexes [{:name "deleted_granules",
                                   :settings i/deleted-granule-setting}]
                        :mapping i/deleted-granule-mapping}
-     :granule {:indexes
-               [{:name "small_collections",
-                 :settings i/granule-settings-for-small-collections-index}
-
-                {:name "C274209-USGS_EROS",
-                 :settings i/granule-settings-for-individual-indexes}
-                {:name "C274211-USGS_EROS",
-                 :settings i/granule-settings-for-individual-indexes}],
-               :individual-index-settings i/granule-settings-for-individual-indexes
-               :mapping i/granule-mapping}
+     :granule (if (cfg/provider-granules)
+                {:indexes
+                 [{:name "C274209-USGS_EROS",
+                   :settings i/granule-settings-for-individual-indexes}
+                  {:name "C274211-USGS_EROS",
+                   :settings i/granule-settings-for-individual-indexes}],
+                 :individual-index-settings i/granule-settings-for-individual-indexes
+                 :mapping i/granule-mapping}
+                {:indexes
+                 [{:name "small_collections",
+                   :settings i/granule-settings-for-small-collections-index}
+                  {:name "C274209-USGS_EROS",
+                   :settings i/granule-settings-for-individual-indexes}
+                  {:name "C274211-USGS_EROS",
+                   :settings i/granule-settings-for-individual-indexes}],
+                 :individual-index-settings i/granule-settings-for-individual-indexes
+                 :mapping i/granule-mapping})
      :tag {:indexes [{:name "tags",
                       :settings i/tag-setting}],
            :mapping i/tag-mapping},

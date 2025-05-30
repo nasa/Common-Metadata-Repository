@@ -62,13 +62,15 @@
   [context provider-ids]
   (def context context)
   (def provider-ids provider-ids)
-  (let [indexes (get-granule-index-names context)
-        granules (if (cfg/provider-granules)
-                   (map #(format "%d_granules_%s" index-set-id (string/lower-case %)) provider-ids)
-                   (get indexes :small_collections))]
-    (cons granules
-          (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
-               provider-ids))))
+  (let [indexes (get-granule-index-names context)]
+    (if (cfg/provider-granules)
+      (concat (map #(format "%d_granules_%s" index-set-id (string/lower-case %))
+                   provider-ids)
+              (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
+                   provider-ids))
+      (cons (get indexes :small_collections)
+            (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
+                 provider-ids)))))
 
 (defn all-granule-indexes
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
@@ -85,7 +87,7 @@
                                    (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))
                                    "")]
     (if (cfg/provider-granules)
-      (format "%d_c*,%d_granule_*,-%d_collections*%s"
+      (format "%d_c*,%d_granules_*,-%d_collections*%s"
               index-set-id index-set-id index-set-id excluded-collections-str)
       (format "%d_c*,%d_small_collections,-%d_collections*%s"
               index-set-id index-set-id index-set-id excluded-collections-str))))
