@@ -8,10 +8,12 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
    [cmr.common.log :as log :refer (info error)]
+   [cmr.common.util :as util]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
+   [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.indexer.indexer-util :as indexer-util]))
 
@@ -1172,14 +1174,14 @@
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
          small-collections-index-name (if (cfg/provider-granules)
-                                        (let [provider (cmr.common.util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
+                                        (let [provider (util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
                                               idx-name (str "granules_" provider)
                                               idx (get indexes (keyword idx-name))]
                                           (if idx
                                             idx
                                             (let [index-set (index-set-es/get-index-set context index-set-id)
                                                   new-index-set (add-new-granule-provider-index index-set idx-name)]
-                                              (cmr.indexer.services.index-set-service/update-index-set context new-index-set)
+                                              (index-set-service/update-index-set context new-index-set)
                                               (str "1_granules_" provider))))
                                         (get indexes :small_collections))
                                         ;(get indexes (keyword (str "granules_" (cmr.common.util/safe-lowercase (cs/concept-id->provider-id coll-concept-id)))))
