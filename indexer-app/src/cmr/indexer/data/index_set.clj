@@ -919,15 +919,15 @@
           {:name idx
            :settings granule-settings-for-individual-indexes}))
   )
-(def get-provider-granule-indexes
-  (try
-    (-> (io/resource "granule_index_config.json")
-        (slurp)
-        (json/parse-string true))
-    (catch Exception e
-      (error
-       (str "The granule_index_config.json file for reading provider granule indexes cannot be found. Please make sure that it exists."
-            (.getMessage e))))))
+;(def get-provider-granule-indexes
+;  (try
+;    (-> (io/resource "granule_index_config.json")
+;        (slurp)
+;        (json/parse-string true))
+;    (catch Exception e
+;      (error
+;       (str "The granule_index_config.json file for reading provider granule indexes cannot be found. Please make sure that it exists."
+;            (.getMessage e))))))
 
 (defn index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
