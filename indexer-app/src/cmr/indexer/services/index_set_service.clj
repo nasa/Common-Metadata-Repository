@@ -1,7 +1,9 @@
 (ns cmr.indexer.services.index-set-service
   "Provide functions to store, retrieve, delete index-sets"
   (:require
+   [cmr.elastic-utils.config :as es-config]
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.string :as string]
    ;[cmr.common.cache :as cache]
    [cmr.common.config :as common-config]
@@ -38,23 +40,14 @@
    :tool
    :variable])
 
-;(defn context->es-store
-;  [context]
-;  (get-in context [:system :db]))
-
 (defn gen-valid-index-name
   "Join parts, lowercase letters and change '-' to '_'."
   [prefix-id suffix]
   (string/lower-case (string/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
 
-(comment
-  (println idx-set)
-  (build-indices-list-w-config idx-set)
-  )
 (defn- build-indices-list-w-config
   "Given an index-set, build list of indices with config."
   [idx-set]
-  (def idx-set idx-set)
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (add-searchable-generic-types searchable-concept-types)
           idx (get-in idx-set [:index-set concept-type :indexes])]
@@ -221,11 +214,28 @@
 
     (index-requested-index-set context index-set)))
 
+(defn get-all-indexes-from-es
+  ""
+  []
+  (let [conn (es-config/elastic-config)
+        response (client/get (format "http://%s:%d/_aliases" (:host conn) (:port conn)))]
+    (keys (json/parse-string (:body response) true))))
+
+(defn get-provider-granule-indexes-to-delete
+  ""
+  [indexes]
+  (let [idxs (filter #(string/includes? (name %) "1_granules_") indexes)]
+    (map #(name %) idxs))
+  )
+
 (defn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by
   index-set doc delete"
   [context index-set-id]
-  (let [index-names (get-index-names (get-index-set context index-set-id))
+  (let [index-names (distinct
+                     (concat
+                      (get-provider-granule-indexes-to-delete (get-all-indexes-from-es))
+                      (get-index-names (get-index-set context index-set-id))))
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (dorun (map #(es/delete-index (indexer-util/context->es-store context) %) index-names))
