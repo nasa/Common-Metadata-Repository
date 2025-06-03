@@ -220,10 +220,14 @@
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
-        (let [err-msg (get-in (ex-data e) [:body])
-              msg (str "Call to Elasticsearch caught exception " err-msg)]
-          (errors/internal-error! msg))))))
-
+        (json/parse-string (:body (ex-data e)) true)))))
+        ;(let [err-msg (get-in (ex-data e) [:body])
+        ;      msg (str "Call to Elasticsearch caught exception " err-msg)]
+        ;  (print "body" (ex-data e))
+        ;  (errors/internal-error! msg))))))
+(comment
+  (json/parse-string (:body (ex-data ex)) true)
+  )
 (defn- context->es-config
   "Returns the elastic config in the context"
   [context]
@@ -324,7 +328,7 @@
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
-(comment 
+(comment
   (print es-doc)
   (print options)
   (print elastic-version)
@@ -333,7 +337,21 @@
   (let [conn (indexer-util/context->conn context)
         {:keys [ignore-conflict? all-revisions-index?]} options]
     (get-elastic-id concept-id revision-id all-revisions-index?))
+  (let [conn (indexer-util/context->conn context)]
+    (println conn)
+    (client/get url params))
+  (let [{:keys [uri http-opts]} (get-in context [:system :db :conn])]
+    http-opts)
+  (println options)
+  (let [x (try
+            (print "hi")
+            (save-document-in-elastic context es-indexes es-type es-doc concept-id revision-id elastic-version options)
+            (println "Not exception")
+            (catch clojure.lang.ExceptionInfo e
+              (println "Exception")))]
+    x)
   )
+
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
@@ -354,12 +372,12 @@
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
-            (info (str "Ignore conflict: " (str result)))
+            (info (str "Ignore conflict: " result))
             (errors/throw-service-error
              :conflict
-             (str "Save to Elasticsearch failed " (str result))))
+             (str "Save to Elasticsearch failed " result)))
           (errors/internal-error!
-           (str "Save to Elasticsearch failed " (str result))))))))
+           (str "Save to Elasticsearch failed " result)))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."

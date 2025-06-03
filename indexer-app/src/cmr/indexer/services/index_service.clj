@@ -546,9 +546,6 @@
              (debug end-log-msg)
              (info end-log-msg))))))))
 
-(comment
-(println concept)
-  )
 ;; **********************
 
 (defn- index-associated-collection

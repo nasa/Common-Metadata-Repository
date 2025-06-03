@@ -1195,12 +1195,12 @@
    (def target-index-key target-index-key)
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
-         _ (println "granule indexes:" indexes)
+         ;_ (println "granule indexes:" indexes)
          small-collections-index-name (if (cfg/provider-granules)
                                         (let [provider (util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
                                               idx-name (str "granules_" provider)
                                               idx (get indexes (keyword idx-name))]
-                                          (println "idx:" idx)
+                                          ;(println "idx:" idx)
                                           (if idx
                                             idx
                                             (let [index-set (index-set-es/get-index-set context index-set-id)
