@@ -18,7 +18,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-service :as index-service]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
@@ -103,7 +103,7 @@
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
    concept id to collection information. The collection will only be in the map if it has granules."
   [context]
-  (-> (es-helper/search (es/context->conn context)
+  (-> (es-helper/search (indexer-util/context->conn context)
                         "1_small_collections,1_c*" ;; Searching all granule indexes
                         ["granule"] ;; With the granule type.
                         {:query (esq/match-all)
@@ -118,7 +118,7 @@
   [context granules-updated-in-last-n]
   (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
         revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
-    (-> (es-helper/search (es/context->conn context)
+    (-> (es-helper/search (indexer-util/context->conn context)
                           "1_small_collections,1_c*" ;; Searching all granule indexes
                           ["granule"] ;; With the granule type.
                           {:query {:bool {:must (esq/match-all)

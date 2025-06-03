@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.common.cache :as cache]
    [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
@@ -11,8 +10,8 @@
    [cmr.common.util :as util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
-   [cmr.indexer.data.index-set :as idx-set]
-   [cmr.indexer.services.messages :as m])
+   [cmr.indexer.services.messages :as m]
+   [cmr.indexer.indexer-util :as indexer-util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -37,10 +36,6 @@
    :tool
    :variable])
 
-(defn context->es-store
-  [context]
-  (get-in context [:system :db]))
-
 (defn gen-valid-index-name
   "Join parts, lowercase letters and change '-' to '_'."
   [prefix-id suffix]
@@ -57,12 +52,6 @@
         {:index-name (gen-valid-index-name prefix-id idx-name)
          :settings settings
          :mapping mapping}))))
-
-(defn- reset-index-set-mappings-cache
-  "Resets the index set mappings cache. It is important that the latest mappings are used whenever
-  we try to update the indexes in Elasticsearch."
-  [context]
-  (cache/reset (get-in context [:system :caches idx-set/index-set-cache-key])))
 
 (defn get-index-names
   "Given a index set build list of index names."
@@ -96,7 +85,7 @@
   [context]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
-        index-sets (es/get-index-sets (context->es-store context) index-name idx-mapping-type)]
+        index-sets (es/get-index-sets (indexer-util/context->es-store context) index-name idx-mapping-type)]
     (map #(select-keys (:index-set %) [:id :name :concepts])
          index-sets)))
 
@@ -105,7 +94,7 @@
   [context index-set-id]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)))
+    (es/index-set-exists? (indexer-util/context->es-store context) index-name idx-mapping-type index-set-id)))
 
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
@@ -146,7 +135,7 @@
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (when (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)
+    (when (es/index-set-exists? (indexer-util/context->es-store context) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
@@ -185,7 +174,7 @@
   (validate-requested-index-set context index-set false)
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
-        es-store (context->es-store context)]
+        es-store (indexer-util/context->es-store context)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
     ;; rollback index-set creation if index creation fails
@@ -208,7 +197,7 @@
   (info "Updating index-set" (pr-str index-set))
   (validate-requested-index-set context index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set)
-        es-store (context->es-store context)]
+        es-store (indexer-util/context->es-store context)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
@@ -222,7 +211,7 @@
   (let [index-names (get-index-names (get-index-set context index-set-id))
         {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    (dorun (map #(es/delete-index (context->es-store context) %) index-names))
+    (dorun (map #(es/delete-index (indexer-util/context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
 (defn- add-rebalancing-collection
@@ -368,22 +357,13 @@
       [:index-set :granule :rebalancing-status]
       assoc (keyword concept-id) status))))
 
-(defn remove-deleted-granule-index
-  "Remove the deleted collection granule index from the index set."
-  [context index-set-id concept-id]
-  (let [index-set (get-index-set context index-set-id)
-        updated-index-set (remove-granule-index-from-index-set index-set concept-id)]
-    ;; Update the index-set and index-set cache
-    (update-index-set context updated-index-set)
-    (reset-index-set-mappings-cache context)))
-
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-
   sets and index-set docs."
   [context]
   (let [{:keys [index-name]} config/idx-cfg-for-index-sets
         index-set-ids (es/get-index-set-ids
-                       (context->es-store context)
+                       (indexer-util/context->es-store context)
                        index-name
                        "_doc")]
     ;; delete indices assoc with index-set
