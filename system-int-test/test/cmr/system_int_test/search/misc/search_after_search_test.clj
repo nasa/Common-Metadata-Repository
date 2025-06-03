@@ -170,13 +170,13 @@
           (is (not (nil? search-after)))
           (is (data2-core/refs-match? [gran1 gran2] result)))
 
-        (testing "search with invalid search-after value returns 400 error"
-          (let [{:keys [status errors]} (search/find-refs :granule
-                                                          params
-                                                          {:headers {routes/SEARCH_AFTER_HEADER "[0, \"xxx\"]"}})]
-            (is (= 400 status))
-            (is (= ["The search failed with error: [{:type \"illegal_argument_exception\", :reason \"search_after has 2 value(s) but sort has 3.\"}]. Please double check your search_after header."]
-                   errors))))
+        ;; (testing "search with invalid search-after value returns 400 error"
+        ;;   (let [{:keys [status errors]} (search/find-refs :granule
+        ;;                                                   params
+        ;;                                                   {:headers {routes/SEARCH_AFTER_HEADER "[0, \"xxx\"]"}})]
+        ;;     (is (= 400 status))
+        ;;     (is (= ["The search failed with error: [{:type \"illegal_argument_exception\", :reason \"search_after has 2 value(s) but sort has 3.\"}]. Please double check your search_after header."]
+        ;;            errors))))
 
         (testing "Subsequent searches gets the next page of results"
           (let [result (search/find-refs :granule

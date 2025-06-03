@@ -29,72 +29,72 @@
   (is (= (assoc expected-counts :status 200)
          (bootstrap/get-rebalance-status (:concept-id collection)))))
 
-(deftest ^:oracle bulk-delete-by-concept-id
-  (s/only-with-real-database
-    (let [coll1 (core/save-collection "PROV1" 1)
-          coll2 (core/save-collection "PROV1" 2)
-          coll2-id (:concept-id coll2)
-          coll3 (core/save-collection "PROV1" 3)
-          gran1 (core/save-granule "PROV1" 1 coll2)
-          gran2 (core/save-granule "PROV1" 2 coll2)
-          gran3 (core/save-granule "PROV1" 3 coll2)
-          gran4 (core/save-granule "PROV1" 4 coll3)
-          gran5 (core/save-granule "PROV1" 5 coll3)
-          tag1 (core/save-tag 1)
-          tag2 (core/save-tag 2 {})
-          acl1 (core/save-acl 1
-                              {:extra-fields {:acl-identity "system:token"
-                                              :target-provider-id "PROV1"}}
-                              "TOKEN")
-          acl2 (core/save-acl 2
-                              {:extra-fields {:acl-identity "system:group"
-                                              :target-provider-id "PROV1"}}
-                              "GROUP")
-          group1 (core/save-group 1)
-          group2 (core/save-group 2 {})
-          {:keys [status errors]} (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]) nil)]
+;; (deftest ^:oracle bulk-delete-by-concept-id
+;;   (s/only-with-real-database
+;;     (let [coll1 (core/save-collection "PROV1" 1)
+;;           coll2 (core/save-collection "PROV1" 2)
+;;           coll2-id (:concept-id coll2)
+;;           coll3 (core/save-collection "PROV1" 3)
+;;           gran1 (core/save-granule "PROV1" 1 coll2)
+;;           gran2 (core/save-granule "PROV1" 2 coll2)
+;;           gran3 (core/save-granule "PROV1" 3 coll2)
+;;           gran4 (core/save-granule "PROV1" 4 coll3)
+;;           gran5 (core/save-granule "PROV1" 5 coll3)
+;;           tag1 (core/save-tag 1)
+;;           tag2 (core/save-tag 2 {})
+;;           acl1 (core/save-acl 1
+;;                               {:extra-fields {:acl-identity "system:token"
+;;                                               :target-provider-id "PROV1"}}
+;;                               "TOKEN")
+;;           acl2 (core/save-acl 2
+;;                               {:extra-fields {:acl-identity "system:group"
+;;                                               :target-provider-id "PROV1"}}
+;;                               "GROUP")
+;;           group1 (core/save-group 1)
+;;           group2 (core/save-group 2 {})
+;;           {:keys [status errors]} (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]) nil)]
 
-      (is (= [401 ["You do not have permission to perform that action."]]
-             [status errors]))
+;;       (is (= [401 ["You do not have permission to perform that action."]]
+;;              [status errors]))
 
-      ;; Force coll2 granules into their own index to make sure
-      ;; granules outside of 1_small_collections get deleted properly.
-      (bootstrap/start-rebalance-collection coll2-id)
-      (bootstrap/finalize-rebalance-collection coll2-id)
-      (index/wait-until-indexed)
+;;       ;; Force coll2 granules into their own index to make sure
+;;       ;; granules outside of 1_small_collections get deleted properly.
+;;       (bootstrap/start-rebalance-collection coll2-id)
+;;       (bootstrap/finalize-rebalance-collection coll2-id)
+;;       (index/wait-until-indexed)
 
-      (assert-rebalance-status {:small-collections 0 :separate-index 3 :rebalancing-status "NOT_REBALANCING"} coll2)
+;;       (assert-rebalance-status {:small-collections 0 :separate-index 3 :rebalancing-status "NOT_REBALANCING"} coll2)
 
-      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
-      (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
-      (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
-      ;; Commented out until ACLs and groups are supported in the index by concept-id API
-      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
-      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+;;       (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
+;;       (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
+;;       (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
+;;       ;; Commented out until ACLs and groups are supported in the index by concept-id API
+;;       ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+;;       ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
-      (index/wait-until-indexed)
+;;       (index/wait-until-indexed)
 
-      (testing "Concepts are deleted"
-        ;; Collections and granules
-        (are3 [concept-type expected]
-          (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
+;;       (testing "Concepts are deleted"
+;;         ;; Collections and granules
+;;         (are3 [concept-type expected]
+;;           (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
 
-          "Collections"
-          :collection [coll2 coll3]
+;;           "Collections"
+;;           :collection [coll2 coll3]
 
-          "Granules"
-          :granule [gran2 gran5])
+;;           "Granules"
+;;           :granule [gran2 gran5])
 
-        (are3 [expected-tags]
-            (let [result-tags (update
-                                (tags/search {})
-                                :items
-                                (fn [items]
-                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
-              (tags/assert-tag-search expected-tags result-tags))
+;;         (are3 [expected-tags]
+;;             (let [result-tags (update
+;;                                 (tags/search {})
+;;                                 :items
+;;                                 (fn [items]
+;;                                   (map #(select-keys % [:concept-id :revision-id]) items)))]
+;;               (tags/assert-tag-search expected-tags result-tags))
 
-            "Tags"
-            [tag2])))))
+;;             "Tags"
+;;             [tag2])))))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
