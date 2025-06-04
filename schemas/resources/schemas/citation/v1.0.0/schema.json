@@ -3,8 +3,8 @@
   "title": "Citation Metadata",
   "description": "Schema for resources associated with EOSDIS datasets",
   "type": "object",
-  "required": ["Name", "Identifier", "IdentifierType", "ResolutionAuthority", "MetadataSpecification"],
   "additionalProperties": false,
+  "required": ["Name", "Identifier", "IdentifierType", "ResolutionAuthority", "MetadataSpecification"],
   "properties": {
     "Name": {
       "type": "string",
@@ -37,6 +37,7 @@
       "description": "List of identifiers that this resource cites, refers to, or is identical to",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": ["RelationshipType", "RelatedIdentifierType", "RelatedIdentifier", "RelatedResolutionAuthority"],
         "properties": {
           "RelationshipType": {
@@ -67,6 +68,7 @@
     },
     "CitationMetadata": {
       "type": "object",
+      "additionalProperties": false,
       "description": "Citation metadata for the resource",
       "required": ["Title", "Year", "Type"],
       "properties": {
@@ -91,6 +93,7 @@
           "description": "List of authors of the resource",
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "ORCID": {
                 "type": "string",
@@ -161,6 +164,8 @@
       "description": "GCMD science keywords",
       "items": {
         "type": "object",
+        "additionalProperties": false,
+        "required": ["Category", "Topic", "Term"],
         "properties": {
           "Category": {
             "type": "string",
@@ -177,8 +182,34 @@
           "VariableLevel1": {
             "type": "string",
             "examples": ["UPPER AIR TEMPERATURE"]
+          },
+          "VariableLevel2": {
+            "type": "string",
+            "examples": ["UPPER AIR TEMPERATURE"]
+          },
+          "VariableLevel3": {
+            "type": "string",
+            "examples": ["UPPER AIR TEMPERATURE"]
+          },
+          "DetailedVariable": {
+            "type": "string",
+            "examples": ["UPPER AIR TEMPERATURE"]
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {"required": ["DetailedVariable"]},
+            "then": {"required": ["VariableLevel1"]}
+          },
+          {
+            "if": {"required": ["VariableLevel3"]},
+            "then": {"required": ["VariableLevel2"]}
+          },
+          {
+            "if": {"required": ["VariableLevel2"]},
+            "then": {"required": ["VariableLevel1"]}
+          }
+        ]
       }
     },
     "MetadataSpecification": {
