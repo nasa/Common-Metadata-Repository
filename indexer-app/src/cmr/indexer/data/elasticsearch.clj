@@ -4,7 +4,7 @@
    [clj-http.client :as client]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [info warn error]]
+   [cmr.common.log :as log :refer [info infof warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
@@ -334,12 +334,12 @@
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
-            (info (str "Ignore conflict: " (str result)))
+            (infof "Ignore conflict: %s" (str result))
             (errors/throw-service-error
              :conflict
-             (str "Save to Elasticsearch failed " (str result))))
+             (format "Save to Elasticsearch failed %s" (str result))))
           (errors/internal-error!
-           (str "Save to Elasticsearch failed " (str result))))))))
+           (format "Save to Elasticsearch failed %s" (str result))))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
@@ -371,9 +371,13 @@
        (when-not (some #{200 404} [status])
          (if (= 409 status)
            (if ignore-conflict?
-             (info (str "Ignore conflict: " (str response)))
-             (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
-           (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))))
+             (infof "Ignore conflict: %s" (str response))
+             (errors/throw-service-error
+              :conflict
+              (format "Delete from Elasticsearch failed %s" (str response))))
+           (errors/internal-error! (format
+                                    "Delete from Elasticsearch failed %s"
+                                    (str response)))))))))
 
 (defn delete-by-query
   "Delete document that match the given query"
