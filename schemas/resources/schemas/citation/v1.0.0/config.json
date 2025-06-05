@@ -59,7 +59,7 @@
       "Name": "keyword",
       "Mapping": "string",
       "Indexer": "simple-array-field",
-      "Configuration": {"sub-fields": ["Category", "Topic", "Term", "VariableLevel1"]}
+      "Configuration": {"sub-fields": ["Category", "Topic", "Term", "VariableLevel1","VariableLevel2", "VariableLevel3"]}
     },
     {
       "Description": "Related Identifiers (dataset DOIs)",
