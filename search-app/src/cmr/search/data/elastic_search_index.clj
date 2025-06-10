@@ -5,6 +5,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.hash-cache :as hcache]
+   [cmr.common.util :as util]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index :as common-esi]
@@ -40,7 +41,7 @@
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 (comment 
-  (keyword "word")
+  (println indexes)
   )
 (defn- collection-concept-id->index-name
   "Return the granule index name for the input collection concept id"
@@ -48,7 +49,8 @@
   (def indexes indexes)
   (def coll-concept-id coll-concept-id)
   (get indexes (keyword coll-concept-id) (if (cfg/provider-granules)
-                                           (get indexes (keyword (str "granule_" (concepts/concept-id->provider-id coll-concept-id))))
+                                           (get indexes (keyword (str "granules_" (util/safe-lowercase
+                                                                                   (concepts/concept-id->provider-id coll-concept-id)))))
                                            (get indexes :small_collections))))
 
 (defn- collection-concept-ids->index-names
@@ -57,6 +59,9 @@
   (let [indexes (get-granule-index-names context)]
     (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
 
+(comment
+  (println context)
+  )
 (defn- provider-ids->index-names
   "Return the granule index names for the input provider-ids"
   [context provider-ids]

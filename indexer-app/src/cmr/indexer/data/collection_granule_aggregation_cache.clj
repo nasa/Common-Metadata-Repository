@@ -245,10 +245,17 @@
 (defn refresh-cache
   "Refreshes the collection granule aggregates in the cache."
   [context granules-updated-in-last-n]
-  (let [_cache (c/context->cache context coll-gran-aggregate-cache-key)]
+  (let [_cache (c/context->cache context coll-gran-aggregate-cache-key)
+        start (System/currentTimeMillis)]
+    (if granules-updated-in-last-n
+      (info "Refreshing partial collection granule aggregates cache.")
+      (info "Refreshing full collection granule aggregates cache."))
     (if granules-updated-in-last-n
       (partial-cache-refresh context granules-updated-in-last-n)
-      (full-cache-refresh context))))
+      (full-cache-refresh context))
+    (if granules-updated-in-last-n
+      (info (format "Refreshed partial collection granule aggregates cache took %d ms" (- (System/currentTimeMillis) start)))
+      (info (format "Refreshed full collection granule aggregates cache took %d ms" (- (System/currentTimeMillis) start))))))
 
 (defn get-coll-gran-aggregates
   "Returns the map of granule aggregate information for the collection. Will return nil if the

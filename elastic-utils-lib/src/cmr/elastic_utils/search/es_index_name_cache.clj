@@ -63,6 +63,7 @@
   (let [index-names-map (fetch-concept-type-index-names context)
         index-names (:index-names index-names-map)
         cache (hcache/context->cache context index-names-cache-key)]
+    (info (str "Refreshing search index-names cache - index-names: " index-names))
     (hcache/set-values cache index-names-cache-key index-names)
     (hcache/set-value cache
                       index-names-cache-key
