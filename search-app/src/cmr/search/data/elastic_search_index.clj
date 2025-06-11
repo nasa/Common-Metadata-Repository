@@ -42,6 +42,16 @@
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 (comment 
   (println indexes)
+  (let [cache (hcache/context->cache context1 cache-key)]
+    (hcache/get-value cache cache-key :granule))
+  (:granule (:index-names (index-names-cache/refresh-index-names-cache context1)))
+  
+  ;      granule-index-names (or (hcache/get-value cache cache-key :granule)
+  ;                              (do
+  ;                                (index-names-cache/refresh-index-names-cache context)
+  ;                                (hcache/get-value cache cache-key :granule)))
+  ;      rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
+  ;  (apply dissoc granule-index-names (map keyword rebalancing-collections)))
   )
 (defn- collection-concept-id->index-name
   "Return the granule index name for the input collection concept id"
@@ -57,10 +67,12 @@
   "Return the granule index names for the input collection concept ids"
   [context coll-concept-ids]
   (let [indexes (get-granule-index-names context)]
-    (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
+    (remove nil? 
+            (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids)))))
 
 (comment
-  (println context)
+  (println context1)
+  (get-granule-index-names context1)
   )
 (defn- provider-ids->index-names
   "Return the granule index names for the input provider-ids"
@@ -97,9 +109,19 @@
       (format "%d_c*,%d_small_collections,-%d_collections*%s"
               index-set-id index-set-id index-set-id excluded-collections-str))))
 
+(comment
+  (println query1)
+  (get-granule-indexes context1 query1)
+  
+  (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query1))]
+    (collection-concept-ids->index-names context1 coll-concept-ids))
+  )
+
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
   [context query]
+  (def context1 context)
+  (def query1 query)
   (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
         provider-ids (seq (pex/extract-provider-ids query))]
     (cond

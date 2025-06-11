@@ -18,6 +18,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.api.routes :as routes]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
@@ -61,7 +62,9 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key (af/create-consistent-acl-cache
+             :caches {;; first cache to set the search redis cache because the index set cache is different.
+                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
+                      af/acl-cache-key (af/create-consistent-acl-cache
                                         [:catalog-item :system-object :provider-object])
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache
                                                      {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)

@@ -56,9 +56,15 @@
     {:index-names index-names-map
      :rebalancing-collections moving-to-separate-index}))
 
+(comment 
+ (println context3)
+  (fetch-concept-type-index-names context3)
+  (indexer/get-index-set context3 index-set-id)
+)
 (defn refresh-index-names-cache
   "Refresh the search index-names cache."
   [context]
+  (def context3 context)
   (info "Refreshing search index-names cache.")
   (let [index-names-map (fetch-concept-type-index-names context)
         index-names (:index-names index-names-map)

@@ -210,7 +210,10 @@
         es-store (indexer-util/context->es-store context)]
 
     (doseq [idx indices-w-config]
-      (es/update-index es-store idx))
+      (try
+        (es/update-index es-store idx)
+        (catch Exception e
+          (println "Caught exeption updating or creating" e))))
 
     (index-requested-index-set context index-set)))
 

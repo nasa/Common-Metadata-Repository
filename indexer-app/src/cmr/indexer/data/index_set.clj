@@ -7,10 +7,12 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.log :as log :refer (info error)]
    [cmr.common.util :as util]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.indexer.services.index-set-service :as index-set-service]
@@ -1103,8 +1105,15 @@
   :indexer-index-set-cache)
 
 (comment
+  (let [cache (cache/context->cache context1 index-set-cache-key)]
+    (cache/get-keys cache))
+  (let [cache (cache/context->cache context1 index-set-cache-key)]
+    (cache/get-value cache :concept-mapping-types))
+  (let [cache (cache/context->cache context1 index-set-cache-key)]
+    (cache/get-value cache :concept-indices))
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-keys cache))
+  
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types))
 
@@ -1122,9 +1131,9 @@
     (cache/get-value cache :concept-indices (partial fetch-concept-type-index-names context))))
 
 (defn set-concept-type-index-names
-  "Fetch index names associated with concepts."
+  "Set index names associated with concepts."
   [context value]
-  (def context1 context)
+  (def context2 context)
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/set-value cache :concept-indices value)))
 
@@ -1167,23 +1176,26 @@
 
 ;    (index-requested-index-set context index-set)))
 
-(comment
-  (let [index-set (index-set-es/get-index-set context index-set-id)]
-    (get-in index-set [:index-set :granule])
-    ;(cmr.indexer.services.index-set-service/update-index-set context index-set)
+(defn set-search-index-names-cache
+  ""
+  [context index-kw index-name]
+  (let [cache (hcache/context->cache context elastic-search-index-names-cache/index-names-cache-key)
+        granule (hcache/get-value cache elastic-search-index-names-cache/index-names-cache-key "granule")
+        new-granule (assoc granule index-kw index-name)]
+    (hcache/set-value cache elastic-search-index-names-cache/index-names-cache-key "granule" new-granule)))
+
+(comment 
+  (println coll-concept-id)
+  (let [coll-concept-id "C12323-PROV2"
+        {:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
+        indexes (:granule index-names)
+        provider (util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
+        idx-name (str "granules_" provider)
+        idx (get indexes (keyword idx-name))]
+    idx
     )
-  
-  (println target-index-key)
-  update-index-set
-  (get-granule-index-names-for-collection context "C1200000001-PROV2" nil)
-  (let [index-names (get-concept-type-index-names context)]
-    (get-in index-names [:index-names :granule]))
-  (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
-        indexes (:granule index-names)]
-    indexes)
-   ; (get indexes :small_collections))
-  (get-granule-index-names-for-provider context "prov6")
- )
+
+  )
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a
    target-index-key can be specified which indicates that a specific index should be returned"
@@ -1200,26 +1212,34 @@
                                         (let [provider (util/safe-lowercase (cs/concept-id->provider-id coll-concept-id))
                                               idx-name (str "granules_" provider)
                                               idx (get indexes (keyword idx-name))]
-                                          ;(println "idx:" idx)
                                           (if idx
                                             idx
-                                            (let [index-set (index-set-es/get-index-set context index-set-id)
+                                            (let [_ (println "idx-name:" idx-name)
+                                                  _ (println "indexes:" indexes)
+                                                  _ (println "coll-concept-id:" coll-concept-id)
+                                                  index-set (index-set-es/get-index-set context index-set-id)
                                                   ;; This sets the index names in ES index.
-                                                  new-index-set (try 
-                                                                  (let [new-idx-set (add-new-granule-provider-index index-set idx-name)]
-                                                                    (index-set-service/update-index-set context new-idx-set))
-                                                                  (catch Exception e
-                                                                    (println (format "index %s already exists." idx-name))
-                                                                    index-set))
+                                                  new-index-set (let [new-idx-set (add-new-granule-provider-index index-set idx-name)]
+                                                                  (try
+                                                                    (index-set-service/update-index-set context new-idx-set)
+                                                                    (catch Exception _e
+                                                                      (println (format "index %s already exists." idx-name))
+                                                                      new-idx-set)))
                                                   _ (println "new-index-set" new-index-set)
+                                                  _ (when (nil? new-index-set)
+                                                      (println "index-set is:" index-set)
+                                                      (println "index-set is:" (:index-set index-set))
+                                                      (println "index-set is granule:" (:granule (:index-set index-set)))
+                                                      (println "index-set is:" (:indexes (:granule (:index-set index-set)))))
                                                   new-index-name (str index-set-id "_" idx-name)
                                                   new-index-names (update-in (get-concept-type-index-names context) [:index-names :granule] #(assoc % (keyword idx-name) new-index-name))
                                                   ;; This needs to set the in memory cache
-                                                  _ (set-concept-type-index-names context new-index-names)]
-                                              new-index-name)))
-                                        (get indexes :small_collections))
-         ]
+                                                  _ (set-concept-type-index-names context new-index-names)
+                                                  ;; this needs to set the search redis cache - this cache and the one above need to be combined into redis
 
+                                                  _ (set-search-index-names-cache context (keyword idx-name) new-index-name)]
+                                              new-index-name)))
+                                        (get indexes :small_collections))]
      (cond
        target-index-key
        [(get indexes target-index-key)]

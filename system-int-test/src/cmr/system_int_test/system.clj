@@ -11,6 +11,7 @@
    [cmr.common.system :as common-sys]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.connection :as oracle]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -42,7 +43,8 @@
    kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
    kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
    kl/kms-location-cache-key (kl/create-kms-location-cache)
-   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)})
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+   elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)})
 
 (defn create-system
   "Returns a new instance of the whole application."
