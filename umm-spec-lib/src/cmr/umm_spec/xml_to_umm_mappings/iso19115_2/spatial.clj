@@ -38,7 +38,7 @@
          "/" id-xpath "/gmd:code/gco:CharacterString")))
 
 (def zone-identifier-xpath
-  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicDescription[@id='ZoneIdentifier']/gmd:geographicIdentifier/gmd:MD_Identifier/gmd:code/gco:CharacterString"))
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicDescription[@id='ZoneIdentifier']/gmd:geographicIdentifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
 
 (def vertical-string-xpath
   (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
