@@ -980,9 +980,11 @@
                            set-of-indexes
                            (index-set-gen/generic-mappings-generator))}))
 
+;; maybe add HERE
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
   [index-set]
+  (println (get-in index-set [:index-set :granule :indexes]))
   (->> (get-in index-set [:index-set :granule :indexes])
        (map :name)
        (remove #(= % "small_collections"))))

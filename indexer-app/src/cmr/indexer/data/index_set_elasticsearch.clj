@@ -77,6 +77,7 @@
 (defn get-index-set
   "Fetch index-set associated with an id."
   [context index-set-id]
+    (def gisctx context)
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?
