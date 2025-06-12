@@ -2,10 +2,11 @@
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [clojure.set :as set]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info]]
+   [cmr.common.log :refer [debug info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as util]
@@ -147,8 +148,8 @@
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
-      (info (format
-             (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
+      (warn (format
+             (str "Execute ES query failed because of UnknownHostException. Retry in %.3f seconds."
                   " Will retry up to %d times.")
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
@@ -157,7 +158,10 @@
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
-        (info "Execute ES query failed due to" body)
+
+        (if (empty? (string/trim body))
+          (info "Execute ES query failed with message <<" (.getMessage e) ">>")
+          (info "Execute ES query failed due to: <<" body ">>"))
 
         (when (re-find #"Trying to create too many scroll contexts" body)
           (errors/throw-service-error
