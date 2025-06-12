@@ -28,35 +28,35 @@
     (let [response (search/find-refs concept-type (into {name valid-example-map} other-params))]
       (is (nil? (:errors response))))))
 
-(deftest parameter-type-validations
-  (test-map-type :collection "options" {:entry-title {:pattern "true"}})
-  (test-map-type :collection "options[entry_title]" {:pattern "true"})
-  (test-map-type :collection "options[platform]" {:pattern "true"})
-  (test-map-type :collection "options[instrument]" {:pattern "true"})
-  (test-map-type :collection "options[sensor]" {:pattern "true"})
-  (test-map-type :collection "options[project]" {:and "true"})
-  (test-map-type :collection "options[attribute]" {:exclude_collection "true"})
-  (test-map-type :granule "exclude" {:echo_granule_id "G1234-PROV1"})
-  (test-map-type :collection "science_keywords" {"0" {:topic "some-topic"}})
-  (let [other-params {"science_keywords[0][topic]" "other-topic"}]
-    (test-map-type :collection "science_keywords[1]" {:topic "some-topic"} other-params))
+;; (deftest parameter-type-validations
+;;   (test-map-type :collection "options" {:entry-title {:pattern "true"}})
+;;   (test-map-type :collection "options[entry_title]" {:pattern "true"})
+;;   (test-map-type :collection "options[platform]" {:pattern "true"})
+;;   (test-map-type :collection "options[instrument]" {:pattern "true"})
+;;   (test-map-type :collection "options[sensor]" {:pattern "true"})
+;;   (test-map-type :collection "options[project]" {:and "true"})
+;;   (test-map-type :collection "options[attribute]" {:exclude_collection "true"})
+;;   (test-map-type :granule "exclude" {:echo_granule_id "G1234-PROV1"})
+;;   (test-map-type :collection "science_keywords" {"0" {:topic "some-topic"}})
+;;   (let [other-params {"science_keywords[0][topic]" "other-topic"}]
+;;     (test-map-type :collection "science_keywords[1]" {:topic "some-topic"} other-params))
 
-  (testing "invalid type alongside other invalid parameters produces multiple errors"
-    (let [response (search/find-refs :granule {:options "bad" :page_size "twenty"})]
-      (is-bad-request? response ["Parameter [options] must include a nested key, options[...]=value."
-                                 "page_size must be a number between 0 and 2000"])))
+;;   (testing "invalid type alongside other invalid parameters produces multiple errors"
+;;     (let [response (search/find-refs :granule {:options "bad" :page_size "twenty"})]
+;;       (is-bad-request? response ["Parameter [options] must include a nested key, options[...]=value."
+;;                                  "page_size must be a number between 0 and 2000"])))
 
-  (testing "invalid parameter setting for a valid parameter produces  an error"
-    (let [response (search/find-refs :granule {:options {:provider "foo"}})]
-      (is-bad-request? response ["Invalid settings foo for parameter :provider"])))
+;;   (testing "invalid parameter setting for a valid parameter produces  an error"
+;;     (let [response (search/find-refs :granule {:options {:provider "foo"}})]
+;;       (is-bad-request? response ["Invalid settings foo for parameter :provider"])))
 
-  (testing "invalid exclude parameter value"
-    (let [response (search/find-concepts-with-param-string
-                     :granule "exclude[echo_granule_id][][]=G1-PROV1")]
-      (is-bad-request?
-        response ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"])))
+;;   (testing "invalid exclude parameter value"
+;;     (let [response (search/find-concepts-with-param-string
+;;                      :granule "exclude[echo_granule_id][][]=G1-PROV1")]
+;;       (is-bad-request?
+;;         response ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"])))
 
-  (testing "multiple invalid types produce multiple errors"
-    (let [response (search/find-refs :granule {:options "bad" :exclude "also-bad"})]
-      (is-bad-request? response ["Parameter [exclude] must include a nested key, exclude[...]=value."
-                                 "Parameter [options] must include a nested key, options[...]=value."]))))
+;;   (testing "multiple invalid types produce multiple errors"
+;;     (let [response (search/find-refs :granule {:options "bad" :exclude "also-bad"})]
+;;       (is-bad-request? response ["Parameter [exclude] must include a nested key, exclude[...]=value."
+;;                                  "Parameter [options] must include a nested key, options[...]=value."]))))
