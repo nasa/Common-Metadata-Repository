@@ -63,6 +63,8 @@
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
   [context]
   (let [cache (hcache/context->cache context cache-key)
+        _ (println "~~~~~~~~~~~~~ all-granule-indexes")
+        _ (println "granule-index-names (hcache/get-value cache cache-key :granule) -- " (hcache/get-value cache cache-key :granule)) ;; {:small_collections 1_small_collections}
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)

@@ -220,6 +220,9 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
+  (println "~~~~~~~~~~ send-query-to-elastic")
+  (def sqe-ctx context)
+  (def sqe-que query)
   (let [elastic-query (q2e/query->elastic query)
         {sort-params :sort
          aggregations :aggs
