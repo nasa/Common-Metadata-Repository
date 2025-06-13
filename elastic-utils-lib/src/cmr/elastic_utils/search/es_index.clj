@@ -6,7 +6,7 @@
    [clojure.set :as set]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info warn]]
+   [cmr.common.log :refer [debug info warnf]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as util]
@@ -148,20 +148,20 @@
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
-      (warn (format
-             (str "Execute ES query failed because of UnknownHostException. Retry in %.3f seconds."
-                  " Will retry up to %d times.")
+      (warnf (str "Execute ES query failed because of UnknownHostException. Retry in %.3f seconds. "
+                  "Will retry up to %d times. No more then %d tries can be made.")
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
-             max-retries))
+             max-retries
+             (es-config/elastic-unknown-host-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
       (do-send-with-retry context index-info query (dec max-retries)))
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
 
-        (if (empty? (string/trim body))
-          (info "Execute ES query failed with message <<" (.getMessage e) ">>")
-          (info "Execute ES query failed due to: <<" body ">>"))
+        (warnf "Execute ES query in do-send-with-retry failed with message '%s' and body «%s»"
+               (.getMessage e)
+               (util/trunc body 1024))
 
         (when (re-find #"Trying to create too many scroll contexts" body)
           (errors/throw-service-error
