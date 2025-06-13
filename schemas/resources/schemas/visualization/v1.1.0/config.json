@@ -16,16 +16,20 @@
       "refresh_interval": "1s"
     }
   },
+  "IndexConfiguration": {
+    "AllowAppending": true,
+    "AdditionalKeywords": ["Identifier"]
+  },
   "Indexes":
   [
     {
-      "Description": "Identifier",
+      "Description": "Identifier as Id",
       "Field": ".Identifier",
       "Name": "Id",
       "Mapping": "string"
     },
     {
-      "Description": "Identifier",
+      "Description": "Identifier as Identifier",
       "Field": ".Identifier",
       "Name": "Identifier",
       "Mapping": "string"
@@ -49,32 +53,26 @@
       "Mapping": "string"
     },
     {    
-      "Description": "Visualization Source ConceptIds",
+      "Description": "Concept IDs of the source material for the Visualization",
       "Field": ".ConceptIds",
       "Name": "Concept-Ids",
-      "Mapping": "string",
+      "Mapping": "token",
       "Indexer": "simple-array-field",
       "Configuration": {"sub-fields": ["Value", "ShortName"]}
     },
     {    
-      "Description": "Visualization Source ConceptIds in keywords",
+      "Description": "Concept IDs of the source material for the Visualization to be included in the Keyword.",
       "Field": ".ConceptIds",
       "Name": "keyword",
-      "Mapping": "string",
+      "Mapping": "token",
       "Indexer": "simple-array-field",
       "Configuration": {"sub-fields": ["Value"]}
-    },
-    {
-      "Description": "Identifier with the keywords",
-      "Field": ".Identifier",
-      "Name": "keyword",
-      "Mapping": "string"
     },
     {
       "Description": "Best Available External Identifier in keywords",
       "Field": ".Specification.ProductIdentification.BestAvailableExternalIdentifier",
       "Name": "keyword",
-      "Mapping": "string"
+      "Mapping": "token"
     }
   ]
 }

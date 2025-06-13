@@ -62,7 +62,9 @@
    :generic-type m/string-field-mapping
    :provider-id m/string-field-mapping
    :provider-id-lowercase m/string-field-mapping
-   :keyword m/string-field-mapping
+   :keyword m/text-field-mapping
+   :keyword-lowercase m/text-field-mapping
+   :cmr-version m/string-field-mapping
    :user-id m/string-field-mapping
    :revision-date m/date-field-mapping
    :native-id m/string-field-mapping
@@ -71,7 +73,8 @@
 
 ;; These are the types which are allowed to be expressed in the Index config file
 (def config->index-mappings
-  {"string" m/string-field-mapping
+  {"token" m/text-field-mapping
+   "string" m/string-field-mapping
    "int" m/int-field-mapping
    "date" m/date-field-mapping})
 
@@ -87,7 +90,9 @@
   [destination index-definition]
   (let [index-name (string/lower-case (:Name index-definition))
         index-name-lower (str index-name "-lowercase")
-        converted-mapping (get config->index-mappings (:Mapping index-definition))]
+        converted-mapping (if (= index-name "keyword")
+                            m/text-field-mapping
+                            (get config->index-mappings (:Mapping index-definition)))]
     (-> destination
         (assoc (keyword index-name) converted-mapping)
         (assoc (keyword index-name-lower) converted-mapping))))
@@ -210,5 +215,7 @@
 
   (when (nil? (:generic-grid (generic-mappings-generator)))
     (println "Missing Generic Grid definition"))
+
+  (:generic-visualization (generic-mappings-generator))
 
   )
