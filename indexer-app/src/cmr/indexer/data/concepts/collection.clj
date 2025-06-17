@@ -232,8 +232,7 @@
         parsed-version-id (collection-util/parse-version-id version-id)
         s3-bucket-and-object-prefix-names (get-in collection [:DirectDistributionInformation :S3BucketAndObjectPrefixNames])
         doi (get-in collection [:DOI :DOI])
-        doi-lowercase (into [(util/safe-lowercase doi)]
-                            (mapv #(util/safe-lowercase (:DOI %)) (get collection :AssociatedDOIs)))
+        doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
