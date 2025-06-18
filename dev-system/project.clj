@@ -51,7 +51,9 @@
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.2.0"]
-                           [ring/ring-jetty-adapter "1.13.0"]]
+                           [ring/ring-jetty-adapter "1.13.0"
+                            :exclusions [org.apache.commons:commons-fileupload2-core]]
+                           [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
