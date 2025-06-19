@@ -8,7 +8,7 @@
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
-                 [commons-fileupload "1.3.3"]
+                 [commons-fileupload "1.5"]
                  [commons-io "2.18.0"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]

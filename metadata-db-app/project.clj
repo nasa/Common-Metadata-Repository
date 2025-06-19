@@ -24,7 +24,9 @@
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"]
+                 [ring/ring-core "1.13.0"
+                  :exclusions [org.apache.commons/commons-fileupload2-core]]
+                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
                  [ring/ring-jetty-adapter "1.13.0"] ;; used by migration
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]

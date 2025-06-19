@@ -5,7 +5,7 @@
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
                  [jakarta.servlet/jakarta.servlet-api "4.0.4"] ;;5.x and 6.x did not work
-                 ;[commons-fileupload "2.0.0-M4"]
+                 [commons-fileupload "1.5"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [compojure "1.6.1"]
@@ -37,7 +37,9 @@
                  [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
                  [ring/ring-codec "1.2.0"]
-                 [ring/ring-core "1.13.0"]
+                 [ring/ring-core "1.13.0"
+                  :exclusions [org.apache.commons/commons-fileupload2-core]]
+                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
                  [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]

@@ -13,7 +13,9 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"]
+                 [ring/ring-core "1.13.0"
+                  :exclusions [org.apache.commons/commons-fileupload2-core]]
+                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
                  [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
