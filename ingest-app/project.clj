@@ -5,7 +5,7 @@
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
                  [jakarta.servlet/jakarta.servlet-api "4.0.4"] ;;5.x and 6.x did not work
-                 [commons-fileupload "1.5"]
+                 [commons-fileupload "1.6.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [compojure "1.6.1"]

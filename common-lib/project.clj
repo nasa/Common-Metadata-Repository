@@ -17,7 +17,7 @@
                  [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload/commons-fileupload]]
-                 [commons-fileupload "1.5"]
+                 [commons-fileupload "1.6.0"]
                  [digest "1.4.8"]
                  [environ "1.1.0"]
                  [hiccup "1.0.5"]
