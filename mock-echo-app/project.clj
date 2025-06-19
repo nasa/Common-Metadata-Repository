@@ -10,9 +10,7 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.jetty/jetty-http "11.0.24"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"
-                  :exclusions [org.apache.commons/commons-fileupload2-core]]
-                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
+                 [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-exec "0.3.7"]

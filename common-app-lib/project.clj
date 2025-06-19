@@ -13,9 +13,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
                  [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"
-                  :exclusions [org.apache.commons/commons-fileupload2-core]]
-                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
+                 [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]]
