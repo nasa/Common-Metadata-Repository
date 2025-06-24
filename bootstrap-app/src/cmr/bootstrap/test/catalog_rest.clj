@@ -7,7 +7,6 @@
    [cmr.bootstrap.data.migration-utils :as mu]
    [cmr.common.concepts :as concepts]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.util :as mdb-util]

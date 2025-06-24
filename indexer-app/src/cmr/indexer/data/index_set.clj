@@ -395,6 +395,9 @@
           :ongoing                        m/date-field-mapping
           :temporal-ranges                m/date-field-mapping
 
+          ;; DataDates CREATE date for sorting
+          :create-data-date               m/date-field-mapping
+
           ;; Temporal range of min and max granule values or the same as collection start and end date
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping

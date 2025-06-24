@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for retreiving and working with ACLs."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
-  :dependencies [[commons-io "2.6"]
+  :dependencies [[commons-io "2.18.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [potemkin "0.4.5"]]
@@ -32,7 +32,9 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     ;; ring is needed or this fails in sys int group3
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

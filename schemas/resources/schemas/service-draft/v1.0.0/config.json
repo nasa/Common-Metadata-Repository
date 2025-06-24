@@ -1,0 +1,28 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Service Draft",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "SD",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Draft Service Name",
+      "Field": ".Name",
+      "Name": "name",
+      "Mapping": "string"
+    }
+  ]
+}

@@ -15,6 +15,7 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.ingest.validation.generic-document-validation :as generic-validation]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :as log]
@@ -121,7 +122,8 @@
                        common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
                        launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-                       urs/urs-cache-key (urs/create-urs-cache)}
+                       urs/urs-cache-key (urs/create-urs-cache)
+                       generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)}
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections

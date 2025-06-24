@@ -1,0 +1,44 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1",
+    "Name": "Generic-Config",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Collection Draft",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "CD",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Draft Collection Short Name",
+      "Field": ".ShortName",
+      "Name": "name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Draft Collection Project short names.",
+      "Field": ".Projects",
+      "Name": "project",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["ShortName"]}
+    },
+    {
+      "Description": "Draft Collection Platform short names.",
+      "Field": ".Platforms",
+      "Name": "platform",
+      "Mapping": "string",
+      "Indexer": "simple-array-field",
+      "Configuration": {"sub-fields": ["ShortName"]}
+    }
+  ]
+}

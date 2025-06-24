@@ -9,7 +9,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def tiling-system-xpath
-  (str "gmd:extent/gmd:EX_Extent[@id='TilingIdentificationSystem']/gmd:geographicElement/gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"))
+  "gmd:extent/gmd:EX_Extent[@id='TilingIdentificationSystem']/gmd:geographicElement/gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier")
 
 (defn- get-double
   "Parse the input string into a double and return it. Return nil when I can't."

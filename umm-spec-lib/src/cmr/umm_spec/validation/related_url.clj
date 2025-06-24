@@ -4,9 +4,7 @@
    [clojure.string :as string]
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.util :as su]
-   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu])
-  (:import
-   (org.apache.commons.validator.routines UrlValidator)))
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
 (defn- data-center-url-content-type-validation
   "Validates the URLContentType for DataCenter ContactInformation"
@@ -45,16 +43,13 @@
        [(vu/escape-error-string (format "Only URLContentType: DistributionURL Type: GET DATA can contain GetData, RelatedUrl contains URLContentType: %s Type: %s" URLContentType Type))]})))
 
 (defn url-validation
-  "Validate the URL. Return nil if no errors and the field path and error if the URL
-  is not valid."
   [field-path value]
-  (let [validator (UrlValidator. (into-array ["http" "ftp" "https" "file" "s3"]))]
+  (let [url-pattern
+        #"^(https?|ftp|file|s3):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)$"]
     (when (and (some? value)
                (not= value su/not-provided-url)
-               (not (.isValid validator value)))
+               (not (re-matches url-pattern value)))
       {field-path
-       ;; Escape the %, because the error messages go through a format, which will throw an error
-       ;; Do the escape after the format here, so it doesn't get formatted out
        [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
 (defn s3-bucket-validation

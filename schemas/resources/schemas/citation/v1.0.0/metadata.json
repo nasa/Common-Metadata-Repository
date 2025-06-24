@@ -1,0 +1,73 @@
+{
+  "Name": "Citation-Name",
+  "Identifier": "10.1029/2021JD034797",
+  "IdentifierType": "DOI",
+  "ResolutionAuthority": "https://doi.org",
+  "RelatedIdentifiers": [
+    {
+      "RelationshipType": "Cites",
+      "RelatedIdentifierType": "DOI",
+      "RelatedIdentifier": "10.5067/MODIS/MOD08_M3.061",
+      "RelatedResolutionAuthority": "https://doi.org"
+    },
+    {
+      "RelationshipType": "Refers",
+      "RelatedIdentifierType": "DOI",
+      "RelatedIdentifier": "10.5067/MEASURES/AEROSOLS/DATA203",
+      "RelatedResolutionAuthority": "https://doi.org"
+    }
+  ],
+  "CitationMetadata": {
+    "Title": "Global Impact of COVID-19 Restrictions on the Atmospheric Concentrations of Nitrogen Dioxide and Ozone",
+    "Year": 2021,
+    "Type": "journal-article",
+    "Author": [
+      {
+        "ORCID": "0000-0003-2541-6634",
+        "Given": "Christoph A.",
+        "Family": "Keller",
+        "Sequence": "first"
+      },
+      {
+        "ORCID": "0000-0002-6194-7454",
+        "Given": "K. Emma",
+        "Family": "Knowland",
+        "Sequence": "additional"
+      }
+    ],
+    "Publisher": "American Geophysical Union",
+    "Container": "Journal of Geophysical Research: Atmospheres",
+    "Volume": "126",
+    "Number": "20",
+    "Pages": "e2021JD034797"
+  },
+  "Abstract": "The global pandemic caused by the coronavirus disease 2019 (COVID-19) led to never-before-seen reductions in urban and industrial activities, along with associated emissions to the environment. This has created an unprecedented opportunity to study atmospheric composition in the absence of its usual drivers. We have combined surface-level nitrogen dioxide (NO2) observations from air quality monitoring stations across the globe with satellite measurements and machine learning techniques to analyze NO2 variations from the initial strict lockdowns through the restrictions that continued into fall 2020. Our analysis shows that the restrictions led to significant decreases in NO2 concentrations globally through 2020.",
+  "ScienceKeywords": [
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "AIR QUALITY",
+      "VariableLevel1": "NITROGEN DIOXIDE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "HUMAN DIMENSIONS",
+      "Term": "PUBLIC HEALTH",
+      "VariableLevel1": "ENVIRONMENTAL IMPACTS"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC CHEMISTRY",
+      "VariableLevel1": "Halocarbons and Halogens",
+      "VariableLevel2": "Hypochlorous Acid",
+      "VariableLevel3": "Next level",
+      "DetailedVariable": "Detail level variable"
+    }
+  ],
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generics/citation/v1.0.0",
+    "Name": "Citation",
+    "Version": "1.0.0"
+  }
+}

@@ -7,7 +7,7 @@
    [cmr.bootstrap.data.fingerprint :as fingerprint]
    [cmr.bootstrap.data.message-queue :as message-queue]
    [cmr.bootstrap.embedded-system-helper :as helper]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
@@ -90,7 +90,7 @@
     (message-queue/bootstrap-subscriptions-event provider-id))))
 
 (defn- index-generics
-  "Bulk index all the generic documents of a particular type. If a provider is passed, only index 
+  "Bulk index all the generic documents of a particular type. If a provider is passed, only index
    the documents for that provider."
   ([this context concept-type]
    (info "Publishing events to index all generic documents of type " concept-type)

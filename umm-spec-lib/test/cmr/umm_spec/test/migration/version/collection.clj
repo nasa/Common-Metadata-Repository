@@ -419,8 +419,6 @@
    :StartCircularLatitude 4
    :NumberOfOrbits 5})
 
-
-
 (deftest get-largest-footprint-in-kilometer-test
   (is (= 0.022 (#'coll-mig/get-largest-footprint-in-kilometer [{:Footprint 22
                                                                 :FootprintUnit "Meter"}]))))
@@ -441,33 +439,33 @@
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements (v/versions :collection))]
-    (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata {}
-                                           umm-record dest-media-type)]
-      (empty? (core/validate-metadata :collection dest-media-type metadata)))))
+           (let [dest-media-type (str mt/umm-json "; version=" dest-version)
+                 metadata (core/generate-metadata {}
+                                                  umm-record dest-media-type)]
+             (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
 (deftest migrate-1_0-up-to-1_1
   (is (nil?
-        (:TilingIdentificationSystems
-          (vm/migrate-umm {} :collection "1.0" "1.1"
-                         {:TilingIdentificationSystem nil}))))
+       (:TilingIdentificationSystems
+        (vm/migrate-umm {} :collection "1.0" "1.1"
+                        {:TilingIdentificationSystem nil}))))
   (is (= [{:TilingIdentificationSystemName "foo"}]
          (:TilingIdentificationSystems
-           (vm/migrate-umm {} :collection "1.0" "1.1"
+          (vm/migrate-umm {} :collection "1.0" "1.1"
                           {:TilingIdentificationSystem {:TilingIdentificationSystemName "foo"}})))))
 
 (deftest migrate-1_1-down-to-1_0
   (is (nil?
-        (:TilingIdentificationSystem
-          (vm/migrate-umm {} :collection "1.1" "1.0"
-                         {:TilingIdentificationSystems nil}))))
+       (:TilingIdentificationSystem
+        (vm/migrate-umm {} :collection "1.1" "1.0"
+                        {:TilingIdentificationSystems nil}))))
   (is (nil?
-        (:TilingIdentificationSystem
-          (vm/migrate-umm {} :collection "1.1" "1.0"
-                         {:TilingIdentificationSystems []}))))
+       (:TilingIdentificationSystem
+        (vm/migrate-umm {} :collection "1.1" "1.0"
+                        {:TilingIdentificationSystems []}))))
   (is (= {:TilingIdentificationSystemName "foo"}
          (:TilingIdentificationSystem
-           (vm/migrate-umm {} :collection "1.1" "1.0"
+          (vm/migrate-umm {} :collection "1.1" "1.0"
                           {:TilingIdentificationSystems [{:TilingIdentificationSystemName "foo"}
                                                          {:TilingIdentificationSystemName "bar"}]})))))
 
@@ -623,24 +621,24 @@
                                            :PostalCode "20771"}]}}]
           result (vm/migrate-umm {} :collection "1.3" "1.4"
                                  {:Personnel personnel})]
-        (is (nil? (:ContactGroups result)))
-        (is (nil? (:Organizations result)))
-        (is (nil? (:Personnel result)))
-        (is (= [{:Roles ["Technical Contact"]
-                 :FirstName "Carey"
-                 :MiddleName "E"
-                 :LastName "Noll"
-                 :Uuid nil
-                 :ContactInformation [{:ServiceHours nil
-                                       :ContactInstruction nil
-                                       :RelatedUrls nil
-                                       :Addresses [{:Country "United States"
-                                                    :StreetAddresses ["NASA GSFC" "Code 690.1"]
-                                                    :City "Greenbelt"
-                                                    :StateProvince "Maryland"
-                                                    :PostalCode "20771"}]
-                                       :ContactMechanisms [{:Type "Email" :Value "Carey.Noll@nasa.gov"}]}]}]
-               (:ContactPersons result))))))
+      (is (nil? (:ContactGroups result)))
+      (is (nil? (:Organizations result)))
+      (is (nil? (:Personnel result)))
+      (is (= [{:Roles ["Technical Contact"]
+               :FirstName "Carey"
+               :MiddleName "E"
+               :LastName "Noll"
+               :Uuid nil
+               :ContactInformation [{:ServiceHours nil
+                                     :ContactInstruction nil
+                                     :RelatedUrls nil
+                                     :Addresses [{:Country "United States"
+                                                  :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                                  :City "Greenbelt"
+                                                  :StateProvince "Maryland"
+                                                  :PostalCode "20771"}]
+                                     :ContactMechanisms [{:Type "Email" :Value "Carey.Noll@nasa.gov"}]}]}]
+             (:ContactPersons result))))))
 
 (deftest migrate-1_4-down-to-1_3
   (testing "Data Centers to Organizations"
@@ -686,7 +684,7 @@
                                       :URLs ["www.contact.foo.com" "www.contact.shoo.com"]
                                       :Title "contact related url title"
                                       :MimeType "application/html"}]}}]
-           (:Organizations result)))))
+             (:Organizations result)))))
   (testing "Contact Persons to Personnel"
     (let [contact-persons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                             :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
@@ -707,8 +705,8 @@
                             :FirstName "John"
                             :MiddleName "D"
                             :LastName "Smith"}]
-            result (vm/migrate-umm {} :collection "1.4" "1.3"
-                                   {:ContactPersons contact-persons})]
+          result (vm/migrate-umm {} :collection "1.4" "1.3"
+                                 {:ContactPersons contact-persons})]
       (is (nil? (:DataCenters result)))
       (is (nil? (:ContactGroups result)))
       (is (nil? (:ContactPersons result)))
@@ -731,7 +729,7 @@
                                       :URLs ["www.contact.foo.com" "www.contact.shoo.com"]
                                       :Title "contact related url title"
                                       :MimeType "application/html"}]}}]
-           (:Personnel result))))))
+             (:Personnel result))))))
 
 (deftest migrate-roundtrip-1_3-to-1_4
   (let [organizations [{:Role "POINTOFCONTACT"
@@ -776,22 +774,22 @@
 
 (deftest migrate-1_4-up-to-1_5
   (let [result (vm/migrate-umm {} :collection "1.4" "1.5"
-                           {:AdditionalAttributes
-                             [{:Name "aa1"
-                               :Description "aa1"}
-                              {:Name "aa2"}]})]
-      (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
-      (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
+                               {:AdditionalAttributes
+                                [{:Name "aa1"
+                                  :Description "aa1"}
+                                 {:Name "aa2"}]})]
+    (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+    (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
 
 (deftest migrate-1_5-down-to-1_4
-    (let [result (vm/migrate-umm {} :collection "1.5" "1.4"
-                             {:AdditionalAttributes
-                               [{:Name "aa1"
-                                 :Description "aa1"}
-                                {:Name "aa2"
-                                 :Description "Not provided"}]})]
-        (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
-        (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
+  (let [result (vm/migrate-umm {} :collection "1.5" "1.4"
+                               {:AdditionalAttributes
+                                [{:Name "aa1"
+                                  :Description "aa1"}
+                                 {:Name "aa2"
+                                  :Description "Not provided"}]})]
+    (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+    (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
 
 (deftest migrate-1_5-up-to-1_6
   (let [result (vm/migrate-umm {} :collection "1.5" "1.6"
@@ -828,19 +826,19 @@
 
     (is (= {:ServiceHours "M-F 9-5"
             :ContactInstruction "Call"}
-         (:ContactInformation (first (:DataCenters result)))))
+           (:ContactInformation (first (:DataCenters result)))))
     (is (= {:ServiceHours "M-F 9-5"
             :ContactInstruction "Call"}
-         (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
+           (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
     (is (= {:ServiceHours "M-F 9-5"
             :ContactInstruction "Call"}
-         (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
+           (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
     (is (= {:ServiceHours "M-F 9-5"
             :ContactInstruction "Call"}
-         (:ContactInformation (first (:ContactPersons result)))))
+           (:ContactInformation (first (:ContactPersons result)))))
     (is (= {:ServiceHours "M-F 9-5"
             :ContactInstruction "Call"}
-         (:ContactInformation (first (:ContactGroups result)))))))
+           (:ContactInformation (first (:ContactGroups result)))))))
 
 (deftest migrate-1_6-down-to-1_5
   (let [result (vm/migrate-umm {} :collection "1.6" "1.5"
@@ -872,19 +870,19 @@
 
     (is (= [{:ServiceHours "M-F 9-5"
              :ContactInstruction "Call"}]
-         (:ContactInformation (first (:DataCenters result)))))
+           (:ContactInformation (first (:DataCenters result)))))
     (is (= [{:ServiceHours "M-F 9-5"
              :ContactInstruction "Call"}]
-         (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
+           (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
     (is (= [{:ServiceHours "M-F 9-5"
              :ContactInstruction "Call"}]
-         (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
+           (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
     (is (= [{:ServiceHours "M-F 9-5"
              :ContactInstruction "Call"}]
-         (:ContactInformation (first (:ContactPersons result)))))
+           (:ContactInformation (first (:ContactPersons result)))))
     (is (= [{:ServiceHours "M-F 9-5"
              :ContactInstruction "Call"}]
-         (:ContactInformation (first (:ContactGroups result)))))))
+           (:ContactInformation (first (:ContactGroups result)))))))
 
 (deftest migrate-1_7-up-to-1_8
   (let [result (vm/migrate-umm {} :collection "1.7" "1.8"
@@ -1231,8 +1229,8 @@
              :Relation ["GET DATA" "ECHO"]
              :URLs ["www.contact.group.foo.com"]}
             {:Description "Contact group related url description"
-                     :Relation ["GET SERVICE" "ECHO"]
-                     :URLs ["www.contact.group.foo.com"]
+             :Relation ["GET SERVICE" "ECHO"]
+             :URLs ["www.contact.group.foo.com"]
              :MimeType "application/html"}]
            (:RelatedUrls result)))
     (is (= [{:URLs ["www.contact.shoo.com"],
@@ -1341,249 +1339,249 @@
                                  :Unit "Minutes"
                                  :Value "96.7"}]
               :Instruments [(umm-cmn/map->InstrumentType
-                              {:ShortName "An Instrument"
-                               :LongName "The Full Name of An Instrument v123.4"
-                               :Technique "Two cans and a string"
-                               :NumberOfInstruments 1
-                               :OperationalModes ["on" "off"]
-                               :Characteristics [{:Name "Signal to Noise Ratio"
-                                                  :Description "Is that necessary?"
-                                                  :DataType "STRING"
-                                                  :Unit "dB"
-                                                  :Value "10"}]
-                               :ComposedOf [(umm-cmn/map->InstrumentChildType
-                                              {:ShortName "ABC"
-                                               :LongName "Long Range Sensor"
-                                               :Characteristics [{:Name "Signal to Noise Ratio"
-                                                                  :Description "Is that necessary?"
-                                                                  :DataType "STRING"
-                                                                  :Unit "dB"
-                                                                  :Value "10"}]
-                                               :Technique "Drunken Fist"})]})]})]
-         (:Platforms
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-             {:Platforms [{:ShortName "Platform 1"
-                           :LongName "Example Platform Long Name 1"
-                           :Type "Aircraft"
-                           :Characteristics [{:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "time/Direction (ascending)"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Time/direction (descending)"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "VarchaR"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Integer"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Radiocarbon Dates"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "String"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Float"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "int"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "boolean"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Date"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Time"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Datetime"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Date_String"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "time_string"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "Datetime_String"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "randomstring"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}
-                                             {:Name "OrbitalPeriod"
-                                              :Description "Orbital period in decimal minutes."
-                                              :DataType "not applicable"
-                                              :Unit "Minutes"
-                                              :Value "96.7"}]
-                           :Instruments [{:ShortName "An Instrument"
-                                          :LongName "The Full Name of An Instrument v123.4"
-                                          :Technique "Two cans and a string"
-                                          :NumberOfInstruments 1
-                                          :OperationalModes ["on" "off"]
-                                          :Characteristics [{:Name "Signal to Noise Ratio"
-                                                             :Description "Is that necessary?"
+                             {:ShortName "An Instrument"
+                              :LongName "The Full Name of An Instrument v123.4"
+                              :Technique "Two cans and a string"
+                              :NumberOfInstruments 1
+                              :OperationalModes ["on" "off"]
+                              :Characteristics [{:Name "Signal to Noise Ratio"
+                                                 :Description "Is that necessary?"
+                                                 :DataType "STRING"
+                                                 :Unit "dB"
+                                                 :Value "10"}]
+                              :ComposedOf [(umm-cmn/map->InstrumentChildType
+                                            {:ShortName "ABC"
+                                             :LongName "Long Range Sensor"
+                                             :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                :Description "Is that necessary?"
+                                                                :DataType "STRING"
+                                                                :Unit "dB"
+                                                                :Value "10"}]
+                                             :Technique "Drunken Fist"})]})]})]
+           (:Platforms
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:Platforms [{:ShortName "Platform 1"
+                                          :LongName "Example Platform Long Name 1"
+                                          :Type "Aircraft"
+                                          :Characteristics [{:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "time/Direction (ascending)"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Time/direction (descending)"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "VarchaR"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Integer"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Radiocarbon Dates"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "String"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Float"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "int"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "boolean"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Date"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Time"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Datetime"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Date_String"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "time_string"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "Datetime_String"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
                                                              :DataType "randomstring"
-                                                             :Unit "dB"
-                                                             :Value "10"}]
-                                          :ComposedOf [{:ShortName "ABC"
-                                                        :LongName "Long Range Sensor"
-                                                        :Characteristics [{:Name "Signal to Noise Ratio"
-                                                                           :Description "Is that necessary?"
-                                                                           :DataType "not applicable"
-                                                                           :Unit "dB"
-                                                                           :Value "10"}]
-                                                        :Technique "Drunken Fist"}]}]}]})))))
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}
+                                                            {:Name "OrbitalPeriod"
+                                                             :Description "Orbital period in decimal minutes."
+                                                             :DataType "not applicable"
+                                                             :Unit "Minutes"
+                                                             :Value "96.7"}]
+                                          :Instruments [{:ShortName "An Instrument"
+                                                         :LongName "The Full Name of An Instrument v123.4"
+                                                         :Technique "Two cans and a string"
+                                                         :NumberOfInstruments 1
+                                                         :OperationalModes ["on" "off"]
+                                                         :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                            :Description "Is that necessary?"
+                                                                            :DataType "randomstring"
+                                                                            :Unit "dB"
+                                                                            :Value "10"}]
+                                                         :ComposedOf [{:ShortName "ABC"
+                                                                       :LongName "Long Range Sensor"
+                                                                       :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                                          :Description "Is that necessary?"
+                                                                                          :DataType "not applicable"
+                                                                                          :Unit "dB"
+                                                                                          :Value "10"}]
+                                                                       :Technique "Drunken Fist"}]}]}]})))))
   (testing "GeographicCoordinateUnits migration from version 1.9 to 1.10"
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Decimal Degrees"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:HorizontalCoordinateSystem
-                                 {:GeographicCoordinateSystem
-                                   {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:HorizontalCoordinateSystem
+                              {:GeographicCoordinateSystem
+                               {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Kilometers"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:HorizontalCoordinateSystem
-                                 {:GeographicCoordinateSystem
-                                   {:GeographicCoordinateUnits "kiLometers"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:HorizontalCoordinateSystem
+                              {:GeographicCoordinateSystem
+                               {:GeographicCoordinateUnits "kiLometers"}}}}))))
     (is (= {:HorizontalCoordinateSystem
             {:GeographicCoordinateSystem
              {:GeographicCoordinateUnits "Meters"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:HorizontalCoordinateSystem
-                                 {:GeographicCoordinateSystem
-                                   {:GeographicCoordinateUnits "mEters"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:HorizontalCoordinateSystem
+                              {:GeographicCoordinateSystem
+                               {:GeographicCoordinateUnits "mEters"}}}}))))
     (is (= nil
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:HorizontalCoordinateSystem
-                                 {:GeographicCoordinateSystem
-                                   {:GeographicCoordinateUnits "randomstring"}}}})))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:HorizontalCoordinateSystem
+                              {:GeographicCoordinateSystem
+                               {:GeographicCoordinateUnits "randomstring"}}}})))))
   (testing "DistanceUnits migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
              :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
-                                  :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
+                               :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
              :DepthSystemDefinition {:DistanceUnits "Feet"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
-                                  :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
+                               :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                  :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                               :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "Meters"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                               :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                  :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                               :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                                  :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                               :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
-                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
     (is (= nil
            (:SpatialInformation
-             (vm/migrate-umm {} :collection "1.9" "1.10"
-                             {:SpatialInformation
-                               {:VerticalCoordinateSystem
-                                 {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
-                                  :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
+                             {:VerticalCoordinateSystem
+                              {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
   (testing "EncodingMethod migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
             {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
              :DepthSystemDefinition {:DistanceUnits "Meters"}}}
-         (:SpatialInformation
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:SpatialInformation
+           (:SpatialInformation
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:SpatialInformation
                              {:VerticalCoordinateSystem
-                               {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"
-                                                           :EncodingMethod "testing"}
-                                :DepthSystemDefinition {:DistanceUnits "meTers"
-                                                        :EncodingMethod "testing"}}}})))))
+                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"
+                                                          :EncodingMethod "testing"}
+                               :DepthSystemDefinition {:DistanceUnits "meTers"
+                                                       :EncodingMethod "testing"}}}})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
     (is (= [{:PrecisionOfSeconds "3"
              :EndsAtPresentFlag "false"
@@ -1597,47 +1595,47 @@
                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]
-         (:TemporalExtents
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:TemporalExtents [{:TemporalRangeType "temp range 1"
-                                               :PrecisionOfSeconds "3"
-                                               :EndsAtPresentFlag "false"
-                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
-                                              {:TemporalRangeType "temp range 2"
-                                               :PrecisionOfSeconds "3"
-                                               :EndsAtPresentFlag "false"
-                                               :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                                 :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                                {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                                 :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
+           (:TemporalExtents
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:TemporalExtents [{:TemporalRangeType "temp range 1"
+                                                :PrecisionOfSeconds "3"
+                                                :EndsAtPresentFlag "false"
+                                                :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                  :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                 {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                  :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+                                               {:TemporalRangeType "temp range 2"
+                                                :PrecisionOfSeconds "3"
+                                                :EndsAtPresentFlag "false"
+                                                :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                                  :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                                 {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                                  :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
   (testing "CollectionProgress migration from version 1.9 to 1.10"
     (is (= u/NOT-PROVIDED
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "ACTIVE"}))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "ACTIVE"}))))
     (is (= "PLANNED"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "planned"}))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "planned"}))))
     (is (= "ACTIVE"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "IN WORK"}))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "IN WORK"}))))
     (is (= u/NOT-PROVIDED
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "NOT PROVIDED"}))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "NOT APPLICABLE"}))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
-         (:CollectionProgress
-           (vm/migrate-umm {} :collection "1.9" "1.10"
-                           {:CollectionProgress "COMPLETE"})))))
+           (:CollectionProgress
+            (vm/migrate-umm {} :collection "1.9" "1.10"
+                            {:CollectionProgress "COMPLETE"})))))
   (testing "VerticalSpatialDomains migration from 1.9.0 to 1.10.0"
     (let [vsds {:SpatialExtent
                 {:VerticalSpatialDomains [{:Type "An Invalid Type"
@@ -1653,7 +1651,7 @@
                :Type "Atmosphere Layer"}
               {:Value "There is no limit if you believe -Bob Ross",
                :Type "Maximum Altitude"}]
-           (get-in result [:SpatialExtent :VerticalSpatialDomains])))))
+             (get-in result [:SpatialExtent :VerticalSpatialDomains])))))
   (testing "DOI MissingReason and Explanation"
     (is (= {:MissingReason "Not Applicable"}
            (get (vm/migrate-umm {} :collection "1.9" "1.10"
@@ -1661,16 +1659,16 @@
                 :DOI))))
 
   (testing "CollectionCitation's OnlineResource migration from version 1.9 to 1.10"
-   (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
-                  {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
-                                          :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
-                                          :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
-                                          :OnlineResource {:Linkage "www.google.com"
-                                                           :Name "URL Title"
-                                                           :Description "URL Description"}}]
-                   :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"
-                                                             :Name "Not provided"
-                                                             :Description "Not provided"}}]})]
+    (let [result (vm/migrate-umm {} :collection "1.9" "1.10"
+                                 {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                                         :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                                         :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                                         :OnlineResource {:Linkage "www.google.com"
+                                                                          :Name "URL Title"
+                                                                          :Description "URL Description"}}]
+                                  :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"
+                                                                            :Name "Not provided"
+                                                                            :Description "Not provided"}}]})]
       (is (= {:Linkage "www.google.com"
               :Name "URL Title"
               :Description "URL Description"}
@@ -1680,37 +1678,37 @@
              (:OnlineResource (first (:PublicationReferences result)))))))
 
   (testing "UseConstraints migration from 1.9.0 to 1.10.0"
-   (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
+    (is (= {:Description (umm-c/map->UseConstraintsDescriptionType
                           {:Description "description"})}
-          (:UseConstraints
+           (:UseConstraints
             (vm/migrate-umm {} :collection "1.9" "1.10"
                             {:UseConstraints "description"}))))
-   (is (nil?
-        (:UseConstraints
+    (is (nil?
+         (:UseConstraints
           (vm/migrate-umm {} :collection "1.9" "1.10"
-                         {}))))))
+                          {}))))))
 
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
     (is (= "PLANNED"
            (:CollectionProgress
-             (vm/migrate-umm {} :collection "1.10" "1.9"
-                             {:CollectionProgress "PLANNED"}))))
+            (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "PLANNED"}))))
     (is (= "IN WORK"
            (:CollectionProgress
-             (vm/migrate-umm {} :collection "1.10" "1.9"
-                             {:CollectionProgress "ACTIVE"}))))
+            (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "ACTIVE"}))))
     (is (= u/NOT-PROVIDED
            (:CollectionProgress
-             (vm/migrate-umm {} :collection "1.10" "1.9"
-                             {:CollectionProgress "NOT PROVIDED"}))))
+            (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "NOT PROVIDED"}))))
     (is (= "NOT APPLICABLE"
            (:CollectionProgress
-             (vm/migrate-umm {} :collection "1.10" "1.9"
-                             {:CollectionProgress "NOT APPLICABLE"}))))
+            (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:CollectionProgress "NOT APPLICABLE"}))))
     (is (= "COMPLETE"
            (:CollectionProgress
-             (vm/migrate-umm {} :collection "1.10" "1.9"
+            (vm/migrate-umm {} :collection "1.10" "1.9"
                             {:CollectionProgress "COMPLETE"})))))
 
   (testing "RelatedUrls GET DATA and GET SERVICE new schema"
@@ -1732,38 +1730,38 @@
 
   (testing "CollectionCitation's OnlineResource migration from version 1.10 to 1.9"
     (let [result (vm/migrate-umm {} :collection "1.10" "1.9"
-                   {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
-                                           :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
-                                           :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
-                                           :OnlineResource {:Linkage "www.google.com"
-                                                            :Name "URL Title"
-                                                            :Description "URL Description"
-                                                            :MimeType "application/json"}}]
-                    :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
-       (is (= {:Linkage "www.google.com"
-               :Name "URL Title"
-               :Description "URL Description"}
-              (:OnlineResource (first (:CollectionCitations result)))))
+                                 {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                                         :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                                         :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                                         :OnlineResource {:Linkage "www.google.com"
+                                                                          :Name "URL Title"
+                                                                          :Description "URL Description"
+                                                                          :MimeType "application/json"}}]
+                                  :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"}}]})]
+      (is (= {:Linkage "www.google.com"
+              :Name "URL Title"
+              :Description "URL Description"}
+             (:OnlineResource (first (:CollectionCitations result)))))
 
-       (is (= {:Linkage "www.google.com"
-               :Name "Not provided"
-               :Description "Not provided"}
-              (:OnlineResource (first (:PublicationReferences result)))))))
+      (is (= {:Linkage "www.google.com"
+              :Name "Not provided"
+              :Description "Not provided"}
+             (:OnlineResource (first (:PublicationReferences result)))))))
 
   (testing "UseConstraints migration from version 1.10 to 1.9"
     (is (= "description"
-         (:UseConstraints
-           (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:UseConstraints (umm-c/map->UseConstraintsType
-                                             {:Description (umm-c/map->UseConstraintsDescriptionType
+           (:UseConstraints
+            (vm/migrate-umm {} :collection "1.10" "1.9"
+                            {:UseConstraints (umm-c/map->UseConstraintsType
+                                              {:Description (umm-c/map->UseConstraintsDescriptionType
                                                              {:Description "description"})
-                                              :LicenseText "license text"})}))))
+                                               :LicenseText "license text"})}))))
     (is (nil?
          (:UseConstraints
-           (vm/migrate-umm {} :collection "1.10" "1.9"
+          (vm/migrate-umm {} :collection "1.10" "1.9"
                           {:UseConstraints (umm-c/map->UseConstraintsType
-                                             {:LicenseUrl (umm-cmn/map->OnlineResourceType
-                                                            {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
+                                            {:LicenseUrl (umm-cmn/map->OnlineResourceType
+                                                          {:Linkage "https://www.nasa.examplelicenseurl.gov"})})}))))))
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems
@@ -1773,19 +1771,19 @@
                              :Coordinate2 {:MinimumValue 1
                                            :MaximumValue 10}}
                             {:TilingIdentificationSystemName "Heat Miser"
-                              :Coordinate1 {:MinimumValue 11
-                                            :MaximumValue 20}
-                              :Coordinate2 {:MinimumValue 11
-                                            :MaximumValue 20}}
+                             :Coordinate1 {:MinimumValue 11
+                                           :MaximumValue 20}
+                             :Coordinate2 {:MinimumValue 11
+                                           :MaximumValue 20}}
                             {:TilingIdentificationSystemName "cALIpSO"
-                              :Coordinate1 {:MinimumValue 1
-                                            :MaximumValue 10}}
+                             :Coordinate1 {:MinimumValue 1
+                                           :MaximumValue 10}}
                             {:TilingIdentificationSystemName "MODIS Tile EASE"
-                              :Coordinate1 {:MinimumValue 1
-                                            :MaximumValue 10}}
+                             :Coordinate1 {:MinimumValue 1
+                                           :MaximumValue 10}}
                             {:TilingIdentificationSystemName "WRS-1"
-                              :Coordinate1 {:MinimumValue 1
-                                            :MaximumValue 10}}]}
+                             :Coordinate1 {:MinimumValue 1
+                                           :MaximumValue 10}}]}
         result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)]
     (is (= (:TilingIdentificationSystems result)
            [{:TilingIdentificationSystemName "MISR",
@@ -1800,65 +1798,65 @@
 
 (def related-urls-UMM-1-10-example
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :RelatedUrls [{:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :Subtype "EARTHDATA SEARCH"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url 3 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "DistributionURL"
-                          :Type "GET SERVICE"
-                          :GetService {:MimeType "application/json"
-                                       :DataID "dataid"
-                                       :DataType "datatype"
-                                       :Protocol "HTTP"
-                                       :FullName "fullname"
-                                       :Format "ascii"
-                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
-                         {:Description "Related url 2 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "VisualizationURL"
-                          :Type "GET RELATED VISUALIZATION"
-                          :Subtype "GIBS"}])))
+   (assoc exp-conv/example-collection-record-edn
+          :RelatedUrls [{:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :Subtype "EARTHDATA SEARCH"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url 3 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "DistributionURL"
+                         :Type "GET SERVICE"
+                         :GetService {:MimeType "application/json"
+                                      :DataID "dataid"
+                                      :DataType "datatype"
+                                      :Protocol "HTTP"
+                                      :FullName "fullname"
+                                      :Format "ascii"
+                                      :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                        {:Description "Related url 2 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "VisualizationURL"
+                         :Type "GET RELATED VISUALIZATION"
+                         :Subtype "GIBS"}])))
 
 (def related-urls-UMM-1-11-example
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :RelatedUrls [{:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :Subtype "Earthdata Search"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url 3 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "DistributionURL"
-                          :Type "USE SERVICE API"
-                          :GetService {:MimeType "application/json"
-                                       :DataID "dataid"
-                                       :DataType "datatype"
-                                       :Protocol "HTTP"
-                                       :FullName "fullname"
-                                       :Format "ascii"
-                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
-                         {:Description "Related url 2 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "VisualizationURL"
-                          :Type "GET RELATED VISUALIZATION"
-                          :Subtype "WORLDVIEW"}])))
+   (assoc exp-conv/example-collection-record-edn
+          :RelatedUrls [{:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :Subtype "Earthdata Search"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url 3 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "DistributionURL"
+                         :Type "USE SERVICE API"
+                         :GetService {:MimeType "application/json"
+                                      :DataID "dataid"
+                                      :DataType "datatype"
+                                      :Protocol "HTTP"
+                                      :FullName "fullname"
+                                      :Format "ascii"
+                                      :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                        {:Description "Related url 2 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "VisualizationURL"
+                         :Type "GET RELATED VISUALIZATION"
+                         :Subtype "WORLDVIEW"}])))
 
 (deftest migrate-1-10-to-1-11
   (let [result (vm/migrate-umm {} :collection "1.10" "1.11" related-urls-UMM-1-10-example)]
@@ -1889,86 +1887,86 @@
 
 (def related-urls-UMM-1-12-example
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :RelatedUrls [{:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :Subtype "Earthdata Search"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :Subtype "Subscribe"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url 3 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "DistributionURL"
-                          :Type "USE SERVICE API"
-                          :GetService {:MimeType "application/json"
-                                       :DataID "dataid"
-                                       :DataType "datatype"
-                                       :Protocol "HTTP"
-                                       :FullName "fullname"
-                                       :Format "ascii"
-                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
-                         {:Description "Related url 2 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "VisualizationURL"
-                          :Type "GET RELATED VISUALIZATION"
-                          :Subtype "WORLDVIEW"}])))
+   (assoc exp-conv/example-collection-record-edn
+          :RelatedUrls [{:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :Subtype "Earthdata Search"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :Subtype "Subscribe"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url 3 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "DistributionURL"
+                         :Type "USE SERVICE API"
+                         :GetService {:MimeType "application/json"
+                                      :DataID "dataid"
+                                      :DataType "datatype"
+                                      :Protocol "HTTP"
+                                      :FullName "fullname"
+                                      :Format "ascii"
+                                      :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                        {:Description "Related url 2 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "VisualizationURL"
+                         :Type "GET RELATED VISUALIZATION"
+                         :Subtype "WORLDVIEW"}])))
 
 (def related-urls-UMM-1-12-example-result
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :RelatedUrls [{:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :Subtype "Earthdata Search"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url description"
-                          :URL "http://www.foo.com?a=1&ver=5"
-                          :URLContentType "DistributionURL"
-                          :Type "GET DATA"
-                          :GetData {:Format "ascii"
-                                    :MimeType "application/json"
-                                    :Checksum "checksum"
-                                    :Size 10.0
-                                    :Unit "MB"
-                                    :Fees "fees"}}
-                         {:Description "Related url 3 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "DistributionURL"
-                          :Type "USE SERVICE API"
-                          :GetService {:MimeType "application/json"
-                                       :DataID "dataid"
-                                       :DataType "datatype"
-                                       :Protocol "HTTP"
-                                       :FullName "fullname"
-                                       :Format "ascii"
-                                       :URI ["http://www.foo.com", "http://www.bar.com"]}}
-                         {:Description "Related url 2 description"
-                          :URL "http://www.foo.com"
-                          :URLContentType "VisualizationURL"
-                          :Type "GET RELATED VISUALIZATION"
-                          :Subtype "WORLDVIEW"}])))
+   (assoc exp-conv/example-collection-record-edn
+          :RelatedUrls [{:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :Subtype "Earthdata Search"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url description"
+                         :URL "http://www.foo.com?a=1&ver=5"
+                         :URLContentType "DistributionURL"
+                         :Type "GET DATA"
+                         :GetData {:Format "ascii"
+                                   :MimeType "application/json"
+                                   :Checksum "checksum"
+                                   :Size 10.0
+                                   :Unit "MB"
+                                   :Fees "fees"}}
+                        {:Description "Related url 3 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "DistributionURL"
+                         :Type "USE SERVICE API"
+                         :GetService {:MimeType "application/json"
+                                      :DataID "dataid"
+                                      :DataType "datatype"
+                                      :Protocol "HTTP"
+                                      :FullName "fullname"
+                                      :Format "ascii"
+                                      :URI ["http://www.foo.com", "http://www.bar.com"]}}
+                        {:Description "Related url 2 description"
+                         :URL "http://www.foo.com"
+                         :URLContentType "VisualizationURL"
+                         :Type "GET RELATED VISUALIZATION"
+                         :Subtype "WORLDVIEW"}])))
 
 (deftest migrate-1-11-to-1-12
   (let [result (vm/migrate-umm {} :collection "1.11" "1.12" related-urls-UMM-1-11-example)]
@@ -2015,15 +2013,15 @@
 
 (def example-collection-1-13-with-archive-and-distribution-information
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :ArchiveAndDistributionInformation
-           archive-and-distribution-information)))
+   (assoc exp-conv/example-collection-record-edn
+          :ArchiveAndDistributionInformation
+          archive-and-distribution-information)))
 
 (def example-collection-1-12-with-distributions
   (js/parse-umm-c
-    (assoc exp-conv/example-collection-record-edn
-           :Distributions
-           distributions)))
+   (assoc exp-conv/example-collection-record-edn
+          :Distributions
+          distributions)))
 
 (deftest migrate-1-12-to-1-13
   (let [result (vm/migrate-umm {} :collection "1.12" "1.13" example-collection-1-12-with-distributions)]
@@ -2076,7 +2074,6 @@
       :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
                               :Description "Just a Description"}}}}})
 
-
 (deftest migrate-1-13-to-1-14
   (let [expected-1-13-1-14-result (-> example-collection-1-14
                                       (update-in [:SpatialExtent :HorizontalSpatialDomain
@@ -2094,9 +2091,9 @@
 (deftest migrate-1-14-to-1-13
   (let [expected-1-14-1-13-result (assoc-in example-collection-1-13 [:SpatialExtent :SpatialCoverageType] "ORBITAL")
         result1 (vm/migrate-umm {} :collection "1.14" "1.13"
-                  (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_ORBITAL"))
+                                (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_ORBITAL"))
         result2 (vm/migrate-umm {} :collection "1.14" "1.13"
-                  (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_VERTICAL_ORBITAL"))]
+                                (assoc-in example-collection-1-14 [:SpatialExtent :SpatialCoverageType] "HORIZONTAL_VERTICAL_ORBITAL"))]
     (is (= expected-1-14-1-13-result
            result1))
     (is (= expected-1-14-1-13-result
@@ -2233,35 +2230,35 @@
                       :SemiMajorAxis 6378140.0
                       :DenominatorOfFlatteningRatio 298.257}
       :HorizontalDataResolution
-        {:VariesResolution {:HorizontalResolutionProcessingLevelEnum "Varies"}
-         :PointResolution {:HorizontalResolutionProcessingLevelEnum "Point"}
-         :NonGriddedResolutions [{:XDimension 1
+      {:VariesResolution {:HorizontalResolutionProcessingLevelEnum "Varies"}
+       :PointResolution {:HorizontalResolutionProcessingLevelEnum "Point"}
+       :NonGriddedResolutions [{:XDimension 1
+                                :Unit "Kilometers"}
+                               {:YDimension 2
+                                :Unit "Kilometers"}]
+       :NonGriddedRangeResolutions [{:MinimumXDimension 1
+                                     :MaximumXDimension 2
+                                     :Unit "Kilometers"}
+                                    {:MinimumXDimension 1
+                                     :MaximumXDimension 2
+                                     :Unit "Kilometers"}
+                                    {:MinimumYDimension 1
+                                     :MaximumYDimension 2
+                                     :Unit "Kilometers"}]
+       :GriddedResolutions [{:XDimension 1
+                             :Unit "Kilometers"}
+                            {:YDimension 1
+                             :Unit "Kilometers"}]
+       :GenericResolutions [{:XDimension 1
+                             :Unit "Kilometers"}
+                            {:YDimension 1
+                             :Unit "Kilometers"}]
+       :GriddedRangeResolutions [{:MinimumXDimension 1
+                                  :MaximumXDimension 2
                                   :Unit "Kilometers"}
-                                 {:YDimension 2
-                                  :Unit "Kilometers"}]
-         :NonGriddedRangeResolutions [{:MinimumXDimension 1
-                                       :MaximumXDimension 2
-                                       :Unit "Kilometers"}
-                                      {:MinimumXDimension 1
-                                       :MaximumXDimension 2
-                                       :Unit "Kilometers"}
-                                      {:MinimumYDimension 1
-                                       :MaximumYDimension 2
-                                       :Unit "Kilometers"}]
-         :GriddedResolutions [{:XDimension 1
-                               :Unit "Kilometers"}
-                              {:YDimension 1
-                               :Unit "Kilometers"}]
-         :GenericResolutions [{:XDimension 1
-                               :Unit "Kilometers"}
-                              {:YDimension 1
-                               :Unit "Kilometers"}]
-         :GriddedRangeResolutions [{:MinimumXDimension 1
-                                    :MaximumXDimension 2
-                                    :Unit "Kilometers"}
-                                   {:MinimumYDimension 1
-                                    :MaximumYDimension 2
-                                    :Unit "Kilometers"}]}
+                                 {:MinimumYDimension 1
+                                  :MaximumYDimension 2
+                                  :Unit "Kilometers"}]}
       :LocalCoordinateSystem {:GeoReferenceInformation "Just a reference."
                               :Description "Just a Description"}}}}})
 
@@ -2342,37 +2339,37 @@
                       :SemiMajorAxis 6378140.0
                       :DenominatorOfFlatteningRatio 298.257}
       :HorizontalDataResolution
-        {:VariesResolution "Varies"
-         :PointResolution "Point"
-         :NonGriddedResolutions [{:XDimension 10
-                                  :YDimension 10
-                                  :Unit "Kilometers"}
-                                 {:XDimension 20
-                                  :YDimension 20
-                                  :Unit "Not provided"}]
-         :NonGriddedRangeResolutions [{:MinimumXDimension 1
-                                       :MaximumXDimension 2
-                                       :Unit "Kilometers"}
-                                      {:MinimumXDimension 1
-                                       :MaximumXDimension 2
-                                       :Unit "Not provided"}
-                                      {:MinimumYDimension 1
-                                       :MaximumYDimension 2
-                                       :Unit "Statute Miles"}]
-         :GriddedResolutions [{:XDimension 1
-                               :Unit "Kilometers"}
-                              {:YDimension 1
-                               :Unit "Kilometers"}]
-         :GenericResolutions [{:XDimension 1
-                               :Unit "Nautical Miles"}
-                              {:YDimension 1
-                               :Unit "Kilometers"}]
-         :GriddedRangeResolutions [{:MinimumXDimension 1
-                                    :MaximumXDimension 2
-                                    :Unit "Statute Miles"}
-                                   {:MinimumYDimension 1
-                                    :MaximumYDimension 2
-                                    :Unit "Nautical Miles"}]}}}}})
+      {:VariesResolution "Varies"
+       :PointResolution "Point"
+       :NonGriddedResolutions [{:XDimension 10
+                                :YDimension 10
+                                :Unit "Kilometers"}
+                               {:XDimension 20
+                                :YDimension 20
+                                :Unit "Not provided"}]
+       :NonGriddedRangeResolutions [{:MinimumXDimension 1
+                                     :MaximumXDimension 2
+                                     :Unit "Kilometers"}
+                                    {:MinimumXDimension 1
+                                     :MaximumXDimension 2
+                                     :Unit "Not provided"}
+                                    {:MinimumYDimension 1
+                                     :MaximumYDimension 2
+                                     :Unit "Statute Miles"}]
+       :GriddedResolutions [{:XDimension 1
+                             :Unit "Kilometers"}
+                            {:YDimension 1
+                             :Unit "Kilometers"}]
+       :GenericResolutions [{:XDimension 1
+                             :Unit "Nautical Miles"}
+                            {:YDimension 1
+                             :Unit "Kilometers"}]
+       :GriddedRangeResolutions [{:MinimumXDimension 1
+                                  :MaximumXDimension 2
+                                  :Unit "Statute Miles"}
+                                 {:MinimumYDimension 1
+                                  :MaximumYDimension 2
+                                  :Unit "Nautical Miles"}]}}}}})
 
 ;; Test the migration of collections from 1.15.2 to 1.15.1.
 (deftest migrate-1-15-2-to-1-15-1
@@ -2479,20 +2476,20 @@
 
 (def sample-collection-1-15-3
   {:ArchiveAndDistributionInformation
-    {:FileArchiveInformation
-      [{:Format "Binary"
-        :FormatType "Native"
-        :FormatDescription "Use the something app to open the binary file."}
-       {:Format "netCDF-4"
-        :FormatType "Supported"
-        :FormatDescription "An acsii file also exists."}]
-     :FileDistributionInformation
-       [{:Format "netCDF-4"
-         :FormatType "Supported"
-         :FormatDescription "An acsii file also exists."}
-        {:Format "netCDF-5"
-         :FormatType "Supported"
-         :FormatDescription "An acsii file also exists."}]}})
+   {:FileArchiveInformation
+    [{:Format "Binary"
+      :FormatType "Native"
+      :FormatDescription "Use the something app to open the binary file."}
+     {:Format "netCDF-4"
+      :FormatType "Supported"
+      :FormatDescription "An acsii file also exists."}]
+    :FileDistributionInformation
+    [{:Format "netCDF-4"
+      :FormatType "Supported"
+      :FormatDescription "An acsii file also exists."}
+     {:Format "netCDF-5"
+      :FormatType "Supported"
+      :FormatDescription "An acsii file also exists."}]}})
 
 ;; Test the migration of collections from 1.15.3 to 1.15.2.
 (deftest migrate-1-15-3-to-1-15-2
@@ -2512,25 +2509,17 @@
              result)))))
 
 (def sample-collection-1-15-4
-  {:TilingIdentificationSystems [{
-     :TilingIdentificationSystemName "MODIS Tile EASE",
-     :Coordinate1 {
-       :MinimumValue -100,
-       :MaximumValue -50
-     },
-     :Coordinate2 {
-       :MinimumValue 50,
-       :MaximumValue 100
-     }
-   },
-     {:TilingIdentificationSystemName "Military Grid Reference System",
-      :Coordinate1 {
-        :MinimumValue -100,
-        :MaximumValue -50
-      },
-      :Coordinate2 {
-        :MinimumValue 50,
-        :MaximumValue 100}}]})
+  {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                  :Coordinate1 {:MinimumValue -100,
+                                                :MaximumValue -50},
+                                  :Coordinate2 {:MinimumValue 50,
+                                                :MaximumValue 100}}
+
+                                 {:TilingIdentificationSystemName "Military Grid Reference System",
+                                  :Coordinate1 {:MinimumValue -100,
+                                                :MaximumValue -50},
+                                  :Coordinate2 {:MinimumValue 50,
+                                                :MaximumValue 100}}]})
 
 (def sample-collection-1-15-5
   {:RelatedUrls [{:Description "Related url description"
@@ -2594,14 +2583,10 @@
 (deftest migrate-1-15-4-to-1-15-3
   (testing "Drop Military Grid Reference System TilingIdentificationSystems"
     (let [result (vm/migrate-umm {} :collection "1.15.4" "1.15.3" sample-collection-1-15-4)]
-      (is (= {:TilingIdentificationSystems [{
-                                             :TilingIdentificationSystemName "MODIS Tile EASE",
-                                             :Coordinate1 {
-                                                           :MinimumValue -100,
-                                                           :MaximumValue -50
-                                                           },
-                                             :Coordinate2 {
-                                                           :MinimumValue 50,
+      (is (= {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                             :Coordinate1 {:MinimumValue -100,
+                                                           :MaximumValue -50},
+                                             :Coordinate2 {:MinimumValue 50,
                                                            :MaximumValue 100}}]}
              result)))))
 
@@ -2613,12 +2598,10 @@
              result)))))
 
 (def sample-collection-1-16
-  {:DirectDistributionInformation {
-     :Region "us-east-2"
-     :S3BucketAndObjectPrefixNames ["TestBucketOrObjectPrefix"]
-     :S3CredentialsAPIEndpoint "DAAC_Credential_Endpoint"
-     :S3CredentialsAPIDocumentationURL "DAAC_Credential_Documentation"
-  }})
+  {:DirectDistributionInformation {:Region "us-east-2"
+                                   :S3BucketAndObjectPrefixNames ["TestBucketOrObjectPrefix"]
+                                   :S3CredentialsAPIEndpoint "DAAC_Credential_Endpoint"
+                                   :S3CredentialsAPIDocumentationURL "DAAC_Credential_Documentation"}})
 
 ;; Test the migration of collections from 1.16 to 1.15.5.
 (deftest migrate-1-16-to-1-15-5-test
@@ -2896,33 +2879,33 @@
 
 (deftest migrate-1-16-4-to-1-16-3
   (are3 [expected sample-collection]
-    (let [result (vm/migrate-umm {} :collection "1.16.4" "1.16.3" sample-collection)]
-      (is (= expected result)))
+        (let [result (vm/migrate-umm {} :collection "1.16.4" "1.16.3" sample-collection)]
+          (is (= expected result)))
 
-    "Testing removing the new related urls"
-    expected-related-urls-1-16-4
-    related-urls-1-16-4
+        "Testing removing the new related urls"
+        expected-related-urls-1-16-4
+        related-urls-1-16-4
 
-    "Testing when no new related urls exist."
-    expected-related-urls-1-16-4
-    expected-related-urls-1-16-4
+        "Testing when no new related urls exist."
+        expected-related-urls-1-16-4
+        expected-related-urls-1-16-4
 
-    "Testing when no related urls exist."
-    nil
-    {}))
+        "Testing when no related urls exist."
+        nil
+        {}))
 
 (deftest migrate-1-16-3-to-1-16-4
   (are3 [expected sample-collection]
-    (let [result (vm/migrate-umm {} :collection "1.16.3" "1.16.4" sample-collection)]
-      (is (= expected result)))
+        (let [result (vm/migrate-umm {} :collection "1.16.3" "1.16.4" sample-collection)]
+          (is (= expected result)))
 
-    "If new urls already exist, they should be unchanged by the move up"
-    related-urls-1-16-4
-    related-urls-1-16-4
+        "If new urls already exist, they should be unchanged by the move up"
+        related-urls-1-16-4
+        related-urls-1-16-4
 
-    "Testing when no related urls exist, none should be added"
-    {}
-    {}))
+        "Testing when no related urls exist, none should be added"
+        {}
+        {}))
 
 ;; Test the migration of collections from 1.16.5 to 1.16.6.
 (deftest migrate-1-16-5-to-1-16-6
@@ -3027,7 +3010,7 @@
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                                  :Name "UMM-C",
                                  :Version "1.17.0"}}
-        
+
         "Migrating with no Orbit Paarameters"
         {:SpatialExtent {:OrbitParameters nil}}
         {:SpatialExtent {:OrbitParameters nil}
@@ -3327,15 +3310,14 @@
                                                    :MimeType "application/xhdf5"}}
                                  {:Author "Some author" ;; OnlineResource with MimeType being "Not provided" which is not in kms
                                   :OnlineResource {:Linkage "http://www.remss.com"
-                                                   :MimeType "Not provided"}}]}
-        ))
+                                                   :MimeType "Not provided"}}]}))
 
 ;; Test the migration of collections from 1.17.1 to 1.17.0.
 (deftest migrate-1-17-1-to-1-17-0
   (are3 [expected sample-collection]
         (let [result (vm/migrate-umm {} :collection "1.17.1" "1.17.0" sample-collection)]
           (is (= expected result)))
-        
+
         "Nothing to migrate"
         {:other-elements "other values"
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
@@ -3487,7 +3469,7 @@
                          {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
                           :ContactInformation {:Addresses ["some address"]}}
                          {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
-                          :ContactInformation {:Addresses ["some address"] 
+                          :ContactInformation {:Addresses ["some address"]
                                                :RelatedUrls [{:Description "testing"} ;; no GetData
                                                              {:Description "testing" ;; GetData No MimeType
                                                               :GetData {:Format "Native"}}
@@ -3506,7 +3488,7 @@
                          {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
                           :ContactInformation {:Addresses ["some address"]}}
                          {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
-                          :ContactInformation {:Addresses ["some address"] 
+                          :ContactInformation {:Addresses ["some address"]
                                                :RelatedUrls [{:Description "testing"} ;; no GetData
                                                              {:Description "testing" ;; GetData No MimeType
                                                               :GetData {:Format "Native"}}
@@ -3519,7 +3501,6 @@
                                                              {:Description "testing" ;; GetData MimeType not in enum
                                                               :GetData {:Format "Native"
                                                                         :MimeType "Not in enum"}}]}}]}
-
 
         "Migrate UseConstraints1 No LicenseURL"
         {:UseConstraints {:Description "test"}
@@ -3586,7 +3567,7 @@
                                  :Version "1.17.0"}}
         {:CollectionCitations [{:Creator "Remote Sensing Systems"} ;;no OnlineResource
                                {:Creator "Remote Sensing Systems" ;; OnlineResource without MimeType
-                                :OnlineResource {:Linkage "http://www.remss.com"}} 
+                                :OnlineResource {:Linkage "http://www.remss.com"}}
                                {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType in enum
                                 :OnlineResource {:Linkage "http://www.remss.com"
                                                  :MimeType "application/x-hdf"}}
@@ -3600,7 +3581,7 @@
         "Migrate PublicationReferences"
         {:PublicationReferences [{:Author "Some author"} ;;no OnlineResource
                                  {:Author "Some author" ;; OnlineResource without MimeType
-                                  :OnlineResource {:Linkage "http://www.remss.com"}} 
+                                  :OnlineResource {:Linkage "http://www.remss.com"}}
                                  {:Author "Some author" ;; OnlineResource with MimeType in enum
                                   :OnlineResource {:Linkage "http://www.remss.com"
                                                    :MimeType "application/x-hdf"}}
@@ -3661,14 +3642,14 @@
   (are3 [expected sample-collection]
         (let [result (vm/migrate-umm {} :collection "1.17.2" "1.17.1" sample-collection)]
           (is (= expected result)))
-        
+
         "Migrating EULAIdentifiers down"
         {:UseConstraints {}
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
                                  :Name "UMM-C",
                                  :Version "1.17.1"}}
         {:UseConstraints {:EULAIdentifiers ["EULA-1" "EULA-2"]}}
-        
+
         "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 down - 
      (keep when all coordinates' strings convert to numbers; otherwise discard entire tiling identification system)"
         {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
@@ -3772,7 +3753,7 @@
           (is (= expected result)))
 
         "Migrating related fields up to 1.18.0"
-        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"}
                           {:DOI "10.5067/fake.record.03"}]
          :DOI {:DOI "10.5067/fake.record.01"}
          :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
@@ -3781,7 +3762,7 @@
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
                                  :Name "UMM-C",
                                  :Version "1.18.0"}}
-        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"}
                           {:DOI "10.5067/fake.record.03"}]
          :DOI {:DOI "10.5067/fake.record.01"}
          :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
@@ -3799,7 +3780,7 @@
           (is (= expected result)))
 
         "Migrating related fields down to 1.17.3"
-        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"}
                           {:DOI "10.5067/fake.record.03"}]
          :DOI {:DOI "10.5067/fake.record.01"}
          :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
@@ -3815,9 +3796,9 @@
                              :Type "ArchiveSetsNumber"}
                             {:Identifier "ECSE-1474"
                              :Type "Other"
-                             :DescriptionOfOtherType "ECSE-1474 addition"}] 
+                             :DescriptionOfOtherType "ECSE-1474 addition"}]
          :AssociatedDOIs [{:DOI "10.5067/fake.record.02"
-                           :Type "Related Dataset"} 
+                           :Type "Related Dataset"}
                           {:DOI "10.5067/fake.record.03"
                            :Type "Other"
                            :DescriptionOfOtherType "ECSE-1474 addition to describe Other DOI"}]
@@ -3840,7 +3821,7 @@
   ;; Test migration up from 1.18.1 to 1.18.2
   (are3 [expected sample-collection]
         (let [result (vm/migrate-umm {} :collection "1.18.1" "1.18.2" sample-collection)]
-             (is (= expected result)))
+          (is (= expected result)))
 
         "Removing NOT APPLICABLE CollectionProgress enum and replacing with NOT PROVIDED"
         ;; expected
@@ -3858,7 +3839,7 @@
   ;; Test migration down from 1.18.2 to 1.18.1
   (are3 [expected sample-collection]
         (let [result (vm/migrate-umm {} :collection "1.18.2" "1.18.1" sample-collection)]
-             (is (= expected result)))
+          (is (= expected result)))
 
         "Migrating AssociateDOI enum IsPreviousVersionOf and IsNewVersionOf back to Related Dataset"
         ;; expected
@@ -3949,8 +3930,8 @@
                                :DataID "Not provided"
                                :Protocol "Not provided"}}]
    :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.3",
-                          :Name    "UMM-C",
-                          :Version "1.18.3"}})
+                           :Name    "UMM-C",
+                           :Version "1.18.3"}})
 
 (def sample-1-18-3-record-migrate-down
   {:RelatedUrls [{:Description "Contact group related url description"
@@ -4027,3 +4008,66 @@
         "Stepping down metadata specification and geo+json"
         sample-1-18-3-record-migrate-down
         sample-1-18-3-record))
+
+(deftest migrate-1-18-3-to-1-18-4
+  ;; Test migration up from 1.18.3 to 1.18.4
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.18.3" "1.18.4" sample-collection)]
+          (is (= expected result)))
+
+        "Stepping up metadata specification"
+        ;; expected
+        {:RelatedUrls [{:Description "Contact group related url description"
+                        :URLContentType "DistributionURL"
+                        :Type "GET DATA"
+                        :Subtype "ECHO"
+                        :URL "www.contact.group.foo.com"
+                        :GetService {:MimeType "application/html"
+                                     :FullName "Not provided"
+                                     :DataID "Not provided"
+                                     :Protocol "Not provided"}}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.4"}}
+        ;; sample-collection
+        {:RelatedUrls [{:Description "Contact group related url description"
+                        :URLContentType "DistributionURL"
+                        :Type "GET DATA"
+                        :Subtype "ECHO"
+                        :URL "www.contact.group.foo.com"
+                        :GetService {:MimeType "application/html"
+                                     :FullName "Not provided"
+                                     :DataID "Not provided"
+                                     :Protocol "Not provided"}}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.3",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.3"}}))
+
+(deftest migrate-1-18-4-to-1-18-3
+  ;; Test migration down from 1.18.4 to 1.18.3
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.18.4" "1.18.3" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating AssociateDOI enum IsPreviousVersionOf and IsNewVersionOf back to Related Dataset"
+        ;; expected
+        {:AssociatedDOIs        [{:Type "Related Dataset"}
+                                 {:Type "Field Campaign"}]
+         :DOI                   {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents       [{:EndsAtPresentFlag false
+                                  :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.3",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.3"}}
+        ;; sample-collection
+        {:AssociatedDOIs        [{:Type "IsDescribedBy"}
+                                 {:Type "Field Campaign"}]
+         :DOI                   {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent         {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents       [{:EndsAtPresentFlag false
+                                  :SingleDateTimes   ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.4"}}))
+

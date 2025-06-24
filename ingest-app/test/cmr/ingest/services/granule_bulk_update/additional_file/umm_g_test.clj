@@ -1,7 +1,7 @@
 (ns cmr.ingest.services.granule-bulk-update.additional-file.umm-g-test
   "Unit tests for UMM-G additionalfile update"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]
