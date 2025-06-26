@@ -238,7 +238,7 @@
   "Creates a new web server. Accepts argument of port and a routes function that should accept
   system argument and return compojure routes to use."
   ([port routes-fn]
-   (create-web-server port routes-fn use-web-compression? use-access-log))
+   (create-web-server port routes-fn (use-web-compression?) (use-access-log)))
   ([port routes-fn use-compression use-access-log-opt]
    (map->WebServer {:port port
                     :use-compression? use-compression
