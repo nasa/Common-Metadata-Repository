@@ -22,10 +22,10 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
-                 [org.eclipse.jetty/jetty-http "11.0.24"]
-                 [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"] ;; used by migration
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"] ;; used by migration
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]
@@ -40,7 +40,7 @@
              :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.13.0"]
+                                  [ring/ring-jetty-adapter "1.14.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]

@@ -31,20 +31,20 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader "1.4.1"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
-                 [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [org.eclipse.jetty/jetty-http "11.0.24"]
-                 [org.eclipse.jetty/jetty-io "11.0.24"]
-                 [org.eclipse.jetty/jetty-server "11.0.24"]
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-io "12.0.21"]
+                 [org.eclipse.jetty/jetty-server "12.0.21"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
-                 [potemkin "0.4.5"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"]
+                 [potemkin "0.4.7"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
@@ -61,9 +61,9 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
-                                  [ring/ring-core "1.13.0"]
-                                  [ring/ring-jetty-adapter "1.13.0"]
-                                  [clj-http "2.3.0"]]
+                                  [ring/ring-core "1.14.2"]
+                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [clj-http "3.13.0"]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
                    ;;     with no need to comment/uncomment.
@@ -76,8 +76,8 @@
                                         ; "-Dcom.sun.management.jmxremote.authenticate=false"
                                         ; "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]}
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "11.0.24"]
-                                     [org.eclipse.jetty/jetty-util "11.0.24"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
+                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
              ;; all projects at the same time, use the same command but from the top-

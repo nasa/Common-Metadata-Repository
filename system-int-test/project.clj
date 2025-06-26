@@ -3,13 +3,20 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "2.3.0"]
+  :dependencies [
+                 ;[cheshire "5.12.0"]
+                 [cheshire "5.13.0"]
+                 ;[clj-http "2.3.0"]
+                 [clj-http "3.13.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 ;[commons-codec/commons-codec "1.11"]
+                 [commons-codec/commons-codec "1.16.1"]
+                 ;[commons-codec/commons-codec "1.15"]
+                 [org.apache.commons/commons-lang3 "3.17.0"]
+                 ;[commons-io "2.18.0"]
+                 [commons-io "2.19.0"]
                  [crouton "0.1.2"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
@@ -26,17 +33,31 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.13"]
-                 [org.apache.httpcomponents/httpcore "4.4.10"]
+                 ;[org.apache.httpcomponents/httpclient "4.5.13"]
+                 [org.apache.httpcomponents/httpclient "4.5.14"]
+                 ;[org.apache.httpcomponents/httpcore "4.4.10"]
+                 [org.apache.httpcomponents/httpcore "4.4.16"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.logging "0.4.0"]
-                 [org.clojure/tools.reader "1.3.2"]
-                 [org.jsoup/jsoup "1.14.2"]
-                 [potemkin "0.4.5"]
+                 ;[org.clojure/tools.logging "0.4.0"]
+                 [org.clojure/tools.logging "1.3.0"]
+                 ;[org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader "1.4.1"]
+                 ;[org.jsoup/jsoup "1.14.2"]
+                 [org.jsoup/jsoup "1.17.2"]
+                 ;[potemkin "0.4.5"]
+                 [potemkin "0.4.7"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-codec "1.2.0"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"]]
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-core "1.14.2"]
+                 ;[ring/ring-core "1.13.0"
+                 ; :exclusions [org.apache.commons/commons-fileupload2-core]]
+                 ;[org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
+                 ;[commons-fileupload/commons-fileupload "1.6.0"]
+                 [ring/ring-jetty-adapter "1.14.2"]
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-io "12.0.21"]
+                 ]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
@@ -49,7 +70,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-jetty-adapter "1.13.0"]]
+                                  [ring/ring-jetty-adapter "1.14.2"]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
@@ -69,7 +90,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.13.0"]
+             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.14.2"]
                                      [lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}

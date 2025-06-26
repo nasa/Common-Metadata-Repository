@@ -54,7 +54,7 @@
                  [org.clojure/java.classpath "0.3.0"]
                  [org.yaml/snakeyaml "1.31"]
                  [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.2"]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]

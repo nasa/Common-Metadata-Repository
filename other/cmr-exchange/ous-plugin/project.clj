@@ -44,7 +44,7 @@
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.2"]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-defaults "0.3.2"]
                  [tolitius/xml-in "0.1.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}

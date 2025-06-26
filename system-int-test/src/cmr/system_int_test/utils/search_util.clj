@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.utils.search-util
   "provides search related utilities."
   (:require
+   [cmr.common.log :refer [debug error info warn]]
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clj-http.client :as client]
@@ -124,8 +125,11 @@
 (defn safe-parse-error-xml
   [xml]
   (try
+    (info "XML received was: " xml)
+    (info "parsed xml is : " (xml/parse-str xml) )
     (cx/strings-at-path (xml/parse-str xml) [:error])
     (catch Exception e
+      (info "RAN INTO ERROR HERE")
       (.printStackTrace e)
       [xml])))
 
@@ -134,8 +138,11 @@
   Tests should verify the results this returns."
   [& body]
   `(try
+     (info "inside get-search-failure-xml-data...")
      ~@body
      (catch clojure.lang.ExceptionInfo e#
+       (info "inside get-search-failure-xml-data in the exception block")
+       (info "error was " (ex-message e#))
        (let [{status# :status body# :body} (ex-data e#)
              errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
@@ -209,6 +216,7 @@
          [url accept] (if url-extension
                         [(str (url/search-url concept-type) "." url-extension)]
                         [(url/search-url concept-type) (or (:accept options) format)])
+         _ (info "find-concepts-in-format url is " url)
          request-map {:url url
                       :method (get options :method :get)
                       :accept accept
@@ -326,6 +334,7 @@
   ([concept-type params]
    (find-concepts-atom concept-type params {}))
   ([concept-type params options]
+   (info "INSIDE find-concepts-atom")
    (let [response (get-search-failure-xml-data
                    (find-concepts-in-format mime-types/atom concept-type params options))
          {:keys [status body]} response]
@@ -619,13 +628,42 @@
   ([concept-type form]
    (find-refs-with-multi-part-form-post concept-type form {}))
   ([concept-type form options]
+   (info "INSIDE find-refs-with-multi-part-form-post")
    (get-search-failure-xml-data
-    (let [response (client/post (url/search-url concept-type)
-                                (merge {:accept mime-types/xml
-                                        :multipart form
-                                        :throw-exceptions true
-                                        :connection-manager (system/conn-mgr)}
-                                       options))]
+    (let [
+          ;merged (merge {:accept mime-types/xml
+          ;              :multipart form
+          ;              :throw-exceptions true
+          ;              :connection-manager (system/conn-mgr)}
+          ;              options)
+          ;[{:name "shapefile"
+          ;  :content (io/file (io/resource (str "shapefiles/" shapefile "." extension)))
+          ;  :mime-type mime-type}
+          ; {:name "provider"
+          ;  :content "PROV1"}])]
+          ;_ (info "merged is " merged) ;; {:accept "application/xml", :multipart [{:name "shapefile", :content #object[java.io.File 0x37078970 "/Users/jmaeng/Projects/Common-Metadata-Repository/system-int-test/resources/shapefiles/box.geojson"], :mime-type "application/geo+json"} {:name "provider", :content "PROV1"}], :throw-exceptions true, :connection-manager #object[org.apache.http.impl.conn.PoolingClientConnectionManager 0x12ea5afc "org.apache.http.impl.conn.PoolingClientConnectionManager@12ea5afc"]}
+          _ (info "url is " (url/search-url concept-type)) ;; http://localhost:3003/collections
+          ;_ (info "form is " form)
+          _ (info "trying out exception catch 11")
+          response (try
+                     (client/post (url/search-url concept-type)
+                                  (merge {:accept mime-types/xml
+                                          :multipart form
+                                          :throw-exceptions true
+                                          :throw-entire-message true
+                                          :connection-manager (system/conn-mgr)}
+                                         options))
+                     ;; when I remove multipart, it's able to call correctly. It just doesn't like multipart...
+                     ;; something about it makes it fail with 500, but search app doesn't even get the call to process
+                     ;; even when multipart is empty, it errors the same 500, it's about the fact that we are using multipart at all...
+                     ;; it's also when org.apache.commons/commons-fileupload2-core changes from M1 to M3... M3 is the breaking changes
+             (catch Exception e
+               (info "Exception " (clojure.stacktrace/print-throwable e))
+               ;(info "Exception caught was " (ex-message e))
+               (info "Stacktrace is " (clojure.stacktrace/print-stack-trace e))
+               (info "Exception " (clojure.stacktrace/print-cause-trace e))
+               ))
+          _ (info "response found was " response)]
       (parse-reference-response-with-headers false response)))))
 
 (defn find-refs-with-json-query
@@ -633,6 +671,7 @@
   ([concept-type query-params json-as-map]
    (find-refs-with-json-query concept-type query-params json-as-map {}))
   ([concept-type query-params json-as-map options]
+   (info "INSIDE find-refs-with-json-query")
    (get-search-failure-xml-data
     (let [response (find-with-json-query
                     concept-type query-params json-as-map mime-types/xml options)]
@@ -644,6 +683,7 @@
   ([aql options]
    (find-refs-with-aql-string aql options mime-types/xml))
   ([aql options content-type]
+   (info "INSIDE find-refs-with-aql-string")
    (get-search-failure-xml-data
     (let [response (client/post (url/aql-url)
                                 (merge {:accept mime-types/xml
