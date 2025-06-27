@@ -114,7 +114,6 @@
   "Invokes query service to parse the JSON query, find results and return
   the response."
   [ctx path-w-extension params headers json-query]
-  (info "INSIDE find-concepts-by-json-query")
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         _ (when (= :stac (:result-format params))
@@ -209,7 +208,6 @@
   "Invokes query service to parse the parameters query, find results, and
   return the response"
   [ctx path-w-extension params headers body]
-  (info "INSIDE find-concepts-by-parameters")
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
@@ -246,7 +244,6 @@
     in the way that we need, we have to make two queries here to support CMR
     Harvesting. This can later be generalized easily, should the need arise."
   [ctx path-w-extension params headers body]
-  (info "INSIDE find-concepts")
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         _ (validate-search-after-value search-after)

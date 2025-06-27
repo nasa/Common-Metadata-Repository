@@ -1,9 +1,9 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-time "0.15.1"]
-                 [commons-codec/commons-codec "1.11"]
+  :dependencies [[cheshire "5.13.0"]
+                 [clj-time "0.15.2"]
+                 [commons-codec/commons-codec "1.16.1"]
                  [commons-io/commons-io "2.18.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -17,11 +17,11 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
-                 [org.apache.httpcomponents/httpclient "4.5.13"]
+                 [org.apache.httpcomponents/httpclient "4.5.14"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader "1.4.1"]
                  [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
                  [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
                  [org.geotools/gt-shapefile "29.1"]

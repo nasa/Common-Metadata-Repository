@@ -28,15 +28,16 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :dependencies ~(concat '[[cheshire "5.12.0"]
-                           [clj-time "0.15.1"]
-                           [com.fasterxml.jackson.core/jackson-core "2.15.4"]
-                           [commons-codec/commons-codec "1.11"]
-                           [commons-io "2.18.0"]
-                           [compojure "1.6.1"]
+  :dependencies ~(concat '[[cheshire "5.13.0"]
+                           [clj-time "0.15.2"]
+                           [com.fasterxml.jackson.core/jackson-core "2.17.0"] ;; done
+                           [commons-codec/commons-codec "1.16.1"]
+                           [commons-io "2.19.0"]
+                           [compojure "1.6.1"
+                            :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            [org.clojure/clojure "1.11.2"]
-                           [org.clojure/tools.reader "1.3.2"]
+                           [org.clojure/tools.reader "1.4.1"]
                            [org.eclipse.jetty/jetty-http "12.0.21"]
                            [org.eclipse.jetty/jetty-util "12.0.21"]
                            [ring/ring-core "1.14.2"]
@@ -54,9 +55,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
+             :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.14"]
                                   [org.clojure/core.async "0.4.500"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.namespace "0.3.1"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]

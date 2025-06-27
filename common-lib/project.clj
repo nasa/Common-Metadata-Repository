@@ -2,20 +2,21 @@
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"
+                 [cheshire "5.13.0"
                   :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
-                 [clj-time "0.15.1"]
+                 [clj-time "0.15.2"]
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.4"]
+                 [com.fasterxml.jackson.core/jackson-core "2.17.0"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
-                 [commons-codec/commons-codec "1.11"]
-                 [compojure "1.6.1"]
+                 [commons-codec/commons-codec "1.16.1"]
+                 [compojure "1.6.1"
+                  :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
                  [environ "1.1.0"]
                  [hiccup "1.0.5"]

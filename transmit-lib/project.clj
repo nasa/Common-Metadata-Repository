@@ -3,7 +3,7 @@
                 libraries that invoke services within the CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
   :dependencies [[clj-http "3.13.0"]
-                 [commons-codec/commons-codec "1.11"]
+                 [commons-codec/commons-codec "1.16.1"]
                  [commons-io "2.19.0"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -24,8 +24,7 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
-                                  ]
+                                  [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

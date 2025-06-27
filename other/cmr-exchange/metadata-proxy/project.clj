@@ -22,7 +22,7 @@
   :url "https://github.com/cmr-exchange/cmr-metadata-proxy"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.13.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "0.4.0"]
@@ -56,7 +56,7 @@
                                        ;; explicitly or implicitly excluded above due to CVEs and need
                                        ;; declare secure versions of the libs pulled in
                                        [commons-fileupload "1.4"]
-                                       [commons-io "2.6"]]}
+                                       [commons-io "2.19.0"]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]

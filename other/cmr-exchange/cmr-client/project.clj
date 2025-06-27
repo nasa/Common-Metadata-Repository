@@ -6,7 +6,7 @@
             :url "https://opensource.org/licenses/Apache-2.0"}
   :exclusions [org.clojure/clojure
                potemkin]
-  :dependencies [[clj-http "3.8.0"]
+  :dependencies [[clj-http "3.13.0"]
                  [cljs-http "0.1.44"]
                  [clojusc/ltest "0.3.0"]
                  [org.clojure/clojure "1.9.0"]
@@ -14,7 +14,7 @@
                  [org.clojure/core.async "0.4.474"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.xml "0.2.0-alpha2"]
-                 [potemkin "0.4.4"]]
+                 [potemkin "0.4.7"]]
   :source-paths ["src/clj" "src/cljc"]
   :profiles {:uberjar {:aot :all}
              :dev {:dependencies [[leiningen-core "2.8.1"]

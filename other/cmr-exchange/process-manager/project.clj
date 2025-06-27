@@ -20,7 +20,7 @@
   :license {:name "Apache License 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.13.0"]
                  [clojusc/trifl "0.4.0"]
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]

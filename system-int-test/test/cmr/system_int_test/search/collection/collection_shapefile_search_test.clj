@@ -111,35 +111,35 @@
                               :content "PROV1"}])]
                 (d/assert-refs-match items found))
 
-          ;"Single Polygon box around VA and DC"
-          ;"box" [whole-world very-wide-cart washington-dc richmond]
-          ;
-          ;"Single Polygon box over North pole"
-          ;"np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
-          ;
-          ;"Single Polygon over Antarctica"
-          ;"antarctica" [south-pole touches-sp on-sp whole-world very-tall-cart]
-          ;
-          ;"Single Polygon over Southern Africa"
-          ;"southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
-          ;
-          ;"Single Polygon around Virgina with hole around DC"
-          ;"polygon_with_hole" [whole-world very-wide-cart richmond]
-          ;
-          ;"Single feature, multiple polygons around DC and Richnmond"
-          ;"multi_poly" [whole-world very-wide-cart washington-dc richmond]
-          ;
-          ;"Multiple feature, single Polygons around DC and Richnmond"
-          ;"multi_feature" [whole-world very-wide-cart washington-dc richmond]
-          ;
-          ;"Polygon across the antimeridian"
-          ;"antimeridian" [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
-          ;
-          ;"Line near North pole"
-          ;"np_line" [on-np whole-world]
-          ;
-          ;"Line from DC to Richmond"
-          ;"dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
+          "Single Polygon box around VA and DC"
+          "box" [whole-world very-wide-cart washington-dc richmond]
+
+          "Single Polygon box over North pole"
+          "np_poly" [north-pole touches-np on-np whole-world very-tall-cart along-am-line]
+
+          "Single Polygon over Antarctica"
+          "antarctica" [south-pole touches-sp on-sp whole-world very-tall-cart]
+
+          "Single Polygon over Southern Africa"
+          "southern_africa" [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+
+          "Single Polygon around Virgina with hole around DC"
+          "polygon_with_hole" [whole-world very-wide-cart richmond]
+
+          "Single feature, multiple polygons around DC and Richnmond"
+          "multi_poly" [whole-world very-wide-cart washington-dc richmond]
+
+          "Multiple feature, single Polygons around DC and Richnmond"
+          "multi_feature" [whole-world very-wide-cart washington-dc richmond]
+
+          "Polygon across the antimeridian"
+          "antimeridian" [whole-world across-am-poly across-am-br am-point very-wide-cart along-am-line]
+
+          "Line near North pole"
+          "np_line" [on-np whole-world]
+
+          "Line from DC to Richmond"
+          "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
           "single_point_dc" [whole-world very-wide-cart washington-dc])))))

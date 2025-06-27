@@ -21,10 +21,10 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.13.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.12.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.17.0"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]

@@ -4,7 +4,7 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[buddy/buddy-sign "3.4.333"]
-                 [cheshire "5.8.1"]
+                 [cheshire "5.13.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]

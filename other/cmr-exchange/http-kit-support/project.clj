@@ -20,7 +20,7 @@
   :license {
             :name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.13.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
@@ -47,8 +47,8 @@
                                        ;; The following pull required deps that have been either been
                                        ;; explicitly or implicitly excluded above due to CVEs and need
                                        ;; declare secure versions of the libs pulled in
-                                       [commons-fileupload "1.3.3"]
-                                       [commons-io "2.6"]]}
+                                       [commons-fileupload "1.6.0"]
+                                       [commons-io "2.19"]]}
              :dev {:dependencies [[clojusc/system-manager "0.3.0"]
                                   [org.clojure/java.classpath "0.3.0"]
                                   [org.clojure/tools.namespace "0.2.11"]

@@ -671,7 +671,6 @@
   ([concept-type query-params json-as-map]
    (find-refs-with-json-query concept-type query-params json-as-map {}))
   ([concept-type query-params json-as-map options]
-   (info "INSIDE find-refs-with-json-query")
    (get-search-failure-xml-data
     (let [response (find-with-json-query
                     concept-type query-params json-as-map mime-types/xml options)]
@@ -683,7 +682,6 @@
   ([aql options]
    (find-refs-with-aql-string aql options mime-types/xml))
   ([aql options content-type]
-   (info "INSIDE find-refs-with-aql-string")
    (get-search-failure-xml-data
     (let [response (client/post (url/aql-url)
                                 (merge {:accept mime-types/xml

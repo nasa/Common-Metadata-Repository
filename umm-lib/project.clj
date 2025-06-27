@@ -7,7 +7,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.3.2"]]
+                 [org.clojure/tools.reader "1.4.1"]]
   :plugins [[lein-shell "0.5.0"]]
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
@@ -52,8 +52,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]
-                                     ]}}
+                                     [ring/ring-jetty-adapter "1.14.2"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
