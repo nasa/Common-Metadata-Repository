@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
-  :dependencies [[cheshire "5.13.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
                  [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
@@ -18,7 +18,7 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
-                                  [clj-http "3.13.0"]]
+                                  [clj-http "2.3.0"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

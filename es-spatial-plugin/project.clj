@@ -43,7 +43,7 @@
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch "7.17.14"]
-                                       [org.clojure/tools.reader "1.4.1"]
+                                       [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
@@ -61,7 +61,7 @@
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
-                                      [org.clojure/tools.reader "1.4.1"]
+                                      [org.clojure/tools.reader "1.3.2"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
@@ -73,8 +73,8 @@
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
              :dev {:dependencies [[criterium "0.4.4"]
-                                  [cheshire "5.13.0"]
-                                  [org.clojure/tools.reader "1.4.1"]
+                                  [cheshire "5.12.0"]
+                                  [org.clojure/tools.reader "1.3.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch "7.17.14"]

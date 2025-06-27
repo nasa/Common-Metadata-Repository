@@ -14,8 +14,8 @@
                org.apache.maven.wagon/wagon-provider-api
                org.clojure/clojure
                org.clojure/tools.macro]
-  :dependencies [[cheshire "5.13.0"]
-                 [clj-http "3.13.0"]
+  :dependencies [[cheshire "5.8.0"]
+                 [clj-http "3.7.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [commons-codec "1.11"]
                  [hawk "0.2.11"]
@@ -23,7 +23,7 @@
                  [leiningen-core "2.7.1" :exclusions [commons-io
                                                       org.apache.httpcomponents/httpcore
                                                       org.slf4j/slf4j-nop]]
-                 [org.apache.httpcomponents/httpclient "4.5.14"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.maven.wagon/wagon-provider-api "2.10"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.3.465" :exclusions [org.clojure/tools.reader]]

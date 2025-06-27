@@ -48,11 +48,10 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[commons-codec/commons-codec "1.16.1"]
+  :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.3.0"]
-                           [ring/ring-jetty-adapter "1.14.2"]
-                           ]
+                           [ring/ring-jetty-adapter "1.14.2"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]

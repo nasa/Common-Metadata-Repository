@@ -1,11 +1,11 @@
 (defproject nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
-  :dependencies [[cheshire "5.13.0"]
-                 [clj-http "3.13.0"]
-                 [clj-time "0.15.2"]
-                 [commons-codec/commons-codec "1.16.1"]
-                 [commons-io "2.19.0"]
+  :dependencies [[cheshire "5.12.0"]
+                 [clj-http "2.3.0"]
+                 [clj-time "0.15.1"]
+                 [commons-codec/commons-codec "1.11"]
+                 [commons-io "2.18.0"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
@@ -17,12 +17,12 @@
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.14"]
-                 [org.apache.httpcomponents/httpcore "4.4.16"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
+                 [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.4.1"]
-                 [potemkin "0.4.7"]
+                 [org.clojure/tools.reader "1.3.2"]
+                 [potemkin "0.4.5"]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-core "1.14.2"]

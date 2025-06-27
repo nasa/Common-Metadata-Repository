@@ -9,9 +9,9 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :dependencies [[cheshire "5.13.0"]
-                 [clj-http "3.13.0"]
-                 [clj-time "0.15.2"]
+  :dependencies [[cheshire "5.12.0"]
+                 [clj-http "2.3.0"]
+                 [clj-time "0.15.1"]
                  [io.netty/netty-handler "4.1.118.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
@@ -19,19 +19,19 @@
                  [software.amazon.awssdk/sns ~aws-java-sdk2-version]
                  [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
-                 [commons-codec/commons-codec "1.16.1"]
-                 [commons-io "2.19.0"]
+                 [commons-codec/commons-codec "1.11"]
+                 [commons-io "2.18.0"]
                  [commons-logging "1.2"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.httpcomponents/httpclient "4.5.14"]
-                 [org.apache.httpcomponents/httpcore "4.4.16"]
+                 [org.apache.httpcomponents/httpclient "4.5.13"]
+                 [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.4.1"]
+                 [org.clojure/tools.reader "1.3.2"]
                  [org.testcontainers/testcontainers "1.19.7"]
-                 [potemkin "0.4.7"]]
+                 [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -62,8 +62,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]
-                                     ]}}
+                                     [ring/ring-jetty-adapter "1.14.2"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

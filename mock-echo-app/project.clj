@@ -1,14 +1,14 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
-  :dependencies [[commons-io "2.19.0"]
+  :dependencies [[commons-io "2.18.0"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.4.1"]
+                 [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-core "1.14.2"]

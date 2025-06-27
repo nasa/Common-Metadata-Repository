@@ -2,19 +2,19 @@
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.13.0"
+                 [cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
-                 [clj-time "0.15.2"]
+                 [clj-time "0.15.1"]
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.17.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.15.4"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
-                 [commons-codec/commons-codec "1.16.1"]
+                 [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
@@ -32,7 +32,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.4.1"]
+                 [org.clojure/tools.reader "1.3.2"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
                  [org.eclipse.jetty/jetty-http "12.0.21"]
@@ -43,7 +43,7 @@
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
-                 [potemkin "0.4.7"]
+                 [potemkin "0.4.5"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-json "0.5.1"]]
@@ -64,7 +64,7 @@
                                   [proto-repl "0.3.1"]
                                   [ring/ring-core "1.14.2"]
                                   [ring/ring-jetty-adapter "1.14.2"]
-                                  [clj-http "3.13.0"]]
+                                  [clj-http "2.3.0"]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
                    ;;     with no need to comment/uncomment.

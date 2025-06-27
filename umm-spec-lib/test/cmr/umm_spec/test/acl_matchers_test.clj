@@ -180,7 +180,6 @@
 (defn temporal-filter
   "Creates a temporal between the two given N times"
   [mask start-n end-n]
-  (println "INSIDE temporal-filter")
   {:start-date (tu/n->date-time start-n)
    :stop-date (tu/n->date-time end-n)
    :mask mask})
@@ -189,7 +188,6 @@
   "Helper for creating a collection with temporal at given n and end date times. end-n can be nil
   to simulate a non ending time."
   [start-n end-n]
-  (println "INSIDE coll-w-temporal")
   {:TemporalExtents
    [{:RangeDateTimes
      [{:BeginningDateTime (tu/n->date-time start-n)
@@ -206,83 +204,83 @@
                                      :collection-identifier
                                      {:temporal tf}}))))
 
-        ;"Collection with no temporal"
-        ;false (temporal-filter "intersect" 1 3) (collection)
-        ;
-        ;;; Intersects Mask
-        ;"Intersects - Collection is exact match"
-        ;true (temporal-filter "intersect" 1 3) (coll-w-temporal 1 3)
-        ;"Contains - Collection start matches range start and end within"
-        ;true (temporal-filter "intersect" 1 4) (coll-w-temporal 1 2)
-        ;"Contains - Collection end matches range end and starts within"
-        ;true (temporal-filter "intersect" 1 4) (coll-w-temporal 2 4)
-        ;"Intersects - Collection contained within temporal range"
-        ;true (temporal-filter "intersect" 2 7) (coll-w-temporal 3 4)
-        ;"Intersects - temporal within collection"
-        ;true (temporal-filter "intersect" 3 4) (coll-w-temporal 2 5)
-        ;"Intersects - collection end = start"
-        ;true (temporal-filter "intersect" 2 7) (coll-w-temporal 1 2)
-        ;"Intersects - collection start = end"
-        ;true (temporal-filter "intersect" 2 7) (coll-w-temporal 7 8)
-        ;"Intersects - collection before with no end date"
-        ;true (temporal-filter "intersect" 2 7) (coll-w-temporal 1 nil)
-        ;"Intersects - collection start and end equal range end"
-        ;true (temporal-filter "intersect" 2 7) (coll-w-temporal 7 7)
+        "Collection with no temporal"
+        false (temporal-filter "intersect" 1 3) (collection)
+
+        ;; Intersects Mask
+        "Intersects - Collection is exact match"
+        true (temporal-filter "intersect" 1 3) (coll-w-temporal 1 3)
+        "Contains - Collection start matches range start and end within"
+        true (temporal-filter "intersect" 1 4) (coll-w-temporal 1 2)
+        "Contains - Collection end matches range end and starts within"
+        true (temporal-filter "intersect" 1 4) (coll-w-temporal 2 4)
+        "Intersects - Collection contained within temporal range"
+        true (temporal-filter "intersect" 2 7) (coll-w-temporal 3 4)
+        "Intersects - temporal within collection"
+        true (temporal-filter "intersect" 3 4) (coll-w-temporal 2 5)
+        "Intersects - collection end = start"
+        true (temporal-filter "intersect" 2 7) (coll-w-temporal 1 2)
+        "Intersects - collection start = end"
+        true (temporal-filter "intersect" 2 7) (coll-w-temporal 7 8)
+        "Intersects - collection before with no end date"
+        true (temporal-filter "intersect" 2 7) (coll-w-temporal 1 nil)
+        "Intersects - collection start and end equal range end"
+        true (temporal-filter "intersect" 2 7) (coll-w-temporal 7 7)
         "Intersects - collection start and end equal range start"
         true (temporal-filter "intersect" 2 7) (coll-w-temporal 2 2)
-        ;"Intersects - collection after temporal range"
-        ;false (temporal-filter "intersect" 1 3) (coll-w-temporal 4 5)
-        ;"Intersects - collection before temporal range"
-        ;false (temporal-filter "intersect" 2 4) (coll-w-temporal 0 1)
-        ;
-        ;;; Disjoint Mask (The opposite of intersects)
-        ;"Disjoint - Collection is exact match"
-        ;false (temporal-filter "disjoint" 1 3) (coll-w-temporal 1 3)
-        ;"Contains - Collection start matches range start and end within"
-        ;false (temporal-filter "disjoint" 1 4) (coll-w-temporal 1 2)
-        ;"Contains - Collection end matches range end and starts within"
-        ;false (temporal-filter "disjoint" 1 4) (coll-w-temporal 2 4)
-        ;"Disjoint - Collection contained within temporal range"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 3 4)
-        ;"Disjoint - temporal within collection"
-        ;false (temporal-filter "disjoint" 3 4) (coll-w-temporal 2 5)
-        ;"Disjoint - collection end = start"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 1 2)
-        ;"Disjoint - collection start = end"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 7 8)
-        ;"Disjoint - collection before with no end date"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 1 nil)
-        ;"Disjoin - collection start and end equal range end"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 7 7)
-        ;"Disjoint - collection start and end equal range start"
-        ;false (temporal-filter "disjoint" 2 7) (coll-w-temporal 2 2)
-        ;"Disjoint - collection after temporal range"
-        ;true (temporal-filter "disjoint" 1 3) (coll-w-temporal 4 5)
-        ;"Disjoint - collection before temporal range"
-        ;true (temporal-filter "disjoint" 2 4) (coll-w-temporal 0 1)
-        ;
-        ;;; Contains
-        ;"Contains - Collection is exact match"
-        ;true (temporal-filter "contains" 1 3) (coll-w-temporal 1 3)
-        ;"Contains - Collection start matches range start and end within"
-        ;true (temporal-filter "contains" 1 4) (coll-w-temporal 1 2)
-        ;"Contains - Collection end matches range end and starts within"
-        ;true (temporal-filter "contains" 1 4) (coll-w-temporal 2 4)
-        ;"Contains - Collection contained within temporal range"
-        ;true (temporal-filter "contains" 2 7) (coll-w-temporal 3 4)
-        ;"Contains - temporal within collection"
-        ;false (temporal-filter "contains" 3 4) (coll-w-temporal 2 5)
-        ;"Contains - collection end = start"
-        ;false (temporal-filter "contains" 2 7) (coll-w-temporal 1 2)
-        ;"Contains - collection start = end"
-        ;false (temporal-filter "contains" 2 7) (coll-w-temporal 7 8)
-        ;"Contains - collection start and end equal range end"
-        ;true (temporal-filter "contains" 2 7) (coll-w-temporal 7 7)
-        ;"Contains - collection start and end equal range start"
-        ;true (temporal-filter "contains" 2 7) (coll-w-temporal 2 2)
-        ;"Contains - collection before with no end date"
-        ;false (temporal-filter "contains" 2 7) (coll-w-temporal 1 nil)
-        ;"Contains - collection after temporal range"
-        ;false (temporal-filter "contains" 1 3) (coll-w-temporal 4 5)
+        "Intersects - collection after temporal range"
+        false (temporal-filter "intersect" 1 3) (coll-w-temporal 4 5)
+        "Intersects - collection before temporal range"
+        false (temporal-filter "intersect" 2 4) (coll-w-temporal 0 1)
+
+        ;; Disjoint Mask (The opposite of intersects)
+        "Disjoint - Collection is exact match"
+        false (temporal-filter "disjoint" 1 3) (coll-w-temporal 1 3)
+        "Contains - Collection start matches range start and end within"
+        false (temporal-filter "disjoint" 1 4) (coll-w-temporal 1 2)
+        "Contains - Collection end matches range end and starts within"
+        false (temporal-filter "disjoint" 1 4) (coll-w-temporal 2 4)
+        "Disjoint - Collection contained within temporal range"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 3 4)
+        "Disjoint - temporal within collection"
+        false (temporal-filter "disjoint" 3 4) (coll-w-temporal 2 5)
+        "Disjoint - collection end = start"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 1 2)
+        "Disjoint - collection start = end"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 7 8)
+        "Disjoint - collection before with no end date"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 1 nil)
+        "Disjoin - collection start and end equal range end"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 7 7)
+        "Disjoint - collection start and end equal range start"
+        false (temporal-filter "disjoint" 2 7) (coll-w-temporal 2 2)
+        "Disjoint - collection after temporal range"
+        true (temporal-filter "disjoint" 1 3) (coll-w-temporal 4 5)
+        "Disjoint - collection before temporal range"
+        true (temporal-filter "disjoint" 2 4) (coll-w-temporal 0 1)
+
+        ;; Contains
+        "Contains - Collection is exact match"
+        true (temporal-filter "contains" 1 3) (coll-w-temporal 1 3)
+        "Contains - Collection start matches range start and end within"
+        true (temporal-filter "contains" 1 4) (coll-w-temporal 1 2)
+        "Contains - Collection end matches range end and starts within"
+        true (temporal-filter "contains" 1 4) (coll-w-temporal 2 4)
+        "Contains - Collection contained within temporal range"
+        true (temporal-filter "contains" 2 7) (coll-w-temporal 3 4)
+        "Contains - temporal within collection"
+        false (temporal-filter "contains" 3 4) (coll-w-temporal 2 5)
+        "Contains - collection end = start"
+        false (temporal-filter "contains" 2 7) (coll-w-temporal 1 2)
+        "Contains - collection start = end"
+        false (temporal-filter "contains" 2 7) (coll-w-temporal 7 8)
+        "Contains - collection start and end equal range end"
+        true (temporal-filter "contains" 2 7) (coll-w-temporal 7 7)
+        "Contains - collection start and end equal range start"
+        true (temporal-filter "contains" 2 7) (coll-w-temporal 2 2)
+        "Contains - collection before with no end date"
+        false (temporal-filter "contains" 2 7) (coll-w-temporal 1 nil)
+        "Contains - collection after temporal range"
+        false (temporal-filter "contains" 1 3) (coll-w-temporal 4 5)
         "Contains - collection before temporal range"
         false (temporal-filter "contains" 2 4) (coll-w-temporal 0 1)))

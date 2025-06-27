@@ -24,7 +24,7 @@
   :url "https://github.com/cmr-exchange/cmr-ous-plugin"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.13.0"]
+  :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "0.4.0"]
@@ -44,7 +44,7 @@
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [tolitius/xml-in "0.1.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}

@@ -94,19 +94,10 @@
    coll is a cached collection
    coll-id is the catalog_item_identity"
   [coll coll-id]
-  (println "INSIDE coll-matches-collection-identifier")
-  (println "coll is " coll)
-  (println "coll-id is " coll-id)
   (let [coll-entry-title (:EntryTitle coll)
-        _ (println "coll entry title is " coll-entry-title)
         concept-id (or (:concept-id coll)
                        (:id coll))
-        _ (println "concept-id = " concept-id)
-        {:keys [entry-titles access-value temporal concept-ids]} coll-id
-        _ (println "entry-titles = " entry-titles)
-        _ (println "access-value = " access-value)
-        _ (println "temporal = " temporal)
-        _ (println "concept-ids = " concept-ids)]
+        {:keys [entry-titles access-value temporal concept-ids]} coll-id]
     (and (or (some (partial = coll-entry-title) entry-titles)
              (some (partial = concept-id) (map name concept-ids))
              (and (empty? concept-ids)
@@ -152,12 +143,10 @@
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
   [coll-prov-id coll acl]
-  (println "INSIDE coll-applicable-acl with coll prov id " coll-prov-id " and coll " coll " and acl " acl)
   (when-let [{:keys [collection-applicable
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
     (validate-collection-identiier acl collection-identifier)
-    (println "got past validate collection identifier")
     (and collection-applicable
          (= coll-prov-id provider-id)
          (or (nil? collection-identifier)

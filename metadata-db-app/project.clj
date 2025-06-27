@@ -2,10 +2,10 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
-  :dependencies [[cheshire "5.13.0"]
-                 [clj-http "3.13.0"]
-                 [clj-time "0.15.2"]
-                 [commons-io "2.19.0"] ;; used by migration
+  :dependencies [[cheshire "5.12.0"]
+                 [clj-http "3.11.0"]
+                 [clj-time "0.15.1"]
+                 [commons-io "2.18.0"] ;; used by migration
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
@@ -20,7 +20,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.4.1"]
+                 [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.eclipse.jetty/jetty-http "12.0.21"]

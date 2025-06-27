@@ -10,7 +10,7 @@
   :license {:name "Apache License 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
-  :dependencies [[cheshire "5.13.0"]
+  :dependencies [[cheshire "5.8.0"]
                  [org.clojure/clojure "1.9.0"]]
   :profiles {:ubercompile {:aot :all}
              :dev {:dependencies [[clojusc/trifl "0.2.0"]
