@@ -9,7 +9,8 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.16"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.4.1"]]
+                 [org.clojure/tools.reader "1.4.1"]
+                 [ring/ring-jetty-adapter "1.14.2"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -23,7 +24,8 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]]
+                                  [proto-repl "0.3.1"]
+                                  [ring/ring-jetty-adapter "1.14.2"]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
                    :jvm-opts ^:replace ["-server"]
