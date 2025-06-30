@@ -3,6 +3,7 @@
 
   For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
+    [cmr.common.log :as log :refer [info warn error]]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer [are deftest is testing use-fixtures]]
@@ -628,16 +629,24 @@
 (deftest ingest-collection-with-slash-in-native-id-test
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
         collection (data-umm-c/collection-concept {:EntryTitle crazy-id})
+        _ (info "collection is " collection)
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection {:validate-keywords false})
-        ingested-concept (mdb/get-concept concept-id)]
+        _ (info "response is " response)
+        ingested-concept (mdb/get-concept concept-id)
+        _ (info "ingested-concept is " ingested-concept)]
     (index/wait-until-indexed)
     (is (= 201 (:status response)))
+    (info "status is 201 success")
     (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+    (info "concept exists in db success")
     (is (= 1 revision-id))
+    (info "revision id is 1 success")
     (is (= crazy-id (:native-id ingested-concept)))
+    (info "crazy id check success")
 
     (testing "delete"
-      (let [delete-result (ingest/delete-concept ingested-concept)]
+      (let [delete-result (ingest/delete-concept ingested-concept)
+            _ (info "delete result is " delete-result)]
         (is (= 200 (:status delete-result)))))))
 
 (deftest schema-validation-test

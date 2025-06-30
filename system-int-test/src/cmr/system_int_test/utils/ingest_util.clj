@@ -1,5 +1,6 @@
 (ns cmr.system-int-test.utils.ingest-util
   (:require
+    [cmr.common.log :as log :refer [info warn error]]
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.data.xml :as xml]
@@ -393,7 +394,10 @@
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (sys/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))]
+         params (merge params (when accept-format {:accept accept-format}))
+         _ (info "about to call client request")
+         client-resp (client/request params)
+         _ (info "client-resp is " client-resp)]
      (parse-ingest-response (client/request params) options))))
 
 (defn publish-draft
