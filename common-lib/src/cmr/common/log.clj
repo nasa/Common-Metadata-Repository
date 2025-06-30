@@ -41,6 +41,7 @@
 
   (timbre/set-level! (or level :warn))
   (timbre/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
+  (timbre/merge-config! {:min-level [[#{"org.eclipse.jetty.server.RequestLog"} :info] [#{"*"} :error]]})
 
   ;; Enable file logging
   (when file

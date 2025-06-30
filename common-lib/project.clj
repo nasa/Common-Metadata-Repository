@@ -8,12 +8,12 @@
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
                  [clojusc/ltest "0.3.0"]
-                 [com.dadrox/quiet-slf4j "0.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.15.4"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.gfredericks/test.chuck "0.2.9"]
-                 [com.taoensso/timbre "5.1.0"]
+                 [com.taoensso/timbre "6.7.0"]
+                 [com.taoensso/timbre-slf4j "6.7.0"]
                  [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"]
                  [digest "1.4.8"]
@@ -42,6 +42,7 @@
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
+                 [org.slf4j/slf4j-api "2.0.17"]
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.13.0"]
                  [ring/ring-jetty-adapter "1.13.0"]
