@@ -3,9 +3,15 @@
   (:require
    [clj-http.client :as h]
    [clojure.string :as string]
-   [clojure.test :refer [deftest is testing]]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.api.web-server :as s]
-   [cmr.common.lifecycle :as l]))
+   [cmr.common.lifecycle :as l]
+   [taoensso.timbre :as timbre]))
+
+(use-fixtures :once (timbre/merge-config! {:min-level [[#{"org.eclipse.jetty.server.RequestLog"} :info]
+                                                       [#{"org.eclipse.jetty.*"} :error]
+                                                       [#{"org.quartz.*"} :error]
+                                                       [#{"*"} :warn]]}))
 
 (def PORT 3123)
 
