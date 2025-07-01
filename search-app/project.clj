@@ -12,7 +12,8 @@
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT" :exclusions
+                  [com.taoensso/encore]]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]

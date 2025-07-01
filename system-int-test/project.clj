@@ -18,7 +18,8 @@
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT" :exclusions
+                  [com.taoensso/encore]]
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]

@@ -7,7 +7,8 @@
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT" :exclusions
+                  [com.taoensso/encore]]
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]

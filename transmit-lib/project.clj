@@ -7,7 +7,8 @@
                  [commons-io "2.18.0"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT" :exclusions
+                  [com.taoensso/encore]]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.csv "0.1.4"]
