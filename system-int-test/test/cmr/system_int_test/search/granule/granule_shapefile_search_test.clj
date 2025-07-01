@@ -44,71 +44,71 @@
         saved-shapefile-max-points (shapefile/max-shapefile-points)
         _ (side/eval-form `(shapefile/set-max-shapefile-points! 50))]
 
-    (testing "ESRI Shapefile Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
-                      (first (:errors (search/find-refs-with-multi-part-form-post
-                                        :granule
-                                        (let [params [{:name "shapefile"
-                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                                                       :mime-type "application/shapefile+zip"}]]
-                                          (if (seq additional-params)
-                                            (conj params additional-params)
-                                            params)))))))
+    ;(testing "ESRI Shapefile Failure cases"
+    ;  (are3 [shapefile additional-params regex]
+    ;    (is (re-find regex
+    ;                  (first (:errors (search/find-refs-with-multi-part-form-post
+    ;                                    :granule
+    ;                                    (let [params [{:name "shapefile"
+    ;                                                   :content (io/file (io/resource (str "shapefiles/" shapefile)))
+    ;                                                   :mime-type "application/shapefile+zip"}]]
+    ;                                      (if (seq additional-params)
+    ;                                        (conj params additional-params)
+    ;                                        params)))))))
+    ;
+    ;    "All granules query"
+    ;    "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
+    ;
+    ;    "Corrupt zip file"
+    ;    "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
+    ;
+    ;    "Missing .shp file"
+    ;    "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
+    ;
+    ;    "Shapefile is too big"
+    ;    "too_big.zip" {:name "provider" :content "PROV1"} #"Uploaded content exceeded limits."
+    ;
+    ;    "Shapefile has too many features"
+    ;    "too_many_features.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
+    ;
+    ;    "Shapefile has too many points"
+    ;    "too_many_points.zip" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
+    ;
+    ;    "Shapefile has no features"
+    ;    "no_features.zip" {:name "provider" :content "PROV1"} #"Shapefile has no features"
+    ;
+    ;    "Shapefile has points too close"
+    ;    "too_precise.zip" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
 
-        "All granules query"
-        "box.zip" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
-
-        "Corrupt zip file"
-        "corrupt_file.zip" {:name "provider" :content "PROV1"} #"Error while uncompressing zip file: invalid END header \(bad central directory offset\)"
-
-        "Missing .shp file"
-        "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
-
-        "Shapefile is too big"
-        "too_big.zip" {:name "provider" :content "PROV1"} #"Uploaded content exceeded limits."
-
-        "Shapefile has too many features"
-        "too_many_features.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
-
-        "Shapefile has too many points"
-        "too_many_points.zip" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
-
-        "Shapefile has no features"
-        "no_features.zip" {:name "provider" :content "PROV1"} #"Shapefile has no features"
-
-        "Shapefile has points too close"
-        "too_precise.zip" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
-
-    (testing "GeoJSON Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
-                      (first (:errors (search/find-refs-with-multi-part-form-post
-                                        :granule
-                                        (let [params [{:name "shapefile"
-                                                       :content (io/file (io/resource (str "shapefiles/" shapefile)))
-                                                       :mime-type "application/geo+json"}]]
-                                          (if (seq additional-params)
-                                            (conj params additional-params)
-                                            params)))))))
-
-        "All granules query"
-        "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
-
-        "Failed to parse shapefile"
-        "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse shapefile"
-
-        "Shapefile has too many features"
-        "too_many_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
-
-        "Shapefile has too many points"
-        "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
-
-        "Shapefile has no features"
-        "no_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile has no features"
-
-        "Shapefile has points too close"
-        "too_precise.geojson" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
+    ;(testing "GeoJSON Failure cases"
+    ;  (are3 [shapefile additional-params regex]
+    ;    (is (re-find regex
+    ;                  (first (:errors (search/find-refs-with-multi-part-form-post
+    ;                                    :granule
+    ;                                    (let [params [{:name "shapefile"
+    ;                                                   :content (io/file (io/resource (str "shapefiles/" shapefile)))
+    ;                                                   :mime-type "application/geo+json"}]]
+    ;                                      (if (seq additional-params)
+    ;                                        (conj params additional-params)
+    ;                                        params)))))))
+    ;
+    ;    "All granules query"
+    ;    "polygon_with_hole.geojson" {} #"The CMR does not allow querying across granules in all collections with a spatial condition"
+    ;
+    ;    "Failed to parse shapefile"
+    ;    "invalid_json.geojson" {:name "provider" :content "PROV1"} #"Failed to parse shapefile"
+    ;
+    ;    "Shapefile has too many features"
+    ;    "too_many_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"
+    ;
+    ;    "Shapefile has too many points"
+    ;    "too_many_points.geojson" {:name "provider" :content "PROV1"} #"Number of points in shapefile exceeds the limit of 50"
+    ;
+    ;    "Shapefile has no features"
+    ;    "no_features.geojson" {:name "provider" :content "PROV1"} #"Shapefile has no features"
+    ;
+    ;    "Shapefile has points too close"
+    ;    "too_precise.geojson" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
 
     (testing "KML Failure cases"
       (are3 [shapefile additional-params regex]

@@ -12,6 +12,7 @@
    (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)
    ;(org.eclipse.jetty.server.handler RequestLogHandler)
    (org.eclipse.jetty.server.handler.gzip GzipHandler)
+   (org.eclipse.jetty.http UriCompliance)
    (org.eclipse.jetty.server Slf4jRequestLogWriter)))
 
 (def MIN_THREADS
@@ -215,9 +216,8 @@
                                              (doseq [^Connector connector (.getConnectors jetty)]
                                                (let [^HttpConnectionFactory http-conn-factory
                                                      (first (.getConnectionFactories connector))]
-                                                 (.setRequestHeaderSize
-                                                  (.getHttpConfiguration http-conn-factory)
-                                                  MAX_REQUEST_HEADER_SIZE))))})]
+                                                 (.setUriCompliance (.getHttpConfiguration http-conn-factory) UriCompliance/JETTY_11)
+                                                 (.setRequestHeaderSize (.getHttpConfiguration http-conn-factory) MAX_REQUEST_HEADER_SIZE))))})]
 
 
         (.stop server)

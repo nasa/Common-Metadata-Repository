@@ -650,19 +650,18 @@
                                   (merge {:accept mime-types/xml
                                           :multipart form
                                           :throw-exceptions true
-                                          :throw-entire-message true
                                           :connection-manager (system/conn-mgr)}
                                          options))
                      ;; when I remove multipart, it's able to call correctly. It just doesn't like multipart...
                      ;; something about it makes it fail with 500, but search app doesn't even get the call to process
                      ;; even when multipart is empty, it errors the same 500, it's about the fact that we are using multipart at all...
                      ;; it's also when org.apache.commons/commons-fileupload2-core changes from M1 to M3... M3 is the breaking changes
-             (catch Exception e
-               (info "Exception " (clojure.stacktrace/print-throwable e))
-               ;(info "Exception caught was " (ex-message e))
-               (info "Stacktrace is " (clojure.stacktrace/print-stack-trace e))
-               (info "Exception " (clojure.stacktrace/print-cause-trace e))
-               ))
+                     (catch Exception e
+                       (info "Exception " (clojure.stacktrace/print-throwable e))
+                       ;(info "Exception caught was " (ex-message e))
+                       (info "Stacktrace is " (clojure.stacktrace/print-stack-trace e))
+                       (info "Exception " (clojure.stacktrace/print-cause-trace e))
+                       ))
           _ (info "response found was " response)]
       (parse-reference-response-with-headers false response)))))
 
