@@ -10,7 +10,6 @@
   (:import
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)
-   ;(org.eclipse.jetty.server.handler RequestLogHandler)
    (org.eclipse.jetty.server.handler.gzip GzipHandler)
    (org.eclipse.jetty.http UriCompliance)
    (org.eclipse.jetty.server Slf4jRequestLogWriter)))
@@ -158,18 +157,9 @@
   [server]
   (let [log-writer (Slf4jRequestLogWriter.)
         log-format (str CustomRequestLog/EXTENDED_NCSA_FORMAT " %{yyyy-MM-dd HH:mm:ss.SSS}t")]
-    ;; RequestLogHandler does not exist. Use Server.setRequestLog(RequestLog) instead.
     (doto server
       (.setRequestLog
-        (CustomRequestLog. log-writer log-format)))
-
-    ;(doto (RequestLogHandler.)
-    ;  (.setHandler existing-handler)
-    ;  (.setRequestLog
-    ;    (CustomRequestLog. log-writer log-format)))
-
-    )
-  )
+        (CustomRequestLog. log-writer log-format)))))
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
@@ -179,8 +169,7 @@
     (.setHandler existing-handler)
     ;; All the mime types that we want to support compression with must be specified here.
     (.setIncludedMimeTypes (into-array mt/all-supported-mime-types))
-    (.setMinGzipSize min-gzip-size))
-  )
+    (.setMinGzipSize min-gzip-size)))
 
 (defrecord WebServer
   [
@@ -227,8 +216,7 @@
                                 (.getHandler server))
               server (if use-access-log?
                        (create-access-log-handler server)
-                       server)
-              ]
+                       server)]
           (doto server
             (.setHandler request-handler)
             (.start)))
