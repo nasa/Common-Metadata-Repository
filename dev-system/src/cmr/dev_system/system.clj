@@ -71,7 +71,6 @@
    :virtual-product {:start vp-system/start
                      :stop vp-system/stop}})
 
-;; TODO JYNA APP ORDER DURING CMR START REPL
 (def app-startup-order
   "Defines the order in which applications should be started"
   [:mock-echo :metadata-db :access-control :indexer :ingest :search :virtual-product :bootstrap])

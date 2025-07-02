@@ -32,8 +32,8 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.testcontainers/testcontainers "1.19.7"]
                  [potemkin "0.4.5"]
-                 [ring/ring-jetty-adapter "1.14.2"]
-                 [ring/ring-core "1.14.2"]]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]

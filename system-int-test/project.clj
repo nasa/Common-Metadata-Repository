@@ -34,12 +34,12 @@
                  [org.jsoup/jsoup "1.14.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-codec "1.3.0"] ;; done required
-                 [ring/ring-core "1.14.2"] ;; done required
-                 [ring/ring-jetty-adapter "1.14.2"];; done required
-                 [org.eclipse.jetty/jetty-http "12.0.21"];; done required
-                 [org.eclipse.jetty/jetty-util "12.0.21"];; done required
-                 [org.eclipse.jetty/jetty-io "12.0.21"]];; done required
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"]
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-io "12.0.21"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
