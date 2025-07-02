@@ -19,6 +19,7 @@
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
