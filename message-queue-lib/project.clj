@@ -31,7 +31,9 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.testcontainers/testcontainers "1.19.7"]
-                 [potemkin "0.4.5"]]
+                 [potemkin "0.4.5"]
+                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-core "1.14.2"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -41,7 +43,9 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [ring/ring-core "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
