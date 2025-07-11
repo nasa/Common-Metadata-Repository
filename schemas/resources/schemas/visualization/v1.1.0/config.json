@@ -18,7 +18,9 @@
   },
   "IndexConfiguration": {
     "AllowAppending": true,
-    "AdditionalKeywords": ["Identifier"]
+    "AdditionalKeywords": ["Identifier"],
+    "IndexName": "2_generic_visualization",
+    "IndexNameForRevisions": "2_all_generic_visualization_revisions"
   },
   "Indexes":
   [

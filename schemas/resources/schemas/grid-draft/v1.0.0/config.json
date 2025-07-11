@@ -16,6 +16,11 @@
       "refresh_interval": "1s"
     }
   },
+  "IndexConfiguration": {
+    "IndexName": "2_generic_grid_draft",
+    "IndexNameForRevisions": "2_all_generic_grid_draft_revisions"
+  },
+
   "Indexes":
   [
     {

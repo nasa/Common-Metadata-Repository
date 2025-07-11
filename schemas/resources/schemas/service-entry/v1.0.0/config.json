@@ -9,6 +9,10 @@
     "Version": "1.0.0"
   },
   "SubConceptType": "SE",
+  "IndexConfiguration": {
+    "IndexName": "2_generic_service_entry",
+    "IndexNameForRevisions": "2_all_generic_service_entry_revisions"
+  },
   "Indexes":
   [
     {

@@ -4,7 +4,9 @@
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
+   [cmr.common.generics :as generics]
    [cmr.common.hash-cache :as hcache]
+   [cmr.common.log :as log :refer [infof]]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index :as common-esi]
@@ -143,14 +145,42 @@
                  "1_subscriptions")
    :type-name "subscription"})
 
+(defconfig use-custom-generic-index-names
+  "Allow the Generic config file to define the IndexNames to be used in elastic"
+  {:default true
+   :type Boolean})
+
+(defn- read-generic-index-config-name
+  "Load the configuration file for a generic and pull out the IndexName to use. If an IndexName does
+   not exist then assume the default, version 1, index name for Generics."
+  [concept-type all-revisions?]
+  (let [snake-concept (string/replace (name concept-type) #"-" "_")
+        revision-name (format "1_all_generic_%s_revisions" snake-concept)
+        normal-name (format "1_generic_%s" snake-concept)
+        config (generics/read-generic-config concept-type)
+        config-index (get config :IndexConfiguration "")
+        result (if (use-custom-generic-index-names)
+                 ;; new behavior
+                 (if all-revisions?
+                   (get config-index :IndexNameForRevisions revision-name)
+                   (get config-index :IndexName normal-name))
+                 ;; legacy mode
+                 (if all-revisions?
+                   revision-name
+                   normal-name))]
+    result))
+
+;; At load time create functions for each of the configured generic concepts
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
+  ;; Log early on in the load process which index names this instance of CMR expects to find. Remove
+  ;; this log if it is no longer a concern.
+  (infof "Creating concept-type->index-info for %s using indexes %s and %s."
+          concept-type
+          (read-generic-index-config-name concept-type false)
+          (read-generic-index-config-name concept-type true))
   (defmethod common-esi/concept-type->index-info concept-type
-    [context _ query]
-    {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type)
-                                                                        #"-" "_"))
-                   (format "1_generic_%s" (string/replace (name concept-type)
-                                                          #"-" "_")))
+    [_context _ query]
+    {:index-name (read-generic-index-config-name concept-type (:all-revisions? query))
      :type-name (name concept-type)}))
 
 (defn- context->conn

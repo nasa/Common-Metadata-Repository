@@ -16,6 +16,10 @@
       "refresh_interval": "1s"
     }
   },
+  "IndexConfiguration": {
+    "IndexName": "2_generic_order_option_draft",
+    "IndexNameForRevisions": "2_all_generic_order_option_draft_revisions"
+  },
   "Indexes":
   [
     {

@@ -9,6 +9,11 @@
       "Version": "0.0.1"
     },
   "SubConceptType": "GRD",
+  "IndexConfiguration": {
+    "IndexName": "2_generic_grid",
+    "IndexNameForRevisions": "2_all_generic_grid_revisions"
+  },
+
   "Indexes":
   [
     {
