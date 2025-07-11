@@ -277,6 +277,9 @@
     (errors/internal-error!
      "Aggregations are not supported with queries with an unlimited page size."))
 
+  (debug "Executing unlimited page size query with query:"
+         (pr-str query))
+
   ;; Use search_after for efficient deep pagination
   (let [batch-size (es-config/es-unlimited-page-size)
         ;; First request to get total hits
@@ -302,14 +305,22 @@
              search-after-values (extract-search-after-values accumulated-hits)
              took-total (:took first-response)
              timed-out (:timed_out first-response)]
-
+        (debug "Accumulated hits so far:" (count accumulated-hits)
+               "with total hits:" total-hits
+               "and took time:" took-total
+               "timed out:" timed-out)
         (if (or (nil? search-after-values)
                 (>= (count accumulated-hits) total-hits))
           ;; We've got all results
-          (-> first-response
-              (assoc :took took-total)
-              (assoc :timed_out timed-out)
-              (assoc-in [:hits :hits] accumulated-hits))
+          (do 
+            (debug "Returning all results with total hits:" total-hits
+                   "and took time:" took-total
+                   "timed out:" timed-out)
+            ;; Return the first response with the accumulated hits and total took time)
+            (-> first-response
+                (assoc :took took-total)
+                (assoc :timed_out timed-out)
+                (assoc-in [:hits :hits] accumulated-hits)))
 
           (let [next-response (send-query-to-elastic
                                context
@@ -317,6 +328,9 @@
                                       :page-size batch-size
                                       :search-after search-after-values))
                 new-hits (get-in next-response [:hits :hits])]
+            (debug "Received next batch of hits with size:" (count new-hits)
+                   "and took time:" (:took next-response)
+                   "timed out:" (:timed_out next-response))
             (recur (concat accumulated-hits new-hits)
                    (extract-search-after-values new-hits)
                    (+ took-total (:took next-response))
