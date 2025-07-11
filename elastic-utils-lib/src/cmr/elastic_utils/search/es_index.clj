@@ -67,12 +67,12 @@
   [context]
   (:conn (context->search-index context)))
 
-(defn- ensure-sort-for-search-after
-  "Ensures the sort params include a tiebreaker field (_id) for consistent search_after pagination"
-  [sort-params]
-  (if (some #(= (ffirst %) "_id") sort-params)
-    sort-params
-    (conj (vec sort-params) {"_id" "asc"})))
+(defn- ensure-sort-keys-for-search-after
+  "Ensures sort-keys include _id for search_after"
+  [sort-keys]
+  (if (some #(= (:field %) "_id") sort-keys)
+    sort-keys
+    (conj (vec sort-keys) {:field "_id" :order :asc})))
 
 (defn- extract-search-after-values
   "Extracts the sort values from the last hit for use in search_after"
@@ -100,10 +100,7 @@
                 scroll-id
                 search-after
                 remove-source]} query
-        raw-sort-params (q2e/query->sort-params query)
-        sort-params (if (= page-size :unlimited)
-                      (ensure-sort-for-search-after raw-sort-params)
-                      raw-sort-params)
+        sort-params (q2e/query->sort-params query)
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                       (es-config/elastic-scroll-search-type)
@@ -281,11 +278,12 @@
          (pr-str query))
 
   ;; Use search_after for efficient deep pagination
-  (let [batch-size (es-config/es-unlimited-page-size)
+  (let [query-with-sort (update query :sort-keys ensure-sort-keys-for-search-after)
+        batch-size (es-config/es-unlimited-page-size)
         ;; First request to get total hits
         first-response (send-query-to-elastic
                         context
-                        (assoc query
+                        (assoc query-with-sort
                                :page-size batch-size
                                :search-after nil))
         total-hits (get-in first-response [:hits :total :value])]
@@ -324,7 +322,7 @@
 
           (let [next-response (send-query-to-elastic
                                context
-                               (assoc query
+                               (assoc query-with-sort 
                                       :page-size batch-size
                                       :search-after search-after-values))
                 new-hits (get-in next-response [:hits :hits])]
