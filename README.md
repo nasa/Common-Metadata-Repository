@@ -311,6 +311,12 @@ applications, as well as several libraries and support applications.
    implementation of ECHO.
   - Main method: cmr.mock_echo.runner
 
+## Contributors
+
+We appreciate all contributors to the CMR project:
+
+- **Ervin Remus** - Contributing to open source development and improvements
+
 ## License
 
 > Copyright © 2007-2024 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
