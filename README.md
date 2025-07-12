@@ -315,7 +315,7 @@ applications, as well as several libraries and support applications.
 
 We appreciate all contributors to the CMR project:
 
-- **Ervin Remus** - Contributing to open source development and improvements
+- **Ervin Remus Radosavlevici** (Ervin210@icloud.com) - Contributing to open source development and improvements
 
 ## License
 
