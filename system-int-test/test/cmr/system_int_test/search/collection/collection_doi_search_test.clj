@@ -106,4 +106,22 @@
             "Search for collections with DOIs that aren't provided or missing"
             [coll3 no-doi]
             {:or [{:not {:doi {:value "*" :pattern true}}} {:doi "Not provided"}]}))))
-            
+
+(deftest search-by-associated-doi
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (-> exp-conv/curr-ingest-ver-example-collection-record
+                   (assoc :ShortName "CMR3674SN1")
+                   (assoc :EntryTitle "CMR3674ET1"))
+               {:format :umm-json
+                :accept-format :json
+                :validate-keywords false})]
+    (index/wait-until-indexed)
+    (testing "search collections by associated doi"
+      (are3 [items doi options]
+        (let [params (merge {:doi doi}
+                            (when options
+                              {"options[doi]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+       "search collections with doi1"
+       [coll1] "10.4567/DOI1" {}))))

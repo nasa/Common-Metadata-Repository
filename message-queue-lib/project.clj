@@ -31,9 +31,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.testcontainers/testcontainers "1.19.7"]
-                 [potemkin "0.4.5"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]]
+                 [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -43,8 +41,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  [org.clojure/tools.nrepl "0.2.13"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
@@ -65,7 +62,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]]}}
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

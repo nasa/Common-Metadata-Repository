@@ -37,22 +37,6 @@ get a JSON response:
     {"concept-id":"CITD1200000000-PROV1","revision-id":1,"warnings":null,"existing-errors":null}
 ```
 
-#### Unsuccessful Response in XML
-
-```
-    <?xml version="1.0" encoding="UTF-8"?>
-    <errors>
-        <error>While validating the record against the [citation] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested.</error>
-    </errors>
-```
-
-#### Unsuccessful Response in JSON
-
-```
-    {"errors":["While validating the record against the [citation] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested."]}
-```
-
-
 ### <a name="delete-citation-draft"></a> Delete a Citation Draft
 
 Citation Draft metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/citation-drafts/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.

@@ -2,6 +2,7 @@
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
   :dependencies [[commons-io "2.18.0"]
+                 [commons-validator/commons-validator "1.7"]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -23,8 +24,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  [proto-repl "0.3.1"]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
                    :jvm-opts ^:replace ["-server"]
@@ -54,7 +54,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]]}}
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]
 
             ;; Kaocha test aliases

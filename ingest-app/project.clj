@@ -5,11 +5,10 @@
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
                  [jakarta.servlet/jakarta.servlet-api "4.0.4"] ;;5.x and 6.x did not work
-                 [commons-fileupload "1.6.0"]
+                 [commons-fileupload "1.3.3"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure "1.6.1"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [instaparse "1.4.10"]
@@ -35,11 +34,11 @@
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [org.eclipse.jetty/jetty-http "11.0.24"]
+                 [org.eclipse.jetty/jetty-util "11.0.24"]
+                 [ring/ring-codec "1.2.0"]
+                 [ring/ring-core "1.13.0"]
+                 [ring/ring-jetty-adapter "1.13.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]]
@@ -51,7 +50,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [ring/ring-jetty-adapter "1.13.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
@@ -59,8 +58,8 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "11.0.24"]
+                                     [org.eclipse.jetty/jetty-util "11.0.24"]]}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this
