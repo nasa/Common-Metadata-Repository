@@ -60,3 +60,13 @@
 - Active Contributors (last 30 days): 1
 - Project Start Date: 2007 (NASA)
 - Open Source Enhancement Date: 2024-12-19
+
+## How to Use the Contributor Tracker
+
+To add your contribution to the project:
+
+```bash
+python3 scripts/update-contributors.py
+```
+
+Or manually add your contribution by editing the `contributor-stats.json` file and running the tracker script.

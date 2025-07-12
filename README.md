@@ -335,6 +335,15 @@ We appreciate all contributors to the CMR project and maintain detailed tracking
 
 For detailed contribution history, see [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
+## Quick Development Setup
+
+1. **Prerequisites**: Ensure you have Java 17, Leiningen, and Docker installed
+2. **Environment Setup**: Run `./bin/cmr setup profile` and update `./dev-system/profiles.clj`
+3. **Start Development**: Click the Run button to start the CMR development environment
+4. **Track Contributions**: Use `python3 scripts/update-contributors.py` to track your work
+
+For complete setup instructions, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+
 ## License
 
 > Copyright © 2007-2024 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
