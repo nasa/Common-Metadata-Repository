@@ -7,6 +7,7 @@ Updates contributor information and maintains project statistics
 
 import json
 import datetime
+import json
 import os
 import re
 import sys
