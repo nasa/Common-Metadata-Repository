@@ -313,9 +313,27 @@ applications, as well as several libraries and support applications.
 
 ## Contributors
 
-We appreciate all contributors to the CMR project:
+We appreciate all contributors to the CMR project and maintain detailed tracking of all improvements:
 
-- **Ervin Remus Radosavlevici** (Ervin210@icloud.com) - Contributing to open source development and improvements
+### Core Contributors
+- **Ervin Remus Radosavlevici** (Ervin210@icloud.com)
+  - **Role**: Project Enhancer & Open Source Developer
+  - **Contributions**: Enhanced project structure, improved documentation, contributor tracking system
+  - **Impact**: Significantly improved open source collaboration and project visibility
+  - **Join Date**: December 2024
+
+### How to Contribute
+1. See our [CONTRIBUTORS.md](CONTRIBUTORS.md) for detailed guidelines
+2. Check our [CHANGELOG.md](CHANGELOG.md) for recent improvements
+3. Follow our contribution workflow outlined below
+
+### Recent Improvements
+- ✨ Enhanced contributor tracking system
+- 📝 Comprehensive documentation updates  
+- 🚀 Improved project structure
+- 🎯 Better open source compliance
+
+For detailed contribution history, see [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ## License
 
