@@ -54,15 +54,6 @@
       "Topic": "HUMAN DIMENSIONS",
       "Term": "PUBLIC HEALTH",
       "VariableLevel1": "ENVIRONMENTAL IMPACTS"
-    },
-    {
-      "Category": "EARTH SCIENCE",
-      "Topic": "ATMOSPHERE",
-      "Term": "ATMOSPHERIC CHEMISTRY",
-      "VariableLevel1": "Halocarbons and Halogens",
-      "VariableLevel2": "Hypochlorous Acid",
-      "VariableLevel3": "Next level",
-      "DetailedVariable": "Detail level variable"
     }
   ],
   "MetadataSpecification": {

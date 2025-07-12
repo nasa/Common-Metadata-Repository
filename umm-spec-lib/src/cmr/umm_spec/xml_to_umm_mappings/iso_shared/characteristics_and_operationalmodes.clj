@@ -24,7 +24,7 @@
                  :Description (char-string-value chars (str pc-attr-base-path "/eos:description"))
                  :DataType    (value-of chars (str pc-attr-base-path "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
                  :Unit        (char-string-value chars (str pc-attr-base-path "/eos:parameterUnitsOfMeasure"))
-                 :Value       (char-string-value chars "eos:value")})))))))
+                 :Value       (char-string-value chars (str "eos:value"))})))))))
 
 (defn parse-operationalmodes
   "Returns the parsed operationalmodes from the element."
@@ -33,4 +33,4 @@
     (remove nil?
       (for [chars (select element characteristics-and-operationalmodes-xpath)]
         (when (= "OperationalMode" (char-string-value chars (str pc-attr-base-path "/eos:name")))
-          (char-string-value chars "eos:value"))))))
+          (char-string-value chars (str "eos:value")))))))

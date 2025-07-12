@@ -34,6 +34,7 @@
 (defn- umm-g-gpolygon->GPolygon
   "Returns the spatial polygon from the given UMM-G GPolygon."
   [gpolygon]
+  [gpolygon]
   (let [outer-ring (umm-g-boundary->Ring (:Boundary gpolygon))
         holes (map umm-g-boundary->Ring (get-in gpolygon [:ExclusiveZone :Boundaries]))]
     (poly/polygon (cons outer-ring holes))))

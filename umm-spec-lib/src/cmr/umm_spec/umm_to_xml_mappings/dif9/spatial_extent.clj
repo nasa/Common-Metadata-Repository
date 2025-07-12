@@ -10,14 +10,14 @@
   [elevation-type]
   (if (.contains elevation-type "Altitude")
     (if (.contains elevation-type "Min")
-      (keyword "Minimum_Altitude")
+      (keyword (str "Minimum_Altitude"))
       (when (.contains elevation-type "Max")
-        (keyword "Maximum_Altitude")))
+        (keyword (str "Maximum_Altitude"))))
     (when (.contains elevation-type "Depth")
       (if (.contains elevation-type "Min")
-        (keyword "Minimum_Depth")
+        (keyword (str "Minimum_Depth"))
         (when (.contains elevation-type "Max")
-          (keyword "Maximum_Depth"))))))
+          (keyword (str "Maximum_Depth")))))))
 
 (defn- create-vertical-domain-maps
   "For the given passed in vector of UMM vertical domains key and value:
