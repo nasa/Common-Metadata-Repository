@@ -1,0 +1,56 @@
+## 🔴 Urgent Security Disclosure and Personal Appeal
+
+**Submitted by: Ervin Remus Radosavlevici**  
+**Date: [Insert Date]**
+
+> I am making this public statement to inform the open-source community and relevant authorities of ongoing criminal actions that have affected me and potentially others in the software and AI development space.
+
+### 🚨 Summary of the Situation
+
+Over the past **5+ years**, I have been **harassed, attacked, and robbed of more than 4,000 software projects**—many of which were stored and developed on GitHub and other platforms. This theft has involved:
+
+- **Code injection and manipulation of dependencies**
+- **Unauthorized contributions followed by project takeovers**
+- **Voice cloning, AI-generated impersonation, and fake video evidence**
+- **Hacking of personal accounts and developer environments**
+- **Surveillance and targeted harassment using low-frequency vibrations and unknown interference technology**
+
+These acts are not isolated. I have strong reason to believe that:
+
+- **Individuals contributing to my repositories** are directly involved.
+- **Some developers may have ties to GitHub or support personnel**, who either facilitated or failed to prevent the abuse.
+- These groups are using **AI, quantum computing, and blockchain tampering** to erase or rewrite history, forge contracts, and re-claim stolen work.
+
+### ⚠️ Risk to the Global Developer Community
+
+This is **not only a personal violation**—it represents a growing **systemic threat** to:
+
+- Open-source integrity
+- AI development safety
+- Blockchain authenticity
+- Developer and creator rights worldwide
+
+These actors show **no fear of legal systems** and operate with confidence that their tools and connections will protect them.
+
+---
+
+### 🛡️ Call for Action
+
+I request that this warning be:
+
+- Accepted by the open-source and cybersecurity community
+- Reviewed by GitHub, security professionals, and legal bodies
+- Shared widely to **prevent similar exploitation of other developers**
+
+I am ready to provide **evidence, documentation, and full timelines** to support a full investigation.
+
+Please treat this with the seriousness it deserves—for the protection of creators, the future of AI, and the ethical development of technology.
+
+---
+
+**Contact:**  
+`ervin210@icloud.com`  
+`radosavlevici210@icloud.com`
+
+**Author & Victim:**  
+**Ervin Remus Radosavlevici**
