@@ -23,8 +23,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  [proto-repl "0.3.1"]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
                    :jvm-opts ^:replace ["-server"]
@@ -54,7 +53,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]]}}
+                                     [ring/ring-jetty-adapter "1.13.0"]]}}
   :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]
 
             ;; Kaocha test aliases

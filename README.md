@@ -311,58 +311,6 @@ applications, as well as several libraries and support applications.
    implementation of ECHO.
   - Main method: cmr.mock_echo.runner
 
-## Contributors
-
-We appreciate all contributors to the CMR project and maintain detailed tracking of all improvements:
-
-### Core Contributors
-- **Ervin Remus Radosavlevici** (Ervin210@icloud.com)
-  - **Role**: Project Enhancer & Open Source Developer
-  - **Contributions**: Enhanced project structure, improved documentation, contributor tracking system
-  - **Impact**: Significantly improved open source collaboration and project visibility
-  - **Join Date**: December 2024
-
-### How to Contribute
-1. See our [CONTRIBUTORS.md](CONTRIBUTORS.md) for detailed guidelines
-2. Check our [CHANGELOG.md](CHANGELOG.md) for recent improvements
-3. Follow our contribution workflow outlined below
-
-### Recent Improvements
-- ✨ Enhanced contributor tracking system
-- 📝 Comprehensive documentation updates  
-- 🚀 Improved project structure
-- 🎯 Better open source compliance
-
-For detailed contribution history, see [CONTRIBUTORS.md](CONTRIBUTORS.md)
-
-## 🚀 Development Status & Roadmap
-
-### Current Status: **Ready for Development** ✅
-
-The CMR project has been enhanced with modern open source practices and is ready for collaborative development.
-
-### Recent Improvements:
-- ✨ Enhanced contributor tracking and recognition system
-- 🔧 Fixed development workflow configuration  
-- 📝 Comprehensive documentation updates
-- 🎯 Improved project structure and automation
-- 🚀 Ready-to-use development environment
-
-### Development Roadmap:
-1. **Phase 1**: Environment Setup & Core Services
-2. **Phase 2**: Database Integration & Testing
-3. **Phase 3**: API Enhancement & Performance
-4. **Phase 4**: Cloud Integration & Scaling
-
-## Quick Development Setup
-
-1. **Prerequisites**: Java 17, Leiningen (auto-installed), and Docker
-2. **Environment Setup**: Run `./bin/cmr setup profile` and update `./dev-system/profiles.clj`
-3. **Start Development**: Click the Run button to start the CMR development environment
-4. **Track Contributions**: Use `python3 scripts/update-contributors.py` to track your work
-
-For complete setup instructions, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
-
 ## License
 
 > Copyright © 2007-2024 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
