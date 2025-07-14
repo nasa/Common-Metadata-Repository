@@ -74,7 +74,7 @@
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev-dependencies {:dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
-                                               [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                                               [org.clojars.daniel-zamora/drift "1.5.6-SNAPSHOT"]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
                                                [org.clojure/tools.namespace "0.2.11"]
                                                [org.clojure/tools.nrepl "0.2.13"]

@@ -8,7 +8,7 @@
                  [commons-io "2.18.0"] ;; used by migration
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
-                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                 [org.clojars.daniel-zamora/drift "1.5.6-SNAPSHOT"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -29,7 +29,7 @@
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"] ;; used by migration
                  [ring/ring-json "0.5.1"]]
-  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+  :plugins [[org.clojars.daniel-zamora/drift "1.5.6-SNAPSHOT"]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
