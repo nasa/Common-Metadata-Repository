@@ -41,6 +41,7 @@
   "The list of miscellaneous concept types that are provider based but saved in a single system table"
   [:variable :service :tool :subscription])
 
+;; TODO JYNA will have to update this to include both clusters?
 (defn elastic-retry-handler
   "A custom http retry handler for use with elastic connections"
   [ex try-count _http-context]
