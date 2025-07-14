@@ -5,7 +5,7 @@
    [clojure.set :as set]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info]]
+   [cmr.common.log :refer [debug info warnf]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as util]
@@ -67,6 +67,19 @@
   [context]
   (:conn (context->search-index context)))
 
+(defn- ensure-sort-keys-for-search-after
+  "Ensures sort-keys include _id for search_after"
+  [sort-keys]
+  (if (some #(= (:field %) "_id") sort-keys)
+    sort-keys
+    (conj (vec sort-keys) {:field "_id" :order :asc})))
+
+(defn- extract-search-after-values
+  "Extracts the sort values from the last hit for use in search_after"
+  [hits]
+  (when-let [last-hit (last hits)]
+    (:sort last-hit)))
+
 (defn- query-fields->elastic-fields
   "Converts all of the CMR business logic field names to the actual fields in elastic."
   [concept-type fields]
@@ -87,11 +100,11 @@
                 scroll-id
                 search-after
                 remove-source]} query
+        sort-params (q2e/query->sort-params query)
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                       (es-config/elastic-scroll-search-type)
                       "query_then_fetch")
-        sort-params (q2e/query->sort-params query)
         fields (query-fields->elastic-fields
                 concept-type
                 (or (:result-fields query)
@@ -147,17 +160,20 @@
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
-      (info (format
-             (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
-                  " Will retry up to %d times.")
+      (warnf (str "Execute ES query failed because of UnknownHostException. Retry in %.3f seconds. "
+                  "Will retry up to %d times. No more then %d tries can be made.")
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
-             max-retries))
+             max-retries
+             (es-config/elastic-unknown-host-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
       (do-send-with-retry context index-info query (dec max-retries)))
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
-        (info "Execute ES query failed due to" body)
+
+        (warnf "Execute ES query in do-send-with-retry failed with message '%s' and body «%s»"
+               (.getMessage e)
+               (util/trunc body 1024))
 
         (when (re-find #"Trying to create too many scroll contexts" body)
           (errors/throw-service-error
@@ -252,45 +268,71 @@
                                                          concept-type)))))
                         all-concepts))))))
 
-;; Implements querying against elasticsearch when the page size is set to :unlimited. It works by
-;; calling the default implementation multiple times until all results have been found. It uses
-;; the constants defined above to control how many are requested at a time and the maximum number
-;; of hits that can be retrieved.
 (defmethod send-query-to-elastic :unlimited
   [context query]
   (when (:aggregations query)
     (errors/internal-error!
      "Aggregations are not supported with queries with an unlimited page size."))
 
-  (loop [offset 0 prev-items [] took-total 0 timed-out false]
-    (let [results (send-query-to-elastic
-                   context (assoc query
-                                  :offset
-                                  offset
-                                  :page-size
-                                  (es-config/es-unlimited-page-size)))
-          total-hits (get-in results [:hits :total :value])
-          current-items (get-in results [:hits :hits])]
+  (debug "Executing unlimited page size query with query:"
+         (pr-str query))
 
-      (when (> total-hits (es-config/es-max-unlimited-hits))
-        (errors/internal-error!
-         (format
-          "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
-          total-hits (es-config/es-max-unlimited-hits) (pr-str query))))
+  ;; Use search_after for efficient deep pagination
+  (let [query-with-sort (update query :sort-keys ensure-sort-keys-for-search-after)
+        batch-size (es-config/es-unlimited-page-size)
+        ;; First request to get total hits
+        first-response (send-query-to-elastic
+                        context
+                        (assoc query-with-sort
+                               :page-size batch-size
+                               :search-after nil))
+        total-hits (get-in first-response [:hits :total :value])]
 
-      (if (>= (+ (count prev-items) (count current-items)) total-hits)
-        ;; We've got enough results now. We'll return the query like we got all of them back in one
-        ;; request
-        (-> results
-            (update-in [:took] + took-total)
-            (update-in [:hits :hits] concat prev-items)
-            (assoc :timed_out timed-out))
-        ;; We need to keep searching subsequent pages
-        (recur (long (+ offset (es-config/es-unlimited-page-size)))
-               (concat prev-items current-items)
-               (long (+ took-total (:took results)))
-               (or timed-out (:timed_out results)))))))
+    ;; Check if we're within the safety limit
+    (when (> total-hits (es-config/es-max-unlimited-hits))
+      (errors/internal-error!
+       (format
+        "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
+        total-hits (es-config/es-max-unlimited-hits) (pr-str query))))
 
+    ;; If we got all results in the first batch, return immediately
+    (if (<= total-hits batch-size)
+      first-response
+      ;; Otherwise, use search_after to get all results
+      (loop [accumulated-hits (get-in first-response [:hits :hits])
+             search-after-values (extract-search-after-values accumulated-hits)
+             took-total (:took first-response)
+             timed-out (:timed_out first-response)]
+        (debug "Accumulated hits so far:" (count accumulated-hits)
+               "with total hits:" total-hits
+               "and took time:" took-total
+               "timed out:" timed-out)
+        (if (or (nil? search-after-values)
+                (>= (count accumulated-hits) total-hits))
+          ;; We've got all results
+          (do 
+            (debug "Returning all results with total hits:" total-hits
+                   "and took time:" took-total
+                   "timed out:" timed-out)
+            ;; Return the first response with the accumulated hits and total took time)
+            (-> first-response
+                (assoc :took took-total)
+                (assoc :timed_out timed-out)
+                (assoc-in [:hits :hits] accumulated-hits)))
+
+          (let [next-response (send-query-to-elastic
+                               context
+                               (assoc query-with-sort 
+                                      :page-size batch-size
+                                      :search-after search-after-values))
+                new-hits (get-in next-response [:hits :hits])]
+            (debug "Received next batch of hits with size:" (count new-hits)
+                   "and took time:" (:took next-response)
+                   "timed out:" (:timed_out next-response))
+            (recur (concat accumulated-hits new-hits)
+                   (extract-search-after-values new-hits)
+                   (+ took-total (:took next-response))
+                   (or timed-out (:timed_out next-response)))))))))
 
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."

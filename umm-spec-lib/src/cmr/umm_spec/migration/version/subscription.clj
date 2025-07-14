@@ -20,7 +20,7 @@
   [_context _subscription & _]
   (errors/throw-service-errors
    :bad-request
-   [(str "Cannot migrate UMM-Sub v1.1 to v1.0.")]))
+   ["Cannot migrate UMM-Sub v1.1 to v1.0."]))
 
 (defmethod interface/migrate-umm-version [:subscription "1.1" "1.1.1"]
   [_context subscription & _]

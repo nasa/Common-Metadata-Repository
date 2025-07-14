@@ -47,7 +47,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.13.0"]]}}
+                                     [ring/ring-jetty-adapter "1.14.2"]]}}
   :aliases {"bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]

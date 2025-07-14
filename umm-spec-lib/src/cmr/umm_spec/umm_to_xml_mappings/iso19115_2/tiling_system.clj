@@ -32,7 +32,7 @@
       [:gmd:code
        (char-string (tiling-system-string tiling-system))]
       [:gmd:codeSpace
-       (char-string (str "gov.nasa.esdis.umm.tilingidentificationsystem"))]
+       (char-string "gov.nasa.esdis.umm.tilingidentificationsystem")]
       [:gmd:description
        (char-string (:TilingIdentificationSystemName tiling-system))]]]]])
 
