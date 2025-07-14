@@ -8,12 +8,16 @@
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
+                 ;; commons-compress does not currently use commons-lang3 3.18.0, for now
+                 ;; we will force it to use the latest version
+                 [org.apache.commons/commons-lang3 "3.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure "1.11.2"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
-                 [org.apache.commons/commons-compress "1.26.0"]
+                 [org.apache.commons/commons-compress "1.26.0"
+                  :exclusions [org.apache.commons/commons-lang3]]
                  [org.testcontainers/testcontainers "1.19.7"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
