@@ -45,6 +45,7 @@
         (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
                      [:warnings :existing-errors]))))))
 
+;; TODO JYNA main collection ingest func level 1
 (defn ingest-collection
   [provider-id native-id request]
   (let [{:keys [body content-type _params headers request-context]} request]

@@ -478,6 +478,7 @@
   (fn [_context concept _parsed-concept _options]
     (:concept-type concept)))
 
+;; TODO JYNA this is where we start to save concept in elasticsearch
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options

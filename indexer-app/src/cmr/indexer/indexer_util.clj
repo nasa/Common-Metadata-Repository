@@ -8,5 +8,8 @@
 
 (defn context->conn
   "Returns the elastisch connection in the context"
-  [context]
+  ([context]
   (get-in context [:system :db :conn]))
+  ([context es-cluster-name]
+   ;; cluster name can be gran-elastic or non-gran-elastic
+  (get-in context [:system :elastic es-cluster-name :conn])))

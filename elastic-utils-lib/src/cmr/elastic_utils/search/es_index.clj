@@ -367,4 +367,4 @@
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
   []
-  (->ElasticSearchIndex (es-config/elastic-config) nil))
+  (->ElasticSearchIndex (es-config/gran-elastic-config) nil))

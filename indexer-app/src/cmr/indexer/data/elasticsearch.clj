@@ -7,6 +7,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
@@ -187,7 +188,12 @@
     [this _system]
     (let [conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
-      (index-set-es/create-index this config/idx-cfg-for-index-sets)
+      ;; this is creating the index set index with the list of indexes in Elastic... do we want them to be a different list in each cluster? Right now, the non-gran cluster has this index
+      ;; unless we want a copy of this index set in each cluster with it being accurate to that specific index, or it only goes to the non-gran cluster...let's try the non-gran cluster only and see what it does
+      ;; TODO DONE only do this below step for the non-gran cluster
+      (when (es-config/is-non-gran-elastic? (:config this))
+          (info "INSIDE ESstore -- dealing with non-gran cluster, about to create index set")
+          (index-set-es/create-index this config/idx-cfg-for-index-sets))
       this))
 
   (stop [this _system]
@@ -316,11 +322,30 @@
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
+(defn get-es-cluster-conn
+  [context es-index]
+  ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
+  ;;TODO change this, right now, it's defaulting to the granule cluster
+  (info "INSIDE get-es-cluster-conn, es-index = " es-index)
+
+  (let [cluster-name (if (or (clojure.string/starts-with? es-index "1_c") (= "1_small_collections"))
+                       "non-gran-elastic"
+                       "gran-elastic")]
+    (info "cluster name is: " cluster-name)
+    (indexer-util/context->conn context cluster-name))
+  )
+;; TODO Jyna this is where elastic saves the document
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
+  (info "INSIDE save-document-in-elastic")
+  (info "total num of es-indexes to go through: " (count es-indexes))
   (doseq [es-index es-indexes]
-    (let [conn (indexer-util/context->conn context)
+    (info "es-indexes are: " es-indexes)
+    ;; TODO JYNA why are there a list of indexes rather than just one index?
+    ;; TODO JYNA where are these es-indexes coming from? Whoever is setting this list of es-indexes need to make sure it's coming from a list that is accurate
+    ;; TODO JYNA need to change this connection based on if this document is for non-gran or gran
+    (let [conn (get-es-cluster-conn context es-index)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation

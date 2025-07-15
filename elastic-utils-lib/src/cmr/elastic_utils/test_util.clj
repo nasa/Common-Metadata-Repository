@@ -8,7 +8,7 @@
 (defn elastic-running?
   "Checks if elastic is running."
   []
-  (let [c (conn/try-connect (config/elastic-config))]
+  (let [c (conn/try-connect (config/gran-elastic-config))]
     (:ok? (conn/health {:system {:db {:conn c}}} :db))))
 
 (defn run-elastic-fixture

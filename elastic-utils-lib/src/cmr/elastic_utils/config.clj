@@ -21,13 +21,23 @@
 
 (declare elastic-host)
 (defconfig elastic-host
-  "Elastic host or VIP."
+  "Elastic host or VIP for granule ES cluster."
   {:default "localhost"})
+
+(declare elastic-host-non-gran)
+(defconfig elastic-host-non-gran
+   "Elastic host for non-granule ES cluster"
+   {:default "localhost"})
 
 (declare elastic-port)
 (defconfig elastic-port
   "Port elastic is listening on."
   {:default 9210 :type Long})
+
+(declare elastic-port-non-gran)
+(defconfig elastic-port-non-gran
+           "Port elastic non-granule is listening on."
+           {:default 9210 :type Long})
 
 (declare elastic-admin-token)
 (defconfig elastic-admin-token
@@ -80,7 +90,7 @@
   {:type Boolean
    :default false})
 
-(defn elastic-config
+(defn gran-elastic-config
   "Returns the elastic config as a map"
   []
   {:host (elastic-host)
@@ -90,3 +100,20 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
+
+(defn non-gran-elastic-config
+  "Returns the elastic config as a map"
+  []
+  {:host (elastic-host-non-gran)
+   :port (elastic-port-non-gran)
+   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
+   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
+   ;; to retry again
+   ;; TODO make sure this retry-handler is setup properly in bootstrap
+   :retry-handler nil
+   :admin-token (elastic-admin-token)})
+
+(defn is-non-gran-elastic?
+  "Returns true or false depending on if this config is non-gran elastic or not"
+  [config]
+  (= {:host config} elastic-host-non-gran))
