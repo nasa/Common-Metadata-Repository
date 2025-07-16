@@ -13,6 +13,6 @@
   ([context]
   (get-in context [:system :db :conn]))
   ([context es-cluster-name]
-   (info "10636- INSIDE context->conn, context is " context " and cluster name is " es-cluster-name)
+   (info "10636- INSIDE context->conn, system db is " [:system :db] " and system elastic is " [:system :elastic] " and cluster name is " es-cluster-name)
    ;; cluster name can be gran-elastic or non-gran-elastic
   (get-in context [:system :elastic (keyword es-cluster-name) :conn])))
