@@ -58,9 +58,9 @@
   (info "10636- Creating new system in indexer")
   (let [sys {:instance-name (common-sys/instance-name "indexer")
              :log (log/create-logger-with-log-level (log-level))
-             :db (es/create-elasticsearch-store (es-config/gran-elastic-config))
+             :db (es/create-elasticsearch-store (es-config/gran-elastic-config)) ;; this one works
              :elastic {
-                       :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config))
+                       :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config)) ;; this one with the same configuration does not... why?
                        :non-gran-elastic (es/create-elasticsearch-store (es-config/non-gran-elastic-config))
                        }
              :web           (web/create-web-server (transmit-config/indexer-port) routes/make-api)

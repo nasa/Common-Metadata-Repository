@@ -5,12 +5,14 @@
             [cmr.elastic-utils.connect :as conn]
             [cmr.common.lifecycle :as l]))
 
+;; TODO Jyna need to change this too
 (defn elastic-running?
   "Checks if elastic is running."
   []
   (let [c (conn/try-connect (config/gran-elastic-config))]
     (:ok? (conn/health {:system {:db {:conn c}}} :db))))
 
+;; TODO JYNA need to change this
 (defn run-elastic-fixture
   "Test fixture that will automatically run elasticsearch if it is not detected as currently
    running."
