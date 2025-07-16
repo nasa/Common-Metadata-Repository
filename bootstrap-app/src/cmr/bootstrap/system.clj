@@ -137,6 +137,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
+  (info "10636- Creating new system in bootstrap")
   (let [metadata-db (-> "metadata-db-in-bootstrap-pool"
                         (mdb-system/create-system)
                         (dissoc :log :web :scheduler :unclustered-scheduler :queue-broker))
@@ -147,8 +148,8 @@
                     (assoc-in [:caches g/parent-collection-cache-key]
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
-                    (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler)
-                    ;; TODO the non gran cluster does not have retry handler yet, need to do this)
+                    ;; TODO the non gran cluster does not have retry handler yet, need to do this
+                    (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:instance-name (common-sys/instance-name "bootstrap")
              :log (log/create-logger-with-log-level (log-level))

@@ -55,6 +55,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
+  (info "10636- Creating new system in indexer")
   (let [sys {:instance-name (common-sys/instance-name "indexer")
              :log (log/create-logger-with-log-level (log-level))
              :db (es/create-elasticsearch-store (es-config/gran-elastic-config))
