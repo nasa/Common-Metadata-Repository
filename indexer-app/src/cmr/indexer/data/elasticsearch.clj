@@ -330,7 +330,9 @@
 
   (let [cluster-name (if
                        (and (not (= es-index "1_collections_v2"))
-                            (or (clojure.string/starts-with? es-index "1_c") (= "1_small_collections"))
+                            (or (clojure.string/starts-with? es-index "1_c")
+                                (= es-index "1_small_collections")
+                                (= es-index "1_deleted_granules"))
                             )
                        "gran-elastic"
                        "non-gran-elastic")]
