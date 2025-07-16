@@ -192,7 +192,7 @@
       ;; unless we want a copy of this index set in each cluster with it being accurate to that specific index, or it only goes to the non-gran cluster...let's try the non-gran cluster only and see what it does
       ;; TODO DONE only do this below step for the non-gran cluster
       (when (es-config/is-non-gran-elastic? (:config this))
-          (info "INSIDE ESstore -- dealing with non-gran cluster, about to create index set")
+          (info "10636- INSIDE ESstore -- dealing with non-gran cluster, about to create index set")
           (index-set-es/create-index this config/idx-cfg-for-index-sets))
       this))
 
@@ -326,22 +326,25 @@
   [context es-index]
   ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
   ;;TODO change this, right now, it's defaulting to the granule cluster
-  (info "INSIDE get-es-cluster-conn, es-index = " es-index)
+  (info "10636- INSIDE get-es-cluster-conn, es-index = " es-index)
 
-  (let [cluster-name (if (or (clojure.string/starts-with? es-index "1_c") (= "1_small_collections"))
-                       "non-gran-elastic"
-                       "gran-elastic")]
-    (info "cluster name is: " cluster-name)
+  (let [cluster-name (if
+                       (and (not (= es-index "1_collections_v2"))
+                            (or (clojure.string/starts-with? es-index "1_c") (= "1_small_collections"))
+                            )
+                       "gran-elastic"
+                       "non-gran-elastic")]
+    (info "10636- cluster name is: " cluster-name)
     (indexer-util/context->conn context cluster-name))
   )
 ;; TODO Jyna this is where elastic saves the document
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
-  (info "INSIDE save-document-in-elastic")
-  (info "total num of es-indexes to go through: " (count es-indexes))
+  (info "10636- INSIDE save-document-in-elastic")
+  (info "10636- total num of es-indexes to go through: " (count es-indexes))
   (doseq [es-index es-indexes]
-    (info "es-indexes are: " es-indexes)
+    (info "10636- es-indexes are: " es-indexes)
     ;; TODO JYNA why are there a list of indexes rather than just one index?
     ;; TODO JYNA where are these es-indexes coming from? Whoever is setting this list of es-indexes need to make sure it's coming from a list that is accurate
     ;; TODO JYNA need to change this connection based on if this document is for non-gran or gran

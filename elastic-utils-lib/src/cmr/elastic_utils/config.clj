@@ -2,6 +2,7 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.config :as config :refer [defconfig]]))
 
 (declare es-unlimited-page-size)
@@ -104,6 +105,7 @@
 (defn non-gran-elastic-config
   "Returns the elastic config as a map"
   []
+  (info "10636- INSIDE non-gran-elastic-config with host = " elastic-host-non-gran)
   {:host (elastic-host-non-gran)
    :port (elastic-port-non-gran)
    ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
