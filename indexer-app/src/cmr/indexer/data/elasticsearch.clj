@@ -191,10 +191,8 @@
           this (assoc this :conn conn)]
       ;; this is creating the index set index with the list of indexes in Elastic... do we want them to be a different list in each cluster? Right now, the non-gran cluster has this index
       ;; unless we want a copy of this index set in each cluster with it being accurate to that specific index, or it only goes to the non-gran cluster...let's try the non-gran cluster only and see what it does
-      ;; TODO DONE only do this below step for the non-gran cluster
-      (when (es-config/is-non-gran-elastic? (:config this))
-          (info "10636- INSIDE ESstore -- dealing with non-gran cluster, about to create index set")
-          (index-set-es/create-index this config/idx-cfg-for-index-sets))
+      ;; TODO do we need this in both ES clusters? Right now, we are putting it in both, because its related to index set cache we need to worry about. Although I do not know exactly what this cache is for exactly just yet.
+      (index-set-es/create-index this config/idx-cfg-for-index-sets)
       this))
 
   (stop [this _system]

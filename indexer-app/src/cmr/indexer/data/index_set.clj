@@ -1012,6 +1012,7 @@
                              name)]
         {index-type (str mapping-type)}))))
 
+;; TODO understand what this is and how it ties into everything.
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app, returns a map of
    concept types which define what the top level field is in each mapping description.
@@ -1020,7 +1021,9 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
+   (info "10636- INSIDE fetch-concept-mapping-types with index-set-id = " index-set-id)
    (let [fetched-index-set (index-set-es/get-index-set context index-set-id)
+         _ (info "10636- fetched index set = " fetched-index-set)
          get-concept-mapping-fn (fn [concept-type]
                                   (-> (get-in fetched-index-set [:index-set concept-type :mapping])
                                       keys
@@ -1061,6 +1064,7 @@
   "Fetch mapping types associated with concepts. Should be a map of index types
    with the name of the top level field in the mapping description."
   [context]
+  (info "10636- INSIDE get-concept-mapping-types -- getting concept mapping types from an internal cache")
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
