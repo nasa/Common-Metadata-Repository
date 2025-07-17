@@ -203,6 +203,7 @@
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
   [config]
+  (info "10636- Trying to create ESstore with config: " config)
   (->ESstore config nil))
 
 (defn- try-elastic-operation
@@ -335,7 +336,7 @@
                                 (= es-index "1_small_collections")
                                 (= es-index "1_deleted_granules"))
                             )
-                       "gran-elastic"
+                       "db" ;; gran-elastic
                        "non-gran-elastic")]
     (info "10636- cluster name is: " cluster-name)
     (indexer-util/context->conn context cluster-name))

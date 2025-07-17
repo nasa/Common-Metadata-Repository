@@ -11,8 +11,12 @@
 (defn context->conn
   "Returns the elastisch connection in the context"
   ([context]
-  (get-in context [:system :db :conn]))
+  (get-in context [:system :db :conn])) ;; db is gran-elastic
   ([context es-cluster-name]
    (info "10636- INSIDE context->conn, system db is " (get-in context [:system :db]) " and system elastic is " (get-in context [:system :elastic]) " and cluster name is " es-cluster-name)
    ;; cluster name can be gran-elastic or non-gran-elastic
-  (get-in context [:system :elastic (keyword es-cluster-name) :conn])))
+   (if (= es-cluster-name "non-gran-elastic")
+     (get-in context [:system (keyword es-cluster-name) :conn])
+     (get-in context [:system :db :conn])
+     )
+  ))
