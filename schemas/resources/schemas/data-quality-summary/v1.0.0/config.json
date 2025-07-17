@@ -16,11 +16,7 @@
       "refresh_interval": "1s"
     }
   },
-  "IndexConfiguration": {
-    "IndexName": "2_generic_data_quality_summary",
-    "IndexNameForRevisions": "2_all_generic_data_quality_summary_revisions"
-  },
- "Indexes":
+  "Indexes":
   [
     {
       "Description": "Name",

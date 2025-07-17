@@ -70,7 +70,7 @@
         tools-api/tool-api-routes
 
         ;; Add routes for generic associations
-        generics-api/generic-association-api-routes
+        generics-api/generic-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes

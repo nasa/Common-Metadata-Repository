@@ -4,7 +4,7 @@
    [cmr.search.api.generic-association :as generic-association]
    [compojure.core :refer :all]))
 
-(def generic-association-api-routes
+(def generic-api-routes
   (context "/associate" []
     ;; generic associations routes
     (context "/:concept-id" [concept-id]
@@ -13,7 +13,7 @@
           (POST "/" {:keys [request-context headers body]}
             (generic-association/associate-concept-to-concepts
              request-context headers (slurp body) concept-id revision-id))
-          ;; Dissociate a generic concept from a list of concepts
+          ;; Dissociate a generic concept from a list of concepts 
           (DELETE "/" {:keys [request-context headers body]}
             (generic-association/dissociate-concept-from-concepts
              request-context headers (slurp body) concept-id revision-id)))

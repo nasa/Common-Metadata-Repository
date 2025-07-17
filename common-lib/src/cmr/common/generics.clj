@@ -75,9 +75,9 @@
    Returns: string"
   [file-name generic-keyword generic-version]
   (debug (format "Making a request for Generic file [%s] [%s] at version [%s]"
-                 file-name
-                 generic-keyword
-                 generic-version))
+                file-name
+                generic-keyword
+                generic-version))
   (try
     (-> "schemas/%s/v%s/%s.json"
         (format (name generic-keyword) generic-version (name file-name))
@@ -158,23 +158,6 @@
    Returns: list of errors or nil"
   [raw-json]
   (validate-metadata-against-schema raw-json :config "0.0.1"))
-
-(defn- read-generic-config*
-  "Load the actual configuration file for a generic and pull out the Index name to use."
-  [concept-type]
-  (let [concept-ver (get (cmr.common.generics/latest-approved-documents) concept-type)
-        config-raw (cmr.common.generics/read-schema-config concept-type concept-ver)
-        parse-errors (validate-config-against-schema config-raw)]
-    (if (some? parse-errors)
-      (do
-        (error (format "Error while parsing generic config file %s: %s" concept-type parse-errors))
-        {:error parse-errors})
-      (json/parse-string config-raw true))))
-
-(defn read-generic-config
-  "Load the Generic configuration file and return an EDN representation of the file."
-  [concept-type]
-  ((memoize read-generic-config*) concept-type))
 
 (defn- approved-generic-concept-prefixes*
   "Return the active list of approved generic content types with the defined

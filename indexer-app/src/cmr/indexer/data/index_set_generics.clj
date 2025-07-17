@@ -216,12 +216,6 @@
   (when (nil? (:generic-grid (generic-mappings-generator)))
     (println "Missing Generic Grid definition"))
 
-  ;; These are the different steps you might need to take to pull out the elastic document and make
-  ;; it readable to either humans or elastic
-  (-> (generic-mappings-generator)
-      (:generic-visualization)
-      ;(json/generate-string true)
-      ;(cmr.common.dev.util/copy-to-clipboard)
-      )
+  (:generic-visualization (generic-mappings-generator))
 
   )

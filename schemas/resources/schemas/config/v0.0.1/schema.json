@@ -127,7 +127,7 @@
           }
         },
         "IndexConfigurationType": {
-          "description": "CMR Settings (not Elastic settings) to use while parsing and handling the index list",
+          "description": "Settings to use while parsing and handling the index list",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -143,22 +143,6 @@
                 "minLength": 1
               },
               "minItems": 1
-            },
-            "IndexName" : {
-              "description": "This is the name of the Elastic Index when the default is not to be used, change this when you need to change the type of an existing index.",
-              "type": "string",
-              "example": "1_generic_service_draft",
-              "pattern": "^[0-9]+_generic_[0-9a-z_]+$",
-              "minimum": 1,
-              "maximum": 64
-            },
-            "IndexNameForRevisions" : {
-              "description": "This is the name of the Elastic Index, for storing multiple revisions, when the default is not to be used, change this when you need to change the type of an existing index.",
-              "type": "string",
-              "example": "1_all_generic_service_draft_revisions",
-              "pattern": "^[0-9]+_all_generic_[0-9a-z_]+_revisions$",
-              "minimum": 1,
-              "maximum": 64
             }
           }
         },

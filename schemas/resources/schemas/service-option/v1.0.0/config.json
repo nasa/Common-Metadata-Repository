@@ -9,10 +9,6 @@
     "Version": "1.0.0"
   },
   "SubConceptType": "SO",
-  "IndexConfiguration": {
-    "IndexName": "2_generic_service_option",
-    "IndexNameForRevisions": "2_all_generic_service_option_revisions"
-  },
   "Indexes":
   [
     {

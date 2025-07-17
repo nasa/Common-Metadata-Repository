@@ -16,11 +16,7 @@
       "refresh_interval": "1s"
     }
   },
-  "IndexConfiguration": {
-    "IndexName": "2_generic_citation",
-    "IndexNameForRevisions": "2_all_generic_citation_revisions"
-  },
- "Indexes": [
+  "Indexes": [
     {
       "Description": "The identifier for the cited resource, e.g., DOI, ISBN, ARK",
       "Field": ".Identifier",

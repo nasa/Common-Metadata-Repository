@@ -16,10 +16,6 @@
       "refresh_interval": "1s"
     }
   },
-  "IndexConfiguration": {
-    "IndexName": "2_generic_data_quality_summary_draft",
-    "IndexNameForRevisions": "2_all_generic_data_quality_summary_draft_revisions"
-  },
   "Indexes":
   [
     {
