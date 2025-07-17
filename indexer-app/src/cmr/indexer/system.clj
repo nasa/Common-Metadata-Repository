@@ -59,7 +59,7 @@
   (let [sys {:instance-name (common-sys/instance-name "indexer")
              :log (log/create-logger-with-log-level (log-level))
              ;:db (es/create-elasticsearch-store (es-config/gran-elastic-config)) ;; this one works
-             :db (es/create-elasticsearch-store (es-config/non-gran-elastic-config)) ;; this one works
+             :db (es/create-elasticsearch-store (es-config/non-gran-elastic-config))
              :elastic {
                        :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config)) ;; this one with the same configuration does not... why?
                        :non-gran-elastic (es/create-elasticsearch-store (es-config/non-gran-elastic-config))
