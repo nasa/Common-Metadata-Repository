@@ -1,7 +1,8 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
-   [cmr.common.cache :as cache]
+    [cmr.common.log :as log :refer [info warn error]]
+    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
