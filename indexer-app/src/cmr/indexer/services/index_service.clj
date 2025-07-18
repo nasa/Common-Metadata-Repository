@@ -499,6 +499,7 @@
         (debug start-log-msg)
         (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
+            _ (info "10636- concept-mapping-types = " concept-mapping-types)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [associations (get-associations context concept)

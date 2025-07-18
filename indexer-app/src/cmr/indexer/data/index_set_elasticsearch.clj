@@ -79,8 +79,9 @@
   [context index-set-id]
   (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
+    ;; index-set is in the non-gran elastic cluster now
     (when-let [result (index-set-exists?
-                       (get-in context [:system :db]) index-name idx-mapping-type index-set-id)]
+                       (get-in context [:system :non-gran-elastic]) index-name idx-mapping-type index-set-id)]
       (-> result
           (get-in [:_source :index-set-request])
           decode-field))))
