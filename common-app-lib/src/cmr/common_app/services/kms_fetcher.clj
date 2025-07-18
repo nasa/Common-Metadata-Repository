@@ -14,7 +14,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.cache :as cache]
-   [cmr.common.log :refer [error]]
+   [cmr.common.log :refer [report error info]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as srv-err]
    [cmr.common.util :as util]
@@ -73,11 +73,13 @@
   as used in the KMS cache."
   [context]
   (try
-    (kms-lookup/create-kms-index
-     context
-     (into {}
-           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-             [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))
+    (let [data (into {}
+                     (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+                       [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))
+          data (cmr.common.util/remove-nil-keys data)]
+      (when-not (empty? data)
+        (info "get-kms-index: have parsed keyword data, about to create cache.")
+        (kms-lookup/create-kms-index context data)))
     (catch Exception e
       (if (string/includes? (ex-message e) "Carmine connection error")
         (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
@@ -108,8 +110,10 @@
   [context]
   (rl-util/log-refresh-start kms-cache-key)
   (try
+    (report "refresh-kms-cache has been requested")
     (let [cache (cache/context->cache context kms-cache-key)
           [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context))
+          gcmd-keywords-map (cmr.common.util/remove-empty-maps gcmd-keywords-map)
           [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
       (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2))
     (catch Exception e
