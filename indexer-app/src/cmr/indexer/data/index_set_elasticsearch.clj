@@ -65,8 +65,10 @@
 (defn index-set-exists?
   "Check index-set existence in elastic."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
+  (info "10636- INSIDE index-set-exists with conn = " conn " and index-name = " index-name
+        " and idx-mapping-type = " idx-mapping-type " and index-set-id = " index-set-id)
   (when (esi-helper/exists? conn index-name)
-    ;; result will be nil if doc doeesn't exist
+    ;; result will be nil if doc doesn't exist
     (es-helper/doc-get
      conn
      index-name
