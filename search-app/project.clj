@@ -53,7 +53,7 @@
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[criterium "0.4.4"]
-                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
