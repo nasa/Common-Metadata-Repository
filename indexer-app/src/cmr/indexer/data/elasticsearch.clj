@@ -343,16 +343,18 @@
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
-  (info "10636- INSIDE save-document-in-elastic")
-  (info "10636- total num of es-indexes to go through: " (count es-indexes))
+  (info "10636- INSIDE save-document-in-elastic for concept-id : " concept-id)
+  (info "10636- concept : " concept-id ": total num of es-indexes to go through: " (count es-indexes))
+  (info "10636- concept : " concept-id " : es-indexes are: " es-indexes)
   (doseq [es-index es-indexes]
-    (info "10636- es-indexes are: " es-indexes)
+    (info "10636- concept : " concept-id " : current es-index: " es-indexes)
     ;; TODO JYNA why are there a list of indexes rather than just one index?
     ;; TODO JYNA where are these es-indexes coming from? Whoever is setting this list of es-indexes need to make sure it's coming from a list that is accurate
-    ;; TODO JYNA need to change this connection based on if this document is for non-gran or gran
     (let [conn (get-es-cluster-conn context es-index)
+          _ (info "10636- concept : " concept-id " : es conn is " conn)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+          _ (info "10636- concept : " concept-id " : elastic-id = " elastic-id)
           result (try-elastic-operation
                   es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
       (when (:error result)
