@@ -3,6 +3,7 @@
    complying to a schema supported by the Generic Document system) to and object
    that can be indexed in lucine."
   (:require
+    [cmr.common.log :as log :refer [info warn error]]
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
@@ -93,6 +94,7 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date native-id]} concept
+        _ (info "10636- concept id = " concept-id " INSIDE parsed-concept->elastic-doc")
         parsed-concept (if (:deleted concept)
                          (c-parser/parse-concept context concept)
                          parsed-concept)

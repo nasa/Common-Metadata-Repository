@@ -32,9 +32,13 @@
   "Routes providing index-set operations"
   (context "/index-sets" []
     (POST "/" {body :body request-context :request-context}
-      (let [index-set (walk/keywordize-keys body)]
-        (acl/verify-ingest-management-permission request-context :update)
-        (r/created (index-set-svc/create-index-set request-context index-set))))
+      (let [index-set (walk/keywordize-keys body)
+            _ (acl/verify-ingest-management-permission request-context :update)
+            gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+            non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
+
+        ;;TODO fix this, we need to incorporate the non-gran-index-set resp too
+        (r/created gran-index-set-resp)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -50,12 +54,14 @@
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-set request-context id)))
+        ;; TODO need to incorporate both non-gran and gran cluster here
+        (r/response (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)))
 
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-index-set request-context index-set)
+          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}

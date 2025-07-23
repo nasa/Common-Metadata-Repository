@@ -16,6 +16,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.config :as es-util-config]
    [cmr.indexer.config :as config]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
@@ -649,6 +650,7 @@
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
+  (info "10636- INSIDE index-concept-by-concept-id-revision-id - Getting concept from db. Concept id = " concept-id)
   (when-not concept-id
     (errors/throw-service-error
      :bad-request
@@ -659,7 +661,9 @@
       (let [concept (if revision-id
                       (meta-db/get-concept context concept-id revision-id)
                       (meta-db/get-latest-concept context concept-id))
-            parsed-concept (cp/parse-concept context concept)]
+            _ (info "10636- concept-id = " concept-id " Concept from db is " concept)
+            parsed-concept (cp/parse-concept context concept)
+            _ (info "10636- concept-id = " concept-id " parsed concept is " parsed-concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept options)))))
 
@@ -674,7 +678,7 @@
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
-                    (indexer-util/context->conn context)
+                    (indexer-util/context->conn context es-util-config/gran-elastic-name)
                     index
                     (concept-mapping-types :granule)
                     {:term {(query-field->elastic-field :collection-concept-id :granule)
@@ -853,7 +857,7 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context)
+       (indexer-util/context->conn context es-util-config/non-gran-elastic-name)
        index
        ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
@@ -861,7 +865,7 @@
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context)
+       (indexer-util/context->conn context es-util-config/gran-elastic-name)
        index-name
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
@@ -870,7 +874,7 @@
     (doseq [concept-type [:service :subscription :tool :variable]]
       (doseq [index (vals (concept-type index-names))]
         (es-helper/delete-by-query
-         (indexer-util/context->conn context)
+         (indexer-util/context->conn context es-util-config/non-gran-elastic-name)
          index
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))

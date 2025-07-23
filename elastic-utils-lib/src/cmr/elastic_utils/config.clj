@@ -5,6 +5,14 @@
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.config :as config :refer [defconfig]]))
 
+(declare non-gran-elastic-name)
+(def non-gran-elastic-name
+  "non-gran-elastic")
+
+(declare gran-elastic-name)
+(def gran-elastic-name
+  "gran-elastic")
+
 (declare es-unlimited-page-size)
 (defconfig es-unlimited-page-size
   "This is the number of items we will request from elastic search at a time when
@@ -38,7 +46,7 @@
 (declare elastic-port-non-gran)
 (defconfig elastic-port-non-gran
            "Port elastic non-granule is listening on."
-           {:default 9210 :type Long})
+           {:default 9211 :type Long})
 
 (declare elastic-admin-token)
 (defconfig elastic-admin-token

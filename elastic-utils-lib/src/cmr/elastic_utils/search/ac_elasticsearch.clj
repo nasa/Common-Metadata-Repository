@@ -72,7 +72,7 @@
   [context docs]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          conn (get-in context [:system :db :conn]) ;; Why db?
+          conn (get-in context [:system :db :conn]) ;; Why db? ;; TODO this will not work anymore there is no :db
           response (es-helper/bulk conn bulk-operations)
           ;; we don't care about version conflicts or deletes that aren't found
           bad-errors (some (fn [item]

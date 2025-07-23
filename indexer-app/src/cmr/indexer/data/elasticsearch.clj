@@ -100,27 +100,35 @@
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
   ([context]
-   (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
+   ;; check requires-update for non-gran cluster
+   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name idx-set/index-set-id)
+         expected-index-set (idx-set/non-gran-index-set)]
+     (requires-update? existing-index-set expected-index-set))
+
+   ;; check requires update for gran cluster
+   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name idx-set/index-set-id)
          extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-         expected-index-set (idx-set/index-set extra-granule-indexes)]
-     (requires-update? existing-index-set expected-index-set)))
+         expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
+     (requires-update? existing-index-set expected-index-set))
+   )
   ([existing-index-set expected-index-set]
    (not= (update-in existing-index-set [:index-set] dissoc :concepts)
          expected-index-set)))
 
 (defn create-indexes
-  "Create elastic index for each index name"
+  "Create elastic indexes for each index name for both es clusters."
   [context]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        expected-index-set (idx-set/index-set extra-granule-indexes)]
+  ;; create indexes for non-gran-cluster
+  (info "10636- INSIDE create-indexes- Checking non-gran index set.")
+  (let [existing-index-set (index-set-es/get-index-set context :non-gran-elastic idx-set/index-set-id)
+        expected-index-set (idx-set/non-gran-index-set)]
     (cond
       (nil? existing-index-set)
       (do
-        (info "Index set does not exist so creating it.")
-        (index-set-svc/create-index-set context expected-index-set)
-        (info "Creating collection index alias.")
-        (esi/create-index-alias (indexer-util/context->conn context)
+        (info "10636- Non-gran index set does not exist so creating it.")
+        (index-set-svc/create-index-set context :non-gran-elastic expected-index-set)
+        (info "10636- Creating collection index alias.")
+        (esi/create-index-alias (indexer-util/context->conn context :non-gran-elastic)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
@@ -128,41 +136,86 @@
       ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
       (do
-        (warn "Index set does not match you may want to update it.")
-        (warn "Expecting:" (pr-str expected-index-set))
-        (warn "Actual:" (pr-str existing-index-set)))
+        (warn "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
+        (warn "10636- Expected:" (pr-str expected-index-set))
+        (warn "10636- Actual:" (pr-str existing-index-set)))
 
       :else
-      (info "Index set exists and matches."))))
+      (info "10636- Non-gran index set exists and matches.")))
+
+
+  ;; create indexes for gran-cluster
+  (info "10636- Checking gran index set.")
+  (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
+    (cond
+      (nil? existing-index-set)
+      (do
+        (info "10636- Gran index set does not exist so creating it.")
+        (index-set-svc/create-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
+
+
+      ;; Compare them to see if they're the same
+      (requires-update? existing-index-set expected-index-set)
+      (do
+        (warn "10636- Gran index set does not match you may want to update it. This is separate manual call you'll need to make.")
+        (warn "10636- Expecting:" (pr-str expected-index-set))
+        (warn "10636- Actual:" (pr-str existing-index-set)))
+
+      :else
+      (info "10636- Gran index set exists and matches.")))
+  )
 
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        ;; We use the extra granule indexes from the existing configured index set when determining
-        ;; the expected index set.
-        expected-index-set (idx-set/index-set extra-granule-indexes)]
+
+  (info "Updating non-gran indexes.")
+  (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name idx-set/index-set-id)
+        expected-index-set (idx-set/non-gran-index-set)]
     (if (or (= "true" (:force params))
             (requires-update? existing-index-set expected-index-set))
       (do
-        (info "Updating the index set to " (pr-str expected-index-set))
-        (index-set-svc/update-index-set context expected-index-set)
-        (info "Creating colleciton index alias.")
-        (esi/create-index-alias (indexer-util/context->conn context)
+        (info "Updating the non-gran index set to " (pr-str expected-index-set))
+        (index-set-svc/update-index-set context cmr.elastic-utils.config/non-gran-elastic-name expected-index-set)
+        (info "Creating collection index alias.")
+        (esi/create-index-alias (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
-        (info "Ignoring upate indexes request because index set is unchanged.")
-        (info "Existing index set:" (pr-str existing-index-set))
-        (info "New index set:" (pr-str expected-index-set))))))
+        (info "Ignoring update indexes request because non-gran index set is unchanged.")
+        (info "Existing non-gran index set:" (pr-str existing-index-set))
+        (info "New non-gran index set:" (pr-str expected-index-set)))))
 
+
+  (info "Updating gran indexes.")
+  (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        ;; We use the extra granule indexes from the existing configured index set when determining
+        ;; the expected index set.
+        expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
+    (if (or (= "true" (:force params))
+            (requires-update? existing-index-set expected-index-set))
+      (do
+        (info "Updating the gran index set to " (pr-str expected-index-set))
+        (index-set-svc/update-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
+      (do
+        (info "Ignoring update gran indexes request because gran index set is unchanged.")
+        (info "Existing gran index set:" (pr-str existing-index-set))
+        (info "New gran index set:" (pr-str expected-index-set)))))
+
+  )
+
+;; TODO test this
 (defn delete-granule-index
   "Delete an elastic index by name"
   [context index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
-    (esi/delete-index (indexer-util/context->conn context) index)
+    (let [es-cluster-name-keyword (indexer-util/get-es-cluster-from-index-name index)]
+      (esi/delete-index (indexer-util/context->conn context es-cluster-name-keyword) index)
+      )
     (catch Throwable e
       (error e (str "Failed to delete granule index: "
                     (pr-str index))))))
@@ -178,7 +231,11 @@
    config
 
    ;; The connection to elasticsearch
-   conn]
+   conn
+
+   ;; name of this es store
+   ^String es-cluster-name
+   ]
 
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -191,8 +248,7 @@
           this (assoc this :conn conn)]
       ;; this is creating the index set index with the list of indexes in Elastic... do we want them to be a different list in each cluster? Right now, the non-gran cluster has this index
       ;; unless we want a copy of this index set in each cluster with it being accurate to that specific index, or it only goes to the non-gran cluster...let's try the non-gran cluster only and see what it does
-      ;; TODO do we need this in both ES clusters? Right now, we are putting it in both, because its related to index set cache we need to worry about. Although I do not know exactly what this cache is for exactly just yet.
-      (index-set-es/create-index this config/idx-cfg-for-index-sets)
+      (index-set-es/create-index this (config/idx-cfg-for-index-sets (:es-cluster-name this)))
       this))
 
   (stop [this _system]
@@ -200,9 +256,9 @@
 
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
-  [config]
+  [config es-cluster-name]
   (info "10636- Trying to create ESstore with config: " config)
-  (->ESstore config nil))
+  (->ESstore config nil es-cluster-name))
 
 (defn- try-elastic-operation
   "Attempt to perform the operation in Elasticsearch, handles exceptions.
@@ -302,25 +358,31 @@
                   {:keys [_id status error]} resp-data]]
       (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
 
+;; TODO have to separate the docs in the bulk to non-gran and gran -- going to just disable this for now
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
   [context docs]
-  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-    (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          conn (indexer-util/context->conn context)
-          response (es-helper/bulk conn bulk-operations)]
-      (handle-bulk-index-response response))))
+  ;(doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+  ;  (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
+  ;        conn (indexer-util/context->conn context)
+  ;        response (es-helper/bulk conn bulk-operations)]
+  ;    (handle-bulk-index-response response)))
+  nil
+  )
 
+;; TODO have to separate the docs in the bulk to non-gran and gran -- going to just disable this for now
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   ([context docs]
    (bulk-index-documents context docs nil))
   ([context docs {:keys [all-revisions-index?]}]
-   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (indexer-util/context->conn context)
-           response (es-helper/bulk conn bulk-operations)]
-       (handle-bulk-index-response response)))))
+   ;(doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+   ;  (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
+   ;        conn (indexer-util/context->conn context)
+   ;        response (es-helper/bulk conn bulk-operations)]
+   ;    (handle-bulk-index-response response)))
+   nil
+   ))
 
 (defn get-es-cluster-conn
   [context es-index]
@@ -334,8 +396,8 @@
                                 (= es-index "1_small_collections")
                                 (= es-index "1_deleted_granules"))
                             )
-                       "db" ;; gran-elastic
-                       "non-gran-elastic")]
+                       :gran-elastic ;; gran-elastic
+                       :non-gran-elastic)]
     (info "10636- cluster name is: " cluster-name)
     (indexer-util/context->conn context cluster-name))
   )
@@ -347,14 +409,13 @@
   (info "10636- concept : " concept-id ": total num of es-indexes to go through: " (count es-indexes))
   (info "10636- concept : " concept-id " : es-indexes are: " es-indexes)
   (doseq [es-index es-indexes]
-    (info "10636- concept : " concept-id " : current es-index: " es-indexes)
     ;; TODO JYNA why are there a list of indexes rather than just one index?
     ;; TODO JYNA where are these es-indexes coming from? Whoever is setting this list of es-indexes need to make sure it's coming from a list that is accurate
     (let [conn (get-es-cluster-conn context es-index)
           _ (info "10636- concept : " concept-id " : es conn is " conn)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-          _ (info "10636- concept : " concept-id " : elastic-id = " elastic-id)
+          _ (info "10636- concept : " concept-id " and es-index = " es-index " and elastic-id = " elastic-id " and es-type = " es-type " and es-doc = " es-doc)
           result (try-elastic-operation
                   es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
       (when (:error result)
@@ -370,7 +431,9 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (es-helper/doc-get (indexer-util/context->conn context) es-index es-type elastic-id))
+  (let [es-cluster-name-keyword (indexer-util/get-es-cluster-from-index-name es-index)]
+    (es-helper/doc-get (indexer-util/context->conn context es-cluster-name-keyword) es-index es-type elastic-id)
+    ))
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
@@ -379,8 +442,9 @@
   ([context es-indexes _es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
-     (let [{:keys [admin-token]} (context->es-config context)
-           {:keys [uri http-opts]} (indexer-util/context->conn context)
+     (let [es-cluster-name-keyword (indexer-util/get-es-cluster-from-index-name es-index)
+           {:keys [admin-token]} (context->es-config context)
+           {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name-keyword)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
            delete-url (if elastic-version

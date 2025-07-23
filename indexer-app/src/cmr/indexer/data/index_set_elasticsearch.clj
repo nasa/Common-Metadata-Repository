@@ -10,6 +10,7 @@
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
+   [cmr.indexer.indexer-util :as idx-util]
    [cmr.transmit.config :as t-config]))
 
 (defn- decode-field
@@ -63,7 +64,7 @@
           (throw e))))))
 
 (defn index-set-exists?
-  "Check index-set existence in elastic."
+  "Check index-set existence in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (info "10636- INSIDE index-set-exists with conn = " conn " and index-name = " index-name
         " and idx-mapping-type = " idx-mapping-type " and index-set-id = " index-set-id)
@@ -77,20 +78,19 @@
      {"_source" "index-set-id,index-set-name,index-set-request"})))
 
 (defn get-index-set
-  "Fetch index-set associated with an id."
-  [context index-set-id]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  "Fetch index-set associated with an id and a specific elastic cluster."
+  [context es-cluster-name index-set-id]
+  (let [es-cluster-name-keyword (idx-util/es-cluster-name-str->keyword es-cluster-name)
+        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
-    ;; index-set is in the non-gran elastic cluster now
-    (info "10636- System non-gran-elastic = " [:system :non-gran-elastic])
     (when-let [result (index-set-exists?
-                       (get-in context [:system :non-gran-elastic]) index-name idx-mapping-type index-set-id)]
+                       (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
       (-> result
           (get-in [:_source :index-set-request])
           decode-field))))
 
 (defn get-index-set-ids
-  "Fetch ids of all index-sets in elastic."
+  "Fetch ids of all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
@@ -98,7 +98,7 @@
       (map #(-> % :_source :index-set-id) (get-in result [:hits :hits])))))
 
 (defn get-index-sets
-  "Fetch all index-sets in elastic."
+  "Fetch all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
@@ -107,7 +107,7 @@
            (get-in result [:hits :hits])))))
 
 (defn delete-index
-  "Delete given elastic index"
+  "Delete given elastic index in specific elastic cluster"
   [{:keys [conn config]} index-name]
   (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
@@ -121,10 +121,11 @@
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defn save-document-in-elastic
-  "Save the document in Elasticsearch, raise error on failure."
+  "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
-    (let [conn (get-in context [:system :db :conn])
+    (let [es-cluster-name-keyword (idx-util/get-es-cluster-from-index-name es-index)
+          conn (get-in context [:system es-cluster-name-keyword :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
@@ -138,9 +139,10 @@
         (throw (Exception. msg))))))
 
 (defn delete-document
-  "Delete the document from elastic, raise error on failure."
+  "Delete the document from specific elastic cluster, raise error on failure."
   [context index-name _mapping-type id]
-  (let [{:keys [host port admin-token]} (get-in context [:system :db :config])
+  (let [es-cluster-name-keyword (idx-util/get-es-cluster-from-index-name index-name)
+        {:keys [host port admin-token]} (get-in context [:system es-cluster-name-keyword :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token
