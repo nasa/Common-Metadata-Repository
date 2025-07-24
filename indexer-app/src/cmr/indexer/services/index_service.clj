@@ -931,7 +931,9 @@
 #_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
-  {:elastic_search #(es-util/health % :db)
+  ;; TODO JYNA this used to be called :elastic_search -- any mention of this needs to be replaced in the readme's to the two separate clusters
+  {:gran-elastic #(es-util/health % (keyword cmr.elastic-utils.config/gran-elastic-name))
+   :non-gran-elastic #(es-util/health % (keyword cmr.elastic-utils.config/non-gran-elastic-name))
    :metadata-db meta-db2/get-metadata-db-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]

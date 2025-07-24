@@ -9,10 +9,10 @@
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
                                   es-cluster-name
                                   (keyword es-cluster-name))]
-    (if (or (= es-cluster-name-keyword :gran-cluster)
-            (= es-cluster-name-keyword :non-gran-cluster))
+    (if (or (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/gran-elastic-name))
+            (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/non-gran-elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. "Expected es-cluster-name to be :gran-cluster or :non-gran-cluster, but got some other value."))
+      (throw (Exception. "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got some other value."))
       )))
 
 ;; TODO unit test

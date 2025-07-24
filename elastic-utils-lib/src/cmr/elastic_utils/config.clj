@@ -119,7 +119,6 @@
    ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
    ;; function is that as specified in clj-http's documentation. It returns true or false of whether
    ;; to retry again
-   ;; TODO make sure this retry-handler is setup properly in bootstrap
    :retry-handler nil
    :admin-token (elastic-admin-token)})
 
