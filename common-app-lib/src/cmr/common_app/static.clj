@@ -256,11 +256,15 @@
                                     (gdocs/all-generic-docs-toc options)
                                     read-generic-markdown-toc
                                     gdocs/format-toc-into-doc)
+                collection-umm-version (config/collection-umm-version)
+                collection-umm-version-snake (string/replace collection-umm-version "." "_")
                 generic-versions (md->html (gdocs/generic-document-versions->markdown))]
             {:status 200
              :headers {"Content-Type" "text/html; charset=utf-8"}
              :body (-> resource
                        slurp
+                       (string/replace "%COLLECTION-UMM-VERSION%" collection-umm-version)
+                       (string/replace "%COLLECTION_UMM_VERSION%" collection-umm-version-snake)
                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" generic-doc-toc)
                        (string/replace "%GENERIC-DOCS%" generic-doc-body)
                        (string/replace "%CMR-ENDPOINT%" cmr-root)
