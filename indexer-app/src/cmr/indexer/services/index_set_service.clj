@@ -83,10 +83,14 @@
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [context]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))
         gran-index-set (es/get-index-sets (indexer-util/context->es-store cmr.elastic-utils.config/non-gran-elastic-name context) index-name idx-mapping-type)
+
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
+        idx-mapping-type (first (keys mapping))
         non-gran-index-set (es/get-index-sets (indexer-util/context->es-store cmr.elastic-utils.config/gran-elastic-name context) index-name idx-mapping-type)
+
         all-index-set (merge gran-index-set non-gran-index-set)]
     (map #(select-keys (:index-set %) [:id :name :concepts])
          all-index-set)))
@@ -94,7 +98,7 @@
 (defn index-set-exists?
   "Check index-set existence"
   [context es-cluster-name index-set-id]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (es/index-set-exists? (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)))
 
@@ -133,18 +137,18 @@
 
 (defn index-set-existence-check
   "Check index-set existence"
-  [context index-set]
+  [context es-cluster-name index-set]
   (let [index-set-id (get-in index-set [:index-set :id])
-        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when (es/index-set-exists? (indexer-util/context->es-store context :non-gran-elastic) index-name idx-mapping-type index-set-id)
+    (when (es/index-set-exists? (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
   "Verify input index-set is valid."
-  [context index-set allow-update?]
+  [context es-cluster-name index-set allow-update?]
   (when-not allow-update?
-    (when-let [error (index-set-existence-check context index-set)]
+    (when-let [error (index-set-existence-check context es-cluster-name index-set)]
       (errors/throw-service-error :conflict error))
     (when-let [error (id-name-existence-check index-set)]
       (errors/throw-service-error :invalid-data error)))
@@ -174,7 +178,7 @@
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
   index-set doc indexing fails."
   [context es-cluster-name index-set]
-  (validate-requested-index-set context index-set false)
+  (validate-requested-index-set context es-cluster-name index-set false)
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-store (indexer-util/context->es-store context es-cluster-name)]
@@ -208,12 +212,12 @@
     (index-requested-index-set context index-set es-cluster-name)))
 
 (defn delete-index-set
-  "Delete all indices having 'id_' as the prefix in the elastic, followed by
+  "Delete all indices having 'id_' as the prefix in all the elastic clusters, followed by
   index-set doc delete"
   [context index-set-id]
   (doseq [es-cluster-name [cmr.elastic-utils.config/non-gran-elastic-name cmr.elastic-utils.config/gran-elastic-name]]
     (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id))
-          {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+          {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
           idx-mapping-type (first (keys mapping))]
       (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
       (es/delete-document context index-name idx-mapping-type index-set-id))
@@ -367,11 +371,12 @@
   "Put elastic in a clean state after deleting indices associated with index-
   sets and index-set docs."
   [context]
-  (let [{:keys [index-name]} config/idx-cfg-for-index-sets
+  (let [{:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
                        (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
                        index-name
                        "_doc")
+        {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         non-gran-index-set-ids (es/get-index-set-ids
                              (indexer-util/context->es-store context :non-gran-elastic)
                              index-name

@@ -81,7 +81,7 @@
   "Fetch index-set associated with an id and a specific elastic cluster."
   [context es-cluster-name index-set-id]
   (let [es-cluster-name-keyword (idx-util/es-cluster-name-str->keyword es-cluster-name)
-        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?
                        (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
