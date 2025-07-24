@@ -155,7 +155,7 @@
 
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
-  [context index-set]
+  [context index-set es-cluster-name]
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set))))
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
@@ -165,7 +165,7 @@
                 :index-set-name (get-in index-set [:index-set :name])
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
-        {:keys [index-name mapping]} config/idx-cfg-for-index-sets
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
@@ -197,15 +197,15 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  (info "Updating index-set" (pr-str index-set))
+  (info "10636- Updating index-set" (pr-str index-set))
   (validate-requested-index-set context index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set)
-        es-store (indexer-util/context->es-store context (indexer-util/es-cluster-name-str->keyword es-cluster-name))]
+        es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
 
-    (index-requested-index-set context index-set)))
+    (index-requested-index-set context index-set es-cluster-name)))
 
 (defn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by
