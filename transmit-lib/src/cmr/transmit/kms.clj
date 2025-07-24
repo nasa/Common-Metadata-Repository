@@ -29,7 +29,7 @@
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.log :as log :refer (infof warnf errorf)]
+   [cmr.common.log :as log :refer (debugf infof warnf errorf)]
    [cmr.common.util :as util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]))
@@ -236,7 +236,7 @@
   csv-content is the raw text of the CSV file to parse
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
-  (infof "refresh-kms-cache: About to parse CSV from KMS, first 1k: [%s]."
+  (debugf "refresh-kms-cache: About to parse CSV from KMS, first 1k: [%s]."
          (subs csv-content 0 (min 1024 (count csv-content))))
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
