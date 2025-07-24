@@ -29,7 +29,7 @@
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.log :as log :refer (info warn error)]
+   [cmr.common.log :as log :refer (debugf infof warnf errorf)]
    [cmr.common.util :as util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]))
@@ -74,11 +74,11 @@
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
   (let [overrides (config/kms-scheme-override-json)]
-    (info (format "Requested KMS schema overrides: %s." overrides))
+    (infof "refresh-kms-cache: Requested KMS schema overrides: %s." overrides)
     (try
       (json/parse-string overrides true)
       (catch com.fasterxml.jackson.core.JsonParseException e
-        (error "Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
+        (errorf "refresh-kms-cache: Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
                (config/kms-scheme-override-json)
                (.getMessage e))))))
 
@@ -209,12 +209,12 @@
   [keyword-scheme subfield-names]
   (let [expected-subfield-names (keyword-scheme keyword-scheme->expected-field-names)
         names-match-result (= expected-subfield-names subfield-names)]
-        ;; allow spatial-keywords that contain either 3 or 4 subregions.
+    ;; allow spatial-keywords that contain either 3 or 4 subregions.
     (when-not names-match-result
-      (error (format "Expected subfield names for %s to be %s, but were %s."
-                     (name keyword-scheme)
-                     (pr-str expected-subfield-names)
-                     (pr-str subfield-names))))
+      (errorf "Expected subfield names for %s to be %s, but were %s."
+              (name keyword-scheme)
+              (pr-str expected-subfield-names)
+              (pr-str subfield-names)))
     names-match-result))
 
 (defn- remove-not-yet-supported-fields
@@ -236,13 +236,17 @@
   csv-content is the raw text of the CSV file to parse
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
+  (debugf "refresh-kms-cache: About to parse CSV from KMS, first 1k: [%s]."
+         (subs csv-content 0 (min 1024 (count csv-content))))
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
-        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
+        raw-field-names (second all-lines)
+        kms-subfield-names (map csk/->kebab-case-keyword raw-field-names)
         keyword-scheme (if (= keyword-scheme :spatial-keywords)
                          (get-spatial-scheme-to-use kms-subfield-names)
                          keyword-scheme)]
-    (when (subfield-names-valid? keyword-scheme kms-subfield-names)
+    (infof "refresh-kms-cache: parsed headers for %s: [%s]." keyword-scheme raw-field-names)
+    (if (subfield-names-valid? keyword-scheme kms-subfield-names)
       (let [keyword-entries (->> all-lines
                                  (drop NUM_HEADER_LINES)
                                  ;; Create a map for each row using the subfield-names as keys
@@ -255,9 +259,14 @@
             invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
         ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
         (doseq [entry invalid-entries]
-          (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
-                        (:short-name entry) entry)))
-        keyword-entries))))
+          (warnf "refresh-kms-cache: Found duplicate keywords for %s short-name [%s]: %s"
+                 (name keyword-scheme)
+                 (get entry :short-name "<no short-name>")
+                 entry))
+        keyword-entries)
+      (do
+        (infof "refresh-kms-cache: subfield-names were not valid, returning nil")
+        nil))))
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
@@ -273,7 +282,9 @@
   ;;     "{\"platforms\":\"static\"}"
   {:pre (config/context->app-connection context :kms)}
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
-    (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
+    (infof "refresh-kms-cache: Loading KMS resource [%s] for [%s]..."
+           gcmd-resource-name
+           keyword-scheme)
     (if (= "static" (string/lower-case gcmd-resource-name))
       ;; load the static file from the resource directory under indexer
       (let [gcmd-resource-path (format "static_kms_keywords/%s.csv" (name keyword-scheme))
@@ -281,11 +292,11 @@
             data-as-rows (string/split-lines (or data ""))
             version-info (first (string/split (first data-as-rows) #","))
             header (string/split-lines (second data-as-rows))]
-        (info (format "Loading static KMS resource from %s for %s. %s. Found keys [%s]."
-                      gcmd-resource-path
-                      gcmd-resource-name
-                      version-info
-                      header))
+        (infof "refresh-kms-cache: Loading static KMS resource from %s for %s. %s. Found keys [%s]."
+               gcmd-resource-path
+               gcmd-resource-name
+               version-info
+               header)
         data)
       (let [conn (config/context->app-connection context :kms)
             url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
@@ -296,9 +307,10 @@
                      :throw-exceptions true})
             start (System/currentTimeMillis)
             response (client/get url params)]
-        (info
-         (format
-          "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
+        (infof "refresh-kms-cache: Completed KMS Request to %s in [%d] ms with response %d."
+               url
+               (- (System/currentTimeMillis) start)
+               (:status response))
         (:body response)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -306,23 +318,27 @@
 
 (defn get-keywords-for-keyword-scheme
   "Returns the full list of keywords from the GCMD Keyword Management System (KMS) for the given
-  keyword scheme. Supported keyword schemes include providers, platforms, and instruments.
+   keyword scheme. Supported keyword schemes include providers, platforms, and instruments.
 
-  Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
-  value.
+   Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
+   value.
 
-  Example response:
-  {\"ETALON-2\"
-  {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :long-name \"Etalan two\",
-   :short-name \"ETALON-2\", :sub-category \"ETALON\",
-   :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
+   Can return nil if there was an error
+
+   Example response:
+   {\"ETALON-2\"
+   {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :long-name \"Etalan two\",
+    :short-name \"ETALON-2\", :sub-category \"ETALON\",
+    :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (when-not (or (= keyword-scheme :spatial-keywords-old)
                 (:testing-for-nil-keyword-scheme-value context))
-    (let [keywords
-          (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
-      (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
+    (let [keywords (parse-entries-from-csv keyword-scheme
+                                           (get-by-keyword-scheme context keyword-scheme))]
+      (infof "refresh-kms-cache: Found %s keywords for %s"
+             (count (keys (or keywords {})))
+             (name keyword-scheme))
       keywords)))
 
 (comment
