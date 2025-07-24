@@ -235,9 +235,9 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 #### <a name="query-parameters"></a> Query Parameters
 
  * `page_size` - Number of results per page - default is 10, max is 2000.
- * `page_num` - The page number to return.
- * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified.
- * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
+ * `page_num` - The page number to return. (**deprecated**)
+ * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified. (**deprecated**)
+ * `scroll` - A boolean flag (true/false) that allows all results to be retrieved somewhat efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls. (**deprecated**)
  * `sort_key` - Indicates one or more fields to sort on. Described below.
  * `pretty` - Return formatted results if set to true.
  * `token` - Specifies a user token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#headers) is the prefered way to supply a token. This parameter may be deprecated in the future.
@@ -245,17 +245,21 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 
 #### <a name="paging-details"></a> Paging Details
 
+__NOTE:__ Deep paging is being deprecated in favor of [Search After](#search-after). Please switch your scroll based queries to [Search After](#search-after) which is more efficient and easier to use.
+
 The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
 
 `page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page_num=3&page_size=5` would return the 11th item through the 15th item.
 
 `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
 
-Note: In the event which an ingest or delete occurs between paging requests, the order of your results may change, causing inconsistent results across pages.
+__Note__: In the event which an ingest or delete occurs between paging requests, the order of your results may change, causing inconsistent results across pages.
 
-You can not page past the 1 millionth item. Please contact the CMR Team at cmr-support@nasa.gov if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
+You can not page past the 1 millionth item. Please contact the CMR Team at cmr-support@nasa.gov if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10,000th item.
 
 #### <a name="search-after"></a> Search After
+
+__NOTE__: This is currently the prefered way to request large sets of records.
 
 Search After supersedes scrolling. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
 
@@ -290,7 +294,7 @@ CMR-Search-After: ["xyz", 789, 999]
 ```
 We can then use the new `CMR-Search-After: ["xyz", 789, 999]` header to get the next page of the result set.
 ```
-curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
+curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=%CMR-EXAMPLE-COLLECTION-ID%&page_size=200"
 ```
 There will be only 8 granules in the result set. We can deem the search has reached the end because the number of results returned is less than the page_size, but if we search again with the new `CMR-Search-After` header value returned, we will get an empty result set and there won't be a `CMR-Search-After` header in the response.
 
@@ -397,10 +401,12 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `stac`      "application/json; profile=stac-catalogue"
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
-    * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
+    * **Caution**: The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
   * `umm_json`   "application/vnd.nasa.cmr.umm_results+json" (supported for collections, granules, variables and services)
     * The UMM JSON extension returns concepts in the latest version of the UMM.
   * `umm_json_vN_N_N` "application/vnd.nasa.cmr.umm_results+json; version=N.N.N (where `_N` can be repeat as many times as is necessary)."
+
+  __NOTE__: As of version "%CMR-RELEASE-VERSION%", the latest UMM Collection version is `%COLLECTION-UMM-VERSION%`.
 
 #### <a name="request-timeouts"></a> Request Timeouts
 
@@ -428,7 +434,7 @@ For private collection, an EDL bearer token or a Launchpad token can be used to 
 %CMR-ENDPOINT%/concepts/<concept-id>?token=EDL-xxxxxx
 ```
 
-#### <a name="atom"></a> Atom
+#### <a name="atom"></a> Atom XML
 
 See the [Atom specification](http://tools.ietf.org/html/rfc4287) for a full description of Atom.
 
@@ -583,7 +589,7 @@ The results are returned as a sequence of `<result>` XML elements, the contents 
 
 #### <a name="dif-9"></a> DIF 9
 
-__NOTE:__ The DIF 9 format is being deprecated in favor of DIF 10. While it is still supported, we strongly discourage its use for new metadata.
+__NOTE:__ The DIF 9 format is being __deprecated__ in favor of DIF 10. While it is still supported, we strongly discourage its use for new metadata.
 
 Mime-type application/dif+xml corresponds to the DIF 9 format. See the [specification](https://cdn.earthdata.nasa.gov/dif/9.x)
 
@@ -919,9 +925,9 @@ __Example__
 </results>
 ```
 
-#### <a name="json"></a> JSON
+#### <a name="json"></a> ATOM JSON
 
-The JSON response contains all the fields in the ATOM response, plus the the following fields:
+The JSON response contains all the fields in the *ATOM* response, plus the the following fields:
 
 * associations - a map of the concept ids of concepts that are associated with the collection.
 * association-details - a map of the concept ids, optional revision ids, and optional data of concepts that are associated with the collection.
@@ -1014,13 +1020,13 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable, service and tool searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response, unlike ATOM JSON, contains "meta-metadata" of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable, service and tool searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
-* A url extension with a version: `%CMR-ENDPOINT%/collections.umm_json_v1_4`
+* A url extension with a version: `%CMR-ENDPOINT%/collections.umm_json_v%COLLECTION_UMM_VERSION%`
   * Note extension `.umm-json` still returns the original alpha version of this response to avoid breaking clients. This will change in the future.
-* An accept header: `application/vnd.nasa.cmr.umm_results+json; version=1.4`
+* An accept header: `application/vnd.nasa.cmr.umm_results+json; version=%COLLECTION-UMM-VERSION%`
    * The version is optional but recommended.
 
 __Example__
@@ -1488,17 +1494,17 @@ __Example__
 
 A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma separated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
 
-`2000-01-01T10:00:00Z,2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
-`,2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
-`2000-01-01T10:00:00Z,` - matches data after `2010-03-10T12:00:00Z`
-`2000-01-01T10:00:00Z/2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
-`2000-01-01T10:00:00Z/` - matches data after `2010-03-10T12:00:00Z`
-`/2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
-`2000-01-01T10:00:00Z/P10Y2M10DT2H` - matches data between `2000-01-01T10:00:00Z` and a date 10 years 2 months 10 days and 2 hours after that or `2010-03-11T02:00:00Z`
-`P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hours and 30 minutes before that or `2007-05-01T14:00:00Z`.
-`2000-01-01T00:00:00.000Z,2023-01-31T23:59:59.999Z,1,31` - matches data between the Julian days `1` to `31` from `2000-01-01T00:00:00.000Z` to `2023-01-31T23:59:59.999Z`.
+* `2000-01-01T10:00:00Z,2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+* `,2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+* `2000-01-01T10:00:00Z,` - matches data after `2010-03-10T12:00:00Z`
+* `2000-01-01T10:00:00Z/2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+* `2000-01-01T10:00:00Z/` - matches data after `2010-03-10T12:00:00Z`
+* `/2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+* `2000-01-01T10:00:00Z/P10Y2M10DT2H` - matches data between `2000-01-01T10:00:00Z` and a date 10 years 2 months 10 days and 2 hours after that or `2010-03-11T02:00:00Z`
+* `P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hours and 30 minutes before that or `2007-05-01T14:00:00Z`.
+* `2000-01-01T00:00:00.000Z,2023-01-31T23:59:59.999Z,1,31` - matches data between the Julian days `1` to `31` from `2000-01-01T00:00:00.000Z` to `2023-01-31T23:59:59.999Z`.
 
-Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
+__Note__: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
 
 ### <a name="autocomplete-facets"></a> Facet Autocompletion
 
@@ -1721,11 +1727,11 @@ This supports `pattern` and `ignore_case`.
 Find collections matching 'archive_center' param value
 
     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=LARC"
-    curl "%CMR-ENDPOINT%/collections?archive_center=Sedac+AC"
+    curl "%CMR-ENDPOINT%/collections?archive_center=PROV1+AC"
 
 Find collections matching any of the 'archive_center' param values
 
-     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
+     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=LARC"
 
 #### <a name="c-data-center"></a> Find collections by data center
 
@@ -1734,11 +1740,11 @@ This supports `pattern`, `and`, and `ignore_case`.
 Find collections matching 'data_center' param value
 
     curl "%CMR-ENDPOINT%/collections?data_center\[\]=LARC"
-    curl "%CMR-ENDPOINT%/collections?data_center=Sedac+AC"
+    curl "%CMR-ENDPOINT%/collections?data_center=PROV1+AC"
 
 Find collections matching any of the 'data_center' param values
 
-     curl "%CMR-ENDPOINT%/collections?data_center\[\]=Larc&data_center\[\]=SEDAC"
+     curl "%CMR-ENDPOINT%/collections?data_center\[\]=Larc&data_center\[\]=LARC"
 
 #### <a name="c-temporal"></a> Find collections with temporal
 
@@ -2028,7 +2034,7 @@ Find collections matching 'provider' param value
 
 Find collections matching any of the 'provider' param values
 
-    curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=SEDAC"
+    curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=LARC"
 
 #### <a name="c-native-id"></a> Find collections by native_id
 
@@ -2731,7 +2737,7 @@ Find granules matching 'provider' param value
 
 Find granules matching any of the 'provider' param values
 
-    curl "%CMR-ENDPOINT%/granules?provider=ASF&provider=SEDAC"
+    curl "%CMR-ENDPOINT%/granules?provider=ASF&provider=LARC"
 
 #### <a name="g-native-id"></a> Find granules by native_id
 
