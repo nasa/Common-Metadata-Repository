@@ -147,7 +147,10 @@ class Search:
 
     def get_producer_granule_id(self, metadata):
         """Get the granule producer id from the metadata."""
-        identifiers = metadata.get('DataGranule').get('Identifiers')
+        data_granule = metadata.get('DataGranule')
+        identifiers = None
+        if data_granule:
+            identifiers = data_granule.get('Identifiers')
         pgi = None
         if identifiers:
             for identifier in identifiers:
@@ -160,6 +163,17 @@ class Search:
                 return None
         else:
             return None
+        
+    def fix_location(self, location):
+        """This function fixes the location bug that is in
+        metadata-db-app/src/cmr/metadata_db/services/subscriptions.clj
+        on line 260 where the location is missing the context value of search."""
+        
+        if "search" in location:
+            return location
+        else:
+            parts = location.split('concepts')
+            return parts[0] + "search/concepts" + parts[1]
 
     def process_message(self, message):
         """This function gets the Message value from
@@ -181,6 +195,8 @@ class Search:
         message_dict = json.loads(message)
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)
+        location = message_dict.get("location")
+        fixed_location = self.fix_location(location)
         # Get the concept from search
         result = self.get_concept(concept_id, revision_id)
 
@@ -193,4 +209,6 @@ class Search:
             del message_dict['revision-id']
         if pgi:
             message_dict.update({"producer-granule-id": pgi})
+        if location:
+            message_dict.update({"location": fixed_location})
         return message_dict
