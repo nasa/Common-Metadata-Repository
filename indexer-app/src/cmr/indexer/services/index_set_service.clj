@@ -87,12 +87,12 @@
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))
         non-gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
-        _ (info "10636- non-gran-index-set is " non-gran-index-set)
+        _ (info "10636- non-gran-index-set is " (apply str non-gran-index-set))
 
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         idx-mapping-type (first (keys mapping))
         gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
-        _ (info "10636- gran-index-set is " gran-index-set)
+        _ (info "10636- gran-index-set is " (apply str gran-index-set))
 
         all-index-set (merge gran-index-set non-gran-index-set)
         _ (info "10636- all-index-set is " all-index-set)]
@@ -197,7 +197,7 @@
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
     (try
-      (index-requested-index-set context index-set)
+      (index-requested-index-set context index-set es-cluster-name)
       (catch ExceptionInfo e
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
@@ -206,7 +206,7 @@
   "Updates indices in the index set"
   [context es-cluster-name index-set]
   (info "10636- Updating index-set" (pr-str index-set))
-  (validate-requested-index-set context index-set true)
+  (validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
