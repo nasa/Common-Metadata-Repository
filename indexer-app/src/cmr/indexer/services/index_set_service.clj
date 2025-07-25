@@ -85,11 +85,11 @@
   [context]
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))
-        gran-index-set (es/get-index-sets (indexer-util/context->es-store cmr.elastic-utils.config/non-gran-elastic-name context) index-name idx-mapping-type)
+        gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
 
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         idx-mapping-type (first (keys mapping))
-        non-gran-index-set (es/get-index-sets (indexer-util/context->es-store cmr.elastic-utils.config/gran-elastic-name context) index-name idx-mapping-type)
+        non-gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
 
         all-index-set (merge gran-index-set non-gran-index-set)]
     (map #(select-keys (:index-set %) [:id :name :concepts])
