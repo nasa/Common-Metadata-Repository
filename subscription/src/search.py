@@ -191,7 +191,7 @@ class Search:
          \"location\": \"http://localhost:3003/concepts/G1200484356-ERICH_PROV/39\"}
         """
         # Get the granule concept-id from the message.
-        print(f"Search process_message message type {type(message)}")
+        logger.debug(f"Search process_message message type {type(message)}")
         message_dict = json.loads(message)
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)
