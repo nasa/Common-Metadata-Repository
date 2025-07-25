@@ -83,15 +83,19 @@
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [context]
+  (info "10636- INSIDE get-index-sets in index-set-service")
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))
-        gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
+        non-gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
+        _ (info "10636- non-gran-index-set is " non-gran-index-set)
 
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         idx-mapping-type (first (keys mapping))
-        non-gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
+        gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
+        _ (info "10636- gran-index-set is " gran-index-set)
 
-        all-index-set (merge gran-index-set non-gran-index-set)]
+        all-index-set (merge gran-index-set non-gran-index-set)
+        _ (info "10636- all-index-set is " all-index-set)]
     (map #(select-keys (:index-set %) [:id :name :concepts])
          all-index-set)))
 

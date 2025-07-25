@@ -100,7 +100,9 @@
 (defn get-index-sets
   "Fetch all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
+  (info "10636- INSIDE get-index-sets index-set-elasticsearch with index name " index-name " and idx-mapping-type " idx-mapping-type)
   (when (esi-helper/exists? conn index-name)
+    (info "10636- " index-name " index exists!")
     (let [result (es-helper/search
                   conn index-name idx-mapping-type {"_source" "index-set-request"})]
       (map #(decode-field (get-in % [:_source :index-set-request]))
