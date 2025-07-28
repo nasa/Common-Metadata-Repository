@@ -121,8 +121,3 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
-
-(defn is-non-gran-elastic?
-  "Returns true or false depending on if this config is non-gran elastic or not"
-  [config]
-  (= {:host config} elastic-host-non-gran))

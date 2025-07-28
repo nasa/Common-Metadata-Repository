@@ -99,18 +99,13 @@
   "Returns true if the existing index set does not match the expected index set and requires
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
-  ([context]
+  ([context es-cluster-name]
    ;; check requires-update for non-gran cluster
-   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name idx-set/index-set-id)
-         expected-index-set (idx-set/non-gran-index-set)]
-     (requires-update? existing-index-set expected-index-set))
-
-   ;; check requires update for gran cluster
-   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name idx-set/index-set-id)
-         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-         expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
-     (requires-update? existing-index-set expected-index-set))
-   )
+   (let [existing-index-set (index-set-es/get-index-set context es-cluster-name idx-set/index-set-id)
+         expected-index-set (case es-cluster-name
+                              cmr.elastic-utils.config/non-gran-elastic-name idx-set/non-gran-index-set
+                              cmr.elastic-utils.config/gran-elastic-name idx-set/gran-index-set)]
+     (requires-update? existing-index-set expected-index-set)))
   ([existing-index-set expected-index-set]
    (not= (update-in existing-index-set [:index-set] dissoc :concepts)
          expected-index-set)))
