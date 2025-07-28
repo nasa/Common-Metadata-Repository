@@ -95,20 +95,24 @@
   (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
-(defn requires-update?
+(defn index-set-requires-update?
   "Returns true if the existing index set does not match the expected index set and requires
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
-  ([context es-cluster-name]
-   ;; check requires-update for non-gran cluster
-   (let [existing-index-set (index-set-es/get-index-set context es-cluster-name idx-set/index-set-id)
-         expected-index-set (case es-cluster-name
-                              cmr.elastic-utils.config/non-gran-elastic-name idx-set/non-gran-index-set
-                              cmr.elastic-utils.config/gran-elastic-name idx-set/gran-index-set)]
-     (requires-update? existing-index-set expected-index-set)))
-  ([existing-index-set expected-index-set]
-   (not= (update-in existing-index-set [:index-set] dissoc :concepts)
-         expected-index-set)))
+  [existing-index-set expected-index-set]
+  (not= (update-in existing-index-set [:index-set] dissoc :concepts)
+         expected-index-set))
+
+(defn cluster-requires-update?
+  "Returns true if the existing index set does not match the expected index set and requires
+  update. Takes either the context which will be used to request index sets or the existing
+  and expected index sets."
+  [context es-cluster-name]
+  (let [existing-index-set (index-set-es/get-index-set context es-cluster-name idx-set/index-set-id)
+        expected-index-set (case es-cluster-name
+                             cmr.elastic-utils.config/non-gran-elastic-name idx-set/non-gran-index-set
+                             cmr.elastic-utils.config/gran-elastic-name idx-set/gran-index-set)]
+    (index-set-requires-update? existing-index-set expected-index-set)))
 
 (defn create-indexes
   "Create elastic indexes for each index name for both es clusters."
@@ -129,7 +133,7 @@
 
 
       ;; Compare them to see if they're the same
-      (requires-update? existing-index-set expected-index-set)
+      (index-set-requires-update? existing-index-set expected-index-set)
       (do
         (warn "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
         (warn "10636- Expected:" (pr-str expected-index-set))
@@ -152,7 +156,7 @@
 
 
       ;; Compare them to see if they're the same
-      (requires-update? existing-index-set expected-index-set)
+      (index-set-requires-update? existing-index-set expected-index-set)
       (do
         (warn "10636- Gran index set does not match you may want to update it. This is separate manual call you'll need to make.")
         (warn "10636- Expecting:" (pr-str expected-index-set))
@@ -170,7 +174,7 @@
   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name idx-set/index-set-id)
         expected-index-set (idx-set/non-gran-index-set)]
     (if (or (= "true" (:force params))
-            (requires-update? existing-index-set expected-index-set))
+            (index-set-requires-update? existing-index-set expected-index-set))
       (do
         (info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context cmr.elastic-utils.config/non-gran-elastic-name expected-index-set)
@@ -191,7 +195,7 @@
         ;; the expected index set.
         expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
     (if (or (= "true" (:force params))
-            (requires-update? existing-index-set expected-index-set))
+            (index-set-requires-update? existing-index-set expected-index-set))
       (do
         (info "10636-Updating the gran index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
