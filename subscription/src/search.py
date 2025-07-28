@@ -144,36 +144,28 @@ class Search:
         else:
             # Request failed
             logger.warning(f"Subscription Worker getting search concept using URL {url} failed with status code: {response.status_code}")
-
+    
     def get_producer_granule_id(self, metadata):
         """Get the granule producer id from the metadata."""
-        data_granule = metadata.get('DataGranule')
-        identifiers = None
-        if data_granule:
-            identifiers = data_granule.get('Identifiers')
-        pgi = None
-        if identifiers:
-            for identifier in identifiers:
-                if identifier.get('IdentifierType') == 'ProducerGranuleId':
-                    pgi = identifier.get('Identifier')
-                    break
-            if pgi:
-                return pgi
-            else:
-                return None
+        data_granule = metadata.get('DataGranule', {})
+        identifiers = data_granule.get('Identifiers', [])
+
+        for identifier in identifiers:
+            if identifier.get('IdentifierType') == 'ProducerGranuleId':
+                return identifier.get('Identifier')
+        return None
+        
+    def add_search_context_to_location_url(self, location_url):
+        """This function adds the search context to the location URL."""
+        
+        if location_url:
+          if "search" in location_url:
+              return location_url
+          else:
+              parts = location_url.split('concepts')
+              return parts[0] + "search/concepts" + parts[1]
         else:
             return None
-        
-    def fix_location(self, location):
-        """This function fixes the location bug that is in
-        metadata-db-app/src/cmr/metadata_db/services/subscriptions.clj
-        on line 260 where the location is missing the context value of search."""
-        
-        if "search" in location:
-            return location
-        else:
-            parts = location.split('concepts')
-            return parts[0] + "search/concepts" + parts[1]
 
     def process_message(self, message):
         """This function gets the Message value from
@@ -196,7 +188,7 @@ class Search:
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)
         location = message_dict.get("location")
-        fixed_location = self.fix_location(location)
+        location_url = self.add_search_context_to_location_url(location)
         # Get the concept from search
         result = self.get_concept(concept_id, revision_id)
 
@@ -209,6 +201,6 @@ class Search:
             del message_dict['revision-id']
         if pgi:
             message_dict.update({"producer-granule-id": pgi})
-        if location:
-            message_dict.update({"location": fixed_location})
+        if location_url:
+            message_dict.update({"location": location_url})
         return message_dict
