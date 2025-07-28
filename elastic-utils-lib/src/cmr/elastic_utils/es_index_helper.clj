@@ -11,6 +11,7 @@
 
 (defn exists?
   [conn index-name]
+  (println "INSIDE exists? with conn: " conn " and index-name = " index-name)
   (esi/exists? conn index-name))
 
 (defn update-mapping

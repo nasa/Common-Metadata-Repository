@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.data.acls :as acls]
-   [cmr.common.log :refer [info error]]
+   [cmr.common.log :refer [info error debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.es-helper :as es-helper]
@@ -440,6 +440,8 @@
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
+  (println "INSIDE create-index-or-update-mappings")
+  (println "elastic-store is " elastic-store)
   (m/create-index-or-update-mappings
     group-index-name group-index-settings group-type-name group-mappings elastic-store)
   (m/create-index-or-update-mappings
