@@ -100,13 +100,13 @@
 (def in-memory-elastic-log-level-atom
   (atom :info))
 
-(defmulti create-gran-elastic
-          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-          in memory if applicable."
-          (fn [type]
+(defmulti create-elastic
+  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+  in memory if applicable."
+  (fn [type]
     type))
 
-(defmethod create-gran-elastic :in-memory
+(defmethod create-elastic :in-memory
   [_]
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
@@ -117,27 +117,7 @@
                                                "embedded-security.policy" "elasticsearch/embedded-security.policy"
                                                "plugins" "elasticsearch/plugins"}})))
 
-(defmethod create-gran-elastic :external
-  [_]
-  nil)
-
-(defmulti create-non-gran-elastic
-          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-          in memory if applicable."
-          (fn [type]
-            type))
-
-(defmethod create-non-gran-elastic :in-memory
-  [_]
-  (let [http-port (elastic-config/elastic-port-non-gran)]
-    (elastic-server/create-server http-port
-                                  {:log-level (name @in-memory-elastic-log-level-atom)
-                                   ;:kibana-port (dev-config/embedded-kibana-port)
-                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
-                                               "es_libs" "elasticsearch/es_libs"
-                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
-                                               "plugins" "elasticsearch/plugins"}})))
-(defmethod create-non-gran-elastic :external
+(defmethod create-elastic :external
   [_]
   nil)
 
@@ -302,13 +282,11 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (println "INSIDE create-system...")
   (let [{:keys [elastic echo db message-queue redis sqs-server]} (component-type-map)
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        gran-elastic-server (create-gran-elastic elastic)
-        non-gran-elastic-server (create-non-gran-elastic elastic)
+        elastic-server (create-elastic elastic)
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
@@ -323,11 +301,10 @@
               :search (create-search-app db-component queue-broker)
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
-                       {:gran-elastic-server gran-elastic-server
-                        :non-gran-elastic-server non-gran-elastic-server
-                        :broker-wrapper      queue-broker
-                        :redis-server        redis-server
-                        :sqs-server          sqs-server})
+                       {:elastic-server elastic-server
+                        :broker-wrapper queue-broker
+                        :redis-server redis-server
+                        :sqs-server sqs-server})
      :post-components {:control-server control-server}}))
 
 (defn- stop-components

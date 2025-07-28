@@ -20,6 +20,22 @@ services:
       elasticsearch-network:
         aliases:
           - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
+      interval: 30s
+      timeout: 3m
+      retries: 6
+      start_period: 40s
+  kibana:
+    container_name: cmr-kibana
+    depends_on: 
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:7.17.14
+    ports:
+      - 5601:5601
+    networks:
+      - elasticsearch-network
+
 networks:
   elasticsearch-network: {}
   redis-network: {}
