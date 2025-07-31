@@ -30,6 +30,15 @@
     (.withNetwork network)
     (.withStartupTimeout (Duration/ofSeconds 240))))
 
+(defn- container-cmd
+  "In order to limit the local memory that embedded elastic uses, we have to create a function
+  to pass into the container cmd modifier to limit the memory. This func defines the command that will be
+  triggered by the container to update its memory setting."
+  [cmd]
+  (.withMemory cmd (* 4 1024 1024 1024))
+  cmd
+  )
+
 ;;TODO JYNA
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
@@ -56,12 +65,10 @@
                    (.get docker-image))
                  elasticsearch-official-docker-image)
          container (FixedHostPortGenericContainer. image)
-         create-container-cmd (doto (reify CreateContainerCmd
-                                      (getHostConfig [this] (HostConfig.)))
-                                (.withMemory 4096)
-                                )
-         consumer (reify Consumer
-                    (accept [this ^CreateContainerCmd t]))
+         ;; create the consumer object that will accept a func that defines a command that the container will use to update its settings
+         cmd-consumer (reify Consumer
+                    (accept [_ cmd]
+                      (container-cmd cmd)))
          network (Network/newNetwork)
          kibana (when kibana-port
                   (build-kibana kibana-port network))]
@@ -70,8 +77,7 @@
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
      (doto container
-       ;(.withCreateContainerCmdModifier (fn [cmd] (-> cmd (.withMemory cmd 4096))))
-       (.withCreateContainerCmdModifier consumer)
+       (.withCreateContainerCmdModifier cmd-consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
        (.withEnv "node.name" "embedded-elastic")
        (.withNetwork network)
@@ -80,6 +86,7 @@
        (.waitingFor
         (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
        (.withStartupTimeout (Duration/ofSeconds 240)))
+
      {:elasticsearch container
       :kibana kibana})))
 
@@ -90,7 +97,6 @@
 
   lifecycle/Lifecycle
 
-  ;; TODO JYNA
   (start
     [this _system]
     (println "Starting elastic server on port" http-port)
@@ -122,7 +128,6 @@
         (.stop kibana)))
     (assoc this :containers nil)))
 
-;; TODO Jyna
 (defn create-server
   ([]
    (create-server 9200))
