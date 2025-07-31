@@ -242,7 +242,7 @@
 
   (start
     [this _system]
-    (info "10636- Inside ESstore defrecord with the config: " (:config this))
+    (println "10636- Inside ESstore defrecord with the config: " (:config this))
     (let [conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
       ;; this is creating the index set index with the list of indexes in Elastic... do we want them to be a different list in each cluster? Right now, the non-gran cluster has this index
@@ -256,7 +256,7 @@
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
   [config es-cluster-name]
-  (info "10636- Trying to create ESstore with config: " config)
+  (println "10636- Trying to create ESstore with config: " config)
   (->ESstore config nil es-cluster-name))
 
 (defn- try-elastic-operation

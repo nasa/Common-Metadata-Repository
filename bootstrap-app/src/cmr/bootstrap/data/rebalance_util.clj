@@ -20,7 +20,7 @@
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
   [indexer-context index-name concept-id]
-  (let [conn (indexer-util/context->conn indexer-context)
+  (let [conn (indexer-util/context->conn indexer-context cmr.elastic-utils.config/gran-elastic-name)
         query (es-query-for-collection-concept-id concept-id)]
     (:count (es-helper/count-query conn index-name granule-mapping-type-name query))))
 
@@ -59,5 +59,5 @@
         small-coll-index (get-in index-names [:index-names :granule :small_collections])
         granule-mapping-type-name (-> index-set/granule-mapping keys first name)]
     (es-helper/delete-by-query
-     (indexer-util/context->conn indexer-context) small-coll-index granule-mapping-type-name
+     (indexer-util/context->conn indexer-context cmr.elastic-utils.config/gran-elastic-name) small-coll-index granule-mapping-type-name
      (es-query-for-collection-concept-id concept-id))))

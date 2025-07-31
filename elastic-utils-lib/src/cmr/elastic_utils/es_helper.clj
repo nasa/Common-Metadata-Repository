@@ -14,6 +14,7 @@
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
   [conn index _mapping-type opts]
+  (println "INSIDE search in es-helper with conn = " conn " and index = " index " and mapping-type = " _mapping-type)
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))

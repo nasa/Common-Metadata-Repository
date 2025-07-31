@@ -137,6 +137,7 @@
   * mappings - a map containing mapping details for field names and types as defined by defmapping.
   * elastic-store - A component containing an elastic connection under the :conn key"
   [index-name index-settings type-name mappings elastic-store]
+  (println "INSIDE create-index-or-update-mappings with index-name = " index-name "and elastic-store = " elastic-store)
   (let [conn (:conn elastic-store)]
     (if (esi-helper/exists? conn index-name)
       (do

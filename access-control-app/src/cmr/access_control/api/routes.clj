@@ -256,7 +256,7 @@
    (reset ctx true))
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
-   (index/reset (-> ctx :system :search-index))
+   (index/reset (-> ctx :system :gran-search-index))
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
 
@@ -269,7 +269,9 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      (index/create-index-or-update-mappings (-> ctx :system :search-index))
+      (println "10636- we are in /db-migrate")
+      ;; TODO fix me we are defaulting to the gran-search-index only for now
+      (index/create-index-or-update-mappings (-> ctx :system :gran-search-index))
       {:status 204})))
 
 ;;; S3 routes

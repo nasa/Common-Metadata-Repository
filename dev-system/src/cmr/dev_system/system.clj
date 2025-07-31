@@ -100,13 +100,13 @@
 (def in-memory-elastic-log-level-atom
   (atom :info))
 
-(defmulti create-elastic
-  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-  in memory if applicable."
-  (fn [type]
+(defmulti create-gran-elastic-server
+          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+          in memory if applicable."
+          (fn [type]
     type))
 
-(defmethod create-elastic :in-memory
+(defmethod create-gran-elastic-server :in-memory
   [_]
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
@@ -117,7 +117,28 @@
                                                "embedded-security.policy" "elasticsearch/embedded-security.policy"
                                                "plugins" "elasticsearch/plugins"}})))
 
-(defmethod create-elastic :external
+(defmethod create-gran-elastic-server :external
+  [_]
+  nil)
+
+(defmulti create-non-gran-elastic-server
+          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+          in memory if applicable."
+          (fn [type]
+            type))
+
+(defmethod create-non-gran-elastic-server :in-memory
+  [_]
+  (let [http-port (elastic-config/elastic-port-non-gran)]
+    (elastic-server/create-server http-port
+                                  {:log-level (name @in-memory-elastic-log-level-atom)
+                                   :kibana-port (dev-config/embedded-kibana-port-non-gran)
+                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                                               "es_libs" "elasticsearch/es_libs"
+                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                                               "plugins" "elasticsearch/plugins"}})))
+
+(defmethod create-non-gran-elastic-server :external
   [_]
   nil)
 
@@ -286,10 +307,13 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        elastic-server (create-elastic elastic)
+        gran-elastic-server (create-gran-elastic-server elastic) ;; elastic-server
+        non-gran-elastic-server (create-non-gran-elastic-server elastic)
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
+    (println "10636- created gran-elastic-server as : " gran-elastic-server)
+    (println "10636- created non-gran-elastic-server as : " non-gran-elastic-server)
     {:instance-name (common-sys/instance-name "dev-system")
      :apps (u/remove-nil-keys
              {:mock-echo echo-component
@@ -301,7 +325,8 @@
               :search (create-search-app db-component queue-broker)
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
-                       {:elastic-server elastic-server
+                       {:gran-elastic-server gran-elastic-server
+                        :non-gran-elastic-server non-gran-elastic-server
                         :broker-wrapper queue-broker
                         :redis-server redis-server
                         :sqs-server sqs-server})
@@ -328,15 +353,16 @@
   (reduce (fn [system component]
             (update-in system [components-key component]
                        #(try
-                          (info (format "Starting %s component" component))
+                          (println (format "Starting %s component" component))
                           (when % (lifecycle/start % system))
                           (catch Exception e
-                            (error e "Failure during startup")
+                            (println e "Failure during startup")
                             (stop-components (stop-apps system) :pre-components)
                             (stop-components (stop-apps system) :post-components)
                             (throw e)))))
           system
-          (keys (components-key system))))
+          (keys (components-key system)))
+  )
 
 (defn- start-apps
   [system]
@@ -362,8 +388,9 @@
   (info "System starting")
   (-> this
       (start-components :pre-components)
-      start-apps
-      (start-components :post-components)))
+      ;start-apps
+      ;(start-components :post-components)
+      ))
 
 (defn stop
   "Performs side effects to shut down the system and release its

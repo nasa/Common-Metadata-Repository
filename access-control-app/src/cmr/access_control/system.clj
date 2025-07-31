@@ -83,7 +83,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
+  [:log :caches :gran-search-index :non-gran-search-index :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -94,13 +94,14 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:instance-name (common-sys/instance-name "access-control")
-             :log (log/create-logger-with-log-level (log-level))
-             :search-index (search-index/create-elastic-search-index)
-             :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
-             :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-             :queue-broker (queue-broker/create-queue-broker (config/queue-config))
-             :caches {af/acl-cache-key (af/create-acl-cache
+  (let [sys {:instance-name         (common-sys/instance-name "access-control")
+             :log                   (log/create-logger-with-log-level (log-level))
+             :gran-search-index     (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
+             :non-gran-search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-name)
+             :web                   (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
+             :nrepl                 (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
+             :queue-broker          (queue-broker/create-queue-broker (config/queue-config))
+             :caches                {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
                       provider-cache/cache-key (provider-cache/create-cache)
                       acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
@@ -109,25 +110,28 @@
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
                       urs/urs-cache-key (urs/create-urs-cache)}
 
-             :public-conf (public-conf)
-             :relative-root-url (transmit-config/access-control-relative-root-url)
-             :scheduler (jobs/create-scheduler
+             :public-conf           (public-conf)
+             :relative-root-url     (transmit-config/access-control-relative-root-url)
+             :scheduler             (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
                           jvm-info/log-jvm-statistics-job
-                          (cache-info/create-log-cache-info-job "access-control")])}]
+                          (cache-info/create-log-cache-info-job "access-control")])}
+        ;_ (println "10636- gran-search-index is " [:gran-search-index sys])
+        ;_ (println "10636- non-gran-search-index is " [:non-gran-search-index sys])
+        ]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources, and start it running. Returns
   an updated instance of the system."
   [system]
-  (info "Access Control system starting")
+  (println "Access Control system starting")
   (let [started-system (common-sys/start system component-order)]
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
 
-    (info "Access control system started")
+    (println "Access control system started")
     started-system))
 
 (def stop
@@ -140,8 +144,10 @@
    bootstrap necessary local test data."
   [system]
   (let [started-system (start system)]
+    (println "10636- we are in dev-start")
     (try
-      (access-control-index/create-index-or-update-mappings (:search-index started-system))
+      ;; because the create-index-or-update-mappings only updates the groups and acls index, we only call it for the non-gran cluster
+      (access-control-index/create-index-or-update-mappings (:non-gran-search-index started-system))
       ;; This is needed to bootstrap admin group for legacy services for integration tests
       (bootstrap/bootstrap started-system)
       (catch Exception e

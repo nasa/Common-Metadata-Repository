@@ -103,7 +103,7 @@
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
    concept id to collection information. The collection will only be in the map if it has granules."
   [context]
-  (-> (es-helper/search (indexer-util/context->conn context)
+  (-> (es-helper/search (indexer-util/context->conn context cmr.elastic-utils.config/gran-elastic-name)
                         "1_small_collections,1_c*" ;; Searching all granule indexes
                         ["granule"] ;; With the granule type.
                         {:query (esq/match-all)
@@ -118,7 +118,7 @@
   [context granules-updated-in-last-n]
   (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
         revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
-    (-> (es-helper/search (indexer-util/context->conn context)
+    (-> (es-helper/search (indexer-util/context->conn context cmr.elastic-utils.config/gran-elastic-name)
                           "1_small_collections,1_c*" ;; Searching all granule indexes
                           ["granule"] ;; With the granule type.
                           {:query {:bool {:must (esq/match-all)

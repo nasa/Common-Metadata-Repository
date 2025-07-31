@@ -516,7 +516,7 @@
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (es-helper/search (common-idx/context->conn context)
+        results (es-helper/search (common-idx/context->conn context cmr.elastic-utils.config/gran-elastic-name)
                                   deleted-granule-index-name
                                   deleted-granule-type-name
                                   query)
@@ -557,7 +557,8 @@
                (shape-param->tile-set param-name value)))
       (tile/all-tiles))))
 
+;; TODO fix me, right now defaulting to gran cluster only
 (defn clear-scroll
   "Clear the scroll context for the given scroll id"
   [context scroll-id]
-  (es-helper/clear-scroll (common-idx/context->conn context) scroll-id))
+  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/gran-elastic-name) scroll-id))

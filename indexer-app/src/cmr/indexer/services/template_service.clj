@@ -11,10 +11,11 @@
                             :mappings index-set/granule-mapping
                             :index-patterns ["1_c*"]}})
 
+;; TODO fix me, understand where templates would go -- default to go to non-gran cluster for now, but this may have to be fine tuned
 (defn- make-template
   "Send individual template map to be ingested to elasticsearch"
   [context index-template-key]
-  (es-index/create-index-template (indexer-util/context->conn context)
+  (es-index/create-index-template (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
                                   (name index-template-key)
                                   (index-template-key index-templates)))
 

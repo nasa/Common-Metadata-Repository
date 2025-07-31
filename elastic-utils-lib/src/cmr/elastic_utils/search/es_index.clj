@@ -58,14 +58,18 @@
 (defn context->search-index
   "Returns the search index given a context. This assumes that the search index is always located
    in a system using the :search-index key."
-  [context]
-  (get-in context [:system :search-index]))
+  [context es-cluster-name]
+  (println "INSIDE context->search-index with es-cluster-name = " es-cluster-name)
+  (cond
+        (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name) (get-in context [:system :non-gran-search-index])
+        (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
+        :else (throw (Exception. (str "expected specific elastic name but got " es-cluster-name " instead.")))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
    a system using the :search-index key."
-  [context]
-  (:conn (context->search-index context)))
+  [context es-cluster-name]
+  (:conn (context->search-index context es-cluster-name)))
 
 (defn- ensure-sort-keys-for-search-after
   "Ensures sort-keys include _id for search_after"
@@ -137,26 +141,32 @@
   [ex _scroll-id]
   (throw ex))
 
+;; TODO Fix
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
     (es-helper/scroll
-     (context->conn context)
+     (context->conn context cmr.elastic-utils.config/gran-elastic-name)
      scroll-id
      {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
+;; TODO we need to be able to switch between clusters based on the query and index info here...
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  (println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
+        ;(es-helper/search
+        ; (context->conn context cmr.elastic-utils.config/gran-elastic-name) (:index-name index-info) [(:type-name index-info)] query)
         (es-helper/search
-         (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
+          (context->conn context cmr.elastic-utils.config/non-gran-elastic-name) (:index-name index-info) [(:type-name index-info)] query)
+        )
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
@@ -351,7 +361,9 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context)))
+  (esri/refresh (context->conn context cmr.elastic-utils.config/non-gran-elastic-name))
+  (esri/refresh (context->conn context cmr.elastic-utils.config/gran-elastic-name))
+  )
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic
@@ -360,11 +372,18 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
+  (start
+    [this _system]
+    (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this _system] this))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  []
-  (->ElasticSearchIndex (es-config/gran-elastic-config) nil))
+  [es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/non-gran-elastic-name) (->ElasticSearchIndex (es-config/non-gran-elastic-config) nil)
+    (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
+    :else (throw (Exception. (str "expected valid elastic name but got " es-cluster-name " instead.")))
+    )
+  )

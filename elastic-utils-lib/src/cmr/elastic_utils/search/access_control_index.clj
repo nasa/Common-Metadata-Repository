@@ -77,10 +77,10 @@
 (defn index-group
   "Indexes an access control group."
   [context concept-map]
-  (info "Indexing group concept:" (pr-str concept-map))
+  (println "Indexing group concept:" (pr-str concept-map))
   (let [elastic-doc (group-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
-        elastic-store (esi/context->search-index context)]
+        elastic-store (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)]
     (m/save-elastic-doc
       elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true
@@ -114,7 +114,7 @@
   "Unindexes all access groups owned by provider-id."
   [context provider-id]
   (info "Unindexing all groups for" provider-id)
-  (es-helper/delete-by-query (esi/context->conn context)
+  (es-helper/delete-by-query (esi/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
                      group-index-name
                      group-type-name
                      ;; only :provider-id-lowercase is indexed, so to find the access group by
@@ -440,6 +440,7 @@
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
+  (println "10636- elastic-store is " elastic-store)
   (m/create-index-or-update-mappings
     group-index-name group-index-settings group-type-name group-mappings elastic-store)
   (m/create-index-or-update-mappings

@@ -1,14 +1,18 @@
 (ns cmr.elastic-utils.embedded-elastic-server
-  "Used to run an Elasticsearch server inside an embedded docker container."
+  "Used to run Elasticsearch servers inside an embedded docker container."
   (:require
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error]]
    [cmr.common.util :as util])
   (:import
-   (java.time Duration)
-   (org.testcontainers.containers FixedHostPortGenericContainer Network)
-   (org.testcontainers.containers.wait.strategy Wait)
-   (org.testcontainers.images.builder ImageFromDockerfile)))
+    (com.github.dockerjava.api.command CreateContainerCmd)
+    (com.github.dockerjava.api.model HostConfig)
+    (java.time Duration)
+    (java.util.function Consumer)
+    (org.testcontainers.containers FixedHostPortGenericContainer Network)
+    (org.testcontainers.containers.wait.strategy Wait)
+    (org.testcontainers.images.builder ImageFromDockerfile)
+    ))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
@@ -26,6 +30,7 @@
     (.withNetwork network)
     (.withStartupTimeout (Duration/ofSeconds 240))))
 
+;;TODO JYNA
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
   started on the default port 9200/9300. Only changing host port mapping. Args:
@@ -51,6 +56,12 @@
                    (.get docker-image))
                  elasticsearch-official-docker-image)
          container (FixedHostPortGenericContainer. image)
+         create-container-cmd (doto (reify CreateContainerCmd
+                                      (getHostConfig [this] (HostConfig.)))
+                                (.withMemory 4096)
+                                )
+         consumer (reify Consumer
+                    (accept [this ^CreateContainerCmd t]))
          network (Network/newNetwork)
          kibana (when kibana-port
                   (build-kibana kibana-port network))]
@@ -59,6 +70,8 @@
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
      (doto container
+       ;(.withCreateContainerCmdModifier (fn [cmd] (-> cmd (.withMemory cmd 4096))))
+       (.withCreateContainerCmdModifier consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
        (.withEnv "node.name" "embedded-elastic")
        (.withNetwork network)
@@ -77,23 +90,24 @@
 
   lifecycle/Lifecycle
 
+  ;; TODO JYNA
   (start
     [this _system]
-    (debug "Starting elastic server on port" http-port)
+    (println "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
         (.start node)
         (when kibana
-          (debug "Starting kibana server on port" (:kibana-port opts))
+          (println "Starting kibana server on port" (:kibana-port opts))
           (.start kibana))
         (assoc this :containers containers)
         (catch Exception e
-          (error "Container(s) failed to start.")
-          (debug "Dumping elasticsearch logs:\n" (.getLogs node))
+          (println "Container(s) failed to start.")
+          (println "Dumping elasticsearch logs:\n" (.getLogs node))
           (when kibana
-            (debug "Dumping kibana logs:\n" (.getLogs kibana)))
+            (println "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this _system]
@@ -108,6 +122,7 @@
         (.stop kibana)))
     (assoc this :containers nil)))
 
+;; TODO Jyna
 (defn create-server
   ([]
    (create-server 9200))

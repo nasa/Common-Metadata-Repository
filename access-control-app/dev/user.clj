@@ -24,7 +24,7 @@
 
 (def system nil)
 
-(def elastic-server nil)
+(def gran-elastic-server nil)
 
 (def side-api-server nil)
 
@@ -47,10 +47,13 @@
   ; true
   false)
 
-(defn- create-elastic-server
+(defn- create-elastic-servers
   "Creates an instance of an elasticsearch server in memory."
   []
   (elastic-config/set-elastic-port! 9306)
+  ;; create gran elastic server
+  (es/create-server 9306 {:log-level (system/log-level)})
+  ;; create non gran elastic server
   (es/create-server 9306 {:log-level (system/log-level)}))
 
 (defn start
@@ -96,8 +99,8 @@
 
     ;; Start elastic search
     (alter-var-root
-     #'elastic-server
-     (constantly (l/start (create-elastic-server) nil)))
+      #'gran-elastic-server
+      (constantly (l/start (create-elastic-servers) nil)))
 
     ;; Start access control
     (alter-var-root
@@ -125,7 +128,7 @@
   ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
   ;; Stop elastic search
-  (alter-var-root #'elastic-server #(when % (l/stop % system)))
+  (alter-var-root #'gran-elastic-server #(when % (l/stop % system)))
   ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 

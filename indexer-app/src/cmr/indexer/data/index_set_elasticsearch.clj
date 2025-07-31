@@ -28,6 +28,7 @@
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
+    (println "INSIDE create-index with index-name = " index-name "and conn = " conn)
     (when-not (esi-helper/exists? conn index-name)
       (try
         (info "Now creating Elastic Index:" index-name)
