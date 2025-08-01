@@ -388,8 +388,8 @@
   (info "System starting")
   (-> this
       (start-components :pre-components)
-      ;start-apps
-      ;(start-components :post-components)
+      start-apps
+      (start-components :post-components)
       ))
 
 (defn stop

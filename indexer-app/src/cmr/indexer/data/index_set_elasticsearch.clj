@@ -31,7 +31,7 @@
     (println "INSIDE create-index with index-name = " index-name "and conn = " conn)
     (when-not (esi-helper/exists? conn index-name)
       (try
-        (info "Now creating Elastic Index:" index-name)
+        (info "Now creating Elastic Index:" index-name " with idx-w-config " idx-w-config)
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
@@ -93,7 +93,9 @@
 (defn get-index-set-ids
   "Fetch ids of all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
+  (println "10636- INSIDE get-index-set-ids. index-name = " index-name " and idx-mapping-type = " idx-mapping-type)
   (when (esi-helper/exists? conn index-name)
+    (println "index exists!!!!")
     (let [result (es-helper/search
                   conn index-name idx-mapping-type {"_source" "index-set-id"})]
       (map #(-> % :_source :index-set-id) (get-in result [:hits :hits])))))
@@ -101,9 +103,9 @@
 (defn get-index-sets
   "Fetch all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
-  (info "10636- INSIDE get-index-sets index-set-elasticsearch with index name " index-name " and idx-mapping-type " idx-mapping-type)
+  (println "10636- INSIDE get-index-sets index-set-elasticsearch with index name " index-name " and idx-mapping-type " idx-mapping-type)
   (when (esi-helper/exists? conn index-name)
-    (info "10636- " index-name " index exists!")
+    (println "10636- " index-name " index exists!")
     (let [result (es-helper/search
                   conn index-name idx-mapping-type {"_source" "index-set-request"})]
       (map #(decode-field (get-in % [:_source :index-set-request]))

@@ -83,21 +83,39 @@
 (defn get-index-sets
   "Fetch all index-sets in elastic."
   [context]
-  (info "10636- INSIDE get-index-sets in index-set-service")
+  (println "10636- INSIDE get-index-sets in index-set-service")
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))
         non-gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
-        _ (info "10636- non-gran-index-set is " (apply str non-gran-index-set))
+        _ (println "10636- non-gran-index-set is " (apply str non-gran-index-set))
+        _ (println "10636- non-gran-index-set mapping type is " idx-mapping-type)
 
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         idx-mapping-type (first (keys mapping))
-        gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
-        _ (info "10636- gran-index-set is " (apply str gran-index-set))
 
-        all-index-set (merge gran-index-set non-gran-index-set)
-        _ (info "10636- all-index-set is " all-index-set)]
-    (map #(select-keys (:index-set %) [:id :name :concepts])
-         all-index-set)))
+        gran-index-set (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name) index-name idx-mapping-type)
+        _ (println "10636- gran-index-set is " (apply str gran-index-set))
+        _ (println "10636- gran-index-set mapping type is " idx-mapping-type)
+
+        _ (println "10636- gran-index-set 0 is " (first gran-index-set))
+        _ (println "10636- gran-index-set type is " (type (first gran-index-set)))
+
+        ;_ (info "10636- gran-index-set 1 is " (:index-set gran-index-set))
+        ;_ (info "10636- gran-index-set 2 is " (get-in gran-index-set [:index-set]))
+        ;_ (info "10636- gran-index-set 3 is " (gran-index-set :index-set))
+
+        ;all-index-set {:index-set (merge (:index-set (first gran-index-set)) (:index-set (first non-gran-index-set)))}
+        all-index-set (concat gran-index-set non-gran-index-set)
+        _ (println "10636- all-index-set is " (apply str all-index-set))
+        result (map #(select-keys (:index-set %) [:id :name :concepts])
+                    all-index-set)
+        _ (println "10636- Result is " (apply str result))
+
+        ]
+    result
+
+
+    ))
 
 (defn index-set-exists?
   "Check index-set existence"
@@ -218,14 +236,14 @@
 (defn delete-index-set
   "Delete all indices having 'id_' as the prefix in all the elastic clusters, followed by
   index-set doc delete"
-  [context index-set-id]
-  (doseq [es-cluster-name [cmr.elastic-utils.config/non-gran-elastic-name cmr.elastic-utils.config/gran-elastic-name]]
+  [context index-set-id es-cluster-name]
+  (println "INSIDE delete-index-set with index-set-id = " index-set-id)
     (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id))
           {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
           idx-mapping-type (first (keys mapping))]
       (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
       (es/delete-document context index-name idx-mapping-type index-set-id))
-    ))
+    )
 
 (defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."
@@ -380,14 +398,16 @@
                        (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
                        index-name
                        "_doc")
+        _ (println "gran-index-set-ids = " gran-index-set-ids)
         {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         non-gran-index-set-ids (es/get-index-set-ids
                              (indexer-util/context->es-store context :non-gran-elastic)
                              index-name
-                             "_doc")]
+                             "_doc")
+        _ (println "non-gran-index-set-ids = " non-gran-index-set-ids)]
     ;; delete indices assoc with index-set
     (doseq [id gran-index-set-ids]
-      (delete-index-set context (str id)))
+      (delete-index-set context (str id) cmr.elastic-utils.config/gran-elastic-name))
 
     (doseq [id non-gran-index-set-ids]
-      (delete-index-set context (str id)))))
+      (delete-index-set context (str id) cmr.elastic-utils.config/non-gran-elastic-name))))

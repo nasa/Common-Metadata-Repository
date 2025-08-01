@@ -5,14 +5,11 @@
    [cmr.common.log :as log :refer [debug error]]
    [cmr.common.util :as util])
   (:import
-    (com.github.dockerjava.api.command CreateContainerCmd)
-    (com.github.dockerjava.api.model HostConfig)
     (java.time Duration)
     (java.util.function Consumer)
     (org.testcontainers.containers FixedHostPortGenericContainer Network)
     (org.testcontainers.containers.wait.strategy Wait)
-    (org.testcontainers.images.builder ImageFromDockerfile)
-    ))
+    (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
