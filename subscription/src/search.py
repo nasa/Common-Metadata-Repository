@@ -144,20 +144,26 @@ class Search:
         else:
             # Request failed
             logger.warning(f"Subscription Worker getting search concept using URL {url} failed with status code: {response.status_code}")
-
+    
     def get_producer_granule_id(self, metadata):
         """Get the granule producer id from the metadata."""
-        identifiers = metadata.get('DataGranule').get('Identifiers')
-        pgi = None
-        if identifiers:
-            for identifier in identifiers:
-                if identifier.get('IdentifierType') == 'ProducerGranuleId':
-                    pgi = identifier.get('Identifier')
-                    break
-            if pgi:
-                return pgi
-            else:
-                return None
+        data_granule = metadata.get('DataGranule', {})
+        identifiers = data_granule.get('Identifiers', [])
+
+        for identifier in identifiers:
+            if identifier.get('IdentifierType') == 'ProducerGranuleId':
+                return identifier.get('Identifier')
+        return None
+        
+    def add_search_context_to_location_url(self, location_url):
+        """This function adds the search context to the location URL."""
+        
+        if location_url:
+          if "search" in location_url:
+              return location_url
+          else:
+              parts = location_url.split('concepts')
+              return parts[0] + "search/concepts" + parts[1]
         else:
             return None
 
@@ -181,6 +187,8 @@ class Search:
         message_dict = json.loads(message)
         concept_id = message_dict["concept-id"]
         revision_id = message_dict.get("revision-id", None)
+        location = message_dict.get("location")
+        location_url = self.add_search_context_to_location_url(location)
         # Get the concept from search
         result = self.get_concept(concept_id, revision_id)
 
@@ -193,4 +201,6 @@ class Search:
             del message_dict['revision-id']
         if pgi:
             message_dict.update({"producer-granule-id": pgi})
+        if location_url:
+            message_dict.update({"location": location_url})
         return message_dict

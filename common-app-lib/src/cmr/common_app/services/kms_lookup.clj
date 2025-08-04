@@ -221,15 +221,20 @@
                                              kms-short-name-cache-key
                                              kms-umm-c-cache-key
                                              kms-location-cache-key
-                                             kms-measurement-cache-key))
-        [tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))
-        _ (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)
-        [tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))
-        _ (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)
-        [tm _] (util/time-execution (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map))
-        _ (rl-util/log-redis-write-complete "create-kms-index" kms-location-cache-key tm)
-        [tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))
-        _ (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)]
+                                             kms-measurement-cache-key))]
+    ;; Only update caches that exist
+    (when-not (empty? short-name-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)))
+    (when-not (empty? umm-c-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)))
+    (when-not (empty? location-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-location-cache-key tm)))
+    (when-not (empty? measurement-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)))
     kms-keywords-map))
 
 (defn lookup-by-short-name
