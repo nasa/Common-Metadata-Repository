@@ -35,6 +35,7 @@ The following parameters can be used to search citations:
 * `identifier-type` - Search by identifier type
 * `relationship-type` - Search by relationship type
 * `related-identifier` - Search by related identifier
+* `related-identifier-with-type` - Search for specific relationship-identifier pairs using format `RelationshipType:RelatedIdentifier` (e.g., `Cites:10.5067/SAMPLE/DATA`, `Describes:ark:/13030/tf1p17542`)
 * `title` - Search by title
 * `year` - Search by publication year (integer)
 * `type` - Search by citation type
@@ -216,6 +217,23 @@ __Sample response__
             </reference>
         </references>
     </results>
+```
+
+#### Related Identifier Searching
+
+The `related-identifier-with-type` parameter enables searches for citations with specific relationship types to specific identifiers. 
+
+__Examples__
+
+```
+    # Find citations that cite a specific DOI
+    curl "%CMR-ENDPOINT%/citations?related-identifier-with-type=Cites:10.5067/MODIS/MOD08_M3.061"
+
+    # Case-insensitive search
+    curl "%CMR-ENDPOINT%/citations?related-identifier-with-type-lowercase=cites:10.5067/modis/mod08_m3.061"
+
+    # Find all citations that cite something using wildcard option
+    curl "%CMR-ENDPOINT%/citations?related-identifier-with-type=Cites*&options%5Brelated-identifier-with-type%5D%5Bpattern%5D=true"
 ```
 
 #### <a name="sorting-citation-results"></a> Sorting Citation Results
