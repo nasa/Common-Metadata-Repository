@@ -482,6 +482,7 @@
 ;; TODO JYNA this is where we start to save concept in elasticsearch
 (defmethod index-concept :default
   [context concept parsed-concept options]
+  (println "10636 - index-concept :default")
   (let [{:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept
         start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
@@ -500,7 +501,7 @@
         (debug start-log-msg)
         (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
-            _ (info "10636- concept-mapping-types = " concept-mapping-types)
+            _ (println "10636- concept-mapping-types = " concept-mapping-types)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [associations (get-associations context concept)

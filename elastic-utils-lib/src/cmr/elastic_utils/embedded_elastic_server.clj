@@ -96,21 +96,19 @@
 
   (start
     [this _system]
-    (println "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
         (.start node)
         (when kibana
-          (println "Starting kibana server on port" (:kibana-port opts))
           (.start kibana))
         (assoc this :containers containers)
         (catch Exception e
-          (println "Container(s) failed to start.")
-          (println "Dumping elasticsearch logs:\n" (.getLogs node))
+          (error "Container(s) failed to start.")
+          (error "Dumping elasticsearch logs:\n" (.getLogs node))
           (when kibana
-            (println "Dumping kibana logs:\n" (.getLogs kibana)))
+            (error "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this _system]

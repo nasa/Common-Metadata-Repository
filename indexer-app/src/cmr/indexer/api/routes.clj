@@ -31,14 +31,17 @@
 (def ^:private index-set-routes
   "Routes providing index-set operations"
   (context "/index-sets" []
+    ;; TODO this needs to be rewritten. We need to make sure the newly created index-set doesn't already exist. And we need to know which cluster it's going to go on, which will depend on the client's wishes. So this will need to be re-written
     (POST "/" {body :body request-context :request-context}
-      (let [index-set (walk/keywordize-keys body)
-            _ (acl/verify-ingest-management-permission request-context :update)
-            gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-            non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
-
-        ;;TODO fix this, we need to incorporate the non-gran-index-set resp too
-        (r/created gran-index-set-resp)))
+      ;(let [index-set (walk/keywordize-keys body)
+      ;      _ (acl/verify-ingest-management-permission request-context :update)
+      ;      gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+      ;      non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
+      ;
+      ;  ;;TODO fix this, we need to incorporate the non-gran-index-set resp too
+      ;  (r/created gran-index-set-resp))
+      ;; In the meantime, we are not going to allow this functionality.
+      {:status 500})
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -48,46 +51,62 @@
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
+      ;; TODO maybe rename this func. It doesn't reset the index-set to any specific base state, it is just deletes it...
       (index-set-svc/reset request-context)
       {:status 204})
 
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        ;; TODO need to incorporate both non-gran and gran cluster here
-        (r/response (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)))
+        (let [gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
+              non-gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name id)
+              combined-index-set (merge (:index-set gran-index-set) (:index-set non-gran-index-set))] ;; temp put it as gran index set for now
+          (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        (let [index-set (walk/keywordize-keys body)]
-          (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
-          {:status 200}))
+        ;; TODO rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
+        ;(let [index-set (walk/keywordize-keys body)]
+        ;  (acl/verify-ingest-management-permission request-context :update)
+        ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+        ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
+        ;  {:status 200})
+
+        {:status 500}
+        )
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context id)
+        (index-set-svc/delete-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
+        (index-set-svc/delete-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name id)
         {:status 204})
 
+      ;; TODO We need to update all these endpoints to work with the new clusters
       (context "/rebalancing-collections/:concept-id" [concept-id]
 
-        ;; Marks the collection as rebalancing in the index set.
+        ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
-          (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
-          {:status 200})
+          ;(acl/verify-ingest-management-permission request-context :update)
+          ;(index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
+          ;{:status 200}
+          {:status 500}
+
+          )
 
         ;; Update the status of collection being rebalanced
         (POST "/update-status" {request-context :request-context params :params}
-          (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
-          {:status 200})
+          ;(acl/verify-ingest-management-permission request-context :update)
+          ;(index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
+          ;{:status 200}
+          {:status 500}
+          )
 
         ;; Marks the collection as completed rebalancing
         (POST "/finalize" {request-context :request-context}
-          (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/finalize-collection-rebalancing request-context id concept-id)
-          {:status 200})))))
+          ;(acl/verify-ingest-management-permission request-context :update)
+          ;(index-set-svc/finalize-collection-rebalancing request-context id concept-id)
+          ;{:status 200}
+          {:status 500}
+          )))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]

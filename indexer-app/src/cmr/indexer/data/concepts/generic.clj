@@ -94,7 +94,6 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date native-id]} concept
-        _ (info "10636- concept id = " concept-id " INSIDE parsed-concept->elastic-doc")
         parsed-concept (if (:deleted concept)
                          (c-parser/parse-concept context concept)
                          parsed-concept)

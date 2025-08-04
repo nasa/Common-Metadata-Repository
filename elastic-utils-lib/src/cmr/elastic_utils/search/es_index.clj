@@ -59,7 +59,6 @@
   "Returns the search index given a context. This assumes that the search index is always located
    in a system using the :search-index key."
   [context es-cluster-name]
-  (println "INSIDE context->search-index with es-cluster-name = " es-cluster-name)
   (cond
         (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name) (get-in context [:system :non-gran-search-index])
         (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
@@ -153,7 +152,7 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
-;; TODO we need to be able to switch between clusters based on the query and index info here...
+;; TODO 10636 we need to be able to switch between clusters based on the query and index info here...
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]

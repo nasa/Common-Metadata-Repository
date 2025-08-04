@@ -100,15 +100,9 @@
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
   [existing-index-set expected-index-set]
-  (println "10636- INSIDE index-set-requires-update? /n existing index set = " existing-index-set "/n expected index set = " expected-index-set)
   (let [updated-value (update-in existing-index-set [:index-set] dissoc :concepts) ;; doesn't compare the :concepts key's values... why?
-        _ (println "10636- Updated value is " updated-value)
-        result (not= updated-value expected-index-set)
-        _ (println "10636- index-set-require-update? answer " result)]
-    result)
-  ;(not= (update-in existing-index-set [:index-set] dissoc :concepts)
-  ;       expected-index-set)
-  )
+        result (not= updated-value expected-index-set)]
+    result))
 
 ;; TODO this can be a deleted func and just put into the one place it is actually called...
 (defn cluster-requires-update?
@@ -146,7 +140,7 @@
       ;; Compare them to see if they're the same
       (index-set-requires-update? existing-index-set expected-index-set)
       (do
-        (println "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
+        (warn "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
         (warn "10636- Expected:" (pr-str expected-index-set))
         (warn "10636- Actual:" (pr-str existing-index-set)))
 
