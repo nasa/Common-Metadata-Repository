@@ -39,6 +39,33 @@
     {(keyword field-name) field-value
      (keyword field-name-lower) field-value-lower}))
 
+(defn field->index-complex-field-with-values-only
+  "Complex indexer field that handles both single objects and arrays,
+   and formats using field values only (not field names)"
+  [settings data]
+  (let [field-list (get settings :Field ".")
+        field-data (get-in data (generics/jq->list field-list keyword) {})
+        config (get settings :Configuration {})
+        sub-fields (get config :sub-fields {})
+        layout (get config :format "%s=%s")
+        field-name (util/safe-lowercase (:Name settings))
+        field-name-lower (str field-name "-lowercase")
+        field-value (if (vector? field-data)
+                      ;; Handle array case
+                      (mapv (fn [element]
+                              (let [values (map #(get element (keyword %)) sub-fields)]
+                                (apply format layout values)))
+                            field-data)
+                      ;; Handle single object case  
+                      (let [values (map #(get field-data (keyword %)) sub-fields)]
+                        (apply format layout values)))
+
+        field-value-lower (if (vector? field-value)
+                            (mapv #(util/safe-lowercase %) field-value)
+                            (util/safe-lowercase field-value))]
+    {(keyword field-name) field-value
+     (keyword field-name-lower) field-value-lower}))
+
 (defn field->index-simple-array-field
   "The gets the a sub field of an array element and puts those values
   into a list so that each value can be searched on one of two indexes:
@@ -85,6 +112,7 @@
   [settings data]
   (case (:Indexer settings)
     "complex-field" (field->index-complex-field settings data)
+    "complex-fields-only" (field->index-complex-field-with-values-only settings data)
     "simple-array-field" (field->index-simple-array-field settings data)
     (field->index-default-field settings data)))
 
