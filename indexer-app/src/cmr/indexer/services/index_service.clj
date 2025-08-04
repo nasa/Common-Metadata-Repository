@@ -662,7 +662,7 @@
       (let [concept (if revision-id
                       (meta-db/get-concept context concept-id revision-id)
                       (meta-db/get-latest-concept context concept-id))
-            parsed-concept (cp/parse-concept context concept)
+            parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept options)))))
 

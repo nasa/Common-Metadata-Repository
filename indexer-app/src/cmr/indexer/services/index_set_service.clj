@@ -63,7 +63,6 @@
          :settings settings
          :mapping mapping}))))
 
-;; TODO fixme fix this one as well Jyna
 (defn get-index-names
   "Given an index set build list of index names."
   [idx-set es-cluster-name]
@@ -114,13 +113,13 @@
   "Recursively merges two maps.
    If a key exists in both and its value is also a map,
    it recursively merges those inner maps. Otherwise,
-   it prefers the value from the second map (m2)."
+   it prefers the value from the second map."
   [m1 m2]
   (merge-with
     (fn [v1 v2]
       (cond
-        (and (map? v1) (map? v2)) (deep-merge v1 v2) ; Both are maps, recurse
-        :else v2))                                 ; Otherwise, take v2
+        (and (map? v1) (map? v2)) (deep-merge v1 v2)
+        :else v2))
     m1 m2))
 
 (defn get-index-sets
@@ -137,10 +136,8 @@
 
         all-index-set-array (map deep-merge gran-index-set-array non-gran-index-set-array)
         result (map #(select-keys (:index-set %) [:id :name :concepts])
-                    all-index-set-array)
-        ]
-    result
-    ))
+                    all-index-set-array)]
+    result))
 
 (defn index-set-exists?
   "Check index-set existence"
@@ -227,11 +224,11 @@
   index-set doc indexing fails."
   [context es-cluster-name index-set]
   (validate-requested-index-set context es-cluster-name index-set false)
-  (println "10636- INSIDE create-index-set for es-cluster-name " es-cluster-name " with index-set = " index-set)
+  ;(println "10636- INSIDE create-index-set for es-cluster-name " es-cluster-name " with index-set = " index-set)
   (let [index-names (get-index-names index-set es-cluster-name)
-        _ (println "index-names = " index-names)
+        ;_ (println "index-names = " index-names)
         indices-w-config (build-indices-list-w-config index-set es-cluster-name)
-        _ (println "indices-w-config is " indices-w-config)
+        ;_ (println "indices-w-config is " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (println "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
@@ -416,19 +413,18 @@
       assoc (keyword concept-id) status))))
 
 (defn reset
-  "Put elastic in a clean state after deleting indices associated with index-
-  sets and index-set docs."
+  "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]
   (let [{:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
-                       (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
-                       index-name
-                       "_doc")
-        {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
-        non-gran-index-set-ids (es/get-index-set-ids
-                             (indexer-util/context->es-store context :non-gran-elastic)
+                             (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
                              index-name
                              "_doc")
+        {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
+        non-gran-index-set-ids (es/get-index-set-ids
+                                 (indexer-util/context->es-store context :non-gran-elastic)
+                                 index-name
+                                 "_doc")]
     ;; delete indices assoc with index-set
     (doseq [id gran-index-set-ids]
       (delete-index-set context (str id) cmr.elastic-utils.config/gran-elastic-name))
