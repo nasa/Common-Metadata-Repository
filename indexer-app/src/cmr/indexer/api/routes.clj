@@ -76,8 +76,8 @@
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
-        (index-set-svc/delete-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name id)
+        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/gran-elastic-name)
+        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/non-gran-elastic-name)
         {:status 204})
 
       ;; TODO We need to update all these endpoints to work with the new clusters

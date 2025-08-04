@@ -487,6 +487,7 @@
         {:keys [concept-id revision-id concept-type deleted]} concept
         start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                               concept-id revision-id all-revisions-index?)
+        _ (println start-log-msg)
         end-log-msg (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
                             concept-id revision-id all-revisions-index?)]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
@@ -501,7 +502,7 @@
         (debug start-log-msg)
         (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
-            _ (println "10636- concept-mapping-types = " concept-mapping-types)
+            ;_ (println "10636- concept-mapping-types = " concept-mapping-types)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [associations (get-associations context concept)
@@ -520,6 +521,7 @@
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
+                _ (println "10636- concept-indexes are " concept-indexes)
                 es-doc (es/parsed-concept->elastic-doc
                         context
                         (-> concept
