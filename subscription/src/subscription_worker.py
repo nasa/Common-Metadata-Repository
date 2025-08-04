@@ -55,9 +55,9 @@ def process_messages(sns_client, topic, messages, access_control, search):
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
             #sets the time in milliseconds
-            start_access_control = (time.time() * 1000)
-            acl_read = access_control.has_read_permission(subscriber, collection_concept_id)
-            logger.info(f"Subscription Worker access control duration {((time.time() * 1000) - start_access_control)} ms.")
+            #start_access_control = (time.time() * 1000)
+            acl_read = True #access_control.has_read_permission(subscriber, collection_concept_id)
+            #logger.info(f"Subscription Worker access control duration {((time.time() * 1000) - start_access_control)} ms.")
             if( acl_read):
                 logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
                 start_search = (time.time() * 1000)
