@@ -30,18 +30,3 @@
   [context es-cluster-name]
   (info "10636- INSIDE context->conn, system :gran-elastic is " (get-in context [:system :gran-elastic]) " and system :non-gran-elastic is " (get-in context [:system :non-gran-elastic]) " and cluster name is " es-cluster-name)
   (get-in context [:system (es-cluster-name-str->keyword es-cluster-name) :conn]))
-
-;; TODO this is hardcoded to index name...could it be better? Will these rules always be true?
-;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
-(defn get-es-cluster-name-from-index-name
-  [index-name]
-  (info "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
-  (if
-    (and (not (= index-name "1_collections_v2"))
-         (or (clojure.string/starts-with? index-name "1_c")
-             (= index-name "1_small_collections")
-             (= index-name "1_deleted_granules")
-             (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets"))))
-    cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/non-gran-elastic-name)
-  )

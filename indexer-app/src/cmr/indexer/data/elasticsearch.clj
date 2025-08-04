@@ -217,7 +217,7 @@
   [context index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
-    (let [es-cluster-name (indexer-util/get-es-cluster-name-from-index-name index)]
+    (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name index)]
       (esi/delete-index (indexer-util/context->conn context es-cluster-name) index)
       )
     (catch Throwable e
@@ -435,7 +435,7 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (let [es-cluster-name (indexer-util/get-es-cluster-name-from-index-name es-index)]
+  (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)]
     (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)
     ))
 
@@ -446,7 +446,7 @@
   ([context es-indexes _es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
-     (let [es-cluster-name (indexer-util/get-es-cluster-name-from-index-name es-index)
+     (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
            {:keys [admin-token]} (context->es-config context)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options

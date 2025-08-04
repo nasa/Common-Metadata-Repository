@@ -64,7 +64,7 @@
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        ;; TODO rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
+        ;; TODO 10636- rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
         ;(let [index-set (walk/keywordize-keys body)]
         ;  (acl/verify-ingest-management-permission request-context :update)
         ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)

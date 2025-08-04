@@ -152,20 +152,36 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
-;; TODO 10636 we need to be able to switch between clusters based on the query and index info here...
+;; TODO this is hardcoded to index name...could it be better? Will these rules always be true?
+;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
+(defn get-es-cluster-name-from-index-name
+  [index-name]
+  (info "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
+  (if
+    (and (not (= index-name "1_collections_v2"))
+         (or (clojure.string/starts-with? index-name "1_c")
+             (= index-name "1_small_collections")
+             (= index-name "1_deleted_granules")
+             (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets"))))
+    cmr.elastic-utils.config/gran-elastic-name
+    cmr.elastic-utils.config/non-gran-elastic-name)
+  )
+
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  ;; example index-info is {:index-name collection_search_alias, :type-name collection}
+  ;; will index-info always be one element or an array?
   (println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
-        ;(es-helper/search
-        ; (context->conn context cmr.elastic-utils.config/gran-elastic-name) (:index-name index-info) [(:type-name index-info)] query)
         (es-helper/search
-          (context->conn context cmr.elastic-utils.config/non-gran-elastic-name) (:index-name index-info) [(:type-name index-info)] query)
-        )
+          (context->conn context (get-es-cluster-name-from-index-name (:index-name index-info)))
+          (:index-name index-info)
+          [(:type-name index-info)]
+          query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
