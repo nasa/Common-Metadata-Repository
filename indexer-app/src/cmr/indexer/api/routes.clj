@@ -31,7 +31,7 @@
 (def ^:private index-set-routes
   "Routes providing index-set operations"
   (context "/index-sets" []
-    ;; TODO this needs to be rewritten. We need to make sure the newly created index-set doesn't already exist. And we need to know which cluster it's going to go on, which will depend on the client's wishes. So this will need to be re-written
+    ;; TODO 10636 this needs to be rewritten. We need to make sure the newly created index-set doesn't already exist. And we need to know which cluster it's going to go on, which will depend on the client's wishes. So this will need to be re-written
     (POST "/" {body :body request-context :request-context}
       ;(let [index-set (walk/keywordize-keys body)
       ;      _ (acl/verify-ingest-management-permission request-context :update)
@@ -51,7 +51,7 @@
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
-      ;; TODO maybe rename this func. It doesn't reset the index-set to any specific base state, it is just deletes it...
+      ;; TODO 10636 maybe rename this func. It doesn't reset the index-set to any specific base state, it is just deletes it...
       (index-set-svc/reset request-context)
       {:status 204})
 
@@ -64,7 +64,7 @@
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        ;; TODO 10636- rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
+        ;; TODO 10636 rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
         ;(let [index-set (walk/keywordize-keys body)]
         ;  (acl/verify-ingest-management-permission request-context :update)
         ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
@@ -80,7 +80,7 @@
         (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/non-gran-elastic-name)
         {:status 204})
 
-      ;; TODO We need to update all these endpoints to work with the new clusters
+      ;; TODO 10636 We need to update all these endpoints to work with the new clusters
       (context "/rebalancing-collections/:concept-id" [concept-id]
 
         ;; Marks the collection as re-balancing in the index set.

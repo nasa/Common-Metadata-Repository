@@ -140,7 +140,7 @@
   [ex _scroll-id]
   (throw ex))
 
-;; TODO Fix
+;; TODO 10636 Fix
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
@@ -152,7 +152,7 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
-;; TODO this is hardcoded to index name...could it be better? Will these rules always be true?
+;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
 ;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
 (defn get-es-cluster-name-from-index-name
   [index-name]

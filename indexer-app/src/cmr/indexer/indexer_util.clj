@@ -3,7 +3,7 @@
   (:require
     [cmr.common.log :as log :refer [info warn error]]))
 
-;; TODO unit test
+;; TODO 10636 unit test
 (defn es-cluster-name-str->keyword
   [es-cluster-name]
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
@@ -22,7 +22,7 @@
   [context es-cluster-name]
   (get-in context [:system (es-cluster-name-str->keyword es-cluster-name)]))
 
-;; TODO unit test
+;; TODO 10636 unit test
 (defn context->conn
   "Returns the elastisch connection in the context"
   ;([context]

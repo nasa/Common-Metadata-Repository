@@ -19,7 +19,6 @@
   "Connects to ES with the given config"
   [config]
   (let [{:keys [host port retry-handler]} config
-        _ (println "10636- About to create connection manager for config : " config)
         http-options {:conn-mgr (conn-mgr/make-reusable-conn-manager
                                   {;; Maximum number of threads that will be used for connecting.
                                    ;; Very important that this matches the maximum number of threads
@@ -37,16 +36,14 @@
                       :retry-handler retry-handler
                       :socket-timeout ELASTIC_CONNECTION_TIMOUT
                       :conn-timeout ELASTIC_CONNECTION_TIMOUT}]
-    (println "10636- finished making connection manager")
 
-    (println (format "Connecting to single ES on %s %d using retry-handler %s"
+    (info (format "Connecting to single ES on %s %d using retry-handler %s"
                   host port retry-handler))
     (esr/connect (str "http://" host ":" port) http-options)))
 
 (defn try-connect
   [config]
   (try
-    (println "10636- Inside try-connect with config " config)
     (connect-with-config config)
     (catch Exception e
       (errors/internal-error!

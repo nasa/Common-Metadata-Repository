@@ -137,7 +137,6 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (info "10636- Creating new system in bootstrap")
   (let [metadata-db (-> "metadata-db-in-bootstrap-pool"
                         (mdb-system/create-system)
                         (dissoc :log :web :scheduler :unclustered-scheduler :queue-broker))

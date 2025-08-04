@@ -36,7 +36,6 @@
   cmd
   )
 
-;;TODO JYNA
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
   started on the default port 9200/9300. Only changing host port mapping. Args:
@@ -83,7 +82,6 @@
        (.waitingFor
         (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
        (.withStartupTimeout (Duration/ofSeconds 240)))
-
      {:elasticsearch container
       :kibana kibana})))
 
@@ -106,9 +104,9 @@
         (assoc this :containers containers)
         (catch Exception e
           (error "Container(s) failed to start.")
-          (error "Dumping elasticsearch logs:\n" (.getLogs node))
+          (debug "Dumping elasticsearch logs:\n" (.getLogs node))
           (when kibana
-            (error "Dumping kibana logs:\n" (.getLogs kibana)))
+            (debug "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this _system]

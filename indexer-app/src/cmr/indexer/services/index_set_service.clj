@@ -204,7 +204,7 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
-;; TODO holy crap this is where :concepts is being set in index-set
+;; TODO 10636 this is where :concepts is being set in index-set
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
@@ -252,7 +252,6 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  (info "10636- Updating index-set" (pr-str index-set))
   (validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
@@ -266,7 +265,6 @@
   "Delete all indices having 'id_' as the prefix in all the elastic clusters, followed by
   index-set doc delete"
   [context index-set-id es-cluster-name]
-  (println "INSIDE delete-index-set with index-set-id = " index-set-id)
     (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
           {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
           idx-mapping-type (first (keys mapping))]
@@ -426,13 +424,11 @@
                        (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
                        index-name
                        "_doc")
-        _ (println "gran-index-set-ids = " gran-index-set-ids)
         {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         non-gran-index-set-ids (es/get-index-set-ids
                              (indexer-util/context->es-store context :non-gran-elastic)
                              index-name
                              "_doc")
-        _ (println "non-gran-index-set-ids = " non-gran-index-set-ids)]
     ;; delete indices assoc with index-set
     (doseq [id gran-index-set-ids]
       (delete-index-set context (str id) cmr.elastic-utils.config/gran-elastic-name))

@@ -77,7 +77,7 @@
 (defn index-group
   "Indexes an access control group."
   [context concept-map]
-  (println "Indexing group concept:" (pr-str concept-map))
+  (info "Indexing group concept:" (pr-str concept-map))
   (let [elastic-doc (group-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)]
@@ -440,7 +440,6 @@
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
-  (println "10636- elastic-store is " elastic-store)
   (m/create-index-or-update-mappings
     group-index-name group-index-settings group-type-name group-mappings elastic-store)
   (m/create-index-or-update-mappings

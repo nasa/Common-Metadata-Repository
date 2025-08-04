@@ -116,22 +116,19 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
                           jvm-info/log-jvm-statistics-job
-                          (cache-info/create-log-cache-info-job "access-control")])}
-        ;_ (println "10636- gran-search-index is " [:gran-search-index sys])
-        ;_ (println "10636- non-gran-search-index is " [:non-gran-search-index sys])
-        ]
+                          (cache-info/create-log-cache-info-job "access-control")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources, and start it running. Returns
   an updated instance of the system."
   [system]
-  (println "Access Control system starting")
+  (info "Access Control system starting")
   (let [started-system (common-sys/start system component-order)]
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
 
-    (println "Access control system started")
+    (info "Access control system started")
     started-system))
 
 (def stop
@@ -144,7 +141,6 @@
    bootstrap necessary local test data."
   [system]
   (let [started-system (start system)]
-    (println "10636- we are in dev-start")
     (try
       ;; because the create-index-or-update-mappings only updates the groups and acls index, we only call it for the non-gran cluster
       (access-control-index/create-index-or-update-mappings (:non-gran-search-index started-system))

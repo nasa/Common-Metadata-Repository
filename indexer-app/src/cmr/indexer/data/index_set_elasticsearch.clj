@@ -28,7 +28,6 @@
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
-    (println "INSIDE create-index with index-name = " index-name "and conn = " conn)
     (when-not (esi-helper/exists? conn index-name)
       (try
         (info "Now creating Elastic Index:" index-name " with idx-w-config " idx-w-config)
@@ -124,7 +123,6 @@
   [context es-index es-mapping-type doc-id es-doc]
   (try
     (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
-          _ (info "INSIDE save-document-in-elastic with es-cluster-name = " es-cluster-name)
           conn (get-in context [:system (keyword es-cluster-name) :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)

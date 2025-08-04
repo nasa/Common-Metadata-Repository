@@ -250,6 +250,7 @@
 
 ;;; Various Admin Route Functions
 
+;; TODO 10636- reset both indexes
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
   ([ctx]

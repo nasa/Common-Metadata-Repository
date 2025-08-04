@@ -312,8 +312,6 @@
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
-    (println "10636- created gran-elastic-server as : " gran-elastic-server)
-    (println "10636- created non-gran-elastic-server as : " non-gran-elastic-server)
     {:instance-name (common-sys/instance-name "dev-system")
      :apps (u/remove-nil-keys
              {:mock-echo echo-component
@@ -353,16 +351,15 @@
   (reduce (fn [system component]
             (update-in system [components-key component]
                        #(try
-                          (println (format "Starting %s component" component))
+                          (info (format "Starting %s component" component))
                           (when % (lifecycle/start % system))
                           (catch Exception e
-                            (println e "Failure during startup")
+                            (error e "Failure during startup")
                             (stop-components (stop-apps system) :pre-components)
                             (stop-components (stop-apps system) :post-components)
                             (throw e)))))
           system
-          (keys (components-key system)))
-  )
+          (keys (components-key system))))
 
 (defn- start-apps
   [system]
@@ -389,8 +386,7 @@
   (-> this
       (start-components :pre-components)
       start-apps
-      (start-components :post-components)
-      ))
+      (start-components :post-components)))
 
 (defn stop
   "Performs side effects to shut down the system and release its

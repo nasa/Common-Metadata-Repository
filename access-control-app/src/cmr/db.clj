@@ -13,8 +13,7 @@
   (let [non-gran-elastic-store (l/start (search-index/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-config) nil)
         gran-elastic-store (l/start (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-config) nil)]
     (ac-index/create-index-or-update-mappings non-gran-elastic-store)
-    (ac-index/create-index-or-update-mappings gran-elastic-store)
-    ))
+    (ac-index/create-index-or-update-mappings gran-elastic-store)))
 
 (defn -main
   "Execute the given database operation specified by input arguments."

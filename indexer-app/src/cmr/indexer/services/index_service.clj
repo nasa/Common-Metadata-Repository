@@ -521,7 +521,6 @@
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
-                _ (println "10636- concept-indexes are " concept-indexes)
                 es-doc (es/parsed-concept->elastic-doc
                         context
                         (-> concept
@@ -653,7 +652,6 @@
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
-  (info "10636- INSIDE index-concept-by-concept-id-revision-id - Getting concept from db. Concept id = " concept-id)
   (when-not concept-id
     (errors/throw-service-error
      :bad-request
@@ -664,9 +662,7 @@
       (let [concept (if revision-id
                       (meta-db/get-concept context concept-id revision-id)
                       (meta-db/get-latest-concept context concept-id))
-            _ (info "10636- concept-id = " concept-id " Concept from db is " concept)
             parsed-concept (cp/parse-concept context concept)
-            _ (info "10636- concept-id = " concept-id " parsed concept is " parsed-concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept options)))))
 

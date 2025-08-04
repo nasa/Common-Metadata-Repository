@@ -24,7 +24,7 @@
 
 (def system nil)
 
-(def gran-elastic-server nil)
+(def elastic-servers nil)
 
 (def side-api-server nil)
 
@@ -99,8 +99,8 @@
 
     ;; Start elastic search
     (alter-var-root
-      #'gran-elastic-server
-      (constantly (l/start (create-elastic-servers) nil)))
+     #'elastic-servers
+     (constantly (l/start (create-elastic-servers) nil)))
 
     ;; Start access control
     (alter-var-root
@@ -128,7 +128,7 @@
   ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
   ;; Stop elastic search
-  (alter-var-root #'gran-elastic-server #(when % (l/stop % system)))
+  (alter-var-root #'elastic-servers #(when % (l/stop % system)))
   ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 

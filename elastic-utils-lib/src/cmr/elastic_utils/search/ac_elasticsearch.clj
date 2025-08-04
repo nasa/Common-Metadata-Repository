@@ -67,6 +67,7 @@
         (remove nil?)
         flatten)))
 
+;: TODO 10636 - need to fix this func.
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   [context docs]

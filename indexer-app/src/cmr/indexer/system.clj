@@ -55,7 +55,6 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (info "10636- Creating new system in indexer")
   (let [sys {:instance-name (common-sys/instance-name "indexer")
              :log (log/create-logger-with-log-level (log-level))
              :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
@@ -110,7 +109,6 @@
       (es/create-indexes context)
       (when (or (es/cluster-requires-update? context cmr.elastic-utils.config/gran-elastic-name)
                 (es/cluster-requires-update? context cmr.elastic-utils.config/non-gran-elastic-name))
-        (println "10636- cluster requires update")
         (es/update-indexes context {}))
       (template-service/make-templates context)
       (catch Exception e
