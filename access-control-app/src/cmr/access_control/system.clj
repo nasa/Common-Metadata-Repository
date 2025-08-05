@@ -103,12 +103,12 @@
              :queue-broker          (queue-broker/create-queue-broker (config/queue-config))
              :caches                {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
-                      provider-cache/cache-key (provider-cache/create-cache)
-                      acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
-                      common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)
-                      launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-                      urs/urs-cache-key (urs/create-urs-cache)}
+                                     provider-cache/cache-key (provider-cache/create-cache)
+                                     acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
+                                     common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
+                                     common-health/health-cache-key (common-health/create-health-cache)
+                                     launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+                                     urs/urs-cache-key (urs/create-urs-cache)}
 
              :public-conf           (public-conf)
              :relative-root-url     (transmit-config/access-control-relative-root-url)
@@ -142,7 +142,7 @@
   [system]
   (let [started-system (start system)]
     (try
-      ;; because the create-index-or-update-mappings only updates the groups and acls index, we only call it for the non-gran cluster
+      ;; TODO 10636 - because the create-index-or-update-mappings only updates the groups and acls index, we only call it for the non-gran cluster, is there a better way though?
       (access-control-index/create-index-or-update-mappings (:non-gran-search-index started-system))
       ;; This is needed to bootstrap admin group for legacy services for integration tests
       (bootstrap/bootstrap started-system)

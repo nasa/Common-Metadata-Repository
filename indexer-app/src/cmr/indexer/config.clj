@@ -10,6 +10,7 @@
          ingest-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
          deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
 
+
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully
 ;; foot print of this index will remain small

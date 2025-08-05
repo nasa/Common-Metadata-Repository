@@ -250,7 +250,7 @@
 
 ;;; Various Admin Route Functions
 
-;; TODO 10636- reset both indexes
+;; TODO 10636- how to not hardcode names... maybe add a var for this search index name
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
   ([ctx]
@@ -258,6 +258,7 @@
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
    (index/reset (-> ctx :system :gran-search-index))
+   (index/reset (-> ctx :system :non-gran-search-index))
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
 
@@ -271,7 +272,7 @@
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
       (println "10636- we are in /db-migrate")
-      ;; TODO fix me we are defaulting to the gran-search-index only for now
+      ;; TODO 10636 fix me we are defaulting to the gran-search-index only for now
       (index/create-index-or-update-mappings (-> ctx :system :gran-search-index))
       {:status 204})))
 

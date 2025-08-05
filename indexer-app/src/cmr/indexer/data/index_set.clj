@@ -1,12 +1,13 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
-    [cmr.common.log :as log :refer [info warn error]]
-    [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer [info warn error]]
+   [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
@@ -1016,8 +1017,12 @@
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
    (let [fetched-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id)
+         ;_ (println "fetched-gran-index-set = " fetched-gran-index-set)
          fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name index-set-id)
-         all-index-set (merge fetched-gran-index-set fetched-non-gran-index-set)]
+         ;_ (println "fetched-non-gran-index-set = " fetched-non-gran-index-set)
+         all-index-set (index-set-service/deep-merge fetched-gran-index-set fetched-non-gran-index-set)
+         ;_ (println "all-index-set = " all-index-set)
+         ]
      {:index-names (get-in all-index-set [:index-set :concepts])
       :rebalancing-collections (get-in all-index-set
                                        [:index-set :granule :rebalancing-collections])})))
@@ -1035,7 +1040,6 @@
                              name)]
         {index-type (str mapping-type)}))))
 
-;; TODO understand what this is and how it ties into everything.
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app, returns a map of
    concept types which define what the top level field is in each mapping description.
@@ -1090,7 +1094,7 @@
   "Fetch mapping types associated with concepts. Should be a map of index types
    with the name of the top level field in the mapping description."
   [context]
-  (info "10636- INSIDE get-concept-mapping-types -- getting concept mapping types from an internal cache")
+  ;(info "10636- INSIDE get-concept-mapping-types -- getting concept mapping types from an internal cache")
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
@@ -1100,9 +1104,13 @@
   ([context coll-concept-id]
    (get-granule-index-names-for-collection context coll-concept-id nil))
   ([context coll-concept-id target-index-key]
+   ;(println "10636- INSIDE get-granule-index-names-for-collection")
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
-         small-collections-index-name (get indexes :small_collections)]
+         ;_ (println "granule indexes = " indexes)
+         small-collections-index-name (get indexes :small_collections)
+         ;_ (println "small-collections-index-name = " small-collections-index-name)
+         ]
 
      (cond
        target-index-key
@@ -1141,9 +1149,15 @@
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id _revision-id {:keys [target-index-key all-revisions-index?]} concept]
+   ;(println "10636 - INSIDE get-concept-index-names")
    (let [concept-type (cs/concept-id->type concept-id)
+         ;_ (println "concept-type = " concept-type)
          index-concept-type (resolve-generic-concept-type concept-type)
-         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
+         ;_ (println "index-concept-type = " index-concept-type)
+         ;_ (println "concept type index names = " (get-concept-type-index-names context))
+         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])
+         ;_ (println "indexes = " indexes)
+         ]
      (case concept-type
        :collection
        (cond

@@ -15,7 +15,7 @@
       (throw (Exception. (str "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got value of " es-cluster-name " instead.")))
       )))
 
-;; TODO unit test
+;; TODO 10636 unit test
 (defn context->es-store
   "Returns the elastic store object in the context.
   es-cluster-name can be 'non-gran-elastic' or 'gran-elastic'"

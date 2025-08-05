@@ -156,7 +156,7 @@
 ;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
 (defn get-es-cluster-name-from-index-name
   [index-name]
-  (info "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
+  ;(println "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
   (if
     (and (not (= index-name "1_collections_v2"))
          (or (clojure.string/starts-with? index-name "1_c")
@@ -172,7 +172,9 @@
   [context index-info query max-retries]
   ;; example index-info is {:index-name collection_search_alias, :type-name collection}
   ;; will index-info always be one element or an array?
-  (println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
+  ;(println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
+  ;; index info =  {:index-name , :type-name granule}
+  ;; query =  {:search_type query_then_fetch, :size 10, :from 0, :timeout 170s, :version true, :query {:bool {:must {:match_all {}}, :filter {:bool {:must ({:term {:collection-concept-id-doc-values C1200000001-JM_PROV1}} {:term {:concept-id G1200000002-JM_PROV1}})}}}}, :_source (:concept-id :revision-id :native-id-stored :provider-id-doc-values :metadata-format :revision-date-stored-doc-values :collection-concept-id-doc-values), :sort ({:provider-id-lowercase-doc-values {:order :asc}} {:start-date-doc-values {:order :asc}} {:concept-seq-id-long {:order asc}})}
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
@@ -261,6 +263,7 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
+  ;(println "10636 INSIDE send-query-to-elastic :default with query = " query)
   (let [elastic-query (q2e/query->elastic query)
         {sort-params :sort
          aggregations :aggs
@@ -377,8 +380,7 @@
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
   (esri/refresh (context->conn context cmr.elastic-utils.config/non-gran-elastic-name))
-  (esri/refresh (context->conn context cmr.elastic-utils.config/gran-elastic-name))
-  )
+  (esri/refresh (context->conn context cmr.elastic-utils.config/gran-elastic-name)))
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic
@@ -399,6 +401,4 @@
   (cond
     (= es-cluster-name es-config/non-gran-elastic-name) (->ElasticSearchIndex (es-config/non-gran-elastic-config) nil)
     (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
-    :else (throw (Exception. (str "expected valid elastic name but got " es-cluster-name " instead.")))
-    )
-  )
+    :else (throw (Exception. (str "expected valid elastic name but got " es-cluster-name " instead.")))))

@@ -5,7 +5,7 @@
             [cmr.elastic-utils.connect :as conn]
             [cmr.common.lifecycle :as l]))
 
-;; TODO 10636 need to change this too
+;; TODO 10636 need to change this to check both elastic clusters
 (defn elastic-running?
   "Checks if elastic is running."
   []

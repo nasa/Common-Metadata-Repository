@@ -38,7 +38,7 @@
       ;      gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
       ;      non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
       ;
-      ;  ;;TODO fix this, we need to incorporate the non-gran-index-set resp too
+      ;  ;;TODO 10636 fix this, we need to incorporate the non-gran-index-set resp too
       ;  (r/created gran-index-set-resp))
       ;; In the meantime, we are not going to allow this functionality.
       {:status 500})
@@ -60,7 +60,7 @@
         (acl/verify-ingest-management-permission request-context :read)
         (let [gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
               non-gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name id)
-              combined-index-set (merge (:index-set gran-index-set) (:index-set non-gran-index-set))] ;; temp put it as gran index set for now
+              combined-index-set (cmr.indexer.services.index-set-service/deep-merge gran-index-set non-gran-index-set)]
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}

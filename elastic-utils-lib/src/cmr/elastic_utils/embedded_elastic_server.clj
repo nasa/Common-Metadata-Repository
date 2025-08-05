@@ -33,8 +33,7 @@
   triggered by the container to update its memory setting."
   [cmd]
   (.withMemory cmd (* 4 1024 1024 1024))
-  cmd
-  )
+  cmd)
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
@@ -73,6 +72,7 @@
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
      (doto container
+       ;; modifier below is to limit local embedded elastic container memory, so it will not exit from OOM.
        (.withCreateContainerCmdModifier cmd-consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
        (.withEnv "node.name" "embedded-elastic")
@@ -94,12 +94,14 @@
 
   (start
     [this _system]
+    (debug "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
         (.start node)
         (when kibana
+          (debug "Starting kibana server on port" (:kibana-port opts))
           (.start kibana))
         (assoc this :containers containers)
         (catch Exception e

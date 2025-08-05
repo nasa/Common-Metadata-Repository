@@ -264,6 +264,7 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
+    ;; TODO 10636 - everywhere we use the full path, we can require instead, also the final home of the gran-elastic-name is TBD
     (es-helper/delete-by-query (indexer-util/context->conn indexer-context cmr.elastic-utils.config/gran-elastic-name) "_all" "granule" query)))
 
 (defmethod delete-concepts-by-id :default

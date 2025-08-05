@@ -44,7 +44,6 @@
   [prefix-id suffix]
   (string/lower-case (string/replace (format "%s_%s" prefix-id suffix) #"-" "_")))
 
-;; TODO Fix this one too index-set Jyna
 (defn- build-indices-list-w-config
   "Given an index-set, build list of indices with config."
   [idx-set es-cluster-name]
@@ -54,8 +53,7 @@
                          (add-searchable-generic-types searchable-gran-concept-types)
 
                          (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
-                         (add-searchable-generic-types searchable-non-gran-concept-types)
-                         )
+                         (add-searchable-generic-types searchable-non-gran-concept-types))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -89,7 +87,6 @@
   "Returns the index set with only the id, name, and a map of concept types to
   the index name map."
   [index-set es-cluster-name]
-  (println "10636- INSIDE prune-index-set with es-cluster-name " es-cluster-name)
   (let [prefix (:id index-set)
         generic-searchable-concept-types (cond
                                            (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name)
@@ -101,7 +98,8 @@
 
                                            :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name)))
                                            )
-        _ (println "10636 - generic-searchable-concept-types for es-cluster-name " es-cluster-name "  is " generic-searchable-concept-types)]
+        ;_ (println "10636 - generic-searchable-concept-types for es-cluster-name " es-cluster-name "  is " generic-searchable-concept-types)
+        ]
     {:id (:id index-set)
      :name (:name index-set)
      :concepts (into {} (for [concept-type generic-searchable-concept-types]
@@ -109,6 +107,7 @@
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                       [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
 
+;; TODO 10636 move this func to the commons lib
 (defn deep-merge
   "Recursively merges two maps.
    If a key exists in both and its value is also a map,
@@ -218,7 +217,6 @@
         idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
-;; TODO Jyna we need to redo this because different indexes go to different clusters now...
 (defn create-index-set
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
   index-set doc indexing fails."
@@ -231,13 +229,13 @@
         ;_ (println "indices-w-config is " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
-      (println "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
+      (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
     ;; rollback index-set creation if index creation fails
     (try
       (dorun (map #(es/create-index es-store %) indices-w-config))
       (catch ExceptionInfo e
         ;; TODO: Generic work: why does this fail to roll back with bad generics?
-        (println "failed to create index, roll back, this does not always work")
+        (info "failed to create index, roll back, this does not always work")
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
     (try

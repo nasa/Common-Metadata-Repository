@@ -101,9 +101,9 @@
   (atom :info))
 
 (defmulti create-gran-elastic-server
-          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-          in memory if applicable."
-          (fn [type]
+  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+  in memory if applicable."
+  (fn [type]
     type))
 
 (defmethod create-gran-elastic-server :in-memory
@@ -307,7 +307,7 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        gran-elastic-server (create-gran-elastic-server elastic) ;; elastic-server
+        gran-elastic-server (create-gran-elastic-server elastic)
         non-gran-elastic-server (create-non-gran-elastic-server elastic)
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)

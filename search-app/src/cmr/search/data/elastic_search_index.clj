@@ -32,12 +32,19 @@
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
+  ;(println "INSIDE get-granule-index-names")
   (let [cache (hcache/context->cache context cache-key)
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
-        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
+        ;_ (println "entire cache map after possible refresh = " (hcache/get-map cache cache-key))
+        ;; how do I see the contents of an internal cache?
+        ;_ (println "granule-index-names = " granule-index-names) ;; how can this be nil?
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
+        ;_ (println "rebalancing-collections = " rebalancing-collections)
+        ;_ (println "we dissoc rebalancing collections from granule index names...")
+        ]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
@@ -48,7 +55,10 @@
 (defn- collection-concept-ids->index-names
   "Return the granule index names for the input collection concept ids"
   [context coll-concept-ids]
-  (let [indexes (get-granule-index-names context)]
+  ;(println "INSIDE collection-concept-ids->index-names")
+  (let [indexes (get-granule-index-names context)
+        ;_ (println "gran-indexes = " indexes)
+        ]
     (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
 
 (defn- provider-ids->index-names
@@ -79,8 +89,12 @@
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
   [context query]
+  ;(println "INSIDE get-granule-indexes")
   (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
-        provider-ids (seq (pex/extract-provider-ids query))]
+        ;_ (println "coll-concept-ids = " coll-concept-ids)
+        provider-ids (seq (pex/extract-provider-ids query))
+        ;_ (println "provider-ids = " provider-ids)
+        ]
     (cond
       coll-concept-ids
       ;; Use collection concept ids to limit the indexes queried
@@ -95,6 +109,7 @@
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]
+  ;(println "INSIDE common-esi/concept-type->index-info :granule")
   {:index-name (get-granule-indexes context query)
    :type-name "granule"})
 
