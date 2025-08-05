@@ -17,7 +17,7 @@ class TestSubscriptionWorker(unittest.TestCase):
         
         mock_sqs.receive_message.assert_called_once_with(
             QueueUrl='test-queue-url',
-            MaxNumberOfMessages=10,
+            MaxNumberOfMessages=100,
             WaitTimeSeconds=1
         )
         self.assertEqual(result, {'Messages': [{'MessageId': '1'}]})
