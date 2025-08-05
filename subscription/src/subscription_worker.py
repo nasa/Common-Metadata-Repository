@@ -22,7 +22,7 @@ def receive_message(sqs_client, queue_url):
     """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
-        MaxNumberOfMessages=10,
+        MaxNumberOfMessages=100,
         # Long Polling
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
