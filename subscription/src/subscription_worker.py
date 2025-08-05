@@ -15,14 +15,14 @@ AWS_REGION = os.getenv("AWS_REGION")
 QUEUE_URL = os.getenv("QUEUE_URL")
 DEAD_LETTER_QUEUE_URL = os.getenv("DEAD_LETTER_QUEUE_URL")
 SUB_DEAD_LETTER_QUEUE_URL = os.getenv("SUB_DEAD_LETTER_QUEUE_URL")
-LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "10")
+LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "1")
 SNS_NAME = os.getenv("SNS_NAME")
 
 def receive_message(sqs_client, queue_url):
     """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
-        MaxNumberOfMessages=1,
+        MaxNumberOfMessages=10,
         # Long Polling
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
