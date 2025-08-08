@@ -103,6 +103,38 @@ class TestSearch(unittest.TestCase):
         self.assertEqual(result, expected_output)
         mock_get_concept.assert_called_once_with("G1200484356-ERICH_PROV", '1')
 
+    @patch('search.Search.get_concept')
+    @patch('search.Search.get_public_search_url')
+    def test_process_message_no_data_granule(self, mock_get_public_search_url, mock_get_concept):
+        # This tests some error cases where no DataGranule element exists in the metadata and
+        # if the location string is missing the search context.
+
+        # Setup
+        search = Search()
+        
+        # Mock the get_public_search_url method
+        mock_get_public_search_url.return_value = "https://cmr.earthdata.nasa.gov/search/"
+
+        # Mock the get_concept method
+        mock_get_concept.return_value = """
+        {
+            "GranuleUR": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01"
+        }
+        """
+
+        # Input message
+        input_message = '{"concept-id": "G1200484356-ERICH_PROV", "revision-id": "1", "granule-ur": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01", "location": "https://cmr.earthdata.nasa.gov/concepts/G1200484356-ERICH_PROV/1"}'
+
+        # Expected output
+        expected_output = {"concept-id": "G1200484356-ERICH_PROV", "granule-ur": "SWOT_L2_HR_PIXC_578_020_221L_20230710T223456_20230710T223506_PIA1_01", "location": "https://cmr.earthdata.nasa.gov/search/concepts/G1200484356-ERICH_PROV/1"}
+
+        # Call the method
+        result = search.process_message(input_message)
+
+        # Assert
+        self.assertEqual(result, expected_output)
+        mock_get_concept.assert_called_once_with("G1200484356-ERICH_PROV", '1')
+
 if __name__ == '__main__':
     unittest.main()
 

@@ -219,6 +219,7 @@
    :identifier-type :string
    :relationship-type :string
    :related-identifier :string
+   :related-identifier-with-type :string
    :title :string
    :year :int
    :type :string
