@@ -8,7 +8,7 @@
                  [commons-io "2.18.0"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
-                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
@@ -29,7 +29,7 @@
                  [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
