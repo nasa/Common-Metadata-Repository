@@ -48,7 +48,6 @@
 
 (defmethod parse-concept :tool
   [context concept]
-  (println "here in tool handler")
   (umm/parse-metadata context concept))
 
 (defmethod parse-concept :tool-association
