@@ -6,51 +6,6 @@
    [clojure.test :refer [deftest is]]
    [cmr.common.util :as util :refer [are3]]))
 
-(deftest list->string-test
-  (let [list->string @#'cmr.indexer.data.concepts.generic/list->string]
-    (is (= "ab"  (list->string ["a" "b"] nil)) "nil as a deliminator")
-
-    (are3
-     [expected given delim]
-     (is (= expected (if delim (list->string given delim) (list->string given))) "match failed")
-
-     ;; tests with no deliminator
-
-     "nil case"
-     "" nil nil
-
-     "empty case"
-     "" "" nil
-
-     "string case"
-     "string" "string" nil
-
-     "words"
-     "one two" "one two" nil
-
-     ;; tests with deliminator
-
-     "nil case"
-     "" nil ","
-
-     "here"
-     "" nil nil
-
-     "empty case"
-     "" "" ","
-
-     "string case"
-     "word" "word", ","
-
-     "multiple string case"
-     "left right" "left right" ","
-
-     "list case"
-     "left,right" ["left" "right"] ","
-
-     "word lists"
-     "Jedi Master,Padawan learner" ["Jedi Master" "Padawan learner"] ",")))
-
 (deftest test-for-field->index-complex-field
   (let [field->index-complex-field
         @#'cmr.indexer.data.concepts.generic/field->index-complex-field]

@@ -19,32 +19,6 @@
    [cmr.indexer.data.elasticsearch :as esearch]
    [cmr.transmit.metadata-db :as meta-db]))
 
-(defn- list->string
-  "Converts a value to a string representation.
-
-  If the input is a collection, it joins the elements with a separator.
-  If no separator is provided, it defaults to a space.
-
-  Args:
-    new-value: The value to be converted to a string.
-    separator (optional): The separator to use when joining collection elements.
-
-  Returns:
-    A string representation of the input value.
-
-  Examples:
-    (list->string [1 2 3])        ; => \"1 2 3\"
-    (list->string [1 2 3] \",\")  ; => \"1,2,3\"
-    (list->string \"hello\")      ; => \"hello\"
-    (list->string 42)             ; => \"42\""
-  ([new-value]
-   (list->string new-value " "))
-  ([new-value separator]
-   (cond
-     (string? new-value) new-value
-     (coll? new-value) (clojure.string/join separator (map str new-value))
-     :else (str new-value))))
-
 (defn- field->index-complex-field
   "This is an example of a complex indexer which takes a list of sub fields and
   combines them into one field"
@@ -94,7 +68,10 @@
                             (into data (map (keyword key-name) field-data)))
                           (sequence nil)
                           sub-fields)
-        value (list->string value-raw)
+        value (cond
+                (string? value-raw) value-raw
+                (coll? value-raw) (clojure.string/join " " (map str value-raw))
+                :else (str value-raw))
         value-lower (util/safe-lowercase value)]
     {(keyword field-name) value
      (keyword field-name-lower) value-lower}))
