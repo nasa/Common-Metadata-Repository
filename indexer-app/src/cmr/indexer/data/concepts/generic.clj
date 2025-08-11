@@ -41,7 +41,7 @@
     {(keyword field-name) field-value
      (keyword field-name-lower) field-value-lower}))
 
-(defn field->index-complex-field-with-values-only
+(defn- field->index-complex-field-with-values-only
   "Complex indexer field that handles both single objects and arrays,
    and formats using field values only (not field names)"
   [settings data]
@@ -105,7 +105,7 @@
 
 (defn- field->index-default-field
   "The default indexer which will map one metadata field to two indexes. One is with the literal
-   case, another is all lower case.
+   case, another is all lower case. If no field is found, then don't return anything
    Example Usage:
    (field->index-default-field
      {:Field \".VisualizationType\" :Name \"VisualizationType\"}
