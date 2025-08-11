@@ -96,8 +96,7 @@
                                            (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
                                            (add-searchable-generic-types searchable-non-gran-concept-types)
 
-                                           :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name)))
-                                           )
+                                           :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name))))
         ;_ (println "10636 - generic-searchable-concept-types for es-cluster-name " es-cluster-name "  is " generic-searchable-concept-types)
         ]
     {:id (:id index-set)
@@ -204,8 +203,10 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
+  (println "INSIDE index-requested-index-set")
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set) es-cluster-name)))
+        _ (println "index-set-w-es-index-names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -214,7 +215,8 @@
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        idx-mapping-type (first (keys mapping))]
+        idx-mapping-type (first (keys mapping))
+        _ (println "idx-mapping-type = " idx-mapping-type)]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
 (defn create-index-set

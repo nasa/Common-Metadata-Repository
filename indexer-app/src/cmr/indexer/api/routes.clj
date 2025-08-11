@@ -65,13 +65,12 @@
 
       (PUT "/" {request-context :request-context body :body}
         ;; TODO 10636 rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
-        ;(let [index-set (walk/keywordize-keys body)]
-        ;  (acl/verify-ingest-management-permission request-context :update)
-        ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-        ;  (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
-        ;  {:status 200})
-
-        {:status 500}
+        ;; TODO I need this api to work in order to update it properly in WL when we transition... augh
+        (let [index-set (walk/keywordize-keys body)]
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
+          {:status 200})
         )
 
       (DELETE "/" {request-context :request-context}

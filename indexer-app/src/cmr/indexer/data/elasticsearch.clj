@@ -98,9 +98,10 @@
 (defn index-set-requires-update?
   "Returns true if the existing index set does not match the expected index set and requires
   update. Takes either the context which will be used to request index sets or the existing
-  and expected index sets."
+  and expected index sets.
+  This does not compare the :concepts values when determining update status."
   [existing-index-set expected-index-set]
-  (let [updated-value (update-in existing-index-set [:index-set] dissoc :concepts) ;; doesn't compare the :concepts key's values... why?
+  (let [updated-value (update-in existing-index-set [:index-set] dissoc :concepts)
         result (not= updated-value expected-index-set)]
     result))
 
