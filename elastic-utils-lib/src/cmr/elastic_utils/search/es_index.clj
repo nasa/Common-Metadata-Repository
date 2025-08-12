@@ -158,11 +158,12 @@
   [index-name]
   ;(println "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
   (if
-    (and (not (= index-name "1_collections_v2"))
+    (and (not (= index-name "collection_search_alias"))
+      (and (not (= index-name "1_collections_v2"))
          (or (clojure.string/starts-with? index-name "1_c")
              (= index-name "1_small_collections")
              (= index-name "1_deleted_granules")
-             (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets"))))
+             (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets")))))
     cmr.elastic-utils.config/gran-elastic-name
     cmr.elastic-utils.config/non-gran-elastic-name)
   )
@@ -175,6 +176,7 @@
   ;(println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
   ;; index info =  {:index-name , :type-name granule}
   ;; query =  {:search_type query_then_fetch, :size 10, :from 0, :timeout 170s, :version true, :query {:bool {:must {:match_all {}}, :filter {:bool {:must ({:term {:collection-concept-id-doc-values C1200000001-JM_PROV1}} {:term {:concept-id G1200000002-JM_PROV1}})}}}}, :_source (:concept-id :revision-id :native-id-stored :provider-id-doc-values :metadata-format :revision-date-stored-doc-values :collection-concept-id-doc-values), :sort ({:provider-id-lowercase-doc-values {:order :asc}} {:start-date-doc-values {:order :asc}} {:concept-seq-id-long {:order asc}})}
+  (info "10636- es cluster we are using = " (get-es-cluster-name-from-index-name (:index-name index-info)))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
