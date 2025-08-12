@@ -121,7 +121,6 @@
 (defn save-document-in-elastic
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
-  ;(println "10636- INSIDE save-document-in-elastic with es-index = " es-index " and es-mapping-type = " es-mapping-type " and doc-id = " doc-id)
   (try
     (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
           conn (get-in context [:system (keyword es-cluster-name) :conn])

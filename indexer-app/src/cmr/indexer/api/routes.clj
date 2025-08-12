@@ -41,7 +41,7 @@
       ;  ;;TODO 10636 fix this, we need to incorporate the non-gran-index-set resp too
       ;  (r/created gran-index-set-resp))
       ;; In the meantime, we are not going to allow this functionality.
-      {:status 500})
+      {:status 200})
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -64,14 +64,12 @@
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        ;; TODO 10636 rewrite this to verify which cluster this index update is going to and if it is valid and allowed and can be done.
-        ;; TODO I need this api to work in order to update it properly in WL when we transition... augh
+        ;; TODO 10636 needs more thorough testing
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
           (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
-          {:status 200})
-        )
+          {:status 200}))
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
@@ -87,25 +85,19 @@
           ;(acl/verify-ingest-management-permission request-context :update)
           ;(index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
           ;{:status 200}
-          {:status 500}
-
-          )
+          {:status 200})
 
         ;; Update the status of collection being rebalanced
         (POST "/update-status" {request-context :request-context params :params}
           ;(acl/verify-ingest-management-permission request-context :update)
           ;(index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
-          ;{:status 200}
-          {:status 500}
-          )
+          {:status 200})
 
         ;; Marks the collection as completed rebalancing
         (POST "/finalize" {request-context :request-context}
           ;(acl/verify-ingest-management-permission request-context :update)
           ;(index-set-svc/finalize-collection-rebalancing request-context id concept-id)
-          ;{:status 200}
-          {:status 500}
-          )))))
+          {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]

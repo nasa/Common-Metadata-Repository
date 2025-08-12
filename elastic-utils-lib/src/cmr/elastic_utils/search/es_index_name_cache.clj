@@ -44,18 +44,14 @@
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]
-  ;(println "INSIDE fetch-concept-type-index-names")
   (let [fetched-index-set (indexer/get-index-set context index-set-id)
-        ;_ (println "fetched-index-set = " fetched-index-set)
         ;; We want to make sure collections in the process of being moved to a separate granule
         ;; index continue to use the small collections index for search.
         rebalancing-targets-map (get-in fetched-index-set
                                         [:index-set
                                          :granule
                                          :rebalancing-targets])
-        ;_ (println "rebalancing-targets-map = " rebalancing-targets-map)
         moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
-        ;_ (println "moving-to-separate-index = " moving-to-separate-index)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
     {:index-names index-names-map
      :rebalancing-collections moving-to-separate-index}))
@@ -63,11 +59,9 @@
 (defn refresh-index-names-cache
   "Refresh the search index-names cache."
   [context]
-  ;(println "Refreshing search index-names cache.")
+  (info "Refreshing search index-names cache.")
   (let [index-names-map (fetch-concept-type-index-names context)
-        ;_ (println "index-names-map = " index-names-map)
         index-names (:index-names index-names-map)
-        ;_ (println "index-names = " index-names)
         cache (hcache/context->cache context index-names-cache-key)]
     (hcache/set-values cache index-names-cache-key index-names)
     (hcache/set-value cache

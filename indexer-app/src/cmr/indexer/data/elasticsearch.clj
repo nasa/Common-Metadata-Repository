@@ -147,7 +147,7 @@
         (warn "10636- Actual:" (pr-str existing-index-set)))
 
       :else
-      (warn "10636- Non-gran index set exists and matches.")))
+      (info "10636- Non-gran index set exists and matches.")))
 
 
   ;; create indexes for gran-cluster
@@ -170,7 +170,7 @@
         (warn "10636- Actual:" (pr-str existing-index-set)))
 
       :else
-      (warn "10636- Gran index set exists and matches.")))
+      (info "10636- Gran index set exists and matches.")))
   )
 
 (defn update-indexes
@@ -183,7 +183,7 @@
     (if (or (= "true" (:force params))
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
-        (info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
+        ;(info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context cmr.elastic-utils.config/non-gran-elastic-name expected-index-set)
         (info "Creating collection index alias.")
         (esi/create-index-alias (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
@@ -195,7 +195,7 @@
         (info "10636-New non-gran index set:" (pr-str expected-index-set)))))
 
 
-  (info "10636-Updating gran indexes.")
+  ;(info "10636-Updating gran indexes.")
   (let [existing-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name idx-set/index-set-id)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
@@ -204,7 +204,7 @@
     (if (or (= "true" (:force params))
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
-        (info "10636-Updating the gran index set to " (pr-str expected-index-set))
+        ;(info "10636-Updating the gran index set to " (pr-str expected-index-set))
         (index-set-svc/update-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
       (do
         (info "10636-Ignoring update gran indexes request because gran index set is unchanged.")
@@ -430,8 +430,7 @@
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
   (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)]
-    (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)
-    ))
+    (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)))
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."

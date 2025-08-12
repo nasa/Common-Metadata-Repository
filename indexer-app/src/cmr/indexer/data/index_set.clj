@@ -1094,7 +1094,6 @@
   "Fetch mapping types associated with concepts. Should be a map of index types
    with the name of the top level field in the mapping description."
   [context]
-  ;(info "10636- INSIDE get-concept-mapping-types -- getting concept mapping types from an internal cache")
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
@@ -1104,13 +1103,9 @@
   ([context coll-concept-id]
    (get-granule-index-names-for-collection context coll-concept-id nil))
   ([context coll-concept-id target-index-key]
-   ;(println "10636- INSIDE get-granule-index-names-for-collection")
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
-         ;_ (println "granule indexes = " indexes)
-         small-collections-index-name (get indexes :small_collections)
-         ;_ (println "small-collections-index-name = " small-collections-index-name)
-         ]
+         small-collections-index-name (get indexes :small_collections)]
 
      (cond
        target-index-key
@@ -1149,15 +1144,9 @@
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id _revision-id {:keys [target-index-key all-revisions-index?]} concept]
-   ;(println "10636 - INSIDE get-concept-index-names")
    (let [concept-type (cs/concept-id->type concept-id)
-         ;_ (println "concept-type = " concept-type)
          index-concept-type (resolve-generic-concept-type concept-type)
-         ;_ (println "index-concept-type = " index-concept-type)
-         ;_ (println "concept type index names = " (get-concept-type-index-names context))
-         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])
-         ;_ (println "indexes = " indexes)
-         ]
+         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
      (case concept-type
        :collection
        (cond

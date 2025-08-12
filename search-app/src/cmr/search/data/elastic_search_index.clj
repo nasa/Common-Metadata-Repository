@@ -32,7 +32,6 @@
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
-  ;(println "INSIDE get-granule-index-names")
   (let [cache (hcache/context->cache context cache-key)
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do
@@ -55,10 +54,7 @@
 (defn- collection-concept-ids->index-names
   "Return the granule index names for the input collection concept ids"
   [context coll-concept-ids]
-  ;(println "INSIDE collection-concept-ids->index-names")
-  (let [indexes (get-granule-index-names context)
-        ;_ (println "gran-indexes = " indexes)
-        ]
+  (let [indexes (get-granule-index-names context)]
     (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
 
 (defn- provider-ids->index-names
@@ -89,12 +85,8 @@
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
   [context query]
-  ;(println "INSIDE get-granule-indexes")
   (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
-        ;_ (println "coll-concept-ids = " coll-concept-ids)
-        provider-ids (seq (pex/extract-provider-ids query))
-        ;_ (println "provider-ids = " provider-ids)
-        ]
+        provider-ids (seq (pex/extract-provider-ids query))]
     (cond
       coll-concept-ids
       ;; Use collection concept ids to limit the indexes queried
@@ -109,7 +101,6 @@
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]
-  ;(println "INSIDE common-esi/concept-type->index-info :granule")
   {:index-name (get-granule-indexes context query)
    :type-name "granule"})
 

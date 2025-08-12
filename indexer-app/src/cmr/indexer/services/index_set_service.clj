@@ -203,10 +203,8 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
-  (println "INSIDE index-requested-index-set")
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set) es-cluster-name)))
-        _ (println "index-set-w-es-index-names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -215,8 +213,7 @@
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        idx-mapping-type (first (keys mapping))
-        _ (println "idx-mapping-type = " idx-mapping-type)]
+        idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
 (defn create-index-set
@@ -224,11 +221,8 @@
   index-set doc indexing fails."
   [context es-cluster-name index-set]
   (validate-requested-index-set context es-cluster-name index-set false)
-  ;(println "10636- INSIDE create-index-set for es-cluster-name " es-cluster-name " with index-set = " index-set)
   (let [index-names (get-index-names index-set es-cluster-name)
-        ;_ (println "index-names = " index-names)
         indices-w-config (build-indices-list-w-config index-set es-cluster-name)
-        ;_ (println "indices-w-config is " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
