@@ -40,7 +40,7 @@
 
 (defn autocomplete-fixture
   [f]
-  (let [conn (esr/connect (url/elastic-root))
+  (let [conn (esr/connect (url/elastic-root cmr.elastic-utils.config/non-gran-elastic-name))
         documents (map #(esd/create conn "1_autocomplete" "_doc" %) test-values)]
     (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)

@@ -435,7 +435,7 @@
      (search/clear-caches)
      ;; Delete the granules from small collections to show that search is still using the separate
      ;; index
-     (index/delete-granules-from-small-collections coll2)
+     (index/delete-granules-from-small-collections-elastic-index coll2)
      (index/wait-until-indexed)
      (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "COMPLETE"} coll2)
      (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
@@ -462,8 +462,8 @@
      (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
      (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
      ;; Delete the collection specific indexes to show it has no impact on search after finalize
-     (index/delete-elasticsearch-index coll1)
-     (index/delete-elasticsearch-index coll2)
+     (index/delete-gran-elastic-index coll1)
+     (index/delete-gran-elastic-index coll2)
      (index/wait-until-indexed)
      (assert-rebalance-status {:small-collections 4 :rebalancing-status "NOT_REBALANCING"} coll1)
      (assert-rebalance-status {:small-collections 2 :rebalancing-status "NOT_REBALANCING"} coll2)

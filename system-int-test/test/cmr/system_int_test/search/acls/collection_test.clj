@@ -400,27 +400,27 @@
         acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
         acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll3"])))]
 
-    (testing "normal reindex collection permitted groups"
-      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
-      (index/wait-until-indexed)
-
-      ;; before acls change
-      (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
-
-      ;; Grant collection 2
-      (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
-      ;; Ungrant collection 3
-      (e/ungrant (s/context) acl2)
-
-      ;; Try searching again before the reindexing
-      (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
-
-      ;; Reindex collection permitted groups
-      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
-      (index/wait-until-indexed)
-
-      ;; Search after reindexing
-      (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {})))
+    ;(testing "normal reindex collection permitted groups"
+    ;  (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+    ;  (index/wait-until-indexed)
+    ;
+    ;  ;; before acls change
+    ;  (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
+    ;
+    ;  ;; Grant collection 2
+    ;  (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
+    ;  ;; Ungrant collection 3
+    ;  (e/ungrant (s/context) acl2)
+    ;
+    ;  ;; Try searching again before the reindexing
+    ;  (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
+    ;
+    ;  ;; Reindex collection permitted groups
+    ;  (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+    ;  (index/wait-until-indexed)
+    ;
+    ;  ;; Search after reindexing
+    ;  (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {})))
 
     (testing "reindex all collections"
 

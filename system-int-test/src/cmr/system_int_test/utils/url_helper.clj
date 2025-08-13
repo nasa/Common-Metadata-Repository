@@ -56,16 +56,24 @@
 ;; Elasticsearch URLs
 
 (defn elastic-root
-  []
-  (format "http://localhost:%s" (es-config/elastic-port)))
+  [elastic-name]
+  (cond
+    (= elastic-name cmr.elastic-utils.config/gran-elastic-name)
+    (format "http://localhost:%s" (es-config/elastic-port))
+
+    (= elastic-name cmr.elastic-utils.config/non-gran-elastic-name)
+    (format "http://localhost:%s" (es-config/elastic-port-non-gran))
+
+    :else
+    (throw (Exception. (str "Given wrong elastic-name: " elastic-name " to create elastic root url.")))))
 
 (defn elastic-refresh-url
-  []
-  (str (elastic-root) "/_refresh"))
+  [elastic-name]
+  (str (elastic-root elastic-name) "/_refresh"))
 
 (defn elastic-delete-tag-url
   [id]
-  (format "%s/1_tags/_doc/%s" (elastic-root) id))
+  (format "%s/1_tags/_doc/%s" (elastic-root cmr.elastic-utils.config/non-gran-elastic-name) id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
