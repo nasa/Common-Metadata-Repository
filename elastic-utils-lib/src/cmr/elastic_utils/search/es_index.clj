@@ -272,7 +272,6 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-  ;(println "10636 INSIDE send-query-to-elastic :default with query = " query)
   (let [elastic-query (q2e/query->elastic query)
         {sort-params :sort
          aggregations :aggs
