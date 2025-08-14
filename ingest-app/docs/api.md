@@ -95,13 +95,13 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/iso:smap+xml          | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json | UMM JSON          | collection, granule, variable, service, subscription, tool |
 
-Note: UMM JSON accepts an additional version parameter for `Content-Type`. Like charset, it is appended with a semicolon (;). UMM JSON version is required.
+**Note**: UMM JSON accepts an additional version parameter for `Content-Type`. Like charset, it is appended with a semicolon (;). UMM JSON version is required.
 
 For an example, the following means version 1.16.2 of the UMM JSON format:
 
     application/vnd.nasa.cmr.umm+json;version=1.16.2
 
-Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
+**Note**: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="authorization-header"></a> Authorization Header
 All Ingest API operations require specifying a Launchpad token, except for subscriptions. Subscription Ingest API operations require specifying an EDL bearer token or a Launchpad token.

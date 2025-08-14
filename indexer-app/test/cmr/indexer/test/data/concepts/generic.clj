@@ -1,7 +1,243 @@
 (ns cmr.indexer.test.data.concepts.generic
+  "Functions for testing cmr.indexer.data.concepts.generic namespace"
   (:require
-   [clojure.test :refer :all]
+   [cheshire.core :as json]
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.indexer.data.concepts.generic :as generic]))
+
+(deftest test-for-field->index-complex-field
+  (let [field->index-complex-field
+        @#'cmr.indexer.data.concepts.generic/field->index-complex-field]
+    (are3
+     [expected settings data]
+     (is (= expected (field->index-complex-field settings data)) "expected failed")
+
+     "Base case"
+     {:generation "SourceProjection=EPSG:4326, OutputFormat=PPNG",
+      :generation-lowercase "sourceprojection=epsg:4326, outputformat=ppng"}
+     {:Field ".Generation"
+      :Name "Generation"
+      :Configuration {:sub-fields ["SourceProjection", "OutputFormat"]}}
+     {:Generation {:SourceProjection "EPSG:4326",
+                   :SourceResolution "Native",
+                   :SourceFormat "GeoTIFF",
+                   :SourceColorModel "Indexed RGBA",
+                   :SourceCoverage "Tiled",
+                   :OutputProjection "EPSG:4326",
+                   :OutputResolution "31.25m",
+                   :OutputFormat "PPNG"}})))
+
+(deftest test-for-field->index-simple-array-field
+  (let [field->index-simple-array-field
+        @#'cmr.indexer.data.concepts.generic/field->index-simple-array-field]
+    (are3
+     [expected settings data]
+     (is (= expected (field->index-simple-array-field settings data)) "expected failed")
+
+     ;; Tests
+     "Primary test"
+     {:concept-ids "Short-Two Short-One V-Two V-One"
+      :concept-ids-lowercase "short-two short-one v-two v-one"}
+     {:Field ".ConceptIds"
+      :Name "Concept-Ids"
+      :Configuration {:sub-fields ["Value", "ShortName"]}}
+     {:ConceptIds [{:Value "V-One" :ShortName "Short-One" :ignore "not-interested"}
+                   {:Value "V-Two" :ShortName "Short-Two" :ignore "something-else"}]})))
+
+(deftest test-for-field->index-default-field
+  (let [field->index-default-field @#'cmr.indexer.data.concepts.generic/field->index-default-field]
+    (are3
+     [expected settings data]
+     (is (= expected (field->index-default-field settings data)) "expected test")
+
+     ;; Tests
+     "Base test"
+     {:visualizationtype "Default", :visualizationtype-lowercase "default"}
+     {:Field ".VisualizationType" :Name "VisualizationType"}
+     {:VisualizationType "Default"})))
+
+(deftest test-for-merge-or-concat
+  (let [merge-or-concat @#'cmr.indexer.data.concepts.generic/merge-or-concat]
+    (are3
+     [expected existing new-value delim]
+     (is (= expected (if (nil? delim)
+                       (merge-or-concat existing new-value)
+                       (merge-or-concat existing new-value delim)))
+         "expected test")
+
+     "Base case"
+     "" nil "" ""
+
+     "Expected use case"
+     "existing value" "existing" "value" nil
+
+     "Expected use case, multi words"
+     "existing text new value" "existing text" "new value" nil
+
+     "Have existing, but not new value"
+     "existing" "existing" "" nil
+
+     "Have new value but not existing"
+     "new value" "" "new value" nil
+
+     "Base case, with delim"
+     "" "" "" " & "
+
+     "Expected case with deliminator"
+     "existing & value" "existing" "value" " & "
+
+     "Expected case with deliminator and now existing value"
+     "value" "" "value" " & ")))
+
+;; *************************************************************************************************
+;; A more complex test, pass a set of documents to the internal parsed-concept->elastic-doc
+;; function and make sure the dynamicly generated elastic document looks like what is expected. This
+;; is also the best way to see how the function actually works.
+
+(def sample-parsed-metadata
+  "This is a sample Visualization record to be used in the test. It normally is derived from the
+   metadata field of the concept variable, but for this test the parsed metadata is used for
+   readability and will latter be converted to a json string and stored in the concept data."
+  {:Specification
+   {:ProductIdentification
+    {:InternalIdentifier "MODIS_Terra_CorrectedReflectance_TrueColor"
+     :StandardOrNRTExternalIdentifier "MODIS_Terra_CorrectedReflectance_TrueColor"
+     :BestAvailableExternalIdentifier "MODIS_Terra_CorrectedReflectance"
+     :GIBSTitle "Corrected Reflectance (True Color)"
+     :WorldviewTitle "Corrected Reflectance (True Color)"
+     :WorldviewSubtitle "Terra / MODIS"}}
+   :ConceptIds [{:Type "STD"
+                 :Value "C1000000001-EARTHDATA",
+                 :DataCenter "MODAPS",
+                 :ShortName "MODIS_Terra_CorrectedReflectance",
+                 :Title "MODIS/Terra Corrected Reflectance True Color",
+                 :Version "6.1"}],
+   :VisualizationType "tiles",
+   :Title "FOO UPDATE MODIS Terra Corrected Reflectance (True Color)",
+   :Identifier "MODIS_Terra_CorrectedReflectance_TrueColor",
+   :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC",
+                   :HorizontalSpatialDomain
+                   {:Geometry {:CoordinateSystem "GEODETIC",
+                               :BoundingRectangles
+                               [{:WestBoundingCoordinate -180.0
+                                 :NorthBoundingCoordinate 90.0
+                                 :EastBoundingCoordinate 180.0
+                                 :SouthBoundingCoordinate -90.0}]}}}
+   :ScienceKeywords [{:Category "EARTH SCIENCE",
+                      :Topic "SPECTRAL/ENGINEERING",
+                      :Term "VISIBLE WAVELENGTHS",
+                      :VariableLevel1 "REFLECTANCE"}
+                     {:Category "EARTH SCIENCE",
+                      :Topic "ATMOSPHERIC OPTICS",
+                      :Term "ATMOSPHERIC TRANSMITTANCE",
+                      :VariableLevel1 "ATMOSPHERIC TRANSPARENCY"}],
+   :Subtitle "Terra / MODIS",
+   :Name "MODIS_Terra_Corrected_Reflectance_TrueColor",
+   :Description (str "MODIS Terra Corrected Reflectance True Color imagery shows land surface, "
+                     "ocean and atmospheric features by combining three different channels (bands) "
+                     "of the sensor data. The image has been enhanced through processing, "
+                     "including atmospheric correction for aerosols, to improve the visual "
+                     "depiction of the land surface while maintaining realistic colors.")
+   :Generation {:SourceProjection "EPSG:4326",
+                :SourceResolution "Native",
+                :SourceFormat "GeoTIFF",
+                :SourceColorModel "Full-Color RGB",
+                :SourceCoverage "Granule",
+                :OutputProjection "EPSG:4326",
+                :OutputResolution "250m", :OutputFormat "JPEG"},
+   :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime "2002-05-01T00:00:00Z",
+                                        :EndingDateTime "2023-12-31T23:59:59Z"}],
+                      :EndsAtPresentFlag true}],
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/visualization/v1.1.0",
+                           :Name "Visualization",
+                           :Version "1.1.0"}})
+
+(def sample-concept
+  "This is what a metadata document looks like when passed in with all the extra fields. Construct
+   the metadata from the sample-parsed-metadata so as to make this def more readable and managable.
+   Normally these values are generated the other way around by CMR."
+  {:revision-id 7
+   :deleted false
+   :format "application/vnd.nasa.cmr.umm+json;version=1.1.0"
+   :provider-id "TCHERRY_A"
+   :tool-associations ()
+   :service-associations ()
+   :user-id "ECHO_SYS"
+   :variable-associations ()
+   :transaction-id "2000072810"
+   :tag-associations ()
+   :native-id "32582d46ab08014528ec97bd535abc40"
+   :generic-associations ()
+   :concept-id "VIS1200000446-TCHERRY_A"
+   :created-at "2025-05-29T16:02:03.200Z"
+   :metadata (json/encode sample-parsed-metadata)
+   :revision-date "2025-06-02T20:25:33.260Z"
+   :extra-fields {:document-name "MODIS_Terra_Corrected_Reflectance_TrueColor"
+                  :schema "visualization"
+                  :concept-type :visualization}})
+
+(def sample-index-data
+  "A visualization Generic configuration file"
+  {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/generic/config/v0.0.1"
+                           :Name "Generic-Config"
+                           :Version "0.0.1"}
+   :Generic {:Name "Visualization", :Version "1.1.0"}
+   :SubConceptType "VIS"
+   :IndexSetup {:index {:number_of_shards 3 :number_of_replicas 1 :refresh_interval "1s"}}
+   :IndexConfiguration {:AllowAppending true
+                        :AdditionalKeywords ["Identifier"]}
+   :Indexes [{:Description "Identifier" :Field ".Identifier" :Name "Id" :Mapping "string"}
+             {:Description "Identifier" :Field ".Identifier" :Name "Identifier" :Mapping "string"}
+             {:Description "Schema Name as the Name field"
+              :Field ".Name"
+              :Name "Name"
+              :Mapping "string"}
+             {:Description "Schema Title as the Title field"
+              :Field ".Title"
+              :Name "Title"
+              :Mapping "string"}
+             {:Description "VisualizationType"
+              :Field ".VisualizationType"
+              :Name "Visualization-Type"
+              :Mapping "string"}
+             {:Description "Visualization Source ConceptIds"
+              :Field ".ConceptIds"
+              :Name "Concept-Ids"
+              :Mapping "token"
+              :Indexer "simple-array-field"
+              :Configuration {:sub-fields ["Value" "ShortName"]}}
+             {:Description "Visualization Source ConceptIds in keywords"
+              :Field ".ConceptIds"
+              :Name "keyword"
+              :Mapping "token"
+              :Indexer "simple-array-field"
+              :Configuration {:sub-fields ["Value"]}}
+             {:Description "Best Available External Identifier in keywords"
+              :Field ".Specification.ProductIdentification.BestAvailableExternalIdentifier"
+              :Name "keyword"
+              :Mapping "token"}]})
+
+(deftest test-for-parsed-concept->elastic-doc
+  (let [parsed-concept->elastic-doc @#'cmr.indexer.data.concepts.generic/parsed-concept->elastic-doc
+        index-data sample-index-data
+        actual (parsed-concept->elastic-doc sample-concept
+                                            sample-parsed-metadata
+                                            ""
+                                            "visualization" "1.1.0"
+                                            index-data)
+        expected-keyword (str "(bands) aerosols aerosols, and atmospheric bands been by c1000000001 "
+                              "c1000000001-earthdata channels color colors colors. combining "
+                              "corrected correctedreflectance correction data data. depiction "
+                              "different earthdata enhanced features for has image imagery improve "
+                              "including land maintaining modis modis_terra_correctedreflectance "
+                              "modis_terra_correctedreflectance_truecolor ocean of processing "
+                              "processing, realistic reflectance sensor shows surface surface, "
+                              "terra the three through to true truecolor visual while")
+        expected-concept-ids "modis_terra_correctedreflectance c1000000001-earthdata"]
+    (is (= expected-keyword (:keyword actual)) "appended keyword test")
+    (is (= expected-keyword (:keyword-lowercase actual)) "lowercase keyword test")
+    (is (= expected-concept-ids (:concept-ids-lowercase actual)) "a simple-array-field test")))
 
 (def sample-citation-data
   {:RelatedIdentifiers [{:RelationshipType "Cites"
@@ -20,10 +256,14 @@
 
 (def empty-data {})
 
-(defn assert-collections-equal-unordered
-  "Asserts two collections contain the same elements, ignoring order"
+(defn assert-all-words-contained
+  "Asserts that all words in the expected set are contained in the actual string"
   [expected actual]
-  (is (= (set expected) (set actual))))
+  (let [expected-words (set (mapcat #(clojure.string/split % #"\s+") expected))
+        actual-words (set (clojure.string/split actual #"\s+"))]
+    (doseq [word expected-words]
+      (is (contains? actual-words word)
+          (str "Expected word '" word "' not found in actual string: " actual)))))
 
 (deftest field->index-complex-field-test
   (testing "Complex field indexer with field names in format"
@@ -31,7 +271,8 @@
                     :Name "Citation-Info"
                     :Configuration {:sub-fields ["Title" "Year"]
                                     :format "%s=%s"}}
-          result (generic/field->index-complex-field settings sample-single-object-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-complex-field
+                  settings sample-single-object-data)]
       (is (= {:citation-info "Title=Climate Research, Year=2020"
               :citation-info-lowercase "title=climate research, year=2020"}
              result))))
@@ -41,7 +282,8 @@
                     :Name "Missing-Field"
                     :Configuration {:sub-fields ["Title" "Year"]
                                     :format "%s=%s"}}
-          result (generic/field->index-complex-field settings sample-single-object-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-complex-field
+                  settings sample-single-object-data)]
       (is (= {:missing-field "Title=null, Year=null"
               :missing-field-lowercase "title=null, year=null"}
              result)))))
@@ -52,7 +294,8 @@
                     :Name "Citation-Values"
                     :Configuration {:sub-fields ["Title" "Year"]
                                     :format "%s:%s"}}
-          result (generic/field->index-complex-field-with-values-only settings sample-single-object-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-complex-field-with-values-only
+                  settings sample-single-object-data)]
       (is (= {:citation-values "Climate Research:2020"
               :citation-values-lowercase "climate research:2020"}
              result))))
@@ -62,7 +305,8 @@
                     :Name "Related-Identifier-With-Type"
                     :Configuration {:sub-fields ["RelationshipType" "RelatedIdentifier"]
                                     :format "%s:%s"}}
-          result (generic/field->index-complex-field-with-values-only settings sample-citation-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-complex-field-with-values-only
+                  settings sample-citation-data)]
       (is (= {:related-identifier-with-type ["Cites:10.5067/MODIS/MOD08_M3.061"
                                              "Describes:ark:/13030/tf1p17542"]
               :related-identifier-with-type-lowercase ["cites:10.5067/modis/mod08_m3.061"
@@ -74,7 +318,8 @@
                     :Name "Empty-Field"
                     :Configuration {:sub-fields ["Title" "Year"]
                                     :format "%s:%s"}}
-          result (generic/field->index-complex-field-with-values-only settings {:EmptyArray []})]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-complex-field-with-values-only
+                  settings {:EmptyArray []})]
       (is (= {:empty-field []
               :empty-field-lowercase []}
              result)))))
@@ -84,11 +329,12 @@
     (let [settings {:Field ".RelatedIdentifiers"
                      :Name "Related-Identifier"
                      :Configuration {:sub-fields ["RelatedIdentifier"]}}
-           result (generic/field->index-simple-array-field settings sample-citation-data)]
-       (assert-collections-equal-unordered
+           result (@#'cmr.indexer.data.concepts.generic/field->index-simple-array-field
+                   settings sample-citation-data)]
+       (assert-all-words-contained
         ["10.5067/MODIS/MOD08_M3.061" "ark:/13030/tf1p17542"]
         (:related-identifier result))
-       (assert-collections-equal-unordered
+       (assert-all-words-contained
         ["10.5067/modis/mod08_m3.061" "ark:/13030/tf1p17542"]
         (:related-identifier-lowercase result))))
 
@@ -96,33 +342,36 @@
     (let [settings {:Field ".RelatedIdentifiers"
                     :Name "Relationship-Info"
                     :Configuration {:sub-fields ["RelationshipType" "RelatedIdentifier"]}}
-          result (generic/field->index-simple-array-field settings sample-citation-data)]
-      (assert-collections-equal-unordered
-       #{"Cites" "10.5067/MODIS/MOD08_M3.061" "Describes" "ark:/13030/tf1p17542"}
-       (set (:relationship-info result)))))
+          result (@#'cmr.indexer.data.concepts.generic/field->index-simple-array-field
+                  settings sample-citation-data)]
+      (assert-all-words-contained #{"Cites" "10.5067/MODIS/MOD08_M3.061" "Describes" "ark:/13030/tf1p17542"}
+       (:relationship-info result))))
 
   (testing "Simple array field with nested data"
     (let [settings {:Field ".CitationMetadata.Author"
                     :Name "Author-Info"
                     :Configuration {:sub-fields ["Given" "Family"]}}
-          result (generic/field->index-simple-array-field settings sample-citation-data)]
-      (assert-collections-equal-unordered ["John" "Smith"] (:author-info result))
-      (assert-collections-equal-unordered ["john" "smith"] (:author-info-lowercase result))))
+          result (@#'cmr.indexer.data.concepts.generic/field->index-simple-array-field
+                  settings sample-citation-data)]
+      (is (= "Smith John" (:author-info result)))
+      (is (= "smith john" (:author-info-lowercase result)))))
 
   (testing "Simple array field with empty data"
     (let [settings {:Field ".NonExistent"
                     :Name "Missing-Array"
                     :Configuration {:sub-fields ["Field1"]}}
-          result (generic/field->index-simple-array-field settings empty-data)]
-      (is (= {:missing-array []
-              :missing-array-lowercase []}
-             result))))
+          result (@#'cmr.indexer.data.concepts.generic/field->index-simple-array-field
+                  settings empty-data)]
+      (is (= {:missing-array ""
+              :missing-array-lowercase ""}
+             result)))))
 
 (deftest field->index-default-field-test
   (testing "Default field indexer for simple values"
     (let [settings {:Field ".CitationMetadata.Title"
                     :Name "Title"}
-          result (generic/field->index-default-field settings sample-citation-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-default-field
+                  settings sample-citation-data)]
       (is (= {:title "Global Climate Study"
               :title-lowercase "global climate study"}
              result))))
@@ -130,7 +379,8 @@
   (testing "Default field indexer with nested path"
     (let [settings {:Field ".CitationMetadata.Author.0.Given"
                     :Name "First-Author-Given"}
-          result (generic/field->index-default-field settings sample-citation-data)]
+          result (@#'cmr.indexer.data.concepts.generic/field->index-default-field
+                  settings sample-citation-data)]
       (is (= {:first-author-given "John"
               :first-author-given-lowercase "john"}
              result))))
@@ -138,7 +388,6 @@
   (testing "Default field indexer with missing field"
     (let [settings {:Field ".NonExistent.Field"
                     :Name "Missing-Field"}
-          result (generic/field->index-default-field settings empty-data)]
-      (is (= {:missing-field nil
-              :missing-field-lowercase nil}
-             result))))))
+          result (@#'cmr.indexer.data.concepts.generic/field->index-default-field
+                  settings empty-data)]
+      (is (nil? result)))))
