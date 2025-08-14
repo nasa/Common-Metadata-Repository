@@ -464,6 +464,7 @@
          (remove nil?)
          parse-single-string-multi-valued-bucket-lists)))
 
+;; TODO CMR-10636 - this is a duplicate method from elastic-utils and I think we can remove this and add it as a dependency in this project... but have to really test it out to see.
 (defmethod common-esi/concept-type->index-info :collection
   [_context _ query]
   ;; This function mirrors the multimethod definition in search.

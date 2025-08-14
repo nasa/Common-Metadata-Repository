@@ -393,7 +393,8 @@
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (sys/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))]
+         params (merge params (when accept-format {:accept accept-format}))
+         _ (println "ingest params = " params)]
      (parse-ingest-response (client/request params) options))))
 
 (defn publish-draft

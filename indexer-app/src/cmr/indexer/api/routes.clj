@@ -41,7 +41,7 @@
       ;  ;;TODO 10636 fix this, we need to incorporate the non-gran-index-set resp too
       ;  (r/created gran-index-set-resp))
       ;; In the meantime, we are not going to allow this functionality.
-      {:status 200})
+      {:status 500})
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -77,26 +77,25 @@
         (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/non-gran-elastic-name)
         {:status 204})
 
-      ;; TODO 10636 We need to update all these endpoints to work with the new clusters
+      ;; TODO 10636 Updated. Need to test that it worked.
       (context "/rebalancing-collections/:concept-id" [concept-id]
 
         ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
-          ;(acl/verify-ingest-management-permission request-context :update)
-          ;(index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
-          ;{:status 200}
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
           {:status 200})
 
         ;; Update the status of collection being rebalanced
         (POST "/update-status" {request-context :request-context params :params}
-          ;(acl/verify-ingest-management-permission request-context :update)
-          ;(index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/update-collection-rebalancing-status request-context id concept-id (:status params))
           {:status 200})
 
         ;; Marks the collection as completed rebalancing
         (POST "/finalize" {request-context :request-context}
-          ;(acl/verify-ingest-management-permission request-context :update)
-          ;(index-set-svc/finalize-collection-rebalancing request-context id concept-id)
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/finalize-collection-rebalancing request-context id concept-id)
           {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.

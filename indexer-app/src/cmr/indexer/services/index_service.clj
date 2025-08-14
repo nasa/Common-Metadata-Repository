@@ -888,7 +888,7 @@
 
 (defn reindex-all-collections
   "Reindexes all collections in all providers. This is only called in the indexer when humanizers
-  are updated and we only index the latest collection revision."
+  are updated, and we only index the latest collection revision."
   [context]
   (let [providers (map :provider-id (meta-db2/get-providers context))]
     (info "Sending events to reindex collections in all providers:" (pr-str providers))

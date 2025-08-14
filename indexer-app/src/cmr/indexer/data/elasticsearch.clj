@@ -219,9 +219,7 @@
   [context index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
-    (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name index)]
-      (esi/delete-index (indexer-util/context->conn context es-cluster-name) index)
-      )
+    (esi/delete-index (indexer-util/context->conn context cmr.elastic-utils.config/gran-elastic-name) index)
     (catch Throwable e
       (error e (str "Failed to delete granule index: "
                     (pr-str index))))))
@@ -438,7 +436,7 @@
    (delete-document context es-indexes es-type concept-id revision-id elastic-version nil))
   ([context es-indexes _es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
-     ;; Cannot use elastisch for deletion as we require special headers on delete
+     ;; Cannot use elasticsearch for deletion as we require special headers on delete
      (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
            {:keys [admin-token]} (context->es-config context)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)

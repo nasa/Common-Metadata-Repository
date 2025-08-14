@@ -25,7 +25,8 @@
   [concept-id]
   (index/doc-present? deleted-granule/deleted-granule-index-name
                       deleted-granule/deleted-granule-type-name
-                      concept-id))
+                      concept-id
+                      cmr.elastic-utils.config/gran-elastic-name))
 
 (defn- find-deleted-granules
   "Calls get-deleted-granules endpoint and returns parsed items from response"

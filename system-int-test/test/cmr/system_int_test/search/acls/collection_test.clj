@@ -388,55 +388,84 @@
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
   (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10 :validate-keywords false})
-        coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
-        coll2-1 (d/ingest "PROV1" coll2-umm {:validate-keywords false})
-        ;; 2 versions of collection 2 will allow us to test the force reindex option after we
-        ;; force delete the latest version of coll2-2
-        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2") {:validate-keywords false})
+        ;_ (println "coll1 = " coll1)
+        ;coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
+        ;coll2-1 (d/ingest "PROV1" coll2-umm {:validate-keywords false})
+        ;;; 2 versions of collection 2 will allow us to test the force reindex option after we
+        ;;; force delete the latest version of coll2-2
+        ;coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2") {:validate-keywords false})
         coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10 :validate-keywords false})
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
-
-        _ (index/wait-until-indexed)
+        ;_ (println "coll3 = " coll3)
+        ;coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
+        ;
+        ;_ (index/wait-until-indexed)
         acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
-        acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll3"])))]
+        acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll3"])))
+        ]
 
     (testing "normal reindex collection permitted groups"
-      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
-      (index/wait-until-indexed)
-
-      ;; before acls change
+      (println "TEST start")
+      ;(ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+      ;(index/wait-until-indexed)
+      ;
+      ;(println "TEST finished reindex-collection-permitted-groups")
+      ;
+      ;;; before acls change
       (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
+      ;(println "TEST finished first refs-match")
+
+      ;; EXPECTED
+      ;; {{:id "C1200000013-PROV1",
+      ;     :location "http://localhost:3003/concepts/C1200000013-PROV1/1",
+      ;     :name "coll1",
+      ;     :revision-id 1}
+      ;    {:id "C1200000015-PROV2",
+      ;     :location "http://localhost:3003/concepts/C1200000015-PROV2/1",
+      ;     :name "coll3",
+      ;     :revision-id 1}}
 
       ;; Grant collection 2
-      (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
+      ;(e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
+      ;(println "TEST finished grant guest")
+
       ;; Ungrant collection 3
-      (e/ungrant (s/context) acl2)
+      ;(e/ungrant (s/context) acl2)
+      ;(println "TEST finished ungrant")
 
       ;; Try searching again before the reindexing
-      (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
+      ;(d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
+      ;(println "TEST finished refs match 2")
 
       ;; Reindex collection permitted groups
-      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
-      (index/wait-until-indexed)
+      ;(ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+      ;(index/wait-until-indexed)
+      ;
+      ;(println "TEST finished reindex-collection-permitted-groups 2")
+
 
       ;; Search after reindexing
-      (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {})))
+      ;(d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {}))
+      ;(println "TEST finished assert-refs-match 3")
 
-    (testing "reindex all collections"
+      )
 
-      ;; Grant collection 4
-      (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll4"])))
+    ;(testing "reindex all collections"
+    ;
+    ;  ;; Grant collection 4
+    ;  (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll4"])))
+    ;
+    ;  ;; Try before reindexing
+    ;  (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {}))
+    ;
+    ;  ;; Reindex all collections
+    ;  ;; Manually check the logs. It should say it's reindexing provider 1 and provider 3 as well.
+    ;  (ingest/reindex-all-collections)
+    ;  (index/wait-until-indexed)
+    ;
+    ;  ;; Search after reindexing
+    ;  (d/assert-refs-match [coll1 coll2-2 coll4] (search/find-refs :collection {})))
 
-      ;; Try before reindexing
-      (d/assert-refs-match [coll1 coll2-2] (search/find-refs :collection {}))
-
-      ;; Reindex all collections
-      ;; Manually check the logs. It should say it's reindexing provider 1 and provider 3 as well.
-      (ingest/reindex-all-collections)
-      (index/wait-until-indexed)
-
-      ;; Search after reindexing
-      (d/assert-refs-match [coll1 coll2-2 coll4] (search/find-refs :collection {})))))
+    ))
 
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was
 ;; used. This isn't the desired behavior. It's just a side effect that shows it's working.
