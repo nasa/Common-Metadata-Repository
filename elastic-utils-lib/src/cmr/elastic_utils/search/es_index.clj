@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
@@ -155,18 +156,24 @@
 ;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
 ;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
 (defn get-es-cluster-name-from-index-name
+  "Returns the Elasticsearch cluster name based on the index name."
   [index-name]
-  ;(println "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
-  (if
-    (and (not (= index-name "collection_search_alias"))
-      (and (not (= index-name "1_collections_v2"))
-         (or (clojure.string/starts-with? index-name "1_c")
-             (= index-name "1_small_collections")
-             (= index-name "1_deleted_granules")
-             (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets")))))
-    cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/non-gran-elastic-name)
-  )
+  (let [gran-cluster cmr.elastic-utils.config/gran-elastic-name
+        non-gran-cluster cmr.elastic-utils.config/non-gran-elastic-name
+        gran-index-set-name (str gran-cluster "-index-sets")
+
+        excluded-indices #{"collection_search_alias" "1_collections_v2"}
+        gran-specific-indices #{"1_small_collections" "1_deleted_granules"}
+
+        uses-gran-cluster? (and
+                            (not (excluded-indices index-name))
+                            (or (string/starts-with? index-name "1_c")
+                                (gran-specific-indices index-name)
+                                (= index-name gran-index-set-name)))]
+
+    (if uses-gran-cluster?
+      gran-cluster
+      non-gran-cluster)))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
@@ -265,6 +272,7 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
+  ;(println "10636 INSIDE send-query-to-elastic :default with query = " query)
   (let [elastic-query (q2e/query->elastic query)
         {sort-params :sort
          aggregations :aggs
@@ -339,7 +347,7 @@
         (if (or (nil? search-after-values)
                 (>= (count accumulated-hits) total-hits))
           ;; We've got all results
-          (do 
+          (do
             (debug "Returning all results with total hits:" total-hits
                    "and took time:" took-total
                    "timed out:" timed-out)
@@ -351,7 +359,7 @@
 
           (let [next-response (send-query-to-elastic
                                context
-                               (assoc query-with-sort 
+                               (assoc query-with-sort
                                       :page-size batch-size
                                       :search-after search-after-values))
                 new-hits (get-in next-response [:hits :hits])]
