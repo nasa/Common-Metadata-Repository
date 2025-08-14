@@ -19,7 +19,12 @@
           "description": "Contains fields for index level configurations in Elastic",
           "$ref": "#/definitions/IndexSetupType"
         },
+        "IndexConfiguration" : {
+          "description": "Contains fields related to how Indexes should be processed when creating the elastic document.",
+          "$ref": "#/definitions/IndexConfigurationType"
+        },
         "Indexes": {
+            "description": "A list of indexes to be added to the elastic document.",
             "type": "array",
             "uniqueItems": true,
             "minItems": 1,
@@ -94,11 +99,12 @@
           "required": ["Name", "Version"]
         },
         "IndexSetupType": {
+          "description": "Define Elastic configurations for the entire index. Changes here will affect lucine",
           "type": "object",
           "additionalProperties": false,
-          "Description": "Define Elastic configurations for the entire index",
           "properties": {
             "index" : {
+              "description": "Settings passed along directly to lucine",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -114,8 +120,29 @@
                 },
                 "refresh_interval" : {
                   "type": "string",
-                  "pattern": "[0-9]+s"}
+                  "pattern": "[0-9]+s"
+                }
               }
+            }
+          }
+        },
+        "IndexConfigurationType": {
+          "description": "Settings to use while parsing and handling the index list",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "AllowAppending" :{
+              "description": "true means that indexes with the same name will be appended, not overwritten",
+              "type": "boolean"
+            },
+            "AdditionalKeywords": {
+              "description": "A list of simple, top level fields to be added to the keyword (freetext)",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
             }
           }
         },
@@ -137,10 +164,10 @@
                     "minLength": 1
                 },
                 "Mapping": {
-                  "description": "The data format to map this index to",
+                  "description": "The data format to map this index to. string is of type 'keyword', and 'token' is the same as string but uses a 'whitespace' analyzer meaning each word can be found.",
                   "type": "string",
                   "default": "string",
-                  "enum": ["string", "int", "date"]
+                  "enum": ["date", "int", "string", "token"]
                 },
                 "Type": {
                     "description": "target index software to host the index",

@@ -113,7 +113,7 @@
                                              :client-id t-config/cmr-client-id}
                                    :throw-exceptions false})
           status (:status response)]
-      (if-not (some #{200 202 204} [status])
+      (when-not (some #{200 202 204} [status])
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defn save-document-in-elastic
