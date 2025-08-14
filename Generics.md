@@ -5,6 +5,30 @@ Generic documents are documents which conform to the "Generic" API in CMR. These
 
 ## Configuration
 
+### Generic Configuration File
+
+Within the Generic config.json file there is a section called `IndexConfiguration`. This contains two settings:
+
+* AllowAppending: When set to true, then multiple Indexes with the same `Name` value will be appended together to create one larger value. Otherwise the last one in the config file will be the setting used.
+* AdditionalKeywords: List of simple fields to be added to the `keyword` field for general searching. By default CMR uses: LongName, Version, Description, RelatedURLs.
+
+Indexes:
+* Description: Human readable description of field. Shows up in some logs
+* Field: [jq](https://jqlang.org) like path to field data
+* Name: Field Name
+* Mapping: The Elastic field type
+	* token: text-field-mapping
+	* string: string-field-mapping
+	* int: int-field-mapping
+	* date: date-field-mapping
+* Indexer:
+	* default (none): direct, one-to-one mapping
+	* simple-array-field: index a sub field of an array element
+	* complex-fields-only: Complex indexer field that handles both single objects and arrays, and formats using field values only (not field names)
+	* complex-field: takes a list of sub fields and combines them
+
+### CMR settings
+
 If adding a new document, you will need to update the defconf variable by either setting an ENV for global change, or by updating the default value in [/common-lib/src/cmr/common/config.clj](/common-lib/src/cmr/common/config.clj). The format for this value is either JSON for an ENV variable or a clojure map if setting directly in the default attribute of the defconfig like this:
 
 	(defconfig approved-pipeline-documents
