@@ -41,7 +41,7 @@
       ;  ;;TODO 10636 fix this, we need to incorporate the non-gran-index-set resp too
       ;  (r/created gran-index-set-resp))
       ;; In the meantime, we are not going to allow this functionality.
-      {:status 200})
+      {:status 500})
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}

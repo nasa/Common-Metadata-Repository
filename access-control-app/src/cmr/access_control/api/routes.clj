@@ -311,14 +311,14 @@
             {ctx :request-context params :params}
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
-            (reindex-groups ctx))
+            (reindex-groups ctx)) ;; TODO CMR-10636 -- need to change this func?
 
       ;; Reindex all acls
       (POST "/reindex-acls"
             {ctx :request-context params :params}
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
-            (reindex-acls ctx))
+            (reindex-acls ctx)) ;; TODO CMR-10636 -- need to change this func?
 
       (if (access-control-config/enable-cmr-groups)
         (context "/groups" []

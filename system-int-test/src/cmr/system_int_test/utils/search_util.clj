@@ -582,13 +582,15 @@
     (facets/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
-  "Parse the find-refs response based on expected format and retruns the parsed result"
+  "Parse the find-refs response based on expected format and returns the parsed result"
   [concept-type params options]
+  (println "INSIDE parse-refs-response")
   (let [;; params is not a map for catalog-rest additional attribute style tests,
         ;; we cannot destructing params as a map for the next two lines.
         echo-compatible (:echo-compatible params)
         include-facets (:include-facets params)
-        response (find-concepts-in-format mime-types/xml concept-type params options)]
+        response (find-concepts-in-format mime-types/xml concept-type params options)
+        _ (println "search response = " response)]
     (if (and echo-compatible include-facets)
       (parse-echo-facets-response response)
       (parse-reference-response echo-compatible response))))

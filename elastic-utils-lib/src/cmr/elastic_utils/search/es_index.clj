@@ -21,10 +21,12 @@
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along
    with an :index-name key. :index-name can refer to a single index or a comma separated string of
-   multiple index names."
+   multiple index names.
+   All index name strings in index-name are expected to be the same type as :type-name."
   (fn [_context concept-type _query]
     concept-type))
 
+;; TODO 10636 -- why are these defmethods here and in search app and duplicated in access-control?...need to consolidate this
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)
@@ -152,10 +154,12 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
+;; TODO 10636 FIX THIS
 ;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
 ;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
 (defn get-es-cluster-name-from-index-name
   [index-name]
+  ;; NOTE: expecting index-name to represent only one index-name as a string
   ;(println "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
   (if
     (and (not (= index-name "collection_search_alias"))
@@ -165,24 +169,29 @@
              (= index-name "1_deleted_granules")
              (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets")))))
     cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/non-gran-elastic-name)
-  )
+    cmr.elastic-utils.config/non-gran-elastic-name))
+
+(defn get-es-cluster-name-by-index-info-type
+  [index-info]
+  (if (= (:type index-info) "granule")
+    cmr.elastic-utils.config/gran-elastic-name
+    cmr.elastic-utils.config/non-gran-elastic-name))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
-  ;; example index-info is {:index-name collection_search_alias, :type-name collection}
+  ;; example index-info is {:index-name collection_search_alias, :type-name collection} OR {:index-name 1_c*,1_small_collections,-1_collections*, :type-name granule}
   ;; will index-info always be one element or an array?
   ;(println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
   ;; index info =  {:index-name , :type-name granule}
   ;; query =  {:search_type query_then_fetch, :size 10, :from 0, :timeout 170s, :version true, :query {:bool {:must {:match_all {}}, :filter {:bool {:must ({:term {:collection-concept-id-doc-values C1200000001-JM_PROV1}} {:term {:concept-id G1200000002-JM_PROV1}})}}}}, :_source (:concept-id :revision-id :native-id-stored :provider-id-doc-values :metadata-format :revision-date-stored-doc-values :collection-concept-id-doc-values), :sort ({:provider-id-lowercase-doc-values {:order :asc}} {:start-date-doc-values {:order :asc}} {:concept-seq-id-long {:order asc}})}
-  (info "10636- es cluster we are using = " (get-es-cluster-name-from-index-name (:index-name index-info)))
+  (println "10636- INSIDE do-send-with-retry with index-info = " index-info ". Determined the es cluster is = " (get-es-cluster-name-by-index-info-type index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
         (es-helper/search
-          (context->conn context (get-es-cluster-name-from-index-name (:index-name index-info)))
+          (context->conn context (get-es-cluster-name-by-index-info-type index-info))
           (:index-name index-info)
           [(:type-name index-info)]
           query))
