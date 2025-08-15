@@ -23,6 +23,8 @@
 (def es-deps-target-path
   "es-deps")
 
+(def elastic-version "7.17.25")
+
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/es-spatial-plugin"
@@ -42,7 +44,7 @@
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
-                                       [org.elasticsearch/elasticsearch "7.17.14"]
+                                       [org.elasticsearch/elasticsearch ~elastic-version]
                                        [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
@@ -77,7 +79,7 @@
                                   [org.clojure/tools.reader "1.3.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                                  [org.elasticsearch/elasticsearch "7.17.14"]
+                                  [org.elasticsearch/elasticsearch ~elastic-version]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [org.clojure/tools.namespace "0.2.11"]
