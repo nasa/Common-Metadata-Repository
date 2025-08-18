@@ -405,14 +405,14 @@
 
     (testing "normal reindex collection permitted groups"
       (println "TEST start")
-      ;(ingest/reindex-collection-permitted-groups (tc/echo-system-token))
-      ;(index/wait-until-indexed)
-      ;
-      ;(println "TEST finished reindex-collection-permitted-groups")
-      ;
-      ;;; before acls change
+      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+      (index/wait-until-indexed)
+
+      (println "TEST finished reindex-collection-permitted-groups")
+
+      ;; before acls change
       (d/assert-refs-match [coll1 coll3] (search/find-refs :collection {}))
-      ;(println "TEST finished first refs-match")
+      (println "TEST finished first refs-match")
 
       ;; EXPECTED
       ;; {{:id "C1200000013-PROV1",

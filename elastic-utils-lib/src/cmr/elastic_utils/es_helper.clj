@@ -18,6 +18,7 @@
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))
         body (apply dissoc (concat [opts] qk))]
+    (println "INSIDE final search call to ES with url = " (rest/search-url conn (join-names index)) " and body = " body " with query params = " qp)
     (rest/post conn (rest/search-url conn (join-names index))
                {:content-type :json
                 :body body

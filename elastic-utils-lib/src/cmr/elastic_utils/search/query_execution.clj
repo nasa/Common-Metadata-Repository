@@ -9,7 +9,7 @@
 
 ;; *************************************************************************************************
 
-;; TODO CMR-10636 -- whereever this is called will have to change, we cannot just add the acls to the query anymore
+;; TODO CMR-10636 -- where ever this is called will have to change, we cannot just add the acls to the query anymore
 (defmulti add-acl-conditions-to-query
   "Adds conditions to the query to enforce ACLs."
   (fn [_context query]
@@ -96,13 +96,14 @@
 
 (defmethod execute-query :elasticsearch
   [context query]
+  (println "INSIDE execute-query :elasticsearch")
   (let [[context processed-query] (concept-type-specific-query-processing
                                    context query)
         processed-query (pre-process-query-result-features context processed-query)
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
-                                 (add-acl-conditions-to-query context %)))
+                                 (add-acl-conditions-to-query context %))) ;; TODO CMR-10636 - is this going to be an issue?
                              (c2s/reduce-query context)
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]

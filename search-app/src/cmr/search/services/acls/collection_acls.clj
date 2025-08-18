@@ -11,12 +11,14 @@
 
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]
+  (println "INSIDE qe/add-acl-conditions-to-query :collection")
   ;; return unmodified query if the context has a system token
   (if (tc/echo-system-token? context)
     query
     (let [group-ids (map #(if (keyword? %) (name %) %)
                          (util/lazy-get context :sids))
           acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]
+      (println "group ids = " group-ids " and acl-cond = " acl-cond)
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
 
 
