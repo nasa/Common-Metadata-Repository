@@ -78,8 +78,6 @@
   the groups that have permission to find collections are indexed with the collections."
   [context]
 
-  (println "INSIDE reindex-collection-permitted-groups")
-
   ;; Refresh the acls
   ;; This is done because we want to make sure we have the latest acls cached. This will update
   ;; the hash code stored in the consistent cache. Both ingest and the indexer use the consistent
@@ -96,7 +94,7 @@
                                                     (get provider-id-acl-hashes provider-id)))
                                             providers)]
     (when (seq providers-requiring-reindex)
-      (println "Providers" (pr-str providers-requiring-reindex)
+      (info "Providers" (pr-str providers-requiring-reindex)
             "ACLs have changed. Reindexing collections")
       (doseq [provider providers-requiring-reindex]
         (ingest-events/publish-provider-event

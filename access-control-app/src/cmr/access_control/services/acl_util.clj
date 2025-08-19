@@ -74,7 +74,6 @@
   (let [acl-concept (merge (acl->base-concept context acl)
                            {:revision-id 1
                             :native-id (str (java.util.UUID/randomUUID))})
-        _ (println "acl-concept = " acl-concept)
         resp (mdb/save-concept context acl-concept)]
     ;; index the saved ACL here to make ingest synchronous
     (index/index-acl context

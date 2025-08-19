@@ -117,7 +117,6 @@
 (defn- create-acl
   "Returns a Ring response with the result of trying to create the ACL with the given request body."
   [request-ctx headers body]
-  (println "INSIDE create-acl")
   (validate-content-type headers)
   (acl-schema/validate-acl-json body)
   (try

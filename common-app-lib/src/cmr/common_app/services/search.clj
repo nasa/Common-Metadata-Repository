@@ -104,13 +104,12 @@
         [result-gen-time result-str] (u/time-execution
                                       (search-results->response
                                        context query (assoc results :took query-execution-time)))]
-    (println "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
+    (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
     [results result-str]))
 
 (defn find-concepts
   "Executes a search for concepts using the given query."
   [context _concept-type query]
-  (println "INSIDE find-concepts in search")
   (validate-query context query)
   ;; If the scroll-id is not nil, first look in the cache to see if there is a deferred result and
   ;; use that if so. If the scroll-id is not set and scroll is set to 'defer' then store the

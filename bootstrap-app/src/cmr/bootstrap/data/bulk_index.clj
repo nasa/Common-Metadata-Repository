@@ -77,6 +77,7 @@
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
         num-granules (index/bulk-index {:system (helper/get-indexer system)}
                                        concept-batches
+                                       cmr.elastic-utils.config/gran-elastic-name
                                        {:target-index-key target-index-key})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     (when completion-message
@@ -98,7 +99,10 @@
         params {:concept-type :granule
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)}
+                                       concept-batches
+                                       cmr.elastic-utils.config/gran-elastic-name
+                                       {})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
@@ -110,7 +114,10 @@
         params {:concept-type :collection
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+        num-collections (index/bulk-index {:system (helper/get-indexer system)}
+                                          concept-batches
+                                          cmr.elastic-utils.config/non-gran-elastic-name
+                                          {})]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
 
@@ -128,12 +135,13 @@
             gran-count
             provider-id)))
 
+;; TODO CMR-10636 fix this. We need to separate out the concepts and go to each seperate cluster
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches {})))
+    (index/bulk-index indexer-context concept-batches nil {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches nil {})))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
@@ -246,12 +254,12 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           concept-batch)
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches nil)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
     (when-not (#{:tag :granule} concept-type)
       (index/bulk-index
-       {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true}))
+       {:system (helper/get-indexer system)} concept-batches nil {:all-revisions-index? true}))
 
     (info "Indexed " total " concepts.")
     total))
@@ -281,7 +289,7 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           (map #(assoc % :deleted true) concept-batch))
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches nil)]
     (info "Deleted " total " concepts")
     total))
 

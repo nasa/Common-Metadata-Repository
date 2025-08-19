@@ -103,7 +103,7 @@
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
-                                 (add-acl-conditions-to-query context %))) ;; TODO CMR-10636 - is this going to be an issue?
+                                 (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]

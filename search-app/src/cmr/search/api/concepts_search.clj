@@ -224,7 +224,7 @@
         log-message (format "Searching for %ss from client %s in format %s with params %s"
                             (name concept-type) (:client-id ctx)
                             (rfh/printable-result-format result-format) (pr-str params))
-        _ (println (cond
+        _ (info (cond
                   short-scroll-id (format "%s, scroll-id: %s." log-message short-scroll-id)
                   search-after (format "%s, search-after: %s." log-message search-after)
                   :else (format "%s." log-message)))

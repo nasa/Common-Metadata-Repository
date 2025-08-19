@@ -139,12 +139,12 @@
   * :all-revisions-index? - true indicates this should be indexed into the all revisions index
   * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
   latest regardless of whether the version in the database is older than the _version in elastic."
-  ([context concept-batches]
-   (bulk-index context concept-batches nil))
-  ([context concept-batches options]
+  ([context concept-batches es-cluster-name]
+   (bulk-index context concept-batches es-cluster-name nil))
+  ([context concept-batches es-cluster-name options]
    (reduce (fn [num-indexed batch]
              (let [batch (prepare-batch context batch options)]
-               (es/bulk-index-documents context batch options)
+               (es/bulk-index-documents context batch es-cluster-name options)
                (+ num-indexed (count batch))))
            0
            concept-batches)))
@@ -260,8 +260,11 @@
                                         :collection
                                         (determine-reindex-batch-size provider-id)
                                         {:provider-id provider-id :latest true})]
-         (bulk-index context latest-collection-batches {:all-revisions-index? false
-                                                        :force-version? force-version?})))
+         (println "latest-collection-batches = " latest-collection-batches)
+         (bulk-index context
+                     latest-collection-batches
+                     cmr.elastic-utils.config/non-gran-elastic-name
+                     {:all-revisions-index? false :force-version? force-version?})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -272,8 +275,10 @@
                                     :collection
                                     (determine-reindex-batch-size provider-id)
                                     {:provider-id provider-id})]
-         (bulk-index context all-revisions-batches {:all-revisions-index? true
-                                                    :force-version? force-version?}))))))
+         (bulk-index context
+                     all-revisions-batches
+                     cmr.elastic-utils.config/non-gran-elastic-name
+                     {:all-revisions-index? true :force-version? force-version?}))))))
 
 (defconfig non-collection-reindex-batch-size
   "Batch size used for re-indexing other things besides collections."
@@ -289,7 +294,7 @@
                             :tag
                             (non-collection-reindex-batch-size)
                             {:latest true})]
-    (bulk-index context latest-tag-batches)))
+    (bulk-index context latest-tag-batches cmr.elastic-utils.config/non-gran-elastic-name)))
 
 (defn- time-to-visibility-text
   "This is the original log entry used by Splunk to report on time to index.

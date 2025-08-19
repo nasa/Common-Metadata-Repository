@@ -171,9 +171,9 @@
     cmr.elastic-utils.config/gran-elastic-name
     cmr.elastic-utils.config/non-gran-elastic-name))
 
-(defn get-es-cluster-name-by-index-info-type
+(defn get-es-cluster-name-by-index-info-type-name
   [index-info]
-  (if (= (:type index-info) "granule")
+  (if (= (:type-name index-info) "granule")
     cmr.elastic-utils.config/gran-elastic-name
     cmr.elastic-utils.config/non-gran-elastic-name))
 
@@ -185,13 +185,13 @@
   ;(println "INSIDE do-send-with-retry with index info = " index-info " and query = " query)
   ;; index info =  {:index-name , :type-name granule}
   ;; query =  {:search_type query_then_fetch, :size 10, :from 0, :timeout 170s, :version true, :query {:bool {:must {:match_all {}}, :filter {:bool {:must ({:term {:collection-concept-id-doc-values C1200000001-JM_PROV1}} {:term {:concept-id G1200000002-JM_PROV1}})}}}}, :_source (:concept-id :revision-id :native-id-stored :provider-id-doc-values :metadata-format :revision-date-stored-doc-values :collection-concept-id-doc-values), :sort ({:provider-id-lowercase-doc-values {:order :asc}} {:start-date-doc-values {:order :asc}} {:concept-seq-id-long {:order asc}})}
-  (println "10636- INSIDE do-send-with-retry with index-info = " index-info ". Determined the es cluster is = " (get-es-cluster-name-by-index-info-type index-info))
+  (println "10636- INSIDE do-send-with-retry with index-info = " index-info ". Determined the es cluster is = " (get-es-cluster-name-by-index-info-type-name index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
         (es-helper/search
-          (context->conn context (get-es-cluster-name-by-index-info-type index-info))
+          (context->conn context (get-es-cluster-name-by-index-info-type-name index-info))
           (:index-name index-info)
           [(:type-name index-info)]
           query))

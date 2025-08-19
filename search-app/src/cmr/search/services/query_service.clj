@@ -202,7 +202,6 @@
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
                                       context concept-type params tag-data))
-        _ (println "INSIDE find-concepts-by-parameters query-service with query = " query)
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        context concept-type query))
@@ -213,7 +212,7 @@
         log-message (log-search-result-metadata (:hits results) (name concept-type)
                                                 total-took (:client-id context) (:token context) result-format
                                                 "with params %s" (pr-str params))]
-    (println (cond
+    (info (cond
             scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
             search-after (format "%s, search-after: %s, new search-after: %s."
                                  log-message
