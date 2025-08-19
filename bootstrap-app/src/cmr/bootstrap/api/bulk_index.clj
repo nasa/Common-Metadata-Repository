@@ -74,6 +74,7 @@
                    \"granule\", \"collection\", etc.
     concept_ids  - a vector of concept ids."
   [context request-details-map params]
+  (println "INSIDE index-concepts-by-id in api/bulk_index.clj")
   (let [dispatcher (api-util/get-dispatcher context params :index-concepts-by-id)
         provider-id (get request-details-map "provider_id")
         concept-type (keyword (get request-details-map "concept_type"))

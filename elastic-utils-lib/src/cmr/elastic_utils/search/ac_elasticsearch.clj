@@ -6,6 +6,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config]
    [cmr.elastic-utils.es-helper :as es-helper]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
@@ -70,11 +71,11 @@
 ;: TODO 10636 - need to fix this func.
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
-  [context docs]
+  [context docs es-cluster-name]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          ;; TODO 10636- this conn will not work anymore there is no :db, it's either gran or non-gran cluster, so need to change
-          conn (get-in context [:system :db :conn])
+          ;; TODO 10636- technically this func to do this conversion already exists in context->es-store in indexer-util.clj, need to organize this later
+          conn (get-in context [:system (cmr.elastic-utils.config/es-cluster-name-str->keyword es-cluster-name)])
           response (es-helper/bulk conn bulk-operations)
           ;; we don't care about version conflicts or deletes that aren't found
           bad-errors (some (fn [item]

@@ -100,6 +100,7 @@
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
   [context dispatcher provider-id concept-type concept-ids]
+  (println "INSIDE index-concepts-by-id in bootstrap_service.clj")
   (dispatch/index-concepts-by-id dispatcher context provider-id concept-type concept-ids))
 
 (defn index-variables

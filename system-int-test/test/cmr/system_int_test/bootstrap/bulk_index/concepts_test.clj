@@ -226,7 +226,8 @@
 
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
-       (assert-indexed-tags [tag1])))))
+       (assert-indexed-tags [tag1]))
+     )))
 
 (deftest ^{:kaocha/skip true
            :oracle true} zzz_bulk-index-after-date-time
