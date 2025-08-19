@@ -1,2 +1,2 @@
-urllib3==1.26.19
+urllib3~=2.5.0
 schedule
