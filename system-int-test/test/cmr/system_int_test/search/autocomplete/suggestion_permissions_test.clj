@@ -37,7 +37,7 @@
            {:format :umm-json
             :validate-keywords false})
 
-        ;; Create another restricted collection with different data center, this one will will delete later
+        ;; Create another restricted collection with different data center, this one we will delete later
         second-restricted-collection (d/ingest-umm-spec-collection
                           "PROV1"
                           (data-umm-spec/collection
@@ -118,9 +118,9 @@
                      set)))))
      
     (testing "Authorized user should see suggestions for all collections"
-      (let [authorized-results (extract-autocomplete-entries 
-                                (search/get-autocomplete-json 
-                                 "q=ORG" 
+      (let [authorized-results (extract-autocomplete-entries
+                                (search/get-autocomplete-json
+                                 "q=ORG"
                                  {:headers {:authorization authorized-token}}))]
         ;; Should find all organizations in the results except the deleted collection's organization
         (is (= #{"RESTRICTED-ORG" "PUBLIC-ORG" "RESTRICTED-ORG3"}
@@ -128,10 +128,10 @@
                      (map :value)
                      set)))))
 
-    ;; Delete all catalog item permissions, making all collections inaccessible      
+    ; Delete all catalog item permissions, making all collections inaccessible
     (e/ungrant-by-search (s/context) {:identity-type "catalog_item"})
 
-    ;; Re-index the collections and suggestions
+    ; Re-index the collections and suggestions
     (index/wait-until-indexed)
     (ingest/reindex-collection-permitted-groups transmit-config/mock-echo-system-token)
     (index/wait-until-indexed)
@@ -164,11 +164,11 @@
                                      "q=PUBLIC-ORG"
                                      {:headers {:authorization unauthorized-token}}))]
           (is (empty? unauthorized-results))))
-          
+
       ;; Now grant guest permission to the restricted collection
-      (e/grant-guest (s/context) 
+      (e/grant-guest (s/context)
                      (e/coll-catalog-item-id "PROV1" (e/coll-id ["Restricted Collection"])))
-      
+
       ;; Re-index and clear caches
       (index/wait-until-indexed)
       (ingest/reindex-collection-permitted-groups transmit-config/mock-echo-system-token)
@@ -176,16 +176,16 @@
       (index/reindex-suggestions)
       (index/wait-until-indexed)
       (search/clear-caches)
-      
+
       (testing "After granting guest permission, users should see suggestions for previously restricted collection"
-        (let [guest-results (extract-autocomplete-entries 
+        (let [guest-results (extract-autocomplete-entries
                              (search/get-autocomplete-json "q=RESTRICTED-ORG"))
-              unauthorized-results (extract-autocomplete-entries 
-                                    (search/get-autocomplete-json 
-                                     "q=RESTRICTED-ORG" 
+              unauthorized-results (extract-autocomplete-entries
+                                    (search/get-autocomplete-json
+                                     "q=RESTRICTED-ORG"
                                      {:headers {:authorization unauthorized-token}}))]
 
-          ;; Should now contain the previously restricted organization for guest users, 
+          ;; Should now contain the previously restricted organization for guest users,
           ;; but not the other restricted organizations, nor the public organization that
           ;; had its permissions revoked
           (is (= #{"RESTRICTED-ORG"}

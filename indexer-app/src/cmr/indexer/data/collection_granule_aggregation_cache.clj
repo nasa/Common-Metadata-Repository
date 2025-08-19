@@ -229,7 +229,7 @@
                (meta-db/get-latest-concepts context)
                ;; wrap it in a vector to make a batch to bulk index
                vector
-               (index-service/bulk-index context)))))
+               (index-service/bulk-index context cmr.elastic-utils.config/non-gran-elastic-name)))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))

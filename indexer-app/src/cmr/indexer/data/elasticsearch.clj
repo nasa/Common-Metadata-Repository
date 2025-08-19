@@ -360,31 +360,29 @@
                   {:keys [_id status error]} resp-data]]
       (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
 
-;; TODO 10636- have to separate the docs in the bulk to non-gran and gran -- going to just disable this for now
+;; TODO 10636- check validity of this
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
   [context docs]
-  ;(doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-  ;  (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-  ;        conn (indexer-util/context->conn context)
-  ;        response (es-helper/bulk conn bulk-operations)]
-  ;    (handle-bulk-index-response response)))
+  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+    (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
+          conn (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+          response (es-helper/bulk conn bulk-operations)]
+      (handle-bulk-index-response response)))
   nil
   )
 
-;; TODO 10636- have to separate the docs in the bulk to non-gran and gran -- going to just disable this for now
+;; TODO 10636- check validity of this
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
-  ([context docs]
-   (bulk-index-documents context docs nil))
-  ([context docs {:keys [all-revisions-index?]}]
-   ;(doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-   ;  (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-   ;        conn (indexer-util/context->conn context)
-   ;        response (es-helper/bulk conn bulk-operations)]
-   ;    (handle-bulk-index-response response)))
-   nil
-   ))
+  ([context docs es-cluster-name]
+   (bulk-index-documents context docs es-cluster-name nil))
+  ([context docs es-cluster-name {:keys [all-revisions-index?]}]
+   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
+           conn (indexer-util/context->conn context es-cluster-name)
+           response (es-helper/bulk conn bulk-operations)]
+       (handle-bulk-index-response response)))))
 
 (defn get-es-cluster-conn
   [context es-index]
