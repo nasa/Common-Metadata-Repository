@@ -142,13 +142,13 @@
   [ex _scroll-id]
   (throw ex))
 
-;; TODO 10636 Fix
+;; TODO 10636 - Test
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
-  [context scroll-id]
+  [context scroll-id es-cluster-name]
   (try
     (es-helper/scroll
-     (context->conn context cmr.elastic-utils.config/gran-elastic-name)
+     (context->conn context es-cluster-name)
      scroll-id
      {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
@@ -189,7 +189,7 @@
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
-        (scroll-search context scroll-id)
+        (scroll-search context scroll-id (get-es-cluster-name-by-index-info-type-name index-info))
         (es-helper/search
           (context->conn context (get-es-cluster-name-by-index-info-type-name index-info))
           (:index-name index-info)

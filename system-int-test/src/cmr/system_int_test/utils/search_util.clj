@@ -220,6 +220,7 @@
                               :form-params params
                               :content-type :x-www-form-urlencoded)
                        (assoc request-map :query-params params))
+         _ (println "request-map = " request-map)
          response (client/request request-map)]
      (when throw-exceptions?
        (is (= 200 (:status response))))
@@ -410,6 +411,7 @@
   (let [response (get-search-failure-data
                   (find-concepts-in-format umm-json-format concept-type params options))
         {:keys [status body]} response]
+    (println "INSIDE find-concepts-umm-json-common: Response = " response)
     (if (= status 200)
       {:status status
        :body body

@@ -8,6 +8,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (info warn error)]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.elasticsearch :as es]
@@ -138,10 +139,10 @@
 ;; TODO CMR-10636 fix this. We need to separate out the concepts and go to each seperate cluster
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
-  [system concept-batches]
+  [system concept-batches es-cluster-name]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches nil {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches nil {})))
+    (index/bulk-index indexer-context concept-batches es-cluster-name {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches es-cluster-name {})))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
@@ -158,7 +159,10 @@
                          db provider
                          params
                          (:db-batch-size system))
-        num-concepts (bulk-index-concept-batches system concept-batches)
+        es-cluster-name (if (= concept-type :granule)
+                          cmr.elastic-utils.config/gran-elastic-name
+                          cmr.elastic-utils.config/non-gran-elastic-name)
+        num-concepts (bulk-index-concept-batches system concept-batches es-cluster-name)
         msg (format "Indexing of %s %s revisions for provider %s completed."
                     num-concepts
                     (name concept-type)
@@ -184,14 +188,15 @@
   "Bulk index ACLs or access groups"
   [system concept-batches]
   (info "Indexing concepts")
-  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches cmr.elastic-utils.config/non-gran-elastic-name))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
-  [system concept-batches]
+  [system concept-batches es-cluster-name]
   (info "Indexing concepts")
-  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-cluster-name))
 
+;; TODO CMR-10636 -- This whole series of index funcs need to be tested thoroughly.
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
   newer than the given date time and then index them."
@@ -206,9 +211,13 @@
                  params)
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
+        es-cluster-name (if (= concept-type :granule)
+                          cmr.elastic-utils.config/gran-elastic-name
+                          cmr.elastic-utils.config/non-gran-elastic-name)
+        _ (println "INSIDE fetch-and-index-new-concepts with concept-type = " concept-type " and concept batches = " concept-batches " and es-cluster-name = " es-cluster-name)
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
                                                  (index-access-control-concepts system concept-batches)
-                                                 (index-concepts system concept-batches))]
+                                                 (index-concepts system concept-batches es-cluster-name))]
 
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
@@ -242,6 +251,7 @@
 (defn index-concepts-by-id
   "Index concepts of the given type for the given provider with the given concept-ids."
   [system provider-id concept-type concept-ids]
+  (println "INSIDE index-concepts-by-id in data/bulk_index.clj")
   (let [db (helper/get-metadata-db-db system)
         provider (helper/get-provider system provider-id)
         ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
@@ -254,7 +264,11 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           concept-batch)
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches nil)]
+        es-cluster-name (if (= :granule concept-type)
+                          cmr.elastic-utils.config/gran-elastic-name
+                          cmr.elastic-utils.config/non-gran-elastic-name)
+        _ (println "es-cluster-name selected = " es-cluster-name " for concept-batches in index-concepts-by-id = " concept-batches)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
     (when-not (#{:tag :granule} concept-type)

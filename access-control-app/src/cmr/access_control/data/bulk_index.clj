@@ -40,13 +40,13 @@
   * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
   latest regardless of whether the version in the database is older than the _version in elastic.
   Returns a map with keys of :num-indexed and :max-revision-date."
-  ([context concept-batches]
-   (bulk-index-with-revision-date context concept-batches nil))
-  ([context concept-batches options]
+  ([context concept-batches es-cluster-name]
+   (bulk-index-with-revision-date context concept-batches es-cluster-name nil))
+  ([context concept-batches es-cluster-name options]
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
                    batch (prepare-batch context batch options)]
-               (es/bulk-index-documents context batch)
+               (es/bulk-index-documents context batch es-cluster-name)
                {:num-indexed (+ num-indexed (count batch))
                 :max-revision-date max-revision-date}))
            {:num-indexed 0 :max-revision-date nil}

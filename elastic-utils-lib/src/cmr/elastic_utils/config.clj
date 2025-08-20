@@ -120,3 +120,15 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
+
+;; TODO 10636 unit test
+(defn es-cluster-name-str->keyword
+  [es-cluster-name]
+  (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
+                                  es-cluster-name
+                                  (keyword es-cluster-name))]
+    (if (or (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/gran-elastic-name))
+            (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/non-gran-elastic-name)))
+      es-cluster-name-keyword
+      (throw (Exception. (str "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got value of " es-cluster-name " instead.")))
+      )))

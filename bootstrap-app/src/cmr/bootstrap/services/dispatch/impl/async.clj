@@ -55,6 +55,7 @@
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
   [this context provider-id concept-type concept-ids]
+  (println "INSIDE index-concepts-by-id in async.clj")
   (let [channel (:concept-id-channel this)]
     (info "Adding bulk index request to concept-id channel.")
     (async/go (>! channel {:provider-id provider-id
