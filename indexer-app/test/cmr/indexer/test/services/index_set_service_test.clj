@@ -22,20 +22,26 @@
     (is (= expected-index-name3 actual-index-name3))))
 
 (deftest prune-index-set-test
-  (let [pruned-index-set {:id 3
-                          :name "cmr-base-index-set"
-                          :concepts (merge
-                                     {:collection  {:C6-PROV3 "3_c6_prov3"
-                                                    :C4-PROV2 "3_c4_prov2"}
-                                      :granule {:small_collections "3_small_collections"
-                                                :C4-PROV3 "3_c4_prov3"
-                                                :C5-PROV5 "3_c5_prov5"}
-                                      :tag {}
-                                      :variable {}
-                                      :service {}
-                                      :tool {}
-                                      :deleted-granule {}
-                                      :autocomplete {}
-                                      :subscription {}}
-                                     (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}]
-    (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
+  (let [expected-pruned-gran-index-set {:id 3
+                                        :name "cmr-base-index-set"
+                                        :concepts (merge
+                                                    {:granule {:small_collections "3_small_collections"
+                                                               :C4-PROV3 "3_c4_prov3"
+                                                               :C5-PROV5 "3_c5_prov5"}
+                                                     :deleted-granule {}})}
+        expected-pruned-non-gran-index-set {:id 3
+                                            :name "cmr-base-index-set"
+                                            :concepts (merge
+                                                        {:collection  {:C6-PROV3 "3_c6_prov3"
+                                                                       :C4-PROV2 "3_c4_prov2"}
+                                                         :tag {}
+                                                         :variable {}
+                                                         :service {}
+                                                         :tool {}
+                                                         :autocomplete {}
+                                                         :subscription {}}
+                                                        (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}
+        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/non-gran-elastic-name)
+        actual-pruned-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/gran-elastic-name)]
+    (is (= expected-pruned-gran-index-set actual-pruned-gran-index-set))
+    (is (= expected-pruned-non-gran-index-set actual-pruned-non-gran-index-set))))
