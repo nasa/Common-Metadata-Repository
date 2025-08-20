@@ -271,7 +271,6 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      (println "10636- we are in /db-migrate")
       ;; TODO 10636 fix me we are defaulting to the gran-search-index only for now
       (index/create-index-or-update-mappings (-> ctx :system :gran-search-index))
       {:status 204})))
