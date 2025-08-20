@@ -130,5 +130,4 @@
     (if (or (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/gran-elastic-name))
             (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/non-gran-elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (str "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got value of " es-cluster-name " instead.")))
-      )))
+      (throw (Exception. (str "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got value of " es-cluster-name " instead."))))))

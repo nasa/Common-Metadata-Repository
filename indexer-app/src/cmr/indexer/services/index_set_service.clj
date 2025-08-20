@@ -76,12 +76,13 @@
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
-(defn given-index-names->es-index-names
-  "Map given names with generated elastic index names."
-  [index-names-array prefix-id]
-  (apply merge
-         (for [index-name index-names-array]
-           {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
+;; TODO CMR-10636 I believe this is unused func, so should be deleted
+;(defn given-index-names->es-index-names
+;  "Map given names with generated elastic index names."
+;  [index-names-array prefix-id]
+;  (apply merge
+;         (for [index-name index-names-array]
+;           {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
@@ -96,9 +97,7 @@
                                            (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
                                            (add-searchable-generic-types searchable-non-gran-concept-types)
 
-                                           :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name))))
-        ;_ (println "10636 - generic-searchable-concept-types for es-cluster-name " es-cluster-name "  is " generic-searchable-concept-types)
-        ]
+                                           :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name))))]
     {:id (:id index-set)
      :name (:name index-set)
      :concepts (into {} (for [concept-type generic-searchable-concept-types]
