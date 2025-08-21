@@ -120,7 +120,6 @@
    :retry-handler nil
    :admin-token (elastic-admin-token)})
 
-;; TODO 10636 unit test
 (defn es-cluster-name-str->keyword
   [es-cluster-name]
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
