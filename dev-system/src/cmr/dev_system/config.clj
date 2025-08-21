@@ -24,12 +24,13 @@
   {:default 10000
    :type Long})
 
-(defconfig embedded-kibana-port
+(defconfig embedded-kibana-gran-port
   "Specifies port to run an embedded kibana on."
   {:default 5601
    :type Long})
 
-(defconfig embedded-kibana-port-non-gran
+;; TODO CMR-10636 -- I believe kibana ports also need to be updated in AWS param store
+(defconfig embedded-kibana-non-gran-port
            "Specifies port to run an embedded kibana on."
            {:default 5602
             :type Long})

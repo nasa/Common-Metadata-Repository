@@ -562,4 +562,4 @@
   "Clear the scroll context for the given scroll id"
   [context scroll-id]
   (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/gran-elastic-name) scroll-id)
-  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/non-gran-elastic-name) scroll-id))
+  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/elastic-name) scroll-id))

@@ -80,7 +80,7 @@
   (info "Indexing group concept:" (pr-str concept-map))
   (let [elastic-doc (group-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
-        elastic-store (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)]
+        elastic-store (esi/context->search-index context cmr.elastic-utils.config/elastic-name)]
     (m/save-elastic-doc
       elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true
@@ -91,7 +91,7 @@
   "Removes group from index by concept ID."
   [context concept-id revision-id]
   (info "Unindexing group concept:" concept-id " revision:" revision-id)
-  (m/delete-by-id (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)
+  (m/delete-by-id (esi/context->search-index context cmr.elastic-utils.config/elastic-name)
                   group-index-name
                   group-type-name
                   concept-id
@@ -114,7 +114,7 @@
   "Unindexes all access groups owned by provider-id."
   [context provider-id]
   (info "Unindexing all groups for" provider-id)
-  (es-helper/delete-by-query (esi/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+  (es-helper/delete-by-query (esi/context->conn context cmr.elastic-utils.config/elastic-name)
                      group-index-name
                      group-type-name
                      ;; only :provider-id-lowercase is indexed, so to find the access group by
@@ -381,7 +381,7 @@
    (info "Indexing ACL concept:" (pr-str concept-map) "with options:" (pr-str options))
    (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
          {:keys [concept-id revision-id]} concept-map
-         elastic-store (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)]
+         elastic-store (esi/context->search-index context cmr.elastic-utils.config/elastic-name)]
      (m/save-elastic-doc
        elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
        (merge
@@ -393,7 +393,7 @@
   "Removes ACL from index by concept ID."
   [context concept-id revision-id]
   (info "Unindexing acl concept:" concept-id " revision:" revision-id)
-  (m/delete-by-id (esi/context->search-index context cmr.elastic-utils.config/non-gran-elastic-name)
+  (m/delete-by-id (esi/context->search-index context cmr.elastic-utils.config/elastic-name)
                   acl-index-name
                   acl-type-name
                   concept-id
@@ -429,7 +429,7 @@
 (defn unindex-acls-by-provider
   "Removes all ACLs granting permissions to the specified provider ID from the index."
   [context provider-id]
-  (es-helper/delete-by-query (esi/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+  (es-helper/delete-by-query (esi/context->conn context cmr.elastic-utils.config/elastic-name)
                      acl-index-name
                      acl-type-name
                      {:term {:target-provider-id-lowercase (string/lower-case provider-id)}}))

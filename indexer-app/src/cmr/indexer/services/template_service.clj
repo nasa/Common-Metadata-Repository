@@ -15,7 +15,7 @@
 (defn- make-template
   "Send individual template map to be ingested to elasticsearch"
   [context index-template-key]
-  (es-index/create-index-template (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+  (es-index/create-index-template (indexer-util/context->conn context cmr.elastic-utils.config/elastic-name)
                                   (name index-template-key)
                                   (index-template-key index-templates)))
 

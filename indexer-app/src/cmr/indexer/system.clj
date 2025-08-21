@@ -32,7 +32,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :gran-elastic :non-gran-elastic :scheduler :queue-broker :web :nrepl])
+  [:log :caches :gran-elastic :elastic :scheduler :queue-broker :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -55,34 +55,34 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:instance-name (common-sys/instance-name "indexer")
-             :log (log/create-logger-with-log-level (log-level))
-             :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
-             :non-gran-elastic (es/create-elasticsearch-store (es-config/non-gran-elastic-config) es-config/non-gran-elastic-name)
-             :web           (web/create-web-server (transmit-config/indexer-port) routes/make-api)
-             :nrepl         (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
+  (let [sys {:instance-name     (common-sys/instance-name "indexer")
+             :log               (log/create-logger-with-log-level (log-level))
+             :gran-elastic      (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
+             :elastic           (es/create-elasticsearch-store (es-config/elastic-config) es-config/elastic-name)
+             :web               (web/create-web-server (transmit-config/indexer-port) routes/make-api)
+             :nrepl             (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key                        (af/create-consistent-acl-cache
-                                                                [:catalog-item :system-object :provider-object])
-                      index-set/index-set-cache-key           (consistent-cache/create-consistent-cache
-                                                                {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
-                                                                 :keys-to-track        index-set-mappings-redis-keys})
-                      acl/token-imp-cache-key                 (acl/create-token-imp-cache)
-                      kf/kms-cache-key                        (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key             (kl/create-kms-short-name-cache)
-                      kl/kms-umm-c-cache-key                  (kl/create-kms-umm-c-cache)
-                      kl/kms-location-cache-key               (kl/create-kms-location-cache)
-                      kl/kms-measurement-cache-key            (kl/create-kms-measurement-cache)
-                      cgac/coll-gran-aggregate-cache-key      (cgac/create-cache)
-                      hf/humanizer-cache-key                  (hf/create-cache-client)
-                      metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
-                      common-health/health-cache-key          (common-health/create-health-cache)}
-             :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                           jvm-info/log-jvm-statistics-job
-                           (cache-info/create-log-cache-info-job "indexer")])
-             :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
+             :caches            {af/acl-cache-key                        (af/create-consistent-acl-cache
+                                                                           [:catalog-item :system-object :provider-object])
+                                 index-set/index-set-cache-key           (consistent-cache/create-consistent-cache
+                                                                           {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
+                                                                            :keys-to-track        index-set-mappings-redis-keys})
+                                 acl/token-imp-cache-key                 (acl/create-token-imp-cache)
+                                 kf/kms-cache-key                        (kf/create-kms-cache)
+                                 kl/kms-short-name-cache-key             (kl/create-kms-short-name-cache)
+                                 kl/kms-umm-c-cache-key                  (kl/create-kms-umm-c-cache)
+                                 kl/kms-location-cache-key               (kl/create-kms-location-cache)
+                                 kl/kms-measurement-cache-key            (kl/create-kms-measurement-cache)
+                                 cgac/coll-gran-aggregate-cache-key      (cgac/create-cache)
+                                 hf/humanizer-cache-key                  (hf/create-cache-client)
+                                 metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
+                                 common-health/health-cache-key          (common-health/create-health-cache)}
+             :scheduler         (jobs/create-scheduler
+                                  `system-holder
+                                  [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
+                                   jvm-info/log-jvm-statistics-job
+                                   (cache-info/create-log-cache-info-job "indexer")])
+             :queue-broker      (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :access-control :echo-rest :kms :search])))
 
@@ -108,7 +108,7 @@
     (try
       (es/create-indexes context)
       (when (or (es/cluster-requires-update? context cmr.elastic-utils.config/gran-elastic-name)
-                (es/cluster-requires-update? context cmr.elastic-utils.config/non-gran-elastic-name))
+                (es/cluster-requires-update? context cmr.elastic-utils.config/elastic-name))
         (es/update-indexes context {}))
       (template-service/make-templates context)
       (catch Exception e

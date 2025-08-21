@@ -156,7 +156,7 @@
 (defn- context->conn
   [context es-cluster-name]
   (case es-cluster-name
-    cmr.elastic-utils.config/non-gran-elastic-name (get-in context [:system :non-gran-search-index :conn])
+    cmr.elastic-utils.config/elastic-name (get-in context [:system :search-index :conn])
     cmr.elastic-utils.config/gran-elastic-name (get-in context [:system :gran-search-index :conn])))
 
 (comment defn- get-collection-permitted-groups

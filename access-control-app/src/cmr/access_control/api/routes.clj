@@ -258,7 +258,7 @@
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
    (index/reset (-> ctx :system :gran-search-index))
-   (index/reset (-> ctx :system :non-gran-search-index))
+   (index/reset (-> ctx :system :search-index))
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
 
@@ -272,7 +272,7 @@
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
       ;; TODO 10636 test me
-      (index/create-index-or-update-mappings (-> ctx :system :non-gran-search-index))
+      (index/create-index-or-update-mappings (-> ctx :system :search-index))
       {:status 204})))
 
 ;;; S3 routes

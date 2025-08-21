@@ -83,7 +83,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :gran-search-index :non-gran-search-index :queue-broker :scheduler :web :nrepl])
+  [:log :caches :gran-search-index :search-index :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -94,29 +94,29 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:instance-name         (common-sys/instance-name "access-control")
-             :log                   (log/create-logger-with-log-level (log-level))
-             :gran-search-index     (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :non-gran-search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-name)
-             :web                   (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
-             :nrepl                 (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-             :queue-broker          (queue-broker/create-queue-broker (config/queue-config))
-             :caches                {af/acl-cache-key (af/create-acl-cache
-                                        [:system-object :provider-object :single-instance-object])
-                                     provider-cache/cache-key (provider-cache/create-cache)
-                                     acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
-                                     common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                                     common-health/health-cache-key (common-health/create-health-cache)
-                                     launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-                                     urs/urs-cache-key (urs/create-urs-cache)}
+  (let [sys {:instance-name     (common-sys/instance-name "access-control")
+             :log               (log/create-logger-with-log-level (log-level))
+             :gran-search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
+             :search-index      (search-index/create-elastic-search-index cmr.elastic-utils.config/elastic-name)
+             :web               (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
+             :nrepl             (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
+             :queue-broker      (queue-broker/create-queue-broker (config/queue-config))
+             :caches            {af/acl-cache-key                              (af/create-acl-cache
+                                                                                 [:system-object :provider-object :single-instance-object])
+                                 provider-cache/cache-key                      (provider-cache/create-cache)
+                                 acl/collection-field-constraints-cache-key    (acl/create-access-constraints-cache)
+                                 common-enabled/write-enabled-cache-key        (common-enabled/create-write-enabled-cache)
+                                 common-health/health-cache-key                (common-health/create-health-cache)
+                                 launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+                                 urs/urs-cache-key                             (urs/create-urs-cache)}
 
-             :public-conf           (public-conf)
-             :relative-root-url     (transmit-config/access-control-relative-root-url)
-             :scheduler             (jobs/create-scheduler
-                         `system-holder
-                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job
-                          (cache-info/create-log-cache-info-job "access-control")])}]
+             :public-conf       (public-conf)
+             :relative-root-url (transmit-config/access-control-relative-root-url)
+             :scheduler         (jobs/create-scheduler
+                                  `system-holder
+                                  [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
+                                   jvm-info/log-jvm-statistics-job
+                                   (cache-info/create-log-cache-info-job "access-control")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start
@@ -143,7 +143,7 @@
   (let [started-system (start system)]
     (try
       ;; TODO 10636 - because the create-index-or-update-mappings only updates the groups and acls index, we only call it for the non-gran cluster, is there a better way though?
-      (access-control-index/create-index-or-update-mappings (:non-gran-search-index started-system))
+      (access-control-index/create-index-or-update-mappings (:search-index started-system))
       ;; This is needed to bootstrap admin group for legacy services for integration tests
       (bootstrap/bootstrap started-system)
       (catch Exception e

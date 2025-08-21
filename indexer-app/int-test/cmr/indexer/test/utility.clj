@@ -146,7 +146,7 @@
 
 (defn elastic-root
   []
-  (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
+  (format "http://%s:%s" (es-config/gran-elastic-host) (es-config/gran-elastic-port)))
 
 (defn safe-decode
   "Safely decodes the response body as JSON. If there's an exception the body as a string is returned."

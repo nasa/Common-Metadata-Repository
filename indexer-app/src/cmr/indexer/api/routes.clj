@@ -37,7 +37,7 @@
       (let [index-set (walk/keywordize-keys body)
             _ (acl/verify-ingest-management-permission request-context :update)
             gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-            non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
+            index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/elastic-name index-set)]
         (r/created gran-index-set-resp)))
 
     ;; respond with index-sets in elastic
@@ -56,7 +56,7 @@
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (let [gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
-              non-gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name id)
+              non-gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/elastic-name id)
               combined-index-set (cmr.indexer.services.index-set-service/deep-merge gran-index-set non-gran-index-set)]
           (r/response combined-index-set)))
 
@@ -65,13 +65,13 @@
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)
+          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/elastic-name index-set)
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
         (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/gran-elastic-name)
-        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/non-gran-elastic-name)
+        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/elastic-name)
         {:status 204})
 
       ;; TODO 10636 Updated. Need to test that it worked.
