@@ -220,7 +220,6 @@
                               :form-params params
                               :content-type :x-www-form-urlencoded)
                        (assoc request-map :query-params params))
-         _ (println "request-map = " request-map)
          response (client/request request-map)]
      (when throw-exceptions?
        (is (= 200 (:status response))))
@@ -411,7 +410,6 @@
   (let [response (get-search-failure-data
                   (find-concepts-in-format umm-json-format concept-type params options))
         {:keys [status body]} response]
-    (println "INSIDE find-concepts-umm-json-common: Response = " response)
     (if (= status 200)
       {:status status
        :body body
@@ -584,15 +582,13 @@
     (facets/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
-  "Parse the find-refs response based on expected format and returns the parsed result"
+  "Parse the find-refs response based on expected format and retruns the parsed result"
   [concept-type params options]
-  (println "INSIDE parse-refs-response")
   (let [;; params is not a map for catalog-rest additional attribute style tests,
         ;; we cannot destructing params as a map for the next two lines.
         echo-compatible (:echo-compatible params)
         include-facets (:include-facets params)
-        response (find-concepts-in-format mime-types/xml concept-type params options)
-        _ (println "search response = " response)]
+        response (find-concepts-in-format mime-types/xml concept-type params options)]
     (if (and echo-compatible include-facets)
       (parse-echo-facets-response response)
       (parse-reference-response echo-compatible response))))

@@ -104,17 +104,17 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:instance-name            (common-sys/instance-name "search")
-             :log                      (log/create-logger-with-log-level (log-level))
+        sys {:instance-name (common-sys/instance-name "search")
+             :log (log/create-logger-with-log-level (log-level))
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
-             :embedded-systems         {:metadata-db metadata-db}
-             :gran-search-index        (common-idx/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :non-gran-search-index     (common-idx/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-name)
-             :web                      (web-server/create-web-server (transmit-config/search-port) routes/handlers)
-             :nrepl                    (nrepl/create-nrepl-if-configured (search-nrepl-port))
+             :embedded-systems {:metadata-db metadata-db}
+             :gran-search-index (common-idx/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
+             :non-gran-search-index (common-idx/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-name)
+             :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
+             :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches                   {elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
+             :caches {elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
@@ -140,11 +140,11 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
-             :public-conf              (public-conf)
+             :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
              ;; running all jobs on all nodes
-             :scheduler                (jobs/create-scheduler
+             :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           hgrf/refresh-has-granules-map-job

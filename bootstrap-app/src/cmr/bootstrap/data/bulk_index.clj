@@ -267,7 +267,6 @@
         es-cluster-name (if (= :granule concept-type)
                           cmr.elastic-utils.config/gran-elastic-name
                           cmr.elastic-utils.config/non-gran-elastic-name)
-        _ (println "es-cluster-name selected = " es-cluster-name " for concept-batches in index-concepts-by-id = " concept-batches)
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
@@ -304,8 +303,7 @@
                           (map #(assoc % :deleted true) concept-batch))
         es-cluster-name (if (= concept-type :granule)
                           cmr.elastic-utils.config/gran-elastic-name
-                          cmr.elastic-utils.config/non-gran-elastic-name
-                          )
+                          cmr.elastic-utils.config/non-gran-elastic-name)
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
     (info "Deleted " total " concepts")
     total))

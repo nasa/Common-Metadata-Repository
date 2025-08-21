@@ -271,8 +271,8 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      ;; TODO 10636 fix me we are defaulting to the gran-search-index only for now
-      (index/create-index-or-update-mappings (-> ctx :system :gran-search-index))
+      ;; TODO 10636 test me
+      (index/create-index-or-update-mappings (-> ctx :system :non-gran-search-index))
       {:status 204})))
 
 ;;; S3 routes

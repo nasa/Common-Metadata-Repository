@@ -37,13 +37,7 @@
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
-        ;_ (println "entire cache map after possible refresh = " (hcache/get-map cache cache-key))
-        ;; how do I see the contents of an internal cache?
-        ;_ (println "granule-index-names = " granule-index-names) ;; how can this be nil?
-        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
-        ;_ (println "rebalancing-collections = " rebalancing-collections)
-        ;_ (println "we dissoc rebalancing collections from granule index names...")
-        ]
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name

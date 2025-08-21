@@ -88,7 +88,6 @@
 
 (defn index-concepts-by-id
   [params result]
-  (println "INSIDE index-concepts-by-id in api/messages.clj")
   (if (api-util/synchronous? params)
     (format "Processed %s concepts for bulk indexing." result)
     (str "Processing concepts for bulk indexing.")))

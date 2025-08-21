@@ -96,7 +96,6 @@
 
 (defmethod execute-query :elasticsearch
   [context query]
-  (println "INSIDE execute-query :elasticsearch")
   (let [[context processed-query] (concept-type-specific-query-processing
                                    context query)
         processed-query (pre-process-query-result-features context processed-query)
