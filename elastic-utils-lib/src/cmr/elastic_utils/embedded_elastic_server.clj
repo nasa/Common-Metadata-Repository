@@ -1,14 +1,15 @@
 (ns cmr.elastic-utils.embedded-elastic-server
-  "Used to run an Elasticsearch server inside an embedded docker container."
+  "Used to run Elasticsearch servers inside an embedded docker container."
   (:require
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error]]
    [cmr.common.util :as util])
   (:import
-   (java.time Duration)
-   (org.testcontainers.containers FixedHostPortGenericContainer Network)
-   (org.testcontainers.containers.wait.strategy Wait)
-   (org.testcontainers.images.builder ImageFromDockerfile)))
+    (java.time Duration)
+    (java.util.function Consumer)
+    (org.testcontainers.containers FixedHostPortGenericContainer Network)
+    (org.testcontainers.containers.wait.strategy Wait)
+    (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
@@ -25,6 +26,14 @@
     (.withFixedExposedPort (int http-port) 5601)
     (.withNetwork network)
     (.withStartupTimeout (Duration/ofSeconds 240))))
+
+(defn- container-cmd
+  "In order to limit the local memory that embedded elastic uses, we have to create a function
+  to pass into the container cmd modifier to limit the memory. This func defines the command that will be
+  triggered by the container to update its memory setting."
+  [cmd]
+  (.withMemory cmd (* 4 1024 1024 1024))
+  cmd)
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
@@ -51,6 +60,10 @@
                    (.get docker-image))
                  elasticsearch-official-docker-image)
          container (FixedHostPortGenericContainer. image)
+         ;; create the consumer object that will accept a func that defines a command that the container will use to update its settings
+         cmd-consumer (reify Consumer
+                    (accept [_ cmd]
+                      (container-cmd cmd)))
          network (Network/newNetwork)
          kibana (when kibana-port
                   (build-kibana kibana-port network))]
@@ -59,6 +72,8 @@
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
      (doto container
+       ;; modifier below is to limit local embedded elastic container memory, so it will not exit from OOM.
+       (.withCreateContainerCmdModifier cmd-consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
        (.withEnv "node.name" "embedded-elastic")
        (.withNetwork network)

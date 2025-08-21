@@ -6,10 +6,13 @@
             [cmr.common.lifecycle :as l]))
 
 (defn elastic-running?
-  "Checks if elastic is running."
+  "Checks if all elastic clusters running."
   []
-  (let [c (conn/try-connect (config/elastic-config))]
-    (:ok? (conn/health {:system {:db {:conn c}}} :db))))
+  (let [gran-elastic-conn (conn/try-connect (config/gran-elastic-config))
+        non-gran-elastic-conn (conn/try-connect (config/elastic-config))]
+    (:ok? (conn/health {:system {:db {:conn gran-elastic-conn}}} :db))
+    (:ok? (conn/health {:system {:db {:conn non-gran-elastic-conn}}} :db))))
+
 
 (defn run-elastic-fixture
   "Test fixture that will automatically run elasticsearch if it is not detected as currently
@@ -17,9 +20,13 @@
   [f]
   (if (elastic-running?)
     (f)
-    (let [port (config/elastic-port)
-          server (l/start (ees/create-server port) nil)]
+    (let [gran-elastic-port (config/gran-elastic-port)
+          gran-elastic-server (l/start (ees/create-server gran-elastic-port) nil)
+          non-gran-elastic-port (config/elastic-port)
+          non-gran-elastic-server (l/start (ees/create-server non-gran-elastic-port) nil)]
       (try
         (f)
         (finally
-          (l/stop server nil))))))
+          (do
+            (l/stop gran-elastic-server nil)
+            (l/stop non-gran-elastic-server nil)))))))

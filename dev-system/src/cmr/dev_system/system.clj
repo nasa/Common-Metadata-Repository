@@ -100,24 +100,45 @@
 (def in-memory-elastic-log-level-atom
   (atom :info))
 
-(defmulti create-elastic
+(defmulti create-gran-elastic-server
   "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
   in memory if applicable."
   (fn [type]
     type))
 
-(defmethod create-elastic :in-memory
+(defmethod create-gran-elastic-server :in-memory
   [_]
-  (let [http-port (elastic-config/elastic-port)]
+  (let [http-port (elastic-config/gran-elastic-port)]
     (elastic-server/create-server http-port
                                   {:log-level (name @in-memory-elastic-log-level-atom)
-                                   :kibana-port (dev-config/embedded-kibana-port)
+                                   :kibana-port (dev-config/embedded-kibana-gran-port)
                                    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
                                                "es_libs" "elasticsearch/es_libs"
                                                "embedded-security.policy" "elasticsearch/embedded-security.policy"
                                                "plugins" "elasticsearch/plugins"}})))
 
-(defmethod create-elastic :external
+(defmethod create-gran-elastic-server :external
+  [_]
+  nil)
+
+(defmulti create-elastic-server
+          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+          in memory if applicable."
+          (fn [type]
+            type))
+
+(defmethod create-elastic-server :in-memory
+  [_]
+  (let [http-port (elastic-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  {:log-level (name @in-memory-elastic-log-level-atom)
+                                   :kibana-port (dev-config/embedded-kibana-non-gran-port)
+                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                                               "es_libs" "elasticsearch/es_libs"
+                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                                               "plugins" "elasticsearch/plugins"}})))
+
+(defmethod create-elastic-server :external
   [_]
   nil)
 
@@ -286,7 +307,8 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        elastic-server (create-elastic elastic)
+        gran-elastic-server (create-gran-elastic-server elastic)
+        elastic-server (create-elastic-server elastic)
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
@@ -301,7 +323,8 @@
               :search (create-search-app db-component queue-broker)
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
-                       {:elastic-server elastic-server
+                       {:gran-elastic-server gran-elastic-server
+                        :elastic-server elastic-server
                         :broker-wrapper queue-broker
                         :redis-server redis-server
                         :sqs-server sqs-server})
