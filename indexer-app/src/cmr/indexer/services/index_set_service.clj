@@ -50,7 +50,7 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name)
-                         (add-searchable-generic-types searchable-gran-concept-types)
+                         searchable-gran-concept-types
 
                          (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types))
@@ -67,7 +67,7 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name)
-                         (add-searchable-generic-types searchable-gran-concept-types)
+                         searchable-gran-concept-types
 
                          (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types)
@@ -119,8 +119,8 @@
         :else v2))
     m1 m2))
 
-(defn get-index-sets
-  "Fetch all index-sets in elastic."
+(defn get-all-index-sets
+  "Fetch all index-sets in elastic and combines it into one json."
   [context]
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
         idx-mapping-type (first (keys mapping))

@@ -168,7 +168,7 @@
   using DMS. It does the same work as bulk-index, but instead of returning the number of concepts
   indexed it returns a map with keys of :num-indexed and :max-revision-date."
   ([context concept-batches es-cluster-name]
-   (bulk-index-with-revision-date context concept-batches {}))
+   (bulk-index-with-revision-date context concept-batches es-cluster-name {}))
   ([context concept-batches es-cluster-name options]
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)

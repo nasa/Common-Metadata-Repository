@@ -187,7 +187,7 @@
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
-  (info "Indexing concepts")
+  (info "Indexing access control concepts")
   (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches cmr.elastic-utils.config/non-gran-elastic-name))
 
 (defn- index-concepts
@@ -243,7 +243,7 @@
                                                                                 (:db-batch-size system)
                                                                                 start-index)]]
                          (:num-indexed (if (= concept-type :tag)
-                                         (index-concepts system concept-batches)
+                                         (index-concepts system concept-batches cmr.elastic-utils.config/non-gran-elastic-name)
                                          (index-access-control-concepts system concept-batches)))))]
     (info "Indexed" total "system concepts.")
     total))
@@ -286,7 +286,6 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
-    ;; TODO 10636 - everywhere we use the full path, we can require instead, also the final home of the gran-elastic-name is TBD
     (es-helper/delete-by-query (indexer-util/context->conn indexer-context cmr.elastic-utils.config/gran-elastic-name) "_all" "granule" query)))
 
 (defmethod delete-concepts-by-id :default
@@ -303,7 +302,11 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           (map #(assoc % :deleted true) concept-batch))
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches nil)]
+        es-cluster-name (if (= concept-type :granule)
+                          cmr.elastic-utils.config/gran-elastic-name
+                          cmr.elastic-utils.config/non-gran-elastic-name
+                          )
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
     (info "Deleted " total " concepts")
     total))
 

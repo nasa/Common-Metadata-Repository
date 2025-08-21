@@ -33,20 +33,17 @@
   (context "/index-sets" []
     ;; TODO 10636 this needs to be rewritten. We need to make sure the newly created index-set doesn't already exist. And we need to know which cluster it's going to go on, which will depend on the client's wishes. So this will need to be re-written
     (POST "/" {body :body request-context :request-context}
-      ;(let [index-set (walk/keywordize-keys body)
-      ;      _ (acl/verify-ingest-management-permission request-context :update)
-      ;      gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-      ;      non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
-      ;
-      ;  ;;TODO 10636 fix this, we need to incorporate the non-gran-index-set resp too
-      ;  (r/created gran-index-set-resp))
-      ;; In the meantime, we are not going to allow this functionality.
-      {:status 500})
+      ;; this will automatically separate out the index sets by cluster and put them into those clusters
+      (let [index-set (walk/keywordize-keys body)
+            _ (acl/verify-ingest-management-permission request-context :update)
+            gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+            non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/non-gran-elastic-name index-set)]
+        (r/created gran-index-set-resp)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :read)
-      (r/response (index-set-svc/get-index-sets request-context)))
+      (r/response (index-set-svc/get-all-index-sets request-context)))
 
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
