@@ -399,10 +399,8 @@
   ;(info "10636- concept : " concept-id " : es-indexes are: " es-indexes)
   (doseq [es-index es-indexes]
     (let [conn (get-es-cluster-conn context es-index)
-          ;_ (info "10636- concept : " concept-id " : es conn is " conn)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-          ;_ (info "10636- concept : " concept-id " and es-index = " es-index " and elastic-id = " elastic-id " and es-type = " es-type " and es-doc = " es-doc)
           result (try-elastic-operation
                   es-helper/put conn es-index es-type es-doc elastic-id elastic-version)]
       (when (:error result)
