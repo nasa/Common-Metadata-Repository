@@ -170,8 +170,11 @@
 (defn index-cfg-validation
   "Verify if required elements are present to create an elastic index."
   [index-set es-cluster-name]
+  (println "INSIDE index-cfg-validation")
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
-        json-index-set-str (json/generate-string index-set)]
+        _ (println "indicies w config = " indices-w-config)
+        json-index-set-str (json/generate-string index-set)
+        _ (println "json index set str = " json-index-set-str)]
     (when-not (every? true? (map #(and (boolean (% :index-name))
                                        (boolean (% :settings)) (boolean (% :mapping))) indices-w-config))
       (m/missing-idx-cfg-msg json-index-set-str))))
@@ -188,14 +191,18 @@
 (defn validate-requested-index-set
   "Verify input index-set is valid."
   [context es-cluster-name index-set allow-update?]
+  (println "INSIDE validate-request-index-set with es-cluster-name = " es-cluster-name " and index-set = " index-set " and allow-update? " allow-update?)
   (when-not allow-update?
     (when-let [error (index-set-existence-check context es-cluster-name index-set)]
       (errors/throw-service-error :conflict error))
     (when-let [error (id-name-existence-check index-set)]
+      (println "id-name-existence check failed")
       (errors/throw-service-error :invalid-data error)))
   (when-let [error (index-set-id-validation index-set)]
+    (println "index set id validation failed")
     (errors/throw-service-error :invalid-data error))
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
+    (println "index cfg validation failed")
     (errors/throw-service-error :invalid-data error)))
 
 ;; TODO 10636 this is where :concepts is being set in index-set
