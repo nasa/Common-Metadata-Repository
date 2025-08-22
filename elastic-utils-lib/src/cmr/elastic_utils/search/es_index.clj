@@ -175,20 +175,6 @@
       gran-cluster
       non-gran-cluster)))
 
-;(defn get-es-cluster-name-from-index-name
-;  "Given one index-name, we determine which elastic cluster it belongs in."
-;  [index-name]
-;  ;; NOTE: expecting index-name to represent only one index-name as a string
-;  (if
-;    (and (not (= index-name "collection_search_alias"))
-;         (and (not (= index-name "1_collections_v2"))
-;              (or (clojure.string/starts-with? index-name "1_c")
-;                  (= index-name "1_small_collections")
-;                  (= index-name "1_deleted_granules")
-;                  (= index-name (str es-config/gran-elastic-name "-index-sets")))))
-;    es-config/gran-elastic-name
-;    es-config/elastic-name))
-
 (defn get-es-cluster-name-by-index-info-type-name
   [index-info]
   (if (= (:type-name index-info) "granule")

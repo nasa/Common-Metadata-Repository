@@ -3,12 +3,8 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as qm]
-   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as es-index]))
-
-(def gran-cluster es-config/gran-elastic-name)
-(def non-gran-cluster es-config/elastic-name)
 
 (deftest test-query->execution-params
   (let [query->execution-params #'es-index/query->execution-params
