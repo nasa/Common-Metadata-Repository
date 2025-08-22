@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
@@ -13,6 +14,7 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -64,7 +66,7 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
     (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
-    :else (throw (Exception. (str "expected specific elastic name but got " es-cluster-name " instead.")))))
+    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
@@ -153,22 +155,39 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
-;; TODO 10636 FIX THIS
 ;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
-;; TODO unit test this --  need a sys test as well, so that if any index is created or found, we will auto warn that something could break with this
 (defn get-es-cluster-name-from-index-name
+  "Given one index-name, we determine which elastic cluster it belongs in."
   [index-name]
-  ;; NOTE: expecting index-name to represent only one index-name as a string
-  ;(println "10636- INSIDE get-es-cluster-from-index-name. Given index-name = " index-name)
-  (if
-    (and (not (= index-name "collection_search_alias"))
-      (and (not (= index-name "1_collections_v2"))
-         (or (clojure.string/starts-with? index-name "1_c")
-             (= index-name "1_small_collections")
-             (= index-name "1_deleted_granules")
-             (= index-name (str es-config/gran-elastic-name "-index-sets")))))
-    cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/elastic-name))
+  (let [gran-cluster cmr.elastic-utils.config/gran-elastic-name
+        non-gran-cluster cmr.elastic-utils.config/elastic-name
+        gran-index-set-name (str gran-cluster "-index-sets")
+
+        excluded-indices #{"collection_search_alias" "1_collections_v2"}
+        gran-specific-indices #{"1_small_collections" "1_deleted_granules"}
+
+        uses-gran-cluster? (and
+                             (not (excluded-indices index-name))
+                             (or (string/starts-with? index-name "1_c")
+                                 (gran-specific-indices index-name)
+                                 (= index-name gran-index-set-name)))]
+    (if uses-gran-cluster?
+      gran-cluster
+      non-gran-cluster)))
+
+;(defn get-es-cluster-name-from-index-name
+;  "Given one index-name, we determine which elastic cluster it belongs in."
+;  [index-name]
+;  ;; NOTE: expecting index-name to represent only one index-name as a string
+;  (if
+;    (and (not (= index-name "collection_search_alias"))
+;         (and (not (= index-name "1_collections_v2"))
+;              (or (clojure.string/starts-with? index-name "1_c")
+;                  (= index-name "1_small_collections")
+;                  (= index-name "1_deleted_granules")
+;                  (= index-name (str es-config/gran-elastic-name "-index-sets")))))
+;    es-config/gran-elastic-name
+;    es-config/elastic-name))
 
 (defn get-es-cluster-name-by-index-info-type-name
   [index-info]
@@ -404,4 +423,4 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
     (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
-    :else (throw (Exception. (str "expected valid elastic name but got " es-cluster-name " instead.")))))
+    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))

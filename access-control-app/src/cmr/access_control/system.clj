@@ -21,6 +21,7 @@
    [cmr.common.log :as log :refer [info]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]
@@ -96,8 +97,8 @@
   []
   (let [sys {:instance-name (common-sys/instance-name "access-control")
              :log (log/create-logger-with-log-level (log-level))
-             :gran-search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/elastic-name)
+             :gran-search-index (search-index/create-elastic-search-index es-config/gran-elastic-name)
+             :search-index (search-index/create-elastic-search-index es-config/elastic-name)
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
