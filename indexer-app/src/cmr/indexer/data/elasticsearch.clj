@@ -275,8 +275,8 @@
 
 (defn- context->es-config
   "Returns the elastic config in the context"
-  [context]
-  (get-in context [:system :db :config]))
+  [context es-cluster-name]
+  (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :config]))
 
 (defn parse-non-tombstone-associations
   "Returns the parsed associations that are not tombstones"
@@ -427,7 +427,7 @@
    (doseq [es-index es-indexes]
      ;; Cannot use elasticsearch for deletion as we require special headers on delete
      (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
-           {:keys [admin-token]} (context->es-config context)
+           {:keys [admin-token]} (context->es-config context es-cluster-name)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
