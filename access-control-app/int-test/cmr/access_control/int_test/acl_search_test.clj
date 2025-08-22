@@ -794,8 +794,8 @@
 
      ;; Unindex acl1 directly through elastic to simulate an inconsistent state
      (client/delete (format "http://%s:%s/acls/_doc/%s"
-                            (elastic-config/elastic-host)
-                            (elastic-config/elastic-port)
+                            (elastic-config/gran-elastic-host)
+                            (elastic-config/gran-elastic-port)
                             (:concept-id acl1))
                     {:query-params {:refresh true}})
 

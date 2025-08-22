@@ -256,6 +256,7 @@
    (reset ctx true))
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
+   (index/reset (-> ctx :system :gran-search-index))
    (index/reset (-> ctx :system :search-index))
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
@@ -269,7 +270,8 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      (index/create-index-or-update-mappings (-> ctx :system :search-index))
+      ;; TODO 10636 test me
+      (index/create-index-or-update-access-control-related-mappings (-> ctx :system :search-index))
       {:status 204})))
 
 ;;; S3 routes
@@ -307,14 +309,14 @@
             {ctx :request-context params :params}
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
-            (reindex-groups ctx))
+            (reindex-groups ctx)) ;; TODO CMR-10636 -- need to change this func?
 
       ;; Reindex all acls
       (POST "/reindex-acls"
             {ctx :request-context params :params}
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
-            (reindex-acls ctx))
+            (reindex-acls ctx)) ;; TODO CMR-10636 -- need to change this func?
 
       (if (access-control-config/enable-cmr-groups)
         (context "/groups" []
