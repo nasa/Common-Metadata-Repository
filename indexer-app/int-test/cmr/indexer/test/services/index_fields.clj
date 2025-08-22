@@ -21,13 +21,13 @@
 (def gran-elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port cmr.elastic-utils.config/gran-elastic-port
+   :port (cmr.elastic-utils.config/gran-elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port cmr.elastic-utils.config/elastic-port
+   :port (cmr.elastic-utils.config/elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def context (atom nil))
