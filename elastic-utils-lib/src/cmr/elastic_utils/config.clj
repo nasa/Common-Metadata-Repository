@@ -2,7 +2,15 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :as config :refer [defconfig]]))
+   [cmr.common.config :refer [defconfig]]))
+
+(declare elastic-name)
+(def elastic-name
+  "elastic")
+
+(declare gran-elastic-name)
+(def gran-elastic-name
+  "gran-elastic")
 
 (declare es-unlimited-page-size)
 (defconfig es-unlimited-page-size
@@ -19,20 +27,30 @@
   {:default 200000
    :type Long})
 
-(declare elastic-host)
-(defconfig elastic-host
-  "Elastic host or VIP."
+(declare gran-elastic-host)
+(defconfig gran-elastic-host
+  "Elastic host or VIP for granule ES cluster."
   {:default "localhost"})
 
-(declare elastic-port)
-(defconfig elastic-port
+(declare elastic-host)
+(defconfig elastic-host
+  "Elastic host for non-granule ES cluster"
+  {:default "localhost"})
+
+(declare gran-elastic-port)
+(defconfig gran-elastic-port
   "Port elastic is listening on."
   {:default 9210 :type Long})
 
+(declare elastic-port)
+(defconfig elastic-port
+   "Port elastic non-granule is listening on."
+  {:default 9211 :type Long})
+
 (declare elastic-admin-token)
 (defconfig elastic-admin-token
-    "Token used for basic auth authentication with elastic."
-    {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
+  "Token used for basic auth authentication with elastic."
+  {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
 (declare elastic-scroll-timeout)
 (defconfig elastic-scroll-timeout
@@ -80,6 +98,17 @@
   {:type Boolean
    :default false})
 
+(defn gran-elastic-config
+  "Returns the elastic config as a map"
+  []
+  {:host (gran-elastic-host)
+   :port (gran-elastic-port)
+   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
+   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
+   ;; to retry again
+   :retry-handler nil
+   :admin-token (elastic-admin-token)})
+
 (defn elastic-config
   "Returns the elastic config as a map"
   []
@@ -90,3 +119,13 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
+
+(defn es-cluster-name-str->keyword
+  [es-cluster-name]
+  (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
+                                  es-cluster-name
+                                  (keyword es-cluster-name))]
+    (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
+            (= es-cluster-name-keyword (keyword elastic-name)))
+      es-cluster-name-keyword
+      (throw (Exception. (str "Expected es-cluster-name to be " gran-elastic-name " or " elastic-name ", but got value of " es-cluster-name " instead."))))))
