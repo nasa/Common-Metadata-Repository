@@ -5,11 +5,11 @@
    [cmr.common.log :as log :refer [debug error]]
    [cmr.common.util :as util])
   (:import
-    (java.time Duration)
-    (java.util.function Consumer)
-    (org.testcontainers.containers FixedHostPortGenericContainer Network)
-    (org.testcontainers.containers.wait.strategy Wait)
-    (org.testcontainers.images.builder ImageFromDockerfile)))
+   (java.time Duration)
+   (java.util.function Consumer)
+   (org.testcontainers.containers FixedHostPortGenericContainer Network)
+   (org.testcontainers.containers.wait.strategy Wait)
+   (org.testcontainers.images.builder ImageFromDockerfile)))
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
@@ -61,9 +61,7 @@
                  elasticsearch-official-docker-image)
          container (FixedHostPortGenericContainer. image)
          ;; create the consumer object that will accept a func that defines a command that the container will use to update its settings
-         cmd-consumer (reify Consumer
-                    (accept [_ cmd]
-                      (container-cmd cmd)))
+         cmd-consumer (reify Consumer (accept [_ cmd] (container-cmd cmd)))
          network (Network/newNetwork)
          kibana (when kibana-port
                   (build-kibana kibana-port network))]

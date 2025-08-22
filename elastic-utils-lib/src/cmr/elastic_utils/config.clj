@@ -2,8 +2,7 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.log :as log :refer [info warn error]]
-   [cmr.common.config :as config :refer [defconfig]]))
+   [cmr.common.config :refer [defconfig]]))
 
 (declare elastic-name)
 (def elastic-name
@@ -27,32 +26,31 @@
   caches."
   {:default 200000
    :type Long})
-;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
+
 (declare gran-elastic-host)
 (defconfig gran-elastic-host
-           "Elastic host or VIP for granule ES cluster."
-           {:default "localhost"})
-;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
+  "Elastic host or VIP for granule ES cluster."
+  {:default "localhost"})
+
 (declare elastic-host)
 (defconfig elastic-host
-           "Elastic host for non-granule ES cluster"
-           {:default "localhost"})
+  "Elastic host for non-granule ES cluster"
+  {:default "localhost"})
 
-;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
 (declare gran-elastic-port)
 (defconfig gran-elastic-port
-           "Port elastic is listening on."
-           {:default 9210 :type Long})
-;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV. The old ENV VAR was called elastic-port, which represented the original cluster, now it's going to represent the new cluster, so BE CAREFUL
+  "Port elastic is listening on."
+  {:default 9210 :type Long})
+
 (declare elastic-port)
 (defconfig elastic-port
-           "Port elastic non-granule is listening on."
-           {:default 9211 :type Long})
+   "Port elastic non-granule is listening on."
+  {:default 9211 :type Long})
 
 (declare elastic-admin-token)
 (defconfig elastic-admin-token
-    "Token used for basic auth authentication with elastic."
-    {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
+  "Token used for basic auth authentication with elastic."
+  {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
 (declare elastic-scroll-timeout)
 (defconfig elastic-scroll-timeout
@@ -127,7 +125,7 @@
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
                                   es-cluster-name
                                   (keyword es-cluster-name))]
-    (if (or (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/gran-elastic-name))
-            (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/elastic-name)))
+    (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
+            (= es-cluster-name-keyword (keyword elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (str "Expected es-cluster-name to be " cmr.elastic-utils.config/gran-elastic-name " or " cmr.elastic-utils.config/elastic-name ", but got value of " es-cluster-name " instead."))))))
+      (throw (Exception. (str "Expected es-cluster-name to be " gran-elastic-name " or " elastic-name ", but got value of " es-cluster-name " instead."))))))
