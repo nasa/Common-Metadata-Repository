@@ -2,7 +2,7 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :as config :refer [defconfig]]))
+   [cmr.common.config :refer [defconfig]]))
 
 (declare elastic-name)
 (def elastic-name
@@ -29,28 +29,28 @@
 
 (declare gran-elastic-host)
 (defconfig gran-elastic-host
-           "Elastic host or VIP for granule ES cluster."
-           {:default "localhost"})
+  "Elastic host or VIP for granule ES cluster."
+  {:default "localhost"})
 
 (declare elastic-host)
 (defconfig elastic-host
-           "Elastic host for non-granule ES cluster"
-           {:default "localhost"})
+  "Elastic host for non-granule ES cluster"
+  {:default "localhost"})
 
 (declare gran-elastic-port)
 (defconfig gran-elastic-port
-           "Port elastic is listening on."
-           {:default 9210 :type Long})
+  "Port elastic is listening on."
+  {:default 9210 :type Long})
 
 (declare elastic-port)
 (defconfig elastic-port
-           "Port elastic non-granule is listening on."
-           {:default 9211 :type Long})
+   "Port elastic non-granule is listening on."
+  {:default 9211 :type Long})
 
 (declare elastic-admin-token)
 (defconfig elastic-admin-token
-    "Token used for basic auth authentication with elastic."
-    {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
+  "Token used for basic auth authentication with elastic."
+  {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
 (declare elastic-scroll-timeout)
 (defconfig elastic-scroll-timeout

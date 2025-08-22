@@ -29,10 +29,10 @@
   {:default 5601
    :type Long})
 
-(defconfig embedded-kibana-non-gran-port
-           "Specifies port to run an embedded kibana on."
-           {:default 5602
-            :type Long})
+(defconfig embedded-kibana-port
+  "Specifies port to run an embedded kibana on."
+  {:default 5602
+   :type Long})
 
 (defconfig dev-system-echo-type
   "Specifies whether dev system should run an in-memory mock ECHO or use an

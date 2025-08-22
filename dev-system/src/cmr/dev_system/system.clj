@@ -132,7 +132,7 @@
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
                                   {:log-level (name @in-memory-elastic-log-level-atom)
-                                   :kibana-port (dev-config/embedded-kibana-non-gran-port)
+                                   :kibana-port (dev-config/embedded-kibana-port)
                                    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
                                                "es_libs" "elasticsearch/es_libs"
                                                "embedded-security.policy" "elasticsearch/embedded-security.policy"
