@@ -51,7 +51,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :gran-search-index :non-gran-search-index :db :queue-broker :scheduler :web :nrepl])
+  [:log :caches :gran-search-index :search-index :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -148,14 +148,14 @@
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:gran-elastic :config :retry-handler] bi/elastic-retry-handler)
-                    (assoc-in [:non-gran-elastic :config :retry-handler] bi/elastic-retry-handler))
+                    (assoc-in [:elastic :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:instance-name            (common-sys/instance-name "bootstrap")
              :log                      (log/create-logger-with-log-level (log-level))
              :embedded-systems         {:metadata-db metadata-db
                                 :indexer indexer}
              :gran-search-index        (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :non-gran-search-index (search-index/create-elastic-search-index cmr.elastic-utils.config/non-gran-elastic-name)
+             :search-index             (search-index/create-elastic-search-index cmr.elastic-utils.config/elastic-name)
              :db-batch-size            (db-batch-size)
              :core-async-dispatcher    (dispatch/create-backend :async)
              :synchronous-dispatcher   (dispatch/create-backend :sync)

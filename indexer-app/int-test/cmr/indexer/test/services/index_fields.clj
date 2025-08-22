@@ -18,10 +18,16 @@
 ;;;   Constants & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def test-config
+(def gran-elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port 9210
+   :port (cmr.elastic-utils.config/gran-elastic-port)
+   :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
+
+(def elastic-test-config
+  "Return the configuration for elasticsearch"
+  {:host "localhost"
+   :port (cmr.elastic-utils.config/elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def context (atom nil))
@@ -98,18 +104,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn server-setup
-  "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
+  "Fixture that starts all instances of elastic in the JVM that runs the tests and then shuts it down."
   [f]
-  (let [http-port (:port test-config)]
-    (reset! context {:system {:db {:config test-config
-                                   :conn (esr/connect (str "http://localhost:" http-port))}}})
+  (do
+    (reset! context {:system
+                     {:gran-elastic {:config gran-elastic-test-config
+                                     :conn (esr/connect (str "http://localhost:" (:port gran-elastic-test-config)))}
+                      :elastic {:config elastic-test-config
+                                :conn   (esr/connect (str "http://localhost:" (:port elastic-test-config)))}}})
     (try
       (f))))
 
+;; TODO CMR-10636 need to fix this too
 (defn index-setup
-  "Fixture that creates an index and drops it."
+  "Fixture that creates a collection index and then drops it."
   [f]
-  (let [conn (get-in @context [:system :db :conn])]
+  (println "INSIDE index-setup")
+  (println "system in context is " (get-in @context [:system]))
+  (let [conn (get-in @context [:system :elastic :conn])]
     (esi/create
      conn
      "tests"

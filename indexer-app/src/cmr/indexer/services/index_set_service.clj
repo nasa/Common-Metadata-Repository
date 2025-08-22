@@ -50,9 +50,9 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name)
-                         (add-searchable-generic-types searchable-gran-concept-types)
+                         searchable-gran-concept-types
 
-                         (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
+                         (= es-cluster-name cmr.elastic-utils.config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
@@ -67,12 +67,12 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name)
-                         (add-searchable-generic-types searchable-gran-concept-types)
+                         searchable-gran-concept-types
 
-                         (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
+                         (= es-cluster-name cmr.elastic-utils.config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types)
 
-                         :else (throw (Exception. (str "Bad es-cluster name given in get index names. Was given " es-cluster-name "  but expected gran-elastic or non-gran-elastic."))))
+                         :else (throw (Exception. (str "Bad es-cluster name given in get index names. Was given " es-cluster-name "  but expected " cmr.elastic-utils.config/gran-elastic-name " or " cmr.elastic-utils.config/elastic-name "."))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -94,7 +94,7 @@
                                            ;; we will not add generics to the searchable gran concept types
                                            searchable-gran-concept-types
 
-                                           (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name)
+                                           (= es-cluster-name cmr.elastic-utils.config/elastic-name)
                                            (add-searchable-generic-types searchable-non-gran-concept-types)
 
                                            :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name))))]
@@ -119,12 +119,12 @@
         :else v2))
     m1 m2))
 
-(defn get-index-sets
-  "Fetch all index-sets in elastic."
+(defn get-all-index-sets
+  "Fetch all index-sets in elastic and combines it into one json."
   [context]
-  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
+  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/elastic-name)
         idx-mapping-type (first (keys mapping))
-        non-gran-index-set-array (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/non-gran-elastic-name) index-name idx-mapping-type)
+        non-gran-index-set-array (es/get-index-sets (indexer-util/context->es-store context cmr.elastic-utils.config/elastic-name) index-name idx-mapping-type)
 
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/gran-elastic-name)
         idx-mapping-type (first (keys mapping))
@@ -413,9 +413,9 @@
                              (indexer-util/context->es-store context cmr.elastic-utils.config/gran-elastic-name)
                              index-name
                              "_doc")
-        {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/non-gran-elastic-name)
+        {:keys [index-name]} (config/idx-cfg-for-index-sets cmr.elastic-utils.config/elastic-name)
         non-gran-index-set-ids (es/get-index-set-ids
-                                 (indexer-util/context->es-store context :non-gran-elastic)
+                                 (indexer-util/context->es-store context :elastic)
                                  index-name
                                  "_doc")]
     ;; delete indices assoc with index-set
@@ -423,4 +423,4 @@
       (delete-index-set context (str id) cmr.elastic-utils.config/gran-elastic-name))
 
     (doseq [id non-gran-index-set-ids]
-      (delete-index-set context (str id) cmr.elastic-utils.config/non-gran-elastic-name))))
+      (delete-index-set context (str id) cmr.elastic-utils.config/elastic-name))))

@@ -243,7 +243,7 @@
         mapping-type (concept-mapping-types :collection)
         document-age (format "now-%dh/h" (autocomplete-suggestion-age-limit))]
     (es-helper/delete-by-query
-     (indexer-util/context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+     (indexer-util/context->conn context cmr.elastic-utils.config/elastic-name)
      index
      mapping-type
      {:range {(service/query-field->elastic-field :modified :suggestion) {:lt document-age}}})))

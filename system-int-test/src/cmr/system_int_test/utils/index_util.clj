@@ -14,7 +14,7 @@
 (defn refresh-all-elastic-indexes
   []
   (client/post (url/elastic-refresh-url cmr.elastic-utils.config/gran-elastic-name) {:connection-manager (s/conn-mgr)})
-  (client/post (url/elastic-refresh-url cmr.elastic-utils.config/non-gran-elastic-name) {:connection-manager (s/conn-mgr)}))
+  (client/post (url/elastic-refresh-url cmr.elastic-utils.config/elastic-name) {:connection-manager (s/conn-mgr)}))
 
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"

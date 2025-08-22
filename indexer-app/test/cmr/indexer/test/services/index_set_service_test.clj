@@ -41,7 +41,7 @@
                                                          :autocomplete {}
                                                          :subscription {}}
                                                         (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}
-        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/non-gran-elastic-name)
+        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/elastic-name)
         actual-pruned-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/gran-elastic-name)]
     (is (= expected-pruned-gran-index-set actual-pruned-gran-index-set))
     (is (= expected-pruned-non-gran-index-set actual-pruned-non-gran-index-set))))

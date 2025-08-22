@@ -11,7 +11,7 @@
   "Pulls out the context from the search index"
   [context es-cluster-name]
   (case es-cluster-name
-    cmr.elastic-utils.config/non-gran-elastic-name (get-in context [:system :non-gran-search-index :conn])
+    cmr.elastic-utils.config/elastic-name (get-in context [:system :search-index :conn])
     cmr.elastic-utils.config/gran-elastic-name (get-in context [:system :gran-search-index :conn])))
 
 (defn get-collection-permitted-groups
@@ -21,7 +21,7 @@
    Originally found in cmr.search.data.elastic-search-index/elastic_search_index.clj"
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
-        results (esd/search (context->conn context cmr.elastic-utils.config/non-gran-elastic-name)
+        results (esd/search (context->conn context cmr.elastic-utils.config/elastic-name)
                             (:index-name index-info)
                             [(:type-name index-info)]
                             :query (q/match-all)

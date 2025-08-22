@@ -557,8 +557,9 @@
                (shape-param->tile-set param-name value)))
       (tile/all-tiles))))
 
-;; TODO 10636 fix me, right now defaulting to gran cluster only
+;; TODO CMR-10636 test me
 (defn clear-scroll
   "Clear the scroll context for the given scroll id"
   [context scroll-id]
-  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/gran-elastic-name) scroll-id))
+  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/gran-elastic-name) scroll-id)
+  (es-helper/clear-scroll (common-idx/context->conn context cmr.elastic-utils.config/elastic-name) scroll-id))

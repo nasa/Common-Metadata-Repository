@@ -19,7 +19,7 @@
   [f]
   (if (elastic-running?)
     (f)
-    (let [port (config/elastic-port)
+    (let [port (config/gran-elastic-port)
           server (l/start (ees/create-server port) nil)]
       (try
         (f)

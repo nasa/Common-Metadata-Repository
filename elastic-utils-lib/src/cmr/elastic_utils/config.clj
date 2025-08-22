@@ -5,9 +5,9 @@
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.config :as config :refer [defconfig]]))
 
-(declare non-gran-elastic-name)
-(def non-gran-elastic-name
-  "non-gran-elastic")
+(declare elastic-name)
+(def elastic-name
+  "elastic")
 
 (declare gran-elastic-name)
 (def gran-elastic-name
@@ -27,24 +27,25 @@
   caches."
   {:default 200000
    :type Long})
-
+;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
+(declare gran-elastic-host)
+(defconfig gran-elastic-host
+           "Elastic host or VIP for granule ES cluster."
+           {:default "localhost"})
+;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
 (declare elastic-host)
 (defconfig elastic-host
-  "Elastic host or VIP for granule ES cluster."
-  {:default "localhost"})
+           "Elastic host for non-granule ES cluster"
+           {:default "localhost"})
 
-(declare elastic-host-non-gran)
-(defconfig elastic-host-non-gran
-   "Elastic host for non-granule ES cluster"
-   {:default "localhost"})
-
+;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV
+(declare gran-elastic-port)
+(defconfig gran-elastic-port
+           "Port elastic is listening on."
+           {:default 9210 :type Long})
+;; TODO CMR-10636 Need to add these env vars to AWS parameter store because the names were changed, for EVERY DEPLOYMENT ENV. The old ENV VAR was called elastic-port, which represented the original cluster, now it's going to represent the new cluster, so BE CAREFUL
 (declare elastic-port)
 (defconfig elastic-port
-  "Port elastic is listening on."
-  {:default 9210 :type Long})
-
-(declare elastic-port-non-gran)
-(defconfig elastic-port-non-gran
            "Port elastic non-granule is listening on."
            {:default 9211 :type Long})
 
@@ -102,6 +103,17 @@
 (defn gran-elastic-config
   "Returns the elastic config as a map"
   []
+  {:host (gran-elastic-host)
+   :port (gran-elastic-port)
+   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
+   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
+   ;; to retry again
+   :retry-handler nil
+   :admin-token (elastic-admin-token)})
+
+(defn elastic-config
+  "Returns the elastic config as a map"
+  []
   {:host (elastic-host)
    :port (elastic-port)
    ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
@@ -110,24 +122,12 @@
    :retry-handler nil
    :admin-token (elastic-admin-token)})
 
-(defn non-gran-elastic-config
-  "Returns the elastic config as a map"
-  []
-  {:host (elastic-host-non-gran)
-   :port (elastic-port-non-gran)
-   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
-   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
-   ;; to retry again
-   :retry-handler nil
-   :admin-token (elastic-admin-token)})
-
-;; TODO 10636 unit test
 (defn es-cluster-name-str->keyword
   [es-cluster-name]
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
                                   es-cluster-name
                                   (keyword es-cluster-name))]
     (if (or (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/gran-elastic-name))
-            (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/non-gran-elastic-name)))
+            (= es-cluster-name-keyword (keyword cmr.elastic-utils.config/elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (str "Expected es-cluster-name to be gran-elastic or non-gran-elastic, but got value of " es-cluster-name " instead."))))))
+      (throw (Exception. (str "Expected es-cluster-name to be " cmr.elastic-utils.config/gran-elastic-name " or " cmr.elastic-utils.config/elastic-name ", but got value of " es-cluster-name " instead."))))))

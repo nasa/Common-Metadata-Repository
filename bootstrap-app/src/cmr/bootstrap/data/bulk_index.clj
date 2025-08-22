@@ -117,7 +117,7 @@
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
         num-collections (index/bulk-index {:system (helper/get-indexer system)}
                                           concept-batches
-                                          cmr.elastic-utils.config/non-gran-elastic-name
+                                          cmr.elastic-utils.config/elastic-name
                                           {})]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
@@ -161,7 +161,7 @@
                          (:db-batch-size system))
         es-cluster-name (if (= concept-type :granule)
                           cmr.elastic-utils.config/gran-elastic-name
-                          cmr.elastic-utils.config/non-gran-elastic-name)
+                          cmr.elastic-utils.config/elastic-name)
         num-concepts (bulk-index-concept-batches system concept-batches es-cluster-name)
         msg (format "Indexing of %s %s revisions for provider %s completed."
                     num-concepts
@@ -187,8 +187,8 @@
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
-  (info "Indexing concepts")
-  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches cmr.elastic-utils.config/non-gran-elastic-name))
+  (info "Indexing access control concepts")
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches cmr.elastic-utils.config/elastic-name))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
@@ -213,7 +213,7 @@
                           db provider params (:db-batch-size system))
         es-cluster-name (if (= concept-type :granule)
                           cmr.elastic-utils.config/gran-elastic-name
-                          cmr.elastic-utils.config/non-gran-elastic-name)
+                          cmr.elastic-utils.config/elastic-name)
         _ (println "INSIDE fetch-and-index-new-concepts with concept-type = " concept-type " and concept batches = " concept-batches " and es-cluster-name = " es-cluster-name)
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
                                                  (index-access-control-concepts system concept-batches)
@@ -243,7 +243,7 @@
                                                                                 (:db-batch-size system)
                                                                                 start-index)]]
                          (:num-indexed (if (= concept-type :tag)
-                                         (index-concepts system concept-batches)
+                                         (index-concepts system concept-batches cmr.elastic-utils.config/elastic-name)
                                          (index-access-control-concepts system concept-batches)))))]
     (info "Indexed" total "system concepts.")
     total))
@@ -266,8 +266,7 @@
                           concept-batch)
         es-cluster-name (if (= :granule concept-type)
                           cmr.elastic-utils.config/gran-elastic-name
-                          cmr.elastic-utils.config/non-gran-elastic-name)
-        _ (println "es-cluster-name selected = " es-cluster-name " for concept-batches in index-concepts-by-id = " concept-batches)
+                          cmr.elastic-utils.config/elastic-name)
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
@@ -286,7 +285,6 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
-    ;; TODO 10636 - everywhere we use the full path, we can require instead, also the final home of the gran-elastic-name is TBD
     (es-helper/delete-by-query (indexer-util/context->conn indexer-context cmr.elastic-utils.config/gran-elastic-name) "_all" "granule" query)))
 
 (defmethod delete-concepts-by-id :default
@@ -303,7 +301,10 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           (map #(assoc % :deleted true) concept-batch))
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches nil)]
+        es-cluster-name (if (= concept-type :granule)
+                          cmr.elastic-utils.config/gran-elastic-name
+                          cmr.elastic-utils.config/elastic-name)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
     (info "Deleted " total " concepts")
     total))
 

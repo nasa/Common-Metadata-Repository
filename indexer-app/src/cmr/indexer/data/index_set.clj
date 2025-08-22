@@ -1017,12 +1017,8 @@
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
    (let [fetched-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id)
-         ;_ (println "fetched-gran-index-set = " fetched-gran-index-set)
-         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name index-set-id)
-         ;_ (println "fetched-non-gran-index-set = " fetched-non-gran-index-set)
-         all-index-set (index-set-service/deep-merge fetched-gran-index-set fetched-non-gran-index-set)
-         ;_ (println "all-index-set = " all-index-set)
-         ]
+         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/elastic-name index-set-id)
+         all-index-set (index-set-service/deep-merge fetched-gran-index-set fetched-non-gran-index-set)]
      {:index-names (get-in all-index-set [:index-set :concepts])
       :rebalancing-collections (get-in all-index-set
                                        [:index-set :granule :rebalancing-collections])})))
@@ -1050,10 +1046,8 @@
   ([context index-set-id]
    ;(println "10636- INSIDE fetch-concept-mapping-types with index-set-id = " index-set-id)
    (let [fetched-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id)
-         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/non-gran-elastic-name index-set-id)
-         ;_ (println "10636- fetched-gran-index-set type is " (type fetched-non-gran-index-set))
+         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/elastic-name index-set-id)
          all-index-set {:index-set (merge (:index-set fetched-non-gran-index-set) (:index-set fetched-gran-index-set))}
-         ;_ (println "10636- fetched all index set = " all-index-set)
          get-concept-mapping-fn (fn [concept-type]
                                   (-> (get-in all-index-set [:index-set concept-type :mapping])
                                       keys

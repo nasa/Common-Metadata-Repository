@@ -62,9 +62,9 @@
    in a system using the :search-index key."
   [context es-cluster-name]
   (cond
-        (= es-cluster-name cmr.elastic-utils.config/non-gran-elastic-name) (get-in context [:system :non-gran-search-index])
-        (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
-        :else (throw (Exception. (str "expected specific elastic name but got " es-cluster-name " instead.")))))
+    (= es-cluster-name cmr.elastic-utils.config/elastic-name) (get-in context [:system :search-index])
+    (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
+    :else (throw (Exception. (str "expected specific elastic name but got " es-cluster-name " instead.")))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
@@ -169,13 +169,13 @@
              (= index-name "1_deleted_granules")
              (= index-name (str cmr.elastic-utils.config/gran-elastic-name "-index-sets")))))
     cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/non-gran-elastic-name))
+    cmr.elastic-utils.config/elastic-name))
 
 (defn get-es-cluster-name-by-index-info-type-name
   [index-info]
   (if (= (:type-name index-info) "granule")
     cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/non-gran-elastic-name))
+    cmr.elastic-utils.config/elastic-name))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
@@ -389,7 +389,7 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context cmr.elastic-utils.config/non-gran-elastic-name))
+  (esri/refresh (context->conn context cmr.elastic-utils.config/elastic-name))
   (esri/refresh (context->conn context cmr.elastic-utils.config/gran-elastic-name)))
 
 (defrecord ElasticSearchIndex
@@ -409,6 +409,6 @@
   "Creates a new instance of the elastic search index."
   [es-cluster-name]
   (cond
-    (= es-cluster-name es-config/non-gran-elastic-name) (->ElasticSearchIndex (es-config/non-gran-elastic-config) nil)
+    (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
     (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
     :else (throw (Exception. (str "expected valid elastic name but got " es-cluster-name " instead.")))))

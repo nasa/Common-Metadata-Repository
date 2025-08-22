@@ -59,10 +59,10 @@
   [elastic-name]
   (cond
     (= elastic-name cmr.elastic-utils.config/gran-elastic-name)
-    (format "http://localhost:%s" (es-config/elastic-port))
+    (format "http://localhost:%s" (es-config/gran-elastic-port))
 
-    (= elastic-name cmr.elastic-utils.config/non-gran-elastic-name)
-    (format "http://localhost:%s" (es-config/elastic-port-non-gran))
+    (= elastic-name cmr.elastic-utils.config/elastic-name)
+    (format "http://localhost:%s" (es-config/elastic-port))
 
     :else
     (throw (Exception. (str "Given wrong elastic-name: " elastic-name " to create elastic root url.")))))
@@ -73,7 +73,7 @@
 
 (defn elastic-delete-tag-url
   [id]
-  (format "%s/1_tags/_doc/%s" (elastic-root cmr.elastic-utils.config/non-gran-elastic-name) id))
+  (format "%s/1_tags/_doc/%s" (elastic-root cmr.elastic-utils.config/elastic-name) id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs

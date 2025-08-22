@@ -120,7 +120,7 @@
         (reset-fn (app-context system service-name)))
       ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
       (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :gran-elastic]))
-      (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :non-gran-elastic]))
+      (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :elastic]))
       (debug "dev system /reset complete")
       {:status 200})
 
