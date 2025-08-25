@@ -5,8 +5,7 @@
    [clojure.repl :refer :all]
    [clojure.tools.namespace.repl :refer (refresh)]
    [cmr.access-control.int-test.fixtures :as int-test-util]
-   [cmr.access-control.system :as system]
-   [cmr.elastic-utils.config :as elastic-config]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.embedded-elastic-server :as es]
    [cmr.common-app.test.side-api :as side-api]
    [cmr.common.dev.util :as d]
@@ -48,13 +47,11 @@
   false)
 
 (defn- create-elastic-servers
-  "Creates an instance of an elasticsearch server in memory."
+  "Creates instances of elasticsearch servers required for access control in memory."
   []
-  (elastic-config/set-elastic-port! 9306)
-  ;; create gran elastic server
-  (es/create-server 9306 {:log-level (system/log-level)})
-  ;; create non gran elastic server
-  (es/create-server 9306 {:log-level (system/log-level)}))
+  ;; create non gran elastic server only because access control only needs access to this one
+  (es-config/set-elastic-port! 9306)
+  (es/create-server 9307 {:log-level (system/log-level)}))
 
 (defn start
   "Starts the current development system."

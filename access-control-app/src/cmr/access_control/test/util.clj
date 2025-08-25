@@ -34,7 +34,7 @@
 
 (defn refresh-elastic-index
   []
-  (client/post (format "http://localhost:%s/_refresh" (es-config/gran-elastic-port))
+  (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))
                {:headers {:client-id config/cmr-client-id}}))
 
 (defn unindex-all-groups
@@ -61,7 +61,7 @@
                          (get-in search-response [:body :hits :hits])))
         bulk-response (client/post
                        (format "http://localhost:%s/%s/_bulk"
-                               (es-config/gran-elastic-port)
+                               (es-config/elastic-port)
                                access-control-index/group-index-name)
                        {:throw-exceptions false
                         :content-type :json

@@ -4,6 +4,7 @@
   (:require
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common.services.errors :as e]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-wrapper :as q]))
 
@@ -11,8 +12,8 @@
   "Pulls out the context from the search index"
   [context es-cluster-name]
   (case es-cluster-name
-    cmr.elastic-utils.config/elastic-name (get-in context [:system :search-index :conn])
-    cmr.elastic-utils.config/gran-elastic-name (get-in context [:system :gran-search-index :conn])))
+    es-config/elastic-name (get-in context [:system :search-index :conn])
+    es-config/gran-elastic-name (get-in context [:system :gran-search-index :conn])))
 
 (defn get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
@@ -21,7 +22,7 @@
    Originally found in cmr.search.data.elastic-search-index/elastic_search_index.clj"
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
-        results (esd/search (context->conn context cmr.elastic-utils.config/elastic-name)
+        results (esd/search (context->conn context es-config/elastic-name)
                             (:index-name index-info)
                             [(:type-name index-info)]
                             :query (q/match-all)
