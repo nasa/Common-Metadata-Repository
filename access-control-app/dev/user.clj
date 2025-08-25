@@ -49,8 +49,8 @@
 (defn- create-elastic-servers
   "Creates instances of elasticsearch servers required for access control in memory."
   []
-  (es-config/set-elastic-port! 9307)
-  ;; create non gran elastic server
+  ;; create non gran elastic server only because access control only needs access to this one
+  (es-config/set-elastic-port! 9306)
   (es/create-server 9307 {:log-level (system/log-level)}))
 
 (defn start
