@@ -1,6 +1,6 @@
 (ns cmr.elastic-utils.test-util
   "Common utility functions for tests."
-  (:require [cmr.elastic-utils.config :as config]
+  (:require [cmr.elastic-utils.config :as es-config]
             [cmr.elastic-utils.embedded-elastic-server :as ees]
             [cmr.elastic-utils.connect :as conn]
             [cmr.common.lifecycle :as l]))
@@ -8,8 +8,8 @@
 (defn elastic-running?
   "Checks if all elastic clusters running."
   []
-  (let [gran-elastic-conn (conn/try-connect (config/gran-elastic-config))
-        elastic-conn (conn/try-connect (config/elastic-config))]
+  (let [gran-elastic-conn (conn/try-connect (es-config/gran-elastic-config))
+        elastic-conn (conn/try-connect (es-config/elastic-config))]
     (:ok? (conn/health {:system {:db {:conn gran-elastic-conn}}} :db))
     (:ok? (conn/health {:system {:db {:conn elastic-conn}}} :db))))
 
@@ -20,8 +20,8 @@
   [f]
   (if (elastic-running?)
     (f)
-    (let [gran-elastic-server (l/start (ees/create-server (config/gran-elastic-port)) nil)
-          elastic-server (l/start (ees/create-server (config/elastic-port)) nil)]
+    (let [gran-elastic-server (l/start (ees/create-server (es-config/gran-elastic-port)) nil)
+          elastic-server (l/start (ees/create-server (es-config/elastic-port)) nil)]
       (try
         (f)
         (finally

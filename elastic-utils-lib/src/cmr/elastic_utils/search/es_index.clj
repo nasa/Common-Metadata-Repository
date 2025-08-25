@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
@@ -13,6 +14,7 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -20,8 +22,10 @@
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along
-   with an :index-name key. :index-name can refer to a single index or a comma separated string of
-   multiple index names."
+   with an :index-name key.
+   :index-name can refer to a single index or a comma separated string of
+   multiple index names.
+   All index name strings in index-name are expected to be the same type as :type-name."
   (fn [_context concept-type _query]
     concept-type))
 
@@ -58,14 +62,17 @@
 (defn context->search-index
   "Returns the search index given a context. This assumes that the search index is always located
    in a system using the :search-index key."
-  [context]
-  (get-in context [:system :search-index]))
+  [context es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
+    (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index])
+    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
    a system using the :search-index key."
-  [context]
-  (:conn (context->search-index context)))
+  [context es-cluster-name]
+  (:conn (context->search-index context es-cluster-name)))
 
 (defn- ensure-sort-keys-for-search-after
   "Ensures sort-keys include _id for search_after"
@@ -139,14 +146,40 @@
 
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
-  [context scroll-id]
+  [context scroll-id es-cluster-name]
   (try
     (es-helper/scroll
-     (context->conn context)
+     (context->conn context es-cluster-name)
      scroll-id
      {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
+
+;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
+(defn get-es-cluster-name-from-index-name
+  "Given one index-name, we determine which elastic cluster it belongs in."
+  [index-name]
+  (let [gran-cluster es-config/gran-elastic-name
+        non-gran-cluster es-config/elastic-name
+        gran-index-set-name (str gran-cluster "-index-sets")
+
+        excluded-indices #{"collection_search_alias" "1_collections_v2"}
+        gran-specific-indices #{"1_small_collections" "1_deleted_granules"}
+
+        uses-gran-cluster? (and
+                             (not (excluded-indices index-name))
+                             (or (string/starts-with? index-name "1_c")
+                                 (gran-specific-indices index-name)
+                                 (= index-name gran-index-set-name)))]
+    (if uses-gran-cluster?
+      gran-cluster
+      non-gran-cluster)))
+
+(defn get-es-cluster-name-by-index-info-type-name
+  [index-info]
+  (if (= (:type-name index-info) "granule")
+    es-config/gran-elastic-name
+    es-config/elastic-name))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
@@ -154,9 +187,12 @@
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
-        (scroll-search context scroll-id)
+        (scroll-search context scroll-id (get-es-cluster-name-by-index-info-type-name index-info))
         (es-helper/search
-         (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
+          (context->conn context (get-es-cluster-name-by-index-info-type-name index-info))
+          (:index-name index-info)
+          [(:type-name index-info)]
+          query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
@@ -351,7 +387,8 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context)))
+  (esri/refresh (context->conn context es-config/elastic-name))
+  (esri/refresh (context->conn context es-config/gran-elastic-name)))
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic
@@ -360,11 +397,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
+  (start
+    [this _system]
+    (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this _system] this))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  []
-  (->ElasticSearchIndex (es-config/elastic-config) nil))
+  [es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
+    (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
+    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
