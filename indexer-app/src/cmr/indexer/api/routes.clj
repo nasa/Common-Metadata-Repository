@@ -12,6 +12,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
    [cmr.indexer.data.concepts.subscription]
@@ -38,9 +39,9 @@
       ;; this will automatically separate out the index sets by cluster and put them into those clusters
       (let [index-set (walk/keywordize-keys body)
             _ (acl/verify-ingest-management-permission request-context :update)
-            gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
+            gran-index-set-resp (index-set-svc/create-index-set request-context es-config/gran-elastic-name index-set)
             _ (println "gran-index-set-resp = " gran-index-set-resp)
-            non-gran-index-set-resp (index-set-svc/create-index-set request-context cmr.elastic-utils.config/elastic-name index-set)
+            non-gran-index-set-resp (index-set-svc/create-index-set request-context es-config/elastic-name index-set)
             _ (println "non-gran-index-set-resp = " non-gran-index-set-resp)]
         (r/created gran-index-set-resp)))
 
@@ -59,8 +60,8 @@
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (let [gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/gran-elastic-name id)
-              non-gran-index-set (index-set-svc/get-index-set request-context cmr.elastic-utils.config/elastic-name id)
+        (let [gran-index-set (index-set-svc/get-index-set request-context es-config/gran-elastic-name id)
+              non-gran-index-set (index-set-svc/get-index-set request-context es-config/elastic-name id)
               combined-index-set (cmr.indexer.services.index-set-service/deep-merge gran-index-set non-gran-index-set)]
           (r/response combined-index-set)))
 
@@ -68,14 +69,14 @@
         ;; TODO 10636 needs more thorough testing
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/gran-elastic-name index-set)
-          (index-set-svc/update-index-set request-context cmr.elastic-utils.config/elastic-name index-set)
+          (index-set-svc/update-index-set request-context es-config/gran-elastic-name index-set)
+          (index-set-svc/update-index-set request-context es-config/elastic-name index-set)
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/gran-elastic-name)
-        (index-set-svc/delete-index-set request-context id cmr.elastic-utils.config/elastic-name)
+        (index-set-svc/delete-index-set request-context id es-config/gran-elastic-name)
+        (index-set-svc/delete-index-set request-context id es-config/elastic-name)
         {:status 204})
 
       ;; TODO 10636 Updated. Need to test that it worked.

@@ -41,7 +41,7 @@
                           index-name error-message))
             (throw e)))))))
 
-(defn update-index
+(defn create-or-update-index
   "Update elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
