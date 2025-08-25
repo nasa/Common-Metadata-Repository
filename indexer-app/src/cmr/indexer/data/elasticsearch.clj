@@ -9,6 +9,7 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.indexer-util :as indexer-util]
@@ -115,7 +116,7 @@
         expected-index-set (cond
                              (= es-cluster-name cmr.elastic-utils.config/elastic-name) idx-set/non-gran-index-set
                              (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) idx-set/gran-index-set
-                             :else (throw (Exception. (str "Expected correct es-cluster-name of " cmr.elastic-utils.config/gran-elastic-name " or " cmr.elastic-utils.config/elastic-name " but got " es-cluster-name " instead."))))]
+                             :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name))))]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
 (defn create-indexes
@@ -177,7 +178,7 @@
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
         ;(info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
-        (index-set-svc/update-index-set context cmr.elastic-utils.config/elastic-name expected-index-set)
+        (index-set-svc/create-or-update-index-set context cmr.elastic-utils.config/elastic-name expected-index-set)
         (info "Creating collection index alias.")
         (esi/create-index-alias (indexer-util/context->conn context cmr.elastic-utils.config/elastic-name)
                                 (idx-set/collections-index)
@@ -198,7 +199,7 @@
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
         ;(info "10636-Updating the gran index set to " (pr-str expected-index-set))
-        (index-set-svc/update-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
+        (index-set-svc/create-or-update-index-set context cmr.elastic-utils.config/gran-elastic-name expected-index-set))
       (do
         (info "10636-Ignoring update gran indexes request because gran index set is unchanged.")
         (info "10636-Existing gran index set:" (pr-str existing-index-set))

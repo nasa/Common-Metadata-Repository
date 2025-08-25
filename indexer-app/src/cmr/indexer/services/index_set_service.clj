@@ -136,6 +136,17 @@
                     all-index-set-array)]
     result))
 
+(defn get-index-sets
+  [context es-cluster-name]
+  (println "INSIDE get-index-sets with es-cluster-name = " es-cluster-name)
+  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
+        idx-mapping-type (first (keys mapping))
+        index-set-array (es/get-index-sets (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type)
+
+        result (map #(select-keys (:index-set %) [:id :name :concepts])
+                    index-set-array)]
+    result))
+
 (defn index-set-exists?
   "Check index-set existence"
   [context es-cluster-name index-set-id]
@@ -239,7 +250,7 @@
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
 
-(defn update-index-set
+(defn create-or-update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
   (validate-requested-index-set context es-cluster-name index-set true)
@@ -355,7 +366,7 @@
                              index-set)
                           (add-new-granule-index index-set concept-id)))]
     ;; Update the index set. This will create the new collection indexes as needed.
-    (update-index-set context cmr.elastic-utils.config/gran-elastic-name index-set)))
+    (create-or-update-index-set context cmr.elastic-utils.config/gran-elastic-name index-set)))
 
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
@@ -382,7 +393,7 @@
                           (remove-granule-index-from-index-set index-set concept-id)
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
-    (update-index-set context cmr.elastic-utils.config/gran-elastic-name index-set)))
+    (create-or-update-index-set context cmr.elastic-utils.config/gran-elastic-name index-set)))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -397,7 +408,7 @@
        (format
          "The index set does not contain the rebalancing collection [%s]"
          concept-id)))
-    (update-index-set
+    (create-or-update-index-set
      context
      cmr.elastic-utils.config/gran-elastic-name
      (update-in

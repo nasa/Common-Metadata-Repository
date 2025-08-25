@@ -32,18 +32,17 @@
 (def ^:private index-set-routes
   "Routes providing index-set operations"
   (context "/index-sets" []
-    ;; TODO 10636 this needs to be rewritten. We need to make sure the newly created index-set doesn't already exist.
-    ;; And we need to know which cluster it's going to go on, which will depend on the client's wishes.
-    ;; So this will need to be re-written and re-tested
     (POST "/" {body :body request-context :request-context}
-      ;; this will automatically separate out the index sets by cluster and put them into those clusters
       (let [index-set (walk/keywordize-keys body)
             _ (acl/verify-ingest-management-permission request-context :update)
             gran-index-set-resp (index-set-svc/create-index-set request-context es-config/gran-elastic-name index-set)
-            _ (println "gran-index-set-resp = " gran-index-set-resp)
+            _ (if (some? gran-index-set-resp)
+                ;; there was an error found
+                (r/created gran-index-set-resp))
             non-gran-index-set-resp (index-set-svc/create-index-set request-context es-config/elastic-name index-set)
-            _ (println "non-gran-index-set-resp = " non-gran-index-set-resp)]
-        (r/created gran-index-set-resp)))
+            _ (if (some? non-gran-index-set-resp)
+                (r/created non-gran-index-set-resp))]
+        (r/created nil)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -57,6 +56,12 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
+    ;; TODO add sys tests for this new endpoint
+    (context "/:es-cluster-name" [es-cluster-name]
+      (GET "/" {request-context :request-context}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
+
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
@@ -66,11 +71,10 @@
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        ;; TODO 10636 needs more thorough testing
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-index-set request-context es-config/gran-elastic-name index-set)
-          (index-set-svc/update-index-set request-context es-config/elastic-name index-set)
+          (index-set-svc/create-or-update-index-set request-context es-config/gran-elastic-name index-set)
+          (index-set-svc/create-or-update-index-set request-context es-config/elastic-name index-set)
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
@@ -79,7 +83,6 @@
         (index-set-svc/delete-index-set request-context id es-config/elastic-name)
         {:status 204})
 
-      ;; TODO 10636 Updated. Need to test that it worked.
       (context "/rebalancing-collections/:concept-id" [concept-id]
 
         ;; Marks the collection as re-balancing in the index set.
