@@ -65,7 +65,7 @@
   [context es-cluster-name]
   (cond
     (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
-    (= es-cluster-name cmr.elastic-utils.config/gran-elastic-name) (get-in context [:system :gran-search-index])
+    (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index])
     :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
 
 (defn context->conn
@@ -159,8 +159,8 @@
 (defn get-es-cluster-name-from-index-name
   "Given one index-name, we determine which elastic cluster it belongs in."
   [index-name]
-  (let [gran-cluster cmr.elastic-utils.config/gran-elastic-name
-        non-gran-cluster cmr.elastic-utils.config/elastic-name
+  (let [gran-cluster es-config/gran-elastic-name
+        non-gran-cluster es-config/elastic-name
         gran-index-set-name (str gran-cluster "-index-sets")
 
         excluded-indices #{"collection_search_alias" "1_collections_v2"}
@@ -178,8 +178,8 @@
 (defn get-es-cluster-name-by-index-info-type-name
   [index-info]
   (if (= (:type-name index-info) "granule")
-    cmr.elastic-utils.config/gran-elastic-name
-    cmr.elastic-utils.config/elastic-name))
+    es-config/gran-elastic-name
+    es-config/elastic-name))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."

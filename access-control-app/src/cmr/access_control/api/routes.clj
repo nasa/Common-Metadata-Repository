@@ -256,7 +256,6 @@
    (reset ctx true))
   ([ctx bootstrap-data]
    (cache/reset-caches ctx)
-   (index/reset (-> ctx :system :gran-search-index))
    (index/reset (-> ctx :system :search-index))
    (when bootstrap-data
      (bootstrap/bootstrap (:system ctx)))))
