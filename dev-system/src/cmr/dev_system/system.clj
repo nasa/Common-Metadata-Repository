@@ -132,7 +132,7 @@
   (let [http-port (elastic-config/elastic-port)]
     (elastic-server/create-server http-port
                                   {:log-level (name @in-memory-elastic-log-level-atom)
-                                   :kibana-port (dev-config/embedded-kibana-non-gran-port)
+                                   :kibana-port (dev-config/embedded-kibana-port)
                                    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
                                                "es_libs" "elasticsearch/es_libs"
                                                "embedded-security.policy" "elasticsearch/embedded-security.policy"
@@ -324,10 +324,10 @@
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
                        {:gran-elastic-server gran-elastic-server
-                        :elastic-server      elastic-server
-                        :broker-wrapper      queue-broker
-                        :redis-server        redis-server
-                        :sqs-server          sqs-server})
+                        :elastic-server elastic-server
+                        :broker-wrapper queue-broker
+                        :redis-server redis-server
+                        :sqs-server sqs-server})
      :post-components {:control-server control-server}}))
 
 (defn- stop-components

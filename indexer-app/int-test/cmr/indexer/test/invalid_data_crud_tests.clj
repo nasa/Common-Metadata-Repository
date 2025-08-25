@@ -37,7 +37,9 @@
 (deftest index-config-missing-test
   (testing "missing index-config"
     (let [invalid-idx-set util/invalid-sample-index-set
-          {:keys [status errors]} (util/create-index-set invalid-idx-set)]
+          response (util/create-index-set invalid-idx-set)
+          _ (println "response = " response)
+          {:keys [status errors]} response]
       (is (= 422 status))
       (is (re-find #"missing index names or settings or mapping in given index-set" (first errors))))))
 
