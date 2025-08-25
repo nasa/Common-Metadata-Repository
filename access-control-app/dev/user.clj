@@ -5,6 +5,7 @@
    [clojure.repl :refer :all]
    [clojure.tools.namespace.repl :refer (refresh)]
    [cmr.access-control.int-test.fixtures :as int-test-util]
+   [cmr.access-control.system :as system]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.embedded-elastic-server :as es]
    [cmr.common-app.test.side-api :as side-api]
