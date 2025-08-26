@@ -16,7 +16,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.elastic-utils.config :as es-util-config]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.config :as config]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
@@ -263,7 +263,7 @@
          (println "latest-collection-batches = " latest-collection-batches)
          (bulk-index context
                      latest-collection-batches
-                     cmr.elastic-utils.config/elastic-name
+                     es-config/elastic-name
                      {:all-revisions-index? false :force-version? force-version?})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
@@ -277,7 +277,7 @@
                                     {:provider-id provider-id})]
          (bulk-index context
                      all-revisions-batches
-                     cmr.elastic-utils.config/elastic-name
+                     es-config/elastic-name
                      {:all-revisions-index? true :force-version? force-version?}))))))
 
 (defconfig non-collection-reindex-batch-size
@@ -294,7 +294,7 @@
                             :tag
                             (non-collection-reindex-batch-size)
                             {:latest true})]
-    (bulk-index context latest-tag-batches cmr.elastic-utils.config/elastic-name)))
+    (bulk-index context latest-tag-batches es-config/elastic-name)))
 
 (defn- time-to-visibility-text
   "This is the original log entry used by Splunk to report on time to index.
@@ -682,7 +682,7 @@
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
-                    (indexer-util/context->conn context es-util-config/gran-elastic-name)
+                    (indexer-util/context->conn context es-config/gran-elastic-name)
                     index
                     (concept-mapping-types :granule)
                     {:term {(query-field->elastic-field :collection-concept-id :granule)
@@ -861,7 +861,7 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context es-util-config/elastic-name)
+       (indexer-util/context->conn context es-config/elastic-name)
        index
        ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
@@ -869,7 +869,7 @@
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context es-util-config/gran-elastic-name)
+       (indexer-util/context->conn context es-config/gran-elastic-name)
        index-name
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
@@ -878,7 +878,7 @@
     (doseq [concept-type [:service :subscription :tool :variable]]
       (doseq [index (vals (concept-type index-names))]
         (es-helper/delete-by-query
-         (indexer-util/context->conn context es-util-config/elastic-name)
+         (indexer-util/context->conn context es-config/elastic-name)
          index
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
@@ -936,8 +936,8 @@
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   ;; TODO 10636- this used to be called :elastic_search -- any mention of this needs to be replaced in the readme's to the two separate clusters
-  {:gran-elastic  #(es-util/health % (keyword cmr.elastic-utils.config/gran-elastic-name))
-   :elastic       #(es-util/health % (keyword cmr.elastic-utils.config/elastic-name))
+  {:gran-elastic  #(es-util/health % (keyword es-config/gran-elastic-name))
+   :elastic       #(es-util/health % (keyword es-config/elastic-name))
    :metadata-db   meta-db2/get-metadata-db-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]

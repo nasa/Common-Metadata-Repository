@@ -9,6 +9,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.test.test-util :as tu]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.elastic-utils.es-index-helper :as esi]
    [cmr.indexer.data.elasticsearch :as es]
@@ -21,13 +22,13 @@
 (def gran-elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port (cmr.elastic-utils.config/gran-elastic-port)
+   :port (es-config/gran-elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port (cmr.elastic-utils.config/elastic-port)
+   :port (es-config/elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def context (atom nil))

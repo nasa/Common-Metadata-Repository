@@ -6,7 +6,7 @@
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.elastic-utils.config]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-index :as es-index]
@@ -80,7 +80,7 @@
 (defn get-index-set
   "Fetch index-set associated with an id and a specific elastic cluster."
   [context es-cluster-name index-set-id]
-  (let [es-cluster-name-keyword (cmr.elastic-utils.config/es-cluster-name-str->keyword es-cluster-name)
+  (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?

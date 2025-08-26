@@ -19,6 +19,7 @@
    [cmr.common.log :as log]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as common-idx]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.metadata-db.system :as mdb-system]
@@ -109,8 +110,8 @@
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems         {:metadata-db metadata-db}
-             :gran-search-index        (common-idx/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :search-index             (common-idx/create-elastic-search-index cmr.elastic-utils.config/elastic-name)
+             :gran-search-index        (common-idx/create-elastic-search-index es-config/gran-elastic-name)
+             :search-index             (common-idx/create-elastic-search-index es-config/elastic-name)
              :web                      (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl                    (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache

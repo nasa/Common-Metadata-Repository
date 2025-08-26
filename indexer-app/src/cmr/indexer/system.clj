@@ -107,8 +107,8 @@
     ;; The indexes/alias will not be created if they already exist.
     (try
       (es/create-indexes context)
-      (when (or (es/cluster-requires-update? context cmr.elastic-utils.config/gran-elastic-name)
-                (es/cluster-requires-update? context cmr.elastic-utils.config/elastic-name))
+      (when (or (es/cluster-requires-update? context es-config/gran-elastic-name)
+                (es/cluster-requires-update? context es-config/elastic-name))
         (es/update-indexes context {}))
       (template-service/make-templates context)
       (catch Exception e

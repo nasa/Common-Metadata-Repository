@@ -1,6 +1,7 @@
 (ns cmr.indexer.services.template-service
   "Provide functions to create index templates"
   (:require
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-index-helper :as es-index]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.indexer-util :as indexer-util]))
@@ -15,7 +16,7 @@
 (defn- make-template
   "Send individual template map to be ingested to elasticsearch"
   [context index-template-key]
-  (es-index/create-index-template (indexer-util/context->conn context cmr.elastic-utils.config/elastic-name)
+  (es-index/create-index-template (indexer-util/context->conn context es-config/elastic-name)
                                   (name index-template-key)
                                   (index-template-key index-templates)))
 

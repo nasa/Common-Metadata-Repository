@@ -2,6 +2,7 @@
   "unit tests for index-set app service functions"
   (:require
    [clojure.test :refer :all]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
@@ -41,7 +42,7 @@
                                                          :autocomplete {}
                                                          :subscription {}}
                                                         (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}
-        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/elastic-name)
-        actual-pruned-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) cmr.elastic-utils.config/gran-elastic-name)]
+        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) es-config/elastic-name)
+        actual-pruned-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) es-config/gran-elastic-name)]
     (is (= expected-pruned-gran-index-set actual-pruned-gran-index-set))
     (is (= expected-pruned-non-gran-index-set actual-pruned-non-gran-index-set))))

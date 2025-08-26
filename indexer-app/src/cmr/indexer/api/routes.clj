@@ -35,14 +35,14 @@
     (POST "/" {body :body request-context :request-context}
       (let [index-set (walk/keywordize-keys body)
             _ (acl/verify-ingest-management-permission request-context :update)
+            _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
+            _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
             gran-index-set-resp (index-set-svc/create-index-set request-context es-config/gran-elastic-name index-set)
-            _ (if (some? gran-index-set-resp)
-                ;; there was an error found
-                (r/created gran-index-set-resp))
-            non-gran-index-set-resp (index-set-svc/create-index-set request-context es-config/elastic-name index-set)
-            _ (if (some? non-gran-index-set-resp)
-                (r/created non-gran-index-set-resp))]
-        (r/created nil)))
+            non-gran-index-set-resp (index-set-svc/create-index-set request-context es-config/elastic-name index-set)]
+        (cond
+          (some? gran-index-set-resp) (r/created gran-index-set-resp)
+          (some? non-gran-index-set-resp) (r/created non-gran-index-set-resp)
+          :else (r/created nil))))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -52,15 +52,15 @@
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
-      ;; TODO 10636 maybe rename this func. It doesn't reset the index-set to any specific base state, it is just deletes it...
+      ;; TODO 10636 maybe rename this func. It doesn't reset the index-set to any specific base state, it just deletes it...
       (index-set-svc/reset request-context)
       {:status 204})
 
     ;; TODO add sys tests for this new endpoint
-    (context "/:es-cluster-name" [es-cluster-name]
-      (GET "/" {request-context :request-context}
-        (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
+    ;(context "/:es-cluster-name" [es-cluster-name]
+    ;  (GET "/" {request-context :request-context}
+    ;    (acl/verify-ingest-management-permission request-context :read)
+    ;    (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
 
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
@@ -73,6 +73,8 @@
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
+          (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
           (index-set-svc/create-or-update-index-set request-context es-config/gran-elastic-name index-set)
           (index-set-svc/create-or-update-index-set request-context es-config/elastic-name index-set)
           {:status 200}))
@@ -84,7 +86,6 @@
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]
-
         ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
           (acl/verify-ingest-management-permission request-context :update)

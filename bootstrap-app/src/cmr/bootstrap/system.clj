@@ -28,6 +28,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.concepts.granule :as g]
@@ -154,8 +155,8 @@
              :log                      (log/create-logger-with-log-level (log-level))
              :embedded-systems         {:metadata-db metadata-db
                                 :indexer indexer}
-             :gran-search-index        (search-index/create-elastic-search-index cmr.elastic-utils.config/gran-elastic-name)
-             :search-index             (search-index/create-elastic-search-index cmr.elastic-utils.config/elastic-name)
+             :gran-search-index        (search-index/create-elastic-search-index es-config/gran-elastic-name)
+             :search-index             (search-index/create-elastic-search-index es-config/elastic-name)
              :db-batch-size            (db-batch-size)
              :core-async-dispatcher    (dispatch/create-backend :async)
              :synchronous-dispatcher   (dispatch/create-backend :sync)

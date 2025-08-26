@@ -1,8 +1,6 @@
 (ns cmr.indexer.test.invalid-data-crud-tests
   "Contains integration tests to verify index-set crud operations with invalid data."
   (:require
-   [cheshire.core :as cheshire]
-   [clj-http.client :as client]
    [clojure.test :refer :all]
    [clojure.walk :as walk]
    [cmr.indexer.test.utility :as util]))
@@ -14,7 +12,7 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Verify non numeric index-set id results in 422
+;; Verify non-numeric index-set id results in 422
 (deftest invalid-index-set-id-test
   (testing "invalid index-set id"
     (let [index-set util/sample-index-set
@@ -38,7 +36,6 @@
   (testing "missing index-config"
     (let [invalid-idx-set util/invalid-sample-index-set
           response (util/create-index-set invalid-idx-set)
-          _ (println "response = " response)
           {:keys [status errors]} response]
       (is (= 422 status))
       (is (re-find #"missing index names or settings or mapping in given index-set" (first errors))))))

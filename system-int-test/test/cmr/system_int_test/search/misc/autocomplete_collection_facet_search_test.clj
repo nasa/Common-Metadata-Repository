@@ -7,6 +7,7 @@
     [clojurewerkz.elastisch.rest.document :as esd]
     [cmr.common.log :as log :refer [debug]]
     [cmr.common.util :refer [are3]]
+    [cmr.elastic-utils.config :as es-config]
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.index-util :as index]
@@ -40,7 +41,7 @@
 
 (defn autocomplete-fixture
   [f]
-  (let [conn (esr/connect (url/elastic-root cmr.elastic-utils.config/elastic-name))
+  (let [conn (esr/connect (url/elastic-root es-config/elastic-name))
         documents (map #(esd/create conn "1_autocomplete" "_doc" %) test-values)]
     (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)

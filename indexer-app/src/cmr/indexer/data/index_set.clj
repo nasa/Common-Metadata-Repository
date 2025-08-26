@@ -6,6 +6,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
@@ -1016,8 +1017,8 @@
    (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
-   (let [fetched-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id)
-         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/elastic-name index-set-id)
+   (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
+         fetched-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name index-set-id)
          all-index-set (index-set-service/deep-merge fetched-gran-index-set fetched-non-gran-index-set)]
      {:index-names (get-in all-index-set [:index-set :concepts])
       :rebalancing-collections (get-in all-index-set
@@ -1045,8 +1046,8 @@
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
    ;(println "10636- INSIDE fetch-concept-mapping-types with index-set-id = " index-set-id)
-   (let [fetched-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id)
-         fetched-non-gran-index-set (index-set-es/get-index-set context cmr.elastic-utils.config/elastic-name index-set-id)
+   (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
+         fetched-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name index-set-id)
          all-index-set {:index-set (merge (:index-set fetched-non-gran-index-set) (:index-set fetched-gran-index-set))}
          get-concept-mapping-fn (fn [concept-type]
                                   (-> (get-in all-index-set [:index-set concept-type :mapping])
@@ -1071,7 +1072,7 @@
    (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
      (fetch-rebalancing-collection-info context index-set-id)))
   ([context index-set-id]
-   (let [fetched-gran-index-set (get-in (index-set-es/get-index-set context cmr.elastic-utils.config/gran-elastic-name index-set-id) [:index-set :granule])]
+   (let [fetched-gran-index-set (get-in (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id) [:index-set :granule])]
      (select-keys fetched-gran-index-set [:rebalancing-collections :rebalancing-status :rebalancing-targets]))))
 
 (def index-set-cache-key
