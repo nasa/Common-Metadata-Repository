@@ -124,14 +124,16 @@
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
+    (println "INSIDE save-document-in-elastic with es-index = " es-index " and es-mapping-type = " es-mapping-type " and doc-id = " doc-id)
     (let [es-cluster-name (es-index/get-es-cluster-name-from-index-name es-index)
+          _ (println "es-cluster-name determined to be = " es-cluster-name)
           conn (get-in context [:system (keyword es-cluster-name) :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
-        ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
+        ;; to result in 503 if replicas setting value of 'index-sets' is set to > 0 when running on a single node
         (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:body])

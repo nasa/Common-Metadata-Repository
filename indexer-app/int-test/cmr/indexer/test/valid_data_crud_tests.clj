@@ -47,27 +47,29 @@
       (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
 
-;; TODO CMR-10636 redo this test to accurately test it's original purpose
 ;; Verify index-set delete is successful.
 ;; First create a index-set, verify a specified index in index-set is created, delete index-set
 ;; and verify specified index is not present now to ensure delete is successful
 (deftest delete-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
-          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-coll-idx-name (svc/gen-valid-index-name index-set-id "C4-PROV2")
+          expected-gran-idx-name (svc/gen-valid-index-name index-set-id "C5-PROV5")
           {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))
-      (is (esi/exists? @util/gran-elastic-connection expected-idx-name))))
+      ;; this is creating a collection index, so we need to check the non-gran elastic cluster
+      (is (esi/exists? @util/elastic-connection expected-coll-idx-name))
+      (is (esi/exists? @util/gran-elastic-connection expected-gran-idx-name))))
   (testing "delete index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
-          suffix-idx-name "C99-Collections"
-          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-coll-idx-name (svc/gen-valid-index-name index-set-id "C4-PROV2")
+          expected-gran-idx-name (svc/gen-valid-index-name index-set-id "C5-PROV5")
           {:keys [status]} (util/delete-index-set index-set-id)]
       (is (= 204 status))
-      (is (not (esi/exists? @util/gran-elastic-connection expected-idx-name))))))
+      (is (not (esi/exists? @util/gran-elastic-connection expected-gran-idx-name)))
+      (is (not (esi/exists? @util/elastic-connection expected-coll-idx-name))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
 ;; Create 2 index-sets with different ids but with same number of concepts and indices associated
@@ -102,9 +104,13 @@
   ([expected-colls]
    (assert-rebalancing-collections expected-colls nil))
   ([expected-colls already-rebalanced]
+   (println "INSIDE assert-rebalancing-collections with expected-colls = " expected-colls " and already rebalanced = " already-rebalanced)
    (let [index-set (get-in (util/get-index-set util/sample-index-set-id) [:response :body])
+         _ (println "index-set found = " index-set)
          base-coll-indexes (->> (get-in util/sample-index-set [:index-set :granule :indexes]) (map :name))
-         expected-coll-indexes (set (concat base-coll-indexes expected-colls already-rebalanced))]
+         _ (println "base-coll-indexes = " base-coll-indexes)
+         expected-coll-indexes (set (concat base-coll-indexes expected-colls already-rebalanced))
+         _ (println "expected coll indexes = " expected-coll-indexes)] ;; #{C4-PROV3 C5-PROV1 small_collections C5-PROV5}
      (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))
      (is (= expected-coll-indexes (->> (get-in index-set [:index-set :granule :indexes])
                                        (map :name)
@@ -116,6 +122,8 @@
              :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
        (is (esi/exists? @util/gran-elastic-connection elastic-index-name))))))
+
+;; TODO fix this test
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index

@@ -182,11 +182,8 @@
 (defn index-cfg-validation
   "Verify if required elements are present to create an elastic index."
   [index-set es-cluster-name]
-  (println "INSIDE index-cfg-validation with es-cluster-name = " es-cluster-name " and index-set = " index-set)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
-        _ (println "indices-w-config = " indices-w-config)
-        json-index-set-str (json/generate-string index-set)
-        _ (println "json-index-set-str = " json-index-set-str)]
+        json-index-set-str (json/generate-string index-set)]
     (when-not (every? true? (map #(and (boolean (% :index-name))
                                        (boolean (% :settings)) (boolean (% :mapping))) indices-w-config))
       (m/missing-idx-cfg-msg json-index-set-str))))
@@ -217,8 +214,10 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
+  (println "INSIDE index requested index set with es-cluster-name = " es-cluster-name " and index-set = " index-set)
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set) es-cluster-name)))
+        _ (println "index set w es index names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -235,7 +234,6 @@
   index-set doc indexing fails."
   [context es-cluster-name index-set]
   (let [index-names (get-index-names index-set es-cluster-name)
-        _ (println "index-names to create = " index-names)
         indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
@@ -260,6 +258,8 @@
   ;(validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
+
+    (println "INSIDE create-or-update-index-set with es cluster name = " es-cluster-name " and indices w config = " indices-w-config)
 
     (doseq [idx indices-w-config]
       (es/create-or-update-index es-store idx))
@@ -324,7 +324,7 @@
          "The collection [%s] does not have a separate granule index."
          collection-concept-id)))))
 
-(defn- add-new-granule-index
+(defn- add-new-granule-index-to-index-set
   "Adds a new granule index for the given collection. Validates the collection
   does not already have an index."
   [index-set collection-concept-id]
@@ -368,7 +368,7 @@
                           (do
                              (validate-granule-index-exists index-set concept-id)
                              index-set)
-                          (add-new-granule-index index-set concept-id)))]
+                          (add-new-granule-index-to-index-set index-set concept-id)))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
     (create-or-update-index-set context es-config/gran-elastic-name index-set)))
