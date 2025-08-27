@@ -5,6 +5,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
+   [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
    [cmr.common.services.errors :as errors]
@@ -155,25 +156,12 @@
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
-;; TODO 10636 this is hardcoded to index name...could it be better? Will these rules always be true?
-(defn get-es-cluster-name-from-index-name
-  "Given one index-name, we determine which elastic cluster it belongs in."
-  [index-name]
-  (let [gran-cluster es-config/gran-elastic-name
-        non-gran-cluster es-config/elastic-name
-        gran-index-set-name (str gran-cluster "-index-sets")
-
-        excluded-indices #{"collection_search_alias" "1_collections_v2"}
-        gran-specific-indices #{"1_small_collections" "1_deleted_granules"}
-
-        uses-gran-cluster? (and
-                             (not (excluded-indices index-name))
-                             (or (string/starts-with? index-name "1_c")
-                                 (gran-specific-indices index-name)
-                                 (= index-name gran-index-set-name)))]
-    (if uses-gran-cluster?
-      gran-cluster
-      non-gran-cluster)))
+(defn get-es-cluster-name-from-concept-id
+  "Given a singular concept-id, we determine which elastic cluster it belongs in."
+  [concept-id]
+    (if (= :granule (concepts/concept-id->type concept-id))
+      es-config/gran-elastic-name
+      es-config/elastic-name))
 
 (defn get-es-cluster-name-from-index-info
   [index-info]
