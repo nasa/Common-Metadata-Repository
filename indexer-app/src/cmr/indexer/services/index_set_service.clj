@@ -227,7 +227,7 @@
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
+    (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc es-cluster-name)))
 
 (defn create-index-set
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
@@ -274,7 +274,7 @@
           {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
           idx-mapping-type (first (keys mapping))]
       (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
-      (es/delete-document context index-name idx-mapping-type index-set-id)))
+      (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
 
 (defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."

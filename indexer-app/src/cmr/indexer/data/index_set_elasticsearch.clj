@@ -122,12 +122,10 @@
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
-  [context es-index es-mapping-type doc-id es-doc]
+  [context es-index es-mapping-type doc-id es-doc es-cluster-name]
   (try
     (println "INSIDE save-document-in-elastic with es-index = " es-index " and es-mapping-type = " es-mapping-type " and doc-id = " doc-id)
-    (let [es-cluster-name (es-index/get-es-cluster-name-from-index-name es-index)
-          _ (println "es-cluster-name determined to be = " es-cluster-name)
-          conn (get-in context [:system (keyword es-cluster-name) :conn])
+    (let [conn (get-in context [:system (keyword es-cluster-name) :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
@@ -142,9 +140,8 @@
 
 (defn delete-document
   "Delete the document from specific elastic cluster, raise error on failure."
-  [context index-name _mapping-type id]
-  (let [es-cluster-name (es-index/get-es-cluster-name-from-index-name index-name)
-        {:keys [host port admin-token]} (get-in context [:system (keyword es-cluster-name) :config])
+  [context index-name _mapping-type id es-cluster-name]
+  (let [{:keys [host port admin-token]} (get-in context [:system (keyword es-cluster-name) :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token

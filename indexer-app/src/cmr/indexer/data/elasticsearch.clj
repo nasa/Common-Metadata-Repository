@@ -9,6 +9,7 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.search.es-index :as es-index]
    [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
@@ -419,7 +420,7 @@
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
-  (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)]
+  (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id elastic-id)]
     (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)))
 
 (defn delete-document
@@ -429,7 +430,7 @@
   ([context es-indexes _es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
      ;; Cannot use elasticsearch for deletion as we require special headers on delete
-     (let [es-cluster-name (cmr.elastic-utils.search.es-index/get-es-cluster-name-from-index-name es-index)
+     (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id concept-id)
            {:keys [admin-token]} (context->es-config context es-cluster-name)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options
