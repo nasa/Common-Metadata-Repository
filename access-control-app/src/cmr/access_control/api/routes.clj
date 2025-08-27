@@ -269,7 +269,7 @@
       {:status 204})
     (POST "/db-migrate" {ctx :request-context}
       (acl/verify-ingest-management-permission ctx :update)
-      (index/create-index-or-update-access-control-related-mappings (-> ctx :system :search-index))
+      (index/create-index-or-update-mappings (-> ctx :system :search-index))
       {:status 204})))
 
 ;;; S3 routes

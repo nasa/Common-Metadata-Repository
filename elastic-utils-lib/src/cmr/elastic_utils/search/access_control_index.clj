@@ -438,7 +438,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions
 
-(defn create-index-or-update-access-control-related-mappings
+(defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
   (m/create-index-or-update-mappings

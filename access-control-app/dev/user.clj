@@ -6,7 +6,7 @@
    [clojure.tools.namespace.repl :refer (refresh)]
    [cmr.access-control.int-test.fixtures :as int-test-util]
    [cmr.access-control.system :as system]
-   [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.config :as elastic-config]
    [cmr.elastic-utils.embedded-elastic-server :as es]
    [cmr.common-app.test.side-api :as side-api]
    [cmr.common.dev.util :as d]
@@ -24,7 +24,7 @@
 
 (def system nil)
 
-(def elastic-servers nil)
+(def elastic-server nil)
 
 (def side-api-server nil)
 
@@ -47,12 +47,11 @@
   ; true
   false)
 
-(defn- create-elastic-servers
-  "Creates instances of elasticsearch servers required for access control in memory."
+(defn- create-elastic-server
+  "Creates an instance of an elasticsearch server in memory."
   []
-  ;; create non gran elastic server only because access control only needs access to this one
-  (es-config/set-elastic-port! 9306)
-  (es/create-server 9307 {:log-level (system/log-level)}))
+  (elastic-config/set-elastic-port! 9306)
+  (es/create-server 9306 {:log-level (system/log-level)}))
 
 (defn start
   "Starts the current development system."
@@ -97,8 +96,8 @@
 
     ;; Start elastic search
     (alter-var-root
-     #'elastic-servers
-     (constantly (l/start (create-elastic-servers) nil)))
+     #'elastic-server
+     (constantly (l/start (create-elastic-server) nil)))
 
     ;; Start access control
     (alter-var-root
@@ -126,7 +125,7 @@
   ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
   ;; Stop elastic search
-  (alter-var-root #'elastic-servers #(when % (l/stop % system)))
+  (alter-var-root #'elastic-server #(when % (l/stop % system)))
   ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 

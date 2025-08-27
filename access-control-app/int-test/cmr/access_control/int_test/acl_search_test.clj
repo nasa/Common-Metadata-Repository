@@ -7,7 +7,7 @@
    [cmr.access-control.test.util :as u]
    [cmr.common-app.api.routes :as routes]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.config :as elastic-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]))
 
@@ -794,8 +794,8 @@
 
      ;; Unindex acl1 directly through elastic to simulate an inconsistent state
      (client/delete (format "http://%s:%s/acls/_doc/%s"
-                            (es-config/elastic-host)
-                            (es-config/elastic-port)
+                            (elastic-config/elastic-host)
+                            (elastic-config/elastic-port)
                             (:concept-id acl1))
                     {:query-params {:refresh true}})
 
