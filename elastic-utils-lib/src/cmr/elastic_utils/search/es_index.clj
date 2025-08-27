@@ -175,7 +175,7 @@
       gran-cluster
       non-gran-cluster)))
 
-(defn get-es-cluster-name-by-index-info-type-name
+(defn get-es-cluster-name-from-index-info
   [index-info]
   (if (= (:type-name index-info) "granule")
     es-config/gran-elastic-name
@@ -187,9 +187,9 @@
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
-        (scroll-search context scroll-id (get-es-cluster-name-by-index-info-type-name index-info))
+        (scroll-search context scroll-id (get-es-cluster-name-from-index-info index-info))
         (es-helper/search
-          (context->conn context (get-es-cluster-name-by-index-info-type-name index-info))
+          (context->conn context (get-es-cluster-name-from-index-info index-info))
           (:index-name index-info)
           [(:type-name index-info)]
           query))
