@@ -127,6 +127,11 @@
               :dynamic "strict"
               :properties ~properties}))))
 
+(defn create-index-alias
+  "Creates the alias for the index."
+  [conn index alias-name]
+  (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}]))
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
    follows:
@@ -148,6 +153,7 @@
       (do
         (info (format "Creating %s index" index-name))
         (esi-helper/create conn index-name {:settings {:index index-settings} :mappings mappings})
+        (create-index-alias conn index-name (str index-name "_alias"))
         (esc/wait-for-healthy-elastic elastic-store)))
     (esi-helper/refresh conn index-name)))
 
@@ -228,8 +234,3 @@
   "Delete index"
   [elastic-store index-name]
   (es-helper/delete-index elastic-store index-name))
-
-(defn create-index-alias
-  "Creates the alias for the index."
-  [conn index alias-name]
-  (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}]))

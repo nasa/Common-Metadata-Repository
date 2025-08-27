@@ -60,6 +60,16 @@
              {:content-type :json
               :body {:actions actions}}))
 
+;; We have to roll our own get-aliases function because Elasticsearch route on GET alias
+;; for an index has changed and clojurewerkz is outdated
+(defn get-aliases
+  "get index aliases"
+  [conn index-name]
+  (let [aliases-url (rest/url-with-path conn index-name "_alias")
+        resp (rest/get conn aliases-url)
+        aliases (keys (get-in resp [(keyword index-name) :aliases]))]
+    (mapv name aliases)))
+
 (defn create-index-template
   "create an index template in elasticsearch"
   [conn template-name opts]
