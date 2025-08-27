@@ -101,7 +101,8 @@
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
-             :caches {af/acl-cache-key (af/create-acl-cache [:system-object :provider-object :single-instance-object])
+             :caches {af/acl-cache-key (af/create-acl-cache
+                                        [:system-object :provider-object :single-instance-object])
                       provider-cache/cache-key (provider-cache/create-cache)
                       acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
@@ -141,7 +142,7 @@
   [system]
   (let [started-system (start system)]
     (try
-      (access-control-index/create-index-or-update-access-control-related-mappings (:search-index started-system))
+      (access-control-index/create-index-or-update-mappings (:search-index started-system))
       ;; This is needed to bootstrap admin group for legacy services for integration tests
       (bootstrap/bootstrap started-system)
       (catch Exception e

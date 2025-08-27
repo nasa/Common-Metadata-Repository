@@ -45,7 +45,7 @@
   []
   (let [search-response (client/post
                          (format "http://localhost:%s/%s/_search"
-                                 (es-config/gran-elastic-port)
+                                 (es-config/elastic-port)
                                  access-control-index/group-index-name)
                          {:throw-exceptions true
                           :content-type :json

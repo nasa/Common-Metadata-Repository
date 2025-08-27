@@ -164,7 +164,7 @@
       es-config/gran-elastic-name
       es-config/elastic-name))
 
-(defn get-es-cluster-name-by-index-info-type-name
+(defn get-es-cluster-name-from-index-info
   [index-info]
   (if (= (:type-name index-info) "granule")
     es-config/gran-elastic-name
@@ -173,13 +173,12 @@
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
-  (println "10636- INSIDE do-send-with-retry with index-info = " index-info ". Determined the es cluster is = " (get-es-cluster-name-by-index-info-type-name index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
-        (scroll-search context scroll-id (get-es-cluster-name-by-index-info-type-name index-info))
+        (scroll-search context scroll-id (get-es-cluster-name-from-index-info index-info))
         (es-helper/search
-          (context->conn context (get-es-cluster-name-by-index-info-type-name index-info))
+          (context->conn context (get-es-cluster-name-from-index-info index-info))
           (:index-name index-info)
           [(:type-name index-info)]
           query))

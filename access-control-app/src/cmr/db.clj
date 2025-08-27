@@ -11,7 +11,7 @@
 (defn migrate
   []
   (let [elastic-store (l/start (search-index/create-elastic-search-index es-config/elastic-config) nil)]
-    (ac-index/create-index-or-update-access-control-related-mappings elastic-store)))
+    (ac-index/create-index-or-update-mappings elastic-store)))
 
 (defn -main
   "Execute the given database operation specified by input arguments."
