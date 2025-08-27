@@ -43,10 +43,3 @@
   "Creates a message stating that the provided settings for the parameter query are invalid."
   [param settings]
   (format "Invalid settings %s for parameter %s" settings param))
-
-(defn invalid-elastic-cluster-name-msg
-  "Create a message stating that the given elastic cluster name is incorrect."
-  [given-elastic-cluster-name expected-elastic-cluster-names]
-  (if (= 2 (count expected-elastic-cluster-names))
-    (format "Expected valid elastic cluster name of %s or %s, but got %s instead" (first expected-elastic-cluster-names) (second expected-elastic-cluster-names) given-elastic-cluster-name)
-    (format "Expected valid elastic cluster name, but got %s instead" given-elastic-cluster-name)))

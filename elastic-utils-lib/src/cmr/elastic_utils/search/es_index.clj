@@ -15,7 +15,6 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -67,7 +66,7 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
     (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index])
-    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
@@ -397,4 +396,4 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
     (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
-    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))

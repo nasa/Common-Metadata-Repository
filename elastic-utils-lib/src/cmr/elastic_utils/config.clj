@@ -121,7 +121,13 @@
    :retry-handler nil
    :admin-token (elastic-admin-token)})
 
+(defn invalid-elastic-cluster-name-msg
+  "Create a message stating that the given elastic cluster name is incorrect."
+  [given-elastic-cluster-name]
+  (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-cluster-name))
+
 (defn es-cluster-name-str->keyword
+  "Converts the elastic cluster name from string to keyword."
   [es-cluster-name]
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
                                   es-cluster-name
@@ -129,4 +135,4 @@
     (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
             (= es-cluster-name-keyword (keyword elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [gran-elastic-name elastic-name]))))))
+      (throw (Exception. (invalid-elastic-cluster-name-msg es-cluster-name))))))
