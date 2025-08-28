@@ -6,15 +6,17 @@
    [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
    [cmr.common-app.services.search :as cs]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as es-config]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.utils.cache-util :as cache-util]
+   [cmr.search.api.concepts-search :as concepts-search]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -354,3 +356,30 @@
             {:headers {routes/SCROLL_ID_HEADER "foo"}}
             404
             "Scroll session [foo] does not exist"))))
+
+(deftest scroll-deprecation-test
+  (let [_ (side/eval-form `(concepts-search/set-reject-cmr-scroll-id-flag! true))
+        expected-url (side/eval-form `(concepts-search/scroll-after-instructions-url))]
+
+    (testing "scroll parameter rejected when flag is enabled"
+      (let [response (search/find-refs :collection {:scroll true}
+                                       {:allow-failure? true})
+            error-msg (first (:errors response))]
+        (is (= 400 (:status response)))
+        (is (re-find #"Scrolling is no longer supported" error-msg))
+        (is (re-find #"search-after" error-msg))
+        (is (.contains (string/replace error-msg #"\s+" " ")
+                       (string/replace (:body expected-url) #"\"" "")))))
+
+    (testing "CMR-Scroll-Id header rejected when flag is enabled"
+      (let [response (search/find-refs :collection {}
+                                       {:headers {routes/SCROLL_ID_HEADER "any-value"}
+                                        :allow-failure? true})
+            error-msg (first (:errors response))]
+        (is (= 400 (:status response)))
+        (is (re-find #"Scrolling is no longer supported" error-msg))
+        (is (re-find #"search-after" error-msg))
+        (is (.contains (string/replace error-msg #"\s+" " ")
+                       (string/replace (:body expected-url) #"\"" "")))))
+
+    (side/eval-form `(concepts-search/set-reject-cmr-scroll-id-flag! false))))
