@@ -35,7 +35,8 @@
    save-tool]
   [cmr.ingest.services.ingest-service.subscription
    ;; Public subscription functions
-   save-subscription]
+   save-subscription
+   delete-subscription]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
    save-variable])
