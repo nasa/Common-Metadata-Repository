@@ -19,7 +19,8 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.search.api.concepts-search :as concepts-search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -257,49 +258,51 @@
           "Single Point Washington DC"
           "single_point_dc" [whole-world very-wide-cart washington-dc]))
 
-      (testing (format "Scrolling with results on first page for %s shapefile" fmt)
-        (let [expected-items [whole-world touches-sp on-sp very-tall-cart south-pole]
-              {:keys [hits headers] :as initial-scroll-request}
-              (search/find-refs-with-multi-part-form-post
-                :granule
-                [{:name "shapefile"
-                  :content (io/file (io/resource (str "shapefiles/antarctica." extension)))
-                  :mime-type mime-type}
-                 {:name "provider"
-                   :content "PROV1"}
-                 {:name "scroll"
-                   :content "true"}
-                 {:name "page_size"
-                   :content "1"}])
-              scroll-id (:CMR-Scroll-Id headers)]
-          (d/assert-refs-match [(first expected-items)] initial-scroll-request)
-          (doseq [item (rest expected-items)
-                  :let [refs (search/find-refs
-                              :granule
-                              {:scroll true}
-                              {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
-            (d/assert-refs-match [item] refs))
-          (search/clear-scroll scroll-id)))
+      (when-not (concepts-search/reject-cmr-scroll-id-flag)
+        (testing (format "Scrolling with results on first page for %s shapefile" fmt)
+         (let [expected-items [whole-world touches-sp on-sp very-tall-cart south-pole]
+               {:keys [hits headers] :as initial-scroll-request}
+               (search/find-refs-with-multi-part-form-post
+                 :granule
+                 [{:name "shapefile"
+                   :content (io/file (io/resource (str "shapefiles/antarctica." extension)))
+                   :mime-type mime-type}
+                  {:name "provider"
+                    :content "PROV1"}
+                  {:name "scroll"
+                    :content "true"}
+                  {:name "page_size"
+                    :content "1"}])
+               scroll-id (:CMR-Scroll-Id headers)]
+           (d/assert-refs-match [(first expected-items)] initial-scroll-request)
+           (doseq [item (rest expected-items)
+                   :let [refs (search/find-refs
+                               :granule
+                               {:scroll true}
+                               {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
+             (d/assert-refs-match [item] refs))
+           (search/clear-scroll scroll-id))))
 
-      (testing (format "Deferred scrolling for %s shapefile" fmt)
-        (let [expected-items [whole-world very-wide-cart washington-dc richmond]
-              {:keys [hits headers]}
-              (search/find-refs-with-multi-part-form-post
-                :granule
-                [{:name "shapefile"
-                  :content (io/file (io/resource (str "shapefiles/box." extension)))
-                  :mime-type mime-type}
-                 {:name "provider"
-                   :content "PROV1"}
-                 {:name "scroll"
-                   :content "defer"}
-                 {:name "page_size"
-                   :content "1"}])
-              scroll-id (:CMR-Scroll-Id headers)]
-          (doseq [item expected-items
-                  :let [refs (search/find-refs
-                              :granule
-                              {:scroll true}
-                              {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
-            (d/assert-refs-match [item] refs))
-          (search/clear-scroll scroll-id))))))
+      (when-not (concepts-search/reject-cmr-scroll-id-flag)
+        (testing (format "Deferred scrolling for %s shapefile" fmt)
+         (let [expected-items [whole-world very-wide-cart washington-dc richmond]
+               {:keys [hits headers]}
+               (search/find-refs-with-multi-part-form-post
+                 :granule
+                 [{:name "shapefile"
+                   :content (io/file (io/resource (str "shapefiles/box." extension)))
+                   :mime-type mime-type}
+                  {:name "provider"
+                    :content "PROV1"}
+                  {:name "scroll"
+                    :content "defer"}
+                  {:name "page_size"
+                    :content "1"}])
+               scroll-id (:CMR-Scroll-Id headers)]
+           (doseq [item expected-items
+                   :let [refs (search/find-refs
+                               :granule
+                               {:scroll true}
+                               {:headers {routes/SCROLL_ID_HEADER scroll-id}})]]
+             (d/assert-refs-match [item] refs))
+           (search/clear-scroll scroll-id)))))))

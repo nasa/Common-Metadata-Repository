@@ -32,6 +32,14 @@
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
 
+(defconfig reject-cmr-scroll-id-flag
+  "Flag that indicates if we should reject CMR-Scroll-Id requests and return 400 error."
+  {:default false :type Boolean})
+
+(defconfig scroll-after-instructions-url
+  "URL for instructions on how to use Scroll After instead of CMR-Scroll-Id."
+  {:default "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after"})
+
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
   #{mt/any
@@ -82,6 +90,18 @@
         (svc-errors/throw-service-error :bad-request "offset is not allowed with search-after"))
       (when scroll
         (svc-errors/throw-service-error :bad-request "scroll is not allowed with search-after")))))
+
+(defn- validate-scroll-id-deprecation
+  "Validate that CMR-Scroll-Id is not used when the rejection flag is enabled."
+  [headers]
+  (when (reject-cmr-scroll-id-flag)
+    (when-let [short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))]
+      (svc-errors/throw-service-error
+       :bad-request
+       (str "CMR-Scroll-Id is deprecated and no longer supported. "
+            "Please use CMR-Search-After header instead. "
+            "For instructions on how to use the new pagination method, see: "
+            (scroll-after-instructions-url))))))
 
 (defn- validate-stac-params
   "Validate stac params, throws service error if failed."
@@ -209,6 +229,7 @@
   return the response"
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+        _ (validate-scroll-id-deprecation headers)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)
@@ -245,6 +266,7 @@
     Harvesting. This can later be generalized easily, should the need arise."
   [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
+        _ (validate-scroll-id-deprecation headers)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         _ (validate-search-after-value search-after)
         ctx (assoc ctx :search-after (json/decode search-after))]
