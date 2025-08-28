@@ -28,6 +28,9 @@
    [cmr.ingest.services.event-handler :as event-handler]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
+   [cmr.ingest.services.nrt-subscription.subscription-cache :as subscription-cache]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.message-queue.pub-sub :as pub-sub]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.transmit.config :as transmit-config]
@@ -123,9 +126,12 @@
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
                        launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
                        urs/urs-cache-key (urs/create-urs-cache)
-                       generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)}
+                       generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)
+                       subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)}
               :public-conf (public-conf)
-              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
+              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
+              :sns {:internal (pub-sub/create-topic (queue-config/cmr-internal-subscriptions-topic-name))
+                    :external (pub-sub/create-topic (queue-config/cmr-subscriptions-topic-name))}}]
      (transmit-config/system-with-connections
        sys [:metadata-db :indexer :access-control :echo-rest :search :kms :ordering :urs]))))
 
