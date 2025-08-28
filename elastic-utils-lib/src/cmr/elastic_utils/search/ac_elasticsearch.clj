@@ -6,6 +6,7 @@
    [cmr.common.concepts :as cs]
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
@@ -69,10 +70,10 @@
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
-  [context docs]
+  [context docs es-cluster-name]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
-          conn (get-in context [:system :db :conn]) ;; Why db?
+          conn (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :conn])
           response (es-helper/bulk conn bulk-operations)
           ;; we don't care about version conflicts or deletes that aren't found
           bad-errors (some (fn [item]
