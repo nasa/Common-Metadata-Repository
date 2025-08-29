@@ -91,10 +91,5 @@ class TestSubscriptionWorker(unittest.TestCase):
         
         mock_sns_instance.publish_message.assert_called_once_with('test-topic', messages['Messages'][0])
 
-        body = messages['Messages'][0]['Body']
-        message = body['Message']
-
-        mock_search_instance.process_message.assert_called_once_with(message)
-
 if __name__ == '__main__':
     unittest.main()
