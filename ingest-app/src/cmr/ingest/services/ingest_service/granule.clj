@@ -108,9 +108,9 @@
         (error "Error while processing subscriptions: " e)))
     {:concept-id concept-id, :revision-id revision-id}))
 
-(declare delete-granule-concept)
+(declare delete-granule)
 #_{:clj-kondo/ignore [:unresolved-symbol]}
-(defn-timed delete-granule-concept
+(defn-timed delete-granule
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
   [context concept-attribs]
