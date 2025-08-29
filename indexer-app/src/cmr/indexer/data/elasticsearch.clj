@@ -120,54 +120,57 @@
                              :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name))))]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
-;; TODO redo this
-(defn create-indexes
+
+(defn create-default-indexes
   "Create elastic indexes for each index name for both es clusters."
   [context]
   ;; create indexes for non-gran-cluster
-  (let [existing-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
-        expected-index-set (idx-set/non-gran-index-set)]
+  (let [;; setup for non-gran-cluster
+        existing-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
+        expected-non-gran-index-set (idx-set/non-gran-index-set)
+
+        ;; setup for gran cluster
+        existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
+        expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
+
     (cond
-      (nil? existing-index-set)
+      ;; Check if exist and needs update
+      (index-set-requires-update? existing-non-gran-index-set expected-non-gran-index-set)
       (do
-        (index-set-svc/create-index-set context es-config/elastic-name expected-index-set)
+        (warn "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
+        (warn "10636- Expected:" (pr-str expected-non-gran-index-set))
+        (warn "10636- Actual:" (pr-str existing-non-gran-index-set)))
+
+      ;; Check if we need to create
+      (nil? existing-non-gran-index-set)
+      (do
+        (index-set-svc/create-or-update-indexes-and-index-set context es-config/elastic-name expected-non-gran-index-set)
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
-
-
-      ;; Compare them to see if they're the same
-      (index-set-requires-update? existing-index-set expected-index-set)
-      (do
-        (warn "10636- Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
-        (warn "10636- Expected:" (pr-str expected-index-set))
-        (warn "10636- Actual:" (pr-str existing-index-set)))
-
       :else
-      (info "10636- Non-gran index set exists and matches.")))
+      (info "10636- Non-gran index set exists and matches."))
 
 
-  ;; create indexes for gran-cluster
-  (info "10636- Checking gran index set.")
-  (let [existing-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
     (cond
-      (nil? existing-index-set)
-      (do
-        (warn "10636- Gran index set does not exist so creating it.")
-        (index-set-svc/create-index-set context es-config/gran-elastic-name expected-index-set))
-
-
-      ;; Compare them to see if they're the same
-      (index-set-requires-update? existing-index-set expected-index-set)
+      ;; Check if we need to update
+      (index-set-requires-update? existing-gran-index-set expected-gran-index-set)
       (do
         (warn "10636- Gran index set does not match you may want to update it. This is separate manual call you'll need to make.")
-        (warn "10636- Expecting:" (pr-str expected-index-set))
-        (warn "10636- Actual:" (pr-str existing-index-set)))
+        (warn "10636- Expecting:" (pr-str expected-gran-index-set))
+        (warn "10636- Actual:" (pr-str existing-gran-index-set)))
+
+      ;; Check if we need to create
+      (nil? existing-gran-index-set)
+      (do
+        (warn "10636- Gran index set does not exist so creating it.")
+        (index-set-svc/create-or-update-indexes-and-index-set context es-config/gran-elastic-name expected-gran-index-set))
 
       :else
-      (info "10636- Gran index set exists and matches."))))
+      (info "10636- Gran index set exists and matches."))
+    )
+  )
 
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
@@ -181,7 +184,7 @@
       (do
         ;(info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
         (index-set-svc/validate-requested-index-set context es-config/elastic-name expected-index-set true)
-        (index-set-svc/create-or-update-index-set context es-config/elastic-name expected-index-set)
+        (index-set-svc/create-or-update-indexes-and-index-set context es-config/elastic-name expected-index-set)
         (info "Creating collection index alias.")
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
@@ -203,7 +206,7 @@
       (do
         ;(info "10636-Updating the gran index set to " (pr-str expected-index-set))
         (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-index-set true)
-        (index-set-svc/create-or-update-index-set context es-config/gran-elastic-name expected-index-set))
+        (index-set-svc/create-or-update-indexes-and-index-set context es-config/gran-elastic-name expected-index-set))
       (do
         (info "10636-Ignoring update gran indexes request because gran index set is unchanged.")
         (info "10636-Existing gran index set:" (pr-str existing-index-set))
@@ -225,7 +228,7 @@
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
   (index-set-svc/reset context)
-  (create-indexes context))
+  (create-default-indexes context))
 
 (defrecord ESstore
   [;; configuration of host, port and admin-token for elasticsearch

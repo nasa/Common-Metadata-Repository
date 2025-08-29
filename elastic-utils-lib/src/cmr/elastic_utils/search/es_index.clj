@@ -170,9 +170,11 @@
     es-config/gran-elastic-name
     es-config/elastic-name))
 
+;; TODO CMR-10636 The jobs are failing. Need to figure out what it is sending to elastic
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  (println "INSIDE do-send-with-retry with index-info = " index-info " and es cluster determined to be = " (get-es-cluster-name-from-index-info index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]

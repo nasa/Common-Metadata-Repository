@@ -9,6 +9,7 @@
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
+   [cmr.common.util :as c-util]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
@@ -33,16 +34,17 @@
   "Routes providing index-set operations"
   (context "/index-sets" []
     (POST "/" {body :body request-context :request-context}
+      "Given a combined/full index set, we will validate the index set and then separate out all gran indexes to go to gran cluster and the rest will be created in the non-gran cluster."
       (let [index-set (walk/keywordize-keys body)
+            _ (println "INSIDE create index sets API.")
             _ (acl/verify-ingest-management-permission request-context :update)
+            ;; both validations need to happen first before do any actions
             _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
             _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
-            gran-index-set-resp (index-set-svc/create-index-set request-context es-config/gran-elastic-name index-set)
-            non-gran-index-set-resp (index-set-svc/create-index-set request-context es-config/elastic-name index-set)]
-        (cond
-          (some? gran-index-set-resp) (r/created gran-index-set-resp)
-          (some? non-gran-index-set-resp) (r/created non-gran-index-set-resp)
-          :else (r/created nil))))
+            split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)
+            index-set-resp (index-set-svc/create-indexes-and-index-set request-context split-index-set-map)]
+        (r/created index-set-resp)
+        ))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -57,26 +59,36 @@
       {:status 204})
 
     ;; TODO add sys tests for this new endpoint
-    ;(context "/:es-cluster-name" [es-cluster-name]
-    ;  (GET "/" {request-context :request-context}
-    ;    (acl/verify-ingest-management-permission request-context :read)
-    ;    (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
+    (context "/elastic-name/:es-cluster-name" [es-cluster-name]
+      (GET "/" {request-context :request-context}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-sets request-context es-cluster-name)))) ;; this is directly what is in elastic
+
+    ;; TODO add sys tests for this new endpoint
+    (context "/elastic-name/:es-cluster-name/:id" [es-cluster-name id]
+      (GET "/" {request-context :request-context}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-set request-context es-cluster-name id))))
 
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (let [gran-index-set (index-set-svc/get-index-set request-context es-config/gran-elastic-name id)
+              _ (println "gran-index-set found in indexer for id = " id " is " gran-index-set)
               non-gran-index-set (index-set-svc/get-index-set request-context es-config/elastic-name id)
-              combined-index-set (cmr.indexer.services.index-set-service/deep-merge gran-index-set non-gran-index-set)]
+              _ (println "non-gran-index-set found in indexer for id = " id " is " non-gran-index-set)
+              combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
+              _ (println "combined-index-set found in indexer for id = " id " is " combined-index-set)]
           (r/response combined-index-set)))
 
+      ;; TODO need to update this too, to split the index-set
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
           (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
-          (index-set-svc/create-or-update-index-set request-context es-config/gran-elastic-name index-set)
-          (index-set-svc/create-or-update-index-set request-context es-config/elastic-name index-set)
+          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/gran-elastic-name index-set)
+          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/elastic-name index-set)
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}

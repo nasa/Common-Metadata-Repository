@@ -6,9 +6,9 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
+   [cmr.common.util :as c-util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
@@ -907,6 +907,7 @@
        :mapping {:properties{:example {:type 'keyword'}}}}}}
    Note: Indexes normally have two items, the all revisions index and the normal index
    Note: Most mappings include a literal case version and a lowercase version
+   NOTE: Changes to this index-set template will affect index-set CRUD calls. Change with caution.
    "
   [extra-granule-indexes]
   (let [set-of-gran-indexes {:name "cmr-base-index-set"
@@ -1019,7 +1020,7 @@
   ([context index-set-id]
    (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
          fetched-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name index-set-id)
-         all-index-set (index-set-service/deep-merge fetched-gran-index-set fetched-non-gran-index-set)]
+         all-index-set (c-util/deep-merge fetched-gran-index-set fetched-non-gran-index-set)]
      {:index-names (get-in all-index-set [:index-set :concepts])
       :rebalancing-collections (get-in all-index-set
                                        [:index-set :granule :rebalancing-collections])})))

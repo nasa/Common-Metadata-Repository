@@ -106,7 +106,7 @@
         context {:system started-system}]
     ;; The indexes/alias will not be created if they already exist.
     (try
-      (es/create-indexes context)
+      (es/create-default-indexes context)
       (when (or (es/cluster-requires-update? context es-config/gran-elastic-name)
                 (es/cluster-requires-update? context es-config/elastic-name))
         (es/update-indexes context {}))

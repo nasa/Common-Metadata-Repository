@@ -220,6 +220,7 @@
   {:default "https://graphql.earthdata.nasa.gov/api"
    :type String})
 
+;; TODO CMR-10636 if this list starts adding granule related documents then it breaks index-set. Need to make this more flexible.
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types. For tests to process, grid is required,

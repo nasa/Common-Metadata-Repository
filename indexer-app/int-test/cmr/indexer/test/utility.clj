@@ -184,7 +184,7 @@
                    :query-params {:target "separate-index"}
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
-                   :throw-exceptions false})
+                   :throw-exceptions true})
         status (:status response)
         body (safe-decode response)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
@@ -237,7 +237,7 @@
                    :url (index-set-url id)
                    :accept :json
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                   :throw-exceptions false})
+                   :throw-exceptions true})
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
