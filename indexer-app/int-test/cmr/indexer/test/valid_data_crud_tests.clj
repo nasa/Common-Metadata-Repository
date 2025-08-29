@@ -112,7 +112,8 @@
      (doseq [collection expected-coll-indexes
              :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
-       (is (esi/exists? @util/elastic-connection elastic-index-name))))))
+       (is (esi/exists? @util/elastic-connection elastic-index-name))
+       (is (esi-helper/alias-exists? @util/elastic-connection elastic-index-name))))))
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index

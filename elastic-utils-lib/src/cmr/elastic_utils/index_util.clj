@@ -153,8 +153,11 @@
       (do
         (info (format "Creating %s index" index-name))
         (esi-helper/create conn index-name {:settings {:index index-settings} :mappings mappings})
-        (create-index-alias conn index-name (str index-name "_alias"))
         (esc/wait-for-healthy-elastic elastic-store)))
+
+    ;; if the alias does not exist, add it
+    (when-not (esi-helper/alias-exists? conn index-name)
+      (create-index-alias conn index-name (str index-name "_alias")))
     (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation
