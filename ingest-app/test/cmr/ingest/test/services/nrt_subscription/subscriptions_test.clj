@@ -667,7 +667,7 @@
 (deftest is-valid-sqs-arn-test
   (testing "sqs endpoint validation for subscription endpoint"
     (are3 [endpoint expected]
-          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-sqs-arn]
+          (let [fun #'cmr.ingest.services.nrt-subscription.subscriptions/is-valid-sqs-arn]
             (is (= expected (fun endpoint))))
 
           "valid sqs endpoint"
@@ -694,7 +694,7 @@
 (deftest is-valid-subscription-endpoint-url-test
   (testing "url string validation for subscription endpoint"
     (are3 [endpoint expected]
-          (let [fun #'cmr.metadata-db.services.subscriptions/is-valid-subscription-endpoint-url]
+          (let [fun #'cmr.ingest.services.nrt-subscription.subscriptions/is-valid-subscription-endpoint-url]
             (is (= expected (fun endpoint))))
 
           "valid local url -- with http prefix"
@@ -737,7 +737,7 @@
 (deftest is-local-test-queue-test
   (testing "is local test queue endpoint for subscription endpoint validation"
     (are3 [endpoint expected]
-          (let [fun #'cmr.metadata-db.services.subscriptions/is-local-test-queue]
+          (let [fun #'cmr.ingest.services.nrt-subscription.subscriptions/is-local-test-queue]
             (is (= expected (fun endpoint))))
 
           "given remote sns queue endpoint"
@@ -836,6 +836,7 @@
            "Delete" #{["https://www.url1.com" "user-2"]}}
           )))
 
+#_{:clj-kondo/ignore [:unused-binding]}
 (deftest attach-subscription-to-topic
     (let [concept-metadata "{\"CollectionConceptId\": \"C1200000002-PROV1\",
                              \"EndPoint\": \"some-endpoint\",
@@ -855,8 +856,7 @@
         (testing "concept given is not ingest, will return input concept"
           (is (= non-ingest-concept (subscriptions/attach-subscription-to-topic context non-ingest-concept))))
         (testing "subscription succeeds, returns concept with aws-arn attached"
-          (is (= (assoc-in ingest-concept [:extra-fields :aws-arn] "sns-subscription-arn") (subscriptions/attach-subscription-to-topic context ingest-concept))))
-        )
+          (is (= (assoc-in ingest-concept [:extra-fields :aws-arn] "sns-subscription-arn") (subscriptions/attach-subscription-to-topic context ingest-concept)))))
       (with-redefs [topic-protocol/subscribe (fn [topic concept-edn] (throw (Exception. "exception from AWS")))]
         (testing "subscribe fails, will return concept without the aws-arn in extra fields and will NOT throw exception"
           (is (thrown? Exception (subscriptions/attach-subscription-to-topic context ingest-concept)))))
