@@ -25,6 +25,7 @@
   [cmr.ingest.services.ingest-service.granule
    ;; Public granule functions
    save-granule
+   delete-granule
    validate-granule
    validate-granule-with-parent-collection]
   [cmr.ingest.services.ingest-service.service
