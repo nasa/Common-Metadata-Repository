@@ -13,6 +13,10 @@
    [cmr.indexer.services.messages :as m]
    [cmr.transmit.config :as t-config]))
 
+(def resharding-index-pattern
+  "Regex pattern for index names created by resharding"
+  #"^([0-9]+_c[0-9]+_[A-Za-z0-9_]+)_([0-9]+)_shards$")
+
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
   if there are any exceptions. This function is here to deal with any legacy fields that are not
@@ -73,6 +77,12 @@
         (do
           (info "Index" index-name "does not exist so it will be created")
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
+
+      ;; if the index is not a resharding index and alias does not exist, add it
+      (when-not (or (esi-helper/alias-exists? conn index-name)
+                    (re-matches resharding-index-pattern index-name))
+        (esi/create-index-alias conn index-name (str index-name "_alias")))
+
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
