@@ -69,7 +69,8 @@
                                       "providers"
                                       "urs"
                                       "acls"
-                                      "schema-validation-functions"]
+                                      "schema-validation-functions"
+                                      "subscription-cache"]
         (url/access-control-read-caches-url) ["acls"
                                               "health"
                                               "provider-cache"
