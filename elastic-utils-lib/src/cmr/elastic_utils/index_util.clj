@@ -157,7 +157,7 @@
 
     ;; if the alias does not exist, add it
     (when-not (esi-helper/alias-exists? conn index-name)
-      (create-index-alias conn index-name (str index-name "_alias")))
+      (create-index-alias conn index-name (esi-helper/index-alias index-name)))
     (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation

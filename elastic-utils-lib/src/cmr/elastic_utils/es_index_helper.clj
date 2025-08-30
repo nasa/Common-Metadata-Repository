@@ -9,7 +9,13 @@
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
 
+(defn index-alias
+  "Returns the default index alias for the given index"
+  [index-name]
+  (str index-name "_alias"))
+
 (defn exists?
+  "Return true if the given index exists"
   [conn index-name]
   (esi/exists? conn index-name))
 
@@ -73,7 +79,7 @@
 (defn alias-exists?
   "Return true if the given index has the default alias in the form of <index-name>_alias"
   [conn index-name]
-  (boolean (some #{(str index-name "_alias")} (get-aliases conn index-name))))
+  (boolean (some #{(index-alias index-name)} (get-aliases conn index-name))))
 
 (defn create-index-template
   "Create an index template in elasticsearch"
