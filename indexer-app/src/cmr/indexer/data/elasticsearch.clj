@@ -175,13 +175,11 @@
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
 
-  ;(info "10636- Updating non-gran indexes.")
   (let [existing-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
         expected-index-set (idx-set/non-gran-index-set)]
     (if (or (= "true" (:force params))
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
-        ;(info "10636- Updating the non-gran index set to " (pr-str expected-index-set))
         (index-set-svc/validate-requested-index-set context es-config/elastic-name expected-index-set true)
         (index-set-svc/create-or-update-indexes-and-index-set context es-config/elastic-name expected-index-set)
         (info "Creating collection index alias.")
@@ -189,9 +187,9 @@
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
-        (info "10636-Ignoring update indexes request because non-gran index set is unchanged.")
-        (info "10636-Existing non-gran index set:" (pr-str existing-index-set))
-        (info "10636-New non-gran index set:" (pr-str expected-index-set)))))
+        (info "Ignoring update indexes request because non-gran index set is unchanged.")
+        (info "Existing non-gran index set:" (pr-str existing-index-set))
+        (info "New non-gran index set:" (pr-str expected-index-set)))))
 
 
   ;(info "10636-Updating gran indexes.")
