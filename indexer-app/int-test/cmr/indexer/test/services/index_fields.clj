@@ -9,6 +9,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.test.test-util :as tu]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.elastic-utils.es-index-helper :as esi]
    [cmr.indexer.data.elasticsearch :as es]
@@ -18,10 +19,16 @@
 ;;;   Constants & Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def test-config
+(def gran-elastic-test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
-   :port 9210
+   :port (es-config/gran-elastic-port)
+   :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
+
+(def elastic-test-config
+  "Return the configuration for elasticsearch"
+  {:host "localhost"
+   :port (es-config/elastic-port)
    :admin-token (str "Basic " (b64/encode (.getBytes "password")))})
 
 (def context (atom nil))
@@ -98,18 +105,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn server-setup
-  "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
+  "Fixture that starts all instances of elastic in the JVM that runs the tests and then shuts it down."
   [f]
-  (let [http-port (:port test-config)]
-    (reset! context {:system {:db {:config test-config
-                                   :conn (esr/connect (str "http://localhost:" http-port))}}})
+  (do
+    (reset! context {:system
+                     {:gran-elastic {:config gran-elastic-test-config
+                                     :conn (esr/connect (str "http://localhost:" (:port gran-elastic-test-config)))}
+                      :elastic {:config elastic-test-config
+                                :conn   (esr/connect (str "http://localhost:" (:port elastic-test-config)))}}})
     (try
       (f))))
 
 (defn index-setup
-  "Fixture that creates an index and drops it."
+  "Fixture that creates a collection index and then drops it."
   [f]
-  (let [conn (get-in @context [:system :db :conn])]
+  (let [conn (get-in @context [:system :elastic :conn])]
     (esi/create
      conn
      "tests"

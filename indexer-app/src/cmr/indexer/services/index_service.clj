@@ -16,6 +16,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.config :as config]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
@@ -138,12 +139,12 @@
   * :all-revisions-index? - true indicates this should be indexed into the all revisions index
   * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
   latest regardless of whether the version in the database is older than the _version in elastic."
-  ([context concept-batches]
-   (bulk-index context concept-batches nil))
-  ([context concept-batches options]
+  ([context concept-batches es-cluster-name]
+   (bulk-index context concept-batches es-cluster-name nil))
+  ([context concept-batches es-cluster-name options]
    (reduce (fn [num-indexed batch]
              (let [batch (prepare-batch context batch options)]
-               (es/bulk-index-documents context batch options)
+               (es/bulk-index-documents context batch es-cluster-name options)
                (+ num-indexed (count batch))))
            0
            concept-batches)))
@@ -166,13 +167,13 @@
   "See documentation for bulk-index. This is a temporary function added for supporting replication
   using DMS. It does the same work as bulk-index, but instead of returning the number of concepts
   indexed it returns a map with keys of :num-indexed and :max-revision-date."
-  ([context concept-batches]
-   (bulk-index-with-revision-date context concept-batches {}))
-  ([context concept-batches options]
+  ([context concept-batches es-cluster-name]
+   (bulk-index-with-revision-date context concept-batches es-cluster-name {}))
+  ([context concept-batches es-cluster-name options]
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
                    batch (prepare-batch context batch options)]
-               (es/bulk-index-documents context batch options)
+               (es/bulk-index-documents context batch es-cluster-name options)
                {:num-indexed (+ num-indexed (count batch))
                 :max-revision-date max-revision-date}))
            {:num-indexed 0 :max-revision-date nil}
@@ -259,8 +260,10 @@
                                         :collection
                                         (determine-reindex-batch-size provider-id)
                                         {:provider-id provider-id :latest true})]
-         (bulk-index context latest-collection-batches {:all-revisions-index? false
-                                                        :force-version? force-version?})))
+         (bulk-index context
+                     latest-collection-batches
+                     es-config/elastic-name
+                     {:all-revisions-index? false :force-version? force-version?})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -271,8 +274,10 @@
                                     :collection
                                     (determine-reindex-batch-size provider-id)
                                     {:provider-id provider-id})]
-         (bulk-index context all-revisions-batches {:all-revisions-index? true
-                                                    :force-version? force-version?}))))))
+         (bulk-index context
+                     all-revisions-batches
+                     es-config/elastic-name
+                     {:all-revisions-index? true :force-version? force-version?}))))))
 
 (defconfig non-collection-reindex-batch-size
   "Batch size used for re-indexing other things besides collections."
@@ -288,7 +293,7 @@
                             :tag
                             (non-collection-reindex-batch-size)
                             {:latest true})]
-    (bulk-index context latest-tag-batches)))
+    (bulk-index context latest-tag-batches es-config/elastic-name)))
 
 (defn- time-to-visibility-text
   "This is the original log entry used by Splunk to report on time to index.
@@ -672,7 +677,7 @@
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
-                    (indexer-util/context->conn context)
+                    (indexer-util/context->conn context es-config/gran-elastic-name)
                     index
                     (concept-mapping-types :granule)
                     {:term {(query-field->elastic-field :collection-concept-id :granule)

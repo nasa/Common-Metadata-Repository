@@ -6,9 +6,9 @@
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
-   [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
    [cmr.transmit.config :as t-config]))
@@ -39,24 +39,7 @@
                           index-name error-message))
             (throw e)))))))
 
-(defn create-index-and-alias
-  "Create elastic index and its alias"
-  [es-store idx-w-config]
-  (let [{:keys [conn]} es-store
-        {:keys [index-name]} idx-w-config
-        alias (str index-name "_alias")]
-    (create-index es-store idx-w-config)
-    (try
-      (info "Now creating Elastic alias:" alias)
-      (esi/create-index-alias conn index-name alias)
-      (catch clojure.lang.ExceptionInfo e
-        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error-message (:error body)]
-          (error (format "error creating %s elastic index alias, elastic reported error: %s"
-                          alias error-message))
-          (throw e))))))
-
-(defn update-index
+(defn create-or-update-index
   "Update elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
@@ -80,11 +63,11 @@
                         index-name error-message))
           (throw e))))))
 
-(defn index-set-exists?
-  "Check index-set existence in elastic."
+(defn get-index-set-if-exists
+  "Check index-set existence in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (when (esi-helper/exists? conn index-name)
-    ;; result will be nil if doc doeesn't exist
+    ;; result will be nil if doc doesn't exist
     (es-helper/doc-get
      conn
      index-name
@@ -93,18 +76,19 @@
      {"_source" "index-set-id,index-set-name,index-set-request"})))
 
 (defn get-index-set
-  "Fetch index-set associated with an id."
-  [context index-set-id]
-  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
+  "Fetch index-set associated with an id and a specific elastic cluster."
+  [context es-cluster-name index-set-id]
+  (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when-let [result (index-set-exists?
-                       (get-in context [:system :db]) index-name idx-mapping-type index-set-id)]
+    (when-let [result (get-index-set-if-exists
+                       (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
       (-> result
           (get-in [:_source :index-set-request])
           decode-field))))
 
 (defn get-index-set-ids
-  "Fetch ids of all index-sets in elastic."
+  "Fetch ids of all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
@@ -112,7 +96,7 @@
       (map #(-> % :_source :index-set-id) (get-in result [:hits :hits])))))
 
 (defn get-index-sets
-  "Fetch all index-sets in elastic."
+  "Fetch all index-sets in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi-helper/exists? conn index-name)
     (let [result (es-helper/search
@@ -121,7 +105,7 @@
            (get-in result [:hits :hits])))))
 
 (defn delete-index
-  "Delete given elastic index"
+  "Delete given elastic index in specific elastic cluster"
   [{:keys [conn config]} index-name]
   (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
@@ -135,16 +119,16 @@
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defn save-document-in-elastic
-  "Save the document in Elasticsearch, raise error on failure."
-  [context es-index es-mapping-type doc-id es-doc]
+  "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
+  [context es-index es-mapping-type doc-id es-doc es-cluster-name]
   (try
-    (let [conn (get-in context [:system :db :conn])
+    (let [conn (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
-        ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
+        ;; to result in 503 if replicas setting value of 'index-sets' is set to > 0 when running on a single node
         (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))
     (catch clojure.lang.ExceptionInfo e
       (let [err-msg (get-in (ex-data e) [:body])
@@ -152,9 +136,9 @@
         (throw (Exception. msg))))))
 
 (defn delete-document
-  "Delete the document from elastic, raise error on failure."
-  [context index-name _mapping-type id]
-  (let [{:keys [host port admin-token]} (get-in context [:system :db :config])
+  "Delete the document from specific elastic cluster, raise error on failure."
+  [context index-name _mapping-type id es-cluster-name]
+  (let [{:keys [host port admin-token]} (get-in context [:system (keyword es-cluster-name) :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token

@@ -144,6 +144,10 @@
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn gran-elastic-root
+  []
+  (format "http://%s:%s" (es-config/gran-elastic-host) (es-config/gran-elastic-port)))
+
 (defn elastic-root
   []
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
@@ -270,10 +274,12 @@
            (vals (get-in idx-set [:concepts concept])))))
 
 
+(def gran-elastic-connection (atom nil))
 (def elastic-connection (atom nil))
 
 (defn reset-fixture [f]
   (reset)
+  (reset! gran-elastic-connection (esr/connect (gran-elastic-root)))
   (reset! elastic-connection (esr/connect (elastic-root)))
   (f)
   (reset))

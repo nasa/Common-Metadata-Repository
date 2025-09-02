@@ -1,10 +1,13 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
+   [cmr.common.util :as c-util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
@@ -893,7 +896,43 @@
   "The identifier of the one and only index set"
   1)
 
-(defn index-set
+(defn gran-index-set
+  "Returns the index-set configuration for a brand new index. Takes a list of the extra
+   granule indexes that should exist in addition to small_collections. This function
+   produces a map containing a list of indexes which contain a settings and a mapping
+   map like this:
+   {:index-set {
+     <doc-type> {
+       :indexes [{:name '' :settings {<shards and replicas>}}]
+       :mapping {:properties{:example {:type 'keyword'}}}}}}
+   Note: Indexes normally have two items, the all revisions index and the normal index
+   Note: Most mappings include a literal case version and a lowercase version
+   NOTE: Changes to this index-set template will affect index-set CRUD calls. Change with caution.
+   "
+  [extra-granule-indexes]
+  (let [set-of-gran-indexes {:name "cmr-base-index-set"
+                             :id index-set-id
+                             :create-reason "indexer app requires this index set"
+                             :deleted-granule {:indexes
+                                               [{:name "deleted_granules"
+                                                 :settings deleted-granule-setting}]
+                                               :mapping deleted-granule-mapping}
+                             :granule {:indexes
+                                       (cons {:name "small_collections"
+                                              :settings granule-settings-for-small-collections-index}
+                                             (for [idx extra-granule-indexes]
+                                               {:name idx
+                                                :settings granule-settings-for-individual-indexes}))
+                                       ;; This specifies the settings for new granule indexes that contain data for a single collection
+                                       ;; This allows the index set application to know what settings to use when creating
+                                       ;; a new granule index.
+                                       :individual-index-settings granule-settings-for-individual-indexes
+                                       :mapping granule-mapping}}]
+
+    ;; merge into the set of indexes all the configured generic documents
+    {:index-set set-of-gran-indexes}))
+
+(defn non-gran-index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
    granule indexes that should exist in addition to small_collections. This function
    produces a map containing a list of indexes which contain a settings and a mapping
@@ -905,79 +944,64 @@
    Note: Indexes normally have two items, the all revisions index and the normal index
    Note: Most mappings include a literal case version and a lowercase version
    "
-  [extra-granule-indexes]
-  (let [set-of-indexes {:name "cmr-base-index-set"
-                        :id index-set-id
-                        :create-reason "indexer app requires this index set"
-                        :collection {:indexes
-                                     [;; This index contains the latest revision of each collection and
-                                      ;; is used for normal searches.
-                                      {:name "collections-v2"
-                                       :settings collection-setting-v2}
-                                      ;; This index contains all the revisions (including tombstones) and
-                                      ;; is used for all-revisions searches.
-                                      {:name "all-collection-revisions"
-                                       :settings collection-setting-v1}]
-                                     :mapping collection-mapping}
-                        :deleted-granule {:indexes
-                                          [{:name "deleted_granules"
-                                            :settings deleted-granule-setting}]
-                                          :mapping deleted-granule-mapping}
-                        :granule {:indexes
-                                  (cons {:name "small_collections"
-                                         :settings granule-settings-for-small-collections-index}
-                                        (for [idx extra-granule-indexes]
-                                          {:name idx
-                                           :settings granule-settings-for-individual-indexes}))
-                                  ;; This specifies the settings for new granule indexes that contain data for a single collection
-                                  ;; This allows the index set application to know what settings to use when creating
-                                  ;; a new granule index.
-                                  :individual-index-settings granule-settings-for-individual-indexes
-                                  :mapping granule-mapping}
-                        :tag {:indexes
-                              [{:name "tags"
-                                :settings tag-setting}]
-                              :mapping tag-mapping}
-                        :variable {:indexes
-                                   [{:name "variables"
-                                     :settings variable-setting}
-                                    ;; This index contains all the revisions (including tombstones) and
-                                    ;; is used for all-revisions searches.
-                                    {:name "all-variable-revisions"
-                                     :settings variable-setting}]
-                                   :mapping variable-mapping}
-                        :autocomplete {:indexes
-                                       [{:name "autocomplete"
-                                         :settings autocomplete-settings}]
-                                       :mapping autocomplete-mapping}
-                        :service {:indexes
-                                  [{:name "services"
-                                    :settings service-setting}
-                                   ;; This index contains all the revisions (including tombstones) and
-                                   ;; is used for all-revisions searches.
-                                   {:name "all-service-revisions"
-                                    :settings service-setting}]
-                                  :mapping service-mapping}
-                        :tool {:indexes
-                               [{:name "tools"
-                                 :settings tool-setting}
-                                ;; This index contains all the revisions (including tombstones) and
-                                ;; is used for all-revisions searches.
-                                {:name "all-tool-revisions"
-                                 :settings tool-setting}]
-                               :mapping tool-mapping}
-                        :subscription {:indexes
-                                       [{:name "subscriptions"
-                                         :settings subscription-setting}
+  []
+  (let [set-of-non-gran-indexes {:name "cmr-base-index-set"
+                                 :id index-set-id
+                                 :create-reason "indexer app requires this index set"
+                                 :collection {:indexes
+                                              [;; This index contains the latest revision of each collection and
+                                               ;; is used for normal searches.
+                                               {:name "collections-v2"
+                                                :settings collection-setting-v2}
+                                               ;; This index contains all the revisions (including tombstones) and
+                                               ;; is used for all-revisions searches.
+                                               {:name "all-collection-revisions"
+                                                :settings collection-setting-v1}]
+                                              :mapping collection-mapping}
+                                 :tag {:indexes
+                                       [{:name "tags"
+                                         :settings tag-setting}]
+                                       :mapping tag-mapping}
+                                 :variable {:indexes
+                                            [{:name "variables"
+                                              :settings variable-setting}
+                                             ;; This index contains all the revisions (including tombstones) and
+                                             ;; is used for all-revisions searches.
+                                             {:name "all-variable-revisions"
+                                              :settings variable-setting}]
+                                            :mapping variable-mapping}
+                                 :autocomplete {:indexes
+                                                [{:name "autocomplete"
+                                                  :settings autocomplete-settings}]
+                                                :mapping autocomplete-mapping}
+                                 :service {:indexes
+                                           [{:name "services"
+                                             :settings service-setting}
+                                            ;; This index contains all the revisions (including tombstones) and
+                                            ;; is used for all-revisions searches.
+                                            {:name "all-service-revisions"
+                                             :settings service-setting}]
+                                           :mapping service-mapping}
+                                 :tool {:indexes
+                                        [{:name "tools"
+                                          :settings tool-setting}
                                          ;; This index contains all the revisions (including tombstones) and
                                          ;; is used for all-revisions searches.
-                                        {:name "all-subscription-revisions"
-                                         :settings subscription-setting}]
-                                       :mapping subscription-mapping}}]
+                                         {:name "all-tool-revisions"
+                                          :settings tool-setting}]
+                                        :mapping tool-mapping}
+                                 :subscription {:indexes
+                                                [{:name "subscriptions"
+                                                  :settings subscription-setting}
+                                                 ;; This index contains all the revisions (including tombstones) and
+                                                 ;; is used for all-revisions searches.
+                                                 {:name "all-subscription-revisions"
+                                                  :settings subscription-setting}]
+                                                :mapping subscription-mapping}}]
 
                ;; merge into the set of indexes all the configured generic documents
        {:index-set (reduce (fn [data addition] (merge data addition))
-                           set-of-indexes
+                           set-of-non-gran-indexes
                            (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
@@ -991,12 +1015,14 @@
   "Fetch a map containing index names for each concept type from index-set app along with the list
    of rebalancing collections"
   ([context]
-   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set-es/get-index-set context index-set-id)]
-     {:index-names (get-in fetched-index-set [:index-set :concepts])
-      :rebalancing-collections (get-in fetched-index-set
+   (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
+         fetched-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name index-set-id)
+         all-index-set (c-util/deep-merge fetched-gran-index-set fetched-non-gran-index-set)]
+     {:index-names (get-in all-index-set [:index-set :concepts])
+      :rebalancing-collections (get-in all-index-set
                                        [:index-set :granule :rebalancing-collections])})))
 
 (defn get-concept-mapping-types-for-generics
@@ -1017,12 +1043,14 @@
    concept types which define what the top level field is in each mapping description.
    Normally this is 'properties'."
   ([context]
-   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set-es/get-index-set context index-set-id)
+   (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
+         fetched-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name index-set-id)
+         all-index-set {:index-set (merge (:index-set fetched-non-gran-index-set) (:index-set fetched-gran-index-set))}
          get-concept-mapping-fn (fn [concept-type]
-                                  (-> (get-in fetched-index-set [:index-set concept-type :mapping])
+                                  (-> (get-in all-index-set [:index-set concept-type :mapping])
                                       keys
                                       first
                                       name))]
@@ -1035,17 +1063,17 @@
        :tool (get-concept-mapping-fn :tool)
        :subscription (get-concept-mapping-fn :subscription)}
       (into {}
-            (map #(get-concept-mapping-types-for-generics % fetched-index-set)
+            (map #(get-concept-mapping-types-for-generics % all-index-set)
                  (cs/get-generic-concept-types-array)))))))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
   ([context]
-   (let [index-set-id (get-in (index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
      (fetch-rebalancing-collection-info context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (get-in (index-set-es/get-index-set context index-set-id) [:index-set :granule])]
-     (select-keys fetched-index-set [:rebalancing-collections :rebalancing-status :rebalancing-targets]))))
+   (let [fetched-gran-index-set (get-in (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id) [:index-set :granule])]
+     (select-keys fetched-gran-index-set [:rebalancing-collections :rebalancing-status :rebalancing-targets]))))
 
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
