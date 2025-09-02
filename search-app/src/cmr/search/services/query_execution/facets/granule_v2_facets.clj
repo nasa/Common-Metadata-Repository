@@ -1,6 +1,6 @@
 (ns cmr.search.services.query-execution.facets.granule-v2-facets
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
-  granule fields. First major use case is supporting OPeNDAP virutal directories capability."
+  granule fields. First major use case is supporting OPeNDAP virtual directories capability."
   (:require
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -104,10 +104,6 @@
   "The titles of temporal facet group nodes in order."
   ["Year" "Month" "Day"])
 
-(def group-nodes-in-order-spatial
-  "The titles of spatial facet group nodes in order."
-  ["Cycle" "Pass"])
-
 (defn add-temporal-group-nodes-to-facets
   "Adds group nodes (Year, Month, Day) as applicable to the provided facets."
   [facets remaining-levels]
@@ -120,20 +116,6 @@
                                                       (rest remaining-levels))])
                             (assoc facet :has_children has-children)))]
     (v2h/generate-group-node (first remaining-levels) applied? children-facets)))
-
-(defn add-spatial-group-nodes-to-facets
-  "Adds group nodes (Cycle, Pass) as applicable to the provided facets."
-  [facets remaining-levels]
-  (let [has-children (not= remaining-levels ["Pass"])
-        applied? (some? (some true? (map :applied facets)))
-        children-facets (for [facet facets]
-                          (if (seq (:children facet))
-                            (assoc facet :children [(add-spatial-group-nodes-to-facets
-                                                      (:children facet)
-                                                      (rest remaining-levels))])
-                            (assoc facet :has_children has-children)))]
-    (v2h/generate-group-node (first remaining-levels) applied? children-facets)))
-
 
 (defn- facet-query-applied?
   "Returns true if the query-params keys match a provided pattern."

@@ -249,50 +249,50 @@
     {:terms {:field "science-keywords-humanized.category", :size 1},
      :aggs
      {:coll-count {:reverse_nested {},
-                   :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                   :aggs {:concept-id {:cardinality {:field :concept-id}}}},
       :topic
       {:terms {:field "science-keywords-humanized.topic", :size 1},
        :aggs
        {:coll-count {:reverse_nested {},
-                     :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                     :aggs {:concept-id {:cardinality {:field :concept-id}}}},
         :term
         {:terms {:field "science-keywords-humanized.term", :size 1},
          :aggs
          {:coll-count {:reverse_nested {},
-                       :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                       :aggs {:concept-id {:cardinality {:field :concept-id}}}},
           :detailed-variable
           {:terms {:field "science-keywords-humanized.detailed-variable", :size 1},
            :aggs
            {:coll-count {:reverse_nested {},
-                         :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}},
+                         :aggs {:concept-id {:cardinality {:field :concept-id}}}}}},
           :variable-level-1
           {:terms {:field "science-keywords-humanized.variable-level-1", :size 1},
            :aggs
            {:coll-count {:reverse_nested {},
-                         :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                         :aggs {:concept-id {:cardinality {:field :concept-id}}}},
             :detailed-variable
             {:terms {:field "science-keywords-humanized.detailed-variable", :size 1},
              :aggs {:coll-count {:reverse_nested {},
-                                 :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}},
+                                 :aggs {:concept-id {:cardinality {:field :concept-id}}}}}},
             :variable-level-2
             {:terms {:field "science-keywords-humanized.variable-level-2", :size 1},
              :aggs
              {:coll-count {:reverse_nested {},
-                           :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                           :aggs {:concept-id {:cardinality {:field :concept-id}}}},
               :detailed-variable
               {:terms {:field "science-keywords-humanized.detailed-variable", :size 1},
                        :aggs {:coll-count {:reverse_nested {},
-                                           :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}},
+                                           :aggs {:concept-id {:cardinality {:field :concept-id}}}}}},
               :variable-level-3
               {:terms {:field "science-keywords-humanized.variable-level-3", :size 1},
                :aggs
                {:coll-count {:reverse_nested {},
-                             :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                             :aggs {:concept-id {:cardinality {:field :concept-id}}}},
                 :detailed-variable
                 {:terms {:field "science-keywords-humanized.detailed-variable", :size 1},
                  :aggs
                  {:coll-count {:reverse_nested {},
-                               :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}}}}}}}}}}}}}}}})
+                               :aggs {:concept-id {:cardinality {:field :concept-id}}}}}}}}}}}}}}}}}}}})
 
 (def expected-nested-facet-aggregations-for-platforms2
   {:nested {:path :platforms2-humanized},
@@ -301,27 +301,27 @@
     {:terms {:field "platforms2-humanized.basis", :size 1},
      :aggs
      {:coll-count {:reverse_nested {},
-                   :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                   :aggs {:concept-id {:cardinality {:field :concept-id}}}},
       :category
       {:terms {:field "platforms2-humanized.category", :size 1},
        :aggs
        {:coll-count {:reverse_nested {},
-                     :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                     :aggs {:concept-id {:cardinality {:field :concept-id}}}},
         :short-name
         {:terms {:field "platforms2-humanized.short-name", :size 1},
          :aggs
          {:coll-count {:reverse_nested {},
-                       :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}},
+                       :aggs {:concept-id {:cardinality {:field :concept-id}}}}}},
         :sub-category
         {:terms {:field "platforms2-humanized.sub-category", :size 1},
          :aggs
          {:coll-count {:reverse_nested {},
-                       :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}},
+                       :aggs {:concept-id {:cardinality {:field :concept-id}}}},
           :short-name
           {:terms {:field "platforms2-humanized.short-name", :size 1},
            :aggs
            {:coll-count {:reverse_nested {},
-                         :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}}}}}}}}}})
+                         :aggs {:concept-id {:cardinality {:field :concept-id}}}}}}}}}}}}}})
 
 (deftest nested-facet-test
   "This function tests the nested aggregations that are created for getting facets from
