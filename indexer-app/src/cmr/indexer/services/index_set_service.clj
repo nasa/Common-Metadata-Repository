@@ -269,7 +269,6 @@
   :elastic {:index-set {:name cmr-index-set :id 1 :granule {} :concepts {}}}
   }
   "
-  ;; TODO CMR-10636 need to deal with nil values for anything here...
   [context split-index-set-map]
   (let [;; setup gran index set configs
         gran-index-set ((keyword es-config/gran-elastic-name) split-index-set-map)

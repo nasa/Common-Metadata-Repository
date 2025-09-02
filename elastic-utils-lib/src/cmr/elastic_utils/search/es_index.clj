@@ -29,7 +29,6 @@
   (fn [_context concept-type _query]
     concept-type))
 
-;; TODO 10636 -- why are these defmethods here and in search app and duplicated in access-control?...need to consolidate this
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)

@@ -267,10 +267,9 @@
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
-    ;; TODO CMR-10636 - Is passing this nil correct? We need to double check this
     (when-not (#{:tag :granule} concept-type)
       (index/bulk-index
-       {:system (helper/get-indexer system)} concept-batches nil {:all-revisions-index? true}))
+       {:system (helper/get-indexer system)} concept-batches es-config/elastic-name {:all-revisions-index? true}))
 
     (info "Indexed " total " concepts.")
     total))
