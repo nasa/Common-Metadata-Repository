@@ -12,7 +12,6 @@
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
