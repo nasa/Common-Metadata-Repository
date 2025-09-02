@@ -775,9 +775,24 @@
                               :metadata metadata
                               :deleted true})))
 
+(comment
+  (let [{:keys [concept-id revision-id skip-publication]} concept
+        {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        db (util/context->db context)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        _ (validate-system-level-concept concept provider)
+        previous-revision (c/get-concept db concept-type provider concept-id)]
+    (if previous-revision
+      previous-revision))
+
+  (println concept)
+  )
+
 ;; true implies creation of tombstone for the revision - delete
 (defmethod save-concept-revision true
   [context concept]
+  (def context context)
+  (def concept concept)
   (cv/validate-tombstone-request concept)
   (let [{:keys [concept-id revision-id skip-publication]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
@@ -844,12 +859,12 @@
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
             ;; Do not let subscription errors fail the operation, use try/catch
-            (try
-              (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
-                (subscriptions/delete-ingest-subscription context revisioned-tombstone))
-              (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
-              (catch Exception e
-                (error "Error while processing subscriptions: " e)))
+            ;(try
+            ;  (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
+            ;    (subscriptions/delete-ingest-subscription context revisioned-tombstone))
+            ;  (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
+            ;  (catch Exception e
+            ;    (error "Error while processing subscriptions: " e)))
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -901,6 +916,8 @@
 ;; false implies creation of a non-tombstone revision -- save/update
 (defmethod save-concept-revision false
   [context concept]
+  (def context1 context)
+  (def concept1 concept)
   (trace "concept:" (keys concept))
   (trace "provider id:" (:provider-id concept))
   (cv/validate-concept concept)
@@ -918,7 +935,7 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
-                       (subscriptions/set-subscription-arn-if-applicable context concept-type)
+                       ;(subscriptions/set-subscription-arn-if-applicable context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -938,11 +955,11 @@
       ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
       ;; above so now we can put it into the cache.
       ;; Do not let subscription errors fail the operation, use try/catch
-      (try
-        (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
-        (subscriptions/publish-subscription-notification-if-applicable context concept)
-        (catch Exception e
-          (error "Error while processing subscriptions: " e)))
+      ;(try
+      ;  (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
+      ;  (subscriptions/publish-subscription-notification-if-applicable context concept)
+      ;  (catch Exception e
+      ;    (error "Error while processing subscriptions: " e)))
       concept)))
 
 (defn- delete-associated-tag-associations

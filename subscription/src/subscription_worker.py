@@ -9,19 +9,20 @@ from access_control import AccessControl
 from search import Search
 from logger import logger
 import traceback
+import time
 
 AWS_REGION = os.getenv("AWS_REGION")
 QUEUE_URL = os.getenv("QUEUE_URL")
 DEAD_LETTER_QUEUE_URL = os.getenv("DEAD_LETTER_QUEUE_URL")
 SUB_DEAD_LETTER_QUEUE_URL = os.getenv("SUB_DEAD_LETTER_QUEUE_URL")
-LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "10")
+LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "1")
 SNS_NAME = os.getenv("SNS_NAME")
 
 def receive_message(sqs_client, queue_url):
     """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
-        MaxNumberOfMessages=1,
+        MaxNumberOfMessages=10,
         # Long Polling
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
@@ -53,11 +54,17 @@ def process_messages(sns_client, topic, messages, access_control, search):
             subscriber = message_attributes['subscriber']['Value']
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
-            if(access_control.has_read_permission(subscriber, collection_concept_id)):
-                logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
-                message_msg = search.process_message(message_body['Message'])
-                message_body['Message'] = message_msg
-                message['Body'] = message_body
+            #sets the time in milliseconds
+            #start_access_control = (time.time() * 1000)
+            acl_read = True #access_control.has_read_permission(subscriber, collection_concept_id)
+            #logger.info(f"Subscription Worker access control duration {((time.time() * 1000) - start_access_control)} ms.")
+            if( acl_read):
+                #logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
+                #start_search = (time.time() * 1000)
+                #message_msg = search.process_message(message_body['Message'])
+                #logger.info(f"Subscription Worker search duration {((time.time() * 1000) - start_search)} ms.")
+                #message_body['Message'] = message_msg
+                #message['Body'] = message_body
                 sns_client.publish_message(topic, message)
             else:
                 logger.warning(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
@@ -78,6 +85,7 @@ def poll_queue(running):
     search = Search()
     while running.value:
         try:
+             start_process = (time.time() * 1000)
              # Poll the SQS
              messages = receive_message(sqs_client=sqs_client, queue_url=QUEUE_URL)
 
@@ -89,11 +97,13 @@ def poll_queue(running):
                      # This exception has already been logged, but capturing the exception here so that the message won't be deleted if it can't be processed.
                      # Do not do anything with the exception here so that we can process the dead letter queue.
                      None
-
+             logger.info(f"Subscription Worker process message duration {((time.time() * 1000) - start_process)} ms.")
+             
              dl_messages = receive_message(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL)
              if dl_messages:
                  process_messages(sns_client=sns_client, topic=topic, messages=dl_messages, access_control=access_control, search=search)
                  delete_messages(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL, messages=dl_messages)
+             logger.info(f"Subscription Worker process full message duration {((time.time() * 1000) - start_process)} ms.")
 
         except Exception as e:
              logger.error(f"An error occurred receiving or deleting messages: {e}")
