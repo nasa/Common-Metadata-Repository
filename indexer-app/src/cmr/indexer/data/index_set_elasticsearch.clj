@@ -8,6 +8,7 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
    [cmr.transmit.config :as t-config]))
@@ -37,6 +38,23 @@
             (error (format "error creating %s elastic index, elastic reported error: %s"
                           index-name error-message))
             (throw e)))))))
+
+(defn create-index-and-alias
+  "Create elastic index and its alias"
+  [es-store idx-w-config]
+  (let [{:keys [conn]} es-store
+        {:keys [index-name]} idx-w-config
+        alias (str index-name "_alias")]
+    (create-index es-store idx-w-config)
+    (try
+      (info "Now creating Elastic alias:" alias)
+      (esi/create-index-alias conn index-name alias)
+      (catch clojure.lang.ExceptionInfo e
+        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
+              error-message (:error body)]
+          (error (format "error creating %s elastic index alias, elastic reported error: %s"
+                          alias error-message))
+          (throw e))))))
 
 (defn update-index
   "Update elastic index"
