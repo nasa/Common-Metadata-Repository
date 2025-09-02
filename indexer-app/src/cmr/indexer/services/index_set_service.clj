@@ -150,7 +150,8 @@
   "Fetch index-set associated with an index-set id."
   [context es-cluster-name index-set-id]
   (or (es/get-index-set context es-cluster-name index-set-id)
-      (errors/throw-service-error :not-found (m/index-set-not-found-msg index-set-id))))
+        (errors/throw-service-error :not-found
+                                    (m/index-set-not-found-msg index-set-id))))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."

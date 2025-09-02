@@ -856,7 +856,7 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context)
+       (indexer-util/context->conn context es-config/elastic-name)
        index
        ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
@@ -864,7 +864,7 @@
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es-helper/delete-by-query
-       (indexer-util/context->conn context)
+       (indexer-util/context->conn context es-config/gran-elastic-name)
        index-name
        (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
@@ -873,7 +873,7 @@
     (doseq [concept-type [:service :subscription :tool :variable]]
       (doseq [index (vals (concept-type index-names))]
         (es-helper/delete-by-query
-         (indexer-util/context->conn context)
+         (indexer-util/context->conn context es-config/elastic-name)
          index
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
@@ -888,7 +888,7 @@
 
 (defn reindex-all-collections
   "Reindexes all collections in all providers. This is only called in the indexer when humanizers
-  are updated and we only index the latest collection revision."
+  are updated, and we only index the latest collection revision."
   [context]
   (let [providers (map :provider-id (meta-db2/get-providers context))]
     (info "Sending events to reindex collections in all providers:" (pr-str providers))
@@ -930,8 +930,9 @@
 #_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
-  {:elastic_search #(es-util/health % :db)
-   :metadata-db meta-db2/get-metadata-db-health
+  {:gran-elastic  #(es-util/health % (keyword es-config/gran-elastic-name))
+   :elastic       #(es-util/health % (keyword es-config/elastic-name))
+   :metadata-db   meta-db2/get-metadata-db-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]
                       (queue-protocol/health qb)))})
