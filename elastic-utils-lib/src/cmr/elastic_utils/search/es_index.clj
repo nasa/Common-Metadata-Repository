@@ -3,7 +3,9 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
+   [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
    [cmr.common.services.errors :as errors]
@@ -20,8 +22,10 @@
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along
-   with an :index-name key. :index-name can refer to a single index or a comma separated string of
-   multiple index names."
+   with an :index-name key.
+   :index-name can refer to a single index or a comma separated string of
+   multiple index names.
+   All index name strings in index-name are expected to be the same type as :type-name."
   (fn [_context concept-type _query]
     concept-type))
 
@@ -58,14 +62,17 @@
 (defn context->search-index
   "Returns the search index given a context. This assumes that the search index is always located
    in a system using the :search-index key."
-  [context]
-  (get-in context [:system :search-index]))
+  [context es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
+    (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index])
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
    a system using the :search-index key."
-  [context]
-  (:conn (context->search-index context)))
+  [context es-cluster-name]
+  (:conn (context->search-index context es-cluster-name)))
 
 (defn- ensure-sort-keys-for-search-after
   "Ensures sort-keys include _id for search_after"
@@ -139,14 +146,27 @@
 
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
-  [context scroll-id]
+  [context scroll-id es-cluster-name]
   (try
     (es-helper/scroll
-     (context->conn context)
+     (context->conn context es-cluster-name)
      scroll-id
      {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
+
+(defn get-es-cluster-name-from-concept-id
+  "Given a singular concept-id, we determine which elastic cluster it belongs in."
+  [concept-id]
+    (if (= :granule (concepts/concept-id->type concept-id))
+      es-config/gran-elastic-name
+      es-config/elastic-name))
+
+(defn get-es-cluster-name-from-index-info
+  [index-info]
+  (if (= (:type-name index-info) "granule")
+    es-config/gran-elastic-name
+    es-config/elastic-name))
 
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
@@ -154,9 +174,12 @@
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
-        (scroll-search context scroll-id)
+        (scroll-search context scroll-id (get-es-cluster-name-from-index-info index-info))
         (es-helper/search
-         (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
+          (context->conn context (get-es-cluster-name-from-index-info index-info))
+          (:index-name index-info)
+          [(:type-name index-info)]
+          query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
     (catch UnknownHostException _e
@@ -351,7 +374,8 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context)))
+  (esri/refresh (context->conn context es-config/elastic-name))
+  (esri/refresh (context->conn context es-config/gran-elastic-name)))
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic
@@ -360,11 +384,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
+  (start
+    [this _system]
+    (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this _system] this))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  []
-  (->ElasticSearchIndex (es-config/elastic-config) nil))
+  [es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
+    (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
