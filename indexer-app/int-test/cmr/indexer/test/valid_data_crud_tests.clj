@@ -259,3 +259,103 @@
   (testing "reset index-set app"
     (let [{:keys [status]} (util/reset)]
       (is (= 204 status)))))
+
+(deftest get-index-set-by-elastic-cluster
+  (testing "get index set apis by elastic cluster"
+    (let [;; create index set
+          index-set util/sample-index-set
+          index-set-id (get-in index-set [:index-set :id])
+          index-set-name (get-in index-set [:index-set :name])
+          index-set-create-reason (get-in index-set [:index-set :create-reason])
+          {:keys [status errors]} (util/create-index-set index-set)
+
+          ;; get index sets
+          gran-index-sets (get-in (util/get-index-sets es-config/gran-elastic-name) [:response :body])
+          _ (println "gran-index-sets = " gran-index-sets)
+          non-gran-index-sets (get-in (util/get-index-sets es-config/elastic-name) [:response :body])
+          _ (println "non-gran-index-sets = " non-gran-index-sets)
+
+          ;; get index set id
+          gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/gran-elastic-name) [:response :body])
+          _ (println "gran-index-set-by-id = " gran-index-set-by-id)
+          non-gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/elastic-name) [:response :body])
+          _ (println "non-gran-index-set-by-id = " non-gran-index-set-by-id)
+
+          ;; expected index sets
+          expected-gran-index-sets [{:id index-set-id
+                                    :name index-set-name
+                                    :concepts {
+                                               :deleted-granule {}
+                                               :granule {
+                                                         :small_collections "3_small_collections"
+                                                         :C4-PROV3 "3_c4_prov3"
+                                                         :C5-PROV5 "3_c5_prov5"}}}]
+          expected-non-gran-index-sets [{:id index-set-id
+                                        :name index-set-name
+                                        :concepts {
+                                                   :generic-order-option {}
+                                                   :service {}
+                                                   :generic-tool-draft {}
+                                                   :variable {}
+                                                   :generic-grid-draft {}
+                                                   :generic-service-draft {}
+                                                   :tool {}
+                                                   :generic-visualization {}
+                                                   :generic-citation {}
+                                                   :generic-collection-draft {}
+                                                   :generic-visualization-draft {}
+                                                   :generic-order-option-draft {}
+                                                   :generic-data-quality-summary-draft {}
+                                                   :generic-variable-draft {}
+                                                   :generic-citation-draft {}
+                                                   :autocomplete {}
+                                                   :tag {}
+                                                   :generic-grid {}
+                                                   :generic-data-quality-summary {}
+                                                   :collection {
+                                                                :C4-PROV2 "3_c4_prov2",
+                                                                :C6-PROV3 "3_c6_prov3"}
+                                                   :subscription {}}}]
+
+          expected-gran-index-set-by-id {:index-set {
+                                                     :name index-set-name
+                                                     :id index-set-id
+                                                     :create-reason index-set-create-reason
+                                                     :granule (get-in index-set [:index-set :granule])
+                                                     :concepts {:deleted-granule {}
+                                                                :granule {:small_collections "3_small_collections"
+                                                                          :C4-PROV3 "3_c4_prov3"
+                                                                          :C5-PROV5 "3_c5_prov5"}}}}
+          expected-non-gran-index-set-by-id {:index-set {
+                                                         :name index-set-name
+                                                         :id index-set-id
+                                                         :create-reason index-set-create-reason
+                                                         :collection (get-in index-set [:index-set :collection])
+                                                         :concepts {
+                                                                    :collection {:C4-PROV2 "3_c4_prov2",
+                                                                                 :C6-PROV3 "3_c6_prov3"}
+                                                                    :generic-order-option {}
+                                                                    :service {}
+                                                                    :generic-tool-draft {}
+                                                                    :variable {}
+                                                                    :generic-grid-draft {}
+                                                                    :generic-service-draft {}
+                                                                    :tool {}
+                                                                    :generic-visualization {}
+                                                                    :generic-citation {}
+                                                                    :generic-collection-draft {}
+                                                                    :generic-visualization-draft {}
+                                                                    :generic-order-option-draft {}
+                                                                    :generic-data-quality-summary-draft {}
+                                                                    :generic-variable-draft {}
+                                                                    :generic-citation-draft {}
+                                                                    :autocomplete {}
+                                                                    :tag {}
+                                                                    :generic-grid {}
+                                                                    :generic-data-quality-summary {}
+                                                                    :subscription {}}}}]
+
+      (is (= expected-gran-index-sets gran-index-sets))
+      (is (= expected-non-gran-index-sets non-gran-index-sets))
+      (is (= expected-gran-index-set-by-id gran-index-set-by-id))
+      (is (= expected-non-gran-index-set-by-id non-gran-index-set-by-id)))))

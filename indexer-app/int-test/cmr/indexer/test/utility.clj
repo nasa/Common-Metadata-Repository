@@ -231,7 +231,7 @@
 
 (defn get-index-set
   "submit a request to index-set app to fetch an index-set assoc with an id"
-  [id]
+  ([id]
   (let [response (client/request
                   {:method :get
                    :url (index-set-url id)
@@ -241,10 +241,21 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([id es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/elastic-name/%s/%s" (index-sets-url) es-cluster-name id)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
+
 
 (defn get-index-sets
   "submit a request to index-set app to fetch all index-sets"
-  []
+  ([]
   (let [response (client/request
                   {:method :get
                    :url (index-sets-url)
@@ -254,6 +265,19 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/index-sets/elastic-name/%s" (indexer-root-url) es-cluster-name)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})
+    )
+
+  )
 
 (defn reset
   "test deletion of indices and index-sets"
