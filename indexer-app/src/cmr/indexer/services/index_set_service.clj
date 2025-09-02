@@ -5,7 +5,7 @@
     [clojure.set :as set]
     [clojure.string :as string]
     [cmr.common.config :as common-config]
-    [cmr.common.log :as log :refer [info]]
+    [cmr.common.log :as log :refer [info warn]]
     [cmr.common.util :as util]
     [cmr.common.rebalancing-collections :as rebalancing-collections]
     [cmr.common.services.errors :as errors]

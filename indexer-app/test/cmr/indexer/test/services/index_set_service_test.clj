@@ -50,27 +50,25 @@
 
 (deftest split-index-set-by-cluster-test
   (let [file-path (str (-> (clojure.java.io/file ".")
-                      .getAbsolutePath) "/test/cmr/indexer/test/services/combined-index-set.json")
+                      .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/combined-index-set.json")
         combined-index-set-map (-> file-path
                                    slurp
                                    (json/parse-string true))
         split-index-set-map (svc/split-index-set-by-cluster combined-index-set-map)
+
         actual-gran-index-set (get split-index-set-map (keyword es-config/gran-elastic-name))
-        ;_ (println ">>>> actual-gran-index-set = " actual-gran-index-set)
         actual-non-gran-index-set (get split-index-set-map (keyword es-config/elastic-name))
-        _ (println ">>>> actual-non-gran-index-set = " actual-non-gran-index-set)
+
         expected-gran-index-set-file-path (str (-> (clojure.java.io/file ".")
-                                                   .getAbsolutePath) "/test/cmr/indexer/test/services/expected-gran-index-set.json")
+                                                   .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/expected-gran-index-set.json")
         expected-gran-index-set (-> expected-gran-index-set-file-path
                                     slurp
                                     (json/parse-string true))
         expected-non-gran-index-set-file-path (str (-> (clojure.java.io/file ".")
-                                                       .getAbsolutePath) "/test/cmr/indexer/test/services/expected-non-gran-index-set.json")
+                                                       .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/expected-non-gran-index-set.json")
         expected-non-gran-index-set (-> expected-non-gran-index-set-file-path
                                         slurp
                                         (json/parse-string true))
-        _ (println ">>>> expected-non-gran-index-set = " expected-non-gran-index-set)
         ]
     (is (= actual-gran-index-set expected-gran-index-set))
-    (is (= actual-non-gran-index-set expected-non-gran-index-set))
-    ))
+    (is (= actual-non-gran-index-set expected-non-gran-index-set))))

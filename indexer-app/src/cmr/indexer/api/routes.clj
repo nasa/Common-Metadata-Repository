@@ -36,7 +36,6 @@
     (POST "/" {body :body request-context :request-context}
       "Given a combined/full index set, we will validate the index set and then separate out all gran indexes to go to gran cluster and the rest will be created in the non-gran cluster."
       (let [index-set (walk/keywordize-keys body)
-            _ (println "INSIDE create index sets API.")
             _ (acl/verify-ingest-management-permission request-context :update)
             ;; both validations need to happen first before do any actions
             _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
@@ -81,14 +80,17 @@
               _ (println "combined-index-set found in indexer for id = " id " is " combined-index-set)]
           (r/response combined-index-set)))
 
-      ;; TODO need to update this too, to split the index-set
       (PUT "/" {request-context :request-context body :body}
-        (let [index-set (walk/keywordize-keys body)]
+        (let [index-set (walk/keywordize-keys body)
+              ;; Split the given index set into the proper sub-index-sets per cluster
+              split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)]
           (acl/verify-ingest-management-permission request-context :update)
+          ;; Validation for both index sets need to happen before we update anything
           (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
           (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/gran-elastic-name index-set)
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/elastic-name index-set)
+          ;; upsert indexes and index set based on the split index set
+          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
+          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
