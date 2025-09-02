@@ -37,6 +37,21 @@ get a JSON response:
     {"concept-id":"VIS1200000000-PROV1","revision-id":1,"warnings":null,"existing-errors":null}
 ```
 
+#### Failed Response in XML
+
+```
+    <?xml version="1.0" encoding="UTF-8"?>
+    <errors>
+        <error>While validating the record against the [visualization] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested.</error>
+    </errors>
+```
+
+#### Failed Response in JSON
+
+```
+    {"errors":["While validating the record against the [visualization] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested."]}
+```
+
 ### <a name="delete-visualization"></a> Delete a Visualization
 
 Visualization metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/visualizations/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
