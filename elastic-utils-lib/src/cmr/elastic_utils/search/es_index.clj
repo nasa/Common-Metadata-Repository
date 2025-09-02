@@ -169,7 +169,6 @@
     es-config/gran-elastic-name
     es-config/elastic-name))
 
-;; TODO CMR-10636 The jobs are failing. Need to figure out what it is sending to elastic
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]

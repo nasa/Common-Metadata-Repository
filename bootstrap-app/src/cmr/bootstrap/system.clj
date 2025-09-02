@@ -155,7 +155,8 @@
              :log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
-             :search-index (search-index/create-elastic-search-index)
+             :gran-search-index (search-index/create-elastic-search-index es-config/gran-elastic-name)
+             :search-index (search-index/create-elastic-search-index es-config/elastic-name)
              :db-batch-size (db-batch-size)
              :core-async-dispatcher (dispatch/create-backend :async)
              :synchronous-dispatcher (dispatch/create-backend :sync)

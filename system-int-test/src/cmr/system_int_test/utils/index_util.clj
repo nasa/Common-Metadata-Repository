@@ -101,7 +101,6 @@
                      :query-params query-params})]
      response)))
 
-;; TODO 10636 - just a note that type-name is not used in this func...
 (defn doc-present?
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id elastic-name]

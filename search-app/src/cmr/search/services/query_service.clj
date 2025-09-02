@@ -558,7 +558,6 @@
                (shape-param->tile-set param-name value)))
       (tile/all-tiles))))
 
-;; TODO CMR-10636 test me
 (defn clear-scroll
   "Clear the scroll context for the given scroll id"
   [context scroll-id]

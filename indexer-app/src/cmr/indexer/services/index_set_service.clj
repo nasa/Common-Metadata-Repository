@@ -11,6 +11,7 @@
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.elastic-utils.config :as es-config]
+    [cmr.elastic-utils.search.es-messenger :as es-msg]
     [cmr.indexer.config :as config]
     [cmr.indexer.data.index-set :as index-set]
     [cmr.indexer.data.index-set-elasticsearch :as es]
@@ -20,13 +21,27 @@
    (clojure.lang ExceptionInfo)))
 
 
-(defn- add-searchable-generic-types
+(defn add-searchable-generic-types
   "Add the list of supported generic document types to a list of fixed searchable
-   concept types presumable from searchable-concept-types"
-  [initial-list]
-  (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
-          initial-list
-          (keys (common-config/approved-pipeline-documents))))
+   concept types presumable from searchable-concept-types.
+   Given a specific elastic cluster, we will or will not filter out granules from the searchable generic types."
+  [initial-list es-cluster-name]
+  (let [approved-pipeline-documents (common-config/approved-pipeline-documents)
+        filtered-pipeline-documents (cond
+                                      (= es-config/gran-elastic-name es-cluster-name)
+                                      (into {} (for [[k v] approved-pipeline-documents
+                                            :when (.startsWith (name k) "granule")]
+                                        [k v]))
+
+                                      (= es-config/elastic-name es-cluster-name)
+                                      (into {} (for [[k v] approved-pipeline-documents
+                                            :when (not (.startsWith (name k) "granule"))]
+                                        [k v]))
+
+                                      :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))]
+    (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
+            initial-list
+            (keys filtered-pipeline-documents))))
 
 (def searchable-gran-concept-types
   "Defines the concept types that are indexed in elasticsearch and thus searchable."
@@ -54,10 +69,12 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name es-config/gran-elastic-name)
-                         searchable-gran-concept-types
+                         (add-searchable-generic-types searchable-gran-concept-types es-cluster-name)
 
                          (= es-cluster-name es-config/elastic-name)
-                         (add-searchable-generic-types searchable-non-gran-concept-types))
+                         (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
+
+                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -71,12 +88,12 @@
   (let [prefix-id (get-in idx-set [:index-set :id])]
     (for [concept-type (cond
                          (= es-cluster-name es-config/gran-elastic-name)
-                         searchable-gran-concept-types
+                         (add-searchable-generic-types searchable-gran-concept-types es-cluster-name)
 
                          (= es-cluster-name es-config/elastic-name)
-                         (add-searchable-generic-types searchable-non-gran-concept-types)
+                         (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                         :else (throw (Exception. (str "Bad es-cluster name given in get index names. Was given " es-cluster-name "  but expected " es-config/gran-elastic-name " or " cmr.elastic-utils.config/elastic-name "."))))
+                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -88,12 +105,13 @@
         generic-searchable-concept-types (cond
                                            (= es-cluster-name es-config/gran-elastic-name)
                                            ;; we will not add generics to the searchable gran concept types
-                                           searchable-gran-concept-types
+                                           (add-searchable-generic-types searchable-gran-concept-types es-cluster-name)
 
                                            (= es-cluster-name es-config/elastic-name)
-                                           (add-searchable-generic-types searchable-non-gran-concept-types)
+                                           (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                                           :else (throw (Exception. (str "Es-cluster name expected was not given. Given es-cluster-name was " es-cluster-name))))]
+                                           :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+        ]
     {:id (:id index-set)
      :name (:name index-set)
      :concepts (into {} (for [concept-type generic-searchable-concept-types]

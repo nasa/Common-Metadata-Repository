@@ -32,7 +32,6 @@
           {:keys [status]} (util/get-index-set index-set-id)]
       (is (= 200 status)))))
 
-;; TODO 10636 -- this is not a great test and should be fixed to capture the functionality of index set more
 ;; Verify index-set fetch is successful.
 ;; First create a index-set, fetch the index-set using an id successfully and then
 ;; assert one of the expected index by name in index-set is created in elastic.
@@ -41,14 +40,18 @@
     (let [index-set util/sample-index-set
           suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
-          expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
+          expected-coll-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)
           fetched-index-set (-> (util/get-index-set index-set-id) :response :body)
-          actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
+          actual-coll-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
       (is (= 201 status))
-      (is (= expected-idx-name actual-idx-name)))))
+      (is (= expected-coll-idx-name actual-coll-idx-name))
+      (is (= (get-in index-set [:index-set :collection]) (get-in fetched-index-set [:index-set :collection])))
+      (is (= (get-in index-set [:index-set :granule]) (get-in fetched-index-set [:index-set :granule])))
+      (is (= {:C4-PROV2 "3_c4_prov2", :C6-PROV3 "3_c6_prov3"} (get-in fetched-index-set [:index-set :concepts :collection])))
+      (is (= {:small_collections "3_small_collections", :C4-PROV3 "3_c4_prov3", :C5-PROV5 "3_c5_prov5"}
+             (get-in fetched-index-set [:index-set :concepts :granule]))))))
 
-;; TODO CMR-10636 - check this test again because it was changed
 ;; Verify index-set delete is successful.
 ;; First create a index-set, verify a specified index in index-set is created, delete index-set
 ;; and verify specified index is not present now to ensure delete is successful
@@ -62,7 +65,13 @@
       (is (= 201 status))
       ;; this is creating a collection index, so we need to check the non-gran elastic cluster
       (is (esi/exists? @util/elastic-connection expected-coll-idx-name))
-      (is (esi/exists? @util/gran-elastic-connection expected-gran-idx-name))))
+      (is (esi/exists? @util/gran-elastic-connection expected-gran-idx-name))
+
+      ;; check that coll index does not exist in gran cluster
+      (is (not (esi/exists? @util/gran-elastic-connection expected-coll-idx-name)))
+
+      ;; check that gran index does not exist in non-gran cluster
+      (is (not (esi/exists? @util/elastic-connection expected-gran-idx-name)))))
   (testing "delete index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])

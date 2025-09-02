@@ -72,3 +72,24 @@
         ]
     (is (= actual-gran-index-set expected-gran-index-set))
     (is (= actual-non-gran-index-set expected-non-gran-index-set))))
+
+
+(deftest add-searchable-generic-types-test
+  (let [;; setup non-gran list
+        initial-non-gran-concept-list [:autocomplete
+                                       :collection
+                                       :service
+                                       :subscription
+                                       :tag
+                                       :tool
+                                       :variable]
+        updated-non-gran-list (svc/add-searchable-generic-types initial-non-gran-concept-list es-config/elastic-name)
+        expected-non-gran-list [:autocomplete :collection :service :subscription :tag :tool :variable :generic-order-option-draft :generic-grid-draft :generic-variable-draft :generic-grid :generic-data-quality-summary-draft :generic-citation :generic-visualization-draft :generic-tool-draft :generic-order-option :generic-visualization :generic-data-quality-summary :generic-citation-draft :generic-collection-draft :generic-service-draft]
+
+        ;; setup gran list
+        initial-gran-concept-list [:deleted-granule :granule]
+        updated-gran-list (svc/add-searchable-generic-types initial-gran-concept-list es-config/gran-elastic-name)
+        expected-gran-list [:deleted-granule :granule]]
+
+    (is (= updated-non-gran-list expected-non-gran-list))
+    (is (= updated-gran-list expected-gran-list))))
