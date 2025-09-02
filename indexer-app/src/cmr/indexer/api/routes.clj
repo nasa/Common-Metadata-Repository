@@ -56,13 +56,11 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
-    ;; TODO add sys tests for this new endpoint
     (context "/elastic-name/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-sets request-context es-cluster-name)))) ;; this is directly what is in elastic
 
-    ;; TODO add sys tests for this new endpoint
     (context "/elastic-name/:es-cluster-name/:id" [es-cluster-name id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
