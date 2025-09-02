@@ -151,24 +151,23 @@
                     (assoc-in [:gran-elastic :config :retry-handler] bi/elastic-retry-handler)
                     (assoc-in [:elastic :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
-        sys {:instance-name            (common-sys/instance-name "bootstrap")
-             :log                      (log/create-logger-with-log-level (log-level))
-             :embedded-systems         {:metadata-db metadata-db
+        sys {:instance-name (common-sys/instance-name "bootstrap")
+             :log (log/create-logger-with-log-level (log-level))
+             :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
-             :gran-search-index        (search-index/create-elastic-search-index es-config/gran-elastic-name)
-             :search-index             (search-index/create-elastic-search-index es-config/elastic-name)
-             :db-batch-size            (db-batch-size)
-             :core-async-dispatcher    (dispatch/create-backend :async)
-             :synchronous-dispatcher   (dispatch/create-backend :sync)
+             :search-index (search-index/create-elastic-search-index)
+             :db-batch-size (db-batch-size)
+             :core-async-dispatcher (dispatch/create-backend :async)
+             :synchronous-dispatcher (dispatch/create-backend :sync)
              :message-queue-dispatcher (dispatch/create-backend :message-queue)
-             :catalog-rest-user        (mdb-config/catalog-rest-db-username)
-             :db                       (mdb-util/create-db (bootstrap-config/db-spec "bootstrap-pool"))
-             :web                      (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
-             :nrepl                    (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
-             :relative-root-url        (transmit-config/bootstrap-relative-root-url)
-             :caches                   application-caches
-             :scheduler                jobs-to-schedule
-             :queue-broker             queue-broker}]
+             :catalog-rest-user (mdb-config/catalog-rest-db-username)
+             :db (mdb-util/create-db (bootstrap-config/db-spec "bootstrap-pool"))
+             :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
+             :relative-root-url (transmit-config/bootstrap-relative-root-url)
+             :caches application-caches
+             :scheduler jobs-to-schedule
+             :queue-broker queue-broker}]
 
     ;; Attach other things to the system and return it.
     (-> sys

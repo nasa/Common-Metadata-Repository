@@ -18,7 +18,7 @@
   [es-cluster-name]
   {:index-name (str es-cluster-name "-index-sets")
    :settings {"index" {"number_of_shards" 1
-                       "number_of_replicas"  1 ;;FIXME, we need it at 0 for local (because our embedded local es cluster is only one node) and 1 for upper envs (because we have multiple nodes)
+                       "number_of_replicas"  1
                        "refresh_interval" "30s"}}
    :mapping {"dynamic"  "strict"
              "_source"  {"enabled" true}

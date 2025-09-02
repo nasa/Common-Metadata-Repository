@@ -53,7 +53,6 @@
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
-      ;; TODO 10636 maybe rename this func. It doesn't reset the index-set to any specific base state, it just deletes it...
       (index-set-svc/reset request-context)
       {:status 204})
 
@@ -73,11 +72,8 @@
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (let [gran-index-set (index-set-svc/get-index-set request-context es-config/gran-elastic-name id)
-              _ (println "gran-index-set found in indexer for id = " id " is " gran-index-set)
               non-gran-index-set (index-set-svc/get-index-set request-context es-config/elastic-name id)
-              _ (println "non-gran-index-set found in indexer for id = " id " is " non-gran-index-set)
-              combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
-              _ (println "combined-index-set found in indexer for id = " id " is " combined-index-set)]
+              combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)]
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}

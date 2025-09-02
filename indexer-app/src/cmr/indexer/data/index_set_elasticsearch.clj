@@ -9,10 +9,8 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
-   [cmr.elastic-utils.search.es-index :as es-index]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
-   [cmr.indexer.indexer-util :as idx-util]
    [cmr.transmit.config :as t-config]))
 
 (defn- decode-field
@@ -82,7 +80,6 @@
   [context es-cluster-name index-set-id]
   (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        _ (println ">>>>> INSIDE get-index-set with es-cluster-name = " es-cluster-name ", index-name = " index-name " and mapping = " mapping)
         idx-mapping-type (first (keys mapping))]
     (when-let [result (get-index-set-if-exists
                        (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
@@ -125,15 +122,10 @@
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc es-cluster-name]
   (try
-    (println "INSIDE save-document-in-elastic with es-index = " es-index " and es-mapping-type = " es-mapping-type " and doc-id = " doc-id " and es-doc = " es-doc)
     (let [conn (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :conn])
-          _ (println "conn = " conn)
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
-          _ (println "result of es put = " result)
-          {:keys [error status]} result
-          saved-index-set (get-index-set context es-config/gran-elastic-name doc-id)
-          _ (println "getting back index-set we just saved = " saved-index-set)]
+          {:keys [error status]} result]
       (when (:error result)
         ;; service layer to rollback index-set create  progress on error
         ;; to result in 503 if replicas setting value of 'index-sets' is set to > 0 when running on a single node

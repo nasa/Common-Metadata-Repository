@@ -260,7 +260,6 @@
                                         :collection
                                         (determine-reindex-batch-size provider-id)
                                         {:provider-id provider-id :latest true})]
-         (println "latest-collection-batches = " latest-collection-batches)
          (bulk-index context
                      latest-collection-batches
                      es-config/elastic-name
@@ -484,15 +483,12 @@
   (fn [_context concept _parsed-concept _options]
     (:concept-type concept)))
 
-;; TODO JYNA this is where we start to save concept in elasticsearch
 (defmethod index-concept :default
   [context concept parsed-concept options]
-  (println "10636 - index-concept :default")
   (let [{:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept
         start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                               concept-id revision-id all-revisions-index?)
-        _ (println start-log-msg)
         end-log-msg (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
                             concept-id revision-id all-revisions-index?)]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
@@ -507,7 +503,6 @@
         (debug start-log-msg)
         (info start-log-msg))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
-            ;_ (println "10636- concept-mapping-types = " concept-mapping-types)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [associations (get-associations context concept)
@@ -935,7 +930,6 @@
 #_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
-  ;; TODO 10636- this used to be called :elastic_search -- any mention of this needs to be replaced in the readme's to the two separate clusters
   {:gran-elastic  #(es-util/health % (keyword es-config/gran-elastic-name))
    :elastic       #(es-util/health % (keyword es-config/elastic-name))
    :metadata-db   meta-db2/get-metadata-db-health

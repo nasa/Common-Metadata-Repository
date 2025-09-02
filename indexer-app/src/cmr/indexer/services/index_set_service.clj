@@ -80,14 +80,6 @@
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
-;; TODO CMR-10636 I believe this is unused func, so should be deleted
-;(defn given-index-names->es-index-names
-;  "Map given names with generated elastic index names."
-;  [index-names-array prefix-id]
-;  (apply merge
-;         (for [index-name index-names-array]
-;           {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
-
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
   the index name map."
@@ -126,10 +118,8 @@
                     all-index-set-array)]
     result))
 
-;; TODO should we just use this to get index-set everywhere? and just pull out the id I'm looking for?
 (defn get-index-sets
   [context es-cluster-name]
-  (println "INSIDE get-index-sets with es-cluster-name = " es-cluster-name)
   (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))
         index-set-array (es/get-index-sets (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type)
@@ -137,14 +127,6 @@
         result (map #(select-keys (:index-set %) [:id :name :concepts])
                     index-set-array)]
     result))
-
-;; TODO unused -- so maybe delete
-;(defn index-set-exists?
-;  "Check index-set existence"
-;  [context es-cluster-name index-set-id]
-;  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-;        idx-mapping-type (first (keys mapping))]
-;    (es/get-index-set-if-exists (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)))
 
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
@@ -205,12 +187,9 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
-  (println ">>>>> INSIDE index requested index set with es-cluster-name = " es-cluster-name " and index-set = " index-set)
   (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
-        _ (println "indexes-w-added-concepts = " indexes-w-added-concepts)
         index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
-        _ (println ">>>>> index set w es index names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -260,34 +239,6 @@
 
     {(keyword es-config/gran-elastic-name) {:index-set gran-index-set}
      (keyword es-config/elastic-name) {:index-set non-gran-index-set}}))
-
-;; OLDER VERSION OF THIS FUNC
-;(defn create-indexes-and-index-set
-;  "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
-;  index-set doc indexing fails."
-;  [context es-cluster-name cluster-separated-index-set]
-;  (println "INSIDE create-index-set with es-cluster-name = " es-cluster-name)
-;  ;; TODO given the cluster name, we need to separate out the granule indices from the non-gran and create them separately.
-;  (let [es-cluster-based-index-names (get-index-names cluster-separated-index-set es-cluster-name)
-;        _ (println ">>>> es-cluster-based-index-names = " es-cluster-based-index-names)
-;        indices-w-config (build-indices-list-w-config cluster-separated-index-set es-cluster-name)
-;        _ (println ">>>> indices-w-config = " indices-w-config)
-;        es-store (indexer-util/context->es-store context es-cluster-name)]
-;    (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
-;      (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
-;    ;; rollback index-set creation if index creation fails
-;    (try
-;      (dorun (map #(es/create-index es-store %) indices-w-config))
-;      (catch ExceptionInfo e
-;        ;; TODO: Generic work: why does this fail to roll back with bad generics?
-;        (info "failed to create index, roll back, this does not always work")
-;        (dorun (map #(es/delete-index es-store %) es-cluster-based-index-names))
-;        (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
-;    (try
-;      (index-requested-index-set context cluster-separated-index-set es-cluster-name)
-;      (catch ExceptionInfo e
-;        (dorun (map #(es/delete-index es-store %) es-cluster-based-index-names))
-;        (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
 
 (defn create-indexes-and-index-set
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
@@ -343,8 +294,6 @@
   ;(validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
-
-    (println "INSIDE create-or-update-index-set with es cluster name = " es-cluster-name " and indices w config = " indices-w-config)
 
     (doseq [idx indices-w-config]
       (es/create-or-update-index es-store idx))

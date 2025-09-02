@@ -44,13 +44,11 @@
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)
           fetched-index-set (-> (util/get-index-set index-set-id) :response :body)
-          _ (println "fetched index set = " fetched-index-set)
-          ;expected-collection-concepts {:C4-PROV2 "3_c4_prov2", :C6-PROV3 "3_c6_prov3"}
-          ;expected-granule-concepts {:small_collections "3_small_collections", :C4-PROV3 "3_c4_prov3", :C5-PROV5 "3_c5_prov5"}
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
       (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
 
+;; TODO CMR-10636 - check this test again because it was changed
 ;; Verify index-set delete is successful.
 ;; First create a index-set, verify a specified index in index-set is created, delete index-set
 ;; and verify specified index is not present now to ensure delete is successful
@@ -108,13 +106,9 @@
   ([expected-colls]
    (assert-rebalancing-collections expected-colls nil))
   ([expected-colls already-rebalanced]
-   (println "INSIDE assert-rebalancing-collections with expected-colls = " expected-colls " and already rebalanced = " already-rebalanced)
    (let [index-set (get-in (util/get-index-set util/sample-index-set-id) [:response :body])
-         _ (println "index-set found = " index-set)
          base-coll-indexes (->> (get-in util/sample-index-set [:index-set :granule :indexes]) (map :name))
-         _ (println "base-coll-indexes = " base-coll-indexes)
-         expected-coll-indexes (set (concat base-coll-indexes expected-colls already-rebalanced))
-         _ (println "expected coll indexes = " expected-coll-indexes)]
+         expected-coll-indexes (set (concat base-coll-indexes expected-colls already-rebalanced))]
      (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))
      (is (= expected-coll-indexes (->> (get-in index-set [:index-set :granule :indexes])
                                        (map :name)
@@ -127,35 +121,31 @@
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
        (is (esi/exists? @util/gran-elastic-connection elastic-index-name))))))
 
-;; TODO fix this test
-
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index
 (deftest add-rebalancing-collection-test
   (testing "Initial rebalancing collections"
     (util/create-index-set util/sample-index-set)
     (assert-rebalancing-collections []))
-  ;(testing "Add collection that is already an index"
-  ;  (is (= {:status 400
-  ;          :errors ["The collection [C4-PROV3] already has a separate granule index."]}
-  ;         (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C4-PROV3")
-  ;                      [:status :errors])))
-  ;  (assert-rebalancing-collections []))
+  (testing "Add collection that is already an index"
+    (is (= {:status 400
+            :errors ["The collection [C4-PROV3] already has a separate granule index."]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C4-PROV3")
+                        [:status :errors])))
+    (assert-rebalancing-collections []))
   (testing "Add first collection"
     (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1"))))
     (assert-rebalancing-collections ["C5-PROV1"]))
-  ;(testing "Add another collection"
-  ;  (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
-  ;  (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"]))
-  ;(testing "Add duplicate collection"
-  ;  (is (= {:status 400
-  ;          :errors ["The index set already contains rebalancing collection [C5-PROV1]"]}
-  ;         (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
-  ;                      [:status :errors])))
-  ;  ;; Rebalancing collections have not changed
-  ;  (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"]))
-
-  )
+  (testing "Add another collection"
+    (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"]))
+  (testing "Add duplicate collection"
+    (is (= {:status 400
+            :errors ["The index set already contains rebalancing collection [C5-PROV1]"]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
+                        [:status :errors])))
+    ;; Rebalancing collections have not changed
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])))
 
 (deftest remove-rebalancing-collection-test
   (util/create-index-set util/sample-index-set)
@@ -170,21 +160,19 @@
   (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
   (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])
 
-  ;(testing "Remove a rebalancing collection"
-  ;  (is (= 200 (:status (util/finalize-rebalancing-collection util/sample-index-set-id "C6-PROV1"))))
-  ;  (assert-rebalancing-collections ["C5-PROV1"] ["C6-PROV1"]))
-  ;
-  ;(testing "Remove rebalancing collection already removed"
-  ;  (is (= {:status 400
-  ;          :errors ["The index set does not contain the rebalancing collection [C6-PROV1]"]}
-  ;         (select-keys (util/finalize-rebalancing-collection util/sample-index-set-id "C6-PROV1")
-  ;                      [:status :errors]))))
-  ;
-  ;(testing "Remove last rebalancing collection"
-  ;  (is (= 200 (:status (util/finalize-rebalancing-collection util/sample-index-set-id "C5-PROV1"))))
-  ;  (assert-rebalancing-collections [] ["C5-PROV1" "C6-PROV1"]))
+  (testing "Remove a rebalancing collection"
+    (is (= 200 (:status (util/finalize-rebalancing-collection util/sample-index-set-id "C6-PROV1"))))
+    (assert-rebalancing-collections ["C5-PROV1"] ["C6-PROV1"]))
 
-  )
+  (testing "Remove rebalancing collection already removed"
+    (is (= {:status 400
+            :errors ["The index set does not contain the rebalancing collection [C6-PROV1]"]}
+           (select-keys (util/finalize-rebalancing-collection util/sample-index-set-id "C6-PROV1")
+                        [:status :errors]))))
+
+  (testing "Remove last rebalancing collection"
+    (is (= 200 (:status (util/finalize-rebalancing-collection util/sample-index-set-id "C5-PROV1"))))
+    (assert-rebalancing-collections [] ["C5-PROV1" "C6-PROV1"])))
 
 (deftest update-rebalancing-collection-status-test
   (util/create-index-set util/sample-index-set)

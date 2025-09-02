@@ -116,12 +116,9 @@
     (try
       (f))))
 
-;; TODO CMR-10636 need to fix this too
 (defn index-setup
   "Fixture that creates a collection index and then drops it."
   [f]
-  (println "INSIDE index-setup")
-  (println "system in context is " (get-in @context [:system]))
   (let [conn (get-in @context [:system :elastic :conn])]
     (esi/create
      conn

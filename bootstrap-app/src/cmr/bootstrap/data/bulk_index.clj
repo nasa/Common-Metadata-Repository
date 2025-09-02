@@ -136,7 +136,6 @@
             gran-count
             provider-id)))
 
-;; TODO CMR-10636 fix this. We need to separate out the concepts and go to each seperate cluster
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
   [system concept-batches es-cluster-name]
@@ -214,7 +213,6 @@
         es-cluster-name (if (= concept-type :granule)
                           es-config/gran-elastic-name
                           es-config/elastic-name)
-        _ (println "INSIDE fetch-and-index-new-concepts with concept-type = " concept-type " and concept batches = " concept-batches " and es-cluster-name = " es-cluster-name)
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
                                                  (index-access-control-concepts system concept-batches)
                                                  (index-concepts system concept-batches es-cluster-name))]
@@ -251,7 +249,6 @@
 (defn index-concepts-by-id
   "Index concepts of the given type for the given provider with the given concept-ids."
   [system provider-id concept-type concept-ids]
-  (println "INSIDE index-concepts-by-id in data/bulk_index.clj")
   (let [db (helper/get-metadata-db-db system)
         provider (helper/get-provider system provider-id)
         ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
@@ -270,6 +267,7 @@
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
+    ;; TODO CMR-10636 - Is passing this nil correct? We need to double check this
     (when-not (#{:tag :granule} concept-type)
       (index/bulk-index
        {:system (helper/get-indexer system)} concept-batches nil {:all-revisions-index? true}))

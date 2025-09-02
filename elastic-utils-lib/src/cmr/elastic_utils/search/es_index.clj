@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [clojure.string :as string]
    [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
@@ -388,9 +387,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start
-    [this _system]
-    (assoc this :conn (es/try-connect (:config this))))
+  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this _system] this))
 

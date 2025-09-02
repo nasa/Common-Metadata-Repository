@@ -213,7 +213,6 @@
         (info "10636-New gran index set:" (pr-str expected-index-set)))))
   )
 
-;; TODO 10636- test this
 (defn delete-granule-index
   "Delete an elastic index by name"
   [context index]
@@ -369,8 +368,7 @@
           conn (indexer-util/context->conn context es-config/elastic-name)
           response (es-helper/bulk conn bulk-operations)]
       (handle-bulk-index-response response)))
-  nil
-  )
+  nil)
 
 ;; TODO 10636- check validity of this
 (defn bulk-index-documents
@@ -395,15 +393,11 @@
                                 (= es-index "1_deleted_granules")))
                        :gran-elastic
                        :elastic)]
-    (info "10636- cluster name is: " cluster-name)
     (indexer-util/context->conn context cluster-name)))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
-  ;(info "10636- INSIDE save-document-in-elastic for concept-id : " concept-id)
-  ;(info "10636- concept : " concept-id ": total num of es-indexes to go through: " (count es-indexes))
-  ;(info "10636- concept : " concept-id " : es-indexes are: " es-indexes)
   (doseq [es-index es-indexes]
     (let [conn (get-es-cluster-conn context es-index)
           {:keys [ignore-conflict? all-revisions-index?]} options
