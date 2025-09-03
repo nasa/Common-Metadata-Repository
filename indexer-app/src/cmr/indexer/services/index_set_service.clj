@@ -315,14 +315,14 @@
     (index-requested-index-set context index-set es-cluster-name)))
 
 (defn delete-index-set
-  "Delete all indices having 'id_' as the prefix in all the elastic clusters, followed by
+  "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
   [context index-set-id es-cluster-name]
-    (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
-          {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-          idx-mapping-type (first (keys mapping))]
-      (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
-      (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
+  (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
+        idx-mapping-type (first (keys mapping))]
+    (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
+    (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
 
 (defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."
