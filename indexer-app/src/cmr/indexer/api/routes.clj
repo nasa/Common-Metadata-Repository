@@ -42,8 +42,7 @@
             _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
             split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)
             index-set-resp (index-set-svc/create-indexes-and-index-set request-context split-index-set-map)]
-        (r/created index-set-resp)
-        ))
+        (r/created index-set-resp)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -59,7 +58,7 @@
     (context "/cluster/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-sets request-context es-cluster-name)))) ;; this is directly what is in elastic
+        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
 
     (context "/cluster/:es-cluster-name/:id" [es-cluster-name id]
       (GET "/" {request-context :request-context}
@@ -94,6 +93,7 @@
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]
+
         ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
           (acl/verify-ingest-management-permission request-context :update)
