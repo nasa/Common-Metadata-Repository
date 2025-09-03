@@ -271,15 +271,11 @@
 
           ;; get index sets
           gran-index-sets (get-in (util/get-index-sets es-config/gran-elastic-name) [:response :body])
-          _ (println "gran-index-sets = " gran-index-sets)
           non-gran-index-sets (get-in (util/get-index-sets es-config/elastic-name) [:response :body])
-          _ (println "non-gran-index-sets = " non-gran-index-sets)
 
           ;; get index set id
           gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/gran-elastic-name) [:response :body])
-          _ (println "gran-index-set-by-id = " gran-index-set-by-id)
           non-gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/elastic-name) [:response :body])
-          _ (println "non-gran-index-set-by-id = " non-gran-index-set-by-id)
 
           ;; expected index sets
           expected-gran-index-sets [{:id index-set-id
