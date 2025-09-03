@@ -11,7 +11,6 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-index :as es-index]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.indexer-util :as indexer-util]
@@ -117,7 +116,7 @@
         expected-index-set (cond
                              (= es-cluster-name es-config/elastic-name) idx-set/non-gran-index-set
                              (= es-cluster-name es-config/gran-elastic-name) idx-set/gran-index-set
-                             :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name))))]
+                             :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
 
@@ -378,6 +377,7 @@
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
+;; TODO how can we centralize index naming so this doesn't fail if index names or id changes? TODO
 (defn get-es-cluster-conn
   [context es-index]
   ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
@@ -386,8 +386,8 @@
                             (or (string/starts-with? es-index "1_c")
                                 (= es-index "1_small_collections")
                                 (= es-index "1_deleted_granules")))
-                       :gran-elastic
-                       :elastic)]
+                       (keyword es-config/gran-elastic-name)
+                       (keyword es-config/elastic-name))]
     (indexer-util/context->conn context cluster-name)))
 
 (defn save-document-in-elastic

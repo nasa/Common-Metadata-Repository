@@ -10,7 +10,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-elasticsearch :as es]
@@ -37,7 +36,7 @@
                                             :when (not (.startsWith (name k) "granule"))]
                                         [k v]))
 
-                                      :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))]
+                                      :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))]
     (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
             initial-list
             (keys filtered-pipeline-documents))))
@@ -73,7 +72,7 @@
                          (= es-cluster-name es-config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                         :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -92,7 +91,7 @@
                          (= es-cluster-name es-config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                         :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -109,7 +108,7 @@
                                            (= es-cluster-name es-config/elastic-name)
                                            (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                                           :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                                           :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
         ]
     {:id (:id index-set)
      :name (:name index-set)

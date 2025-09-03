@@ -56,12 +56,12 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
-    (context "/elastic-name/:es-cluster-name" [es-cluster-name]
+    (context "/cluster/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-sets request-context es-cluster-name)))) ;; this is directly what is in elastic
 
-    (context "/elastic-name/:es-cluster-name/:id" [es-cluster-name id]
+    (context "/cluster/:es-cluster-name/:id" [es-cluster-name id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-set request-context es-cluster-name id))))

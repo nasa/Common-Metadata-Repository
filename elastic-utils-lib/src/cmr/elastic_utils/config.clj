@@ -2,15 +2,18 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :refer [defconfig]]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]))
+   [cmr.common.config :refer [defconfig]]))
 
 (declare elastic-name)
 (def elastic-name
+  "Defining the elastic cluster name for non-gran elastic cluster.
+  This is a source of truth var, so change with caution."
   "elastic")
 
 (declare gran-elastic-name)
 (def gran-elastic-name
+  "Defining the granule elastic cluster name for granule elastic cluster.
+  This is a source of truth var, so change with caution."
   "gran-elastic")
 
 (declare es-unlimited-page-size)
