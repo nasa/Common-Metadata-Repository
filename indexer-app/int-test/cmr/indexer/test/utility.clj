@@ -274,10 +274,7 @@
                      :throw-exceptions false})
          status (:status response)
          body (cheshire/decode (:body response) true)]
-     {:status status :errors (:errors body) :response (assoc response :body body)})
-    )
-
-  )
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
 
 (defn reset
   "test deletion of indices and index-sets"

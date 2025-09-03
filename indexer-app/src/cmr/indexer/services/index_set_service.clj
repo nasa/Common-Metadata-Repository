@@ -1,21 +1,21 @@
 (ns cmr.indexer.services.index-set-service
   "Provide functions to store, retrieve, delete index-sets"
   (:require
-    [cheshire.core :as json]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [cmr.common.config :as common-config]
-    [cmr.common.log :as log :refer [info warn]]
-    [cmr.common.rebalancing-collections :as rebalancing-collections]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.elastic-utils.config :as es-config]
-    [cmr.elastic-utils.search.es-messenger :as es-msg]
-    [cmr.indexer.config :as config]
-    [cmr.indexer.data.index-set :as index-set]
-    [cmr.indexer.data.index-set-elasticsearch :as es]
-    [cmr.indexer.services.messages :as m]
-    [cmr.indexer.indexer-util :as indexer-util])
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.config :as common-config]
+   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.rebalancing-collections :as rebalancing-collections]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.search.es-messenger :as es-msg]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.index-set :as index-set]
+   [cmr.indexer.data.index-set-elasticsearch :as es]
+   [cmr.indexer.services.messages :as m]
+   [cmr.indexer.indexer-util :as indexer-util])
   (:import
    (clojure.lang ExceptionInfo)))
 

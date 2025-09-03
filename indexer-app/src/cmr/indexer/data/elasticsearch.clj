@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [info infof warn error]]
@@ -380,10 +381,9 @@
 (defn get-es-cluster-conn
   [context es-index]
   ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
-  ;(info "10636- INSIDE get-es-cluster-conn, es-index = " es-index)
   (let [cluster-name (if
                        (and (not (= es-index "1_collections_v2"))
-                            (or (clojure.string/starts-with? es-index "1_c")
+                            (or (string/starts-with? es-index "1_c")
                                 (= es-index "1_small_collections")
                                 (= es-index "1_deleted_granules")))
                        :gran-elastic
