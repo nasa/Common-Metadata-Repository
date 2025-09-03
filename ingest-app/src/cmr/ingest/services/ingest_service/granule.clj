@@ -79,7 +79,7 @@
      (let [gran-concept (add-extra-fields-for-granule
                          concept granule parent-collection-concept)]
        (v/validate-business-rules context gran-concept)
-       [parent-collection-concept gran-concept]))))
+       [gran-concept granule]))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
@@ -100,10 +100,13 @@
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (let [[_coll-concept concept] (validate-granule context concept)
-        {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+  (let [[concept umm-granule] (validate-granule context concept)
+        {:keys [concept-id revision-id]} (mdb/save-concept context concept)
+        granule-edn-concept (assoc concept :metadata umm-granule
+                                           :concept-id concept-id
+                                           :revision-id revision-id)]
     (try
-      (subscriptions/publish-subscription-notification-if-applicable context (assoc concept :revision-id revision-id))
+      (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
       (catch Exception e
         (error "Error while processing subscriptions: " e)))
     {:concept-id concept-id, :revision-id revision-id}))

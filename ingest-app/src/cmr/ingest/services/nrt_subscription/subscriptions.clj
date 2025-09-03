@@ -350,8 +350,7 @@
                                                      "endpoint-type" "url"
                                                      "mode" mode
                                                      "subscriber" subscriber
-                                                     "collection-concept-id" coll-concept-id}))
-  )
+                                                     "collection-concept-id" coll-concept-id})))
 
 (defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
@@ -377,7 +376,7 @@
                 (let [result (topic-protocol/publish topic message message-attributes-map subject)
                       duration (- (System/currentTimeMillis) start)]
                   (debug (format "Subscription publish for endpoint %s took %d ms." (first endpoint-set) duration))
-                  (swap! result-array (fn [n] (conj @result-array result)))))))
+                  (swap! result-array (fn [_n] (conj @result-array result)))))))
           @result-array)))))
 
 (comment
