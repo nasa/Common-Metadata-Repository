@@ -6,6 +6,7 @@
    [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.config :as common-app-config]
+   [cmr.common-app.services.search.parameter-validation :as parameter-validation]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
@@ -31,15 +32,6 @@
   "This is the header that allows operators to run all granule queries when
    allow-all-granule-params-flag is set to false."
   {:default "Must be changed"})
-
-(defconfig reject-cmr-scroll-id-flag
-  "Flag that indicates if we should reject scroll functionality and return 400 error.
-  When enabled, both scroll parameters and CMR-Scroll-Id headers are blocked."
-  {:default false :type Boolean})
-
-(defconfig scroll-after-instructions-url
-  "URL for instructions on how to use search-after pagination instead of scrolling."
-  {:default "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -96,16 +88,13 @@
   "Validate that scroll functionality is not used when the rejection flag is enabled.
   Checks both CMR-Scroll-Id headers and scroll parameters, throwing a 400 error if found."
   [headers params]
-  (when (reject-cmr-scroll-id-flag)
+  (when (not (parameter-validation/scrolling-enabled))
     (let [short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
           scroll-param (:scroll params)]
       (when (or short-scroll-id scroll-param)
         (svc-errors/throw-service-error
          :bad-request
-         (str "Scrolling is no longer supported. "
-              "Please use search-after instead. "
-              "For instructions on how to use this pagination method, see: "
-              (scroll-after-instructions-url)))))))
+         (parameter-validation/scroll-deprecation-message))))))
 
 (defn- validate-stac-params
   "Validate stac params, throws service error if failed."
