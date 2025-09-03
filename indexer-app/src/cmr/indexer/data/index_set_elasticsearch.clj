@@ -52,7 +52,7 @@
     (create-index es-store idx-w-config)
     (try
       (info "Now creating Elastic alias:" alias)
-      (esi/create-index-alias conn index-name alias)
+      (esi/create-index-alias conn index-name alias true)
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
@@ -81,7 +81,7 @@
       ;; if the index is not a resharding index and alias does not exist, add it
       (when-not (or (esi-helper/alias-exists? conn index-name)
                     (re-matches resharding-index-pattern index-name))
-        (esi/create-index-alias conn index-name (esi-helper/index-alias index-name)))
+        (esi/create-index-alias conn index-name (esi-helper/index-alias index-name) true))
 
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
