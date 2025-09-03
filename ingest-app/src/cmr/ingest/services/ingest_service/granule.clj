@@ -103,7 +103,7 @@
   (let [[_coll-concept concept] (validate-granule context concept)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
     (try
-      (subscriptions/publish-subscription-notification-if-applicable context concept)
+      (subscriptions/publish-subscription-notification-if-applicable context (assoc concept :revision-id revision-id))
       (catch Exception e
         (error "Error while processing subscriptions: " e)))
     {:concept-id concept-id, :revision-id revision-id}))
