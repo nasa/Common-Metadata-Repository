@@ -20,6 +20,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-params-converter :as cp]
@@ -470,7 +471,7 @@
   ;; Search is not a dependency of access-control and this must be
   ;; defined for collection search to work
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 (esi-helper/index-alias "1_all_collection_revisions")
                  "collection_search_alias")
    :type-name "collection"})
 
