@@ -7,6 +7,7 @@
    [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -45,22 +46,26 @@
   [indexes coll-concept-id]
   (get indexes (keyword coll-concept-id) (get indexes :small_collections)))
 
-(defn- collection-concept-ids->index-names
-  "Return the granule index names for the input collection concept ids"
+(defn- collection-concept-ids->index-aliases
+  "Return the granule index aliases for the input collection concept ids"
   [context coll-concept-ids]
   (let [indexes (get-granule-index-names context)]
-    (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
+    (distinct
+     (map #(esi-helper/index-alias
+            (collection-concept-id->index-name indexes %))
+          coll-concept-ids))))
 
-(defn- provider-ids->index-names
-  "Return the granule index names for the input provider-ids"
+(defn- provider-ids->index-aliases
+  "Return the granule index aliases for the input provider-ids"
   [context provider-ids]
   (let [indexes (get-granule-index-names context)]
-    (cons (get indexes :small_collections)
-          (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
+    (cons (esi-helper/index-alias (get indexes :small_collections))
+          (map #(esi-helper/index-alias
+                 (format "%d_c*_%s" index-set-id (string/lower-case %)))
                provider-ids))))
 
-(defn all-granule-indexes
-  "Returns all possible granule indexes in a string that can be used by elasticsearch query"
+(defn- all-granule-index-aliases
+  "Returns all possible granule index aliases in a string that can be used by elasticsearch query"
   [context]
   (let [cache (hcache/context->cache context cache-key)
         granule-index-names (or (hcache/get-value cache cache-key :granule)
@@ -71,27 +76,27 @@
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)
-                                   (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))
+                                   (str "," (string/join "," (map #(str "-" (esi-helper/index-alias %)) rebalancing-indexes)))
                                    "")]
-    (format "%d_c*,%d_small_collections,-%d_collections*%s"
+    (format "%d_c*_alias,%d_small_collections_alias,-%d_collections*%s"
             index-set-id index-set-id index-set-id excluded-collections-str)))
 
 (defn- get-granule-indexes
-  "Returns the granule indexes that should be searched based on the input query"
+  "Returns the granule index aliases that should be searched based on the input query"
   [context query]
   (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
         provider-ids (seq (pex/extract-provider-ids query))]
     (cond
       coll-concept-ids
       ;; Use collection concept ids to limit the indexes queried
-      (string/join "," (collection-concept-ids->index-names context coll-concept-ids))
+      (string/join "," (collection-concept-ids->index-aliases context coll-concept-ids))
 
       provider-ids
       ;; Use provider ids to limit the indexes queried
-      (string/join "," (provider-ids->index-names context provider-ids))
+      (string/join "," (provider-ids->index-aliases context provider-ids))
 
       :else
-      (all-granule-indexes context))))
+      (all-granule-index-aliases context))))
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]
@@ -101,57 +106,57 @@
 (defmethod common-esi/concept-type->index-info :collection
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 (esi-helper/index-alias "1_all_collection_revisions")
                  (collections-index-alias))
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :autocomplete
   [context _ query]
-  {:index-name "1_autocomplete"
+  {:index-name (esi-helper/index-alias "1_autocomplete")
    :type-name "suggestion"})
 
 (defmethod common-esi/concept-type->index-info :tag
   [context _ query]
-  {:index-name "1_tags"
+  {:index-name (esi-helper/index-alias "1_tags")
    :type-name "tag"})
 
 (defmethod common-esi/concept-type->index-info :variable
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_variable_revisions"
-                 "1_variables")
+                 (esi-helper/index-alias "1_all_variable_revisions")
+                 (esi-helper/index-alias "1_variables"))
    :type-name "variable"})
 
 (defmethod common-esi/concept-type->index-info :service
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_service_revisions"
-                 "1_services")
+                 (esi-helper/index-alias "1_all_service_revisions")
+                 (esi-helper/index-alias "1_services"))
    :type-name "service"})
 
 (defmethod common-esi/concept-type->index-info :tool
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_tool_revisions"
-                 "1_tools")
+                 (esi-helper/index-alias "1_all_tool_revisions")
+                 (esi-helper/index-alias "1_tools"))
    :type-name "tool"})
 
 (defmethod common-esi/concept-type->index-info :subscription
   [context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_subscription_revisions"
-                 "1_subscriptions")
+                 (esi-helper/index-alias "1_all_subscription_revisions")
+                 (esi-helper/index-alias "1_subscriptions"))
    :type-name "subscription"})
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
-  (defmethod common-esi/concept-type->index-info concept-type
-    [context _ query]
-    {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type)
-                                                                        #"-" "_"))
-                   (format "1_generic_%s" (string/replace (name concept-type)
-                                                          #"-" "_")))
-     :type-name (name concept-type)}))
+  (let [clean-name (string/replace (name concept-type) #"-" "_")]
+    (defmethod common-esi/concept-type->index-info concept-type
+      [context _ query]
+      (let [index-name (if (:all-revisions? query)
+                         (esi-helper/index-alias (format "1_all_generic_%s_revisions" clean-name))
+                         (esi-helper/index-alias (format "1_generic_%s" clean-name)))]
+        {:index-name index-name
+         :type-name  (name concept-type)}))))
 
 (defn- context->conn
   [context]
