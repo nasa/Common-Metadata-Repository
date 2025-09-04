@@ -230,7 +230,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id (**deprecated**) and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id (**deprecated**), CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -261,7 +261,7 @@ You can not page past the 1 millionth item. Please contact the CMR Team at cmr-s
 
 __NOTE__: This is currently the prefered way to request large sets of records.
 
-Search After supersedes scrolling. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
+Search After supersedes scrolling and is the replacement for the deprecated CMR-Scroll-Id functionality. Search After allows the retrieval of all results of a query in a stateless manner and is the recommended way for deep paging by Elasticsearch. It is supported through the `CMR-Search-After` header. Search After is primarily intended to support harvesting of metadata.
 
 Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
 
@@ -300,7 +300,7 @@ There will be only 8 granules in the result set. We can deem the search has reac
 
 #### <a name="scrolling-details"></a> Scrolling Details
 
-__NOTE:__ Scrolling is being deprecated in favor of [Search After](#search-after). Please switch your scroll based queries to [Search After](#search-after) which is more efficient and easier to use.
+__IMPORTANT:__ Scrolling is deprecated and will be disabled in the future. When disabled, requests using CMR-Scroll-Id or scroll parameter will return HTTP 400 errors with instructions to migrate to [Search After](#search-after). Please migrate your applications to use the Search After pattern instead, which is more efficient and easier to use.
 
 Scrolling allows the retrieval of all results of a query in an efficient manner. This parameter is primarily intended to support harvesting of metadata. Scrolling is only supported for parameter queries, but all query parameters are available with the exception of the `page_num` and `offset` parameters. The response format for scrolling queries is identical to the response for normal parameter queries with the exception of the addition of the `CMR-Scroll-Id` header. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 

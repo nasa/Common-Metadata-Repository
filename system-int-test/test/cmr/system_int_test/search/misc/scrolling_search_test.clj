@@ -2,19 +2,18 @@
   "Tests for using the scroll parameter to retrieve search results"
   (:require
    [clj-http.client :as client]
-   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
    [cmr.common-app.services.search :as cs]
+   [cmr.common-app.services.search.parameter-validation :as parameter-validation]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.elastic-utils.config :as es-config]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -311,8 +310,9 @@
                                        {:provider "PROV1" :scroll true}
                                        {:allow-failure? true})]
         (is (= 400 (:status response)))
-        (is (= "Scrolling is disabled."
-               (first (:errors response)))))
+        (let [error-msg (first (:errors response))]
+          (is (= error-msg (parameter-validation/scroll-deprecation-message)))))
+
       (dev-sys-util/eval-in-dev-sys
        `(cmr.common-app.services.search.parameter-validation/set-scrolling-enabled! true)))
 
@@ -354,3 +354,30 @@
             {:headers {routes/SCROLL_ID_HEADER "foo"}}
             404
             "Scroll session [foo] does not exist"))))
+
+(deftest scroll-deprecation-test
+  (dev-sys-util/eval-in-dev-sys
+   `(parameter-validation/set-scrolling-enabled! false))
+
+  (testing "scroll parameter rejected when scrolling is disabled"
+    (let [response (search/find-refs :collection {:scroll true}
+                                     {:allow-failure? true})
+          error-msg (first (:errors response))]
+      (is (= 400 (:status response)))
+      (is (= error-msg (parameter-validation/scroll-deprecation-message)))))
+
+  (testing "CMR-Scroll-Id header rejected when scrolling is disabled"
+    (let [response (search/find-refs :collection {}
+                                     {:headers {routes/SCROLL_ID_HEADER "any-value"}
+                                      :allow-failure? true})
+          error-msg (first (:errors response))]
+      (is (= 400 (:status response)))
+      (is (= error-msg (parameter-validation/scroll-deprecation-message)))))
+
+  (testing "normal search works when scrolling is disabled"
+    (let [response (search/find-refs :collection {})]
+      (is (nil? (:status response)))
+      (is (nil? (:errors response)))))
+
+  (dev-sys-util/eval-in-dev-sys
+   `(parameter-validation/set-scrolling-enabled! true)))
