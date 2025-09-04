@@ -241,16 +241,15 @@
         gran-index-set (assoc gran-outer-map-index-set :concepts gran-concepts-map-index-set)
 
         ;; all other indices given in the index set will go the non gran index set. This relies heavily on the gran index set template.
-        ;; TODO CMR-10636 do we want to restrict this to the collection index list only? If so, we have to update this code.
         non-gran-index-keys-to-extract (set/difference (set (keys inner-combined-index-set)) (set gran-index-keys))
         non-gran-outer-map-index-set (select-keys inner-combined-index-set non-gran-index-keys-to-extract)
-        non-gran-outer-map-index-set (-> non-gran-outer-map-index-set
+        non-gran-index-set-without-concepts (-> non-gran-outer-map-index-set
                                          (dissoc :concepts)
                                          (assoc :name (:name inner-combined-index-set)
                                                 :id (:id inner-combined-index-set)
                                                 :create-reason (:create-reason inner-combined-index-set)))
         non-gran-concepts-map-index-set (select-keys combined-concepts-map (set/difference (set (keys combined-concepts-map)) (set gran-index-keys)))
-        non-gran-index-set (assoc non-gran-outer-map-index-set :concepts non-gran-concepts-map-index-set)]
+        non-gran-index-set (assoc non-gran-index-set-without-concepts :concepts non-gran-concepts-map-index-set)]
 
     {(keyword es-config/gran-elastic-name) {:index-set gran-index-set}
      (keyword es-config/elastic-name) {:index-set non-gran-index-set}}))

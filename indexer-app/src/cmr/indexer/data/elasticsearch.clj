@@ -377,15 +377,14 @@
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
-;; TODO how can we centralize index naming so this doesn't fail if index names or id changes? TODO
 (defn get-es-cluster-conn
   [context es-index]
   ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
   (let [cluster-name (if
-                       (and (not (= es-index "1_collections_v2"))
-                            (or (string/starts-with? es-index "1_c")
-                                (= es-index "1_small_collections")
-                                (= es-index "1_deleted_granules")))
+                       (and (not (= es-index (idx-set/collections-index)))
+                            (or (string/starts-with? es-index idx-set/granule-index-name-prefix)
+                                (= es-index idx-set/small-collections-index-name)
+                                (= es-index idx-set/deleted-granule-index-name)))
                        (keyword es-config/gran-elastic-name)
                        (keyword es-config/elastic-name))]
     (indexer-util/context->conn context cluster-name)))

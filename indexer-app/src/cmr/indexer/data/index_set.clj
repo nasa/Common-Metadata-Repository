@@ -13,6 +13,10 @@
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
 
+(def index-set-id
+  "The identifier of the one and only index set"
+  1)
+
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
 ;; can all be configured separately.
@@ -67,6 +71,18 @@
 (defconfig collections-index
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
+
+(def small-collections-index-name
+  "The index to use for the small collections index"
+  (str index-set-id "_small_collections"))
+
+(def deleted-granule-index-name
+  "The name of the index in elastic search."
+  (str index-set-id "_deleted_granules"))
+
+(def granule-index-name-prefix
+  "The prefix to all granule indexes"
+  (str index-set-id "_c"))
 
 (def ^:private MAX_RESULT_WINDOW
   "Number of max results can be returned in an Elasticsearch query."
@@ -892,10 +908,6 @@
            :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
-(def index-set-id
-  "The identifier of the one and only index set"
-  1)
-
 (defn gran-index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
    granule indexes that should exist in addition to small_collections. This function
@@ -907,7 +919,7 @@
        :mapping {:properties{:example {:type 'keyword'}}}}}}
    Note: Indexes normally have two items, the all revisions index and the normal index
    Note: Most mappings include a literal case version and a lowercase version
-   NOTE: Changes to this index-set template will affect index-set CRUD calls. Change with caution.
+   IMPORTANT: Changes to this index-set template will affect index-set CRUD calls. Change with caution.
    "
   [extra-granule-indexes]
   (let [set-of-gran-indexes {:name "cmr-base-index-set"
