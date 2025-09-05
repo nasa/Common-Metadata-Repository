@@ -183,7 +183,7 @@
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when (es/get-index-set-if-exists (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
+    (when (es/index-set-exists? (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
@@ -309,7 +309,7 @@
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
-      (es/create-or-update-index es-store idx))
+      (es/update-index es-store idx))
 
     (index-requested-index-set context index-set es-cluster-name)))
 

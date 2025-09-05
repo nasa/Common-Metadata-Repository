@@ -11,8 +11,8 @@
 (use-fixtures :each util/reset-fixture)
 
 ;; Verify index-set creation is successful.
-;; use elastisch to verify all indices of index-set exist and the index-set doc has been indexed
-;; in elastic
+;; use elastisch to verify all indices and aliases of index-set exist
+;; and the index-set doc has been indexed in elastic
 (deftest create-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
@@ -124,11 +124,12 @@
                                        set))
          "The expected granule indexes were incorrect")
 
-     ;; Verify the collection indexes were created in elasticsearch.
+     ;; Verify the granule indexes were created in elasticsearch.
      (doseq [collection expected-coll-indexes
              :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
-       (is (esi/exists? @util/gran-elastic-connection elastic-index-name))))))
+       (is (esi/exists? @util/gran-elastic-connection elastic-index-name))
+       (is (esi-helper/alias-exists? @util/gran-elastic-connection elastic-index-name))))))
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index

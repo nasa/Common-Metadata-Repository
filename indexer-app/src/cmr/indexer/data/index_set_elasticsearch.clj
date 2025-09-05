@@ -9,9 +9,14 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
    [cmr.transmit.config :as t-config]))
+
+(def resharding-index-pattern
+  "Regex pattern for index names created by resharding"
+  #"^([0-9]+_c[0-9]+_[A-Za-z0-9_]+)_([0-9]+)_shards$")
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -39,7 +44,24 @@
                           index-name error-message))
             (throw e)))))))
 
-(defn create-or-update-index
+(defn create-index-and-alias
+  "Create elastic index and its alias"
+  [es-store idx-w-config]
+  (let [{:keys [conn]} es-store
+        {:keys [index-name]} idx-w-config
+        alias (esi-helper/index-alias index-name)]
+    (create-index es-store idx-w-config)
+    (try
+      (info "Now creating Elastic alias:" alias)
+      (esi/create-index-alias conn index-name alias true)
+      (catch clojure.lang.ExceptionInfo e
+        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
+              error-message (:error body)]
+          (error (format "error creating %s elastic index alias, elastic reported error: %s"
+                          alias error-message))
+          (throw e))))))
+
+(defn update-index
   "Update elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
@@ -56,6 +78,12 @@
         (do
           (info "Index" index-name "does not exist so it will be created")
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
+
+      ;; if the index is not a resharding index and alias does not exist, add it
+      (when-not (or (esi-helper/alias-exists? conn index-name)
+                    (re-matches resharding-index-pattern index-name))
+        (esi/create-index-alias conn index-name (esi-helper/index-alias index-name) true))
+
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
@@ -63,11 +91,11 @@
                         index-name error-message))
           (throw e))))))
 
-(defn get-index-set-if-exists
+(defn index-set-exists?
   "Check index-set existence in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (when (esi-helper/exists? conn index-name)
-    ;; result will be nil if doc doesn't exist
+    ;; result will be nil if doc doeesn't exist
     (es-helper/doc-get
      conn
      index-name
@@ -81,7 +109,7 @@
   (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when-let [result (get-index-set-if-exists
+    (when-let [result (index-set-exists?
                        (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
       (-> result
           (get-in [:_source :index-set-request])

@@ -9,7 +9,13 @@
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
 
+(defn index-alias
+  "Returns the default index alias for the given index"
+  [index-name]
+  (str index-name "_alias"))
+
 (defn exists?
+  "Return true if the given index exists"
   [conn index-name]
   (esi/exists? conn index-name))
 
@@ -36,7 +42,7 @@
                :throw-exceptions true})))
 
 (defn refresh
- "refresh an index"
+ "Refresh an index"
   [conn index-name]
   (-> (rest/index-refresh-url conn (join-names index-name))
       (client/post (merge (.http-opts conn)
@@ -48,12 +54,12 @@
       (rest/parse-safely)))
 
 (defn delete
-  "delete an index"
+  "Delete an index"
   [conn index-name]
   (esi/delete conn index-name))
 
 (defn update-aliases
-  "update index aliases"
+  "Update index aliases"
   [conn actions]
   (rest/post conn
              (rest/index-aliases-batch-url conn)
@@ -63,15 +69,20 @@
 ;; We have to roll our own get-aliases function because Elasticsearch route on GET alias
 ;; for an index has changed and clojurewerkz is outdated
 (defn get-aliases
-  "get index aliases"
+  "Get index aliases"
   [conn index-name]
   (let [aliases-url (rest/url-with-path conn index-name "_alias")
         resp (rest/get conn aliases-url)
         aliases (keys (get-in resp [(keyword index-name) :aliases]))]
     (mapv name aliases)))
 
+(defn alias-exists?
+  "Return true if the given index has the default alias in the form of <index-name>_alias"
+  [conn index-name]
+  (boolean (some #{(index-alias index-name)} (get-aliases conn index-name))))
+
 (defn create-index-template
-  "create an index template in elasticsearch"
+  "Create an index template in elasticsearch"
   [conn template-name opts]
   (let [{:keys [index-patterns settings mappings aliases]} opts
         template-url (rest/url-with-path conn "_index_template" template-name)
