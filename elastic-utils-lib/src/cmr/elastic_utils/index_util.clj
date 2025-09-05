@@ -127,6 +127,16 @@
               :dynamic "strict"
               :properties ~properties}))))
 
+(defn create-index-alias
+  "Creates the alias for the index.
+   Optional parameter is-write-alias?: when true, the alias will be marked as write index."
+  ([conn index alias-name]
+   (create-index-alias conn index alias-name false))
+  ([conn index alias-name is-write-alias?]
+   (let [alias-map (cond-> {:index index :alias alias-name}
+                     is-write-alias? (assoc :is_write_index true))]
+     (esi-helper/update-aliases conn [{:add alias-map}]))))
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
    follows:
@@ -149,6 +159,10 @@
         (info (format "Creating %s index" index-name))
         (esi-helper/create conn index-name {:settings {:index index-settings} :mappings mappings})
         (esc/wait-for-healthy-elastic elastic-store)))
+
+    ;; if the alias does not exist, add it
+    (when-not (esi-helper/alias-exists? conn index-name)
+      (create-index-alias conn index-name (esi-helper/index-alias index-name) true))
     (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation
@@ -228,8 +242,3 @@
   "Delete index"
   [elastic-store index-name]
   (es-helper/delete-index elastic-store index-name))
-
-(defn create-index-alias
-  "Creates the alias for the index."
-  [conn index alias-name]
-  (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}]))

@@ -31,6 +31,18 @@
   {:type Boolean
    :default true})
 
+(defconfig search-after-instructions-url
+  "URL for instructions on how to use search-after pagination instead of scrolling."
+  {:default "https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after"})
+
+(defn scroll-deprecation-message
+  "Returns the standard error message for when scrolling is disabled."
+  []
+  (str "Scrolling is no longer supported. "
+       "Please use search-after instead. "
+       "For instructions on how to use this pagination method, see: "
+       (search-after-instructions-url)))
+
 (def basic-params-config
   "Defines a map of parameter validation types to a set of the parameters."
   {;; Parameters that must take a single value, never a vector of values.

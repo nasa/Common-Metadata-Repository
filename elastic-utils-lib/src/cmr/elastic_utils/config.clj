@@ -2,15 +2,18 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :refer [defconfig]]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]))
+   [cmr.common.config :refer [defconfig]]))
 
 (declare elastic-name)
 (def elastic-name
+  "Defining the elastic cluster name for non-gran elastic cluster.
+  This is a source of truth var, so change with caution."
   "elastic")
 
 (declare gran-elastic-name)
 (def gran-elastic-name
+  "Defining the granule elastic cluster name for granule elastic cluster.
+  This is a source of truth var, so change with caution."
   "gran-elastic")
 
 (declare es-unlimited-page-size)
@@ -121,7 +124,13 @@
    :retry-handler nil
    :admin-token (elastic-admin-token)})
 
+(defn invalid-elastic-cluster-name-msg
+  "Create a message stating that the given elastic cluster name is incorrect."
+  [given-elastic-cluster-name]
+  (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-cluster-name))
+
 (defn es-cluster-name-str->keyword
+  "Converts the elastic cluster name from string to keyword."
   [es-cluster-name]
   (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
                                   es-cluster-name
@@ -129,4 +138,4 @@
     (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
             (= es-cluster-name-keyword (keyword elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [gran-elastic-name elastic-name]))))))
+      (throw (Exception. (invalid-elastic-cluster-name-msg es-cluster-name))))))

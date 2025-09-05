@@ -14,7 +14,6 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-   [cmr.elastic-utils.search.es-messenger :as es-msg]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
@@ -66,7 +65,7 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index])
     (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index])
-    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in
@@ -171,7 +170,6 @@
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
-  (println "INSIDE do-send-with-retry with index-info = " index-info " and es cluster determined to be = " (get-es-cluster-name-from-index-info index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
@@ -385,7 +383,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
+  (start
+    [this _system]
+    (assoc this :conn (es/try-connect (:config this))))
 
   (stop [this _system] this))
 
@@ -395,4 +395,4 @@
   (cond
     (= es-cluster-name es-config/elastic-name) (->ElasticSearchIndex (es-config/elastic-config) nil)
     (= es-cluster-name es-config/gran-elastic-name) (->ElasticSearchIndex (es-config/gran-elastic-config) nil)
-    :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/elastic-name es-config/gran-elastic-name])))))
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
