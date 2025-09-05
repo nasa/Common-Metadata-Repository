@@ -1,11 +1,13 @@
 (def aws-java-sdk-version
   "The java aws sdk version to use."
-  "1.12.663")
+  "1.12.788") ; was 1.12.663
+  ;; worked 1.12.788
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.28.19")
-
+  "2.33.1") ; was 2.28.19
+  ;;try 2.29.52, 2.30.38, 2.31.78, 2.32.33, or 2.33.1
+  ;; worked 2.28.29, 2.29.52, 2.30.38, 2.31.78, 2.32.33
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
