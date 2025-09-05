@@ -5,6 +5,7 @@
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
