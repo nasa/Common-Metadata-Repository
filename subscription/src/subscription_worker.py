@@ -63,8 +63,8 @@ def process_messages(sns_client, topic, messages, access_control, search):
                 #start_search = (time.time() * 1000)
                 #message_msg = search.process_message(message_body['Message'])
                 #logger.info(f"Subscription Worker search duration {((time.time() * 1000) - start_search)} ms.")
-                #message_body['Message'] = message_msg
-                #message['Body'] = message_body
+                message_body['Message'] = json.loads(message_body['Message'])
+                message['Body'] = message_body
                 sns_client.publish_message(topic, message)
             else:
                 logger.warning(f"Subscription worker: {subscriber} does not have read permission to receive notifications for {collection_concept_id}.")
