@@ -1,22 +1,20 @@
 (ns cmr.indexer.services.index-set-service
   "Provide functions to store, retrieve, delete index-sets"
   (:require
-    [cheshire.core :as json]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [cmr.common.config :as common-config]
-    [cmr.common.log :as log :refer [info warn]]
-    [cmr.common.util :as util]
-    [cmr.common.rebalancing-collections :as rebalancing-collections]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.elastic-utils.config :as es-config]
-    [cmr.elastic-utils.search.es-messenger :as es-msg]
-    [cmr.indexer.config :as config]
-    [cmr.indexer.data.index-set :as index-set]
-    [cmr.indexer.data.index-set-elasticsearch :as es]
-    [cmr.indexer.services.messages :as m]
-    [cmr.indexer.indexer-util :as indexer-util])
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.config :as common-config]
+   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.rebalancing-collections :as rebalancing-collections]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.index-set :as index-set]
+   [cmr.indexer.data.index-set-elasticsearch :as es]
+   [cmr.indexer.services.messages :as m]
+   [cmr.indexer.indexer-util :as indexer-util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -38,7 +36,7 @@
                                             :when (not (.startsWith (name k) "granule"))]
                                         [k v]))
 
-                                      :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))]
+                                      :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))]
     (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
             initial-list
             (keys filtered-pipeline-documents))))
@@ -74,7 +72,7 @@
                          (= es-cluster-name es-config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                         :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -93,7 +91,7 @@
                          (= es-cluster-name es-config/elastic-name)
                          (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                         :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                         :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -110,7 +108,7 @@
                                            (= es-cluster-name es-config/elastic-name)
                                            (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
-                                           :else (throw (Exception. (es-msg/invalid-elastic-cluster-name-msg es-cluster-name [es-config/gran-elastic-name es-config/elastic-name]))))
+                                           :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
         ]
     {:id (:id index-set)
      :name (:name index-set)
@@ -150,8 +148,8 @@
   "Fetch index-set associated with an index-set id."
   [context es-cluster-name index-set-id]
   (or (es/get-index-set context es-cluster-name index-set-id)
-        (errors/throw-service-error :not-found
-                                    (m/index-set-not-found-msg index-set-id))))
+      (errors/throw-service-error :not-found
+                                  (m/index-set-not-found-msg index-set-id))))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -185,13 +183,12 @@
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when (es/get-index-set-if-exists (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
+    (when (es/index-set-exists? (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
   "Verify input index-set is valid."
   [context es-cluster-name index-set allow-update?]
-  ;(println "INSIDE validate-request-index-set with es-cluster-name = " es-cluster-name " and index-set = " index-set " and allow-update? " allow-update?)
   (when-not allow-update?
     (when-let [error (index-set-existence-check context es-cluster-name index-set)]
       (errors/throw-service-error :conflict error))
@@ -244,21 +241,20 @@
         gran-index-set (assoc gran-outer-map-index-set :concepts gran-concepts-map-index-set)
 
         ;; all other indices given in the index set will go the non gran index set. This relies heavily on the gran index set template.
-        ;; TODO CMR-10636 do we want to restrict this to the collection index list only? If so, we have to update this code.
         non-gran-index-keys-to-extract (set/difference (set (keys inner-combined-index-set)) (set gran-index-keys))
         non-gran-outer-map-index-set (select-keys inner-combined-index-set non-gran-index-keys-to-extract)
-        non-gran-outer-map-index-set (-> non-gran-outer-map-index-set
+        non-gran-index-set-without-concepts (-> non-gran-outer-map-index-set
                                          (dissoc :concepts)
                                          (assoc :name (:name inner-combined-index-set)
                                                 :id (:id inner-combined-index-set)
                                                 :create-reason (:create-reason inner-combined-index-set)))
         non-gran-concepts-map-index-set (select-keys combined-concepts-map (set/difference (set (keys combined-concepts-map)) (set gran-index-keys)))
-        non-gran-index-set (assoc non-gran-outer-map-index-set :concepts non-gran-concepts-map-index-set)]
+        non-gran-index-set (assoc non-gran-index-set-without-concepts :concepts non-gran-concepts-map-index-set)]
 
     {(keyword es-config/gran-elastic-name) {:index-set gran-index-set}
      (keyword es-config/elastic-name) {:index-set non-gran-index-set}}))
 
-(defn create-indexes-and-index-set
+(defn create-index-set
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
   index-set doc indexing fails.
   We combine the work of both index sets here because if one fails to one cluster, we want to rollback all the indices to all clusters together.
@@ -287,11 +283,11 @@
 
     ;; create indices and rollback if index creation fails
     (try
-      (dorun (map #(es/create-index gran-es-store %) gran-indices-w-config))
-      (dorun (map #(es/create-index non-gran-es-store %) non-gran-indices-w-config))
+      (dorun (map #(es/create-index-and-alias gran-es-store %) gran-indices-w-config))
+      (dorun (map #(es/create-index-and-alias non-gran-es-store %) non-gran-indices-w-config))
       (catch ExceptionInfo e
         ;; TODO: Generic work: why does this fail to roll back with bad generics?
-        (warn "failed to create index, roll back, this does not always work")
+        (println "failed to create index, roll back, this does not always work")
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
         (dorun (map #(es/delete-index non-gran-es-store %) non-gran-index-names))
         (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
@@ -303,29 +299,29 @@
       (catch ExceptionInfo e
         (warn "failed to create index sets, roll back, this does not always work")
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
-        (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
+        (dorun (map #(es/delete-index non-gran-es-store %) non-gran-index-names))
+        (m/handle-elastic-exception "attempt to index index-set doc failed" e)))))
 
-(defn create-or-update-indexes-and-index-set
+(defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  ;(validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
-      (es/create-or-update-index es-store idx))
+      (es/update-index es-store idx))
 
     (index-requested-index-set context index-set es-cluster-name)))
 
 (defn delete-index-set
-  "Delete all indices having 'id_' as the prefix in all the elastic clusters, followed by
+  "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
   [context index-set-id es-cluster-name]
-    (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
-          {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-          idx-mapping-type (first (keys mapping))]
-      (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
-      (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
+  (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
+        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
+        idx-mapping-type (first (keys mapping))]
+    (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
+    (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
 
 (defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."
@@ -422,7 +418,7 @@
                           (add-new-granule-index-to-index-set index-set concept-id)))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
-    (create-or-update-indexes-and-index-set context es-config/gran-elastic-name gran-index-set)))
+    (update-index-set context es-config/gran-elastic-name gran-index-set)))
 
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
@@ -450,7 +446,7 @@
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (create-or-update-indexes-and-index-set context es-config/gran-elastic-name index-set)))
+    (update-index-set context es-config/gran-elastic-name index-set)))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -466,7 +462,7 @@
          "The index set does not contain the rebalancing collection [%s]"
          concept-id)))
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (create-or-update-indexes-and-index-set
+    (update-index-set
      context
      es-config/gran-elastic-name
      (update-in

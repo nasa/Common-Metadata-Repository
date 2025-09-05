@@ -43,14 +43,17 @@
                                                          :autocomplete {}
                                                          :subscription {}}
                                                         (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}
-        actual-pruned-non-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) es-config/elastic-name)
-        actual-pruned-gran-index-set (svc/prune-index-set (:index-set util/sample-index-set) es-config/gran-elastic-name)]
+        actual-pruned-non-gran-index-set (svc/prune-index-set
+                                           (:index-set util/sample-index-set) es-config/elastic-name)
+        actual-pruned-gran-index-set (svc/prune-index-set
+                                       (:index-set util/sample-index-set) es-config/gran-elastic-name)]
     (is (= expected-pruned-gran-index-set actual-pruned-gran-index-set))
     (is (= expected-pruned-non-gran-index-set actual-pruned-non-gran-index-set))))
 
 (deftest split-index-set-by-cluster-test
-  (let [file-path (str (-> (clojure.java.io/file ".")
-                      .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/combined-index-set.json")
+  (let [file-path (str
+                    (-> (clojure.java.io/file ".") .getAbsolutePath)
+                    "/test/cmr/indexer/test/services/test_files/combined-index-set.json")
         combined-index-set-map (-> file-path
                                    slurp
                                    (json/parse-string true))
@@ -59,17 +62,18 @@
         actual-gran-index-set (get split-index-set-map (keyword es-config/gran-elastic-name))
         actual-non-gran-index-set (get split-index-set-map (keyword es-config/elastic-name))
 
-        expected-gran-index-set-file-path (str (-> (clojure.java.io/file ".")
-                                                   .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/expected-gran-index-set.json")
+        expected-gran-index-set-file-path (str
+                                            (-> (clojure.java.io/file ".") .getAbsolutePath)
+                                            "/test/cmr/indexer/test/services/test_files/expected-gran-index-set.json")
         expected-gran-index-set (-> expected-gran-index-set-file-path
                                     slurp
                                     (json/parse-string true))
-        expected-non-gran-index-set-file-path (str (-> (clojure.java.io/file ".")
-                                                       .getAbsolutePath) "/test/cmr/indexer/test/services/test_files/expected-non-gran-index-set.json")
+        expected-non-gran-index-set-file-path (str
+                                                (-> (clojure.java.io/file ".") .getAbsolutePath)
+                                                "/test/cmr/indexer/test/services/test_files/expected-non-gran-index-set.json")
         expected-non-gran-index-set (-> expected-non-gran-index-set-file-path
                                         slurp
-                                        (json/parse-string true))
-        ]
+                                        (json/parse-string true))]
     (is (= actual-gran-index-set expected-gran-index-set))
     (is (= actual-non-gran-index-set expected-non-gran-index-set))))
 
@@ -84,7 +88,12 @@
                                        :tool
                                        :variable]
         updated-non-gran-list (svc/add-searchable-generic-types initial-non-gran-concept-list es-config/elastic-name)
-        expected-non-gran-list [:autocomplete :collection :service :subscription :tag :tool :variable :generic-order-option-draft :generic-grid-draft :generic-variable-draft :generic-grid :generic-data-quality-summary-draft :generic-citation :generic-visualization-draft :generic-tool-draft :generic-order-option :generic-visualization :generic-data-quality-summary :generic-citation-draft :generic-collection-draft :generic-service-draft]
+        expected-non-gran-list [:autocomplete :collection :service :subscription :tag :tool
+                                :variable :generic-order-option-draft :generic-grid-draft
+                                :generic-variable-draft :generic-grid :generic-data-quality-summary-draft
+                                :generic-citation :generic-visualization-draft :generic-tool-draft
+                                :generic-order-option :generic-visualization :generic-data-quality-summary
+                                :generic-citation-draft :generic-collection-draft :generic-service-draft]
 
         ;; setup gran list
         initial-gran-concept-list [:deleted-granule :granule]

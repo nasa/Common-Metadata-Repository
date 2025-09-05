@@ -107,10 +107,9 @@
 
 (deftest requires-update-test
   (testing "No updates required"
-    (is (not (es/index-set-requires-update?
-              test-index-set
-              (i/gran-index-set (i/index-set->extra-granule-indexes test-index-set))))))
+    (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)]
+      (is (not (es/index-set-requires-update? test-index-set expected-index-set)))))
   (testing "Updates required from individual index settings"
-    (is (es/index-set-requires-update?
-          (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)
-          (i/gran-index-set (i/index-set->extra-granule-indexes test-index-set))))))
+    (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)
+          existing-gran-index-set (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)]
+      (is (es/index-set-requires-update? existing-gran-index-set expected-index-set)))))

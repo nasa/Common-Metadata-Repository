@@ -55,12 +55,12 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:instance-name     (common-sys/instance-name "indexer")
-             :log               (log/create-logger-with-log-level (log-level))
-             :gran-elastic      (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
-             :elastic           (es/create-elasticsearch-store (es-config/elastic-config) es-config/elastic-name)
-             :web               (web/create-web-server (transmit-config/indexer-port) routes/make-api)
-             :nrepl             (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
+  (let [sys {:instance-name (common-sys/instance-name "indexer")
+             :log (log/create-logger-with-log-level (log-level))
+             :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
+             :elastic (es/create-elasticsearch-store (es-config/elastic-config) es-config/elastic-name)
+             :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {af/acl-cache-key (af/create-consistent-acl-cache
                                         [:catalog-item :system-object :provider-object])
