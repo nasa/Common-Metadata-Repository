@@ -6,8 +6,9 @@
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [commons-io "2.18.0"] ;; used by migration
-                 [compojure "1.6.1"]
-                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                 [compojure "1.6.1"
+                  :exclusions [commons-fileupload]]
+                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -22,12 +23,13 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
-                 [org.eclipse.jetty/jetty-http "11.0.24"]
-                 [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"] ;; used by migration
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"] ;; used by migration
                  [ring/ring-json "0.5.1"]]
-  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
@@ -40,7 +42,7 @@
              :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.13.0"]
+                                  [ring/ring-jetty-adapter "1.14.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]

@@ -12,7 +12,7 @@
   :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [io.netty/netty-handler "4.1.118.Final"]
+                 [io.netty/netty-handler "4.1.124.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
@@ -31,7 +31,9 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.testcontainers/testcontainers "1.19.7"]
-                 [potemkin "0.4.5"]]
+                 [potemkin "0.4.5"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -41,7 +43,8 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
@@ -62,7 +65,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.13.0"]]}}
+                                     [ring/ring-jetty-adapter "1.14.2"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

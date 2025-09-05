@@ -23,7 +23,7 @@ _Kaocha will complain if a test is executed with no assertions._
 
 ## Test Groups
 
-In the CI environment, system integration tests are broken into two groups.
+In the CI environment, system integration tests are broken into multiple groups.
 The split was determined to keep allow the tests to run in approximately 
 equivalent lengths of time.
 

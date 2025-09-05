@@ -13,7 +13,7 @@
                  [org.clojure/data.csv "0.1.4"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-jetty-adapter "1.13.0"]
+                 [ring/ring-jetty-adapter "1.14.2"]
                  [buddy/buddy-sign "3.4.333"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -24,7 +24,7 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.13.0"]]
+                                  [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

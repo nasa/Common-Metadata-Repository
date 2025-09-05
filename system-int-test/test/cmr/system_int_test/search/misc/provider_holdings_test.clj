@@ -2,13 +2,14 @@
   "Integration tests for provider holdings"
   (:require
    [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.api.providers :as providers]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -115,7 +116,8 @@
 
 (deftest retrieve-provider-holdings
 
-
+  ;; Set the page size to unlimited so that we can test search after pagination 
+  (side/eval-form `(es-config/set-es-unlimited-page-size! 1))
   ;; Grant all holdings to registered users
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
@@ -167,9 +169,9 @@
               (is (= (set (get all-holdings "PROV1"))
                      (set (:results response)))))
             (let [response (search/provider-holdings-in-format
-                             format
-                             {:provider_id ["PROV1" "PROV2" "PROV3"]
-                              :token user-token})]
+                            format
+                            {:provider_id ["PROV1" "PROV2" "PROV3"]
+                             :token user-token})]
               (is (= 200 (:status response)))
               (is (= expected-all-holdings
                      (set (:results response))))))
@@ -181,24 +183,24 @@
                      (set (:results response))))))
           (testing "Retrieve provider holdings with echo-compatible true"
             (let [response (search/provider-holdings-in-format
-                             format {:token user-token :echo-compatible? true})]
+                            format {:token user-token :echo-compatible? true})]
               (is (= 200 (:status response)))
               (is (= expected-all-holdings
                      (set (:results response))))))
           (testing "As extension"
             (is (= (select-keys
-                     (search/provider-holdings-in-format format {:provider_id "PROV1"
-                                                                 :token user-token})
-                     [:status :results])
+                    (search/provider-holdings-in-format format {:provider_id "PROV1"
+                                                                :token user-token})
+                    [:status :results])
                    (select-keys
-                     (search/provider-holdings-in-format format
-                                                         {:provider_id "PROV1"
-                                                          :token user-token}
-                                                         {:url-extension (name format)})
-                     [:status :results]))))
+                    (search/provider-holdings-in-format format
+                                                        {:provider_id "PROV1"
+                                                         :token user-token}
+                                                        {:url-extension (name format)})
+                    [:status :results]))))
           (testing "Retrieve provider holdings with count summaries in headers"
             (let [response (search/provider-holdings-in-format format {:provider_id "PROV1"
-                                                                        :token user-token})
+                                                                       :token user-token})
                   headers (:headers response)
                   header-granule-count (headers providers/CMR_GRANULE_COUNT_HEADER)
                   header-collection-count (headers providers/CMR_COLLECTION_COUNT_HEADER)

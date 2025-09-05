@@ -28,11 +28,11 @@
                  [org.geotools/gt-geojsondatastore "27-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
                  [org.mozilla/rhino "1.7.12"]
-                 [org.eclipse.jetty/jetty-http "11.0.24"]
-                 [org.eclipse.jetty/jetty-util "11.0.24"]
-                 [ring/ring-codec "1.2.0"]
-                 [ring/ring-core "1.13.0"]
-                 [ring/ring-jetty-adapter "1.13.0"]
+                 [org.eclipse.jetty/jetty-http "12.0.21"]
+                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
@@ -53,11 +53,11 @@
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[criterium "0.4.4"]
-                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.13.0"]
+                                  [ring/ring-jetty-adapter "1.14.2"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
@@ -71,8 +71,8 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "11.0.24"]
-                                     [org.eclipse.jetty/jetty-util "11.0.24"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
+                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

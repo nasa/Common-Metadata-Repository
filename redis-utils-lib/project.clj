@@ -12,7 +12,11 @@
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.apache.commons/commons-compress "1.26.0"]
+                 ;; commons-compress does not currently use commons-lang3 3.18.0, for now
+                 ;; we will force it to use the latest version
+                 [org.apache.commons/commons-lang3 "3.18.0"]
+                 [org.apache.commons/commons-compress "1.26.0"
+                  :exclusions [org.apache.commons/commons-lang3]]
                  [org.testcontainers/testcontainers "1.19.7"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
@@ -47,7 +51,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.13.0"]]}}
+                                     [ring/ring-jetty-adapter "1.14.2"]]}}
   :aliases {"bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
