@@ -190,7 +190,7 @@
   (when-let [scroll (:scroll params)]
     (when (and (contains? #{"true" "defer"} (string/lower-case scroll))
                (not (scrolling-enabled)))
-      ["Scrolling is disabled."])))
+      [(scroll-deprecation-message)])))
 
 (defn scroll-validation
   "Validates the the scroll parameter (if present) is 'true', 'false', or 'defer'."
