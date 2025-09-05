@@ -254,7 +254,7 @@
     {(keyword es-config/gran-elastic-name) {:index-set gran-index-set}
      (keyword es-config/elastic-name) {:index-set non-gran-index-set}}))
 
-(defn create-indexes-and-index-set
+(defn create-index-set
   "Create indices listed in index-set for specific elastic cluster. Rollback occurs if indices creation or
   index-set doc indexing fails.
   We combine the work of both index sets here because if one fails to one cluster, we want to rollback all the indices to all clusters together.
@@ -283,11 +283,11 @@
 
     ;; create indices and rollback if index creation fails
     (try
-      (dorun (map #(es/create-index gran-es-store %) gran-indices-w-config))
-      (dorun (map #(es/create-index non-gran-es-store %) non-gran-indices-w-config))
+      (dorun (map #(es/create-index-and-alias gran-es-store %) gran-indices-w-config))
+      (dorun (map #(es/create-index-and-alias non-gran-es-store %) non-gran-indices-w-config))
       (catch ExceptionInfo e
         ;; TODO: Generic work: why does this fail to roll back with bad generics?
-        (warn "failed to create index, roll back, this does not always work")
+        (println "failed to create index, roll back, this does not always work")
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
         (dorun (map #(es/delete-index non-gran-es-store %) non-gran-index-names))
         (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
@@ -301,7 +301,7 @@
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
         (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
 
-(defn create-or-update-indexes-and-index-set
+(defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
   ;(validate-requested-index-set context es-cluster-name index-set true)
@@ -418,7 +418,7 @@
                           (add-new-granule-index-to-index-set index-set concept-id)))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
-    (create-or-update-indexes-and-index-set context es-config/gran-elastic-name gran-index-set)))
+    (update-index-set context es-config/gran-elastic-name gran-index-set)))
 
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
@@ -446,7 +446,7 @@
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (create-or-update-indexes-and-index-set context es-config/gran-elastic-name index-set)))
+    (update-index-set context es-config/gran-elastic-name index-set)))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -462,7 +462,7 @@
          "The index set does not contain the rebalancing collection [%s]"
          concept-id)))
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (create-or-update-indexes-and-index-set
+    (update-index-set
      context
      es-config/gran-elastic-name
      (update-in

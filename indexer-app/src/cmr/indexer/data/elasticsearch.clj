@@ -148,7 +148,7 @@
       ;; Check if we need to create
       (nil? existing-non-gran-index-set)
       (do
-        (index-set-svc/create-or-update-indexes-and-index-set context es-config/elastic-name expected-non-gran-index-set)
+        (index-set-svc/update-index-set context es-config/elastic-name expected-non-gran-index-set)
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
@@ -168,7 +168,7 @@
       (nil? existing-gran-index-set)
       (do
         (warn "Gran index set does not exist so creating it.")
-        (index-set-svc/create-or-update-indexes-and-index-set context es-config/gran-elastic-name expected-gran-index-set))
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
 
       :else
       (info "Gran index set exists and matches."))
@@ -184,7 +184,7 @@
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
         (index-set-svc/validate-requested-index-set context es-config/elastic-name expected-index-set true)
-        (index-set-svc/create-or-update-indexes-and-index-set context es-config/elastic-name expected-index-set)
+        (index-set-svc/update-index-set context es-config/elastic-name expected-index-set)
         (info "Creating collection index alias.")
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
@@ -204,7 +204,7 @@
       (do
         (info "Updating the gran index set to " (pr-str expected-index-set))
         (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-index-set true)
-        (index-set-svc/create-or-update-indexes-and-index-set context es-config/gran-elastic-name expected-index-set))
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-index-set))
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
         (info "Existing gran index set:" (pr-str existing-index-set))

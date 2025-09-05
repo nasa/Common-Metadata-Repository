@@ -41,7 +41,7 @@
             _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
             _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
             split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)
-            index-set-resp (index-set-svc/create-indexes-and-index-set request-context split-index-set-map)]
+            index-set-resp (index-set-svc/create-index-set request-context split-index-set-map)]
         (r/created index-set-resp)))
 
     ;; respond with index-sets in elastic
@@ -82,8 +82,8 @@
           (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
           (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
           ;; upsert indexes and index set based on the split index set
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
+          (index-set-svc/update-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
+          (index-set-svc/update-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
