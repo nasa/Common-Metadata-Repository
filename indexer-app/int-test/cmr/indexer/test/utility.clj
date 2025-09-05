@@ -144,6 +144,10 @@
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn gran-elastic-root
+  []
+  (format "http://%s:%s" (es-config/gran-elastic-host) (es-config/gran-elastic-port)))
+
 (defn elastic-root
   []
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
@@ -227,7 +231,7 @@
 
 (defn get-index-set
   "submit a request to index-set app to fetch an index-set assoc with an id"
-  [id]
+  ([id]
   (let [response (client/request
                   {:method :get
                    :url (index-set-url id)
@@ -237,10 +241,21 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([id es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/cluster/%s/%s" (index-sets-url) es-cluster-name id)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
+
 
 (defn get-index-sets
   "submit a request to index-set app to fetch all index-sets"
-  []
+  ([]
   (let [response (client/request
                   {:method :get
                    :url (index-sets-url)
@@ -250,6 +265,16 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/index-sets/cluster/%s" (indexer-root-url) es-cluster-name)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
 
 (defn reset
   "test deletion of indices and index-sets"
@@ -270,10 +295,12 @@
            (vals (get-in idx-set [:concepts concept])))))
 
 
+(def gran-elastic-connection (atom nil))
 (def elastic-connection (atom nil))
 
 (defn reset-fixture [f]
   (reset)
+  (reset! gran-elastic-connection (esr/connect (gran-elastic-root)))
   (reset! elastic-connection (esr/connect (elastic-root)))
   (f)
   (reset))

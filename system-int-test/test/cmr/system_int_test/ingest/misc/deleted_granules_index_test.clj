@@ -7,6 +7,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3] :as util]
    [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
+   [cmr.indexer.data.index-set :as idx-set]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -23,7 +24,7 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? deleted-granule/deleted-granule-index-name
+  (index/doc-present? idx-set/deleted-granule-index-name
                       deleted-granule/deleted-granule-type-name
                       concept-id))
 

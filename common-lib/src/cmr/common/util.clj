@@ -1171,3 +1171,16 @@
         (as-> $ (string/join "&" $))
         string/trim
         digest/md5)))
+
+(defn deep-merge
+  "Recursively merges two maps.
+   If a key exists in both and its value is also a map,
+   it recursively merges those inner maps. Otherwise,
+   it prefers the value from the second map."
+  [m1 m2]
+  (merge-with
+    (fn [v1 v2]
+      (cond
+        (and (map? v1) (map? v2)) (deep-merge v1 v2)
+        :else v2))
+    m1 m2))

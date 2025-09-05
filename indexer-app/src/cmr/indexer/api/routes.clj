@@ -9,9 +9,11 @@
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
+   [cmr.common.util :as c-util]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
    [cmr.indexer.data.concepts.subscription]
@@ -32,14 +34,20 @@
   "Routes providing index-set operations"
   (context "/index-sets" []
     (POST "/" {body :body request-context :request-context}
-      (let [index-set (walk/keywordize-keys body)]
-        (acl/verify-ingest-management-permission request-context :update)
-        (r/created (index-set-svc/create-index-set request-context index-set))))
+      "Given a combined/full index set, we will validate the index set and then separate out all gran indexes to go to gran cluster and the rest will be created in the non-gran cluster."
+      (let [index-set (walk/keywordize-keys body)
+            _ (acl/verify-ingest-management-permission request-context :update)
+            ;; both validations need to happen first before do any actions
+            _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
+            _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
+            split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)
+            index-set-resp (index-set-svc/create-index-set request-context split-index-set-map)]
+        (r/created index-set-resp)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :read)
-      (r/response (index-set-svc/get-index-sets request-context)))
+      (r/response (index-set-svc/get-all-index-sets request-context)))
 
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
@@ -47,25 +55,46 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
+    (context "/cluster/:es-cluster-name" [es-cluster-name]
+      (GET "/" {request-context :request-context}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
+
+    (context "/cluster/:es-cluster-name/:id" [es-cluster-name id]
+      (GET "/" {request-context :request-context}
+        (acl/verify-ingest-management-permission request-context :read)
+        (r/response (index-set-svc/get-index-set request-context es-cluster-name id))))
+
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-set request-context id)))
+        (let [gran-index-set (index-set-svc/get-index-set request-context es-config/gran-elastic-name id)
+              non-gran-index-set (index-set-svc/get-index-set request-context es-config/elastic-name id)
+              combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)]
+          (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        (let [index-set (walk/keywordize-keys body)]
+        (let [index-set (walk/keywordize-keys body)
+              ;; Split the given index set into the proper sub-index-sets per cluster
+              split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)]
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/update-index-set request-context index-set)
+          ;; Validation for both index sets need to happen before we update anything
+          (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
+          (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
+          ;; upsert indexes and index set based on the split index set
+          (index-set-svc/update-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
+          (index-set-svc/update-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context id)
+        (index-set-svc/delete-index-set request-context id es-config/gran-elastic-name)
+        (index-set-svc/delete-index-set request-context id es-config/elastic-name)
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]
 
-        ;; Marks the collection as rebalancing in the index set.
+        ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/mark-collection-as-rebalancing request-context id concept-id (:target params))
