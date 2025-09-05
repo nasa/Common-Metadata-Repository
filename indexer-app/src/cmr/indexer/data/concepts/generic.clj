@@ -3,7 +3,6 @@
    complying to a schema supported by the Generic Document system) to and object
    that can be indexed in lucine."
   (:require
-    [cmr.common.log :as log :refer [info warn error]]
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]

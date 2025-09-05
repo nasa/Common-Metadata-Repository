@@ -41,9 +41,8 @@
             _ (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set false)
             _ (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set false)
             split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)
-            index-set-resp (index-set-svc/create-indexes-and-index-set request-context split-index-set-map)]
-        (r/created index-set-resp)
-        ))
+            index-set-resp (index-set-svc/create-index-set request-context split-index-set-map)]
+        (r/created index-set-resp)))
 
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
@@ -56,12 +55,12 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
-    (context "/elastic-name/:es-cluster-name" [es-cluster-name]
+    (context "/cluster/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-sets request-context es-cluster-name)))) ;; this is directly what is in elastic
+        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
 
-    (context "/elastic-name/:es-cluster-name/:id" [es-cluster-name id]
+    (context "/cluster/:es-cluster-name/:id" [es-cluster-name id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
         (r/response (index-set-svc/get-index-set request-context es-cluster-name id))))
@@ -83,8 +82,8 @@
           (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
           (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
           ;; upsert indexes and index set based on the split index set
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
-          (index-set-svc/create-or-update-indexes-and-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
+          (index-set-svc/update-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
+          (index-set-svc/update-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
           {:status 200}))
 
       (DELETE "/" {request-context :request-context}
@@ -94,6 +93,7 @@
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]
+
         ;; Marks the collection as re-balancing in the index set.
         (POST "/start" {request-context :request-context params :params}
           (acl/verify-ingest-management-permission request-context :update)

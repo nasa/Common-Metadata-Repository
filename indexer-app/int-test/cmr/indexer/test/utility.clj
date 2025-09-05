@@ -244,7 +244,7 @@
   ([id es-cluster-name]
    (let [response (client/request
                     {:method :get
-                     :url (format "%s/elastic-name/%s/%s" (index-sets-url) es-cluster-name id)
+                     :url (format "%s/cluster/%s/%s" (index-sets-url) es-cluster-name id)
                      :accept :json
                      :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                      :throw-exceptions false})
@@ -268,16 +268,13 @@
   ([es-cluster-name]
    (let [response (client/request
                     {:method :get
-                     :url (format "%s/index-sets/elastic-name/%s" (indexer-root-url) es-cluster-name)
+                     :url (format "%s/index-sets/cluster/%s" (indexer-root-url) es-cluster-name)
                      :accept :json
                      :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                      :throw-exceptions false})
          status (:status response)
          body (cheshire/decode (:body response) true)]
-     {:status status :errors (:errors body) :response (assoc response :body body)})
-    )
-
-  )
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
 
 (defn reset
   "test deletion of indices and index-sets"
