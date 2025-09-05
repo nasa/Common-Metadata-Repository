@@ -67,3 +67,10 @@
           {:keys [revision-id]} (mdb/save-concept context concept)]
       (subscriptions/delete-ingest-subscription context existing-concept)
       {:concept-id concept-id, :revision-id revision-id})))
+
+(defn refresh-subscription-cache
+  "Go through all the subscriptions and create a map of collection concept ids and
+  their mode values. Get the old keys from the cache and if the keys exist in the new structure
+  then update the cache with the new values. Otherwise, delete the contents that no longer exists."
+  [context]
+  (subscriptions/refresh-subscription-cache context))

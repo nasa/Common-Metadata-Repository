@@ -37,7 +37,8 @@
   [cmr.ingest.services.ingest-service.subscription
    ;; Public subscription functions
    save-subscription
-   delete-subscription]
+   delete-subscription
+   refresh-subscription-cache]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
    save-variable])
