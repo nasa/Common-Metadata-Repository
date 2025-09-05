@@ -299,12 +299,12 @@
       (catch ExceptionInfo e
         (warn "failed to create index sets, roll back, this does not always work")
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
-        (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
+        (dorun (map #(es/delete-index non-gran-es-store %) non-gran-index-names))
+        (m/handle-elastic-exception "attempt to index index-set doc failed" e)))))
 
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  ;(validate-requested-index-set context es-cluster-name index-set true)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
