@@ -279,14 +279,11 @@
 (defn get-location-message-str
   "Get the granule search location for the subscription notification message."
   [concept]
-  (let [context (:context (:search (t-config/app-conn-info)))
-        context-str (if (string/blank? context)
-                      ""
-                      (str context "/"))]
+  (let [context (:context (:search (t-config/app-conn-info)))]
     (str "\"location\": \""
          (format "%s%sconcepts/%s/%s"
                  (t-config/format-public-root-url (:search (t-config/app-conn-info)))
-                 context-str
+                 context
                  (:concept-id concept)
                  (:revision-id concept))
          "\"")))
