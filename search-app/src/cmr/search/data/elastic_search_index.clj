@@ -76,12 +76,12 @@
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)
-                                   (str "," (string/join "," (map #(str "-" (esi-helper/index-alias %)) rebalancing-indexes)))
+                                   (str "," (string/join "," (map #(str "-" % "*") rebalancing-indexes)))
                                    "")]
     (format "%d_c*_alias,%d_small_collections_alias,-%d_collections*%s"
             index-set-id index-set-id index-set-id excluded-collections-str)))
 
-(defn- get-granule-indexes
+(defn- get-granule-index-aliases
   "Returns the granule index aliases that should be searched based on the input query"
   [context query]
   (let [coll-concept-ids (seq (cex/extract-collection-concept-ids query))
@@ -100,7 +100,7 @@
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]
-  {:index-name (get-granule-indexes context query)
+  {:index-name (get-granule-index-aliases context query)
    :type-name "granule"})
 
 (defmethod common-esi/concept-type->index-info :collection
