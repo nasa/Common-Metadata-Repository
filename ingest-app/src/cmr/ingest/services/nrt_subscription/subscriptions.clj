@@ -276,14 +276,30 @@
     (when pgi
       (str "\"producer-granule-id\": \"" pgi "\""))))
 
+(def public-search-url
+  "Creates a public search URL from the ingest URL parts. The passed in
+  ingest-public-url-map contains the following:
+   {:protocol (ingest-public-protocol)
+    :host (ingest-public-host)
+    :port (ingest-public-port)
+    :relative-root-url (transmit-config/ingest-relative-root-url)}
+  Use the above information and replace the relative-root-url with search if
+  if the context of ingest exists.
+  The public search URL is put into the granule notification message so
+  so the end user knows how to retrieve the granule."
+  (memoize
+   (fn [ingest-public-url-map]
+     (string/replace (t-config/format-public-root-url ingest-public-url-map) "ingest" "search"))))
+
 (defn get-location-message-str
   "Get the granule search location for the subscription notification message."
-  [concept]
-  (let [context (:context (:search (t-config/app-conn-info)))]
+  [context concept]
+  (def context context)
+  (def concept concept)
+  (let [public-search-url (public-search-url (get-in context [:system :public-conf]))]
     (str "\"location\": \""
-         (format "%s%sconcepts/%s/%s"
-                 (t-config/format-public-root-url (:search (t-config/app-conn-info)))
-                 context
+         (format "%sconcepts/%s/%s"
+                 public-search-url
                  (:concept-id concept)
                  (:revision-id concept))
          "\"")))
@@ -296,12 +312,12 @@
    * This function exists so that it can be tested as the output is expected in external software:
      'subscription_worker'
    * Returns a String containing JSON."
-  [concept]
+  [context concept]
   (let [pgi-str (get-producer-granule-id-message-str concept)
         granule-ur-str (get-in concept [:extra-fields :granule-ur])
         concept-id-str (:concept-id concept)
         revision-id-str (get concept :revision-id "1")
-        location-str (get-location-message-str concept)]
+        location-str (get-location-message-str context concept)]
     (if pgi-str
       (format "{\"concept-id\": \"%s\", \"revision-id\": \"%s\", \"granule-ur\": \"%s\", %s, %s}"
               concept-id-str revision-id-str granule-ur-str location-str, pgi-str)
@@ -366,7 +382,7 @@
           (doseq [endpoint-set endpoint-list]
             (let [topic (get-in context [:system :sns :internal])
                   coll-concept-id (:parent-collection-id (:extra-fields concept))
-                  message (create-notification-message-body concept)
+                  message (create-notification-message-body context concept)
                   message-attributes-map (create-message-attributes-map endpoint-set gran-concept-mode coll-concept-id)
                   subject (create-message-subject gran-concept-mode)]
              (when (and message-attributes-map subject)
