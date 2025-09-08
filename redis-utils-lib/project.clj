@@ -1,4 +1,8 @@
 (load-file "../global_versions.clj")
+
+(printf "!!!!!!!!!!!!!!!!!!!!!\nUsing version %s of testcontainers\n!!!!!!!!!!!!!!!!!!!!!\n"
+        global-versions/testcontainers)
+
 (def redis-distribution
   "The version of redis to use and hash value of executable. See:
   https://github.com/antirez/redis-hashes/blob/master/README"
