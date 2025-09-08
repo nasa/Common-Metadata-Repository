@@ -289,7 +289,11 @@
   so the end user knows how to retrieve the granule."
   (memoize
    (fn [ingest-public-url-map]
-     (string/replace (t-config/format-public-root-url ingest-public-url-map) "ingest" "search"))))
+     (let [url (t-config/format-public-root-url ingest-public-url-map)
+           search-url (string/replace-first url "ingest" "search")]
+       (if (string/includes? search-url "3002")
+         (string/replace-first search-url "3002" "3003")
+         search-url)))))
 
 (defn get-location-message-str
   "Get the granule search location for the subscription notification message."

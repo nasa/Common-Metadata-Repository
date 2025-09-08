@@ -396,10 +396,14 @@
 
 (deftest get-location-message-str-test
   (testing "Getting location url for the concept id."
-    (let [concept {:concept-id "G12345-PROV1"
+    (let [context {:system {:public-conf {:protocol "http"
+                                          :host "localhost"
+                                          :port "3002"
+                                          :relative-root-url "/ingest"}}}
+          concept {:concept-id "G12345-PROV1"
                    :revision-id 1}]
-      (is (= "\"location\": \"http://localhost:3003/concepts/G12345-PROV1/1\""
-             (subscriptions/get-location-message-str concept))))))
+      (is (= "\"location\": \"http://localhost:3003/search/concepts/G12345-PROV1/1\""
+             (subscriptions/get-location-message-str context concept))))))
 
 ;; The output of the function being tested is needed and expected for external process
 ;; 'subscription_worker'
@@ -408,7 +412,11 @@
     (let [expected {"concept-id" "G12345-PROV1"
                     "revision-id" "1"
                     "granule-ur" "GranuleUR"
-                    "location" "http://localhost:3003/concepts/G12345-PROV1/1"}
+                    "location" "http://localhost:3003/search/concepts/G12345-PROV1/1"}
+          context {:system {:public-conf {:protocol "http"
+                                          :host "localhost"
+                                          :port "3002"
+                                          :relative-root-url "/ingest"}}}
           concept {:concept-id "G12345-PROV1"
                    :revision-id 1
                    :extra-fields {:granule-ur "GranuleUR"}
@@ -429,8 +437,8 @@
                              </ProducerGranuleId>
                            </DataGranule>
                          </Granule>"}]
-      (is (= expected (json/decode (subscriptions/create-notification-message-body concept))) "JSON test")
-      (is (= expected (json/decode (subscriptions/create-notification-message-body xml-concept))) "XML test"))))
+      (is (= expected (json/decode (subscriptions/create-notification-message-body context concept))) "JSON test")
+      (is (= expected (json/decode (subscriptions/create-notification-message-body context xml-concept))) "XML test"))))
 
 (deftest create-message-attributes-test
   (testing "Creating the message attributes."
