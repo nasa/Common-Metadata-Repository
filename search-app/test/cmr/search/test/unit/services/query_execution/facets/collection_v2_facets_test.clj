@@ -1,13 +1,12 @@
 (ns cmr.search.test.unit.services.query-execution.facets.collection-v2-facets-test
   (:require [clojure.test :refer :all]
-            [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
-            [cmr.search.services.query-execution.facets.collection-v2-facets :as cv2f]))
+            [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]))
 
 (deftest create-v2-facets-by-concept-type-test
   (testing "Testing that facets are applied and that the link shows the how to remove them."
     (let [base-url "http://localhost:3003/collections.json"
           query-params {"keyword" "*", "include_facets" "v2", "pretty" true, "two_d_coordinate_system_name[]" "MODIS Tile EASE"}
-          aggs {:two-d-coordinate-system-name-h 
+          aggs {:two-d-coordinate-system-name-h
                  {:doc_count_error_upper_bound 0,
                   :sum_other_doc_count 0,
                   :buckets [{:key "MODIS Tile EASE", :doc_count 1}]}}

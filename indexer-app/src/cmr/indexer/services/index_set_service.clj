@@ -179,7 +179,7 @@
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
     ;; rollback index-set creation if index creation fails
     (try
-      (dorun (map #(es/create-index es-store %) indices-w-config))
+      (dorun (map #(es/create-index-and-alias es-store %) indices-w-config))
       (catch ExceptionInfo e
         ;; TODO: Generic work: why does this fail to roll back with bad generics?
         (println "failed to create index, roll back, this does not always work")
