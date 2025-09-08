@@ -23,10 +23,12 @@
     (let [index-set util/sample-index-set
           index-names-from-gran-cluster (svc/get-index-names index-set es-config/gran-elastic-name)
           index-names-from-non-gran-cluster (svc/get-index-names index-set es-config/elastic-name)]
-      (for [idx-name index-names-from-gran-cluster]
-        (is (esi/exists? @util/gran-elastic-connection idx-name)))
-      (for [idx-name index-names-from-non-gran-cluster]
-        (is (esi/exists? @util/elastic-connection idx-name)))))
+      (doseq [idx-name index-names-from-gran-cluster]
+        (is (esi/exists? @util/gran-elastic-connection idx-name))
+        (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/gran-elastic-connection idx-name))))
+      (doseq [idx-name index-names-from-non-gran-cluster]
+        (is (esi/exists? @util/elastic-connection idx-name))
+        (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/elastic-connection idx-name))))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
