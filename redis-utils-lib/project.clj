@@ -1,8 +1,3 @@
-(load-file "../global_versions.clj")
-
-(printf "!!!!!!!!!!!!!!!!!!!!!\nUsing version %s of testcontainers\n!!!!!!!!!!!!!!!!!!!!!\n"
-        global-versions/testcontainers)
-
 (def redis-distribution
   "The version of redis to use and hash value of executable. See:
   https://github.com/antirez/redis-hashes/blob/master/README"
@@ -14,19 +9,21 @@
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  ;; commons-compress does not currently use commons-lang3 3.18.0, for now
                  ;; we will force it to use the latest version
                  ;[org.apache.commons/commons-lang3 "3.18.0"]
                  ;[org.apache.commons/commons-compress "1.26.0"
                  ; :exclusions [org.apache.commons/commons-lang3]]
                  ;; Test containers requires a patch
-                 [org.apache.commons/commons-compress ~global-versions/commons-compress]
-                 [org.testcontainers/testcontainers ~global-versions/testcontainers
-                  :exclusions [[org.apache.commons/commons-compress]]]]
+                 [org.apache.commons/commons-compress]
+                 [org.testcontainers/testcontainers]]
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :global-vars {*warn-on-reflection* true}

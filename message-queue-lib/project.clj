@@ -1,5 +1,3 @@
-(load-file "../global_versions.clj")
-
 (def aws-java-sdk-version
   "The java aws sdk version to use."
   "1.12.788")
@@ -11,9 +9,11 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "2.3.0"]
-                 [clj-time "0.15.1"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-http "2.3.0"] ;;behind other projects
+                 [clj-time]
                  [io.netty/netty-handler "4.1.125.Final"]
                  [io.netty/netty-codec-http "4.1.125.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
@@ -37,18 +37,18 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/tools.reader "1.3.2"]
 
                  ;; Fix testcontainers use of commons-compress
-                 [org.apache.commons/commons-compress ~global-versions/commons-compress]
-                 [org.testcontainers/testcontainers ~global-versions/testcontainers
-                  :exclusions [[org.apache.commons/commons-compress]]]
+                 [org.apache.commons/commons-compress]
+                 [org.testcontainers/testcontainers]
 
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :aot [cmr.message-queue.test.ExitException]
