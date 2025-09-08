@@ -103,6 +103,7 @@
   and expected index sets.
   This does not compare the :concepts values when determining update status."
   [existing-index-set expected-index-set]
+  (println ">>>>>> index-set-requries-update? exisint = " existing-index-set " and expected is " expected-index-set)
   (let [updated-value (update-in existing-index-set [:index-set] dissoc :concepts)
         result (not= updated-value expected-index-set)]
     result))
@@ -138,13 +139,6 @@
         expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
 
     (cond
-      ;; Check if exist and needs update
-      (index-set-requires-update? existing-non-gran-index-set expected-non-gran-index-set)
-      (do
-        (warn "Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
-        (warn "Expected:" (pr-str expected-non-gran-index-set))
-        (warn "Actual:" (pr-str existing-non-gran-index-set)))
-
       ;; Check if we need to create
       (nil? existing-non-gran-index-set)
       (do
@@ -152,23 +146,31 @@
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
+
+      ;; Check if exist and needs update
+      (index-set-requires-update? existing-non-gran-index-set expected-non-gran-index-set)
+      (do
+        (warn "Non-gran index set does not match. You may want to update it. This is separate manual call you'll need to make.")
+        (warn "Expected:" (pr-str expected-non-gran-index-set))
+        (warn "Actual:" (pr-str existing-non-gran-index-set)))
+
       :else
       (info "Non-gran index set exists and matches."))
 
 
     (cond
+      ;; Check if we need to create
+      (nil? existing-gran-index-set)
+      (do
+        (warn "Gran index set does not exist so creating it.")
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
+
       ;; Check if we need to update
       (index-set-requires-update? existing-gran-index-set expected-gran-index-set)
       (do
         (warn "Gran index set does not match you may want to update it. This is separate manual call you'll need to make.")
         (warn "Expecting:" (pr-str expected-gran-index-set))
         (warn "Actual:" (pr-str existing-gran-index-set)))
-
-      ;; Check if we need to create
-      (nil? existing-gran-index-set)
-      (do
-        (warn "Gran index set does not exist so creating it.")
-        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
 
       :else
       (info "Gran index set exists and matches."))
