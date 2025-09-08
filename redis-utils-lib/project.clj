@@ -1,3 +1,4 @@
+(load-file "../global_versions.clj")
 (def redis-distribution
   "The version of redis to use and hash value of executable. See:
   https://github.com/antirez/redis-hashes/blob/master/README"
@@ -14,10 +15,13 @@
                  [org.clojure/clojure "1.11.2"]
                  ;; commons-compress does not currently use commons-lang3 3.18.0, for now
                  ;; we will force it to use the latest version
-                 [org.apache.commons/commons-lang3 "3.18.0"]
-                 [org.apache.commons/commons-compress "1.26.0"
-                  :exclusions [org.apache.commons/commons-lang3]]
-                 [org.testcontainers/testcontainers "1.19.7"]]
+                 ;[org.apache.commons/commons-lang3 "3.18.0"]
+                 ;[org.apache.commons/commons-compress "1.26.0"
+                 ; :exclusions [org.apache.commons/commons-lang3]]
+                 ;; Test containers requires a patch
+                 [org.apache.commons/commons-compress ~global-versions/commons-compress]
+                 [org.testcontainers/testcontainers ~global-versions/testcontainers
+                  :exclusions [[org.apache.commons/commons-compress]]]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]

@@ -1,10 +1,12 @@
+(load-file "../global_versions.clj")
+
 (def aws-java-sdk-version
   "The java aws sdk version to use."
-  "1.12.663")
+  "1.12.788")
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.28.19")
+  "2.33.4")
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
@@ -12,12 +14,19 @@
   :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [io.netty/netty-handler "4.1.124.Final"]
+                 [io.netty/netty-handler "4.1.125.Final"]
+                 [io.netty/netty-codec-http "4.1.125.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
-                 [software.amazon.awssdk/sns ~aws-java-sdk2-version]
-                 [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
+                 [software.amazon.awssdk/sns ~aws-java-sdk2-version
+                  :exclusions [io.netty/netty-codec
+                               io.netty/netty-codec-http
+                               io.netty/netty-handler]]
+                 [software.amazon.awssdk/sqs ~aws-java-sdk2-version
+                  :exclusions [io.netty/netty-codec
+                               io.netty/netty-codec-http
+                               io.netty/netty-handler]]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
@@ -30,7 +39,12 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.testcontainers/testcontainers "1.19.7"]
+
+                 ;; Fix testcontainers use of commons-compress
+                 [org.apache.commons/commons-compress ~global-versions/commons-compress]
+                 [org.testcontainers/testcontainers ~global-versions/testcontainers
+                  :exclusions [[org.apache.commons/commons-compress]]]
+
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]]
