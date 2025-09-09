@@ -8,6 +8,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (info warn error)]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.elasticsearch :as es]
@@ -77,6 +78,7 @@
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
         num-granules (index/bulk-index {:system (helper/get-indexer system)}
                                        concept-batches
+                                       es-config/gran-elastic-name
                                        {:target-index-key target-index-key})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     (when completion-message
@@ -98,7 +100,10 @@
         params {:concept-type :granule
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)}
+                                       concept-batches
+                                       es-config/gran-elastic-name
+                                       {})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
@@ -110,7 +115,10 @@
         params {:concept-type :collection
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+        num-collections (index/bulk-index {:system (helper/get-indexer system)}
+                                          concept-batches
+                                          es-config/elastic-name
+                                          {})]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
 
@@ -130,10 +138,10 @@
 
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
-  [system concept-batches]
+  [system concept-batches es-cluster-name]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches {})))
+    (index/bulk-index indexer-context concept-batches es-cluster-name {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches es-cluster-name {})))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
@@ -150,7 +158,10 @@
                          db provider
                          params
                          (:db-batch-size system))
-        num-concepts (bulk-index-concept-batches system concept-batches)
+        es-cluster-name (if (= concept-type :granule)
+                          es-config/gran-elastic-name
+                          es-config/elastic-name)
+        num-concepts (bulk-index-concept-batches system concept-batches es-cluster-name)
         msg (format "Indexing of %s %s revisions for provider %s completed."
                     num-concepts
                     (name concept-type)
@@ -175,14 +186,14 @@
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
-  (info "Indexing concepts")
-  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+  (info "Indexing access control concepts")
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-config/elastic-name))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
-  [system concept-batches]
+  [system concept-batches es-cluster-name]
   (info "Indexing concepts")
-  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-cluster-name))
 
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
@@ -198,9 +209,12 @@
                  params)
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
+        es-cluster-name (if (= concept-type :granule)
+                          es-config/gran-elastic-name
+                          es-config/elastic-name)
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
                                                  (index-access-control-concepts system concept-batches)
-                                                 (index-concepts system concept-batches))]
+                                                 (index-concepts system concept-batches es-cluster-name))]
 
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
@@ -226,7 +240,7 @@
                                                                                 (:db-batch-size system)
                                                                                 start-index)]]
                          (:num-indexed (if (= concept-type :tag)
-                                         (index-concepts system concept-batches)
+                                         (index-concepts system concept-batches es-config/elastic-name)
                                          (index-access-control-concepts system concept-batches)))))]
     (info "Indexed" total "system concepts.")
     total))
@@ -246,12 +260,15 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           concept-batch)
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        es-cluster-name (if (= :granule concept-type)
+                          es-config/gran-elastic-name
+                          es-config/elastic-name)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
 
     ;; for concept types that have all revisions index, also index the all revisions index
     (when-not (#{:tag :granule} concept-type)
       (index/bulk-index
-       {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true}))
+       {:system (helper/get-indexer system)} concept-batches es-config/elastic-name {:all-revisions-index? true}))
 
     (info "Indexed " total " concepts.")
     total))
@@ -264,7 +281,7 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
-    (es-helper/delete-by-query (indexer-util/context->conn indexer-context) "_all" "granule" query)))
+    (es-helper/delete-by-query (indexer-util/context->conn indexer-context es-config/gran-elastic-name) "_all" "granule" query)))
 
 (defmethod delete-concepts-by-id :default
   [system provider-id concept-type concept-ids]
@@ -280,7 +297,10 @@
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
                           (map #(assoc % :deleted true) concept-batch))
-        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        es-cluster-name (if (= concept-type :granule)
+                          es-config/gran-elastic-name
+                          es-config/elastic-name)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
     (info "Deleted " total " concepts")
     total))
 
