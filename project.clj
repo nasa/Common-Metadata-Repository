@@ -17,12 +17,12 @@
   :plugins [[lein-modules "0.3.11"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
-   :managed-dependencies [[cheshire "5.12.0"] ;; lattest is 6.1.0
-                          [clj-http "3.11.0"] ;; lattest is 3.13.1
-                          [clj-time "0.15.1"] ;; lattest is 0.15.2
-                          [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4
+   :managed-dependencies [[cheshire "5.12.0"] ;; latest is 6.1.0
+                          [clj-http "3.11.0"] ;; latest is 3.13.1
+                          [clj-time "0.15.1"] ;; latest is 0.15.2
+                          [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
-                          [org.testcontainers/testcontainers "1.21.3"
+                          [org.testcontainers/testcontainers "1.21.3" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"

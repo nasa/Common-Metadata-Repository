@@ -1,10 +1,10 @@
 (def aws-java-sdk-version
   "The java aws sdk version to use."
-  "1.12.788")
+  "1.12.788") ;; latest as of 2025-09-05
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.33.4")
+  "2.33.4") ;; latest as of 2025-09-05
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
@@ -12,7 +12,7 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire]
-                 [clj-http "2.3.0"] ;;behind other projects
+                 [clj-http "2.3.0"] ;;behind other cmr projects
                  [clj-time]
                  [io.netty/netty-handler "4.1.125.Final"]
                  [io.netty/netty-codec-http "4.1.125.Final"]
@@ -39,8 +39,8 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
                  [org.clojure/tools.reader "1.3.2"]
-
-                 ;; Fix testcontainers use of commons-compress
+                 ;; testcontainers needs a newer version of commons-compress, for now
+                 ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
 

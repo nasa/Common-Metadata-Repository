@@ -14,12 +14,8 @@
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure]
-                 ;; commons-compress does not currently use commons-lang3 3.18.0, for now
+                 ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
-                 ;[org.apache.commons/commons-lang3 "3.18.0"]
-                 ;[org.apache.commons/commons-compress "1.26.0"
-                 ; :exclusions [org.apache.commons/commons-lang3]]
-                 ;; Test containers requires a patch
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]]
   :plugins [[lein-exec "0.3.7"]
