@@ -11,11 +11,12 @@
    [cmr.common.log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
-   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.index-set :as indexer-index-set]
    [cmr.indexer.system :as indexer-system]
    [cmr.transmit.indexer :as indexer]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   ;; This must be required here to make protocol implementations available.
+   [cmr.transmit.cache.consistent-cache]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -183,9 +184,7 @@
 (defn- reset-rebalancing-caches
   "Reset caches affected by rebalancing"
   [context]
-  (let [index-names-cache (get-in context [:system :caches elastic-search-index-names-cache/index-names-cache-key])]
-    (cache/reset index-names-cache))
-  (let [index-set-cache (get-in context [:system :embedded-systems :indexer :system :caches indexer-index-set/index-set-cache-key])]
+  (let [index-set-cache (get-in context [:system :embedded-systems :indexer :caches indexer-index-set/index-set-cache-key])]
     (cache/reset index-set-cache)))
 
 (defn start-rebalance-collection
