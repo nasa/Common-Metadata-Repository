@@ -103,7 +103,6 @@
   and expected index sets.
   This does not compare the :concepts values when determining update status."
   [existing-index-set expected-index-set]
-  (println ">>>>>> index-set-requries-update? exisint = " existing-index-set " and expected is " expected-index-set)
   (let [updated-value (update-in existing-index-set [:index-set] dissoc :concepts)
         result (not= updated-value expected-index-set)]
     result))

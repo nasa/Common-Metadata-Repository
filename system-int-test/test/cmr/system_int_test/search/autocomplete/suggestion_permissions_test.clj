@@ -37,7 +37,7 @@
            {:format :umm-json
             :validate-keywords false})
 
-        ;; Create another restricted collection with different data center, this one we will delete later
+        ;; Create another restricted collection with different data center, this one will will delete later
         second-restricted-collection (d/ingest-umm-spec-collection
                           "PROV1"
                           (data-umm-spec/collection
@@ -128,10 +128,10 @@
                      (map :value)
                      set)))))
 
-    ; Delete all catalog item permissions, making all collections inaccessible
+    ;; Delete all catalog item permissions, making all collections inaccessible
     (e/ungrant-by-search (s/context) {:identity-type "catalog_item"})
 
-    ; Re-index the collections and suggestions
+    ;; Re-index the collections and suggestions
     (index/wait-until-indexed)
     (ingest/reindex-collection-permitted-groups transmit-config/mock-echo-system-token)
     (index/wait-until-indexed)

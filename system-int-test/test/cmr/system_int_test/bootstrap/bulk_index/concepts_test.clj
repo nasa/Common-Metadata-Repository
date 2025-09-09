@@ -194,10 +194,8 @@
      (assert-indexed-tags [tag2 tag3]))))
 
 (deftest ^:oracle bulk-index-by-concept-id
-  (println "STARTING TEST")
   (s/only-with-real-database
    (let [;; saved but not indexed
-         _ (println "INSIDE TEST")
          coll1 (core/save-collection "PROV1" 1)
          coll2 (core/save-collection "PROV1" 2 {})
          colls (map :concept-id [coll1 coll2])
@@ -228,8 +226,7 @@
 
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
-       (assert-indexed-tags [tag1]))
-     )))
+       (assert-indexed-tags [tag1])))))
 
 (deftest ^{:kaocha/skip true
            :oracle true} zzz_bulk-index-after-date-time

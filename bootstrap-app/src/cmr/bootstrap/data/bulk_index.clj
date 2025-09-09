@@ -195,7 +195,6 @@
   (info "Indexing concepts")
   (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-cluster-name))
 
-;; TODO CMR-10636 -- This whole series of index funcs need to be tested thoroughly.
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
   newer than the given date time and then index them."
