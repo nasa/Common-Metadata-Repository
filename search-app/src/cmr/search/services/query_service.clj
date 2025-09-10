@@ -14,6 +14,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-wrapper :as esq]
    [cmr.common-app.services.search :as common-search]
    [cmr.common.concepts :as cc]
@@ -516,7 +517,7 @@
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (es-helper/search (common-idx/context->conn context)
+        results (es-helper/search (common-idx/context->conn context es-config/gran-elastic-name)
                                   deleted-granule-index-name
                                   deleted-granule-type-name
                                   query)
@@ -560,4 +561,5 @@
 (defn clear-scroll
   "Clear the scroll context for the given scroll id"
   [context scroll-id]
-  (es-helper/clear-scroll (common-idx/context->conn context) scroll-id))
+  (es-helper/clear-scroll (common-idx/context->conn context es-config/gran-elastic-name) scroll-id)
+  (es-helper/clear-scroll (common-idx/context->conn context es-config/elastic-name) scroll-id))

@@ -7,6 +7,7 @@
    [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -154,8 +155,11 @@
      :type-name (name concept-type)}))
 
 (defn- context->conn
-  [context]
-  (get-in context [:system :search-index :conn]))
+  [context es-cluster-name]
+  (cond
+    (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index :conn])
+    (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index :conn])
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (comment defn- get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
