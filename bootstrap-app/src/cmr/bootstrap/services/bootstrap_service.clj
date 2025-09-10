@@ -181,7 +181,7 @@
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
     (Thread/sleep (* util/second-as-milliseconds sleep-secs))))
 
-(defn- reset-rebalancing-caches
+(defn- reset-caches-affected-by-rebalancing
   "Reset caches affected by rebalancing"
   [context]
   (let [index-set-cache (get-in context [:system :embedded-systems :indexer :caches indexer-index-set/index-set-cache-key])]
@@ -204,7 +204,7 @@
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (reset-rebalancing-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; We must wait here so that any new granules coming in will start to pick up the new index set
     ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
@@ -235,7 +235,7 @@
     (indexer/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (reset-rebalancing-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; There is a race condition as noted here: https://wiki.earthdata.nasa.gov/display/CMR/Rebalancing+Collection+Indexes+Approach
     ;; "There's a period of time during which the different indexer applications may be processing
