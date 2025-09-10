@@ -11,9 +11,10 @@
 (defn- context->conn
   "Pulls out the context from the search index"
   [context es-cluster-name]
-  (case es-cluster-name
-    es-config/elastic-name (get-in context [:system :search-index :conn])
-    es-config/gran-elastic-name (get-in context [:system :gran-search-index :conn])))
+  (cond
+    (= es-cluster-name es-config/elastic-name) (get-in context [:system :search-index :conn])
+    (= es-cluster-name es-config/gran-elastic-name) (get-in context [:system :gran-search-index :conn])
+    :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (defn get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
