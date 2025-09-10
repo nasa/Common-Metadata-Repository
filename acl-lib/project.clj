@@ -1,19 +1,22 @@
 (defproject nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for retreiving and working with ACLs."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
-  :dependencies [[commons-io "2.18.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[commons-io]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.11.2"]
-                 [potemkin "0.4.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+                 [org.clojure/clojure]
+                 [potemkin]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

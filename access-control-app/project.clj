@@ -28,16 +28,18 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :dependencies ~(concat '[[cheshire "5.12.0"]
-                           [clj-time "0.15.1"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies ~(concat '[[cheshire]
+                           [clj-time]
                            [com.fasterxml.jackson.core/jackson-core "2.15.4"]
-                           [commons-codec/commons-codec "1.11"]
-                           [commons-io "2.18.0"]
+                           [commons-codec/commons-codec ]
+                           [commons-io]
                            [compojure "1.6.1"
                             :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
-                           [org.clojure/clojure "1.11.2"]
-                           [org.clojure/tools.reader "1.3.2"]
+                           [org.clojure/clojure]
+                           [org.clojure/tools.reader]
                            [org.eclipse.jetty/jetty-http "12.0.21"]
                            [org.eclipse.jetty/jetty-util "12.0.21"]
                            [ring/ring-core "1.14.2"]
@@ -47,6 +49,7 @@
                          project-dependencies)
   :plugins [[lein-modules "0.3.11"]
             [lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
@@ -57,10 +60,10 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
                                   [org.clojure/core.async "0.4.500"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
+                                  [pjstadig/humane-test-output]
+                                  [proto-repl]
                                   [ring/ring-codec "1.3.0"]
                                   [ring/ring-jetty-adapter "1.14.2"]
                                   [ring-mock "0.1.5"]]
@@ -75,10 +78,10 @@
              ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                     [org.clojure/tools.nrepl "0.2.13"]
-                                     [pjstadig/humane-test-output "0.9.0"]
-                                     [proto-repl "0.3.1"]
+             :static {:dependencies [[org.clojure/tools.namespace]
+                                     [org.clojure/tools.nrepl]
+                                     [pjstadig/humane-test-output]
+                                     [proto-repl]
                                      [ring-mock "0.1.5"]]}
              :uberjar {:main cmr.access-control.runner
                        :aot :all}

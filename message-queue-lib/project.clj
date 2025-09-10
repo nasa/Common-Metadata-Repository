@@ -14,8 +14,8 @@
   :dependencies [[cheshire]
                  [clj-http "2.3.0"] ;;behind other cmr projects
                  [clj-time]
-                 [io.netty/netty-handler "4.1.125.Final"]
-                 [io.netty/netty-codec-http "4.1.125.Final"]
+                 [io.netty/netty-handler "4.1.126.Final"]
+                 [io.netty/netty-codec-http "4.1.126.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
@@ -28,8 +28,8 @@
                                io.netty/netty-codec-http
                                io.netty/netty-handler]]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [commons-logging "1.2"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -38,13 +38,13 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader]
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
 
-                 [potemkin "0.4.5"]
+                 [potemkin]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]]
   :plugins [[lein-parent "0.3.9"]
@@ -55,9 +55,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+             :dev {:dependencies [[org.clojure/tools.namespace]
+                                  [org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.nrepl]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

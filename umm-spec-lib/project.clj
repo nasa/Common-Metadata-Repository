@@ -1,29 +1,32 @@
 (defproject nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
-  :dependencies [[commons-io "2.18.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[commons-io]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.3.2"]]
+                 [org.clojure/clojure]
+                 [org.clojure/tools.reader]]
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[clj-http "2.3.0"]
+             :dev {:dependencies [[clj-http "2.3.0"] ;; behind other projects
                                   [criterium "0.4.4"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]
+                                  [org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
+                                  [pjstadig/humane-test-output]
+                                  [proto-repl]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster

@@ -28,9 +28,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

@@ -2,28 +2,31 @@
   :description "The Transmit Library is responsible for defining the common transmit
                 libraries that invoke services within the CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
-  :dependencies [[clj-http "3.11.0"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
-                 [inflections "0.13.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[clj-http]
+                 [commons-codec/commons-codec]
+                 [commons-io]
+                 [inflections]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/data.csv "0.1.4"]
-                 [potemkin "0.4.5"]
+                 [potemkin]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-jetty-adapter "1.14.2"]
                  [buddy/buddy-sign "3.4.333"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

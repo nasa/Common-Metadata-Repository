@@ -1,11 +1,13 @@
 (defproject nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "2.3.0"]
-                 [clj-time "0.15.1"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-http "2.3.0"] ;; behind other projects
+                 [clj-time]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
@@ -19,10 +21,10 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
-                 [potemkin "0.4.5"]
+                 [org.clojure/clojure]
+                 [org.clojure/tools.nrepl]
+                 [org.clojure/tools.reader]
+                 [potemkin]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-core "1.14.2"]
@@ -31,6 +33,7 @@
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
@@ -38,8 +41,8 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojure/tools.namespace]
+                                  [org.clojars.gjahad/debug-repl]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

@@ -3,12 +3,15 @@
                model for Metadata Concepts in the CMR along with code to parse and generate the
                various dialects of each concept."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.3.2"]]
-  :plugins [[lein-shell "0.5.0"]]
+                 [org.clojure/clojure]
+                 [org.clojure/tools.reader]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"
@@ -17,11 +20,11 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[criterium "0.4.4"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [pjstadig/humane-test-output "0.9.0"]
-                                  [proto-repl "0.3.1"]]
+                                  [org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
+                                  [pjstadig/humane-test-output]
+                                  [proto-repl]]
                    :jvm-opts ^:replace ["-server"]
                    ;; Uncomment this to enable assertions. Turn off during performance tests.
                                         ; "-ea"

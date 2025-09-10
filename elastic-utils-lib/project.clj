@@ -8,8 +8,8 @@
   :dependencies [[cheshire]
                  [clj-http]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
@@ -20,8 +20,8 @@
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
 
-                 [org.yaml/snakeyaml "1.31"]
-                 [potemkin "0.4.5"]]
+                 ;[org.yaml/snakeyaml]
+                 [potemkin]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -31,9 +31,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

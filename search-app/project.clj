@@ -1,10 +1,12 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-time "0.15.1"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io/commons-io "2.18.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-time]
+                 [commons-codec/commons-codec]
+                 [commons-io/commons-io]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -18,10 +20,10 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader]
                  [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
                  [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
                  [org.geotools/gt-shapefile "29.1"]
@@ -43,7 +45,8 @@
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
                  ["geo-snapshot" "https://repo.osgeo.org/repository/snapshot"]]
-  :plugins [[lein-exec "0.3.7"]]
+  :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]]
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
@@ -54,11 +57,11 @@
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[criterium "0.4.4"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
                                   [ring/ring-jetty-adapter "1.14.2"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [pjstadig/humane-test-output]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :resource-paths ["resources" "test/resources"]

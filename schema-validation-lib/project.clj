@@ -1,11 +1,14 @@
 (defproject nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"
   :description "Provides json schema validation code"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
-                 [org.clojure/clojure "1.11.2"]]
+                 [org.clojure/clojure]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
@@ -14,11 +17,11 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/test.check "1.1.0"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojars.gjahad/debug-repl]
                                   [criterium "0.4.4"]
-                                  [proto-repl "0.3.1"]
-                                  [clj-http "2.3.0"]]
+                                  [clj-http "2.3.0"] ;; behind other projects
+                                  [proto-repl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
@@ -36,7 +39,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
+             :kaocha {:dependencies [[org.clojure/tools.namespace]
                                      [lambdaisland/kaocha "1.88.1376"]
                                      [lambdaisland/kaocha-cloverage "1.1.89"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}

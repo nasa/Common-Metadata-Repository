@@ -3,15 +3,17 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "2.3.0"]
-                 [clj-time "0.15.1"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-http "2.3.0"] ;; behind other projects
+                 [clj-time]
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [crouton "0.1.2"]
-                 [inflections "0.13.0"]
+                 [inflections]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
@@ -28,11 +30,11 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/tools.logging "0.4.0"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader]
                  [org.jsoup/jsoup "1.14.2"]
-                 [potemkin "0.4.5"]
+                 [potemkin]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.14.2"]
@@ -40,7 +42,8 @@
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [org.eclipse.jetty/jetty-io "12.0.21"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -48,10 +51,10 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
+                                  [org.clojure/tools.nrepl]
+                                  [pjstadig/humane-test-output]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]

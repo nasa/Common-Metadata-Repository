@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[compojure "1.6.1"
                   :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
@@ -13,15 +15,16 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [org.clojure/clojure]
+                 [org.clojure/tools.nrepl]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -29,8 +32,8 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl]
+                                  [org.clojure/tools.namespace]
                                   [ring/ring-jetty-adapter "1.14.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

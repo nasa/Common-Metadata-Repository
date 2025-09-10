@@ -46,14 +46,17 @@
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
-                           [org.clojure/clojure "1.11.2"]
+  :dependencies ~(concat '[[commons-codec/commons-codec]
+                           [org.clojure/clojure]
                            [ring/ring-codec "1.3.0"]
                            [ring/ring-jetty-adapter "1.14.2"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :repl-options {:init-ns user
@@ -75,11 +78,11 @@
              :dev-dependencies {:dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
-                                               [org.clojars.gjahad/debug-repl "0.3.3"]
-                                               [org.clojure/tools.namespace "0.2.11"]
-                                               [org.clojure/tools.nrepl "0.2.13"]
-                                               [pjstadig/humane-test-output "0.9.0"]
-                                               [proto-repl "0.3.1"]
+                                               [org.clojars.gjahad/debug-repl]
+                                               [org.clojure/tools.namespace]
+                                               [org.clojure/tools.nrepl]
+                                               [pjstadig/humane-test-output]
+                                               [proto-repl]
                                                [proto-repl-charts "0.3.2"]
                                                [proto-repl-sayid "0.1.3"]
                                                [ring-mock "0.1.5"]]
