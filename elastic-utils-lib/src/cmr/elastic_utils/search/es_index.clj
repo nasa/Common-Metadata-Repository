@@ -12,6 +12,7 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.transmit.connection :as transmit-conn])
   (:import
@@ -28,7 +29,7 @@
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 (esi-helper/index-alias "1_all_collection_revisions")
                  (es-config/collections-index-alias))
    :type-name "collection"})
 
@@ -310,7 +311,7 @@
         (if (or (nil? search-after-values)
                 (>= (count accumulated-hits) total-hits))
           ;; We've got all results
-          (do 
+          (do
             (debug "Returning all results with total hits:" total-hits
                    "and took time:" took-total
                    "timed out:" timed-out)
@@ -322,7 +323,7 @@
 
           (let [next-response (send-query-to-elastic
                                context
-                               (assoc query-with-sort 
+                               (assoc query-with-sort
                                       :page-size batch-size
                                       :search-after search-after-values))
                 new-hits (get-in next-response [:hits :hits])]

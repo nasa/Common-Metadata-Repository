@@ -51,16 +51,16 @@
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :concept-id ["C1200000001-PROV1"] true)
                              :page-size 1})]
-        (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
+        (is (= "1_small_collections_alias,1_c*_prov1_alias" (#'search-index/get-granule-index-aliases context query)))))
 
     (testing "provider id to index name"
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :provider ["PROV1"] true)
                              :page-size 2})]
-        (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
+        (is (= "1_small_collections_alias,1_c*_prov1_alias" (#'search-index/get-granule-index-aliases context query)))))
 
     (testing "all granule to index name"
       (let [query (qm/query {:concept-type :granule
                               :condition (qm/string-conditions :provider-id ["PROV1"] true)
                               :page-size 3})]
-         (is (= "1_c*,1_small_collections,-1_collections*" (#'search-index/get-granule-indexes context query)))))))
+         (is (= "1_c*_alias,1_small_collections_alias,-1_collections*" (#'search-index/get-granule-index-aliases context query)))))))

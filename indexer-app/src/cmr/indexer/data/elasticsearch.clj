@@ -246,8 +246,7 @@
                       (update :tool-associations #(parse-non-tombstone-associations context %)))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
-                       context concept-id revision-id options
-                       concept)
+                       context concept-id revision-id options concept)
           elastic-doc (if (:deleted concept)
                         ;; The concept is a tombstone
                         (parsed-concept->elastic-doc context concept concept)

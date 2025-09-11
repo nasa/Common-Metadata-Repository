@@ -23,7 +23,7 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? deleted-granule/deleted-granule-index-name
+  (index/doc-present? deleted-granule/deleted-granules-index-alias
                       deleted-granule/deleted-granule-type-name
                       concept-id))
 
