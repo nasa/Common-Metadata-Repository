@@ -106,6 +106,29 @@
         (is (esi/exists? @util/gran-elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
+;; Verify that you can update an index set multiple times and get the correct indices created and deleted
+(deftest update-index-sets-test
+  (testing "update index sets"
+    (let [;; create index set
+          index-set util/sample-index-set
+          _ (util/create-index-set index-set)
+          ;; create updated index set input
+          updated-index-set util/sample-index-set-updated
+          updated-index-set-id (get-in updated-index-set [:index-set :id]) ;; should be the same as the original sample-index-set
+          ;; update index set
+          updated-resp (util/update-index-set updated-index-set updated-index-set-id)
+          found-index-set (-> (util/get-index-set updated-index-set-id) :response :body)]
+
+      (is (= (:status updated-resp) 200))
+
+      (is (= (get-in updated-index-set [:index-set :name]) (get-in found-index-set [:index-set :name])))
+      (is (= (get-in updated-index-set [:index-set :create-reason]) (get-in found-index-set [:index-set :create-reason])))
+      (is (= (get-in updated-index-set [:index-set :collection]) (get-in found-index-set [:index-set :collection])))
+      (is (= (get-in updated-index-set [:index-set :granule]) (get-in found-index-set [:index-set :granule])))
+      (is (= (get-in updated-index-set [:index-set :random]) (get-in found-index-set [:index-set :random])))
+      (is (= {:COLL2-PROV1 "3_coll2_prov1"} (get-in found-index-set [:index-set :concepts :collection])))
+      (is (= {:small_collections "3_small_collections", :GRAN5-PROV3 "3_gran5_prov3", :GRAN6-PROV4 "3_gran6_prov4"}
+             (get-in found-index-set [:index-set :concepts :granule]))))))
 
 ;; manual reset
 (comment
