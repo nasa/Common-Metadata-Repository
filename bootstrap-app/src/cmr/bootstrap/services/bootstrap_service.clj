@@ -14,7 +14,9 @@
    [cmr.indexer.data.index-set :as indexer-index-set]
    [cmr.indexer.system :as indexer-system]
    [cmr.transmit.indexer :as indexer]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   ;; This must be required here to make protocol implementations available.
+   [cmr.transmit.cache.consistent-cache]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -58,13 +60,13 @@
      [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn validate-collection
-   "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
-   [context provider-id collection-id]
-   (let [provider (get-provider context provider-id)]
-     (when-not (bulk/get-collection context provider collection-id)
-       (errors/throw-service-errors
-        :bad-request
-        [(format "Collection [%s] does not exist." collection-id)]))))
+  "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
+  [context provider-id collection-id]
+  (let [provider (get-provider context provider-id)]
+    (when-not (bulk/get-collection context provider collection-id)
+      (errors/throw-service-errors
+       :bad-request
+       [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
@@ -144,14 +146,13 @@
   all providers' generic documents are (re-)indexed."
   ([context dispatcher concept-type provider-id]
    (if provider-id
-    (dispatch/index-generics dispatcher context concept-type provider-id)
-    (dispatch/index-generics dispatcher context concept-type))))
+     (dispatch/index-generics dispatcher context concept-type provider-id)
+     (dispatch/index-generics dispatcher context concept-type))))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [context dispatcher provider-id concept-type concept-ids]
-  (dispatch/delete-concepts-from-index-by-id dispatcher context provider-id concept-type
-                                                      concept-ids))
+  (dispatch/delete-concepts-from-index-by-id dispatcher context provider-id concept-type concept-ids))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
@@ -180,6 +181,12 @@
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
     (Thread/sleep (* util/second-as-milliseconds sleep-secs))))
 
+(defn- reset-caches-affected-by-rebalancing
+  "Reset caches affected by rebalancing"
+  [context]
+  (let [index-set-cache (get-in context [:system :embedded-systems :indexer :caches indexer-index-set/index-set-cache-key])]
+    (cache/reset index-set-cache)))
+
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set. If no target is specified default to moving to a separate
@@ -197,7 +204,7 @@
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (cache/reset-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; We must wait here so that any new granules coming in will start to pick up the new index set
     ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
@@ -228,7 +235,7 @@
     (indexer/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (cache/reset-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; There is a race condition as noted here: https://wiki.earthdata.nasa.gov/display/CMR/Rebalancing+Collection+Indexes+Approach
     ;; "There's a period of time during which the different indexer applications may be processing
