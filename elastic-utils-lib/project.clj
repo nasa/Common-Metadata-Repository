@@ -3,25 +3,26 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "3.11.0"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-http]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
-                 ;; commons-compress does not currently use commons-lang3 3.18.0, for now
-                 ;; we will force it to use the latest version
-                 [org.apache.commons/commons-lang3 "3.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.elasticsearch/elasticsearch ~elastic-version]
-                 [org.apache.commons/commons-compress "1.26.0"
-                  :exclusions [org.apache.commons/commons-lang3]]
-                 [org.testcontainers/testcontainers "1.19.7"]
+                 ;; testcontainers needs a newer version of commons-compress, for now
+                 ;; we will force it to use the latest version
+                 [org.apache.commons/commons-compress]
+                 [org.testcontainers/testcontainers]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :resource-paths ["resources"]
