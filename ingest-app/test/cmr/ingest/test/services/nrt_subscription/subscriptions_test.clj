@@ -469,6 +469,7 @@
          :transaction-id "2000000009M"
          :native-id "erichs_ingest_subscription"
          :concept-id "SUB1200000005-PROV1"
+         :aws-arn "Ingest-Subscription-Test"
          :metadata (format
                     "{\"SubscriberId\":\"user1\",
                       \"CollectionConceptId\":\"C1200000002-PROV1\",
@@ -496,17 +497,17 @@
   [test-context]
   (let [topic (get-in test-context [:system :sns :internal])
         internal-subscriptions @(:subscription-atom topic)
-        internal-sub (first (filter #(nil? (:concept-id %)) internal-subscriptions))]
+        internal-sub (first (filter #(nil? (:name %)) internal-subscriptions))]
     (:queue-url internal-sub)))
 
 (defn get-cmr-subscription-dead-letter-queue-url
   "helper function for the work-potential-notitification-test
   to get the internal subscription queue url to receive messages
   from it."
-  [test-context sub-concept-id]
+  [test-context sub-name]
   (let [topic (get-in test-context [:system :sns :internal])
         internal-subscriptions @(:subscription-atom topic)
-        internal-sub (first (filter #(= sub-concept-id (:concept-id %)) internal-subscriptions))]
+        internal-sub (first (filter #(= sub-name (:name %)) internal-subscriptions))]
     (:dead-letter-queue-url internal-sub)))
 
 (defn check-messages-and-contents
@@ -534,7 +535,8 @@
         queue-name "cmr-subscription-client-test-queue"
         queue-url  (queue/create-queue sqs-client queue-name)
         db-result (set-db-result queue-url)
-        concept-metadata (format "{\"CollectionConceptId\": \"C1200000002-PROV1\",
+        concept-metadata (format "{\"Name\":\"Ingest-Subscription-Test\",
+                                   \"CollectionConceptId\": \"C1200000002-PROV1\",
                                    \"EndPoint\": \"%s\",
                                    \"Mode\":[\"New\", \"Delete\"],
                                    \"Method\":\"ingest\",
@@ -560,13 +562,13 @@
                                                                                 \"Identifier\": \"Algorithm-1\"}]}}"
                                :extra-fields {:parent-collection-id "C1200000002-PROV1"}}]
 
-          ;; if successful, the subscription concept-id is returned for local topic.
+          ;; if successful, the subscription name is returned for local topic.
           (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)
-          (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
+          (is (= "Ingest-Subscription-Test" (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
 
           ;; the subscription is replaced when the subscription already exists.
           (subscriptions/add-or-delete-ingest-subscription-in-cache test-context sub-concept)
-          (is (= (:concept-id sub-concept) (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
+          (is (= "Ingest-Subscription-Test" (get-in (subscriptions/attach-subscription-to-topic test-context sub-concept) [:extra-fields :aws-arn])))
 
           ;; For this test add the subscription to the internal topic to test publishing.
           (let [topic (get-in test-context [:system :sns :internal])
@@ -588,7 +590,7 @@
           (subscriptions/publish-subscription-notification-if-applicable test-context granule-concept)
 
           ;; Receive message from dead letter queue.
-          (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context (sub-concept :concept-id))]
+          (let [dead-letter-queue-url (get-cmr-subscription-dead-letter-queue-url test-context "Ingest-Subscription-Test")]
             (check-messages-and-contents (queue/receive-messages sqs-client dead-letter-queue-url) sqs-client dead-letter-queue-url))
 
           ;; Just delete the message from the internal infrastructure queue.
@@ -604,8 +606,9 @@
         (let [sub-concept {:metadata concept-metadata
                            :deleted true
                            :concept-type :subscription
-                           :concept-id "SUB1200000005-PROV1"}]
-          (is (= (:concept-id sub-concept) (subscriptions/delete-ingest-subscription test-context sub-concept)))
+                           :concept-id "SUB1200000005-PROV1"
+                           :extra-fields {:aws-arn "Ingest-Subscription-Test"}}]
+          (is (= "Ingest-Subscription-Test" (subscriptions/delete-ingest-subscription test-context sub-concept)))
           ;; Also remove subscription from internal queue.
           (let [topic (get-in test-context [:system :sns :internal])]
             (topic-protocol/unsubscribe topic sub-concept)))))))
