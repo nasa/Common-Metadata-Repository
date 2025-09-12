@@ -67,7 +67,7 @@
                                   [proto-repl]
                                   [ring/ring-core "1.14.2"]
                                   [ring/ring-jetty-adapter "1.14.2"]
-                                  [clj-http "2.3.0"] ;; behind other projects
+                                  [clj-http "2.3.0"] ;; 2.3.0 - behind other projects
                                   ]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
@@ -97,7 +97,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[org.clojure/tools.namespace "1.5.0"]
+             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
                                      [lambdaisland/kaocha "1.88.1376"]
                                      [lambdaisland/kaocha-cloverage "1.1.89"]
                                      [lambdaisland/kaocha-junit-xml "1.17.101"]]}}

@@ -4,7 +4,7 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab]
-                 [clj-http "2.3.0"] ;; behind other projects
+                 ;[clj-http "2.3.0"] ;; behind other projects
                  [com.draines/postal "2.0.3"]
                  [jakarta.servlet/jakarta.servlet-api "4.0.4"] ;;5.x and 6.x did not work
                  [commons-fileupload "1.6.0"]

@@ -20,7 +20,7 @@
                                   [org.clojure/tools.namespace]
                                   [org.clojars.gjahad/debug-repl]
                                   [criterium "0.4.4"]
-                                  [clj-http "2.3.0"] ;; behind other projects
+                                  ;[clj-http "2.3.0"] ;; behind other projects
                                   [proto-repl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
@@ -39,7 +39,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[org.clojure/tools.namespace]
+             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
                                      [lambdaisland/kaocha "1.88.1376"]
                                      [lambdaisland/kaocha-cloverage "1.1.89"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}

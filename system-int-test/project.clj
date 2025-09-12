@@ -21,14 +21,14 @@
   ;:parent-project {:path "../project.clj"
   ;                 :inherit [:managed-dependencies]}
   :dependencies [[cheshire "5.12.0"]
-                 [clj-http "3.11.0"] ;; 2.3.0 - behind other projects
+                 [clj-http "2.3.0"] ;; 2.3.0 - behind other projects
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [crouton "0.1.2"]
-                 [inflections "0.13.2"]
+                 [inflections "0.13.0"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]

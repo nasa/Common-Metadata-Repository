@@ -4,7 +4,7 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire]
-                 [clj-http "2.3.0"] ;; behind other projects
+                 ;[clj-http "2.3.0"] ;; behind other projects
                  [clj-time]
                  [commons-codec/commons-codec]
                  [commons-io]

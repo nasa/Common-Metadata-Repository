@@ -30,7 +30,7 @@
                           [clj-time "0.15.1"] ;; latest is 0.15.2
                           [commons-codec/commons-codec "1.11"] ;; latest is 1.19.0
                           [commons-io "2.18.0"] ;; latest is 2.20.0
-                          [inflections "0.13.2"] ;; latest is 1.15.0
+                          [inflections "0.13.0"] ;; latest is 1.15.0
                           [org.clojars.gjahad/debug-repl "0.3.3"] ;; latest
                           [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
                           [org.clojure/tools.namespace "0.2.11"] ;; latest is 1.5.0

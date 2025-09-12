@@ -7,7 +7,7 @@
                    :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab] ; was 0.4.0
                  [cheshire]
-                 [clj-http "2.3.0"] ;; behind other projects
+                 [clj-http "2.3.0"] ;; 2.3.0 - behind other projects
                  [clj-time]
                  [commons-codec/commons-codec]
                  [commons-fileupload "1.6.0"]

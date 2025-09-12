@@ -12,7 +12,7 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire]
-                 [clj-http "2.3.0"] ;;behind other cmr projects
+                 [clj-http "2.3.0"] ;; 2.3.0 - behind other cmr projects
                  [clj-time]
                  [io.netty/netty-handler "4.1.126.Final"]
                  [io.netty/netty-codec-http "4.1.126.Final"]
