@@ -87,6 +87,50 @@
                                   :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
                                                :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
 
+(def sample-index-set-updated
+  {:index-set
+   {:name "cmr-base-index-set-updated"
+    :id sample-index-set-id
+    :create-reason "updated index set from sample index"
+    :random {:indexes
+             [{:name "RAND1-PROV0"
+               :settings {:index {:number_of_shards 1,
+                                  :number_of_replicas 0,
+                                  :refresh_interval "20s"}}}]
+             :mapping {:dynamic "strict",
+                       :_source {:enabled true},
+                       :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                    :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
+    :collection {:indexes
+                 [{:name "COLL2-PROV1"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}]
+                 :mapping {:dynamic "strict",
+                           :_source {:enabled true},
+                           :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                        :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
+    :granule {:indexes
+              [{:name "small_collections"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "GRAN5-PROV3"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "GRAN6-PROV4"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}]
+              :individual-index-settings {:index {:number_of_shards 1,
+                                                  :number_of_replicas 0,
+                                                  :refresh_interval "10s"}}
+              :mapping {:dynamic "strict",
+                        :_source {:enabled true},
+                        :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                     :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
+
 (def invalid-sample-index-set
   {:index-set
    {:name "cmr-base-index-set"
@@ -171,6 +215,21 @@
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
+
+(defn update-index-set
+  "submit a request to index-set app to create indices"
+  [idx-set id]
+  (let [response (client/request
+                   {:method :put
+                    :url (index-set-url id)
+                    :body (cheshire.core/generate-string idx-set)
+                    :content-type :json
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :accept :json
+                    :throw-exceptions false})
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
