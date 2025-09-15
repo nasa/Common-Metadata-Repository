@@ -41,12 +41,28 @@
      :native-id (:native-id concept)
      :revision-id revision-id}))
 
+(comment
+  (println context)
+  (println concept-attribs)
+  (let [{:keys [concept-type provider-id native-id]} concept-attribs
+        existing-concept (first (mdb/find-concepts context
+                                                   {:provider-id provider-id
+                                                    :native-id native-id
+                                                    :latest true}
+                                                   concept-type))] 
+    existing-concept)
+  
+   ;concept-id (:concept-id existing-concept)]
+ )
+
 (declare delete-subscription)
 #_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-subscription
   "Delete a subscription from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
   [context concept-attribs]
+  (def context context)
+  (def concept-attribs concept-attribs)
   (let [{:keys [concept-type provider-id native-id]} concept-attribs
         existing-concept (first (mdb/find-concepts context
                                                    {:provider-id provider-id

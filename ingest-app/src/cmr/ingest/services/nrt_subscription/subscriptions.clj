@@ -66,14 +66,10 @@
   [subscription]
   (update subscription :metadata #(json/decode % true)))
 
-(comment
-  (println subscriptions)
-  )
 (defn convert-and-filter-subscriptions
   "Convert the metadata of the subscriptions to edn and then filter out the non
   ingest subscriptions."
   [subscriptions]
-  (def subscriptions subscriptions)
   (let [subs (map convert-concept-to-edn subscriptions)]
     (filter #(and (ingest-subscription-concept? %)
                   (= false (:deleted %)))
@@ -107,7 +103,7 @@
         (doseq [mode modes]
           (swap! temp-map assoc mode #{[endpoint, subscriber]}))
         (let [merged-map (merge-with union @final-map @temp-map)]
-          (swap! final-map (fn [n] merged-map)))))
+          (swap! final-map (fn [_n] merged-map)))))
     @final-map))
 
 (defn change-subscription-in-cache
@@ -181,9 +177,6 @@
   save the SQS ARN to the subscription concept.
   Returns the concept with updates or the unchanged concept (if concept is not a subscription concept)"
   [context concept-type concept]
-  (def context context)
-  (def concept-type concept-type)
-  (def concept concept)
   (if (and ingest-subscriptions-enabled? (= :subscription concept-type))
     (let [concept-edn (convert-concept-to-edn concept)
           endpoint (get-in concept-edn [:metadata :EndPoint])]
@@ -298,8 +291,6 @@
 (defn get-location-message-str
   "Get the granule search location for the subscription notification message."
   [context concept]
-  (def context context)
-  (def concept concept)
   (let [public-search-url (public-search-url (get-in context [:system :public-conf]))]
     (str "\"location\": \""
          (format "%sconcepts/%s/%s"
