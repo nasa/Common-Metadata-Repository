@@ -47,8 +47,7 @@
                                        "acls"
                                        "indexer-index-set-cache"
                                        "humanizer-cache"]
-        (url/mdb-read-caches-url) ["subscription-cache"
-                                   "health"
+        (url/mdb-read-caches-url) ["health"
                                    "token-imp"]
         (url/ingest-read-caches-url) ["token-user-ids"
                                       "launchpad-user"
