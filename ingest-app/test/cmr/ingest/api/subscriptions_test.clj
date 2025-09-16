@@ -1,7 +1,7 @@
 (ns cmr.ingest.api.subscriptions-test
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util]
    [cmr.ingest.api.subscriptions :as subscriptions]))
 

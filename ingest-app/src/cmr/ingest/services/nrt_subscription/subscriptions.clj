@@ -37,29 +37,21 @@
   "Get the subscriptions from the database. This function primarily exists so that
   it can be stubbed out for unit tests."
   ([context]
-   (let [response (mdb2/find-concepts context
-                                      {}
-                                      :subscription
-                                      {:raw? true
-                                       :http-options {:query-params
-                                                      {:latest true
-                                                       :concept-type :subscription
-                                                       :subscription-type "granule"}}})]
-     (if (= (:status response) 200)
-       (:body response)
-       nil)))
+   (get-subscriptions-from-db context nil))
   ([context coll-concept-id]
-   (let [response (mdb2/find-concepts context
+   (let [query-params {:latest true
+                       :concept-type :subscription
+                       :subscription-type "granule"}
+         query-params (if coll-concept-id
+                        (assoc query-params :collection-concept-id coll-concept-id)
+                        query-params)
+         response (mdb2/find-concepts context
                                       {}
                                       :subscription
                                       {:raw? true
-                                       :http-options {:query-params
-                                                      {:collection-concept-id coll-concept-id
-                                                       :latest true
-                                                       :concept-type :subscription}}})]
-     (if (= (:status response) 200)
-       (:body response)
-       nil))))
+                                       :http-options {:query-params query-params}})]
+     (when (= (:status response) 200)
+       (:body response)))))
 
 (defn convert-concept-to-edn
   "Converts the passed in concept to edn"
