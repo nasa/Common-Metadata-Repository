@@ -107,9 +107,9 @@
   (-> (select-keys params (filter keyword? (keys params)))
       common-params/sanitize-params))
 
-(def deleted-granule-index-name
-  "The name of the index in elastic search. Duplicated from indexer app."
-  "1_deleted_granules")
+(def deleted-granules-index-alias
+  "The alias of the deleted granules index in elastic search. Duplicated from indexer app."
+  "1_deleted_granules_alias")
 
 (def deleted-granule-type-name
   "The name of the mapping type within the cubby elasticsearch index. Duplicated from indexer app."
@@ -530,7 +530,7 @@
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
         results (es-helper/search (common-idx/context->conn meta-context)
-                                  deleted-granule-index-name
+                                  deleted-granules-index-alias
                                   deleted-granule-type-name
                                   query)
         result-format (:result-format params)

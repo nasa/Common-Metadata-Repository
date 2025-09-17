@@ -12,6 +12,7 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.transmit.connection :as transmit-conn])
   (:import
@@ -28,7 +29,7 @@
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 (esi-helper/index-alias "1_all_collection_revisions")
                  (es-config/collections-index-alias))
    :type-name "collection"})
 
