@@ -231,7 +231,7 @@
    (do-send context index-info query)))
 
 (defn- add-shard-count-to-context
-  "Add information about the indexes used to the `meta` field of the context"
+  "Add information about the shards read during search to the metadata of the context"
   [context shard-count]
   (when-let [metadata (meta context)]
     (let [shard-counts-atom (:shard-counts metadata)]

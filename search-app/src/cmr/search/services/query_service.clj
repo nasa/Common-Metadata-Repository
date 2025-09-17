@@ -195,7 +195,7 @@
     (common-params/generate-param-query-conditions context concept-type params)))
 
 (defn- add-meta-to-context
-  "Add metadata to the context to the context to hold an atom that will contain shard counts"
+  "Add metadata to the context to hold an atom that will contain shard counts"
   [context]
   (let [shard-counts (atom [])]
     (with-meta context {:shard-counts shard-counts})))
