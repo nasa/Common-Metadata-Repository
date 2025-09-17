@@ -195,10 +195,10 @@
     (common-params/generate-param-query-conditions context concept-type params)))
 
 (defn- add-meta-to-context
-  "Add an atom to the context to hold meta information about the query execution"
+  "Add metadata to the context to the context to hold an atom that will contain shard counts"
   [context]
-  (let [meta (atom {:shard-counts []})]
-    (merge context {:meta meta})))
+  (let [shard-counts (atom [])]
+    (with-meta context {:shard-counts shard-counts})))
 
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with

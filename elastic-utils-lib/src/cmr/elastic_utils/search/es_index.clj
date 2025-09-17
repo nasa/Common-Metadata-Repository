@@ -232,8 +232,9 @@
 (defn- add-shard-count-to-context
   "Add information about the indexes used to the `meta` field of the context"
   [context shard-count]
-  (when-let [meta (:meta context)]
-    (swap! meta update-in [:shard-counts] conj shard-count)))
+  (when-let [metadata (meta context)]
+    (let [shard-counts-atom (:shard-counts metadata)]
+      (swap! shard-counts-atom conj shard-count))))
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
