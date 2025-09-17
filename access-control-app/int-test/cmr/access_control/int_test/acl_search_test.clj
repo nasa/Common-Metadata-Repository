@@ -381,7 +381,14 @@
            "Registered read or group AG12345-PROV delete"
            ["registered" "read" "AG12345-PROV" "delete"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl6 acl8]))
 
-    ;; CMR-3154 acceptance criterium 3
+    ;; NOTE 1: The following tests requires that the
+    ;; cmr.access-control.api.routes/parse-group-permission function corrects the request being
+    ;; sent from transmit to access-control. The issue came up when modernizing third party
+    ;; libraries and somewhere between clj-http and ring a value is not getting converted from edn
+    ;; to a map correctly. Time to debug this issue was exhosted and the access-control code was
+    ;; just made more defensive. Try removing that function in the future and see if future
+    ;; libraries work better.
+    ;; NOTE 2: CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
         (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map} :page_size 20})]

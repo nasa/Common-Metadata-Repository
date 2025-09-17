@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[camel-snake-kebab]
+  :dependencies [[camel-snake-kebab] ;; was 0.4.2 ; ahead of other projects
                  ;[clj-http "2.3.0"] ;; behind other projects
                  [com.draines/postal "2.0.3"]
                  [jakarta.servlet/jakarta.servlet-api "4.0.4"] ;;5.x and 6.x did not work

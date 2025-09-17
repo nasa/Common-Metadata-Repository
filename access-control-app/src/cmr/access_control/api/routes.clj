@@ -19,7 +19,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.cache :as cache]
-   [cmr.common.log :refer (info error)]
+   [cmr.common.log :refer (debugf info error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -163,15 +163,37 @@
        :bad-request
        "search-after header value is invalid, must be in the form of a JSON array."))))
 
+(defn- parse-group-permission
+  "Parse the group-permission value if it's a string.
+
+   Under some conditions the
+   ring infistructure will not parse the inner edn value of group-permission. For example:
+
+   Should be:
+   {:group-permission {:0 {:permitted-group \"guest\"}}, :page_size \"20\"}
+
+   but it is not, it is:
+   {:group-permission \"{:0 {:permitted-group \"guest\"}}\", :page_size \"20\"}"
+  [params]
+  (if (string? (:group-permission params))
+    (try
+      (update params :group-permission #(read-string %))
+      (catch Exception e
+        (error "Failed to parse group-permission:" (.getMessage e))
+        params))
+    params))
+
 (defn- search-for-acls
   "Returns a Ring response with ACL search results for the given params."
   [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (let [search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         decoded-search-after (validate-search-after-value search-after)
-        ctx (assoc ctx :search-after decoded-search-after)]
-    (common-routes/search-response
-    (acl-search/search-for-acls ctx params))))
+        ctx (assoc ctx :search-after decoded-search-after)
+        clean-params (parse-group-permission params)]
+    (when-not (= clean-params params)
+      (debugf "Ring improperly parsed the data, cleaning up: %s" (pr-str params)))
+    (common-routes/search-response (acl-search/search-for-acls ctx clean-params))))
 
 (defn- get-page
   "Extracts a specific page from a vector of values based on the given page size and page number."
@@ -383,45 +405,45 @@
 
       (context "/acls" []
         (OPTIONS "/"
-                 {params :params}
-                 (pv/validate-standard-params params)
-                 (common-routes/options-response))
+          {params :params}
+          (pv/validate-standard-params params)
+          (common-routes/options-response))
 
         ;; Search for ACLs with either GET or POST
         (GET "/"
-             {ctx :request-context params :params headers :headers}
-             (search-for-acls ctx headers params))
+          {ctx :request-context params :params headers :headers}
+          (search-for-acls ctx headers params))
         ;; POST search is at a different route to avoid a collision with the ACL creation route
         (POST "/search"
-              {ctx :request-context params :params headers :headers}
-              (search-for-acls ctx headers params))
+          {ctx :request-context params :params headers :headers}
+          (search-for-acls ctx headers params))
 
         ;; Create an ACL
         (POST "/"
-              {ctx :request-context params :params headers :headers body :body}
-              (lt-validation/validate-launchpad-token ctx)
-              (pv/validate-standard-params params)
-              (create-acl ctx headers (slurp body)))
+          {ctx :request-context params :params headers :headers body :body}
+          (lt-validation/validate-launchpad-token ctx)
+          (pv/validate-standard-params params)
+          (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
           (OPTIONS "/" _req (common-routes/options-response))
 
           ;; Update an ACL
           (PUT "/"
-               {ctx :request-context headers :headers body :body}
-               (lt-validation/validate-launchpad-token ctx)
-               (update-acl ctx concept-id headers (slurp body)))
+            {ctx :request-context headers :headers body :body}
+            (lt-validation/validate-launchpad-token ctx)
+            (update-acl ctx concept-id headers (slurp body)))
 
           ;; Delete an ACL
           (DELETE "/"
-                  {ctx :request-context headers :headers}
-                  (lt-validation/validate-launchpad-token ctx)
-                  (delete-acl ctx concept-id headers))
+            {ctx :request-context headers :headers}
+            (lt-validation/validate-launchpad-token ctx)
+            (delete-acl ctx concept-id headers))
 
           ;; Retrieve an ACL
           (GET "/"
-               {ctx :request-context params :params}
-               (get-acl ctx concept-id params))))
+            {ctx :request-context params :params}
+            (get-acl ctx concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] (common-routes/options-response))

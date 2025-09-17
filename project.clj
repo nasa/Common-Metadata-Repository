@@ -24,22 +24,22 @@
    ;; sync (mixed status).
    ;; NOTE: some libraries have known issues, for now, don't mess with:
    ;; ring, jackson-*, compojure, netty
-   :managed-dependencies [[camel-snake-kebab "0.4.2"] ;; latest is 0.4.3
+   :managed-dependencies [[camel-snake-kebab "0.4.0"] ;; latest is 0.4.3 ; warn about 0.4.2 ; mixed status!
                           [cheshire "5.12.0"] ;; latest is 6.1.0
                           [clj-http "3.11.0"] ;; latest is 3.13.1 ; mixed status!
                           [clj-time "0.15.1"] ;; latest is 0.15.2
                           [commons-codec/commons-codec "1.11"] ;; latest is 1.19.0
                           [commons-io "2.18.0"] ;; latest is 2.20.0
-                          [inflections "0.13.0"] ;; latest is 1.15.0
+                          [inflections "0.13.0"] ;; latest is 1.15.0 ; warning 0.13.2 needs testing
                           [org.clojars.gjahad/debug-repl "0.3.3"] ;; latest
-                          [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
+                          [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
                           [org.clojure/tools.namespace "0.2.11"] ;; latest is 1.5.0
                           [org.clojure/tools.nrepl "0.2.13"] ;; latest, but moved
                           [org.clojure/tools.reader "1.3.2"] ;; latest is 1.5.2 or 1.3.7
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.testcontainers/testcontainers "1.21.3" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]
-                          [org.yaml/snakeyaml "1.31"] ;; lattest is 2.5, try 1.33 but with issues
+                          [org.yaml/snakeyaml "1.31"] ;; latest is 2.5, try 1.33 but with issues
                           ;; potemkin changed the one function we used in 0.4.8
                           [potemkin "0.4.5"] ;; latest is 0.4.8 but 0.4.7 would be the safest
                           [pjstadig/humane-test-output "0.9.0"] ;; latest is 0.11.0

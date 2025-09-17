@@ -30,7 +30,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies ~(concat '[[cheshire]
+  :dependencies ~(concat '[;[camel-snake-kebab] ;; is this needed?
+                           [cheshire]
                            [clj-time]
                            [com.fasterxml.jackson.core/jackson-core "2.15.4"]
                            [commons-codec/commons-codec ]
