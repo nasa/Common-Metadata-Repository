@@ -129,6 +129,10 @@
      (common-routes/search-response response))))
 
 (defn log-search-result-metadata
-  ([hits concept-type total-took client-id token-type result-format param-str & param-args]
-   (let [format-str (str "Found %d %ss in %d ms from client %s, token_type %s in format %s " param-str)]
-     (apply format format-str hits concept-type total-took client-id (get-token-type token-type) result-format param-args))))
+  ([context hits concept-type total-took client-id token-type result-format param-str & param-args]
+   (let [metadata (meta context)
+         {shard-counts-atom :shard-counts} metadata
+         total-shard-count (apply + @shard-counts-atom)
+         search-count (count @shard-counts-atom)
+         format-str (str "Found %d %ss in %d ms from client %s, token_type %s in format %s using %d Elasticsearch queries across %d shards " param-str)]
+     (apply format format-str hits concept-type total-took client-id (get-token-type token-type) result-format search-count total-shard-count param-args))))
