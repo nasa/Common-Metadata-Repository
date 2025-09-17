@@ -229,6 +229,13 @@
   (transmit-conn/handle-socket-exception-retries
    (do-send context index-info query)))
 
+(defn- add-shard-count-to-context
+  "Add information about the shards read during search to the metadata of the context"
+  [context shard-count]
+  (when-let [metadata (meta context)]
+    (let [shard-counts-atom (:shard-counts metadata)]
+      (swap! shard-counts-atom conj shard-count))))
+
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   (fn [_context query]
@@ -248,15 +255,17 @@
                       (set/rename-keys {:search-after :search_after})
                       util/remove-nil-keys)]
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
-          (pr-str elastic-query)
-          "with sort" (pr-str sort-params)
-          "with aggregations" (pr-str aggregations)
-          "and highlights" (pr-str highlights))
+           (pr-str elastic-query)
+           "with sort" (pr-str sort-params)
+           "with aggregations" (pr-str aggregations)
+           "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]
       (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]
       (debug "Using search-after" (pr-str search-after)))
-    (let [response (send-query context index-info query-map)]
+    (let [response (send-query context index-info query-map)
+          shard-count (get-in response [:_shards :total] 0)]
+      (add-shard-count-to-context context shard-count)
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]
