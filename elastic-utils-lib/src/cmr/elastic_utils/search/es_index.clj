@@ -265,7 +265,7 @@
     (when-let [search-after (:search_after query-map)]
       (debug "Using search-after" (pr-str search-after)))
     (let [response (send-query context index-info query-map)
-          shard-count (get-in response [:_shards :total])]
+          shard-count (get-in response [:_shards :total] 0)]
       (add-shard-count-to-context context shard-count)
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
