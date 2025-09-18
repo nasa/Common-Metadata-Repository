@@ -1,19 +1,20 @@
-(ns cmr.metadata-db.services.subscriptions
-  "Buisness logic for subscription processing."
+(ns cmr.ingest.services.nrt-subscription.subscriptions
+  "Business logic for subscription processing."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.common.log :refer [debug info]]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol]
-   [cmr.metadata-db.config :as mdb-config]
-   [cmr.metadata-db.services.search-service :as mdb-search]
-   [cmr.metadata-db.services.subscription-cache :as subscription-cache]
+   [cmr.ingest.config :as ingest-config]
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.ingest.services.nrt-subscription.subscription-cache :as subscription-cache]
    [cmr.transmit.config :as t-config])
   (:import
     (org.apache.commons.validator.routines UrlValidator)))
 
 (def ingest-subscriptions-enabled?
   "Checks to see if ingest subscriptions are enabled."
-  (mdb-config/ingest-subscription-enabled))
+  (ingest-config/ingest-subscription-enabled))
 
 (defn ingest-subscription-concept?
   "Checks to see if the concept is a ingest subscription concept."
@@ -36,13 +37,21 @@
   "Get the subscriptions from the database. This function primarily exists so that
   it can be stubbed out for unit tests."
   ([context]
-   (mdb-search/find-concepts context {:latest true
-                                      :concept-type :subscription
-                                      :subscription-type "granule"}))
+   (get-subscriptions-from-db context nil))
   ([context coll-concept-id]
-   (mdb-search/find-concepts context {:latest true
-                                      :concept-type :subscription
-                                      :collection-concept-id coll-concept-id})))
+   (let [query-params {:latest true
+                       :concept-type :subscription
+                       :subscription-type "granule"}
+         query-params (if coll-concept-id
+                        (assoc query-params :collection-concept-id coll-concept-id)
+                        query-params)
+         response (mdb2/find-concepts context
+                                      {}
+                                      :subscription
+                                      {:raw? true
+                                       :http-options {:query-params query-params}})]
+     (when (= (:status response) 200)
+       (:body response)))))
 
 (defn convert-concept-to-edn
   "Converts the passed in concept to edn"
@@ -86,7 +95,7 @@
         (doseq [mode modes]
           (swap! temp-map assoc mode #{[endpoint, subscriber]}))
         (let [merged-map (merge-with union @final-map @temp-map)]
-          (swap! final-map (fn [n] merged-map)))))
+          (swap! final-map (fn [_n] merged-map)))))
     @final-map))
 
 (defn change-subscription-in-cache
@@ -252,15 +261,35 @@
     (when pgi
       (str "\"producer-granule-id\": \"" pgi "\""))))
 
+(def public-search-url
+  "Creates a public search URL from the ingest URL parts. The passed in
+  ingest-public-url-map contains the following:
+   {:protocol (ingest-public-protocol)
+    :host (ingest-public-host)
+    :port (ingest-public-port)
+    :relative-root-url (transmit-config/ingest-relative-root-url)}
+  Use the above information and replace the relative-root-url with search if
+  if the context of ingest exists.
+  The public search URL is put into the granule notification message so
+  so the end user knows how to retrieve the granule."
+  (memoize
+   (fn [ingest-public-url-map]
+     (let [url (t-config/format-public-root-url ingest-public-url-map)
+           search-url (string/replace-first url "ingest" "search")]
+       (if (string/includes? search-url "3002")
+         (string/replace-first search-url "3002" "3003")
+         search-url)))))
+
 (defn get-location-message-str
   "Get the granule search location for the subscription notification message."
-  [concept]
-  (str "\"location\": \""
-       (format "%sconcepts/%s/%s"
-               (t-config/format-public-root-url (:search (t-config/app-conn-info)))
-               (:concept-id concept)
-               (:revision-id concept))
-       "\""))
+  [context concept]
+  (let [public-search-url (public-search-url (get-in context [:system :public-conf]))]
+    (str "\"location\": \""
+         (format "%sconcepts/%s/%s"
+                 public-search-url
+                 (:concept-id concept)
+                 (:revision-id concept))
+         "\"")))
 
 (defn create-notification-message-body
   "Create the notification when a subscription exists.
@@ -270,13 +299,17 @@
    * This function exists so that it can be tested as the output is expected in external software:
      'subscription_worker'
    * Returns a String containing JSON."
-  [concept]
-  (let [granule-ur-str (get-in concept [:extra-fields :granule-ur])
+  [context concept]
+  (let [pgi-str (get-producer-granule-id-message-str concept)
+        granule-ur-str (get-in concept [:extra-fields :granule-ur])
         concept-id-str (:concept-id concept)
         revision-id-str (get concept :revision-id "1")
-        location-str (get-location-message-str concept)]
-    (format "{\"concept-id\": \"%s\", \"revision-id\": \"%s\", \"granule-ur\": \"%s\", %s}"
-            concept-id-str revision-id-str granule-ur-str location-str)))
+        location-str (get-location-message-str context concept)]
+    (if pgi-str
+      (format "{\"concept-id\": \"%s\", \"revision-id\": \"%s\", \"granule-ur\": \"%s\", %s, %s}"
+              concept-id-str revision-id-str granule-ur-str location-str, pgi-str)
+      (format "{\"concept-id\": \"%s\", \"revision-id\": \"%s\", \"granule-ur\": \"%s\", %s}"
+              concept-id-str revision-id-str granule-ur-str location-str))))
 
 (defn create-message-attributes
   "Create the notification message attributes so that the notifications can be
@@ -317,8 +350,7 @@
                                                      "endpoint-type" "url"
                                                      "mode" mode
                                                      "subscriber" subscriber
-                                                     "collection-concept-id" coll-concept-id}))
-  )
+                                                     "collection-concept-id" coll-concept-id})))
 
 (defn publish-subscription-notification-if-applicable
   "Publish a notification to the topic if the passed-in concept is a granule
@@ -337,16 +369,16 @@
           (doseq [endpoint-set endpoint-list]
             (let [topic (get-in context [:system :sns :internal])
                   coll-concept-id (:parent-collection-id (:extra-fields concept))
-                  message (create-notification-message-body concept)
+                  message (create-notification-message-body context concept)
                   message-attributes-map (create-message-attributes-map endpoint-set gran-concept-mode coll-concept-id)
                   subject (create-message-subject gran-concept-mode)]
              (when (and message-attributes-map subject)
                 (let [result (topic-protocol/publish topic message message-attributes-map subject)
                       duration (- (System/currentTimeMillis) start)]
                   (debug (format "Subscription publish for endpoint %s took %d ms." (first endpoint-set) duration))
-                  (swap! result-array (fn [n] (conj @result-array result)))))))
+                  (swap! result-array (fn [_n] (conj @result-array result)))))))
           @result-array)))))
 
 (comment
-  (let [system (get-in user/system [:apps :metadata-db])]
+  (let [system (get-in user/system [:apps :ingest])]
     (refresh-subscription-cache {:system system})))

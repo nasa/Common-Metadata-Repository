@@ -156,6 +156,12 @@
          (DELETE "/"
            request
            (subscriptions/delete-subscription native-id request)))))
+    (api-core/set-default-error-format
+     :xml
+     (context "/subscription" []
+        (POST "/refresh-subscription-cache"
+          {request-context :request-context}
+          (ingest/refresh-subscription-cache request-context))))
     ;; granule bulk update status route
     (api-core/set-default-error-format
      :json
