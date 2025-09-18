@@ -45,54 +45,54 @@
   ;;     find a different way to accomplish this goal ... possibly use protocols
   ;;     instead.
   (:require
-    cmr.search.data.complex-to-simple-converters.attribute
-    cmr.search.data.complex-to-simple-converters.has-granules
-    cmr.search.data.complex-to-simple-converters.has-granules-or-cwic
-    cmr.search.data.complex-to-simple-converters.orbit
-    cmr.search.data.complex-to-simple-converters.spatial
-    cmr.search.data.complex-to-simple-converters.temporal
-    cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
-    cmr.elastic-utils.search.elastic-results-to-query-results
-    cmr.search.services.aql.converters.attribute
-    cmr.search.services.aql.converters.attribute-name
-    cmr.search.services.aql.converters.science-keywords
-    cmr.search.services.aql.converters.spatial
-    cmr.search.services.aql.converters.temporal
-    cmr.search.services.aql.converters.two-d-coordinate-system
-    cmr.search.services.json-parameters.converters.attribute
-    cmr.search.services.parameters.converters.attribute
-    cmr.search.services.parameters.converters.collection-query
-    cmr.search.services.parameters.converters.equator-crossing-date
-    cmr.search.services.parameters.converters.equator-crossing-longitude
-    cmr.search.services.parameters.converters.humanizer
-    cmr.search.services.parameters.converters.orbit-number
-    cmr.search.services.parameters.converters.pass
-    cmr.search.services.parameters.converters.platform
-    cmr.search.services.parameters.converters.science-keyword
-    cmr.search.services.parameters.converters.spatial
-    cmr.search.services.parameters.converters.shapefile
-    cmr.search.services.parameters.converters.geometry
-    cmr.search.services.parameters.converters.temporal
-    cmr.search.services.parameters.converters.temporal-facet
-    cmr.search.services.parameters.converters.two-d-coordinate-system
-    cmr.search.services.query-execution
-    cmr.search.services.query-execution.facets.collection-v2-facets
-    cmr.search.services.query-execution.facets.facets-results-feature
-    cmr.search.services.query-execution.facets.facets-v2-results-feature
-    cmr.search.services.query-execution.facets.granule-v2-facets
-    cmr.search.services.query-execution.granule-counts-results-feature
-    cmr.search.services.query-execution.has-granules-created-at-feature
-    cmr.search.services.query-execution.has-granules-results-feature
-    cmr.search.services.query-execution.has-granules-or-cwic-results-feature
-    cmr.search.services.query-execution.has-granules-revised-at-feature
-    cmr.search.services.query-execution.highlight-results-feature
-    cmr.search.services.query-execution.tags-results-feature
-    cmr.search.validators.attribute
-    cmr.search.validators.equator-crossing-date
-    cmr.search.validators.equator-crossing-longitude
-    cmr.search.validators.orbit-number
-    cmr.search.validators.temporal
-    cmr.search.validators.validation))
+   cmr.search.data.complex-to-simple-converters.attribute
+   cmr.search.data.complex-to-simple-converters.has-granules
+   cmr.search.data.complex-to-simple-converters.has-granules-or-cwic
+   cmr.search.data.complex-to-simple-converters.orbit
+   cmr.search.data.complex-to-simple-converters.spatial
+   cmr.search.data.complex-to-simple-converters.temporal
+   cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
+   cmr.elastic-utils.search.elastic-results-to-query-results
+   cmr.search.services.aql.converters.attribute
+   cmr.search.services.aql.converters.attribute-name
+   cmr.search.services.aql.converters.science-keywords
+   cmr.search.services.aql.converters.spatial
+   cmr.search.services.aql.converters.temporal
+   cmr.search.services.aql.converters.two-d-coordinate-system
+   cmr.search.services.json-parameters.converters.attribute
+   cmr.search.services.parameters.converters.attribute
+   cmr.search.services.parameters.converters.collection-query
+   cmr.search.services.parameters.converters.equator-crossing-date
+   cmr.search.services.parameters.converters.equator-crossing-longitude
+   cmr.search.services.parameters.converters.humanizer
+   cmr.search.services.parameters.converters.orbit-number
+   cmr.search.services.parameters.converters.pass
+   cmr.search.services.parameters.converters.platform
+   cmr.search.services.parameters.converters.science-keyword
+   cmr.search.services.parameters.converters.spatial
+   cmr.search.services.parameters.converters.shapefile
+   cmr.search.services.parameters.converters.geometry
+   cmr.search.services.parameters.converters.temporal
+   cmr.search.services.parameters.converters.temporal-facet
+   cmr.search.services.parameters.converters.two-d-coordinate-system
+   cmr.search.services.query-execution
+   cmr.search.services.query-execution.facets.collection-v2-facets
+   cmr.search.services.query-execution.facets.facets-results-feature
+   cmr.search.services.query-execution.facets.facets-v2-results-feature
+   cmr.search.services.query-execution.facets.granule-v2-facets
+   cmr.search.services.query-execution.granule-counts-results-feature
+   cmr.search.services.query-execution.has-granules-created-at-feature
+   cmr.search.services.query-execution.has-granules-results-feature
+   cmr.search.services.query-execution.has-granules-or-cwic-results-feature
+   cmr.search.services.query-execution.has-granules-revised-at-feature
+   cmr.search.services.query-execution.highlight-results-feature
+   cmr.search.services.query-execution.tags-results-feature
+   cmr.search.validators.attribute
+   cmr.search.validators.equator-crossing-date
+   cmr.search.validators.equator-crossing-longitude
+   cmr.search.validators.orbit-number
+   cmr.search.validators.temporal
+   cmr.search.validators.validation))
 
 (def query-aggregation-size
   "Page size for query aggregations. This should be large enough
@@ -194,23 +194,32 @@
                 context concept-type params)]
     (common-params/generate-param-query-conditions context concept-type params)))
 
+(defn- add-meta-to-context
+  "Add metadata to the context to hold an atom that will contain shard counts"
+  [context]
+  (let [shard-counts (atom [])]
+    (with-meta context {:shard-counts shard-counts})))
+
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
-  (let [tag-data (make-concepts-tag-data params)
+  (let [meta-context (add-meta-to-context context)
+        tag-data (make-concepts-tag-data params)
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
-                                      context concept-type params tag-data))
+                                      meta-context concept-type params tag-data))
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
-                                       context concept-type query))
+                                       meta-context concept-type query))
         total-took (+ query-creation-time find-concepts-time)
         scroll-id (:scroll-id results)
-        search-after (:search-after context)
+        search-after (:search-after meta-context)
         result-format (rfh/printable-result-format (:result-format query))
-        log-message (log-search-result-metadata (:hits results) (name concept-type)
-                                                total-took (:client-id context) (:token context) result-format
+        log-message (log-search-result-metadata meta-context (:hits results) (name concept-type)
+                                                total-took (:client-id meta-context)
+                                                (:token meta-context)
+                                                result-format
                                                 "with params %s" (pr-str params))]
     (info (cond
             scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
@@ -225,21 +234,22 @@
   "Executes a search for concepts using the given JSON. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
-  (let [[query-creation-time query] (u/time-execution
+  (let [meta-context (add-meta-to-context context)
+        [query-creation-time query] (u/time-execution
                                      (jp/parse-json-query concept-type
                                                           (common-params/sanitize-params params)
                                                           json-query))
-        search-after (:search-after context)
+        search-after (:search-after meta-context)
         query (merge query
                      (when search-after {:search-after search-after}))
         [find-concepts-time results] (u/time-execution
-                                      (common-search/find-concepts context
+                                      (common-search/find-concepts meta-context
                                                                    concept-type
                                                                    query))
         total-took (+ query-creation-time find-concepts-time)
         result-format (rfh/printable-result-format (:result-format query))
-        log-message (log-search-result-metadata (:hits results) (name concept-type) total-took
-                                                (:client-id context) (:token context) result-format
+        log-message (log-search-result-metadata meta-context (:hits results) (name concept-type) total-took
+                                                (:client-id meta-context) (:token meta-context) result-format
                                                 "with JSON Query %s and query params %s" json-query (pr-str params))]
     (info (if search-after
             (format "%s, search-after: %s, new search-after: %s."
@@ -253,19 +263,20 @@
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
-  (let [params (-> params
+  (let [meta-context (add-meta-to-context context)
+        params (-> params
                    sanitize-aql-params
                    lp/replace-parameter-aliases)
         [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
         [find-concepts-time results] (u/time-execution
-                                      (common-search/find-concepts context
+                                      (common-search/find-concepts meta-context
                                                                    concept-type
                                                                    query))
         total-took (+ query-creation-time find-concepts-time)
         result-format (rfh/printable-result-format (:result-format query))
-        log-message (log-search-result-metadata (:hits results) (name concept-type)
-                                                total-took (:client-id context) (:token context) result-format
+        log-message (log-search-result-metadata meta-context (:hits results) (name concept-type)
+                                                total-took (:client-id meta-context) (:token meta-context) result-format
                                                 "with aql: %s" aql)]
     (info log-message)
     (assoc results :took total-took)))
@@ -463,28 +474,29 @@
   ;; 2/ Filters out any collections c1 that still exists -> c2
   ;; 3/ Find all collection revisions for the c2, return the highest revisions that are visible
   (let [start-time (System/currentTimeMillis)
+        meta-context (add-meta-to-context context)
         result-format (:result-format params)
-        coll-concept-ids (get-collections-with-deleted-revisions context params)
-        visible-concept-ids (get-visible-collections context coll-concept-ids)
+        coll-concept-ids (get-collections-with-deleted-revisions meta-context params)
+        visible-concept-ids (get-visible-collections meta-context coll-concept-ids)
         ;; Find the concept ids that are still deleted
         deleted-concept-ids (seq (set/difference
                                   (set coll-concept-ids)
                                   (set visible-concept-ids)))
-        results (get-highest-visible-revisions context deleted-concept-ids result-format)
+        results (get-highest-visible-revisions meta-context deleted-concept-ids result-format)
         ;; when results is nil, hits is 0
         hits (get results :hits 0)
         results (or results {:hits hits :items []})
         total-took (- (System/currentTimeMillis) start-time)
         ;; construct the response results string
         results-str (common-search/search-results->response
-                     context
+                     meta-context
                      ;; pass in a fake query to get the desired response format
                      (qm/query {:concept-type :collection
                                 :result-format result-format})
                      (assoc results :took total-took))
         pr-result-format (rfh/printable-result-format result-format)
-        log-message (log-search-result-metadata hits "deleted collections"
-                                                total-took (:client-id context) (:token context) pr-result-format
+        log-message (log-search-result-metadata meta-context hits "deleted collections"
+                                                total-took (:client-id meta-context) (:token meta-context) pr-result-format
                                                 "with params %s" (pr-str params))]
     (info log-message)
     {:results results-str
@@ -513,10 +525,11 @@
    granules that are deleted, then later ingested again are not included in the result."
   [context params]
   (let [start-time (System/currentTimeMillis)
+        meta-context (add-meta-to-context context)
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (es-helper/search (common-idx/context->conn context)
+        results (es-helper/search (common-idx/context->conn meta-context)
                                   deleted-granule-index-name
                                   deleted-granule-type-name
                                   query)
@@ -528,8 +541,8 @@
         ;; construct the response results string
         results-str (json/generate-string (:items results))
         pr-result-format (rfh/printable-result-format result-format)
-        log-message (log-search-result-metadata (:hits results) "deleted granules"
-                                                total-took (:client-id context) (:token context) pr-result-format
+        log-message (log-search-result-metadata meta-context (:hits results) "deleted granules"
+                                                total-took (:client-id meta-context) (:token meta-context) pr-result-format
                                                 "with params %s" (pr-str params))]
     (info log-message)
     {:results results-str
