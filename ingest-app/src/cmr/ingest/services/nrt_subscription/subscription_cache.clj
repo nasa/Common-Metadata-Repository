@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.services.subscription-cache
+(ns cmr.ingest.services.nrt-subscription.subscription-cache
   "Defines common functions and defs for the subscription cache.
 	Structure of the hash-cache is as follows:
 	<collection-concept-id> --> <ingest subscription vector>

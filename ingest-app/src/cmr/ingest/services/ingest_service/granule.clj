@@ -1,11 +1,13 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.services.helper :as h]
    [cmr.ingest.services.ingest-service.collection :as collection]
    [cmr.ingest.services.messages :as msg]
+   [cmr.ingest.services.nrt-subscription.subscriptions :as subscriptions]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.legacy :as umm-legacy]
@@ -43,7 +45,7 @@
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
-  [_context concept granule collection-concept]
+  [concept granule collection-concept]
   (let [{:keys [granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         parent-collection-id (:concept-id collection-concept)
@@ -75,9 +77,9 @@
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
-                         context concept granule parent-collection-concept)]
+                         concept granule parent-collection-concept)]
        (v/validate-business-rules context gran-concept)
-       [parent-collection-concept gran-concept]))))
+       [gran-concept granule]))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
@@ -94,10 +96,47 @@
                       (constantly [parent-collection-concept
                                    collection]))))
 
-(declare save-granule)
+(declare save-granule context concept)
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (let [[_coll-concept concept] (validate-granule context concept)
-        {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+  (let [[concept umm-granule] (validate-granule context concept)
+        {:keys [concept-id revision-id]} (mdb/save-concept context concept)
+        granule-edn-concept (assoc concept :metadata umm-granule
+                                           :concept-id concept-id
+                                           :revision-id revision-id)]
+    (try
+      (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
+      (catch Exception e
+        (error "Error while processing subscriptions: " e)))
     {:concept-id concept-id, :revision-id revision-id}))
+
+(declare delete-granule)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
+(defn-timed delete-granule
+  "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
+  the latest revision for the concept is already a tombstone."
+  [context concept-attribs]
+  (let [{:keys [concept-type provider-id native-id]} concept-attribs
+        existing-concept (first (mdb/find-concepts context
+                                                   {:provider-id provider-id
+                                                    :native-id native-id
+                                                    :latest true}
+                                                   concept-type))
+        concept-id (:concept-id existing-concept)]
+    (when-not concept-id
+      (errors/throw-service-error
+       :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
+    (when (:deleted existing-concept)
+      (errors/throw-service-error
+       :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                          (util/html-escape native-id) (util/html-escape concept-id))))
+    (let [concept (-> concept-attribs
+                      (dissoc :provider-id :native-id)
+                      (assoc :concept-id concept-id :deleted true))
+          {:keys [revision-id]} (mdb/save-concept context concept)]
+      (try
+        (subscriptions/publish-subscription-notification-if-applicable context (assoc existing-concept :deleted true))
+        (catch Exception e
+          (error "Error while processing subscriptions: " e)))
+      {:concept-id concept-id, :revision-id revision-id})))

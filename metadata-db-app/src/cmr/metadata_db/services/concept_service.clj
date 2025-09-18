@@ -7,7 +7,7 @@
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer (debug error info warn trace)]
+   [cmr.common.log :refer (debug info warn trace)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
@@ -22,8 +22,6 @@
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.provider-validation :as pv]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.metadata-db.services.sub-notifications :as sub-not]
-   [cmr.metadata-db.services.subscriptions :as subscriptions]
    [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
@@ -843,13 +841,6 @@
                       (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
-            ;; Do not let subscription errors fail the operation, use try/catch
-            (try
-              (when (and subscriptions/ingest-subscriptions-enabled? (= :subscription concept-type))
-                (subscriptions/delete-ingest-subscription context revisioned-tombstone))
-              (subscriptions/publish-subscription-notification-if-applicable context revisioned-tombstone)
-              (catch Exception e
-                (error "Error while processing subscriptions: " e)))
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -918,7 +909,6 @@
         {:keys [concept-type concept-id]} concept]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
-                       (subscriptions/set-subscription-arn-if-applicable context concept-type)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider context))
@@ -935,14 +925,6 @@
       (publish-service-associations-update-event context concept-type concept-id)
       (publish-tool-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event context (ingest-events/concept-update-event concept))
-      ;; Add the ingest subscriptions to the cache. The subscriptions were saved to the database
-      ;; above so now we can put it into the cache.
-      ;; Do not let subscription errors fail the operation, use try/catch
-      (try
-        (subscriptions/add-or-delete-ingest-subscription-in-cache context concept)
-        (subscriptions/publish-subscription-notification-if-applicable context concept)
-        (catch Exception e
-          (error "Error while processing subscriptions: " e)))
       concept)))
 
 (defn- delete-associated-tag-associations
