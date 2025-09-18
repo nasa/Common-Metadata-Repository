@@ -49,7 +49,7 @@ def make_schedule_expression(job):
         return make_cron_expression(job)
     return make_interval_expression(job)
 
-def create_event_targets(events_client, lambda_details, jobs_map):
+def create_event_targets(environment, events_client, lambda_details, jobs_map):
     """
     Creates AWS EventBridge lambda targets so that when the EventBridge scheduler
     fires, the job router lambda is called to carry out the task, which calls a
@@ -71,7 +71,7 @@ def create_event_targets(events_client, lambda_details, jobs_map):
         except ClientError as e:
             print("Error putting lambda target: " + e.response["Error"]["Code"])
 
-def add_lambda_permissions(lambda_client, rules):
+def add_lambda_permissions(environment, lambda_client, rules):
     """
     Creates lambda permissions for each job so that the job router lambda can be
     invoked by AWS EventBridge rules.
@@ -108,7 +108,7 @@ def create_scheduler_rules(jobs_map):
 
     return [events_client, rules]
 
-def get_lambda_function():
+def get_lambda_function(environment):
     """
     Gets the job router AWS lambda client and its details such as its arn.
     """
@@ -129,18 +129,18 @@ def deploy_schedules(environment, jobs_map):
     for each given job in the jobs_file
     """
     # First get the lambda function
-    [lambda_client, lambda_details] = get_lambda_function()
+    [lambda_client, lambda_details] = get_lambda_function(environment)
 
     # Then create the schedule rules for each job
     [events_client, rules] = create_scheduler_rules(jobs_map)
 
     # Then add the permissions for the event bridge scheduler to invoke
     # the job router lambda for each scheduled rule.
-    add_lambda_permissions(lambda_client, rules)
+    add_lambda_permissions(environment, lambda_client, rules)
 
     # Lastly add the job router lambda as a target for each schedule rule
     # so the scheduler can invoke the job router lambda when a schedule rule fires.
-    create_event_targets(events_client, lambda_details, jobs_map)
+    create_event_targets(environment, events_client, lambda_details, jobs_map)
 
     print("job events deployed")
 
