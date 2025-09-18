@@ -52,6 +52,7 @@ def process_messages(sns_client, topic, messages, access_control):
             subscriber = message_attributes['subscriber']['Value']
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
+            # Re-enable ACL check with CMR-10855
             #sets the time in milliseconds
             #start_access_control = (time.time() * 1000)
             acl_read = True #access_control.has_read_permission(subscriber, collection_concept_id)

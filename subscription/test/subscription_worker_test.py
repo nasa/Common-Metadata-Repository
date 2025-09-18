@@ -82,6 +82,7 @@ class TestSubscriptionWorker(unittest.TestCase):
 
         process_messages(mock_sns_instance, 'test-topic', messages, mock_access_control_instance)
 
+        # Re-enable ACL check with CMR-10855
         # Check if has_read_permission was called with correct arguments
         #mock_access_control_instance.has_read_permission.assert_called_once_with('user1_test', 'C1200484363-PROV')
         
