@@ -302,12 +302,12 @@
            (pv/validate-parameters :service {:type "Harmony"}))))
   (testing "Service failed invalid parameters."
     (try
-      (pv/validate-parameters :service {:foo "Harmony"}))
+      (pv/validate-parameters :service {:foo "Harmony"})
       (is false "An error should have been thrown.")
       (catch clojure.lang.ExceptionInfo e
         (is (= {:type :bad-request
                 :errors #{"Parameter [foo] was not recognized."}}
-               (update-in (ex-data e) [:errors] set))))))
+               (update-in (ex-data e) [:errors] set)))))))
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"

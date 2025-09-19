@@ -198,7 +198,7 @@
        (empty? coll-constraints)))
 
 (defn- handle-granule-search-params
-  "Check the params when it is a granule search query."
+  "Check the params when it is a granule search query and return true if there are collection limiting params"
   [headers concept-type params scroll-id]
   (when (= :granule concept-type)
     ;; Check to see if any concept-id(s) are not starting with C or G. If so, bad request.
@@ -208,14 +208,18 @@
                       lp/replace-parameter-aliases
                       (util/remove-map-keys empty-string-values?))
           constraints (select-keys params all-gran-validation/granule-limiting-search-fields)
-          concept-id-param (:concept-id constraints)
+          concept-id-param (or (:concept-id constraints)
+                               (:collection-concept-id constraints))
           illegal-concept-id-msg (str "Invalid concept_id [" concept-id-param
                                       "]. For granule queries concept_id must be"
                                       " either a granule or collection concept ID.")]
       (if (illegal-concept-id-in-granule-query? concept-id-param)
         (svc-errors/throw-service-error :bad-request illegal-concept-id-msg)
         (when (all-granule-params? scroll-id constraints)
-          (handle-all-granule-params headers))))))
+          (handle-all-granule-params headers)))
+
+      (when (seq constraints)
+        true))))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and
@@ -241,8 +245,9 @@
                   search-after (format "%s, search-after: %s." log-message search-after)
                   :else (format "%s." log-message)))
         search-params (or cached-search-params (lp/process-legacy-psa params))
-        _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
-
+        has-coll-identifier (handle-granule-search-params headers concept-type search-params short-scroll-id)
+        ctx (cond-> ctx
+              has-coll-identifier (assoc :has-coll-identifier has-coll-identifier))
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)
       (core-api/search-response ctx results search-params)
