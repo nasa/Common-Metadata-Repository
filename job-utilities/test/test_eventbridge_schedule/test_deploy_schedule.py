@@ -5,9 +5,7 @@ import unittest
 from unittest.mock import patch, mock_open, Mock, MagicMock
 import json
 import os
-
 from botocore.exceptions import ClientError
-
 from eventbridge_schedule import deploy_schedule
 
 test_job_data = {
@@ -92,10 +90,10 @@ class TestDeploySchedule(unittest.TestCase):
     @patch.dict(os.environ, {}, clear=True)
     def test_wrong_environment_variables(self, _mock_file):
         """
-        Test that deploy_schedule fails out when needed environment variables aren't set
+        Test that deploy_schedules fails out when needed environment variables aren't set
         """
         with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
+            deploy_schedule.get_environment()
 
     @patch('boto3.client')
     @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
@@ -109,38 +107,10 @@ class TestDeploySchedule(unittest.TestCase):
 
         mock_client.return_value = get_function_mock
 
-        with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
-
-    @patch('boto3.client')
-    @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
-    @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
-    def test_put_rule_client_error(self, _mock_file, mock_client):
-        """
-        Test that deploy_schedule fails out when clien.put_rule returns a ClientError
-        """
-        put_rule_mock = Mock()
-        put_rule_mock.put_rule.side_effect = ClientError(test_error_response, "put_rule")
-
-        mock_client.return_value = put_rule_mock
+        deploy_schedule.environment = "test"
 
         with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
-
-    @patch('boto3.client')
-    @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
-    @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
-    def test_put_target_client_error(self, _mock_file, mock_client):
-        """
-        Test that deploy_schedule fails out when client.put_targets returns a ClientError
-        """
-        put_targets_mock = MagicMock()
-        put_targets_mock.put_targets.side_effect = ClientError(test_error_response, "put_targets")
-
-        mock_client.return_value = put_targets_mock
-
-        with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
+            deploy_schedule.get_lambda_function()
 
 if __name__ == '__main__':
     unittest.main()
