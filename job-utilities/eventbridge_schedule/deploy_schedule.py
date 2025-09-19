@@ -9,6 +9,11 @@ import boto3
 import argparse
 from botocore.exceptions import ClientError
 
+environment = None;
+lambda_client = None;
+lambda_arn = None;
+event_client = None;
+
 def make_cron_expression(job):
     """
     Takes the job details to construct a cron expression
@@ -49,7 +54,7 @@ def make_schedule_expression(job):
         return make_cron_expression(job)
     return make_interval_expression(job)
 
-def create_event_targets(environment, events_client, lambda_details, jobs_map):
+def create_event_targets(jobs_map):
     """
     Creates AWS EventBridge lambda targets so that when the EventBridge scheduler
     fires, the job router lambda is called to carry out the task, which calls a
@@ -66,12 +71,12 @@ def create_event_targets(environment, events_client, lambda_details, jobs_map):
             events_client.put_targets(
                 Rule=jobs_key,
                 Targets=[{"Id" : "job-router-" + environment,
-                          "Arn" : lambda_details["Configuration"]["FunctionArn"],
+                          "Arn" : lambda_arn,
                           "Input" : json.dumps(job_details["target"])}])
         except ClientError as e:
             print("Error putting lambda target: " + e.response["Error"]["Code"])
 
-def add_lambda_permissions(environment, lambda_client, rules):
+def add_lambda_permissions(rules):
     """
     Creates lambda permissions for each job so that the job router lambda can be
     invoked by AWS EventBridge rules.
@@ -94,6 +99,7 @@ def create_scheduler_rules(jobs_map):
     Creates AWS EventBridge scheduler rules to schedule all the refresh cache jobs.
     """
     rules = {}
+    global events_client
     events_client = boto3.client('events')
 
     for job_key in jobs_map:
@@ -106,41 +112,45 @@ def create_scheduler_rules(jobs_map):
         except ClientError as e:
             print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
 
-    return [events_client, rules]
+    return rules
 
-def get_lambda_function(environment):
+def get_lambda_function():
     """
     Gets the job router AWS lambda client and its details such as its arn.
     """
+    global lambda_client
     lambda_client = boto3.client('lambda')
     try:
         lambda_details = lambda_client.get_function(
             FunctionName="job-router-"+environment
         )
+        global lambda_arn
+        lambda_arn = lambda_details["Configuration"]["FunctionArn"]
     except ClientError as e:
         print("Error getting lambda function: " + e.response['Error']['Code'])
         sys.exit(1)
-    return [lambda_client, lambda_details]
 
-def deploy_schedules(environment, jobs_map):
+def deploy_schedules(jobs_map):
     """
     Uses the job details provided in the jobs_file to put rules
     into AWS EventBridge that invoke the job-router lambda
     for each given job in the jobs_file
     """
-    # First get the lambda function
-    [lambda_client, lambda_details] = get_lambda_function(environment)
+    # First get the lambda function. This function sets the 
+    # lambda_client and lambda_arn global variables
+    get_lambda_function()
 
-    # Then create the schedule rules for each job
-    [events_client, rules] = create_scheduler_rules(jobs_map)
+    # Then create the schedule rules for each job. This function
+    # also sets the event_client global variable
+    rules = create_scheduler_rules(jobs_map)
 
     # Then add the permissions for the event bridge scheduler to invoke
     # the job router lambda for each scheduled rule.
-    add_lambda_permissions(environment, lambda_client, rules)
+    add_lambda_permissions(rules)
 
     # Lastly add the job router lambda as a target for each schedule rule
     # so the scheduler can invoke the job router lambda when a schedule rule fires.
-    create_event_targets(environment, events_client, lambda_details, jobs_map)
+    create_event_targets(jobs_map)
 
     print("job events deployed")
 
@@ -214,4 +224,4 @@ if __name__ == '__main__':
     jobs_map = get_jobs_map(args.job_name, args.jobs_file_name)
 
     # Deploy the schedules and tie them to the job router lambda.
-    deploy_schedules(environment, jobs_map)
+    deploy_schedules(jobs_map)

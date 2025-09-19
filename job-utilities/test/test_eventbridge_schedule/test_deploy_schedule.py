@@ -109,8 +109,10 @@ class TestDeploySchedule(unittest.TestCase):
 
         mock_client.return_value = get_function_mock
 
+        deploy_schedule.environment = "sit"
+
         with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedules("sit", "test_file")
+            deploy_schedule.deploy_schedules("test_file")
 
 if __name__ == '__main__':
     unittest.main()
