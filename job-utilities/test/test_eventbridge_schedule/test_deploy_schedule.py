@@ -5,9 +5,7 @@ import unittest
 from unittest.mock import patch, mock_open, Mock, MagicMock
 import json
 import os
-
 from botocore.exceptions import ClientError
-
 from eventbridge_schedule import deploy_schedule
 
 test_job_data = {
@@ -109,10 +107,10 @@ class TestDeploySchedule(unittest.TestCase):
 
         mock_client.return_value = get_function_mock
 
-        deploy_schedule.environment = "sit"
+        deploy_schedule.environment = "test"
 
         with self.assertRaises(SystemExit):
-            deploy_schedule.deploy_schedules("test_file")
+            deploy_schedule.get_lambda_function()
 
 if __name__ == '__main__':
     unittest.main()
