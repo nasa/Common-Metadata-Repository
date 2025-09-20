@@ -51,31 +51,31 @@
 
     (testing "UMM-JSON search-after"
       (are3 [concept-type accept extension all-refs]
-        (let [params {:page-size 1
-                      :provider "PROV1"}
-              response (search/find-concepts-umm-json
-                        concept-type
-                        params
-                        {:url-extension extension
-                         :accept accept})
-              [num-scrolls all-concepts] (scroll-all-umm-json-with-search-after
-                                          concept-type params response)]
-          (is (not (nil? (:search-after response))))
-          (is (= (count all-refs) num-scrolls))
-          (is (= (set (map :concept-id all-refs))
-                 (set (map #(get-in % [:meta :concept-id]) all-concepts)))))
+            (let [params {:page-size 1
+                          :provider "PROV1"}
+                  response (search/find-concepts-umm-json
+                            concept-type
+                            params
+                            {:url-extension extension
+                             :accept accept})
+                  [num-scrolls all-concepts] (scroll-all-umm-json-with-search-after
+                                              concept-type params response)]
+              (is (not (nil? (:search-after response))))
+              (is (= (count all-refs) num-scrolls))
+              (is (= (set (map :concept-id all-refs))
+                     (set (map #(get-in % [:meta :concept-id]) all-concepts)))))
 
-        "Collection UMM-JSON via extension"
-        :collection nil "umm_json" colls
+            "Collection UMM-JSON via extension"
+            :collection nil "umm_json" colls
 
-        "Collection UMM-JSON via accept"
-        :collection mime-types/umm-json nil colls
+            "Collection UMM-JSON via accept"
+            :collection mime-types/umm-json nil colls
 
-        "Granule UMM-JSON via extension"
-        :granule nil "umm_json" grans
+            "Granule UMM-JSON via extension"
+            :granule nil "umm_json" grans
 
-        "Granule UMM-JSON via accept"
-        :granule mime-types/umm-json nil grans))
+            "Granule UMM-JSON via accept"
+            :granule mime-types/umm-json nil grans))
 
     (testing "search after with JSON query"
       (let [[coll1 coll2 coll3 coll4 coll5] colls
@@ -122,7 +122,6 @@
 
 (deftest granule-search-after
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
-        admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
         coll1 (data2-core/ingest-umm-spec-collection "PROV1"
                                                      (data-umm-c/collection {:EntryTitle "E1"
@@ -203,57 +202,56 @@
                         search-after-3 (:search-after result)]
                     (is (= (count all-grans) (:hits result)))
                     (is (nil? search-after-3))
-                    (is (data2-core/refs-match? [] result))))))))))))
+                    (is (data2-core/refs-match? [] result))))))))))
 
-(deftest search-after-invalid-parameters
-  (testing "invalid parameters"
-    (are3 [query expected-status err-msg]
-      (let [{:keys [status errors]} (search/find-refs :granule
-                                                      query
-                                                      {:allow-failure? true
-                                                       :headers {routes/SEARCH_AFTER_HEADER "[0]"}})]
-        (is (= expected-status status))
-        (is (= [err-msg] errors)))
+    (testing "invalid parameters"
+      (are3 [query expected-status err-msg]
+            (let [{:keys [status errors]} (search/find-refs :granule
+                                                            query
+                                                            {:allow-failure? true
+                                                             :headers {routes/SEARCH_AFTER_HEADER "[0]"}})]
+              (is (= expected-status status))
+              (is (= [err-msg] errors)))
 
-      "Search After queries cannot be all-granule queries"
-      {}
-      400
-      (str "The CMR does not allow querying across granules in all collections when using search-after."
-           " You should limit your query using conditions that identify one or more collections "
-           "such as provider, concept_id, short_name, or entry_title.")
+            "Search After queries cannot be all-granule queries"
+            {}
+            400
+            (str "The CMR does not allow querying across granules in all collections when using search-after."
+                 " You should limit your query using conditions that identify one or more collections "
+                 "such as provider, concept_id, short_name, or entry_title.")
 
-      "page_num is not allowed with search-after"
-      {:provider "PROV1" :page-num 2}
-      400
-      "page_num is not allowed with search-after"
+            "page_num is not allowed with search-after"
+            {:provider "PROV1" :page-num 2}
+            400
+            "page_num is not allowed with search-after"
 
-      "offset is not allowed with search-after"
-      {:provider "PROV1" :offset 2}
-      400
-      "offset is not allowed with search-after"
+            "offset is not allowed with search-after"
+            {:provider "PROV1" :offset 2}
+            400
+            "offset is not allowed with search-after"
 
-      "scroll is not allowed with search-after"
-      {:scroll true}
-      400
-      "scroll is not allowed with search-after"))
+            "scroll is not allowed with search-after"
+            {:scroll true}
+            400
+            "scroll is not allowed with search-after"))
 
-  (testing "invalid search-after header value"
-    (are3 [value err-msg]
-          (let [{:keys [status errors]} (search/find-refs :granule
-                                                          {:provider "PROV1"}
-                                                          {:allow-failure? true
-                                                           :headers {routes/SEARCH_AFTER_HEADER value}})]
-            (is (= 400 status))
-            (is (= [err-msg] errors)))
+    (testing "invalid search-after header value"
+      (are3 [value err-msg]
+            (let [{:keys [status errors]} (search/find-refs :granule
+                                                            {:provider "PROV1"}
+                                                            {:allow-failure? true
+                                                             :headers {routes/SEARCH_AFTER_HEADER value}})]
+              (is (= 400 status))
+              (is (= [err-msg] errors)))
 
-      "invaid search-after value, string"
-      12345
-      "search-after header value is invalid, must be in the form of a JSON array."
+            "invaid search-after value, string"
+            12345
+            "search-after header value is invalid, must be in the form of a JSON array."
 
-      "invaid search-after value, string with quotes"
-      "\"abc \""
-      "The search failed with error: [{:type \"parsing_exception\", :reason \"Unknown key for a VALUE_STRING in [search_after].\", :line 1, :col 17}]. Please double check your search_after header."
+            "invaid search-after value, string with quotes"
+            "\"abc \""
+            "The search failed with error: [{:type \"parsing_exception\", :reason \"Unknown key for a VALUE_STRING in [search_after].\", :line 1, :col 17}]. Please double check your search_after header."
 
-      "invaid search-after value, missing comma"
-      "[0 \"abc\"]"
-      "search-after header value is invalid, must be in the form of a JSON array.")))
+            "invaid search-after value, missing comma"
+            "[0 \"abc\"]"
+            "search-after header value is invalid, must be in the form of a JSON array."))))
