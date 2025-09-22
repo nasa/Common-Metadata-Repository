@@ -151,6 +151,9 @@
               (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-cwic-cache-key)
               (has-granules-or-cwic-results-feature/refresh-has-granules-or-cwic-map request-context)
 
+              (= keyword-cache-name :granule-counts)
+              (info "The granule-counts cache is currently being developed.")
+
               :else
               (route/not-found "Not Found")))
           {:status 200}))

@@ -18,5 +18,24 @@
                 "year" : "*"
             }
         }
+    },
+    "RefreshGranulesCountCache": {
+        "target" : {
+            "endpoint" : "caches/refresh/granule-counts",
+            "service" : "bootstrap",
+            "single-target" : true,
+            "request-type" : "POST"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 0,
+                "hours" : 1,
+                "day-of-month" : "*",
+                "month" : "*",
+                "day-of-week" : "?",
+                "year" : "*"
+            }
+        }
     }
 }
