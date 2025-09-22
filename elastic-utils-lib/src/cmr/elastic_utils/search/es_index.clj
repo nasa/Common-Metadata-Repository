@@ -170,6 +170,7 @@
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  (info ">>>> INSIDE do-send-with-retry with es cluster = " (get-es-cluster-name-from-index-info index-info))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
@@ -258,12 +259,15 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
+  (info ">>>> INSIDE send-query-to-elastic :default")
   (let [elastic-query (q2e/query->elastic query)
         {sort-params :sort
          aggregations :aggs
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)
+        _ (info ">>>> concept-type = " concept-type)
         index-info (concept-type->index-info context concept-type query)
+        _ (info ">>>> index-info = " index-info)
         query-map (-> elastic-query
                       (merge execution-params)
                       ;; rename search-after to search_after for ES execution
