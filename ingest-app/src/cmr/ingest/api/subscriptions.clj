@@ -85,12 +85,12 @@
         endpoint (:EndPoint subscription-concept)
         default-url-validator (UrlValidator. UrlValidator/ALLOW_LOCAL_URLS)]
 
-    (if (= method "ingest")
-      (if-not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))
-        (errors/throw-service-error
-          :bad-request
-          "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL.
-          If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
+    (when (and (= method "ingest")
+               (not (or (some? (re-matches #"arn:aws:sqs:.*" endpoint)) (.isValid default-url-validator endpoint))))
+      (errors/throw-service-error
+       :bad-request
+       (str "Subscription creation failed - Method was ingest, but the endpoint given was not valid SQS ARN or HTTP/S URL. "
+            "If it is a URL, make sure to give the full URL path like so: https://www.google.com.")))))
 
 (defn- check-subscription-limit
   "Given the configuration for subscription limit, this valdiates that the user has no more than
@@ -442,6 +442,6 @@
                   (pr-str concept-attribs) (:client-id request-context)))
     (api-core/generate-ingest-response headers
                                        (api-core/format-and-contextualize-warnings-existing-errors
-                                        (ingest/delete-concept
+                                        (ingest/delete-subscription
                                          request-context
                                          concept-attribs)))))

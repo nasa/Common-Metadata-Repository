@@ -6,7 +6,6 @@ from flask import Flask, jsonify
 from sns import Sns
 from botocore.exceptions import ClientError
 from access_control import AccessControl
-from search import Search
 from logger import logger
 import traceback
 
@@ -14,14 +13,14 @@ AWS_REGION = os.getenv("AWS_REGION")
 QUEUE_URL = os.getenv("QUEUE_URL")
 DEAD_LETTER_QUEUE_URL = os.getenv("DEAD_LETTER_QUEUE_URL")
 SUB_DEAD_LETTER_QUEUE_URL = os.getenv("SUB_DEAD_LETTER_QUEUE_URL")
-LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "10")
+LONG_POLL_TIME = os.getenv("LONG_POLL_TIME", "1")
 SNS_NAME = os.getenv("SNS_NAME")
 
 def receive_message(sqs_client, queue_url):
     """ Calls the queue to get one message from it to process the message. """
     response = sqs_client.receive_message(
         QueueUrl=queue_url,
-        MaxNumberOfMessages=1,
+        MaxNumberOfMessages=10,
         # Long Polling
         WaitTimeSeconds=(int (LONG_POLL_TIME)))
 
@@ -39,7 +38,7 @@ def delete_messages(sqs_client, queue_url, messages):
         receipt_handle = message['ReceiptHandle']
         delete_message(sqs_client=sqs_client, queue_url=queue_url, receipt_handle=receipt_handle)
 
-def process_messages(sns_client, topic, messages, access_control, search):
+def process_messages(sns_client, topic, messages, access_control):
     """ Processes a list of messages that was received from a queue. Check to see if ACLs pass for the granule.
         If the checks pass then send the notification. """
 
@@ -53,10 +52,14 @@ def process_messages(sns_client, topic, messages, access_control, search):
             subscriber = message_attributes['subscriber']['Value']
             collection_concept_id = message_attributes['collection-concept-id']['Value']
 
-            if(access_control.has_read_permission(subscriber, collection_concept_id)):
-                logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
-                message_msg = search.process_message(message_body['Message'])
-                message_body['Message'] = message_msg
+            # Re-enable ACL check with CMR-10855
+            #sets the time in milliseconds
+            #start_access_control = (time.time() * 1000)
+            acl_read = True #access_control.has_read_permission(subscriber, collection_concept_id)
+            #logger.info(f"Subscription Worker access control duration {((time.time() * 1000) - start_access_control)} ms.")
+            if( acl_read):
+                #logger.debug(f"Subscription worker: {subscriber} has permission to receive granule notifications for {collection_concept_id}")
+                message_body['Message'] = json.loads(message_body['Message'])
                 message['Body'] = message_body
                 sns_client.publish_message(topic, message)
             else:
@@ -75,7 +78,6 @@ def poll_queue(running):
     topic = sns_client.create_topic(SNS_NAME)
     
     access_control = AccessControl()
-    search = Search()
     while running.value:
         try:
              # Poll the SQS
@@ -83,16 +85,16 @@ def poll_queue(running):
 
              if messages:
                  try:
-                     process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control, search=search)
+                     process_messages(sns_client=sns_client, topic=topic, messages=messages, access_control=access_control)
                      delete_messages(sqs_client=sqs_client, queue_url=QUEUE_URL, messages=messages)
                  except Exception as e:
                      # This exception has already been logged, but capturing the exception here so that the message won't be deleted if it can't be processed.
                      # Do not do anything with the exception here so that we can process the dead letter queue.
                      None
-
+             
              dl_messages = receive_message(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL)
              if dl_messages:
-                 process_messages(sns_client=sns_client, topic=topic, messages=dl_messages, access_control=access_control, search=search)
+                 process_messages(sns_client=sns_client, topic=topic, messages=dl_messages, access_control=access_control)
                  delete_messages(sqs_client=sqs_client, queue_url=DEAD_LETTER_QUEUE_URL, messages=dl_messages)
 
         except Exception as e:
@@ -123,4 +125,3 @@ if __name__ == "__main__":
     # Wait for the polling process to finish before exiting
     poll_process.join()
     logger.info("The subscription worker exited the polling loop.")
-
