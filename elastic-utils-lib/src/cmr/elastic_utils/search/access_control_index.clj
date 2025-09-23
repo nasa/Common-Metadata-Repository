@@ -9,6 +9,7 @@
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.elastic-utils.search.es-index :as esi]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -133,7 +134,7 @@
 
 (defmethod esi/concept-type->index-info :access-group
   [_context _ _]
-  {:index-name group-index-name
+  {:index-name (esi-helper/index-alias group-index-name)
    :type-name group-type-name})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -416,7 +417,7 @@
 
 (defmethod esi/concept-type->index-info :acl
   [_context _ _]
-  {:index-name acl-index-name
+  {:index-name (esi-helper/index-alias acl-index-name)
    :type-name acl-type-name})
 
 (defmethod q2e/concept-type->field-mappings :acl
@@ -455,6 +456,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support for bulk indexing
 
-(def concept-type->index-name
-  {:acl acl-index-name
-   :access-group group-index-name})
+(def concept-type->index-alias
+  {:acl (esi-helper/index-alias acl-index-name)
+   :access-group (esi-helper/index-alias group-index-name)})

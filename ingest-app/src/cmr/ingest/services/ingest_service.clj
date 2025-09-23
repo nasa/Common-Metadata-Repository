@@ -25,6 +25,7 @@
   [cmr.ingest.services.ingest-service.granule
    ;; Public granule functions
    save-granule
+   delete-granule
    validate-granule
    validate-granule-with-parent-collection]
   [cmr.ingest.services.ingest-service.service
@@ -35,7 +36,9 @@
    save-tool]
   [cmr.ingest.services.ingest-service.subscription
    ;; Public subscription functions
-   save-subscription]
+   save-subscription
+   delete-subscription
+   refresh-subscription-cache]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
    save-variable])

@@ -42,7 +42,7 @@
     (let [{:keys [concept-id revision-id]} concept
           type (concept->type concept)
           elastic-version revision-id
-          index-name (access-control-index/concept-type->index-name type)
+          index-alias (access-control-index/concept-type->index-alias type)
           elastic-doc (parsed-concept->elastic-doc context concept concept)
           ;; "only index the document if the given version is equal or higher than
           ;; the version of the stored document."
@@ -51,7 +51,7 @@
                              {:_id concept-id
                               :version elastic-version
                               :version_type version-type})]
-      (assoc elastic-doc :_index index-name))
+      (assoc elastic-doc :_index index-alias))
 
     (catch Throwable e
       (error e (str "Skipping failed catalog item. Exception trying to convert "

@@ -90,4 +90,4 @@
     (common-enabled/validate-write-enabled request-context "ingest")
     (info (format "Deleting granule %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
-    (api-core/generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+    (api-core/generate-ingest-response headers (ingest/delete-granule request-context concept-attribs))))

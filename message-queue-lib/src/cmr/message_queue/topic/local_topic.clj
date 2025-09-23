@@ -78,23 +78,23 @@
                          :subscriber (:SubscriberId metadata)})
               :queue-url (:EndPoint metadata)
               :dead-letter-queue-url (queue/create-queue sqs-client (config/cmr-subscriptions-dead-letter-queue-name))
-              :concept-id (:concept-id subscription)}]
-     (if-not (seq (filter #(= (:concept-id %) (:concept-id subscription))
+              :name (:Name metadata)}]
+     (if-not (seq (filter #(= (:name %) (:Name metadata))
                           @subscription-atom))
        (swap! subscription-atom conj sub)
-       (let [new-subs (filter #(not= (:concept-id %) (:concept-id subscription)) @subscription-atom)]
+       (let [new-subs (filter #(not= (:name %) (:Name metadata)) @subscription-atom)]
          (reset! subscription-atom (conj new-subs sub))))
      ;; instead of the full subscription list, pass back the subscription concept id.
-     (:concept-id subscription)))
+     (:Name metadata)))
 
   (unsubscribe
    [_this subscription]
    ;; remove the subscription from the atom and send back the subscription id, not the atom contents.
    (swap! subscription-atom (fn [subs]
                               (doall
-                               (filter #(not= (:concept-id %) (:concept-id subscription))
+                               (filter #(not= (:name %) (:subscription-arn subscription))
                                        subs))))
-   (:concept-id subscription))
+   (:subscription-arn subscription))
 
   (publish
    [this message message-attributes _subject]

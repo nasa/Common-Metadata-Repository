@@ -1,8 +1,11 @@
 (ns cmr.indexer.data.concepts.deleted-granule
   "Contains functions to parse and convert deleted-granule index document"
   (:require
-   [cmr.indexer.data.elasticsearch :as es]
-   [cmr.indexer.data.index-set :as idx-set]))
+   [cmr.indexer.data.elasticsearch :as es]))
+
+(def deleted-granules-index-alias
+  "The alias of the deleted granules index in elastic search."
+  "1_deleted_granules_alias")
 
 (def deleted-granule-type-name
   "The name of the mapping type within the cubby elasticsearch index."
@@ -13,7 +16,7 @@
   [context concept-id revision-id options]
   (let [elastic-options (select-keys options [:ignore-conflict?])]
     (es/delete-document
-      context [idx-set/deleted-granule-index-name] deleted-granule-type-name
+      context [deleted-granules-index-alias] deleted-granule-type-name
       concept-id revision-id nil elastic-options)))
 
 (defn deleted-granule->elastic-doc
@@ -32,5 +35,5 @@
   [context concept concept-id revision-id elastic-version elastic-options]
   (let [es-doc (deleted-granule->elastic-doc concept)]
     (es/save-document-in-elastic
-      context [idx-set/deleted-granule-index-name] deleted-granule-type-name
+      context [deleted-granules-index-alias] deleted-granule-type-name
       es-doc concept-id revision-id elastic-version elastic-options)))

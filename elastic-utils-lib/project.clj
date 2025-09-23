@@ -19,7 +19,6 @@
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
-
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-parent "0.3.9"]
