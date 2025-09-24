@@ -785,6 +785,17 @@
   (when-let [c-concept-ids (util/seqify (:collection-concept-id params))]
     (mapcat (partial cc/concept-id-validation :collection-concept-id) c-concept-ids)))
 
+(defn- timeline-collection-identifier-validation
+  "Validates that collection identifier parameters are present for timeline searches.
+   Accepts collection-concept-id, entry-id, entry-title, provider, or short-name + version combination."
+  [_concept-type params]
+  (when-not (or (:collection-concept-id params)
+                (:concept-id params)
+                (:entry-id params)
+                (:entry-title params)
+                (and (:short-name params) (:version params)))
+    ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]))
+
 (defn- timeline-start-date-validation
   "Validates the timeline start date parameter"
   [_concept-type params]
@@ -1057,6 +1068,7 @@
         regular-params (dissoc safe-params :interval :start-date :end-date)
         errors (concat type-errors
                        (mapcat #(% :granule regular-params) (parameter-validations :granule))
+                       (timeline-collection-identifier-validation :granule safe-params)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors)))
