@@ -25,7 +25,7 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? idx-set/deleted-granule-index-name
+  (index/doc-present? idx-set/deleted-granules-index-alias
                       deleted-granule/deleted-granule-type-name
                       concept-id
                       es-config/gran-elastic-name))

@@ -378,13 +378,16 @@
        (handle-bulk-index-response response)))))
 
 (defn get-es-cluster-conn
-  [context es-index]
-  ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
+  [context es-index-or-alias]
+  ;; if es-index-or-alias is granule type then get granule connection, else get the non-gran cluster connection
   (let [cluster-name (if
-                       (and (not (= es-index (idx-set/collections-index)))
-                            (or (string/starts-with? es-index idx-set/granule-index-name-prefix)
-                                (= es-index idx-set/small-collections-index-name)
-                                (= es-index idx-set/deleted-granule-index-name)))
+                       (and (not (= es-index-or-alias (idx-set/collections-index)))
+                            (not (= es-index-or-alias (idx-set/collections-index-alias)))
+                            (or (string/starts-with? es-index-or-alias idx-set/granule-index-name-prefix)
+                                (= es-index-or-alias idx-set/small-collections-index-name)
+                                (= es-index-or-alias idx-set/small-collections-index-alias)
+                                (= es-index-or-alias idx-set/deleted-granule-index-name)
+                                (= es-index-or-alias idx-set/deleted-granules-index-alias)))
                        (keyword es-config/gran-elastic-name)
                        (keyword es-config/elastic-name))]
     (indexer-util/context->conn context cluster-name)))
