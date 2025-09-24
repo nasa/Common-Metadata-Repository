@@ -260,6 +260,7 @@
    :DirectoryNames #(mapcat names->keywords (:DirectoryNames %))
    :LocationKeywords #(lk/location-keywords->spatial-keywords-for-indexing (:LocationKeywords %))
    :Projects #(mapcat names->keywords (:Projects %))
+   :OtherIdentifiers #(map :Identifier (:OtherIdentifiers %))
    :RelatedUrls #(mapcat related-url->keywords (:RelatedUrls %))
    :TilingIdentificationSystems #(map :TilingIdentificationSystemName (:TilingIdentificationSystems %))
    :ArchiveAndDistributionInformation #(archive-distribution-data-formats %)

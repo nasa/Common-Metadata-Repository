@@ -81,6 +81,7 @@
    :facets-size :string
    :shapefile :shapefile
    :simplify-shapefile :boolean
+   :identifier :string
 
    ;; Tag parameters
    :tag-data :tag-query

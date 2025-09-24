@@ -574,7 +574,9 @@
           :horizontal-data-resolutions float-prioritized-mapping
 
           ;; Direct Distribution Information
-          :s3-bucket-and-object-prefix-names m/string-field-mapping}
+          :s3-bucket-and-object-prefix-names m/string-field-mapping
+          :identifier           m/string-field-mapping
+          :identifier-lowercase m/string-field-mapping}
          spatial-coverage-fields))
 
 (declare deleted-granule-mapping)

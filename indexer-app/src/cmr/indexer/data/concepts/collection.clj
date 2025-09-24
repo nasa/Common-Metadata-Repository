@@ -209,7 +209,10 @@
       ;; provider's consortiums contains EOSDIS indicates the colleciton is an EOSDIS record.
       (distinct (conj consortiums "GEOSS"))
       consortiums)))
-
+(comment 
+  (println (:OtherIdentifiers collection))
+  (map :Identifier (:OtherIdentifiers collection))
+  )
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -350,7 +353,12 @@
                                               :HorizontalSpatialDomain
                                               :ResolutionAndCoordinateSystem
                                               :HorizontalDataResolution]))
-        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+        identifier (map :Identifier (:OtherIdentifiers collection))
+        identifier-lowercase (map util/safe-lowercase identifier)
+        _ (println "Identifier:" identifier)
+        _ (def collection collection)
+        _ (def concept concept)]
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
@@ -503,7 +511,9 @@
                                        (sort-by :Date)
                                        first
                                        :Date))
-                                (index-util/date->elastic c))}
+                                (index-util/date->elastic c))
+            :identifier identifier
+            :identifier-lowercase identifier-lowercase}
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
            (collection-temporal-elastic context concept-id collection)

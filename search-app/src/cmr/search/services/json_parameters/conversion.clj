@@ -82,6 +82,7 @@
    :additional-attribute-value :additional-attribute
    :additional-attribute-range :additional-attribute
    :tag :nested-condition
+   :identifier :string
 
    ;; query constructs
    :or :or

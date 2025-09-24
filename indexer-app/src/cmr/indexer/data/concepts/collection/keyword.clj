@@ -51,6 +51,7 @@
                      :CollectionPlatforms
                      :ProcessingLevel
                      :Projects
+                     :OtherIdentifiers
                      :RelatedUrls
                      :ScienceKeywords
                      :ShortName
