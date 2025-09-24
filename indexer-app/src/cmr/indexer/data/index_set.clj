@@ -80,6 +80,10 @@
   "The index to use for the small collections index"
   (str index-set-id "_small_collections_alias"))
 
+(def deleted-granules-index-alias
+  "The alias of the deleted granules index in elastic search."
+  "1_deleted_granules_alias")
+
 (def granule-index-name-prefix
   "The prefix to all granule indexes"
   (str index-set-id "_c"))
