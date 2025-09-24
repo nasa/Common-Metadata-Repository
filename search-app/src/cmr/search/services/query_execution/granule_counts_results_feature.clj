@@ -63,7 +63,7 @@
         (validate-path-to-condition query condition-path)
         true))))
 
-(defn- extract-spatial-conditions
+(defn extract-spatial-conditions
   "Returns a list of the spatial conditions in the query."
   [query]
   (extract-conditions query SpatialCondition))
