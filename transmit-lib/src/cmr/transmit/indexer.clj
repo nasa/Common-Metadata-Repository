@@ -27,6 +27,18 @@
   [conn index-set-id concept-id]
   (str (rebalance-collection-url conn index-set-id concept-id) "/finalize"))
 
+(defn- reshard-index-url
+  [conn index-set-id index]
+  (format "%s/index-sets/%s/reshard/%s" (conn/root-url conn) index-set-id index))
+
+(defn- start-reshard-index-url
+  [conn index-set-id index]
+  (str (reshard-index-url conn index-set-id index) "/start"))
+
+(defn- finalize-reshard-index-url
+  [conn index-set-id index]
+  (str (reshard-index-url conn index-set-id index) "/finalize"))
+
 (defn get-index-set
   "Submit a request to indexer to fetch an index-set assoc with an id"
   [context id]
@@ -48,7 +60,6 @@
       (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
                                       Index set app reported status: %s, error: %s"
                                       id status (pr-str (flatten (:errors body))))))))
-
 
 (defn- submit-rebalancing-collection-request
   "A helper function for submitting a request to modify the list of rebalancing collections."
@@ -79,3 +90,32 @@
   [context index-set-id concept-id]
   (submit-rebalancing-collection-request context index-set-id concept-id
                                          finalize-rebalance-collection-url nil))
+
+(defn- submit-reshard-index-request
+  "A helper function for submitting a request to reshard an index."
+  [context index-set-id index url-fn num-shards]
+  (let [query-params (when num-shards {:num_shards num-shards})]
+    (h/request context :indexer
+               {:url-fn #(url-fn % index-set-id index)
+                :method :put
+                :http-options {:headers {config/token-header (config/echo-system-token)}
+                               :content-type :json
+                               :query-params query-params}
+                :response-handler (fn [_request {:keys [status body]}]
+                                    (cond
+                                      (= status 200) nil
+                                      (= status 400) (errors/throw-service-errors :bad-request (:errors body))
+                                      (= status 404) (errors/throw-service-errors :not-found (:errors body))
+                                      :else (errors/internal-error!
+                                             (str "Unexpected status code:"
+                                                  status " response:" (pr-str body)))))})))
+
+(defn add-resharding-index
+  "Adds the specified index to the set of resharding indexes."
+  [context index-set-id index num-shards]
+  (submit-reshard-index-request context index-set-id index start-reshard-index-url num-shards))
+
+(defn finalize-resharding-index
+  "Finalizes the resharding index specified in the indexer application."
+  [context index-set-id index]
+  (submit-reshard-index-request context index-set-id index finalize-rebalance-collection-url nil))

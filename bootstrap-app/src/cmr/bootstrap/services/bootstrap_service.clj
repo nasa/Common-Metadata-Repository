@@ -258,3 +258,24 @@
    (rebalance-util/rebalancing-collection-counts context concept-id)
    :rebalancing-status
    (rebalance-util/rebalancing-collection-status context concept-id)))
+
+(defn start-reshard-index
+  "Kicks off index resharding. Throws exception when failing to change the index set."
+  [context index num-shards]
+  (let [target (str index "_" num-shards)]
+    (info (format "Starting to reshard index [%s] to target [%s] with [%d] shards."
+                  index target num-shards))
+    ;; (rebalancing-collections/validate-target target concept-id)
+      ;; This will throw an exception if the collection is already rebalancing
+    (indexer/add-resharding-index context indexer-index-set/index-set-id index
+                                  num-shards)
+
+      ;; Clear the cache so that the newest index set data will be used.
+      ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    (reset-caches-affected-by-rebalancing context)
+
+      ;; We must wait here so that any new granules coming in will start to pick up the new index set
+      ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
+      ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
+      ;; came in and was indexed only to the old collection but after we started reindexing the collection.
+    (wait-until-index-set-hash-cache-times-out)))
