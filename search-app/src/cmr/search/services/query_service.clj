@@ -530,7 +530,7 @@
         params (dissoc (common-params/sanitize-params params) :sort-key)
         _ (pv/validate-deleted-granules-params params)
         query (make-deleted-granules-query params)
-        results (es-helper/search (common-idx/context->conn meta-context)
+        results (es-helper/search (common-idx/context->conn meta-context es-config/gran-elastic-name)
                                   deleted-granules-index-alias
                                   deleted-granule-type-name
                                   query)
