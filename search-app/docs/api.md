@@ -2963,7 +2963,14 @@ It supports all normal granule parameters. It requires the following parameters.
   * `start_date` - The start date of the timeline intervals to search from.
   * `end_date` - The end date of to search from.
   * `interval` - The interval granularity. This can be one of year, month, day, hour, minute, or second. At least one granule found within the interval time will be considered coverage for that interval.
-  * `concept_id` - Specifies a collection concept id to search for. It is recommended that the timeline search be limited to a few collections for good performance.
+  * **Collection identifier** - One of the following parameters must be provided to specify which collection(s) to search:
+    * `concept_id` - Collection concept id.
+    * `collection_concept_id` - Collection concept id.
+    * `entry_id` - Collection entry id (concatenation of short_name and version).
+    * `entry_title` - Collection entry title.
+    * `short_name` and `version` - Both parameters must be provided together to identify a specific collection.
+  
+  It is recommended that the timeline search be limited to a few collections for good performance.
 
 The response format is in JSON. Intervals are returned as tuples containing three numbers like `[949363200,965088000,4]`. The two numbers are the start and stop date of the interval represented by the number of seconds since the epoch. The third number is the number of granules within that interval.
 
