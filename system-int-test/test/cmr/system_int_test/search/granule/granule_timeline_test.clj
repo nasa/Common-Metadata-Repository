@@ -92,14 +92,14 @@
 
         (testing "missing collection identifier"
           (is (= {:status 400
-                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
+                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, echo-collection-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
                  (search/get-granule-timeline {:start-date "2000-01-01T00:00:00Z"
                                                :end-date "2001-01-01T00:00:00Z"
                                                :interval :year}))))
 
         (testing "short-name without version"
           (is (= {:status 400
-                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
+                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, echo-collection-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
                  (search/get-granule-timeline {:start-date "2000-01-01T00:00:00Z"
                                                :end-date "2001-01-01T00:00:00Z"
                                                :interval :year
@@ -107,7 +107,7 @@
 
         (testing "version without short-name"
           (is (= {:status 400
-                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
+                  :errors ["Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, echo-collection-id, entry-id, entry-title, or both short-name and version) to limit the search scope."]}
                  (search/get-granule-timeline {:start-date "2000-01-01T00:00:00Z"
                                                :end-date "2001-01-01T00:00:00Z"
                                                :interval :year
@@ -154,7 +154,7 @@
 
         (testing "missing parameters with post"
           (is (= {:status 400 :errors ["Parameter [foo] was not recognized."
-                                       "Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, entry-id, entry-title, or both short-name and version) to limit the search scope."
+                                       "Timeline searches must include a collection identifier parameter (concept-id, collection-concept-id, echo-collection-id, entry-id, entry-title, or both short-name and version) to limit the search scope."
                                        "start_date is a required parameter for timeline searches"
                                        "end_date is a required parameter for timeline searches"
                                        "interval is a required parameter for timeline searches"]}
@@ -175,6 +175,15 @@
                 :results [{:concept-id (:concept-id coll1)
                            :intervals [["2000-01-01T00:00:00.000Z" "2002-01-01T00:00:00.000Z" 11]]}]}
                (search/get-granule-timeline {:collection-concept-id (:concept-id coll1)
+                                             :start-date "2000-01-01T00:00:00Z"
+                                             :end-date "2002-01-01T00:00:00Z"
+                                             :interval :year}))))
+
+      (testing "timeline search with echo-collection-id"
+        (is (= {:status 200
+                :results [{:concept-id (:concept-id coll1)
+                           :intervals [["2000-01-01T00:00:00.000Z" "2002-01-01T00:00:00.000Z" 11]]}]}
+               (search/get-granule-timeline {:echo-collection-id (:concept-id coll1)
                                              :start-date "2000-01-01T00:00:00Z"
                                              :end-date "2002-01-01T00:00:00Z"
                                              :interval :year}))))
