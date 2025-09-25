@@ -1,14 +1,16 @@
 (ns cmr.system-int-test.search.granule.granule-timeline-test
   "This tests the granule timeline feature of the search api."
   (:require
-   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.indexer.data.index-set :as i]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -328,19 +330,23 @@
                                             {:url-extension "json"}))))
 
       (testing "get and post matches"
-        (are [search-params]
-             (= (search/get-granule-timeline search-params)
-                (search/get-granule-timeline-with-post search-params))
+        (are3
+         [search-params]
+         (is (= (search/get-granule-timeline search-params)
+                (search/get-granule-timeline-with-post search-params)))
 
-          {:concept-id [(:concept-id coll1) (:concept-id coll2)]
-           :start-date "1992-01-01T00:00:00Z"
-           :end-date "2002-02-01T00:00:00Z"
-           :interval :year}
+         "concept-id"
+         {:concept-id [(:concept-id coll1) (:concept-id coll2)]
+          :start-date "1992-01-01T00:00:00Z"
+          :end-date "2002-02-01T00:00:00Z"
+          :interval :year}
 
-          {:entry-title ["Dataset1" "Dataset2"]
-           :start-date "1992-01-01T00:00:00Z"
-           :end-date "2002-02-01T00:00:00Z"
-           :interval :month}))
+         "entry-title"
+         {:entry-title ["Dataset1" "Dataset2"]
+          :start-date "1992-01-01T00:00:00Z"
+          :end-date "2002-02-01T00:00:00Z"
+          :interval :month}))
+      
       (testing "correct headers are returned"
         (let [response (search/get-granule-timeline {:concept-id (:concept-id coll1)
                                                      :start-date "2000-01-01T00:00:00Z"
