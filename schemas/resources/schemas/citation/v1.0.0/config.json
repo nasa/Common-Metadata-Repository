@@ -60,8 +60,9 @@
       "Field": ".RelatedIdentifiers",
       "Name": "Related-Identifier",
       "Mapping": "string",
-      "Indexer": "simple-array-field",
-      "Configuration": {"sub-fields": ["RelatedIdentifier"]}
+      "Indexer": "complex-fields-only",
+      "Configuration": {"sub-fields": ["RelatedIdentifier"],
+                        "format": "%s"}
     },
     {
       "Description": "Related Identifiers with Relationship Types", 
