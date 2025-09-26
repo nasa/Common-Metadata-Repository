@@ -195,21 +195,21 @@
         (info "Existing non-gran index set:" (pr-str existing-index-set))
         (info "New non-gran index set:" (pr-str expected-index-set)))))
 
-  (let [existing-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+  (let [existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
-        expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
+        expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
     (if (or (= "true" (:force params))
-            (index-set-requires-update? existing-index-set expected-index-set))
+            (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
       (do
-        (info "Updating the gran index set to " (pr-str expected-index-set))
-        (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-index-set true)
-        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-index-set))
+        (info "Updating the gran index set to " (pr-str expected-gran-index-set))
+        (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-gran-index-set true)
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
-        (info "Existing gran index set:" (pr-str existing-index-set))
-        (info "New gran index set:" (pr-str expected-index-set))))))
+        (info "Existing gran index set:" (pr-str existing-gran-index-set))
+        (info "New gran index set:" (pr-str expected-gran-index-set))))))
 
 (defn delete-granule-index
   "Delete an elastic index by name"
