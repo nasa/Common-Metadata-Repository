@@ -21,7 +21,8 @@
    [cmr.search.middleware.shapefile-simplification :as shapefile-simplifier]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
-   [compojure.core :refer [GET context routes]]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
+   [compojure.core :refer [GET POST context routes]]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]))
@@ -106,6 +107,14 @@
        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
      (api-routes/build-routes system)
      (site-routes/build-routes system)
+     (POST "/refresh-granule-counts-cache" {:keys [request-context params headers]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (granule-counts-cache/refresh-granule-counts-cache request-context)
+       {:status 200})
+     (POST "/clear-granule-counts-cache" {:keys [request-context params headers]}
+       (acl/verify-ingest-management-permission request-context :update)
+       (granule-counts-cache/clear-granule-counts-cache request-context)
+       {:status 200})
      (common-pages/not-found))))
 
 (defn handlers [system]
