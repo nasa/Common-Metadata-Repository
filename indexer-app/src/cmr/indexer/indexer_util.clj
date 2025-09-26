@@ -1,9 +1,7 @@
 (ns cmr.indexer.indexer-util
   "Provide util functions for indexer functionality"
   (:require
-    [cmr.common.log :as log :refer [info warn error]]
     [cmr.elastic-utils.config :as es-util-config]))
-
 
 (defn context->es-store
   "Returns the elastic store object in the context."

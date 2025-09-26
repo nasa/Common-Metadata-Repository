@@ -195,21 +195,21 @@
         (info "Existing non-gran index set:" (pr-str existing-index-set))
         (info "New non-gran index set:" (pr-str expected-index-set)))))
 
-  (let [existing-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+  (let [existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
-        expected-index-set (idx-set/gran-index-set extra-granule-indexes)]
+        expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
     (if (or (= "true" (:force params))
-            (index-set-requires-update? existing-index-set expected-index-set))
+            (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
       (do
-        (info "Updating the gran index set to " (pr-str expected-index-set))
-        (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-index-set true)
-        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-index-set))
+        (info "Updating the gran index set to " (pr-str expected-gran-index-set))
+        (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-gran-index-set true)
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
-        (info "Existing gran index set:" (pr-str existing-index-set))
-        (info "New gran index set:" (pr-str expected-index-set))))))
+        (info "Existing gran index set:" (pr-str existing-gran-index-set))
+        (info "New gran index set:" (pr-str expected-gran-index-set))))))
 
 (defn delete-granule-index
   "Delete an elastic index by name"
@@ -378,13 +378,16 @@
        (handle-bulk-index-response response)))))
 
 (defn get-es-cluster-conn
-  [context es-index]
-  ;; if es-index is granule type then get granule connection, else get the non-gran cluster connection
+  [context es-index-or-alias]
+  ;; if es-index-or-alias is granule type then get granule connection, else get the non-gran cluster connection
   (let [cluster-name (if
-                       (and (not (= es-index (idx-set/collections-index)))
-                            (or (string/starts-with? es-index idx-set/granule-index-name-prefix)
-                                (= es-index idx-set/small-collections-index-name)
-                                (= es-index idx-set/deleted-granule-index-name)))
+                       (and (not (= es-index-or-alias (idx-set/collections-index)))
+                            (not (= es-index-or-alias (idx-set/collections-index-alias)))
+                            (or (string/starts-with? es-index-or-alias idx-set/granule-index-name-prefix)
+                                (= es-index-or-alias idx-set/small-collections-index-name)
+                                (= es-index-or-alias idx-set/small-collections-index-alias)
+                                (= es-index-or-alias idx-set/deleted-granule-index-name)
+                                (= es-index-or-alias idx-set/deleted-granules-index-alias)))
                        (keyword es-config/gran-elastic-name)
                        (keyword es-config/elastic-name))]
     (indexer-util/context->conn context cluster-name)))
@@ -394,6 +397,8 @@
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
     (let [conn (get-es-cluster-conn context es-index)
+          ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
+          _ (info "CMR-10600 Saving doc for concept " concept-id " under index " es-index " in es cluster " conn)
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
@@ -412,6 +417,8 @@
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
   (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id elastic-id)]
+    ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
+    (info "CMR-10600 Get document of index " es-index " from ES cluster " es-cluster-name)
     (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)))
 
 (defn delete-document
@@ -422,6 +429,8 @@
    (doseq [es-index es-indexes]
      ;; Cannot use elasticsearch for deletion as we require special headers on delete
      (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id concept-id)
+           ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
+           _ (info "CMR-10600 Deleting concept " concept-id " with index " es-index " in ES cluster " es-cluster-name)
            {:keys [admin-token]} (context->es-config context es-cluster-name)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options
