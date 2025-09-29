@@ -76,13 +76,17 @@
   "The index to use for the small collections index"
   (str index-set-id "_small_collections"))
 
-(def deleted-granule-index-name
-  "The name of the index in elastic search."
-  (str index-set-id "_deleted_granules"))
+(def small-collections-index-alias
+  "The index alias to use for the small collections index"
+  (str index-set-id "_small_collections_alias"))
 
 (def deleted-granules-index-alias
   "The alias of the deleted granules index in elastic search."
   "1_deleted_granules_alias")
+
+(def deleted-granule-index-name
+  "The name of the index in elastic search."
+  "1_deleted_granules")
 
 (def granule-index-name-prefix
   "The prefix to all granule indexes"
