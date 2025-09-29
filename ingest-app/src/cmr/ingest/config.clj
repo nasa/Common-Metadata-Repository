@@ -154,3 +154,7 @@
 (defconfig validate-umm-var-keywords
   "Flag for whether or not to validate UMM-Var against KMS keywords."
   {:default false :type Boolean})
+
+(defconfig ingest-subscription-enabled
+  "This indicates whether or not ingest granule subscriptions are enabled."
+  {:default true :type Boolean})
