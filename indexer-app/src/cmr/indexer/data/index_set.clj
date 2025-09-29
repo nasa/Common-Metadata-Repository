@@ -65,10 +65,6 @@
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
 
-(def deleted-granules-index-alias
-  "The alias of the deleted granules index in elastic search."
-  "1_deleted_granules_alias")
-
 (def ^:private MAX_RESULT_WINDOW
   "Number of max results can be returned in an Elasticsearch query."
   1000000)
