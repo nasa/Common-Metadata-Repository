@@ -11,6 +11,7 @@
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search :as search]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.in-memory-cache :as mem-cache]
@@ -130,6 +131,7 @@
                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+                      provider-cache/cache-key (provider-cache/create-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)

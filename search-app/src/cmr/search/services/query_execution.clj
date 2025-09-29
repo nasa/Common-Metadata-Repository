@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-execution
   (:require
    [clojure.set :as set]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
@@ -20,7 +21,7 @@
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
    [cmr.transmit.config :as tc])
   (:import
-   (cmr.common.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
+   (cmr.common.services.search.query_model Query StringCondition StringsCondition ConditionGroup MatchNoneCondition)
    (cmr.search.models.query CollectionQueryCondition)))
 
 (def specific-elastic-items-format?
@@ -41,7 +42,7 @@
   "Returns true if the query should be executed directly against the database and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
-       ;; elastic + the metadata cache for them
+   ;; elastic + the metadata cache for them
    (= :granule concept-type)
    (specific-items-query? query)
    (mt/transformer-supported-format? result-format)
@@ -139,13 +140,23 @@
         (assoc :items items)
         (update :hits - (- original-item-count item-count)))))
 
+(defn- granule-match-none?
+  "Returns true if this is a granule query with a MatchNone condition, meaning we should skip querying ES."
+  [{:keys [concept-type condition]}]
+  (and (= concept-type :granule)
+       (instance? MatchNoneCondition condition)))
+
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
   (let [processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
-        elastic-results (idx/execute-query context processed-query)
+        elastic-results (if (granule-match-none? processed-query)
+                          (do
+                            (info "This is a granule search with MatchNone condition, skip querying ES.")
+                            common-qe/empty-es-results)
+                          (idx/execute-query context processed-query))
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
