@@ -5,21 +5,12 @@
   (:require
    [cmr.common-app.config :as common-config]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.jobs :refer [defjob]]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.search.data.elastic-search-index :as idx]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]))
-
-(def REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL
-  "The frequency in seconds of the refresh-has-granules-or-cwic-map-job"
-  ;; default to 1 hour
-  3600)
+   [cmr.search.data.elastic-search-index :as idx]))
 
 (def has-granules-or-cwic-cache-key
   :has-granules-or-cwic-map)
@@ -37,23 +28,14 @@
 (defn create-has-granules-or-opensearch-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  ;; Single threaded lookup cache used to prevent indexing multiple items at the same time with
-  ;; empty cache cause lots of lookups in elasticsearch.
-  (stl-cache/create-single-thread-lookup-cache
-    ;; Use the fall back cache so that the data is fast and available in memory
-    ;; But if it's not available we'll fetch it from redis.
-    (fallback-cache/create-fallback-cache
-
-      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
-      ;; have only a single indexer refreshing its cache.
-      (consistent-cache/create-consistent-cache
-       {:hash-timeout-seconds (* 5 60)})
-      (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
-                                       :primary-connection (redis-config/redis-conn-opts)}))))
+  (redis-cache/create-redis-cache {:keys-to-track [has-granules-or-opensearch-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn get-cwic-collections
-  "Returns the collection granule count by searching elasticsearch by aggregation"
-  [context _provider-ids]
+  "Returns any CWIC collections and sets the the granule count to 1 so that these collections
+  are included with the query."
+  [context]
   (let [condition (qm/string-conditions :consortiums ["CWIC"])
         query (qm/query {:concept-type :collection
                          :condition condition
@@ -65,8 +47,9 @@
             [coll-id 1]))))
 
 (defn get-opensearch-collections
-  "Returns the collection granule count by searching elasticsearch by aggregation"
-  [context _provider-ids]
+  "Returns any Opensearch collections and sets the the granule count to 1 so that these collections
+  are included with the query."
+  [context]
   (let [condition (gc/or-conds (map #(qm/string-conditions :consortiums [%])
                                     (common-config/opensearch-consortiums)))
         query (qm/query {:concept-type :collection
@@ -92,13 +75,30 @@
   (into {} (for [[coll-id num-granules] coll-gran-counts]
              [coll-id (> num-granules 0)])))
 
+(defn create-has-granules-or-cwic-map
+  "Creates the has granules or cwic map by combining all collections
+  that have granules with CWIC collections. The map looks like the following:
+  {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" true}"
+  [context]
+  (collection-granule-counts->has-granules-or-cwic-map
+   (merge
+    (idx/get-collection-granule-counts context nil)
+    (get-cwic-collections context))))
+
+(defn create-has-granules-or-opensearch-map
+  "Creates the has granules or opensearch map by combining all collections
+  that have granules with Opensearch collections. The map looks like the following:
+  {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" true}"
+  [context]
+  (collection-granule-counts->has-granules-or-opensearch-map
+   (merge
+    (idx/get-collection-granule-counts context nil)
+    (get-opensearch-collections context))))
+
 (defn refresh-has-granules-or-cwic-map
   "Gets the latest provider holdings and updates the has-granules-or-cwic-map stored in the cache."
   [context]
-  (let [has-granules-or-cwic-map (collection-granule-counts->has-granules-or-cwic-map
-                                  (merge
-                                   (idx/get-collection-granule-counts context nil)
-                                   (get-cwic-collections context nil)))]
+  (let [has-granules-or-cwic-map (create-has-granules-or-cwic-map context)]
     (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
                      has-granules-or-cwic-cache-key
                      has-granules-or-cwic-map)))
@@ -106,10 +106,7 @@
 (defn refresh-has-granules-or-opensearch-map
   "Gets the latest provider holdings and updates the has-granules-or-opensearch-map stored in the cache."
   [context]
-  (let [has-granules-or-opensearch-map (collection-granule-counts->has-granules-or-opensearch-map
-                                        (merge
-                                         (idx/get-collection-granule-counts context nil)
-                                         (get-opensearch-collections context nil)))]
+  (let [has-granules-or-opensearch-map (create-has-granules-or-opensearch-map context)]
     (cache/set-value (cache/context->cache context has-granules-or-opensearch-cache-key)
                      :has-granules-or-opensearch has-granules-or-opensearch-map)))
 
@@ -122,11 +119,7 @@
   (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granules-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
                      has-granules-or-cwic-cache-key
-                     (fn []
-                       (collection-granule-counts->has-granules-or-cwic-map
-                        (merge
-                         (idx/get-collection-granule-counts context nil)
-                         (get-cwic-collections context nil)))))))
+                     (fn [] (create-has-granules-or-cwic-map context)))))
 
 (defn get-has-granules-or-opensearch-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
@@ -137,25 +130,4 @@
     (cache/get-value has-granules-or-opensearch-map-cache
                      :has-granules-or-opensearch
                      (fn []
-                       (collection-granule-counts->has-granules-or-opensearch-map
-                        (merge
-                         (idx/get-collection-granule-counts context nil)
-                         (get-opensearch-collections context nil)))))))
-
-(defjob RefreshHasGranulesOrCwicMapJob
-  [_ctx system]
-  (refresh-has-granules-or-cwic-map {:system system}))
-
-(defjob RefreshHasGranulesOrOpenSearchMapJob
-  [_ctx system]
-  (refresh-has-granules-or-opensearch-map {:system system}))
-
-(defn refresh-has-granules-or-cwic-map-job
-  [job-key]
-  {:job-type RefreshHasGranulesOrCwicMapJob
-   :job-key job-key
-   :interval REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL})
-
-(def refresh-has-granules-or-opensearch-map-job
-  {:job-type RefreshHasGranulesOrOpenSearchMapJob
-   :interval REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL})
+                       (create-has-granules-or-opensearch-map context)))))
