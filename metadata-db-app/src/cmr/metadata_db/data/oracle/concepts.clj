@@ -644,6 +644,18 @@
                 []
                 concept-id-rev-ids-map))))
 
+(defn get-collection-concept-ids
+  [db provider granule-concept-ids]
+  (let [table (tables/get-table-name provider :granule)
+        placeholders (str "(" (string/join "," (repeat (count granule-concept-ids) "?")) ")")
+        stmt (into [(format "select distinct parent_collection_id
+                               from %s a
+                              where a.concept_id in %s"
+                            table placeholders)]
+                   granule-concept-ids)
+        result (su/query db stmt)]
+    (map :parent_collection_id result)))
+
 (def behaviour
   {:generate-concept-id generate-concept-id
    :get-concept-id get-concept-id
@@ -661,7 +673,8 @@
    :reset reset
    :get-expired-concepts get-expired-concepts
    :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
-   :get-old-concept-revisions get-old-concept-revisions})
+   :get-old-concept-revisions get-old-concept-revisions
+   :get-collection-concept-ids get-collection-concept-ids})
 
 (extend OracleStore
         concepts/ConceptsStore
