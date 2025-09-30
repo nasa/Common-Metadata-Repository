@@ -75,8 +75,11 @@
    (let [granule-counts (func)
          cache (cache/context->cache context granule-counts-cache-key)]
      (log/info "Refreshing granule counts cache with" (count granule-counts) "entries")
-     (when cache
-       (cache/set-value cache granule-counts-cache-key granule-counts)))))
+     (if cache
+       (cache/set-value cache granule-counts-cache-key granule-counts)
+       (let [error-msg "Granule counts cache not found in context - refresh skipped"]
+         (log/error error-msg)
+         (throw (IllegalStateException. error-msg)))))))
 
 (defn get-granule-counts
   "Retrieves the cached granule counts, or fetches them if not cached."

@@ -23,6 +23,7 @@
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.routes :as routes]
@@ -32,8 +33,7 @@
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
-   [cmr.transmit.urs :as urs]
-   [cmr.search.data.granule-counts-cache :as granule-counts-cache]))
+   [cmr.transmit.urs :as urs]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -174,3 +174,4 @@
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
     stopped-system))
+
