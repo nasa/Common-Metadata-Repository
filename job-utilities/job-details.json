@@ -46,13 +46,13 @@
             "request-type" : "POST"
         },
         "scheduling" : {
-            "type" : "interval",
+            "type" : "cron",
             "timing" : {
                 "minutes" : 10,
-                "hours" : 1,
-                "day-of-month" : "*",
+                "hours" : "*",
+                "day-of-month" : "?",
                 "month" : "*",
-                "day-of-week" : "?",
+                "day-of-week" : "*",
                 "year" : "*"
             }
         }
@@ -65,13 +65,13 @@
             "request-type" : "POST"
         },
         "scheduling" : {
-            "type" : "interval",
+            "type" : "cron",
             "timing" : {
                 "minutes" : 10,
-                "hours" : 1,
-                "day-of-month" : "*",
+                "hours" : "*",
+                "day-of-month" : "?",
                 "month" : "*",
-                "day-of-week" : "?",
+                "day-of-week" : "*",
                 "year" : "*"
             }
         }
