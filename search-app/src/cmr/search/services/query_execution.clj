@@ -21,7 +21,7 @@
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
    [cmr.transmit.config :as tc])
   (:import
-   (cmr.common.services.search.query_model Query StringCondition StringsCondition ConditionGroup MatchNoneCondition)
+   (cmr.common.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
    (cmr.search.models.query CollectionQueryCondition)))
 
 (def specific-elastic-items-format?
@@ -140,23 +140,13 @@
         (assoc :items items)
         (update :hits - (- original-item-count item-count)))))
 
-(defn- granule-match-none?
-  "Returns true if this is a granule query with a MatchNone condition, meaning we should skip querying ES."
-  [{:keys [concept-type condition]}]
-  (and (= concept-type :granule)
-       (instance? MatchNoneCondition condition)))
-
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
   (let [processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
-        elastic-results (if (granule-match-none? processed-query)
-                          (do
-                            (info "This is a granule search with MatchNone condition, skip querying ES.")
-                            common-qe/empty-es-results)
-                          (idx/execute-query context processed-query))
+        elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
