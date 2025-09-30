@@ -1,5 +1,6 @@
 (ns cmr.search.data.granule-counts-cache
   (:require
+   [cmr.common.log :as log]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -73,16 +74,16 @@
   ([context func]
    (let [granule-counts (func)
          cache (cache/context->cache context granule-counts-cache-key)]
-     (print "Refreshing granule counts cache with" (count granule-counts) "entries")
+     (log/info "Refreshing granule counts cache with" (count granule-counts) "entries")
      (when cache
        (cache/set-value cache granule-counts-cache-key granule-counts)))))
 
 (defn get-granule-counts
   "Retrieves the cached granule counts, or fetches them if not cached."
   ([context]
-   (get-granule-counts context nil #(get-collection-granule-counts context nil)))
+   (get-granule-counts context nil get-collection-granule-counts))
   ([context provider-ids]
-   (get-granule-counts context provider-ids #(get-collection-granule-counts context provider-ids)))
+   (get-granule-counts context provider-ids get-collection-granule-counts))
   ([context provider-ids get-collection-granule-counts-fn]
    (cache/get-value (cache/context->cache context granule-counts-cache-key)
                     granule-counts-cache-key

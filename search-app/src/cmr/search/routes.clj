@@ -107,11 +107,12 @@
        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
      (api-routes/build-routes system)
      (site-routes/build-routes system)
-     (POST "/refresh-granule-counts-cache" {:keys [request-context params headers]}
+     ;; Endpoints for managing the granule counts cache
+     (POST "/refresh-granule-counts-cache" {:keys [request-context]}
        (acl/verify-ingest-management-permission request-context :update)
        (granule-counts-cache/refresh-granule-counts-cache request-context)
        {:status 200})
-     (POST "/clear-granule-counts-cache" {:keys [request-context params headers]}
+     (POST "/clear-granule-counts-cache" {:keys [request-context]}
        (acl/verify-ingest-management-permission request-context :update)
        (granule-counts-cache/clear-granule-counts-cache request-context)
        {:status 200})

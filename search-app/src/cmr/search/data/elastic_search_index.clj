@@ -183,8 +183,6 @@
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids] 
-  (def context context)
-  (def provider-ids provider-ids)
   (let [condition (if (seq provider-ids)
                     (qm/string-conditions :provider-id provider-ids true)
                     qm/match-all)
