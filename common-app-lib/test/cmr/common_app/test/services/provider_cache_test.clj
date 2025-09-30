@@ -61,9 +61,8 @@
               :small false
               :consortiums "EOSDIS GEOSS"}
              (provider-cache/get-provider test-context "PROV2"))))
-    (testing "Get a non-existent provider throws an exception"
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (provider-cache/get-provider test-context "PROV3"))))))
+    (testing "Get a non-existent provider returns nil"
+      (is (nil? (provider-cache/get-provider test-context "PROV3"))))))
 
 (deftest job-config-test
   (testing "testing the provider cache refresh job"
