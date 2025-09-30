@@ -33,7 +33,7 @@
                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn get-cwic-collections
-  "Returns any CWIC collections and sets the the granule count to 1 so that these collections
+  "Returns any CWIC collections and sets the granule count to 1 so that these collections
   are included with the query."
   [context]
   (let [condition (qm/string-conditions :consortiums ["CWIC"])
@@ -47,7 +47,7 @@
             [coll-id 1]))))
 
 (defn get-opensearch-collections
-  "Returns any Opensearch collections and sets the the granule count to 1 so that these collections
+  "Returns any Opensearch collections and sets the granule count to 1 so that these collections
   are included with the query."
   [context]
   (let [condition (gc/or-conds (map #(qm/string-conditions :consortiums [%])
