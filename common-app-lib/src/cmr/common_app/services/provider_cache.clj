@@ -78,13 +78,8 @@
 (defn get-provider
   "Return the provider for the given provider id."
   [context provider-id]
-  (let [providers (vals (get-cached-providers context))
-        provider  (some #(when (= (:provider-id %) provider-id) %) providers)]
-    (if provider
-      provider
-      (errors/throw-service-errors
-       :bad-request
-       [(provider-does-not-exist provider-id)]))))
+  (let [providers (vals (get-cached-providers context))]
+    (some #(when (= (:provider-id %) provider-id) %) providers)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
