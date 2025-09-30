@@ -341,7 +341,7 @@
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
         coll-ids-from-granules (mapcat (fn [[provider-id granules]]
-                                         (let [provider (provider-cache/get-provider context provider-id)]
+                                         (when-let [provider (provider-cache/get-provider context provider-id)]
                                            (cs/get-collection-concept-ids mdb-context provider granules)))
                                        granules-by-provider)
 
