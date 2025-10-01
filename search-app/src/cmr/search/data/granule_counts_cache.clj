@@ -21,7 +21,7 @@
 (def granule-counts-cache-key
   :granule-counts-cache)
 
-(defn create-granule-counts-cache
+(defn create-redis-cache-client
   "Creates and returns a new cache for storing granule counts."
   []
   (redis-cache/create-redis-cache {:keys-to-track [granule-counts-cache-key]
@@ -97,5 +97,10 @@
 (defn clear-granule-counts-cache
   "Clears the granule counts cache."
   [context]
-  (cache/reset (cache/context->cache context granule-counts-cache-key)))
+  (let [cache (cache/context->cache context granule-counts-cache-key)]
+    (if cache
+      (cache/reset cache)
+      (let [error-msg "Granule counts cache not found in context - clear skipped"]
+        (log/error error-msg)
+        (throw (IllegalStateException. error-msg))))))
 

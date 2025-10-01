@@ -139,7 +139,7 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)
-                      granule-counts-cache/granule-counts-cache-key (granule-counts-cache/create-granule-counts-cache)}
+                      granule-counts-cache/granule-counts-cache-key (granule-counts-cache/create-redis-cache-client)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
