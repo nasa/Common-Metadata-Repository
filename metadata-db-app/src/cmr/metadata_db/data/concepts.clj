@@ -121,7 +121,7 @@
 
   (get-collection-concept-ids
    [db provider granule-concept-ids]
-    "Returns the collectioin concept ids for the given provider and granule concept id
+    "Returns the collection concept ids for the given provider and granule concept id
      provider and granule concept id has been verified to match before invoking this function."))
 
 (defn search-with-params

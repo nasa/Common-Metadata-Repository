@@ -1,7 +1,6 @@
 (ns cmr.search.services.query-execution
   (:require
    [clojure.set :as set]
-   [cmr.common.log :as log :refer [info]]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
