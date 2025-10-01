@@ -53,17 +53,17 @@
         (e/internal-error! (str "There were [" extra-provider-count "] more providers with granules than we ever expected to see.")))
 
     (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
-                   :let [extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])]
-                         coll-bucket (get-in provider-bucket [:by-collection-id :buckets])
                    :let [provider-id (:key provider-bucket)
-                         coll-seq-id (:key coll-bucket)
-                         num-granules (:doc_count coll-bucket)]]
-               (do
-                 (when (> extra-collection-count 0)
+                         extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])
+                         _ (when (> extra-collection-count 0)
                    (e/internal-error!
                     (format "Provider %s has more collections ([%s]) with granules than we support"
                             provider-id
                             extra-collection-count)))
+                         coll-buckets (get-in provider-bucket [:by-collection-id :buckets])]]
+               (for [coll-bucket coll-buckets
+                     :let [coll-seq-id (:key coll-bucket)
+                           num-granules (:doc_count coll-bucket)]]
                  [(concepts/build-concept-id {:sequence-number coll-seq-id
                                               :provider-id provider-id
                                               :concept-type :collection})
@@ -98,3 +98,4 @@
   "Clears the granule counts cache."
   [context]
   (cache/reset (cache/context->cache context granule-counts-cache-key)))
+
