@@ -75,25 +75,39 @@
   (into {} (for [[coll-id num-granules] coll-gran-counts]
              [coll-id (> num-granules 0)])))
 
+(defn get-collection-granule-counts
+  "Gets the granule counts for all collections. This function exists so that this function
+  can be replaced for testing purposes."
+  [context]
+  (idx/get-collection-granule-counts context nil))
+
 (defn create-has-granules-or-cwic-map
   "Creates the has granules or cwic map by combining all collections
   that have granules with CWIC collections. The map looks like the following:
   {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" true}"
-  [context]
-  (collection-granule-counts->has-granules-or-cwic-map
-   (merge
-    (idx/get-collection-granule-counts context nil)
-    (get-cwic-collections context))))
+  ([context]
+   (create-has-granules-or-cwic-map context
+                                    get-collection-granule-counts
+                                    get-cwic-collections))
+  ([context get-collection-granule-counts-fn get-cwic-collections-fn]
+   (collection-granule-counts->has-granules-or-cwic-map
+    (merge
+     (get-collection-granule-counts-fn context)
+     (get-cwic-collections-fn context)))))
 
 (defn create-has-granules-or-opensearch-map
   "Creates the has granules or opensearch map by combining all collections
   that have granules with Opensearch collections. The map looks like the following:
   {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" true}"
-  [context]
-  (collection-granule-counts->has-granules-or-opensearch-map
-   (merge
-    (idx/get-collection-granule-counts context nil)
-    (get-opensearch-collections context))))
+  ([context]
+   (create-has-granules-or-opensearch-map context
+                                          get-collection-granule-counts
+                                          get-opensearch-collections))
+  ([context get-collection-granule-counts-fn get-opensearch-collections-fn]
+   (collection-granule-counts->has-granules-or-opensearch-map
+    (merge
+     (get-collection-granule-counts-fn context)
+     (get-opensearch-collections-fn context)))))
 
 (defn refresh-has-granules-or-cwic-map
   "Gets the latest provider holdings and updates the has-granules-or-cwic-map stored in the cache."
@@ -108,7 +122,8 @@
   [context]
   (let [has-granules-or-opensearch-map (create-has-granules-or-opensearch-map context)]
     (cache/set-value (cache/context->cache context has-granules-or-opensearch-cache-key)
-                     :has-granules-or-opensearch has-granules-or-opensearch-map)))
+                     has-granules-or-opensearch-cache-key
+                     has-granules-or-opensearch-map)))
 
 (defn get-has-granules-or-cwic-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
@@ -128,6 +143,6 @@
   [context]
   (let [has-granules-or-opensearch-map-cache (cache/context->cache context has-granules-or-opensearch-cache-key)]
     (cache/get-value has-granules-or-opensearch-map-cache
-                     :has-granules-or-opensearch
+                     has-granules-or-opensearch-cache-key
                      (fn []
                        (create-has-granules-or-opensearch-map context)))))
