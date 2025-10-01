@@ -332,29 +332,27 @@
 (defmethod common-params/parameter->condition :granule-concept-id
   [context concept-type _param value options]
   (let [values (if (sequential? value) value [value])
-        {granule-concept-ids    :granule
+        {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
 
-        ;; get collection concept ids for granule-concept-ids from metadata-db
-        granules-by-provider (group-by (comp :provider-id cc/parse-concept-id)
-                                       granule-concept-ids)
-        mdb-context (assoc context :system
-                           (get-in context [:system :embedded-systems :metadata-db]))
-        coll-ids-from-granules (mapcat (fn [[provider-id granules]]
-                                         (when-let [provider (provider-cache/get-provider context provider-id)]
-                                           (cs/get-collection-concept-ids mdb-context provider granules)))
-                                       granules-by-provider)
+        ;; derive collection IDs only if no collection-concept-ids provided
+        coll-ids-from-granules
+        (when (empty? collection-concept-ids)
+          (let [granules-by-provider (group-by (comp :provider-id cc/parse-concept-id)
+                                               granule-concept-ids)
+                mdb-context (assoc context :system
+                                   (get-in context [:system :embedded-systems :metadata-db]))]
+            (mapcat (fn [[provider-id granules]]
+                      (when-let [provider (provider-cache/get-provider context provider-id)]
+                        (cs/get-collection-concept-ids mdb-context provider granules)))
+                    granules-by-provider)))
 
-        ;; take the intersaction between collection concept ids provided in params and the ones derived from the granule concept ids
+        ;; choose collection ids based on params and/or granule lookup
         all-coll-ids (cond
-                       (and (seq collection-concept-ids) (seq coll-ids-from-granules))
-                       (set/intersection (set collection-concept-ids)
-                                         (set coll-ids-from-granules))
-
                        (seq collection-concept-ids)
                        collection-concept-ids
 
-                       :else
+                       (seq coll-ids-from-granules)
                        coll-ids-from-granules)]
     (if (seq all-coll-ids)
       (let [collection-cond (qm/->CollectionQueryCondition
