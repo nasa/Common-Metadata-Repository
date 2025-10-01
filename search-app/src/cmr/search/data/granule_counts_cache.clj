@@ -12,8 +12,10 @@
    [cmr.redis-utils.redis-cache :as redis-cache]))
 
 (defconfig granule-counts-cache-time-to-live
-  "Time to live for granule counts cache in seconds."
-  {:default 3600
+  "Time to live for granule counts cache in seconds.
+  Set to 4 hours to ensure the cache persists long enough for data to be fully loaded and utilized
+  before a refresh is needed, preventing premature cache emptying." 
+  {:default (* 4 3600)
    :type Long})
 
 (def granule-counts-cache-key
