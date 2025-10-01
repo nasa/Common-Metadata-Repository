@@ -1153,7 +1153,7 @@
       concept-truncation-batch-size)))
 
 (defn get-collection-concept-ids
-  "Returns the collectioin concept ids for the given provider and granule concept id
+  "Returns the collection concept ids for the given provider and granule concept id
    provider and granule concept id has been verified to match before invoking this function."
   [context provider granule-concept-ids]
   (let [db (util/context->db context)]

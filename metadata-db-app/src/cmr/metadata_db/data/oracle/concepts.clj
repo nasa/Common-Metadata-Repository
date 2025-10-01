@@ -646,15 +646,28 @@
 
 (defn get-collection-concept-ids
   [db provider granule-concept-ids]
-  (let [table (tables/get-table-name provider :granule)
-        placeholders (str "(" (string/join "," (repeat (count granule-concept-ids) "?")) ")")
-        stmt (into [(format "select distinct parent_collection_id
-                               from %s a
-                              where a.concept_id in %s"
-                            table placeholders)]
-                   granule-concept-ids)
-        result (su/query db stmt)]
-    (map :parent_collection_id result)))
+  (cond
+    (empty? granule-concept-ids)
+    []
+
+    :else
+    (let [table (tables/get-table-name provider :granule)
+          ;; Oracle caps IN clause at 1000, so chunk the IDs
+          ;; This is only theoretical, it is unlikely we will get close to even 100.
+          batches (partition-all 900 granule-concept-ids)]
+      (->> batches
+           (mapcat
+            (fn [batch]
+              (let [placeholders (str "(" (string/join "," (repeat (count batch) "?")) ")")
+                    stmt (into [(format "select distinct parent_collection_id
+                                            from %s a
+                                           where a.concept_id in %s"
+                                        table placeholders)]
+                               batch)
+                    result (su/query db stmt)]
+                (map :parent_collection_id result))))
+           distinct
+           vec))))
 
 (def behaviour
   {:generate-concept-id generate-concept-id
