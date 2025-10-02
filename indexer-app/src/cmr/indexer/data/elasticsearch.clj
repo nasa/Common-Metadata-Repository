@@ -123,8 +123,7 @@
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
-
-      ;; Compare them to see if they're the same
+;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
       (do
         (warn "Index set does not match you may want to update it.")
@@ -173,14 +172,13 @@
   (create-indexes context))
 
 (defrecord ESstore
-  [;; configuration of host, port and admin-token for elasticsearch
-   config
+           [;; configuration of host, port and admin-token for elasticsearch
+            config
 
    ;; The connection to elasticsearch
-   conn]
+            conn]
 
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
@@ -314,6 +312,15 @@
            conn (indexer-util/context->conn context)
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
+
+(defn migrate-index
+  "Copy contents of one index into another. Used during resharding."
+  [context source-index target-index]
+  (let [conn (indexer-util/context->conn context)
+        result (es-helper/migrate-index conn source-index target-index)]
+    (when (:error result)
+      (errors/internal-error!
+       (format "Migrating index [%s] to index [%s] failed" source-index target-index)))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."

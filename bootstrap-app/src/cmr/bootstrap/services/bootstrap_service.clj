@@ -12,6 +12,7 @@
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.indexer.data.index-set :as indexer-index-set]
+   [cmr.indexer.services.index-set-service :as index-set-services]
    [cmr.indexer.system :as indexer-system]
    [cmr.transmit.indexer :as indexer]
    [cmr.common.util :as util]
@@ -32,6 +33,7 @@
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
+   :migrate-index :core-async-dispatcher
    :fingerprint-by-id :synchronous-dispatcher
    :fingerprint-variables :message-queue-dispatcher
    :delete-concepts-from-index-by-id :core-async-dispatcher
@@ -149,6 +151,11 @@
      (dispatch/index-generics dispatcher context concept-type provider-id)
      (dispatch/index-generics dispatcher context concept-type))))
 
+(defn migrate-index
+  "Copy the contents of one index into another. Used during resharding."
+  [context dispatcher source-index target-index]
+  (dispatch/migrate-index dispatcher context source-index target-index))
+
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [context dispatcher provider-id concept-type concept-ids]
@@ -261,21 +268,23 @@
 
 (defn start-reshard-index
   "Kicks off index resharding. Throws exception when failing to change the index set."
-  [context index num-shards]
-  (let [target (str index "_" num-shards)]
+  [context dispatcher index num-shards]
+  (let [target (index-set-services/get-resharded-index-name index num-shards)]
     (info (format "Starting to reshard index [%s] to target [%s] with [%d] shards."
                   index target num-shards))
-    ;; (rebalancing-collections/validate-target target concept-id)
-      ;; This will throw an exception if the collection is already rebalancing
-    (indexer/add-resharding-index context indexer-index-set/index-set-id index
-                                  num-shards)
+    ;; This will throw an exception if the index is already resharding
+    (indexer/add-resharding-index context indexer-index-set/index-set-id index num-shards)
 
-      ;; Clear the cache so that the newest index set data will be used.
-      ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    ;; Clear the cache so that the newest index set data will be used.
+    ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
     (reset-caches-affected-by-rebalancing context)
 
-      ;; We must wait here so that any new granules coming in will start to pick up the new index set
-      ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
-      ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
-      ;; came in and was indexed only to the old collection but after we started reindexing the collection.
-    (wait-until-index-set-hash-cache-times-out)))
+    ;; We must wait here so that any new granules coming in will start to pick up the new index set
+    ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
+    ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
+    ;; came in and was indexed only to the old index but after we started migrating to the the index
+    (wait-until-index-set-hash-cache-times-out)
+
+    ;; Copy the contents of the source index to the target index. The dispatcher will handle
+    ;; how this is run.
+    (migrate-index context dispatcher index target)))

@@ -21,21 +21,24 @@
 (defn start
   "Kicks off resharding of an index."
   [context index params]
-  (let [num-shards-str (:num_shards params)]
+  (let [dispatcher (api-util/get-dispatcher context params :migrate-index)
+        num-shards-str (:num_shards params)]
     (validate-num-shards num-shards-str)
-    (service/start-reshard-index context index (parse-long num-shards-str))
+    (service/start-reshard-index context dispatcher index (parse-long num-shards-str))
     {:status 200
      :body {:message (msg/resharding-started index)}}))
 
+;; TODO add this in CMR-10771
 ;; (defn get-status
-;;   "Gets the status of rebalancing a collection."
-;;   [context concept-id]
+;;   "Gets the status of resharding an index."
+;;   [context index]
 ;;   {:status 200
-;;    :body (service/rebalance-status context concept-id)})
+;;    :body (service/resharding-status context index})
 
+;; TODO add this in CMR-10770
 ;; (defn finalize
-;;   "Completes rebalancing the granules in the collection"
-;;   [context concept-id]
-;;   (service/finalize-rebalance-collection context concept-id)
+;;   "Completes resharding the index"
+;;   [context index]
+;;   (service/finalize-resharding context index)
 ;;   {:status 200
-;;    :body {:message (msg/rebalancing-completed concept-id)}})
+;;    :body {:message (msg/resharding-completed index)}})

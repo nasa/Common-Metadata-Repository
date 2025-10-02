@@ -12,6 +12,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.indexer.common.index-set-util :as index-set-util]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
    [cmr.indexer.data.concepts.subscription]
@@ -39,7 +40,7 @@
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :read)
-      (r/response (index-set-svc/get-index-sets request-context)))
+      (r/response (index-set-util/get-index-sets request-context)))
 
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
@@ -50,7 +51,7 @@
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-set request-context id)))
+        (r/response (index-set-util/get-index-set request-context id)))
 
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
@@ -86,10 +87,10 @@
       ;; Index resharding routes
       (context "/reshard/:index" [index]
 
-        (PUT "/start" {:keys [request-context params]}
+        (POST "/start" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/start-index-resharding request-context index params)
-          {:status 204})))))
+          (index-set-svc/start-index-resharding request-context id index params)
+          {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]

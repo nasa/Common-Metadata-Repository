@@ -97,7 +97,7 @@
   (let [query-params (when num-shards {:num_shards num-shards})]
     (h/request context :indexer
                {:url-fn #(url-fn % index-set-id index)
-                :method :put
+                :method :post
                 :http-options {:headers {config/token-header (config/echo-system-token)}
                                :content-type :json
                                :query-params query-params}

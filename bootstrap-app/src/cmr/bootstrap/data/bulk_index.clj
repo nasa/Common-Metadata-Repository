@@ -64,6 +64,18 @@
   [context provider collection-id]
   (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider collection-id))
 
+(defn migrate-index
+  "Copy the contents of one index to another."
+  [system source-index target-index]
+  (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
+  (let [indexer-context {:system (helper/get-indexer system)}
+        conn (indexer-util/context->conn indexer-context)]
+    (es-helper/migrate-index conn source-index target-index)
+    (index-set-service/update-resharding-status indexer-context
+                                                index-set/index-set-id
+                                                source-index
+                                                "COMPLETE")))
+
 (defn index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id {:keys [start-index target-index-key completion-message rebalancing-collection?]}]
@@ -197,10 +209,10 @@
                  (dissoc params :provider-id)
                  params)
         concept-batches (db/find-concepts-in-batches
-                          db provider params (:db-batch-size system))
+                         db provider params (:db-batch-size system))
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
-                                                 (index-access-control-concepts system concept-batches)
-                                                 (index-concepts system concept-batches))]
+                                                  (index-access-control-concepts system concept-batches)
+                                                  (index-concepts system concept-batches))]
 
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
@@ -363,31 +375,38 @@
   (let [core-async-dispatcher (:core-async-dispatcher system)]
     (let [channel (:provider-index-channel core-async-dispatcher)]
       (async/thread (while true
-                   (try ; catch any errors and log them, but don't let the thread die
-                     (let [{:keys [provider-id start-index]} (<!! channel)]
-                       (index-provider system provider-id start-index))
-                     (catch Throwable e
-                       (error e (.getMessage e)))))))
+                      (try ; catch any errors and log them, but don't let the thread die
+                        (let [{:keys [provider-id start-index]} (<!! channel)]
+                          (index-provider system provider-id start-index))
+                        (catch Throwable e
+                          (error e (.getMessage e)))))))
     (let [channel (:collection-index-channel core-async-dispatcher)]
       (async/thread (while true
-                   (try ; catch any errors and log them, but don't let the thread die
-                     (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
-                       (index-granules-for-collection system provider-id collection-id options))
-                     (catch Throwable e
-                       (error e (.getMessage e)))))))
+                      (try ; catch any errors and log them, but don't let the thread die
+                        (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
+                          (index-granules-for-collection system provider-id collection-id options))
+                        (catch Throwable e
+                          (error e (.getMessage e)))))))
     (let [channel (:system-concept-channel core-async-dispatcher)]
       (async/thread (while true
-                   (try ; catch any errors and log them, but don't let the thread die
-                     (let [{:keys [start-index]} (<!! channel)]
-                       (index-system-concepts system start-index))
-                     (catch Throwable e
-                       (error e (.getMessage e)))))))
+                      (try ; catch any errors and log them, but don't let the thread die
+                        (let [{:keys [start-index]} (<!! channel)]
+                          (index-system-concepts system start-index))
+                        (catch Throwable e
+                          (error e (.getMessage e)))))))
     (let [channel (:concept-id-channel core-async-dispatcher)]
       (async/thread (while true
-                  (try ; log errors but keep the thread alive)
-                    (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
-                      (if (= request :delete)
-                        (delete-concepts-by-id system provider-id concept-type concept-ids)
-                        (index-concepts-by-id system provider-id concept-type concept-ids)))
-                    (catch Throwable e
-                      (error e (.getMessage e)))))))))
+                      (try ; log errors but keep the thread alive)
+                        (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
+                          (if (= request :delete)
+                            (delete-concepts-by-id system provider-id concept-type concept-ids)
+                            (index-concepts-by-id system provider-id concept-type concept-ids)))
+                        (catch Throwable e
+                          (error e (.getMessage e)))))))
+    (let [channel (:migrate-index-channel core-async-dispatcher)]
+      (async/thread (while true
+                      (try ; log errors but keep the thread alive)
+                        (let [{:keys [source-index target-index]} (<!! channel)]
+                          (migrate-index system source-index target-index))
+                        (catch Throwable e
+                          (error e (.getMessage e)))))))))
