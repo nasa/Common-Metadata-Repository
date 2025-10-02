@@ -4,13 +4,11 @@
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
    [cmr.bootstrap.services.bootstrap-service :as service]
-   [cmr.common.services.errors :as errors]
-   [cmr.elastic-utils.es-index-helper :as index-helper]))
+   [cmr.common.services.errors :as errors]))
 
 (defn- validate-num-shards
   "Validate the the number of shards is a positive integer"
   [num-shards-str]
-  (println "VALIDATING NUM-SHARDS=================")
   (let [num-shards (parse-long num-shards-str)]
     (when-not (and num-shards (> num-shards 0))
       (errors/throw-service-errors

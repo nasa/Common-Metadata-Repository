@@ -64,7 +64,6 @@
   "Update elastic index"
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
-    (println "INDEX-NAME=========== " index-name)
     (try
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.

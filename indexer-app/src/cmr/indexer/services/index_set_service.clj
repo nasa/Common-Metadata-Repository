@@ -375,14 +375,6 @@
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
-  ;; 1 - search for index name in index-set :concepts to get concept type and to validate the index
-  ;;     exists
-  ;; 2 - get the index configuration from the index-set under :<concept-type> :indexes
-  ;; 3 - set the shard count on the configuration
-  ;; 4 - use the configuration to create a new entry under :indexes
-  ;; 5 - use the configuration to create a new index with the new name
-  ;; 7 - change the index set to write to both indexes
-  ;; 8 - index the content from the old index into the new index
   (let [num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
@@ -428,7 +420,7 @@
       (errors/throw-service-error
        :bad-request
        (format
-        "The index set does not contain the resharding index [%s]" index)))
+        "The index set does not contain the resharding index [%s]." index)))
     (update-index-set
      context
      (update-in
