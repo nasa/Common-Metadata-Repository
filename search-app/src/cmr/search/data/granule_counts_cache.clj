@@ -84,14 +84,3 @@
    (cache/get-value (cache/context->cache context granule-counts-cache-key)
                     granule-counts-cache-key
                     #(get-collection-granule-counts-fn context provider-ids))))
-
-(defn clear-granule-counts-cache
-  "Clears the granule counts cache."
-  [context]
-  (let [cache (cache/context->cache context granule-counts-cache-key)]
-    (if cache
-      (cache/reset cache)
-      (let [error-msg "Granule counts cache not found in context - clear skipped"]
-        (log/error error-msg)
-        (throw (IllegalStateException. error-msg))))))
-
