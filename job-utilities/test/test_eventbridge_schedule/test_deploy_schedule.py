@@ -95,7 +95,7 @@ class TestDeploySchedule(unittest.TestCase):
         with self.assertRaises(SystemExit):
             deploy_schedule.get_environment()
 
-    @patch('boto3.client')
+    @patch('eventbridge_schedule.deploy_schedule.boto3')
     @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
     @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
     def test_get_function_client_error(self, _mock_file, mock_client):
@@ -105,7 +105,7 @@ class TestDeploySchedule(unittest.TestCase):
         get_function_mock = Mock()
         get_function_mock.get_function.side_effect = ClientError(test_error_response, "get_function")
 
-        mock_client.return_value = get_function_mock
+        mock_client.client.return_value = get_function_mock
 
         deploy_schedule.environment = "test"
 
