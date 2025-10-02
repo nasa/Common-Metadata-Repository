@@ -644,6 +644,31 @@
                 []
                 concept-id-rev-ids-map))))
 
+(defn get-collection-concept-ids
+  [db provider granule-concept-ids]
+  (cond
+    (empty? granule-concept-ids)
+    []
+
+    :else
+    (let [table (tables/get-table-name provider :granule)
+          ;; Oracle caps IN clause at 1000, so chunk the IDs
+          ;; This is only theoretical, it is unlikely we will get close to even 100.
+          batches (partition-all 900 granule-concept-ids)]
+      (->> batches
+           (mapcat
+            (fn [batch]
+              (let [placeholders (str "(" (string/join "," (repeat (count batch) "?")) ")")
+                    stmt (into [(format "select distinct parent_collection_id
+                                            from %s a
+                                           where a.concept_id in %s"
+                                        table placeholders)]
+                               batch)
+                    result (su/query db stmt)]
+                (map :parent_collection_id result))))
+           distinct
+           vec))))
+
 (def behaviour
   {:generate-concept-id generate-concept-id
    :get-concept-id get-concept-id
@@ -661,7 +686,8 @@
    :reset reset
    :get-expired-concepts get-expired-concepts
    :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
-   :get-old-concept-revisions get-old-concept-revisions})
+   :get-old-concept-revisions get-old-concept-revisions
+   :get-collection-concept-ids get-collection-concept-ids})
 
 (extend OracleStore
         concepts/ConceptsStore

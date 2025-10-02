@@ -6,10 +6,12 @@
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.elastic-utils.search.es-params-converter :as common-params]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as parser]
    [cmr.common.util :as util]
+   [cmr.metadata-db.services.concept-service :as cs]
    [cmr.search.models.query :as qm]
    [cmr.search.services.parameters.legacy-parameters :as lp]))
 
@@ -332,22 +334,38 @@
   (let [values (if (sequential? value) value [value])
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
-        collection-cond (when (seq collection-concept-ids)
-                          (qm/->CollectionQueryCondition
-                           (common-params/parameter->condition
-                            context :collection :concept-id value options)))
-        granule-cond (when (seq granule-concept-ids)
-                       (let [provider-ids (distinct
-                                           (map (comp :provider-id cc/parse-concept-id)
-                                                granule-concept-ids))]
-                         (gc/and-conds [(qm/->CollectionQueryCondition
-                                         (common-params/parameter->condition
-                                          context :collection :provider provider-ids {}))
-                                        (common-params/string-parameter->condition
-                                         concept-type :concept-id granule-concept-ids options)])))]
-    (if (and collection-cond granule-cond)
-      (gc/and-conds [collection-cond granule-cond])
-      (or collection-cond granule-cond))))
+
+        ;; derive collection IDs only if no collection-concept-ids provided
+        coll-ids-from-granules
+        (when (empty? collection-concept-ids)
+          (let [granules-by-provider (group-by (comp :provider-id cc/parse-concept-id)
+                                               granule-concept-ids)
+                mdb-context (assoc context :system
+                                   (get-in context [:system :embedded-systems :metadata-db]))]
+            (mapcat (fn [[provider-id granules]]
+                      (when-let [provider (provider-cache/get-provider context provider-id)]
+                        (cs/get-collection-concept-ids mdb-context provider granules)))
+                    granules-by-provider)))
+
+        ;; choose collection ids based on params and/or granule lookup
+        all-coll-ids (cond
+                       (seq collection-concept-ids)
+                       collection-concept-ids
+
+                       (seq coll-ids-from-granules)
+                       coll-ids-from-granules)]
+    (if (seq all-coll-ids)
+      (let [collection-cond (qm/->CollectionQueryCondition
+                             (common-params/parameter->condition
+                              context :collection :concept-id all-coll-ids options))
+            granule-cond (when (seq granule-concept-ids)
+                           (common-params/string-parameter->condition
+                            concept-type :concept-id granule-concept-ids options))]
+
+        (if (and collection-cond granule-cond)
+          (gc/and-conds [collection-cond granule-cond])
+          (or collection-cond granule-cond)))
+      cqm/match-none)))
 
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
@@ -485,7 +503,7 @@
 (defmethod common-params/parse-query-level-params :collection
   [_concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :collection params lp/param-aliases)
+                                :collection params lp/param-aliases)
         query-attribs (reverse-has-granules-sort query-attribs)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
@@ -545,8 +563,8 @@
         concept-id (:concept-id regular-params)
         concept-ids (when concept-id
                       (if (sequential? concept-id)
-                          concept-id
-                          [concept-id]))
+                        concept-id
+                        [concept-id]))
         only-concept-id-params? (nil?
                                  (some granule-param-names
                                        (keys (dissoc regular-params :concept-id))))
