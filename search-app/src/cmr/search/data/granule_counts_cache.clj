@@ -13,7 +13,7 @@
 (def granule-counts-cache-key
   :granule-counts-cache)
 
-(defn create-redis-cache-client
+(defn create-granule-counts-cache-client
   "Creates and returns a new cache for storing granule counts."
   []
   (redis-cache/create-redis-cache {:keys-to-track [granule-counts-cache-key]

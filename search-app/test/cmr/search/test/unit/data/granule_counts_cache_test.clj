@@ -9,7 +9,7 @@
 
 (deftest create-cache-test
   (testing "Creation of granule counts cache"
-    (let [gc-cache (granule-counts-cache/create-redis-cache-client)]
+    (let [gc-cache (granule-counts-cache/create-granule-counts-cache-client)]
       (is (some? gc-cache) "Cache should not be nil")
       (is (satisfies? cache/CmrCache gc-cache) "Cache should satisfy the CmrCache protocol"))))
 
@@ -24,7 +24,7 @@
 (deftest next-cache-test
   (testing "Granule count cache operations"
    (let [cache-key granule-counts-cache/granule-counts-cache-key
-         test-context {:system {:caches {cache-key (granule-counts-cache/create-redis-cache-client)}}}
+         test-context {:system {:caches {cache-key (granule-counts-cache/create-granule-counts-cache-client)}}}
          granule-counts-cache (get-in test-context [:system :caches cache-key])]
      (cache/reset granule-counts-cache)
      (testing "Cache is empty initially"
@@ -44,7 +44,7 @@
 (deftest refresh-test
   (testing "Refreshing granule counts cache"
     (let [cache-key granule-counts-cache/granule-counts-cache-key
-          test-context {:system {:caches {cache-key (granule-counts-cache/create-redis-cache-client)}}}]
+          test-context {:system {:caches {cache-key (granule-counts-cache/create-granule-counts-cache-client)}}}]
       (granule-counts-cache/refresh-granule-counts-cache test-context #(mock-get-collection-granule-counts test-context nil))
       (let [cache (get-in test-context [:system :caches cache-key])
             cached-value (cache/get-value cache cache-key)]
