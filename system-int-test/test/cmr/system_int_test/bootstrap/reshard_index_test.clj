@@ -47,7 +47,14 @@
      (testing "index must exist"
        (is (= {:status 404
                :errors ["Index [1_non-existing-index] does not exist."]}
-              (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1})))))))
+              (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1}))))
+     (testing "attempting to reshard an index that is already being resharded fails"
+       (is (= {:status 200
+               :message "Resharding started for index 1_small_collections"}
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))
+       (is (= {:status 400
+               :errors ["The index set already contains resharding index [1_small_collections]"]}
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
 
 (deftest ^:oracle reshard-index-success-test
   (s/only-with-real-database
@@ -56,7 +63,7 @@
          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
          _ (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}))]
      (index/wait-until-indexed)
-     (testing "index does exist"
+     (testing "resharding an index that does exist"
        (is (= {:status 200
                :message "Resharding started for index 1_small_collections"}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
