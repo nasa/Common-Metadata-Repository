@@ -49,7 +49,4 @@
       (let [cache (get-in test-context [:system :caches cache-key])
             cached-value (cache/get-value cache cache-key)]
         (is (= collection-granule-counts-mock-data cached-value)
-            "Cache should be updated with mock granule counts after refresh")
-        (granule-counts-cache/clear-granule-counts-cache test-context)
-        (is (nil? (cache/get-value cache cache-key))
-            "Cache should be cleared after clear operation")))))
+            "Cache should be updated with mock granule counts after refresh")))))

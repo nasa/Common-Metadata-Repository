@@ -112,10 +112,6 @@
        (acl/verify-ingest-management-permission request-context :update)
        (granule-counts-cache/refresh-granule-counts-cache request-context)
        {:status 200})
-     (POST "/clear-granule-counts-cache" {:keys [request-context]}
-       (acl/verify-ingest-management-permission request-context :update)
-       (granule-counts-cache/clear-granule-counts-cache request-context)
-       {:status 200})
      (common-pages/not-found))))
 
 (defn handlers [system]
