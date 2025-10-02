@@ -1,20 +1,16 @@
 (ns cmr.system-int-test.search.granule.granule-counts-search-test
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.common-app.config :as common-config]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.system-int-test.data2.collection :as dc]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gran-counts]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]

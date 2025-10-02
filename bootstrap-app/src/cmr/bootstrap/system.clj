@@ -82,7 +82,10 @@
    (humanizer-report-service/create-humanizer-report-cache-client)
 
    has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key
-   (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)})
+   (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)
+
+   has-gran-or-cwic-results-feature/has-granules-or-opensearch-cache-key
+   (has-gran-or-cwic-results-feature/create-has-granules-or-opensearch-map-cache)})
 
 (def jobs-to-schedule
   "Create all the schedules to be added to the sys latter."
@@ -107,10 +110,7 @@
      "bootstrap-humanizer-alias-cache-refresh")
 
     (humanizer-report-service/refresh-humanizer-report-cache-job
-     "bootstrap-humanizer-report-cache-refresh")
-
-    (has-gran-or-cwic-results-feature/refresh-has-granules-or-cwic-map-job
-     "bootstrap-has-granules-or-cwic-map-cache-refresh")]))
+     "bootstrap-humanizer-report-cache-refresh")]))
 
 (defn- attach-startup-tasks
   "Attach processes that need to run after the web service starts up if it has been configured to
