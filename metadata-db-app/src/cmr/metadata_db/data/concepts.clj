@@ -117,7 +117,12 @@
   (get-old-concept-revisions
     [db provider concept-type max-revisions limit]
     "Returns concept-id and revision-id tuples for old (more than 'max-revisions'
-    old) revisions of concepts, up to 'limit' concepts."))
+    old) revisions of concepts, up to 'limit' concepts.")
+
+  (get-collection-concept-ids
+   [db provider granule-concept-ids]
+    "Returns the collection concept ids for the given provider and granule concept id
+     provider and granule concept id has been verified to match before invoking this function."))
 
 (defn search-with-params
   "Returns the concepts within the given concepts that matches the search params."

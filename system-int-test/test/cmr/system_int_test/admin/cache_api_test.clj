@@ -94,6 +94,7 @@
                                       "kms-location-index"
                                       "collection-metadata-cache"
                                       "collections-for-gran-acls-by-concept-id"
+                                      "provider-cache"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"
