@@ -160,6 +160,12 @@ Make changes to the collection's rebalancing status. This will update a mapping 
 
     curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/update-status?status=COMPLETE
 
+### Start resharding an index
+
+An index can be resharded to improve performance. The `start` endpoint begin the process.
+
+  curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50
+
 ### Reset for dev purposes
 
     curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/reset"

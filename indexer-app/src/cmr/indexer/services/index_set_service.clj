@@ -228,7 +228,7 @@
    At some point we might want a finer-grained check for a specific index, but for now this
    is the safest thing to do."
   [index-set]
-  (boolean (some #(contains? % :resharding-indexes)
+  (boolean (some #(:resharding-indexes %)
                  (vals (:index-set index-set)))))
 
 (defn- add-resharding-index

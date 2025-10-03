@@ -67,6 +67,6 @@
    :parser parse-dev-system-component-type})
 
 (defconfig default-job-start-delay
-  "How long in minutes before all jobs start."
-  {:default 180 ;; three hours
+  "How long in seconds before all jobs start."
+  {:default 10800 ;; three hours
    :type Long})
