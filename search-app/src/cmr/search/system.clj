@@ -120,7 +120,7 @@
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       hgocrf/has-granules-or-cwic-cache-key (hgocrf/create-has-granules-or-cwic-map-cache)
-                      :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
+                      hgocrf/has-granules-or-opensearch-cache-key (hgocrf/create-has-granules-or-opensearch-map-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       acl/token-pc-cache-key (acl/create-token-pc-cache)
@@ -148,7 +148,6 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           hgrf/refresh-has-granules-map-job
-                          hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
                           (cache-info/create-log-cache-info-job "search")
