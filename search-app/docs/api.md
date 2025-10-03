@@ -2969,7 +2969,7 @@ It supports all normal granule parameters. It requires the following parameters.
     * `entry_id` - Collection entry id (concatenation of short_name and version).
     * `entry_title` - Collection entry title.
     * `short_name` and `version` - Both parameters must be provided together to identify a specific collection.
-  
+
   It is recommended that the timeline search be limited to a few collections for good performance.
 
 The response format is in JSON. Intervals are returned as tuples containing three numbers like `[949363200,965088000,4]`. The two numbers are the start and stop date of the interval represented by the number of seconds since the epoch. The third number is the number of granules within that interval.
