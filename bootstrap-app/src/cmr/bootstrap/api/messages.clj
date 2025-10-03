@@ -139,3 +139,11 @@
 (defn rebalancing-completed
   [concept-id]
   (str "Rebalancing completed for collection " concept-id))
+
+(defn resharding-started
+  [index]
+  (str "Resharding started for index " index))
+
+(defn resharding-completed
+  [index]
+  (str "Resharding completed for index " index))

@@ -120,3 +120,13 @@
   [conn scroll-id]
   (rest/delete conn (rest/scroll-url conn) {:content-type :json
                                             :body {:scroll_id scroll-id}}))
+
+(defn migrate-index
+  "Copies the contents of one index into another. Used for resharding."
+  [conn source-index target-index]
+  (let [body {"source" {:index source-index}
+              "dest" {:index target-index}}
+        url (rest/url-with-path conn "_reindex")]
+    (rest/post-string conn url
+                      {:body (json/encode body)
+                       :content-type "application/json"})))

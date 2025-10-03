@@ -128,7 +128,7 @@
   (= :in-memory (get-in (system) [:component-type-map :db])))
 
 (defn real-database?
-  "Returns true if running with a in-memory database"
+  "Returns true if running with an external database"
   []
   (= :external (get-in (system) [:component-type-map :db])))
 
