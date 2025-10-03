@@ -653,7 +653,6 @@
     :else
     (let [table (tables/get-table-name provider :granule)
           ;; Oracle caps IN clause at 1000, so chunk the IDs
-          ;; This is only theoretical, it is unlikely we will get close to even 100.
           batches (partition-all 900 granule-concept-ids)]
       (->> batches
            (mapcat
