@@ -2966,7 +2966,6 @@ It supports all normal granule parameters. It requires the following parameters.
   * **Collection identifier** - One of the following parameters must be provided to specify which collection(s) to search:
     * `concept_id` - Collection concept id.
     * `collection_concept_id` - Collection concept id.
-    * `echo_collection_id` - Collection concept id.
     * `entry_id` - Collection entry id (concatenation of short_name and version).
     * `entry_title` - Collection entry title.
     * `short_name` and `version` - Both parameters must be provided together to identify a specific collection.

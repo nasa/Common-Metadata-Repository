@@ -795,7 +795,7 @@
                 (:entry-title params)
                 (:echo-collection-id params)
                 (and (:short-name params) (:version params)))
-    ["Timeline searches must include a collection identifier parameter (concept_id, collection_concept_id, echo_collection_id, entry_id, entry_title, or both short_name and version) to limit the search scope."]))
+    ["Timeline searches must include a collection identifier parameter (concept_id, collection_concept_id, entry_id, entry_title, or both short_name and version) to limit the search scope."]))
 
 (defn- timeline-start-date-validation
   "Validates the timeline start date parameter"
