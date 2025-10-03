@@ -1097,7 +1097,7 @@
              target-index (index-set-util/get-resharding-index-target index-set :granule (first indexes-for-collection))]
          (if target-index
            ;; index is being resharded so we need to return the target index as well
-           (conj indexes target-index)
+           (conj indexes-for-collection target-index)
            indexes-for-collection))
        indexes-for-collection))))
 
