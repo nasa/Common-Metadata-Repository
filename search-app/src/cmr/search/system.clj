@@ -24,6 +24,7 @@
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.routes :as routes]
@@ -139,7 +140,8 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
-                      hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
+                      hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)
+                      granule-counts-cache/granule-counts-cache-key (granule-counts-cache/create-granule-counts-cache-client)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
@@ -173,3 +175,4 @@
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
     stopped-system))
+
