@@ -1133,7 +1133,7 @@
                    (cond
                      target-index-key [(get indexes target-index-key)]
                      all-revisions-index? [(get indexes :all-collection-revisions)]
-         ;; Else index to all collection indexes except for the all-collection-revisions index.
+                     ;; Else index to all collection indexes except for the all-collection-revisions index.
                      :else (keep (fn [[k v]]
                                    (when-not (= :all-collection-revisions (keyword k))
                                      v))
@@ -1166,18 +1166,20 @@
                    (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
                      (get-granule-index-names-for-collection context coll-concept-id target-index-key))
 
-       ;; Default
+                   ;; Default
                    (when (some? (concept-type (common-generic/latest-approved-documents)))
-         ;; Generics are a bunch of document types, find out which one to work with
-         ;; and return the index name for those
+                      ;; Generics are a bunch of document types, find out which one to work with
+                      ;; and return the index name for those
                      (if all-revisions-index?
                        [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
                        [(get indexes (keyword (format "generic-%s" (name concept-type))))])))]
      (if (= (count indexes) 1)
-             ;; check to see if the index is being resharded
+       ;; check to see if the index is being resharded
        (let [index-set (index-set-util/get-index-set context index-set-id)
              target-index (index-set-util/get-resharding-index-target index-set concept-type (first indexes))]
-         (conj indexes target-index))
+         (if-some [idx target-index]
+           (conj indexes idx)
+           indexes))
        indexes))))
 
 (defn get-granule-index-names-for-provider
