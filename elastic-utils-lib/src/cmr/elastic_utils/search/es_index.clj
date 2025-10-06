@@ -18,7 +18,12 @@
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
-   java.net.UnknownHostException))
+   java.net.UnknownHostException
+   (cmr.common.services.search.query_model MatchNoneCondition)))
+
+(def empty-es-results
+  "An empty result returned by Elasticsearch when no match is found."
+  {:took 0, :timed_out false, :_shards {:total 0, :successful 0, :skipped 0, :failed 0}, :hits {:total {:value 0}, :max_score nil, :hits ()}})
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along
@@ -366,11 +371,21 @@
                    (+ took-total (:took next-response))
                    (or timed-out (:timed_out next-response)))))))))
 
+(defn- granule-match-none?
+  "Returns true if this is a granule query with a MatchNone condition, meaning we should skip querying ES."
+  [{:keys [concept-type condition]}]
+  (and (= concept-type :granule)
+       (instance? MatchNoneCondition condition)))
+
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
   (let [start (System/currentTimeMillis)
-        e-results (send-query-to-elastic context query)
+        e-results (if (granule-match-none? query)
+                    (do
+                      (info "This is a granule search with MatchNone condition, skip querying ES.")
+                      empty-es-results)
+                    (send-query-to-elastic context query))
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total :value])]
     (info "Elastic query for concept-type:" (:concept-type query) " and result format: "

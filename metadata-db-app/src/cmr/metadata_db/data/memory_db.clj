@@ -105,10 +105,10 @@
   (if-not (:deleted concept)
     concepts
     (let [tool-associations (find-latest-concepts
-                                db
-                                {:provider-id "CMR"}
-                                {:concept-type :tool-association
-                                 :tool-concept-id (:concept-id concept)})
+                             db
+                             {:provider-id "CMR"}
+                             {:concept-type :tool-association
+                              :tool-concept-id (:concept-id concept)})
           tombstones (map association->tombstone tool-associations)]
       ;; publish tool-association delete events
       (doseq [tombstone tombstones]
@@ -205,11 +205,11 @@
             ;;from cmr_variables table.
             v-concept-id-same-name (->> @(:concepts-atom db)
                                         (filter #(concept-id-in-list?
-                                                   v-concept-ids-in-associations
-                                                   (:concept-id %)))
+                                                  v-concept-ids-in-associations
+                                                  (:concept-id %)))
                                         (filter #(not (concept-id-in-list?
-                                                        v-concept-ids-in-deleted-associations
-                                                        (:concept-id %))))
+                                                       v-concept-ids-in-deleted-associations
+                                                       (:concept-id %))))
                                         (filter #(= variable-name (get-in % [:extra-fields :variable-name])))
                                         first
                                         :concept-id)]
@@ -318,8 +318,8 @@
    :find-latest-associations find-latest-associations})
 
 (extend MemoryStore
-        concepts/ConceptSearch
-        concept-search-behaviour)
+  concepts/ConceptSearch
+  concept-search-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptsStore Implementation
@@ -350,9 +350,9 @@
   (let [provider-id (:provider-id provider)
         matched-gran (->> @(:concepts-atom db)
                           (filter (fn [c]
-                                   (and (= :granule (:concept-type c))
-                                        (= provider-id (:provider-id c))
-                                        (= native-id (:native-id c)))))
+                                    (and (= :granule (:concept-type c))
+                                         (= provider-id (:provider-id c))
+                                         (= native-id (:native-id c)))))
                           (sort-by :revision-id)
                           last)
         {:keys [concept-id deleted]} matched-gran
@@ -363,9 +363,9 @@
   [db concept-type provider concept-id]
   (let [revisions (filter
                    (fn [c]
-                    (and (= concept-type (:concept-type c))
-                         (= (:provider-id provider) (:provider-id c))
-                         (= concept-id (:concept-id c))))
+                     (and (= concept-type (:concept-type c))
+                          (= (:provider-id provider) (:provider-id c))
+                          (= concept-id (:concept-id c))))
                    @(:concepts-atom db))]
     (->> revisions
          (map #(data-util/metadata->umm-concept % db))
@@ -378,10 +378,10 @@
     (-get-concept db concept-type provider concept-id)
     (first (filter
             (fn [c]
-             (and (= concept-type (:concept-type c))
-                  (= (:provider-id provider) (:provider-id c))
-                  (= concept-id (:concept-id c))
-                  (= revision-id (:revision-id c))))
+              (and (= concept-type (:concept-type c))
+                   (= (:provider-id provider) (:provider-id c))
+                   (= concept-id (:concept-id c))
+                   (= revision-id (:revision-id c))))
             @(:concepts-atom db)))))
 
 (defn get-concept
@@ -400,31 +400,31 @@
         concept-id-revision-id-tuples)))
 
 (defn get-latest-concepts
- [db concept-type provider concept-ids]
- (let [concept-id-set (set concept-ids)
-       concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
-                            (if (contains? concept-id-set concept-id)
-                              (cond
+  [db concept-type provider concept-ids]
+  (let [concept-id-set (set concept-ids)
+        concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
+                              (if (contains? concept-id-set concept-id)
+                                (cond
 
-                                (nil? (get concept-map concept-id))
-                                (assoc concept-map concept-id concept)
+                                  (nil? (get concept-map concept-id))
+                                  (assoc concept-map concept-id concept)
 
-                                (> revision-id (:revision-id (get concept-map concept-id)))
-                                (assoc concept-map concept-id concept)
+                                  (> revision-id (:revision-id (get concept-map concept-id)))
+                                  (assoc concept-map concept-id concept)
 
-                                :else
-                                concept-map)
-                              concept-map))
-                           {}
-                           @(:concepts-atom db))]
-  (keep (partial get concept-map) concept-ids)))
+                                  :else
+                                  concept-map)
+                                concept-map))
+                            {}
+                            @(:concepts-atom db))]
+    (keep (partial get concept-map) concept-ids)))
 
 (defn get-transactions-for-concept
   [db provider con-id]
   (keep (fn [{:keys [concept-id revision-id transaction-id]}]
-         (when (= con-id concept-id)
-           {:revision-id revision-id :transaction-id transaction-id}))
-       @(:concepts-atom db)))
+          (when (= con-id concept-id)
+            {:revision-id revision-id :transaction-id transaction-id}))
+        @(:concepts-atom db)))
 
 (defn save-concept
   [db provider concept]
@@ -464,8 +464,8 @@
         {:error :revision-id-conflict}
         (do
           (swap! (:concepts-atom db) (fn [concepts]
-                                      (after-save db (conj concepts concept)
-                                                  concept)))
+                                       (after-save db (conj concepts concept)
+                                                   concept)))
           nil)))))
 
 (defn force-delete
@@ -473,10 +473,10 @@
   (swap! (:concepts-atom db)
          #(filter
            (fn [c]
-            (not (and (= concept-type (:concept-type c))
-                      (= (:provider-id provider) (:provider-id c))
-                      (= concept-id (:concept-id c))
-                      (= revision-id (:revision-id c)))))
+             (not (and (= concept-type (:concept-type c))
+                       (= (:provider-id provider) (:provider-id c))
+                       (= concept-id (:concept-id c))
+                       (= revision-id (:revision-id c)))))
            %)))
 
 (defn force-delete-draft
@@ -484,9 +484,9 @@
   (swap! (:concepts-atom db)
          #(filter
            (fn [c]
-            (not (and (= concept-type (:concept-type c))
-                      (= (:provider-id provider) (:provider-id c))
-                      (= concept-id (:concept-id c)))))
+             (not (and (= concept-type (:concept-type c))
+                       (= (:provider-id provider) (:provider-id c))
+                       (= concept-id (:concept-id c)))))
            %)))
 
 (defn force-delete-concepts
@@ -497,11 +497,11 @@
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
   (->> @(:concepts-atom db)
-      (filter #(= (:provider-id provider) (:provider-id %)))
-      (filter #(= concept-type (:concept-type %)))
-      (group-by (comp :parent-collection-id :extra-fields))
-      (map #(update-in % [1] count))
-      (into {})))
+       (filter #(= (:provider-id provider) (:provider-id %)))
+       (filter #(= concept-type (:concept-type %)))
+       (group-by (comp :parent-collection-id :extra-fields))
+       (map #(update-in % [1] count))
+       (into {})))
 
 (defn reset
   [db]
@@ -532,18 +532,25 @@
 (defn get-old-concept-revisions
   [db provider concept-type max-versions limit]
   (letfn [(drop-highest
-           [concepts]
-           (->> concepts
-                (sort-by :revision-id)
-                (drop-last max-versions)))]
-   (->> @(:concepts-atom db)
-        (filter #(= concept-type (:concept-type %)))
-        (filter #(= (:provider-id provider) (:provider-id %)))
-        (group-by :concept-id)
-        vals
-        (filter #(> (count %) max-versions))
-        (mapcat drop-highest)
-        (map concept->tuple))))
+            [concepts]
+            (->> concepts
+                 (sort-by :revision-id)
+                 (drop-last max-versions)))]
+    (->> @(:concepts-atom db)
+         (filter #(= concept-type (:concept-type %)))
+         (filter #(= (:provider-id provider) (:provider-id %)))
+         (group-by :concept-id)
+         vals
+         (filter #(> (count %) max-versions))
+         (mapcat drop-highest)
+         (map concept->tuple))))
+
+(defn get-collection-concept-ids
+  [db provider granule-concept-ids]
+  (distinct
+   (keep #(-> (get-concept db :granule provider %)
+              (get-in [:extra-fields :parent-collection-id]))
+         granule-concept-ids)))
 
 (def concept-store-behaviour
   {:generate-concept-id generate-concept-id
@@ -561,11 +568,12 @@
    :reset reset
    :get-expired-concepts get-expired-concepts
    :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
-   :get-old-concept-revisions get-old-concept-revisions})
+   :get-old-concept-revisions get-old-concept-revisions
+   :get-collection-concept-ids get-collection-concept-ids})
 
 (extend MemoryStore
-        concepts/ConceptsStore
-        concept-store-behaviour)
+  concepts/ConceptsStore
+  concept-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ProvidersStore Implementation
@@ -591,33 +599,33 @@
   [db provider]
   ;; Cascade to delete the concepts
   (doseq [{:keys [concept-type concept-id revision-id]} (find-concepts db [provider] nil)]
-   (force-delete db concept-type provider concept-id revision-id))
+    (force-delete db concept-type provider concept-id revision-id))
 
   ;; Cascade to delete the variable associations, service associations and tool associations
   ;; this is a hacky way of doing things
   (doseq [assoc-type [:variable-association :service-association :tool-association]]
-   (doseq [association (find-concepts db [{:provider-id "CMR"}]
-                                         {:concept-type assoc-type})]
-     (let [{:keys [concept-id revision-id extra-fields]} association
-           {:keys [associated-concept-id variable-concept-id service-concept-id tool-concept-id]}
-           extra-fields
-           referenced-providers
-           (map (fn [cid]
-                  (some-> cid
-                   cc/parse-concept-id
-                   :provider-id))
-                [associated-concept-id variable-concept-id service-concept-id tool-concept-id])]
-       ;; If the association references the deleted provider through
-       ;; either collection or variable/service/tool, delete the association
-       (when (some #{(:provider-id provider)} referenced-providers)
-         (force-delete db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
+    (doseq [association (find-concepts db [{:provider-id "CMR"}]
+                                       {:concept-type assoc-type})]
+      (let [{:keys [concept-id revision-id extra-fields]} association
+            {:keys [associated-concept-id variable-concept-id service-concept-id tool-concept-id]}
+            extra-fields
+            referenced-providers
+            (map (fn [cid]
+                   (some-> cid
+                           cc/parse-concept-id
+                           :provider-id))
+                 [associated-concept-id variable-concept-id service-concept-id tool-concept-id])]
+        ;; If the association references the deleted provider through
+        ;; either collection or variable/service/tool, delete the association
+        (when (some #{(:provider-id provider)} referenced-providers)
+          (force-delete db assoc-type {:provider-id "CMR"} concept-id revision-id)))))
 
   ;; to find items that reference the provider that should be deleted (e.g. ACLs)
   (doseq [{:keys [concept-type concept-id revision-id]} (find-concepts
                                                          db
                                                          [pv/cmr-provider]
                                                          {:target-provider-id (:provider-id provider)})]
-   (force-delete db concept-type pv/cmr-provider concept-id revision-id))
+    (force-delete db concept-type pv/cmr-provider concept-id revision-id))
   ;; finally delete the provider
   (swap! (:providers-atom db) dissoc (:provider-id provider)))
 
@@ -634,8 +642,8 @@
    :reset-providers reset-providers})
 
 (extend MemoryStore
-        providers/ProvidersStore
-        provider-store-behaviour)
+  providers/ProvidersStore
+  provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor

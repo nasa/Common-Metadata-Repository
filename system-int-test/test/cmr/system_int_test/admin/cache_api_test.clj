@@ -94,6 +94,7 @@
                                       "kms-location-index"
                                       "collection-metadata-cache"
                                       "collections-for-gran-acls-by-concept-id"
+                                      "provider-cache"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"
@@ -101,7 +102,8 @@
                                       "token-user-id"
                                       "write-enabled"
                                       "xsl-transformer-templates"
-                                      "token-pc"])
+                                      "token-pc"
+                                      "granule-counts-cache"])
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
          (testing "list caches for bootstrap"
@@ -196,31 +198,33 @@
            (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
              (is (every? (set response)
                          [["ABC-1" "read"]
-                          ["ABC-2" "read"]])))))) (testing "normal user cannot retrieve cache values"
-                                                    (are [url]
-                                                         (let [response (client/request {:url url
-                                                                                         :method :get
-                                                                                         :query-params {:token normal-user-token}
-                                                                                         :connection-manager (s/conn-mgr)
-                                                                                         :throw-exceptions false})
-                                                               errors (:errors (json/decode (:body response) true))]
-                                                           (is (= 401 (:status response)))
-                                                           (is (= ["You do not have permission to perform that action."] errors)))
-                                                      (str (url/indexer-read-caches-url) "/acls/acls")
-                                                      (str (url/mdb-read-caches-url) "/acls/acls")
-                                                      (str (url/access-control-read-caches-url) "/acls/acls")
-                                                      (str (url/ingest-read-caches-url) "/acls/acls")
-                                                      (str (url/search-read-caches-url) "/acls/acls"))
-                                                    (s/only-with-real-database
-                                                     (testing "normal user cannot retrieve cache values for bootstrap"
-                                                       (let [response (client/request {:url (url/bootstrap-read-caches-url)
-                                                                                       :method :get
-                                                                                       :query-params {:token normal-user-token}
-                                                                                       :connection-manager (s/conn-mgr)
-                                                                                       :throw-exceptions false})
-                                                             errors (:errors (json/decode (:body response) true))]
-                                                         (is (= 401 (:status response)))
-                                                         (is (= ["You do not have permission to perform that action."] errors))))))
+                          ["ABC-2" "read"]]))))))
+
+    (testing "normal user cannot retrieve cache values"
+      (are [url]
+            (let [response (client/request {:url url
+                                            :method :get
+                                            :query-params {:token normal-user-token}
+                                            :connection-manager (s/conn-mgr)
+                                            :throw-exceptions false})
+                  errors (:errors (json/decode (:body response) true))]
+              (is (= 401 (:status response)))
+              (is (= ["You do not have permission to perform that action."] errors)))
+         (str (url/indexer-read-caches-url) "/acls/acls")
+         (str (url/mdb-read-caches-url) "/acls/acls")
+         (str (url/access-control-read-caches-url) "/acls/acls")
+         (str (url/ingest-read-caches-url) "/acls/acls")
+         (str (url/search-read-caches-url) "/acls/acls"))
+       (s/only-with-real-database
+        (testing "normal user cannot retrieve cache values for bootstrap"
+          (let [response (client/request {:url (url/bootstrap-read-caches-url)
+                                          :method :get
+                                          :query-params {:token normal-user-token}
+                                          :connection-manager (s/conn-mgr)
+                                          :throw-exceptions false})
+                errors (:errors (json/decode (:body response) true))]
+            (is (= 401 (:status response)))
+            (is (= ["You do not have permission to perform that action."] errors))))))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)
