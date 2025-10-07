@@ -71,8 +71,8 @@
                         (filter-group-conds operation))]
 
     (when (empty? processed-conditions)
-      (errors/internal-error! (format "Logic error while grouping initial conditions [%s]. No conditions found"
-                                      conditions)))
+      (errors/internal-error! (format "Logic error while grouping initial conditions [%s] with operation [%s]. No conditions found"
+                                      conditions, operation)))
 
     (if (= (count processed-conditions) 1)
       (first processed-conditions)
