@@ -64,18 +64,19 @@
   [operation conditions]
   (when (empty? conditions) (errors/internal-error! "Grouping empty list of conditions"))
 
-  (let [conditions (->> conditions
+  (let [processed-conditions (->> conditions
                         (flatten-group-conds operation)
                         (condition-merger/merge-conditions operation)
                         (short-circuit-group-conds operation)
                         (filter-group-conds operation))]
 
-    (when (empty? conditions)
-      (errors/internal-error! "Logic error while grouping conditions. No conditions found"))
+    (when (empty? processed-conditions)
+      (errors/internal-error! (format "Logic error while grouping initial conditions [%s]. No conditions found"
+                                      conditions)))
 
-    (if (= (count conditions) 1)
-      (first conditions)
-      (q/->ConditionGroup operation conditions))))
+    (if (= (count processed-conditions) 1)
+      (first processed-conditions)
+      (q/->ConditionGroup operation processed-conditions))))
 
 (defn and-conds
   "Returns a condition representing conditions combined using a logical AND."
