@@ -70,7 +70,9 @@
   (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
   (let [indexer-context {:system (helper/get-indexer system)}
         conn (indexer-util/context->conn indexer-context)]
-    (es-helper/migrate-index conn source-index target-index)
+    (let [result (es-helper/migrate-index conn source-index target-index)]
+      (when (:error result)
+        (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
     (index-set-service/update-resharding-status indexer-context
                                                 index-set/index-set-id
                                                 source-index

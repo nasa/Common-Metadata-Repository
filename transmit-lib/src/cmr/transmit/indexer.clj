@@ -118,4 +118,4 @@
 (defn finalize-resharding-index
   "Finalizes the resharding index specified in the indexer application."
   [context index-set-id index]
-  (submit-reshard-index-request context index-set-id index finalize-rebalance-collection-url nil))
+  (submit-reshard-index-request context index-set-id index finalize-reshard-index-url nil))

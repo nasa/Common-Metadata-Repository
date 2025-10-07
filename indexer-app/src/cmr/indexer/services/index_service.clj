@@ -128,10 +128,6 @@
 
 ;; **********************
 
-(defn migrate-index
-  "Copy the contents of one index into another. Used during resharding."
-  [context source-index target-index])
-
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for

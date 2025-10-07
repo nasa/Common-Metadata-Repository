@@ -221,7 +221,7 @@
    At some point we might want a finger-grained check for a specific collection, but for now this
    is the safest thing to do."
   [index-set]
-  (> 0 (count (get-in index-set [:index-set :granule :rebalancing-collections]))))
+  (pos? (count (get-in index-set [:index-set :granule :rebalancing-collections]))))
 
 (defn- is-resharding?
   "Evaluates to true if any index is being resharded.
@@ -303,30 +303,29 @@
   (info (format "Starting to rebalance granules for collection [%s] to target [%s]."
                 concept-id target))
   (rebalancing-collections/validate-target target concept-id)
-  (let [index-set (as-> (index-set-util/get-index-set context index-set-id) index-set
-                    ;; Don't allow rebalancing operations while resharding. This could be more fine-grained,
-                    ;; but for now this is the safest thing.
-                    (when (is-resharding? index-set)
-                      (errors/throw-service-error
-                       :bad-request
-                       "Rebalancing is not allowed while resharding is running."))
-                    (update-in
-                     index-set
-                     [:index-set :granule :rebalancing-collections]
-                     add-rebalancing-collection concept-id)
-                    (update-in
-                     index-set
-                     [:index-set :granule :rebalancing-targets]
-                     assoc concept-id target)
-                    (update-in
-                     index-set
-                     [:index-set :granule :rebalancing-status]
-                     assoc concept-id "IN_PROGRESS")
-                    (if (= "small-collections" target)
-                      (do
-                        (validate-granule-index-exists index-set concept-id)
-                        index-set)
-                      (add-new-granule-index index-set concept-id)))]
+  (let [index-set (index-set-util/get-index-set context index-set-id)
+        ;; Don't allow rebalancing operations while resharding. This could be more fine-grained,
+        ;; but for now this is the safest thing.
+        _ (when (is-resharding? index-set)
+            (errors/throw-service-error
+             :bad-request
+             "Rebalancing is not allowed while resharding is running."))
+        index-set (-> index-set
+                      (update-in
+                       [:index-set :granule :rebalancing-collections]
+                       add-rebalancing-collection concept-id)
+                      (update-in
+                       [:index-set :granule :rebalancing-targets]
+                       assoc concept-id target)
+                      (update-in
+                       [:index-set :granule :rebalancing-status]
+                       assoc concept-id "IN_PROGRESS")
+                      ((fn [index-set]
+                         (if (= "small-collections" target)
+                           (do
+                             (validate-granule-index-exists index-set concept-id)
+                             index-set)
+                           (add-new-granule-index index-set concept-id)))))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
 

@@ -313,15 +313,6 @@
            response (es-helper/bulk conn bulk-operations)]
        (handle-bulk-index-response response)))))
 
-(defn migrate-index
-  "Copy contents of one index into another. Used during resharding."
-  [context source-index target-index]
-  (let [conn (indexer-util/context->conn context)
-        result (es-helper/migrate-index conn source-index target-index)]
-    (when (:error result)
-      (errors/internal-error!
-       (format "Migrating index [%s] to index [%s] failed" source-index target-index)))))
-
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
