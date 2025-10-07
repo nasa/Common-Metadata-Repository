@@ -57,7 +57,9 @@
   [_operation conditions]
   (if (some #(= q/match-all %) conditions)
     [q/match-all]
-    conditions))
+    (if (every? #(= q/match-none %) conditions)
+      [q/match-none]
+      conditions)))
 
 (defn group-conds
   "Combines the conditions together in the specified type of group."
