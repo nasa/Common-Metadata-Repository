@@ -102,7 +102,8 @@
                                       "token-user-id"
                                       "write-enabled"
                                       "xsl-transformer-templates"
-                                      "token-pc"])
+                                      "token-pc"
+                                      "granule-counts-cache"])
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
          (testing "list caches for bootstrap"
