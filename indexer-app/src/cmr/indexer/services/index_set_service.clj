@@ -216,20 +216,40 @@
         "The index set does not contain the rebalancing collection [%s]"
         concept-id)))))
 
-(defn- is-rebalancing?
-  "Evaluates to true if any collection is being rebalanced.
-   At some point we might want a finger-grained check for a specific collection, but for now this
-   is the safest thing to do."
+(defn get-resharding-indexes
+  "get the set of resharding indexes and targets from index-set"
   [index-set]
-  (pos? (count (get-in index-set [:index-set :granule :rebalancing-collections]))))
+  (reduce (fn [acc x]
+            (if-let [index-targets (:resharding-targets x)]
+              (-> acc
+                  (into (map name (keys index-targets)))
+                  (into (vals index-targets)))
+              acc))
+          #{}
+          (vals (:index-set index-set))))
+
+(defn- is-rebalancing?
+  "Evaluates to true if the index is being used for rebalanced"
+  [index-set index]
+  (let [rebalancing (get-in index-set [:index-set :granule :rebalancing-targets])
+        rebalancing-indexes (set (keys rebalancing))
+        target-indexes (set (vals rebalancing))]
+    (or (contains? rebalancing-indexes index) (contains? target-indexes index))))
 
 (defn- is-resharding?
-  "Evaluates to true if any index is being resharded.
-   At some point we might want a finer-grained check for a specific index, but for now this
-   is the safest thing to do."
-  [index-set]
-  (boolean (some #(:resharding-indexes %)
-                 (vals (:index-set index-set)))))
+  "Evaluates to true if the index is being resharded or is the target of resharding"
+  [index-set index]
+  (contains? (get-resharding-indexes index-set) index))
+
+(defn- is-resharding-blocking-rebalancing?
+  "Returns true if a reshard operation is running that prevents the given collection and target
+   from being rebalanced."
+  [index-set concept-id]
+  ;; get the index names for the concept-id and small_collections
+  ;; then check to see if either index is being resharded
+  (let [separate-index (get-in index-set [:index-set :concepts :granule concept-id])
+        small-collections-index (get-in index-set [:index-set :concepts :granule :small_collections])]
+    (or (is-resharding? index-set separate-index) (is-resharding? index-set small-collections-index))))
 
 (defn- add-resharding-index
   "Adds a new resharding index to the set of resharding indexes"
@@ -304,12 +324,12 @@
                 concept-id target))
   (rebalancing-collections/validate-target target concept-id)
   (let [index-set (index-set-util/get-index-set context index-set-id)
-        ;; Don't allow rebalancing operations while resharding. This could be more fine-grained,
-        ;; but for now this is the safest thing.
-        _ (when (is-resharding? index-set)
+        ;; Don't allow rebalancing a collection while resharding a related index.
+        _ (when (is-resharding-blocking-rebalancing? index-set concept-id)
             (errors/throw-service-error
              :bad-request
-             "Rebalancing is not allowed while resharding is running."))
+             (format "Cannot rebalance [%s] while its related indexes are being resharded."
+                     concept-id)))
         index-set (-> index-set
                       (update-in
                        [:index-set :granule :rebalancing-collections]
@@ -405,12 +425,16 @@
         _ (info (format "Starting to reshard index [%s] to [%s]" index target-index))
         target-index-no-index-set-id (string/replace-first target-index #".*?_" "")
         index-set (index-set-util/get-index-set context index-set-id)
-        ;; Don't allow resharding operations while rebalancing This could be more fine-grained,
-        ;; but for now this is the safest thing.
-        _ (when (is-rebalancing? index-set)
+        ;; Don't allow conflicts with rebalancing
+        _ (when (is-rebalancing? index-set index)
             (errors/throw-service-error
              :bad-request
-             "Resharding is not allowed while rebalancing is running."))
+             (format "%s cannot be resharded as it is being used for rebalancing." index)))
+        _ (when (is-rebalancing? index-set target-index)
+            (errors/throw-service-error
+             :bad-request
+             (format "%s cannot be resharded as its target %s is being used for rebalancing."
+                     index target-index)))
         ;; search for index name in index-set :concepts to get concept type and to validate the
         ;; index exists
         concept-type (get-concept-type-for-index index-set index)

@@ -2,7 +2,7 @@
   "unit tests for index-set app service functions"
   (:require
    [clojure.test :refer :all]
-   [cmr.indexer.common.index-set-util :as index-set-util]
+   [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
@@ -220,46 +220,46 @@
       (is (= :collection
              (svc/get-concept-type-for-index index-set "index_10_shards"))))))
 
-#_(deftest test-get-resharding-index-target
+(deftest test-get-resharding-index-target
   (testing "returns target index when resharding target exists for granule"
     (let [index-set {:index-set
                      {:granule
                       {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
       (is (= "granule_index_10_shards"
-             (index-set-util/get-resharding-index-target index-set :granule "granule_index_5_shards")))))
+             (#'index-set/get-resharding-index-target index-set :granule "granule_index_5_shards")))))
 
   (testing "returns target index when resharding target exists for collection"
     (let [index-set {:index-set
                      {:collection
                       {:resharding-targets {:collection_index_3_shards "collection_index_6_shards"}}}}]
       (is (= "collection_index_6_shards"
-             (index-set-util/get-resharding-index-target index-set :collection "collection_index_3_shards")))))
+             (#'index-set/get-resharding-index-target index-set :collection "collection_index_3_shards")))))
 
   (testing "returns nil when index is not being resharded"
     (let [index-set {:index-set
                      {:granule
                       {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
-      (is (nil? (index-set-util/get-resharding-index-target index-set :granule "other_index")))))
+      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "other_index")))))
 
   (testing "returns nil when wrong concept type is queried"
     (let [index-set {:index-set
                      {:granule
                       {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
-      (is (nil? (index-set-util/get-resharding-index-target index-set :collection "granule_index_5_shards")))))
+      (is (nil? (#'index-set/get-resharding-index-target index-set :collection "granule_index_5_shards")))))
 
   (testing "returns nil when resharding-targets key is missing"
     (let [index-set {:index-set {:granule {}}}]
-      (is (nil? (index-set-util/get-resharding-index-target index-set :granule "some_index")))))
+      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index")))))
 
   (testing "returns nil when concept type key is missing"
     (let [index-set {:index-set {}}]
-      (is (nil? (index-set-util/get-resharding-index-target index-set :granule "some_index")))))
+      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index")))))
 
   (testing "returns nil when index-set is empty"
-    (is (nil? (index-set-util/get-resharding-index-target {} :granule "some_index"))))
+    (is (nil? (#'index-set/get-resharding-index-target {} :granule "some_index"))))
 
   (testing "returns nil when index-set is nil"
-    (is (nil? (index-set-util/get-resharding-index-target nil :granule "some_index"))))
+    (is (nil? (#'index-set/get-resharding-index-target nil :granule "some_index"))))
 
   (testing "handles multiple resharding targets for same concept type"
     (let [index-set {:index-set
@@ -267,9 +267,9 @@
                       {:resharding-targets {:index_a_5_shards "index_a_10_shards"
                                             :index_b_3_shards "index_b_6_shards"}}}}]
       (is (= "index_a_10_shards"
-             (index-set-util/get-resharding-index-target index-set :granule "index_a_5_shards")))
+             (#'index-set/get-resharding-index-target index-set :granule "index_a_5_shards")))
       (is (= "index_b_6_shards"
-             (index-set-util/get-resharding-index-target index-set :granule "index_b_3_shards")))))
+             (#'index-set/get-resharding-index-target index-set :granule "index_b_3_shards")))))
 
   (testing "handles resharding targets across different concept types"
     (let [index-set {:index-set
@@ -278,9 +278,9 @@
                       :collection
                       {:resharding-targets {:collection_index "collection_target"}}}}]
       (is (= "granule_target"
-             (index-set-util/get-resharding-index-target index-set :granule "granule_index")))
+             (#'index-set/get-resharding-index-target index-set :granule "granule_index")))
       (is (= "collection_target"
-             (index-set-util/get-resharding-index-target index-set :collection "collection_index")))))
+             (#'index-set/get-resharding-index-target index-set :collection "collection_index")))))
 
   (testing "converts string index to keyword for lookup"
     (let [index-set {:index-set
@@ -288,15 +288,15 @@
                       {:resharding-targets {:my_index "target_index"}}}}]
       ;; The function converts the string "my_index" to keyword :my_index
       (is (= "target_index"
-             (index-set-util/get-resharding-index-target index-set :granule "my_index")))))
+             (#'index-set/get-resharding-index-target index-set :granule "my_index")))))
 
   (testing "handles index names with special characters"
     (let [index-set {:index-set
                      {:granule
                       {:resharding-targets {:index-with-dashes_10_shards "new_index"}}}}]
       (is (= "new_index"
-             (index-set-util/get-resharding-index-target index-set :granule "index-with-dashes_10_shards")))))
+             (#'index-set/get-resharding-index-target index-set :granule "index-with-dashes_10_shards")))))
 
   (testing "returns nil for empty resharding-targets map"
     (let [index-set {:index-set {:granule {:resharding-targets {}}}}]
-      (is (nil? (index-set-util/get-resharding-index-target index-set :granule "some_index"))))))
+      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index"))))))
