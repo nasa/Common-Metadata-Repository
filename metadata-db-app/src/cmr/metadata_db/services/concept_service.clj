@@ -1151,3 +1151,10 @@
          tombstone-cut-off-date
          concept-truncation-batch-size)
       concept-truncation-batch-size)))
+
+(defn get-collection-concept-ids
+  "Returns the collection concept ids for the given provider and granule concept id
+   provider and granule concept id has been verified to match before invoking this function."
+  [context provider granule-concept-ids]
+  (let [db (util/context->db context)]
+    (c/get-collection-concept-ids db provider granule-concept-ids)))

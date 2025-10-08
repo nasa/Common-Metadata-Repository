@@ -41,6 +41,29 @@
     (testing "Validate that a provider does not exist."
       (is (thrown? clojure.lang.ExceptionInfo (provider-cache/validate-providers-exist test-context '("PROV3")))))))
 
+(deftest get-provider-test
+  (let [cache-key provider-cache/cache-key
+        test-context {:system {:caches {cache-key (provider-cache/create-cache)}}}
+        cache (get-in test-context [:system :caches cache-key])]
+    (hash-cache/reset cache cache-key)
+    (provider-cache/refresh-provider-cache test-context providers)
+    (testing "Get an existing provider"
+      (is (= {:provider-id "PROV1"
+              :short-name "PROV1"
+              :cmr-only false
+              :small false
+              :consortiums "EOSDIS GEOSS"}
+             (provider-cache/get-provider test-context "PROV1"))))
+    (testing "Get another existing provider"
+      (is (= {:provider-id "PROV2"
+              :short-name "PROV2"
+              :cmr-only false
+              :small false
+              :consortiums "EOSDIS GEOSS"}
+             (provider-cache/get-provider test-context "PROV2"))))
+    (testing "Get a non-existent provider returns nil"
+      (is (nil? (provider-cache/get-provider test-context "PROV3"))))))
+
 (deftest job-config-test
   (testing "testing the provider cache refresh job"
     (is (= {:job-type cmr.common_app.services.provider_cache.RefreshProviderCacheJob

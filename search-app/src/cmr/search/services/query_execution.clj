@@ -41,7 +41,7 @@
   "Returns true if the query should be executed directly against the database and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
-       ;; elastic + the metadata cache for them
+   ;; elastic + the metadata cache for them
    (= :granule concept-type)
    (specific-items-query? query)
    (mt/transformer-supported-format? result-format)

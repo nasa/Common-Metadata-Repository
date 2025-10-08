@@ -94,10 +94,6 @@
   (fn [_context query]
     (query->execution-strategy query)))
 
-(def empty-es-results
-  "An empty result returned by Elasticsearch when no match is found."
-  {:took 0, :timed_out false, :_shards {:total 0, :successful 0, :skipped 0, :failed 0}, :hits {:total {:value 0}, :max_score nil, :hits ()}})
-
 (defn- granule-no-coll-match?
   "Returns true if this is a granule query with a collection identifier
    but no matching collection IDs, meaning we should skip querying ES."
@@ -125,7 +121,7 @@
         elastic-results (if (granule-no-coll-match? context)
                           (do
                             (info "No collection matched by collection identifying parameters in granule search, skip querying ES.")
-                            empty-es-results)
+                            idx/empty-es-results)
                           (run-elasticsearch-query context processed-query))
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
