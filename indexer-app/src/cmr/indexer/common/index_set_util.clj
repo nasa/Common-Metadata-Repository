@@ -29,9 +29,3 @@
   (or (es/get-index-set context index-set-id)
       (errors/throw-service-error :not-found
                                   (m/index-set-not-found-msg index-set-id))))
-
-(defn get-resharding-index-target
-  "Get the target index for the given concept-type and index if the index is being resharded.
-   Evaluates to nil if the index is not being resharded."
-  [index-set concept-type index]
-  (get-in index-set [:index-set concept-type :resharding-targets (keyword index)]))

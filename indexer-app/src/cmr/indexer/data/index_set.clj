@@ -6,11 +6,10 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.indexer.common.index-set-util :as index-set-utils]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.transmit.metadata-db :as meta-db]
-   [cmr.indexer.common.index-set-util :as index-set-util]))
+   [cmr.transmit.metadata-db :as meta-db]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
@@ -975,13 +974,13 @@
                         :subscription {:indexes
                                        [{:name "subscriptions"
                                          :settings subscription-setting}
-                                         ;; This index contains all the revisions (including tombstones) and
-                                         ;; is used for all-revisions searches.
+                                        ;; This index contains all the revisions (including tombstones) and
+                                        ;; is used for all-revisions searches.
                                         {:name "all-subscription-revisions"
                                          :settings subscription-setting}]
                                        :mapping subscription-mapping}}]
 
-               ;; merge into the set of indexes all the configured generic documents
+    ;; merge into the set of indexes all the configured generic documents
     {:index-set (reduce (fn [data addition] (merge data addition))
                         set-of-indexes
                         (index-set-gen/generic-mappings-generator))}))
@@ -1002,6 +1001,7 @@
   ([context index-set-id]
    (let [fetched-index-set (index-set-es/get-index-set context index-set-id)]
      {:index-names (get-in fetched-index-set [:index-set :concepts])
+      :resharding-indices (elastic-search-index-names-cache/get-resharding-targets fetched-index-set)
       :rebalancing-collections (get-in fetched-index-set
                                        [:index-set :granule :rebalancing-collections])})))
 
@@ -1070,6 +1070,13 @@
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
+(defn- get-resharding-index-target
+  "Get the target index for the given index.
+   Return nil if the index is not being resharded."
+  [context index]
+  (let [concept-indices (get-concept-type-index-names context)]
+    (get-in concept-indices [:resharding-indices (keyword index)])))
+
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a
    target-index-key can be specified which indicates that a specific index should be returned"
@@ -1083,22 +1090,20 @@
                                   target-index-key
                                   [(get indexes target-index-key)]
 
-                                       ;; The collection is currently rebalancing so it will have granules in both small Collections
-                                       ;; and the separate index
+                                  ;; The collection is currently rebalancing so it will have granules in both small Collections
+                                  ;; and the separate index
                                   (some #{coll-concept-id} rebalancing-collections)
                                   [(get indexes (keyword coll-concept-id)) small-collections-index-name]
 
                                   :else
-                                       ;; The collection is not rebalancing so it's either in a separate index or small Collections
+                                  ;; The collection is not rebalancing so it's either in a separate index or small Collections
                                   [(get indexes (keyword coll-concept-id) small-collections-index-name)])]
      (if (= (count indexes-for-collection) 1)
        ;; only one index so it's not being rebalanced, but it might be resharding
-       (let [index-set (index-set-util/get-index-set context index-set-id)
-             target-index (index-set-util/get-resharding-index-target index-set :granule (first indexes-for-collection))]
-         (if target-index
-           ;; index is being resharded so we need to return the target index as well
-           (conj indexes-for-collection target-index)
-           indexes-for-collection))
+       (if-let [target-index (get-resharding-index-target context (first indexes-for-collection))]
+         ;; index is being resharded so we need to return the target index as well
+         (conj indexes-for-collection target-index)
+         indexes-for-collection)
        indexes-for-collection))))
 
 (defn resolve-generic-concept-type
@@ -1168,18 +1173,16 @@
 
                    ;; Default
                    (when (some? (concept-type (common-generic/latest-approved-documents)))
-                      ;; Generics are a bunch of document types, find out which one to work with
-                      ;; and return the index name for those
+                     ;; Generics are a bunch of document types, find out which one to work with
+                     ;; and return the index name for those
                      (if all-revisions-index?
                        [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
                        [(get indexes (keyword (format "generic-%s" (name concept-type))))])))]
      (if (= (count indexes) 1)
        ;; check to see if the index is being resharded
-       (let [index-set (index-set-util/get-index-set context index-set-id)
-             target-index (index-set-util/get-resharding-index-target index-set concept-type (first indexes))]
-         (if-some [idx target-index]
-           (conj indexes idx)
-           indexes))
+       (if-let [target-index (get-resharding-index-target context (first indexes))]
+         (conj indexes target-index)
+         indexes)
        indexes))))
 
 (defn get-granule-index-names-for-provider

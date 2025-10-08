@@ -41,6 +41,16 @@
             (name k)))
         rebalancing-targets-map))
 
+(defn get-resharding-targets
+  "Get all resharding targets from any concept in the index-set"
+  [index-set]
+  (reduce (fn [acc x]
+            (if-let [targets (:resharding-targets x)]
+              (merge acc targets)
+              acc))
+          {}
+          (vals (:index-set index-set))))
+
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]
@@ -54,6 +64,7 @@
         moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
     {:index-names index-names-map
+     :resharding-indices (get-resharding-targets fetched-index-set)
      :rebalancing-collections moving-to-separate-index}))
 
 (defn refresh-index-names-cache
@@ -64,6 +75,10 @@
         index-names (:index-names index-names-map)
         cache (hcache/context->cache context index-names-cache-key)]
     (hcache/set-values cache index-names-cache-key index-names)
+    (hcache/set-value cache
+                      index-names-cache-key
+                      :resharding-indices
+                      (:resharding-indices index-names-map))
     (hcache/set-value cache
                       index-names-cache-key
                       :rebalancing-collections

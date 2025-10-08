@@ -220,7 +220,7 @@
       (is (= :collection
              (svc/get-concept-type-for-index index-set "index_10_shards"))))))
 
-(deftest test-get-resharding-index-target
+#_(deftest test-get-resharding-index-target
   (testing "returns target index when resharding target exists for granule"
     (let [index-set {:index-set
                      {:granule
