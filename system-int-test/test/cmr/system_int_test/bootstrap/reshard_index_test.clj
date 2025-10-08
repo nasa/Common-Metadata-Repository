@@ -14,10 +14,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
-;; These tests don't actually require Oracle, but they are marked as such to keep them from
-;; running normally as they can be slow
-
-(deftest ^:oracle reshard-index-error-test
+(deftest reshard-index-error-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
@@ -40,6 +37,14 @@
        (is (= {:status 400
                :errors ["Invalid num_shards [1.1]. Only integers greater than zero are allowed."]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 1.1}))))
+     (testing "acls are not supported"
+       (is (= {:status 400
+               :errors ["Resharding is not allowed for acls or groups."]}
+              (bootstrap/start-reshard-index "acls" {:synchronous false :num-shards 1}))))
+     (testing "groups are not supported"
+       (is (= {:status 400
+               :errors ["Resharding is not allowed for acls or groups."]}
+              (bootstrap/start-reshard-index "groups" {:synchronous false :num-shards 1}))))
      (testing "shard count must be a number"
        (is (= {:status 400
                :errors ["Invalid num_shards [abc]. Only integers greater than zero are allowed."]}
@@ -56,7 +61,7 @@
                :errors ["The index set already contains resharding index [1_small_collections]"]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
 
-(deftest ^:oracle reshard-index-success-test
+(deftest reshard-index-success-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))

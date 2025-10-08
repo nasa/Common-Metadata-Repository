@@ -395,6 +395,10 @@
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
+  (when (#{"acls" "groups"} index)
+    (errors/throw-service-error
+     :bad-request
+     "Resharding is not allowed for acls or groups."))
   (let [num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
