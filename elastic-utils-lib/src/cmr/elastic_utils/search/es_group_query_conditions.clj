@@ -28,17 +28,17 @@
 (defmethod filter-group-conds :and
   [_operation conditions]
   ;; Match all conditions can be filtered out of an AND.
-  (if (= conditions [q/match-all])
+  (if (every? #(= q/match-all %) conditions)
     ;; A single match-all should be returned
-    conditions
+    [q/match-all]
     (filter #(not= % q/match-all) conditions)))
 
 (defmethod filter-group-conds :or
   [_operation conditions]
   ;; Match none conditions can be filtered out of an OR.
-  (if (= conditions [q/match-none])
+  (if (every? #(= q/match-none %) conditions)
     ;; A single match-none should be returned
-    conditions
+    [q/match-none]
     (filter #(not= % q/match-none) conditions)))
 
 (defmulti short-circuit-group-conds
@@ -57,9 +57,7 @@
   [_operation conditions]
   (if (some #(= q/match-all %) conditions)
     [q/match-all]
-    (if (every? #(= q/match-none %) conditions)
-      [q/match-none]
-      conditions)))
+    conditions))
 
 (defn group-conds
   "Combines the conditions together in the specified type of group."
