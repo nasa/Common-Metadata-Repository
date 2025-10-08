@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-execution
   (:require
    [clojure.set :as set]
+   [cmr.common.log :refer [debug]]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
@@ -168,14 +169,6 @@
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
-(defn- update-facets
-  "Update the orig-facets-with-count using the info in the all-facets-with-count."
-  [orig-facets-with-count all-facets-with-count]
-  (for [title-val (map :title orig-facets-with-count)
-        :let [match (some #(when (= title-val (:title %)) %) all-facets-with-count)]
-        :when (some? match)]
-    match))
-
 (defn- get-facets-with-count
   "Extract out the facet part that contains title and count, amoung other things:
   [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
@@ -188,36 +181,11 @@
       first
       :children))
 
-(defn- get-facets-for-field-again?
-  "Check to see if any facet count in facets-for-field is 0
-  and that facets-size-for-field is not set to return all facets.
-  If so, return true."
-  [facets-size-for-field facets-for-field]
+(defn- has-zero-count-facets?
+  "Check to see if any facet count in facets-for-field is 0."
+  [facets-for-field]
   (let [facets-with-count (get-facets-with-count facets-for-field)]
-    (and (or (nil? facets-size-for-field)
-             ;; facets-size-for-field could be a string or a long so reflection will be used
-             (< (Integer. facets-size-for-field) fv2rf/UNLIMITED_TERMS_SIZE))
-         (some #(= 0 (:count %)) facets-with-count))))
-
-(defn- update-facets-for-field
-  "Update the counts in facets-for-field with the counts in all-facets-for-field.
-  orig-facets-with-count is like:
-  [{:title \"t1\" :count 0} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]
-  all-facets-with-count is like:
-  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}
-   {:title \"t4\" :count 2} {:title \"t5\" :count 1}]
-  updated-orig-facets-with-count is:
-  [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
-  [facets-for-field all-facets-for-field]
-  (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
-        orig-facets-with-count (get-facets-with-count facets-for-field)
-        all-facets-with-count  (get-facets-with-count all-facets-for-field)
-        ;; replace the original facets with the facets in all-facets that have the same :title.
-        updated-orig-facets-with-count (update-facets orig-facets-with-count all-facets-with-count)
-        updated-orig-first-facets-children
-        (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
-    ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
-    (assoc-in facets-for-field [:facets :children] [updated-orig-first-facets-children])))
+    (some #(= 0 (:count %)) facets-with-count)))
 
 (defn- get-facets-for-field
   "Returns the facets search result on the given field by executing an elasticsearch query
@@ -228,18 +196,10 @@
                   (assoc :result-features [:facets-v2])
                   (assoc :facet-fields [field])
                   (assoc :page-size 0))
-        facets-size-map (:facets-size query)
-        facets-size-for-field (field facets-size-map)
         facets-for-field (common-qe/execute-query context query)]
-    ;; Check if any facet contains 0 count, if so, and the
-    ;; facets-size-for-field is not showing all facets, then we will try to
-    ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
-    (if (get-facets-for-field-again? facets-size-for-field facets-for-field)
-      (let [query-with-all-facets-size
-            (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))
-            all-facets-for-field (get-facets-for-field context query-with-all-facets-size field)]
-        (update-facets-for-field facets-for-field all-facets-for-field))
-      facets-for-field)))
+    (when (has-zero-count-facets? facets-for-field)
+      (debug "Facet field" field "contains 0-count results. This may indicate shard_size is insufficient."))
+    facets-for-field))
 
 (defn- merge-facets
   "Returns the facets by merging the two lists of facets and sort the fields in the correct order.

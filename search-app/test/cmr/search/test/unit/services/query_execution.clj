@@ -204,10 +204,3 @@
                                                                           :count 3,
                                                                           :links {:apply "https://cmr.sit.earthdata.nasa.gov:443/search/collections.json?page_num=1&include_granule_counts=true&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&sort_key%5B%5D=has_granules_or_cwic&sort_key%5B%5D=-usage_score&platforms_h%5B0%5D%5Bsub_category%5D=Worldview&page_size=20&include_has_granules=true&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=PlanetScope&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
                                                                           :has_children true}]}]}]}]}})
-
-(deftest update-facets
-  (testing "does not return nils"
-    (let [update-facets #'search-qe/update-facets
-          result (update-facets orig-facets all-facets)]
-      (is (= (count result) 1))
-      (is (every? some? result)))))

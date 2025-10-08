@@ -5,13 +5,14 @@
    [camel-snake-kebab.core :as csk]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.elastic-utils.search.query-execution :as query-execution]
+   [cmr.common.log :refer [debug info]]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
+   [cmr.search.services.query-execution.facets.cycle-facets :as cycle-facets]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
    [cmr.search.services.query-execution.facets.links-helper :as lh]
-   [cmr.search.services.query-execution.facets.cycle-facets :as cycle-facets]
    [cmr.search.services.query-execution.facets.temporal-facets :as temporal-facets]
    [cmr.transmit.connection :as conn]
    [ring.util.codec :as codec]))
@@ -23,6 +24,23 @@
 (def DEFAULT_TERMS_SIZE
   "The default limit for the number of results to return from any terms query for v2 facets."
   50)
+
+(def facet-field-shard-size-map
+  "Shard size configuration for high and medium cardinality facet fields.  
+   Numbers are chosen based on current counts from production and include some buffer, 
+   they might need to be increased at some point in the future."
+  {:platforms-h                6000
+   :project-h                  4000
+   :data-center-h              3000
+   :instrument-h               3000
+   :science-keywords-h         2000
+   :granule-data-format-h      1500})
+
+(defn get-shard-size-for-field
+  "Returns the shard_size for a facet field. Uses configured value if present,
+  otherwise returns nil (Elasticsearch will use its default)."
+  [facet-field]
+  (get facet-field-shard-size-map facet-field))
 
 (defmulti facets-v2-params->elastic-fields
   "Maps the parameter names for the concept-type to the fields in Elasticsearch."
@@ -55,8 +73,10 @@
   (case facet-field
     (:platforms :science-keywords :variables)
     (let [hierarchical-field (keyword (str (name facet-field) "-h"))
-          depth (hv2/get-depth-for-hierarchical-field query-params hierarchical-field)]
-      (hv2/nested-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size depth))
+          elastic-field (get (facets-v2-params->elastic-fields concept-type) facet-field)
+          depth (hv2/get-depth-for-hierarchical-field query-params hierarchical-field)
+          shard-size (get-shard-size-for-field hierarchical-field)]
+      (hv2/nested-facet elastic-field size depth shard-size))
 
     :start-date
     (temporal-facets/temporal-facet query-params)
@@ -72,10 +92,15 @@
     (v2h/prioritized-range-facet context (get (facets-v2-params->elastic-fields concept-type) facet-field))
 
     :latency
-     (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
+    (let [elastic-field (get (facets-v2-params->elastic-fields concept-type) facet-field)
+          aggregation-field (get (facet-fields->aggregation-fields concept-type) facet-field)
+          shard-size (get-shard-size-for-field aggregation-field)]
+      (v2h/terms-facet elastic-field size shard-size))
 
-    ;; else
-    (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
+    (let [elastic-field (get (facets-v2-params->elastic-fields concept-type) facet-field)
+          aggregation-field (get (facet-fields->aggregation-fields concept-type) facet-field)
+          shard-size (get-shard-size-for-field aggregation-field)]
+      (v2h/prioritized-facet elastic-field size shard-size))))
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
