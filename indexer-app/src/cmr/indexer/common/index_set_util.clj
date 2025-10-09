@@ -29,3 +29,4 @@
   (or (es/get-index-set context index-set-id)
       (errors/throw-service-error :not-found
                                   (m/index-set-not-found-msg index-set-id))))
+

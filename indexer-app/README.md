@@ -162,7 +162,7 @@ Make changes to the collection's rebalancing status. This will update a mapping 
 
 ### Start resharding an index
 
-An index can be resharded to improve performance. The `start` endpoint begin the process.
+An index can be resharded to improve performance. The `start` endpoint begins the process.
 
   curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50
 

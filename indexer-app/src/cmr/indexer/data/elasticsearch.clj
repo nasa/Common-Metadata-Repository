@@ -123,7 +123,7 @@
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
-;; Compare them to see if they're the same
+      ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
       (do
         (warn "Index set does not match you may want to update it.")

@@ -1074,8 +1074,9 @@
   "Get the target index for the given index.
    Return nil if the index is not being resharded."
   [context index]
-  (let [concept-indices (get-concept-type-index-names context)]
-    (get-in concept-indices [:resharding-indices (keyword index)])))
+  (when index
+    (let [concept-indices (get-concept-type-index-names context)]
+      (get-in concept-indices [:resharding-indices (keyword index)]))))
 
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a

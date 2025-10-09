@@ -228,13 +228,50 @@
           #{}
           (vals (:index-set index-set))))
 
+(defn index-name->concept-id
+  "Extracts a concept ID from a granule index name. Does not work for non-granule indexes.
+   Examples:
+   '1_c2317035855_nsidc_ecs' -> 'C2317035855-NSIDC_ECS'
+   '1_c2317035855_nsidc_ecs_5_shards' -> 'C2317035855-NSIDC_ECS'"
+  [index-name]
+  (when index-name
+    (let [;; Remove shard count suffix if present
+          without-shards (string/replace index-name #"_\d+_shards$" "")
+          ;; Remove leading number prefix (e.g., "1_")
+          without-prefix (string/replace without-shards #"^\d+_" "")
+          ;; Find the first underscore after the concept type+number
+          ;; Concept pattern: letter followed by numbers/underscores until we hit provider
+          ;; Match: concept letter + any combo of numbers/underscores that form the concept ID
+          first-underscore-idx (string/index-of without-prefix "_")]
+      (when first-underscore-idx
+        (let [concept-part (subs without-prefix 0 first-underscore-idx)
+              provider-part (subs without-prefix (inc first-underscore-idx))]
+          (str (string/upper-case concept-part)
+               "-"
+               (string/upper-case provider-part)))))))
+
 (defn- is-rebalancing?
-  "Evaluates to true if the index is being used for rebalanced"
+  "Evaluates to true if the index is being used for rebalancing"
   [index-set index]
-  (let [rebalancing (get-in index-set [:index-set :granule :rebalancing-targets])
-        rebalancing-indexes (set (keys rebalancing))
-        target-indexes (set (vals rebalancing))]
-    (or (contains? rebalancing-indexes index) (contains? target-indexes index))))
+  ;; if rebalancing-targets length == 0 then return false
+  ;; if the index is the small-collections index and any rebalancing is happening, return true
+  ;; if the concept-id for the index is in the rebalancing set, return true
+  ;; else return false
+  (let [rebalancing-collections (get-in index-set [:index-set :granule :rebalancing-collections])]
+    (if (= 0 (count rebalancing-collections))
+      ;; no rebalancing is happening
+      false
+      ;; rebalancing is happening
+      (let [small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
+        (if (= index small-collections-index)
+          ;; the index is the small-collections index and rebalancing always uses that index
+          true
+          ;; the index is not the small-collections index, so get the concept-id for it and see
+          ;; if it is in the resharding set (non-granule indexes will never be in that set)
+          (let [concept-id (index-name->concept-id index)]
+            (if (some #{concept-id} rebalancing-collections)
+              true
+              false)))))))
 
 (defn- is-resharding?
   "Evaluates to true if the index is being resharded or is the target of resharding"
@@ -248,7 +285,7 @@
   ;; get the index names for the concept-id and small_collections
   ;; then check to see if either index is being resharded
   (let [separate-index (get-in index-set [:index-set :concepts :granule concept-id])
-        small-collections-index (get-in index-set [:index-set :concepts :granule :small_collections])]
+        small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
     (or (is-resharding? index-set separate-index) (is-resharding? index-set small-collections-index))))
 
 (defn- add-resharding-index
@@ -438,9 +475,9 @@
         ;; search for index name in index-set :concepts to get concept type and to validate the
         ;; index exists
         concept-type (get-concept-type-for-index index-set index)
-        _ (when-not concept-type (errors/throw-service-errors
+        _ (when-not concept-type (errors/throw-service-error
                                   :not-found
-                                  [(format "Index [%s] does not exist." index)]))
+                                  (format "Index [%s] does not exist." index)))
         ;; get the index configuration from the index-set under :<concept-type> :indexes then
         ;; change the shard count and index name to create a new configuration
         new-index-config (-> (get-index-config index-set concept-type canonical-index-name)

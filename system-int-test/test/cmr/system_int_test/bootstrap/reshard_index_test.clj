@@ -1,6 +1,5 @@
 (ns cmr.system-int-test.bootstrap.reshard-index-test
-  "Tests rebalancing granule indexes by moving collections's granules from the small collections
-   index to separate collection indexes"
+  "Tests the resharding API endpoint for index resharding operations."
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.collection :as dc]

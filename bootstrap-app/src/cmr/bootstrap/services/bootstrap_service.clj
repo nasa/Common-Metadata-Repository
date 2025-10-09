@@ -205,7 +205,7 @@
     (rebalancing-collections/validate-target target concept-id)
     (when (= "separate-index" target)
       (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id))
-    ;; This will throw an exception if the collection is already rebalancing
+    ;; This will throw an exception if the collection is already rebalancing or resharding
     (indexer/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
                                         (csk/->kebab-case-keyword target))
 

@@ -10,7 +10,6 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
-   [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.services.index-service :as index]
    [cmr.indexer.services.index-set-service :as index-set-service]
@@ -70,13 +69,15 @@
   (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
   (let [indexer-context {:system (helper/get-indexer system)}
         conn (indexer-util/context->conn indexer-context)]
-    (let [result (es-helper/migrate-index conn source-index target-index)]
-      (when (:error result)
-        (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-    (index-set-service/update-resharding-status indexer-context
-                                                index-set/index-set-id
-                                                source-index
-                                                "COMPLETE")))
+    (try
+      (let [result (es-helper/migrate-index conn source-index target-index)]
+        (when (:error result)
+          (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE")
+      (catch Throwable e
+        (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
+        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED")
+        (throw e)))))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."

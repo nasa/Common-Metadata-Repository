@@ -98,7 +98,7 @@
             provider-index-channel
    ;; Channel for processing collections to index.
             collection-index-channel
-   ;; Chanel for copying one index to another during resharding
+   ;; Channel for copying one index to another during resharding
             migrate-index-channel
    ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
             system-concept-channel

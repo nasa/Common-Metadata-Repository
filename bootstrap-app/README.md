@@ -91,7 +91,7 @@ HTTP/1.1 200 OK
 
 ### Start Resharding
 Starts the resharding process to create a new index with the given number of shards and copies
-the data from the old index to the new index. Both indexes will be used for ingest/search until
+the data from the old index to the new index. Both indexes will be used for ingest until
 the resharding is finalized.
 
 ```

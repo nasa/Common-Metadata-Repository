@@ -41,39 +41,100 @@
                                      (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
 
+(deftest test-index-name->concept-id
+  (testing "converts basic granule index name to concept ID"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "1_c2317035855_nsidc_ecs"))))
+
+  (testing "converts granule index name with shards suffix to concept ID"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "1_c2317035855_nsidc_ecs_5_shards"))))
+
+  (testing "converts index name with single-part provider"
+    (is (= "C2545314550-LPCLOUD"
+           (#'svc/index-name->concept-id "1_c2545314550_lpcloud"))))
+
+  (testing "converts index name with multi-part provider"
+    (is (= "C2844842625-NSIDC_CPRD"
+           (#'svc/index-name->concept-id "1_c2844842625_nsidc_cprd"))))
+
+  (testing "handles different shard counts"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "1_c2317035855_nsidc_ecs_10_shards"))))
+
+  (testing "handles different leading numbers"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "2_c2317035855_nsidc_ecs"))))
+
+  (testing "returns nil for nil input"
+    (is (nil? (#'svc/index-name->concept-id nil))))
+
+  (testing "returns nil for empty string"
+    (is (nil? (#'svc/index-name->concept-id "")))))
+
 (deftest test-is-rebalancing?
   (testing "returns false when rebalancing-collections is empty"
     (let [index-set {:index-set {:granule {:rebalancing-collections []}}}]
-      (is (false? (#'svc/is-rebalancing? index-set)))))
+      (is (false? (#'svc/is-rebalancing? index-set "1_small_collections")))))
 
-  (testing "returns false when rebalancing-collections has one collection"
-    (let [index-set {:index-set {:granule {:rebalancing-collections ["C123-PROV"]}}}]
-      (is (false? (#'svc/is-rebalancing? index-set)))))
-
-  (testing "returns false when rebalancing-collections has multiple collections"
-    (let [index-set {:index-set {:granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
-      (is (false? (#'svc/is-rebalancing? index-set)))))
-
-  (testing "returns false when rebalancing-collections key is missing"
+  (testing "returns false when no rebalancing is happening"
     (let [index-set {:index-set {:granule {}}}]
-      (is (false? (#'svc/is-rebalancing? index-set))))))
+      (is (false? (#'svc/is-rebalancing? index-set "1_c123_prov")))))
+
+  (testing "returns false when rebalancing-collections does not include the collection for the index"
+    (let [index-set {:index-set {:granule {:rebalancing-collections ["C123-PROV"]}}}]
+      (is (false? (#'svc/is-rebalancing? index-set "1_c124_prov")))))
+
+  (testing "returns true when rebalancing-collections includes the collection for the index"
+    (let [index-set {:index-set {:granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
+      (is (true? (#'svc/is-rebalancing? index-set "1_c123_prov")))))
+
+  (testing "returns true when rebalancing is happening and the index is small-collections"
+    (let [index-set {:index-set {:concepts {:granule {"small_collections" "1_small_collections"}} :granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
+      (is (true? (#'svc/is-rebalancing? index-set "1_small_collections"))))))
 
 (deftest test-is-resharding?
   (testing "returns false when no resharding-indexes present"
     (is (false? (#'svc/is-resharding? {:index-set {:granule {}
-                                                   :collection {}}}))))
+                                                   :collection {}}}
+                                      "1_small_collections"))))
 
-  (testing "returns true when collection has resharding-indexes"
-    (is (true? (#'svc/is-resharding? {:index-set {:granule {}
-                                                  :collection {:resharding-indexes []}}}))))
+  (testing "returns true when index is resharding"
+    (is (true? (#'svc/is-resharding? {:index-set {:collection {}
+                                                  :granule {:resharding-indexes #{"1_c123_prov"}
+                                                            :resharding-targets {"1_c123_prov" "1_c123_prov_5_shards"}}}}
+                                     "1_c123_prov"))))
 
-  (testing "returns true when granule has resharding-indexes"
-    (is (true? (#'svc/is-resharding? {:index-set {:granule {:resharding-indexes []}
-                                                  :collection {}}}))))
+  (testing "returns true when index is a resharding target"
+    (is (true? (#'svc/is-resharding? {:index-set {:collection {}
+                                                  :granule {:resharding-indexes #{"1_c123_prov"}
+                                                            :resharding-targets {"1_c123_prov" "1_c123_prov_5_shards"}}}}
+                                     "1_c123_prov_5_shards")))))
 
-  (testing "returns true when multiple indexes have resharding-indexes"
-    (is (true? (#'svc/is-resharding? {:index-set {:granule {:resharding-indexes []}
-                                                  :collection {:resharding-indexes []}}})))))
+(deftest is-resharding-blocking-rebalancing?
+  (testing "returns true if small_collections is being resharded"
+    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"}}
+                                                                       :collection {}
+                                                                       :granule {:resharding-indexes #{"1_small_collections"}
+                                                                                 :resharding-targets {"1_small_collections" "1_small_collections_100_shards"}}}}
+                                                          "C123_PROV"))))
+
+  (testing "returns true if the index for the concept-id is being resharded"
+    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"
+                                                                                            "C123_PROV" "1_c123_prov"}}
+                                                                       :collection {}
+                                                                       :granule {:resharding-indexes #{"1_c123_prov"}
+                                                                                 :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
+                                                          "C123_PROV"))))
+
+  (testing "returns false if the index for the concept-id is not being resharded and neither is small_collections"
+    (is (false? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"
+                                                                                             "C123_PROV" "1_c123_prov"
+                                                                                             "C124_PROV" "1_c124_prov"}}
+                                                                        :collection {}
+                                                                        :granule {:resharding-indexes #{"1_c123_prov"}
+                                                                                  :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
+                                                           "C124_PROV")))))
 
 (deftest test-get-resharded-index-name
   (testing "appends shard count to index name without existing shard count"
@@ -219,84 +280,3 @@
              (svc/get-concept-type-for-index index-set "index_5_shards")))
       (is (= :collection
              (svc/get-concept-type-for-index index-set "index_10_shards"))))))
-
-(deftest test-get-resharding-index-target
-  (testing "returns target index when resharding target exists for granule"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
-      (is (= "granule_index_10_shards"
-             (#'index-set/get-resharding-index-target index-set :granule "granule_index_5_shards")))))
-
-  (testing "returns target index when resharding target exists for collection"
-    (let [index-set {:index-set
-                     {:collection
-                      {:resharding-targets {:collection_index_3_shards "collection_index_6_shards"}}}}]
-      (is (= "collection_index_6_shards"
-             (#'index-set/get-resharding-index-target index-set :collection "collection_index_3_shards")))))
-
-  (testing "returns nil when index is not being resharded"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
-      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "other_index")))))
-
-  (testing "returns nil when wrong concept type is queried"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:granule_index_5_shards "granule_index_10_shards"}}}}]
-      (is (nil? (#'index-set/get-resharding-index-target index-set :collection "granule_index_5_shards")))))
-
-  (testing "returns nil when resharding-targets key is missing"
-    (let [index-set {:index-set {:granule {}}}]
-      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index")))))
-
-  (testing "returns nil when concept type key is missing"
-    (let [index-set {:index-set {}}]
-      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index")))))
-
-  (testing "returns nil when index-set is empty"
-    (is (nil? (#'index-set/get-resharding-index-target {} :granule "some_index"))))
-
-  (testing "returns nil when index-set is nil"
-    (is (nil? (#'index-set/get-resharding-index-target nil :granule "some_index"))))
-
-  (testing "handles multiple resharding targets for same concept type"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:index_a_5_shards "index_a_10_shards"
-                                            :index_b_3_shards "index_b_6_shards"}}}}]
-      (is (= "index_a_10_shards"
-             (#'index-set/get-resharding-index-target index-set :granule "index_a_5_shards")))
-      (is (= "index_b_6_shards"
-             (#'index-set/get-resharding-index-target index-set :granule "index_b_3_shards")))))
-
-  (testing "handles resharding targets across different concept types"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:granule_index "granule_target"}}
-                      :collection
-                      {:resharding-targets {:collection_index "collection_target"}}}}]
-      (is (= "granule_target"
-             (#'index-set/get-resharding-index-target index-set :granule "granule_index")))
-      (is (= "collection_target"
-             (#'index-set/get-resharding-index-target index-set :collection "collection_index")))))
-
-  (testing "converts string index to keyword for lookup"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:my_index "target_index"}}}}]
-      ;; The function converts the string "my_index" to keyword :my_index
-      (is (= "target_index"
-             (#'index-set/get-resharding-index-target index-set :granule "my_index")))))
-
-  (testing "handles index names with special characters"
-    (let [index-set {:index-set
-                     {:granule
-                      {:resharding-targets {:index-with-dashes_10_shards "new_index"}}}}]
-      (is (= "new_index"
-             (#'index-set/get-resharding-index-target index-set :granule "index-with-dashes_10_shards")))))
-
-  (testing "returns nil for empty resharding-targets map"
-    (let [index-set {:index-set {:granule {:resharding-targets {}}}}]
-      (is (nil? (#'index-set/get-resharding-index-target index-set :granule "some_index"))))))
