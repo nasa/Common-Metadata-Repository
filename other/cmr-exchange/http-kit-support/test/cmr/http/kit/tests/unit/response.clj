@@ -35,9 +35,7 @@
 
 (def json-test-errors
   (str "{\n"
-       "     \"body\": {\n"
        "          \"errors\": [\"Bearexxxxxxxxsdf is not a valid token\"]\n"
-       "     }\n"
        "}"))
 
 (deftest parse-xml-body

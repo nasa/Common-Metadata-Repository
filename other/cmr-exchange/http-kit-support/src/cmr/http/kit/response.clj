@@ -143,9 +143,9 @@
     (format "Unexpected cmr-authz error (%s)." status)))
   ([status headers body default-msg]
    (let [ct (:content-type headers)]
-     (log/trace "Headers:" headers)
-     (log/trace "Content-Type:" ct)
-     (log/trace "Body:" body)
+     (log/trace "======Headers:" headers)
+     (log/trace "======Content-Type:" ct)
+     (log/trace "=======Body:" body)
      (cond (nil? ct)
            (do
              (log/error body)
@@ -157,7 +157,8 @@
              {:errors errs})
 
            (string/starts-with? ct "application/json")
-           (let [errs (json-errors body)]
+           (let [_ (println "========== ")
+                 errs (json-errors body)]
              (log/error errs)
              {:errors errs})
 

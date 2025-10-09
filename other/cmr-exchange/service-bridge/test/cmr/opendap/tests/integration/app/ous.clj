@@ -41,6 +41,7 @@
       (let [response @(httpc/get
                        (str ous-url "?page_size=3")
                        options)]
+        (println "======== response:", response)
         (is (= 200 (:status response)))
         (is (= "12" (get-in response [:headers :cmr-hits])))
         (is (= "[\"hmr_tme\",1031097600000,1200442183]" (get-in response [:headers :cmr-search-after])))
