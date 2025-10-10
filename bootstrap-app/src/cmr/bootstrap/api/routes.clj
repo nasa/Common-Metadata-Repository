@@ -156,7 +156,7 @@
               (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
 
               (= keyword-cache-name :granule-counts)
-              (info "The granule-counts cache is currently being developed.")
+              (granule-counts-cache/refresh-granule-counts-cache request-context)
 
               :else
               (route/not-found "Not Found")))
@@ -188,8 +188,7 @@
       (POST "/jobs/refresh-granule-counts-cache" {:keys [request-context]}
         (acl/verify-ingest-management-permission request-context :update)
         (granule-counts-cache/refresh-granule-counts-cache request-context)
-        {:status 200
-         :body {:message "Granule counts cache refresh initiated"}})
+        {:status 200})
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))
