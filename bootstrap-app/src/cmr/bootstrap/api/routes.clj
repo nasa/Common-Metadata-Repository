@@ -23,6 +23,7 @@
    [cmr.common.generics :as common-generic]
    [cmr.common.log :refer [info]]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature
     :as has-granules-or-cwic-results-feature]
    [compojure.core :refer [DELETE GET POST context routes]]
@@ -184,6 +185,11 @@
                     (println "Caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
                     (drift.execute/run (cons migrate-args "migrate")))))))
         {:status 204})
+      (POST "/jobs/refresh-granule-counts-cache" {:keys [request-context]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (granule-counts-cache/refresh-granule-counts-cache request-context)
+        {:status 200
+         :body {:message "Granule counts cache refresh initiated"}})
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))
