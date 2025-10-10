@@ -18,6 +18,7 @@
    [cmr.search.api.generics :as generics-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [compojure.core :refer :all])
   (:require
    ;; These must be required here to make multimethod implementations available.
@@ -122,7 +123,13 @@
              {ctx :request-context}
              (acl/verify-ingest-management-permission ctx :update)
              (metadata-cache/refresh-cache ctx)
-             {:status 200})))
+             {:status 200})
+           (POST "/refresh-granule-counts-cache"
+             {ctx :request-context}
+             (acl/verify-ingest-management-permission ctx :update)
+             (granule-counts-cache/refresh-granule-counts-cache ctx)
+             {:status 200
+              :body "Granule counts cache refreshed successfully"})))
 
         ;; Add routes for accessing caches
         common-routes/cache-api-routes
