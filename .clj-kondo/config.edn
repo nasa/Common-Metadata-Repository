@@ -13,6 +13,7 @@
  ;; CMR custom macros
  :lint-as {cmr.common.config/defconfig clojure.core/def
            cmr.common.util/defn-timed clj-kondo.lint-as/def-catch-all
+           cmr.common.util/defn-timed-level clj-kondo.lint-as/def-catch-all
            cmr.common.util/while-let clj-kondo.lint-as/def-catch-all
            cmr.common.jobs/defjob clojure.core/defn
            cmr.common.jobs/def-stateful-job clojure.core/defn
