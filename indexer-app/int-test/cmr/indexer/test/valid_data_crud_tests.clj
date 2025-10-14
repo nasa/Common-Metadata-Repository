@@ -87,12 +87,10 @@
         (is (esi/exists? @util/elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
-
 ;; manual reset
 (comment
- (util/reset-fixture (constantly true))
- (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
-
+  (util/reset-fixture (constantly true))
+  (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
 
 (defn assert-rebalancing-collections
   "Asserts that the index set contains the listed rebalancing collections."
@@ -185,21 +183,21 @@
        util/sample-index-set-id
        coll)
       (is (= {:status 400
-              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
-           (select-keys
-            (util/update-rebalancing-collection-status
-             util/sample-index-set-id
-             coll
-             "INVALID_STATUS")
-            [:errors :status])))
+              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\" \"FAILED\"] are allowed."]}
+             (select-keys
+              (util/update-rebalancing-collection-status
+               util/sample-index-set-id
+               coll
+               "INVALID_STATUS")
+              [:errors :status])))
       (is (= {:status 400
-              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
-           (select-keys
-            (util/update-rebalancing-collection-status
-             util/sample-index-set-id
-             coll
-             nil)
-            [:errors :status])))))
+              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\" \"FAILED\"] are allowed."]}
+             (select-keys
+              (util/update-rebalancing-collection-status
+               util/sample-index-set-id
+               coll
+               nil)
+              [:errors :status])))))
   (let [coll "C5-PROV1"
         _ (util/mark-collection-as-rebalancing
            util/sample-index-set-id

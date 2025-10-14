@@ -123,7 +123,6 @@
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
-
       ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
       (do
@@ -173,14 +172,13 @@
   (create-indexes context))
 
 (defrecord ESstore
-  [;; configuration of host, port and admin-token for elasticsearch
-   config
+           [;; configuration of host, port and admin-token for elasticsearch
+            config
 
    ;; The connection to elasticsearch
-   conn]
+            conn]
 
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
