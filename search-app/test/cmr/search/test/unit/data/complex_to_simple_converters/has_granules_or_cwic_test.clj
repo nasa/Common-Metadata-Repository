@@ -8,65 +8,35 @@
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-gran-or-cwic-feature]
    [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-feature]))
 
+(defn- make-fake-cache
+  "Create a minimal fake cache that satisfies CmrCache protocol."
+  [cache-data]
+  (reify cache/CmrCache
+    (key-exists [_ _] true)
+    (get-keys [_] nil)
+    (get-value [_ _] cache-data)
+    (get-value [_ _ _] cache-data)
+    (reset [_] nil)
+    (set-value [_ _ _] nil)
+    (cache-size [_] 0)))
+
 ;; Test context with both caches (has-granules-cache has-granules-or-cwic) have values - normal case
 (def test-context
   {:system
    {:caches
     {has-gran-or-cwic-feature/has-granules-or-cwic-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] {"C1" true
-                         "C2" true
-                         "C3" true})
-       (get-value [_ _ _] {"C1" true
-                           "C2" true
-                           "C3" true})
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))
+     (make-fake-cache {"C1" true "C2" true "C3" true})
      has-granules-feature/has-granule-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] {"C1" true
-                         "C2" true
-                         "C3" true
-                         "C4" true})
-       (get-value [_ _ _] {"C1" true
-                           "C2" true
-                           "C3" true
-                           "C4" true})
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))}}})
+     (make-fake-cache {"C1" true "C2" true "C3" true "C4" true})}}})
 
 ;; Test context with both caches (has-granules-cache has-granules-or-cwic) empty
 (def test-context-empty-caches
   {:system
    {:caches
     {has-gran-or-cwic-feature/has-granules-or-cwic-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] nil)
-       (get-value [_ _ _] nil)
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))
+     (make-fake-cache nil)
      has-granules-feature/has-granule-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] nil)
-       (get-value [_ _ _] nil)
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))}}})
+     (make-fake-cache nil)}}})
 
 (deftest has-granules-or-cwic-condition-test
   (testing "HasGranulesOrCwicCondition with has-granules-or-cwic true"
@@ -94,60 +64,18 @@
   {:system
    {:caches
     {has-gran-or-cwic-feature/has-granules-or-opensearch-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] {"C1" true
-                         "C2" true
-                         "C3" true})
-       (get-value [_ _ _] {"C1" true
-                           "C2" true
-                           "C3" true})
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))
+     (make-fake-cache {"C1" true "C2" true "C3" true})
      has-granules-feature/has-granule-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] {"C1" true
-                         "C2" true
-                         "C3" true
-                         "C4" true})
-       (get-value [_ _ _] {"C1" true
-                           "C2" true
-                           "C3" true
-                           "C4" true})
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))}}})
+     (make-fake-cache {"C1" true "C2" true "C3" true "C4" true})}}})
 
-;; Test context with both caches (has-granules-cache has-granules-or-cwic) empty
+;; Test context with both caches (has-granules-cache has-granules-or-opensearch) empty
 (def test-context-opensearch-empty-caches
   {:system
    {:caches
     {has-gran-or-cwic-feature/has-granules-or-opensearch-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] nil)
-       (get-value [_ _ _] nil)
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))
+     (make-fake-cache nil)
      has-granules-feature/has-granule-cache-key
-     ;; minimal fake hash cache that satisfies the protocol
-     (reify cache/CmrCache
-       (key-exists [_ _] true)
-       (get-keys [_] nil)
-       (get-value [_ _] nil)
-       (get-value [_ _ _] nil)
-       (reset [_] nil)
-       (set-value [_ _ _] nil)
-       (cache-size [_] 0))}}})
+     (make-fake-cache nil)}}})
 
 (deftest has-granules-or-opensearch-condition-test
   (testing "HasGranulesOrOpenSearchCondition with has-granules-or-opensearch true"
