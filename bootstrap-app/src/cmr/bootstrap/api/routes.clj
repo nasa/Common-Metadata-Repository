@@ -155,7 +155,7 @@
               (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
               (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
 
-              (= keyword-cache-name :granule-counts)
+              (= keyword-cache-name :granule-counts-cache/granule-counts-cache-key)
               (granule-counts-cache/refresh-granule-counts-cache request-context)
 
               :else
@@ -185,10 +185,6 @@
                     (println "Caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
                     (drift.execute/run (cons migrate-args "migrate")))))))
         {:status 204})
-      (POST "/jobs/refresh-granule-counts-cache" {:keys [request-context]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (granule-counts-cache/refresh-granule-counts-cache request-context)
-        {:status 200})
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))
