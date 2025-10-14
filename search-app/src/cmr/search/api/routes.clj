@@ -59,83 +59,83 @@
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
-      (context relative-root-url []
+     (context relative-root-url []
         ;; Add routes for tagging
-        tags-api/tag-api-routes
+       tags-api/tag-api-routes
 
         ;; Add routes for service association
-        services-api/service-api-routes
+       services-api/service-api-routes
 
         ;; Add routes for tool association
-        tools-api/tool-api-routes
+       tools-api/tool-api-routes
 
         ;; Add routes for generic associations
-        generics-api/generic-api-routes
+       generics-api/generic-api-routes
 
         ;; Add routes for humanizers
-        humanizers-api/humanizers-routes
+       humanizers-api/humanizers-routes
 
         ;; Add routes for community usage metrics
-        metrics-api/community-usage-metrics-routes
+       metrics-api/community-usage-metrics-routes
 
         ;; Add route(s) for the concepts lookup endpoint
-        concepts-lookup-api/concepts-routes
+       concepts-lookup-api/concepts-routes
 
         ;; Find concepts
-        concepts-search-api/search-routes
+       concepts-search-api/search-routes
 
         ;; Granule timeline
-        concepts-search-api/granule-timeline-routes
+       concepts-search-api/granule-timeline-routes
 
         ;; Deleted concepts
-        concepts-search-api/find-deleted-concepts-routes
+       concepts-search-api/find-deleted-concepts-routes
 
         ;; AQL search - xml
-        concepts-search-api/aql-search-routes
+       concepts-search-api/aql-search-routes
 
         ;; Add routes for data json
-        concepts-search-api/data-json-routes
+       concepts-search-api/data-json-routes
 
         ;; Provider holdings
-        providers-api/holdings-routes
+       providers-api/holdings-routes
 
         ;; Add routes for providers
-        providers-api/provider-api-routes
+       providers-api/provider-api-routes
 
         ;; Add routes for autocomplete
-        autocomplete-api/autocomplete-api-routes
+       autocomplete-api/autocomplete-api-routes
 
         ;; Resets the application back to it's initial state.
-        (POST "/reset"
-          {ctx :request-context}
-          (acl/verify-ingest-management-permission ctx)
-          (cache/reset-caches ctx)
-          {:status 204})
+       (POST "/reset"
+         {ctx :request-context}
+         (acl/verify-ingest-management-permission ctx)
+         (cache/reset-caches ctx)
+         {:status 204})
 
         ;; Add routes for retrieving GCMD keywords
-        keyword-api/keyword-api-routes
+       keyword-api/keyword-api-routes
 
         ;; Add routes for managing jobs
-        (common-routes/job-api-routes
-         (routes
-           (POST "/refresh-collection-metadata-cache"
-             {ctx :request-context}
-             (acl/verify-ingest-management-permission ctx :update)
-             (metadata-cache/refresh-cache ctx)
-             {:status 200})))
+       (common-routes/job-api-routes
+        (routes
+         (POST "/refresh-collection-metadata-cache"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (metadata-cache/refresh-cache ctx)
+           {:status 200})))
 
         ;; Add routes for accessing caches
-        common-routes/cache-api-routes
+       common-routes/cache-api-routes
 
         ;; Add routes for checking health of the application
-        (common-health/health-api-routes hs/health)
+       (common-health/health-api-routes hs/health)
 
         ;; Add routes for enabling/disabling application
-        (common-enabled/write-enabled-api-routes
-         #(acl/verify-ingest-management-permission % :update))
+       (common-enabled/write-enabled-api-routes
+        #(acl/verify-ingest-management-permission % :update))
 
         ;; Add routes for searching tiles
-        concepts-search-api/tiles-routes
+       concepts-search-api/tiles-routes
 
         ;; clear scroll routes
-        concepts-search-api/clear-scroll-routes))))
+       concepts-search-api/clear-scroll-routes))))
