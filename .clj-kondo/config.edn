@@ -12,10 +12,12 @@
                 cache-in-mem {:linters {:unresolved-symbol {:exclude [cmr.common.cache.in-memory-cache]}}}}
  ;; CMR custom macros
  :lint-as {cmr.common.config/defconfig clojure.core/def
+           cmr.common.util/defn-timed clj-kondo.lint-as/def-catch-all
+           cmr.common.util/while-let clj-kondo.lint-as/def-catch-all
            cmr.common.jobs/defjob clojure.core/defn
            cmr.common.jobs/def-stateful-job clojure.core/defn
            cmr.common.util/are3 clj-kondo.lint-as/def-catch-all
-           cmr.common.util/are2 clj-kondo.lint-as/def-catch-all} 
+           cmr.common.util/are2 clj-kondo.lint-as/def-catch-all}
  :linters {:unresolved-var {:exclude [digest/md5 digest/sha-1]} ;; dynamically generated
            ;; our defs with ^:dynamic metadata are being caught by this with no clear way to selectively turn off
            :uninitialized-var {:level :off}

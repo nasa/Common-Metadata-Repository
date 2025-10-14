@@ -189,28 +189,20 @@
   [context provider-id]
   (get-provider-bulk-update-status (context->db context) provider-id))
 
-(declare get-bulk-update-task-status-for-provider)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-bulk-update-task-status-for-provider
   [context task-id provider-id]
   (get-bulk-update-task-status (context->db context) task-id provider-id))
 
-(declare get-bulk-update-collection-statuses-for-task)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-bulk-update-collection-statuses-for-task
   [context task-id]
   (get-bulk-update-task-collection-status (context->db context) task-id))
 
-(declare create-bulk-update-task)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed create-bulk-update-task
   "Creates all the rows for bulk update status tables - task status and collection
   status. Returns task id"
   [context provider-id json-body concept-ids]
   (create-and-save-bulk-update-status (context->db context) provider-id json-body concept-ids))
 
-(declare update-bulk-update-task-collection-status)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed update-bulk-update-task-collection-status
   "For the task and concept id, update the collection to the given status with the
   given status message"

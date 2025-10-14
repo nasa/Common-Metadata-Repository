@@ -256,8 +256,6 @@
       (errors/throw-service-error :invalid-data
                                   [(str "Error cleaning up bulk granule update task table "
                                         (.getMessage e))]))))
-(declare get-granule-tasks-by-provider)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-granule-tasks-by-provider
   "Returns granule bulk update tasks by provider"
   [context provider-id params]
@@ -272,8 +270,6 @@
   [context task-id]
   (get-bulk-update-task-granule-status (context->db context) task-id))
 
-(declare create-granule-bulk-update-task)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed create-granule-bulk-update-task
   "Create all rows for granule bulk update status tables - task status and granule status.
   Returns task id."
@@ -281,8 +277,6 @@
   (create-and-save-bulk-granule-update-status
    (context->db context) provider-id user-id request-json-body instructions))
 
-(declare update-bulk-update-task-granule-status)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed update-bulk-update-task-granule-status
   "For the task and concept id, update the granule to the given status with the
    given status message"
@@ -292,8 +286,6 @@
   (update-bulk-update-granule-status
    (context->db context) task-id granule-ur status status-message))
 
-(declare get-incomplete-granule-task-ids)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-incomplete-granule-task-ids
   "Returns a list of granule bulk update task ids where the status is not COMPELTE."
   [context]
@@ -324,8 +316,6 @@
               (util/html-escape task-id))]))
   task-id)
 
-(declare task-completed?)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed task-completed?
   "Returns false if there are any granule updates marked PENDING."
   [context task-id]
@@ -339,8 +329,6 @@
             (sql-utils/where `(and (= :status "PENDING")
                                    (= :task-id ~task-id))))))))
 
-(declare mark-task-complete)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed-level mark-task-complete debug
   "Marks a granule bulk task as COMPLETE and sets the status message.
   It will throw an exception if there still granules marked as PENDING."
