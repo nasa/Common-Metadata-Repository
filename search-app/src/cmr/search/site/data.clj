@@ -89,7 +89,6 @@
   [results]
   (map :concept-id (:items results)))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-collection-data
   "Get the collection data from elastic by provider id and tag. Sort results
   by entry title"
@@ -141,7 +140,6 @@
   ([context tag provider-id granule-conditions]
    (get-collection-data context tag provider-id granule-conditions)))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed provider-data
   "Create a provider data structure suitable for template iteration to
   generate links.
@@ -161,7 +159,6 @@
        :collections []
        :collection-count 0})))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed providers-data
   "Given a list of provider maps, create the nested data structure needed
   for rendering providers in a template."

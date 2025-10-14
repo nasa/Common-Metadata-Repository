@@ -328,7 +328,6 @@
             (Long/parseLong (str milliseconds))
             all-value)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-time-to-visibility-log
   "Send either a JSON message as a report or the original log entry to info."
   [concept-id revision-id ms-durration all-revisions-index?]
@@ -697,7 +696,6 @@
                            revision-id
                            all-revisions-index?)]
     (if (= concept-type :collection)
-      #_{:clj-kondo/ignore [:unresolved-var]}
       (format "%s. Removing %d granules."
               log-string
               (search/find-granule-hits context {:collection-concept-id concept-id}))
@@ -873,7 +871,6 @@
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn publish-provider-event
   "Put a provider event on the message queue."
   [context msg]
@@ -922,7 +919,6 @@
   (es/update-indexes context params)
   (reset-index-set-mappings-cache context))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
