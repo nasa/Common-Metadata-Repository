@@ -66,7 +66,11 @@
      (testing "get the resharding status of an index not being resharded"
        (is (= {:status 404
                :errors ["The index [1_collections_v2] is not being resharded."]}
-              (bootstrap/get-reshard-status "1_collections_v2")))))))
+              (bootstrap/get-reshard-status "1_collections_v2"))))
+     (testing "get the resharding status of an unexistent index"
+       (is (= {:status 404
+               :errors ["The index [1_unexistent_index] does not exist."]}
+              (bootstrap/get-reshard-status "1_unexistent_index")))))))
 
 (deftest reshard-index-success-test
   (s/only-with-real-database

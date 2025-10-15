@@ -505,6 +505,11 @@
   [context index-set-id index]
   (let [index-set (index-set-util/get-index-set context index-set-id)
         concept-type (get-concept-type-for-index index-set index)]
+    (when-not concept-type
+      (errors/throw-service-error
+       :not-found
+       (format
+        "The index [%s] does not exist." index)))
     (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
       (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
         {:original-index index
