@@ -52,8 +52,6 @@
   (let [errors (seq (umm-spec-validation/validate-service service (match-kms-related-url-content-type-type-and-subtype context)))]
     (if-errors-throw :bad-request errors)))
 
-(declare save-service)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-service
   "Store a service concept in mdb and indexer. Return concept-id, and revision-id."
   [context concept]

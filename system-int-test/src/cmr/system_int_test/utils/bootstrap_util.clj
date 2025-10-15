@@ -1,20 +1,20 @@
 (ns cmr.system-int-test.utils.bootstrap-util
   "Contains utilities for working with the bootstrap application."
   (:require
-    [cheshire.core :as json]
-    [clj-http.client :as client]
-    [clj-time.core :as t]
-    [clj-time.format :as f]
-    [clojure.test :refer [is]]
-    [cmr.bootstrap.test.catalog-rest :as cat-rest]
-    [cmr.common.lifecycle :as lifecycle]
-    [cmr.common.util :as util]
-    [cmr.metadata-db.config :as mdb-config]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.transmit.config :as transmit-config]))
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.test :refer [is]]
+   [cmr.bootstrap.test.catalog-rest :as cat-rest]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (defn bulk-index-after-date-time
   "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
@@ -22,27 +22,27 @@
    (bulk-index-after-date-time date-time {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([date-time headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-after-date-time-url date-time)
-                     :content-type :json
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-after-date-time-url date-time)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response))))
   ([date-time headers provider-ids]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-after-date-time-url date-time)
-                     :body (json/generate-string {:provider_ids provider-ids})
-                     :content-type :json
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-after-date-time-url date-time)
+                    :body (json/generate-string {:provider_ids provider-ids})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -52,16 +52,16 @@
    (bulk-index-concepts provider-id concept-type concept-ids {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id concept-type concept-ids headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-concepts-url)
-                     :body (json/generate-string {:provider_id provider-id
-                                                  :concept_type concept-type
-                                                  :concept_ids concept-ids})
-                     :content-type :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-concepts-url)
+                    :body (json/generate-string {:provider_id provider-id
+                                                 :concept_type concept-type
+                                                 :concept_ids concept-ids})
+                    :content-type :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -69,19 +69,19 @@
   "Call the bootstrap app to bulk delete concepts by id."
   ([provider-id concept-type concept-ids]
    (bulk-delete-concepts
-     provider-id concept-type concept-ids {transmit-config/token-header (transmit-config/echo-system-token)}))
+    provider-id concept-type concept-ids {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id concept-type concept-ids headers]
    (let [response (client/request
-                    {:method :delete
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-concepts-url)
-                     :body (json/generate-string {:provider_id provider-id
-                                                  :concept_type concept-type
-                                                  :concept_ids concept-ids})
-                     :content-type :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :delete
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-concepts-url)
+                    :body (json/generate-string {:provider_id provider-id
+                                                 :concept_type concept-type
+                                                 :concept_ids concept-ids})
+                    :content-type :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -195,15 +195,15 @@
    (bulk-index-provider provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-provider-url)
-                     :body (json/generate-string {:provider_id provider-id})
-                     :content-type :json
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-provider-url)
+                    :body (json/generate-string {:provider_id provider-id})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -229,15 +229,15 @@
    (bulk-index-collection provider-id collection-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id collection-id headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-collection-url)
-                     :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
-                     :content-type :json
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-collection-url)
+                    :body (json/generate-string {:provider_id provider-id :collection_id collection-id})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -283,6 +283,26 @@
   ([headers]
    (fingerprint-by-url (url/fingerprint-url) headers)))
 
+(defn start-reshard-index
+  "Call the bootstrap app to kickoff resharding and index"
+  ([index-name]
+   (start-reshard-index index-name {}))
+  ([index-name options]
+   (let [synchronous (get options :synchronous true)
+         num-shards (get options :num-shards 1)
+         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+         response (client/request
+                   {:method :post
+                    :query-params {:synchronous synchronous
+                                   :num_shards num-shards}
+                    :headers headers
+                    :url (url/start-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]
@@ -307,15 +327,15 @@
   "Call the bootstrap app to finalize rebalancing a collection."
   ([collection-id]
    (finalize-rebalance-collection
-     collection-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+    collection-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([collection-id headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :url (url/finalize-rebalance-collection-url collection-id)
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :url (url/finalize-rebalance-collection-url collection-id)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -325,12 +345,12 @@
    (get-rebalance-status collection-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([collection-id headers]
    (let [response (client/request
-                    {:method :get
-                     :headers headers
-                     :url (url/status-rebalance-collection-url collection-id)
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :get
+                    :headers headers
+                    :url (url/status-rebalance-collection-url collection-id)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -338,14 +358,14 @@
   "Call the bootstrap app to bulk db migrate a provider."
   [provider-id]
   (let [response (client/request
-                   {:method :post
-                    :url (url/bulk-migrate-provider-url)
-                    :query-params {:synchronous true}
-                    :body (format "{\"provider_id\": \"%s\"}" provider-id)
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
+                  {:method :post
+                   :url (url/bulk-migrate-provider-url)
+                   :query-params {:synchronous true}
+                   :body (format "{\"provider_id\": \"%s\"}" provider-id)
+                   :content-type :json
+                   :accept :json
+                   :throw-exceptions false
+                   :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -369,13 +389,13 @@
    (bulk-index-system-concepts {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([headers]
    (let [response (client/request
-                    {:method :post
-                     :headers headers
-                     :query-params {:synchronous true}
-                     :url (url/bulk-index-system-concepts-url)
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-system-concepts-url)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -391,14 +411,14 @@
   "Call the bootstrap app to bulk index a collection."
   [provider-id entry-title]
   (let [response (client/request
-                   {:method :post
-                    :query-params (util/remove-nil-keys {:synchronous true
-                                                         :provider-id provider-id
-                                                         :entry-title entry-title})
-                    :url (url/bootstrap-url "virtual_products")
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
+                  {:method :post
+                   :query-params (util/remove-nil-keys {:synchronous true
+                                                        :provider-id provider-id
+                                                        :entry-title entry-title})
+                   :url (url/bootstrap-url "virtual_products")
+                   :accept :json
+                   :throw-exceptions false
+                   :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -411,23 +431,23 @@
 (defn db-fixture-setup
   [provider-id-cmr-only-map]
   (s/only-with-real-database
-    (let [system (system)]
-      (dev-sys-util/reset)
-      (doseq [[provider-id cmr-only] provider-id-cmr-only-map
-              :let [guid (str provider-id "-guid")]]
-        (ingest/create-provider {:provider-guid guid :provider-id provider-id :cmr-only cmr-only})
-        (when-not cmr-only
-          (cat-rest/create-provider system provider-id))))))
+   (let [system (system)]
+     (dev-sys-util/reset)
+     (doseq [[provider-id cmr-only] provider-id-cmr-only-map
+             :let [guid (str provider-id "-guid")]]
+       (ingest/create-provider {:provider-guid guid :provider-id provider-id :cmr-only cmr-only})
+       (when-not cmr-only
+         (cat-rest/create-provider system provider-id))))))
 
 (defn db-fixture-tear-down
   [provider-id-cmr-only-map]
   (s/only-with-real-database
-    (let [system (system)]
-      (dev-sys-util/reset)
-      ;; Delete catalog rest providers
-      (doseq [[provider-id cmr-only] provider-id-cmr-only-map
-              :when (not cmr-only)]
-        (cat-rest/delete-provider system provider-id)))))
+   (let [system (system)]
+     (dev-sys-util/reset)
+     ;; Delete catalog rest providers
+     (doseq [[provider-id cmr-only] provider-id-cmr-only-map
+             :when (not cmr-only)]
+       (cat-rest/delete-provider system provider-id)))))
 
 (defn db-fixture
   "This is a fixture that sets up things for bootstrap database integration tests. It resets the CMR,

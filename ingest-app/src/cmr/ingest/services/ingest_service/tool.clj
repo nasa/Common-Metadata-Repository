@@ -49,8 +49,6 @@
   (let [errors (seq (umm-spec-validation/validate-tool tool (match-kms-content-type-type-and-subtype context)))]
     (if-errors-throw :bad-request errors)))
 
-(declare save-tool)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-tool
   "Store a tool concept in mdb and indexer."
   [context concept]

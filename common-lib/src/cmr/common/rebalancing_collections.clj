@@ -12,7 +12,7 @@
 
 (def allowed-status
   "The potential status for a rebalancing collection."
-  ["IN_PROGRESS" "COMPLETE"])
+  ["IN_PROGRESS" "COMPLETE" "FAILED"])
 
 (defn validate-target
   "Validates the target is set to one of the allowed values."

@@ -190,7 +190,6 @@
           (async/thread
             (log "starting")
             (try
-              #_{:clj-kondo/ignore [:unresolved-symbol]}
               (util/while-let
                 [[source-collection source-granule-batch] (<!! batch-chan)]
                 (doseq [source-granule source-granule-batch]

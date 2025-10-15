@@ -138,7 +138,7 @@
     (message-queue/fingerprint-variables-event provider-id))))
 
 (defrecord MessageQueueDispatcher
-  [])
+           [])
 
 (def dispatch-behavior
   "Map of protocol definitions to the implementations of that protocol for the message queue
@@ -155,6 +155,7 @@
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
    :index-concepts-by-id (partial not-implemented :index-concepts-by-id)
+   :migrate-index (partial not-implemented :migrate-index)
    :delete-concepts-from-index-by-id (partial not-implemented :delete-concepts-from-index-by-id)
    :bootstrap-virtual-products (partial not-implemented :bootstrap-virtual-products)
    :fingerprint-variables fingerprint-variables})
