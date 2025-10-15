@@ -187,8 +187,6 @@
                (util/html-escape version)
                (.getMessage e))))))
 
-(declare save-document)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-document
   "Store a concept in mdb and indexer. Return concept-id, and revision-id."
   [context concept]

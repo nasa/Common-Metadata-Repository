@@ -25,7 +25,6 @@
               (into result
                     {k (set (get cache-map k))})) {} map-keys)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (deftest subscription-cache-test
   (let [cache-key subscription-cache/subscription-cache-key
         test-context {:system {:caches {cache-key (subscription-cache/create-cache-client)}}}

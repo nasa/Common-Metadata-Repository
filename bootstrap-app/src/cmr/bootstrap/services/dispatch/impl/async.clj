@@ -1,9 +1,9 @@
 (ns cmr.bootstrap.services.dispatch.impl.async
   "Provides methods to insert migration requets on the appropriate channels."
   (:require
-    [clojure.core.async :as async :refer [>!]]
-    [cmr.common.log :refer [info]]
-    [cmr.common.services.errors :as errors]))
+   [clojure.core.async :as async :refer [>!]]
+   [cmr.common.log :refer [info]]
+   [cmr.common.services.errors :as errors]))
 
 (defn- not-implemented
   "Throws an exception indicating that the specified function is not implemented for
@@ -62,6 +62,14 @@
                            :request :index
                            :concept-ids concept-ids}))))
 
+(defn migrate-index
+  "Copy the contents of one index to another. Used during resharding."
+  [this _context source-index target-index]
+  (let [channel (:migrate-index-channel this)]
+    (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
+    (async/go (>! channel {:source-index source-index
+                           :target-index target-index}))))
+
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this context provider-id concept-type concept-ids]
@@ -81,21 +89,23 @@
                            :entry-title entry-title}))))
 
 (defrecord CoreAsyncDispatcher
-  [;; Channel for requesting full provider migration
-   provider-db-channel
+           [;; Channel for requesting full provider migration
+            provider-db-channel
    ;; Channel for requesting single collection/granules migration.
    ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-   collection-db-channel
+            collection-db-channel
    ;; Channel for requesting full provider indexing - collections/granules
-   provider-index-channel
+            provider-index-channel
    ;; Channel for processing collections to index.
-   collection-index-channel
+            collection-index-channel
+   ;; Channel for copying one index to another during resharding
+            migrate-index-channel
    ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
-   system-concept-channel
+            system-concept-channel
    ;; channel for processing bulk index requests by concept-id
-   concept-id-channel
+            concept-id-channel
    ;; channel for bootstrapping virtual products
-   virtual-product-channel])
+            virtual-product-channel])
 
 (def dispatch-behavior
   "Map of protocol definitions to the implementations of that protocol for the
@@ -110,6 +120,7 @@
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
    :index-generics (partial not-implemented :index-generics)
+   :migrate-index migrate-index
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products
    :fingerprint-variables (partial not-implemented :fingerprint-variables)})
@@ -122,6 +133,7 @@
    :collection-db-channel (async/chan 100)
    :provider-index-channel (async/chan 10)
    :collection-index-channel (async/chan 100)
+   :migrate-index-channel (async/chan 10)
    :system-concept-channel (async/chan 10)
    :concept-id-channel (async/chan 10)
    :virtual-product-channel (async/chan)})
@@ -134,6 +146,7 @@
                            (:collection-db-channel channels)
                            (:provider-index-channel channels)
                            (:collection-index-channel channels)
+                           (:migrate-index-channel channels)
                            (:system-concept-channel channels)
                            (:concept-id-channel channels)
                            (:virtual-product-channel channels))))

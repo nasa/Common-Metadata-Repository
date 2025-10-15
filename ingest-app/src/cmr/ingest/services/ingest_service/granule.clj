@@ -22,8 +22,6 @@
         :invalid-data
         "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
-(declare get-granule-parent-collection-and-concept)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed get-granule-parent-collection-and-concept
   "Returns the parent collection concept, parsed UMM spec record, and the parse UMM lib record for a
   granule as a tuple. Finds the parent collection using the provider id and collection ref. This will
@@ -55,8 +53,6 @@
                                   :delete-time (when delete-time (str delete-time))
                                   :granule-ur granule-ur})))
 
-(declare validate-granule)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.
   Returns a tuple of the parent collection concept and the granule concept.
@@ -111,8 +107,6 @@
         (error "Error while processing subscriptions: " e)))
     {:concept-id concept-id, :revision-id revision-id}))
 
-(declare delete-granule)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-granule
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."

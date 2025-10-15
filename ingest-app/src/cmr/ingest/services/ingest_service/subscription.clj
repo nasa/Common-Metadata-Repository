@@ -22,8 +22,6 @@
                   :mode (:Mode subscription)
                   :method (:Method subscription)}))
 
-(declare save-subscription)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-subscription
   "Store a subscription concept in mdb and indexer."
   [context concept]
@@ -41,8 +39,6 @@
      :native-id (:native-id concept)
      :revision-id revision-id}))
 
-(declare delete-subscription)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-subscription
   "Delete a subscription from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
