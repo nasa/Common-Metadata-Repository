@@ -58,7 +58,15 @@
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))
        (is (= {:status 400
                :errors ["The index set already contains resharding index [1_small_collections]"]}
-              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100}))))
+     (testing "no permission to get resharding status"
+       (is (= {:status 401
+               :errors ["You do not have permission to perform that action."]}
+              (bootstrap/get-reshard-status "1_small_collections" {:headers {}}))))
+     (testing "get the resharding status of an index not being resharded"
+       (is (= {:status 404
+               :errors ["The index [1_collections_v2] is not being resharded."]}
+              (bootstrap/get-reshard-status "1_collections_v2")))))))
 
 (deftest reshard-index-success-test
   (s/only-with-real-database
@@ -70,4 +78,10 @@
      (testing "resharding an index that does exist"
        (is (= {:status 200
                :message "Resharding started for index 1_small_collections"}
-              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100}))))
+     (testing "get the resharding status"
+       (is (= {:status 200
+               :original-index "1_small_collections"
+               :reshard-index "1_small_collections_100_shards"
+               :reshard-status "IN_PROGRESS"}
+              (bootstrap/get-reshard-status "1_small_collections")))))))

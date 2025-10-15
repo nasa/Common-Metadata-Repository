@@ -35,6 +35,10 @@
   [conn index-set-id index]
   (str (reshard-index-url conn index-set-id index) "/start"))
 
+(defn- get-reshard-status-url
+  [conn index-set-id index]
+  (str (reshard-index-url conn index-set-id index) "/status"))
+
 (defn- finalize-reshard-index-url
   [conn index-set-id index]
   (str (reshard-index-url conn index-set-id index) "/finalize"))
@@ -114,6 +118,28 @@
   "Adds the specified index to the set of resharding indexes."
   [context index-set-id index num-shards]
   (submit-reshard-index-request context index-set-id index start-reshard-index-url num-shards))
+
+(defn get-reshard-status
+  "Get the resharding status of the given index."
+  [context index-set-id index]
+  (let [conn (config/context->app-connection context :indexer)
+         params (merge
+                 (config/conn-params conn)
+                 {:method :get
+                  :url (get-reshard-status-url conn index-set-id index)
+                  :accept :json
+                  :throw-exceptions false
+                  :headers {:client-id config/cmr-client-id
+                            config/token-header (config/echo-system-token)}})
+         response (client/request params)
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     (case (int status)
+       404 {:status status :body body}
+       200 {:status status :body body}
+       (errors/internal-error! (format "Unexpected error fetching resharding status for index: %s,
+                                        Index set app reported status: %s, error: %s"
+                                       index status (pr-str (flatten (:errors body))))))))
 
 (defn finalize-resharding-index
   "Finalizes the resharding index specified in the indexer application."

@@ -288,3 +288,8 @@
     ;; Copy the contents of the source index to the target index. The dispatcher will handle
     ;; how this is run.
     (migrate-index context dispatcher index target)))
+
+(defn reshard-status
+  "Returns the resharding status of the given index."
+  [context index]
+  (indexer/get-reshard-status context indexer-index-set/index-set-id index))
