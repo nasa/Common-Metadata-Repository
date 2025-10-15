@@ -107,14 +107,12 @@
         end-time (last parts)]
     (assoc raw :start-time start-time :end-time end-time)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-update-subscription-notification-time!
   "Fires off an http call to update the time which the subscription last was processed"
   [context sub-id last-notified-time]
   (debug "send-update-subscription-notification-time with" sub-id )
   (search/save-subscription-notification-time context sub-id last-notified-time))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- filter-concept-refs-by-subscriber-id
   "Takes a list of concept references and a subscriber id and removes any concept that the user does
    not have read access to."
@@ -135,7 +133,6 @@
                 (t/minus end (t/seconds amount-in-sec)))]
     (str begin "," end)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- search-gran-refs-by-collection-id
   [context params sub-id]
   (try
@@ -145,7 +142,6 @@
              (dissoc params :token) "\n\n" (.getMessage e) "\n\n" e)
       [])))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- search-collection-refs
   [context params sub-id]
   (try

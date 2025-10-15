@@ -70,3 +70,8 @@
   (elasticmq) or use an external instance."
   {:default :in-memory
    :parser parse-dev-system-component-type})
+
+(defconfig default-job-start-delay
+  "How long in seconds before all jobs start."
+  {:default 10800 ;; three hours
+   :type Long})

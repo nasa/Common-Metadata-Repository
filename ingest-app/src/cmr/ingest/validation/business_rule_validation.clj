@@ -59,7 +59,6 @@
    sv/spatial-param-change-searches])
 
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
   by the search."

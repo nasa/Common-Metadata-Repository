@@ -87,6 +87,22 @@ HTTP/1.1 200 OK
 {"message":"Rebalancing completed for collection C5-PROV1"}
 ```
 
+## Resharding Indexes
+
+### Start Resharding
+Starts the resharding process to create a new index with the given number of shards and copies
+the data from the old index to the new index. Both indexes will be used for ingest until
+the resharding is finalized.
+
+```
+curl -i \
+  -X POSTS \
+  "http://localhost:3005/reshard/1_small_collections/start?num_shards=50"
+
+HTTP/1.1 200 OK
+{"message": "Resharding started for index 1_small_collections"}
+```
+
 ## Bulk Operations
 
 ### Bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db
@@ -290,7 +306,7 @@ To issue a KMS Redis Cache reindex, call
 	curl -i \
 		-X POST \
 		-H "Authorization: token" \
-		http://localhost:3006/caches/refresh/kms 
+		http://localhost:3006/caches/refresh/kms
 
 No output is returned on success. HTTP status code of 200 when cache has been refreshed.
 

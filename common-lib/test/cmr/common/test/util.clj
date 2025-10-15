@@ -101,8 +101,6 @@
   (testing "False case"
     (is (= false (util/numeric? "0D")))))
 
-(declare test-timed-multi-arity test-timed-single-arity)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed test-timed-multi-arity
   "The doc string"
   ([f]
@@ -117,7 +115,6 @@
      (fb)
      (fc))))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed test-timed-single-arity
   "the doc string"
   [f]
@@ -979,12 +976,12 @@
   (testing "Query normalization"
     (util/are3 [query expected]
           (is (= expected (util/normalize-parameters query)))
-          
+
           "With a leading question mark"
           "?provider=PROV1&instrument=1B&instrument=2B" "bc71e563ac03a05d7c557608f868ce6a"
-          
+
           "Without a leading question mark"
           "provider=PROV1&instrument=1B&instrument=2B" "bc71e563ac03a05d7c557608f868ce6a"
-          
+
           "Empty string"
           "" "d41d8cd98f00b204e9800998ecf8427e")))

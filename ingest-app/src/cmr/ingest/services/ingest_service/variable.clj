@@ -15,8 +15,6 @@
           :measurement (:LongName variable)
           :fingerprint (fingerprint/get-variable-fingerprint (:metadata concept))}))
 
-(declare save-variable)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-variable
   "Store a variable concept in mdb and indexer. Return name, long-name, concept-id, and
   revision-id."

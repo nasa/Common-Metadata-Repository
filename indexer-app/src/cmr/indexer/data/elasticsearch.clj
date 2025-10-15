@@ -228,18 +228,16 @@
   (create-default-indexes context))
 
 (defrecord ESstore
-  [;; configuration of host, port and admin-token for elasticsearch
-   config
+           [;; configuration of host, port and admin-token for elasticsearch
+            config
 
-   ;; The connection to elasticsearch
-   conn
+            ;; The connection to elasticsearch
+            conn
 
-   ;; name of this es store
-   ^String es-cluster-name
-   ]
+            ;; name of this es store
+            ^String es-cluster-name]
 
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start

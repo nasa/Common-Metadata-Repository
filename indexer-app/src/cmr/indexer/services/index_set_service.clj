@@ -10,6 +10,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.indexer.common.index-set-util :as index-set-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-elasticsearch :as es]
@@ -317,7 +318,7 @@
   "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
   [context index-set-id es-cluster-name]
-  (let [index-names (get-index-names (get-index-set context es-cluster-name index-set-id) es-cluster-name)
+  (let [index-names (get-index-names (index-set-util/get-index-set context es-cluster-name index-set-id) es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
@@ -329,10 +330,10 @@
   (if rebalancing-colls
     (if (contains? (set rebalancing-colls) concept-id)
       (errors/throw-service-error
-        :bad-request
-        (format
-          "The index set already contains rebalancing collection [%s]"
-          concept-id))
+       :bad-request
+       (format
+        "The index set already contains rebalancing collection [%s]"
+        concept-id))
       (conj rebalancing-colls concept-id))
     #{concept-id}))
 
@@ -343,10 +344,95 @@
     (if (contains? rebalancing-colls-set concept-id)
       (seq (disj rebalancing-colls-set concept-id))
       (errors/throw-service-error
-        :bad-request
-        (format
-          "The index set does not contain the rebalancing collection [%s]"
-          concept-id)))))
+       :bad-request
+       (format
+        "The index set does not contain the rebalancing collection [%s]"
+        concept-id)))))
+
+(defn get-resharding-indexes
+  "get the set of resharding indexes and targets from index-set"
+  [index-set]
+  (reduce (fn [acc x]
+            (if-let [index-targets (:resharding-targets x)]
+              (-> acc
+                  (into (map name (keys index-targets)))
+                  (into (vals index-targets)))
+              acc))
+          #{}
+          (vals (:index-set index-set))))
+
+(defn index-name->concept-id
+  "Extracts a concept ID from a granule index name. Does not work for non-granule indexes.
+   Examples:
+   '1_c2317035855_nsidc_ecs' -> 'C2317035855-NSIDC_ECS'
+   '1_c2317035855_nsidc_ecs_5_shards' -> 'C2317035855-NSIDC_ECS'"
+  [index-name]
+  (when index-name
+    (let [;; Remove shard count suffix if present
+          without-shards (string/replace index-name #"_\d+_shards$" "")
+          ;; Remove leading number prefix (e.g., "1_")
+          without-prefix (string/replace without-shards #"^\d+_" "")
+          ;; Find the first underscore after the concept type+number
+          ;; Concept pattern: letter followed by numbers/underscores until we hit provider
+          ;; Match: concept letter + any combo of numbers/underscores that form the concept ID
+          first-underscore-idx (string/index-of without-prefix "_")]
+      (when first-underscore-idx
+        (let [concept-part (subs without-prefix 0 first-underscore-idx)
+              provider-part (subs without-prefix (inc first-underscore-idx))]
+          (str (string/upper-case concept-part)
+               "-"
+               (string/upper-case provider-part)))))))
+
+(defn- is-rebalancing?
+  "Evaluates to true if the index is being used for rebalancing"
+  [index-set index]
+  ;; if rebalancing-targets length == 0 then return false
+  ;; if the index is the small-collections index and any rebalancing is happening, return true
+  ;; if the concept-id for the index is in the rebalancing set, return true
+  ;; else return false
+  (let [rebalancing-collections (get-in index-set [:index-set :granule :rebalancing-collections])]
+    (if (= 0 (count rebalancing-collections))
+      ;; no rebalancing is happening
+      false
+      ;; rebalancing is happening
+      (let [small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
+        (if (= index small-collections-index)
+          ;; the index is the small-collections index and rebalancing always uses that index
+          true
+          ;; the index is not the small-collections index, so get the concept-id for it and see
+          ;; if it is in the resharding set (non-granule indexes will never be in that set)
+          (let [concept-id (index-name->concept-id index)]
+            (if (some #{concept-id} rebalancing-collections)
+              true
+              false)))))))
+
+(defn- is-resharding?
+  "Evaluates to true if the index is being resharded or is the target of resharding"
+  [index-set index]
+  (contains? (get-resharding-indexes index-set) index))
+
+(defn- is-resharding-blocking-rebalancing?
+  "Returns true if a reshard operation is running that prevents the given collection and target
+   from being rebalanced."
+  [index-set concept-id]
+  ;; get the index names for the concept-id and small_collections
+  ;; then check to see if either index is being resharded
+  (let [separate-index (get-in index-set [:index-set :concepts :granule concept-id])
+        small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
+    (or (is-resharding? index-set separate-index) (is-resharding? index-set small-collections-index))))
+
+(defn- add-resharding-index
+  "Adds a new resharding index to the set of resharding indexes"
+  [resharding-indexes index]
+  (if resharding-indexes
+    (if (contains? (set resharding-indexes) index)
+      (errors/throw-service-error
+       :bad-request
+       (format
+        "The index set already contains resharding index [%s]"
+        index))
+      (conj resharding-indexes index))
+    #{index}))
 
 (defn- validate-granule-index-does-not-exist
   "Validates that a granule index does not already exist in the index set for the given collection
@@ -357,8 +443,8 @@
       (errors/throw-service-error
        :bad-request
        (format
-         "The collection [%s] already has a separate granule index."
-         collection-concept-id)))))
+        "The collection [%s] already has a separate granule index."
+        collection-concept-id)))))
 
 (defn- validate-granule-index-exists
   "Validates that a granule index exists in the index set for the given collection concept ID."
@@ -368,8 +454,8 @@
       (errors/throw-service-error
        :bad-request
        (format
-         "The collection [%s] does not have a separate granule index."
-         collection-concept-id)))))
+        "The collection [%s] does not have a separate granule index."
+        collection-concept-id)))))
 
 (defn- add-new-granule-index-to-index-set
   "Adds a new granule index for the given collection. Validates the collection
@@ -381,6 +467,15 @@
                conj
                {:name collection-concept-id
                 :settings individual-index-settings})))
+
+(defn- get-index-config
+  "Get the configuration for the given index from the index-set"
+  [index-set concept-type canonical-index-name]
+  (let [indexes (get-in index-set [:index-set concept-type :indexes])]
+    (some (fn [index-config]
+            (when (= (:name index-config) canonical-index-name)
+              index-config))
+          (seq indexes))))
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
@@ -398,24 +493,29 @@
   (info (format "Starting to rebalance granules for collection [%s] to target [%s]."
                 concept-id target))
   (rebalancing-collections/validate-target target concept-id)
-  (let [gran-index-set (as-> (get-index-set context es-config/gran-elastic-name index-set-id) index-set
-                        (update-in
-                          index-set
-                          [:index-set :granule :rebalancing-collections]
-                          add-rebalancing-collection concept-id)
-                        (update-in
-                          index-set
-                          [:index-set :granule :rebalancing-targets]
-                          assoc concept-id target)
-                        (update-in
-                         index-set
-                         [:index-set :granule :rebalancing-status]
-                         assoc concept-id "IN_PROGRESS")
-                        (if (= "small-collections" target)
-                          (do
-                             (validate-granule-index-exists index-set concept-id)
-                             index-set)
-                          (add-new-granule-index-to-index-set index-set concept-id)))]
+  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
+        ;; Don't allow rebalancing a collection while resharding a related index.
+        _ (when (is-resharding-blocking-rebalancing? index-set concept-id)
+            (errors/throw-service-error
+             :bad-request
+             (format "Cannot rebalance [%s] while its related indexes are being resharded."
+                     concept-id)))
+        gran-index-set (-> gran-index-set
+                      (update-in
+                       [:index-set :granule :rebalancing-collections]
+                       add-rebalancing-collection concept-id)
+                      (update-in
+                       [:index-set :granule :rebalancing-targets]
+                       assoc concept-id target)
+                      (update-in
+                       [:index-set :granule :rebalancing-status]
+                       assoc concept-id "IN_PROGRESS")
+                      ((fn [gran-index-set]
+                         (if (= "small-collections" target)
+                           (do
+                             (validate-granule-index-exists gran-index-set concept-id)
+                             gran-index-set)
+                           (add-new-granule-index-to-index-set gran-index-set concept-id)))))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
     (update-index-set context es-config/gran-elastic-name gran-index-set)))
@@ -423,12 +523,12 @@
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
   [context index-set-id concept-id]
-  (let [gran-index-set (get-index-set context es-config/gran-elastic-name index-set-id)
+  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
         target (get-in gran-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
         _ (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."
                         concept-id target))
         _ (rebalancing-collections/validate-target target concept-id)
-        index-set (as-> gran-index-set index-set
+        gran-index-set (as-> gran-index-set index-set
                         (update-in
                           index-set
                           [:index-set :granule :rebalancing-collections]
@@ -446,7 +546,7 @@
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (update-index-set context es-config/gran-elastic-name index-set)))
+    (update-index-set context es-config/gran-elastic-name gran-index-set)))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -454,13 +554,13 @@
   (rebalancing-collections/validate-status status)
   (info (format "Updating collection rebalancing status for collection [%s] to status [%s]."
                 concept-id status))
-  (let [index-set (get-index-set context es-config/gran-elastic-name index-set-id)]
+  (let [index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)]
     (when-not (get-in index-set [:index-set :granule :rebalancing-status (keyword concept-id)])
       (errors/throw-service-error
        :bad-request
        (format
-         "The index set does not contain the rebalancing collection [%s]"
-         concept-id)))
+        "The index set does not contain the rebalancing collection [%s]"
+        concept-id)))
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
     (update-index-set
      context
@@ -469,6 +569,92 @@
       index-set
       [:index-set :granule :rebalancing-status]
       assoc (keyword concept-id) status))))
+
+(defn get-resharded-index-name
+  "Creates a name for a new index using the old name and the new shard count. Strips off the old
+   shard count if present."
+  [index shard-count]
+  (-> (string/replace index #"_\d+_shards$" "") ;; strip off trailing shard count
+      ;; append shard count
+      (str "_" shard-count "_shards")))
+
+(defn get-concept-type-for-index
+  "Given an index name return the matching concept type by looking the index up in the index-set"
+  [index-set index]
+  (some (fn [[concept-type indexes]]
+          (when (some #(= index %) (vals indexes))
+            concept-type))
+        (get-in index-set [:index-set :concepts])))
+
+(defn start-index-resharding
+  "Reshards an index to have the given number of shards"
+  [context index-set-id index params]
+  (when (#{"acls" "groups"} index)
+    (errors/throw-service-error
+     :bad-request
+     "Resharding is not allowed for acls or groups."))
+  (let [num-shards (parse-long (:num_shards params))
+        canonical-index-name (string/replace-first index #"^\d+_" "")
+        target-index (get-resharded-index-name index num-shards)
+        _ (info (format "Starting to reshard index [%s] to [%s]" index target-index))
+        target-index-no-index-set-id (string/replace-first target-index #".*?_" "")
+        index-set (index-set-util/get-index-set context index-set-id)
+        ;; Don't allow conflicts with rebalancing
+        _ (when (is-rebalancing? index-set index)
+            (errors/throw-service-error
+             :bad-request
+             (format "%s cannot be resharded as it is being used for rebalancing." index)))
+        _ (when (is-rebalancing? index-set target-index)
+            (errors/throw-service-error
+             :bad-request
+             (format "%s cannot be resharded as its target %s is being used for rebalancing."
+                     index target-index)))
+        ;; search for index name in index-set :concepts to get concept type and to validate the
+        ;; index exists
+        concept-type (get-concept-type-for-index index-set index)
+        _ (when-not concept-type (errors/throw-service-error
+                                  :not-found
+                                  (format "Index [%s] does not exist." index)))
+        ;; get the index configuration from the index-set under :<concept-type> :indexes then
+        ;; change the shard count and index name to create a new configuration
+        new-index-config (-> (get-index-config index-set concept-type canonical-index-name)
+                             (assoc-in [:settings :index :number_of_shards] num-shards)
+                             (assoc :name target-index-no-index-set-id))
+        ;; update the index-set to have the new index config and to mark the original index
+        ;; as resharding
+        new-index-set (-> index-set
+                          (update-in
+                           [:index-set concept-type :indexes] conj new-index-config)
+                          (update-in
+                           [:index-set concept-type :resharding-indexes]
+                           add-resharding-index index)
+                          (update-in
+                           [:index-set concept-type :resharding-targets]
+                           assoc (keyword index) target-index)
+                          (update-in
+                           [:index-set concept-type :resharding-status]
+                           assoc (keyword index) "IN_PROGRESS"))]
+    ;; this will create the new index with the new shard count
+    (update-index-set context new-index-set)))
+
+(defn update-resharding-status
+  "Update the resharding status for the given index"
+  [context index-set-id index status]
+    ;; resharding has the same valid statuses as rebalancing
+  (rebalancing-collections/validate-status status)
+  (let [index-set (index-set-util/get-index-set context index-set-id)
+        concept-type (get-concept-type-for-index index-set index)]
+    (when-not (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
+      (errors/throw-service-error
+       :bad-request
+       (format
+        "The index set does not contain the resharding index [%s]." index)))
+    (update-index-set
+     context
+     (update-in
+      index-set
+      [:index-set concept-type :resharding-status]
+      assoc (keyword index) status))))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."

@@ -16,7 +16,7 @@
 
 (def resharding-index-pattern
   "Regex pattern for index names created by resharding"
-  #"^([0-9]+_c[0-9]+_[A-Za-z0-9_]+)_([0-9]+)_shards$")
+  #"^.+_([0-9]+)_shards$")
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -41,7 +41,7 @@
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error-message (:error body)]
             (error (format "error creating %s elastic index, elastic reported error: %s"
-                          index-name error-message))
+                           index-name error-message))
             (throw e)))))))
 
 (defn create-index-and-alias
@@ -58,7 +58,7 @@
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
           (error (format "error creating %s elastic index alias, elastic reported error: %s"
-                          alias error-message))
+                         alias error-message))
           (throw e))))))
 
 (defn update-index
@@ -70,7 +70,7 @@
         ;; The index exists. Update the mappings.
         (doseq [[type-name] mapping]
           (let [response (esi-helper/update-mapping
-                           conn index-name (name type-name) {:mapping mapping})]
+                          conn index-name (name type-name) {:mapping mapping})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
@@ -88,7 +88,7 @@
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
           (error (format "error updating %s elastic index, elastic reported error: %s"
-                        index-name error-message))
+                         index-name error-message))
           (throw e))))))
 
 (defn index-set-exists?
