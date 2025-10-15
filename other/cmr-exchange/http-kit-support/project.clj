@@ -25,35 +25,30 @@
                  [clojusc/twig "0.4.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
-                 [http-kit "2.5.3"]
+                 [http-kit "2.9.0-beta2"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
-                 [ring/ring-defaults "0.3.2"]
+                 [ring/ring-defaults "0.3.4"]
                  [selmer "1.12.5"]
-                 [tolitius/xml-in "0.1.0"]]
+                 [tolitius/xml-in "0.1.0"]
+                 [commons-fileupload "1.6.0"]
+                 [commons-io "2.20.0"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [
-                                     ;; The following are excluded due to their being flagged as a CVE
-                                     [com.google.protobuf/protobuf-java]
-                                     [com.google.javascript/closure-compiler-unshaded]
-                                     [commons-fileupload]]
-                        :dependencies [
-                                       ;; The following pull required deps that have been either been
-                                       ;; explicitly or implicitly excluded above due to CVEs and need
-                                       ;; declare secure versions of the libs pulled in
-                                       [commons-fileupload "1.3.3"]
-                                       [commons-io "2.6"]]}
+                        :exclusions [;; The following are excluded due to their being flagged as a CVE
+                                      [com.google.protobuf/protobuf-java]
+                                      [com.google.javascript/closure-compiler-unshaded]]
+                        :dependencies []}
              :dev {:dependencies [[clojusc/system-manager "0.3.0"]
                                   [org.clojure/java.classpath "0.3.0"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [proto-repl "0.3.1"]]
-                   :plugins [[venantius/ultra "0.5.2"]]
+                   :plugins []
                    :source-paths ["dev-resources/src"]
                    :repl-options {:init-ns cmr.http.kit.dev
                                   :prompt ~get-prompt

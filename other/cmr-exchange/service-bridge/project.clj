@@ -41,12 +41,12 @@
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
-                 [http-kit "2.5.3"]
+                 [http-kit "2.9.0-beta2"]
                  [markdown-clj "1.10.0"]
                  [metosin/reitit-core "0.3.9"]
                  [metosin/reitit-ring "0.3.9"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/clojurescript "1.10.891"]
                  [org.clojure/core.async "0.4.500"]
                  [org.clojure/core.cache "0.7.2"]
@@ -80,8 +80,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "0.3.0" :exclusions [org.clojure/tools.reader]]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.6.0"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
@@ -98,8 +97,7 @@
                               [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
-                              [test2junit "1.4.2"]
-                              [venantius/ultra "0.6.0"]]
+                              [test2junit "1.4.2"]]
                     :jvm-opts ["-Dcmr.testing.config.data=testing-value"]
                     :test2junit-output-dir "junit-test-results"
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))

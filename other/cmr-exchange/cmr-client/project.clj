@@ -9,7 +9,7 @@
   :dependencies [[clj-http "3.8.0"]
                  [cljs-http "0.1.44"]
                  [clojusc/ltest "0.3.0"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/clojurescript "1.10.217"]
                  [org.clojure/core.async "0.4.474"]
                  [org.clojure/data.json "0.2.6"]
@@ -35,7 +35,7 @@
                                      :system :system}}
              :lint {:exclusions ^:replace [org.clojure/clojure
                                            org.clojure/tools.namespace]
-                    :dependencies ^:replace [[org.clojure/clojure "1.9.0"]
+                    :dependencies ^:replace [[org.clojure/clojure "1.11.2"]
                                              [org.clojure/tools.namespace "0.2.11"]]
                     :source-paths ^:replace ["src/clj" "src/cljc"]
                     :test-paths ^:replace []

@@ -11,7 +11,7 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
   :dependencies [[cheshire "5.8.0"]
-                 [org.clojure/clojure "1.9.0"]]
+                 [org.clojure/clojure "1.11.2"]]
   :profiles {:ubercompile {:aot :all}
              :dev {:dependencies [[clojusc/trifl "0.2.0"]
                                   [org.clojure/tools.namespace "0.2.11"]]

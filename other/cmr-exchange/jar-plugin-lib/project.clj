@@ -24,7 +24,7 @@
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/java.classpath "0.3.0"]]
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
@@ -41,8 +41,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]}
              :dev {:dependencies [[debugger "0.2.1"]]
                    :repl-options {:init-ns cmr.plugin.jar.dev
