@@ -5,7 +5,7 @@
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-gran-or-cwic-base]
    [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-base]))
 
-(defn- cache-map->concept-ids-condition
+(defn- create-concept-ids-condition
   "Extract concept IDs from cache map where value is true, return string-conditions or match-none."
   [cache-map]
   (let [concept-ids (map key (filter val cache-map))]
@@ -26,9 +26,9 @@
     ;; so we will use the has-granules-or-cwic-map and get the keys (concept IDs) of entries with true values.
     (if (:has-granules-or-cwic this)
       (let [has-granules-or-cwic-map (has-gran-or-cwic-base/get-has-granules-or-cwic-map context)]
-        (cache-map->concept-ids-condition has-granules-or-cwic-map))
+        (create-concept-ids-condition has-granules-or-cwic-map))
       (let [has-granules-map (has-granules-base/get-has-granules-map context)]
-        (cqm/negated-condition (cache-map->concept-ids-condition has-granules-map))))))
+        (cqm/negated-condition (create-concept-ids-condition has-granules-map))))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.HasGranulesOrOpenSearchCondition
@@ -38,6 +38,6 @@
     ;; so we will use the has-granules-or-opensearch-map and get the keys (concept IDs) of entries with true values.
     (if (:has-granules-or-opensearch this)
       (let [has-granules-or-opensearch-map (has-gran-or-cwic-base/get-has-granules-or-opensearch-map context)]
-        (cache-map->concept-ids-condition has-granules-or-opensearch-map))
+        (create-concept-ids-condition has-granules-or-opensearch-map))
       (let [has-granules-map (has-granules-base/get-has-granules-map context)]
-        (cqm/negated-condition (cache-map->concept-ids-condition has-granules-map))))))
+        (cqm/negated-condition (create-concept-ids-condition has-granules-map))))))
