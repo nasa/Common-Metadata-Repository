@@ -161,7 +161,7 @@
              (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
              (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
 
-              (= keyword-cache-name :granule-counts-cache/granule-counts-cache-key)
+              (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
               (granule-counts-cache/refresh-granule-counts-cache request-context)
 
              :else
