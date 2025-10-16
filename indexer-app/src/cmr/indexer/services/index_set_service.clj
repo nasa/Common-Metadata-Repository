@@ -144,6 +144,7 @@
                                        (boolean (% :settings)) (boolean (% :mapping))) indices-w-config))
       (m/missing-idx-cfg-msg json-index-set-str))))
 
+;; TODO JYNA do not need to change -- DONE -- but if I don't change it will affect rebalancing... do not do merge during rebalance process
 (defn index-set-existence-check
   "Check index-set existence"
   [context es-cluster-name index-set]
@@ -166,6 +167,7 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
+;; TODO JYNA do not need to change -- DONE
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
@@ -280,6 +282,7 @@
 
     (index-requested-index-set context index-set es-cluster-name)))
 
+;; TODO JYNA do not need to change -- DONE
 (defn delete-index-set
   "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
@@ -625,6 +628,7 @@
       [:index-set concept-type :resharding-status]
       assoc (keyword index) status))))
 
+;; TODO JYNA do not need to change -- DONE
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]

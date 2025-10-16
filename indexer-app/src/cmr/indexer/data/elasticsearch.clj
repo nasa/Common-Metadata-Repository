@@ -243,8 +243,6 @@
     [this _system]
     (let [conn (es/try-connect (:config this))
           this (assoc this :conn conn)]
-      ;; this is creating the index set index with the list of indexes in Elastic... do we want them to be a different list in each cluster? Right now, the non-gran cluster has this index
-      ;; unless we want a copy of this index set in each cluster with it being accurate to that specific index, or it only goes to the non-gran cluster...let's try the non-gran cluster only and see what it does
       (index-set-es/create-index this (config/idx-cfg-for-index-sets (:es-cluster-name this)))
       this))
 

@@ -15,7 +15,7 @@
 ;; index the request after creating all of the requested indices successfully
 ;; foot print of this index will remain small
 (defn idx-cfg-for-index-sets
-  [es-cluster-name]
+  ([es-cluster-name]
   {:index-name (str es-cluster-name "-index-sets")
    :settings {"index" {"number_of_shards" 1
                        "number_of_replicas"  1
@@ -26,6 +26,17 @@
                           :index-set-name {:type "keyword" :norms false :index_options "docs"}
                           :index-set-name-lowercase {:type "keyword" :norms false :index_options "docs"}
                           :index-set-request {:type "keyword" :norms false :index_options "docs"}}}})
+  ([es-cluster-name index-set-name]
+  {:index-name index-set-name
+   :settings {"index" {"number_of_shards" 1
+                       "number_of_replicas"  1
+                       "refresh_interval" "30s"}}
+   :mapping {"dynamic"  "strict"
+             "_source"  {"enabled" true}
+             :properties {:index-set-id  {:type "keyword" :norms false :index_options "docs"}
+                          :index-set-name {:type "keyword" :norms false :index_options "docs"}
+                          :index-set-name-lowercase {:type "keyword" :norms false :index_options "docs"}
+                          :index-set-request {:type "keyword" :norms false :index_options "docs"}}}}))
 
 (defconfig index-queue-name
   "The queue containing ingest events for the indexer"

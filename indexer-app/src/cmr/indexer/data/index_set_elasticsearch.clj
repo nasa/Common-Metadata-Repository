@@ -103,15 +103,19 @@
      (str index-set-id)
      {"_source" "index-set-id,index-set-name,index-set-request"})))
 
+;; TODO JYNA need to change -- DONE
 (defn get-index-set
   "Fetch index-set associated with an id and a specific elastic cluster."
   [context es-cluster-name index-set-id]
   (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        idx-mapping-type (first (keys mapping))]
-    (when-let [result (index-set-exists?
-                       (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
-      (-> result
+        idx-mapping-type (first (keys mapping))
+        found-index-set (index-set-exists? (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)
+        found-index-set (if (nil? found-index-set)
+                           (index-set-exists? (get-in context [:system es-cluster-name-keyword]) "index-sets" idx-mapping-type index-set-id)
+                           found-index-set)]
+    (when found-index-set
+      (-> found-index-set
           (get-in [:_source :index-set-request])
           decode-field))))
 
