@@ -3,11 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]
@@ -317,6 +314,21 @@
                                    :num_shards num-shards}
                     :headers headers
                     :url (url/finalize-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
+(defn get-reshard-status
+  "Gets the reshard status of a given index."
+  ([index-name]
+   (get-reshard-status index-name {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([index-name headers]
+   (let [response (client/request
+                   {:method :get
+                    :headers headers
+                    :url (url/status-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})

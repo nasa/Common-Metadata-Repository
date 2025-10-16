@@ -34,7 +34,6 @@
   "App logging level"
   {:default "info"})
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn create-system
   "Returns a new instance of the whole application."
   ([]

@@ -93,6 +93,10 @@
           (index-set-svc/start-index-resharding request-context id index params)
           {:status 200})
 
+        (GET "/status" {request-context :request-context}
+          (acl/verify-ingest-management-permission request-context :update)
+          (r/response (index-set-svc/get-reshard-status request-context id index)))
+
         ;; Finalizes resharding of an index, culminating in deleting the index which is replaced
         ;; by a new index
         (POST "/finalize" {:keys [request-context]}

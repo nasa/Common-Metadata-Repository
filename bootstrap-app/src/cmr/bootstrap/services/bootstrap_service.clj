@@ -306,3 +306,8 @@
 
     ;; Minimize likelihood of triggering race condition (see `finalize-rebalance-collection` above)
     (wait-until-index-set-hash-cache-times-out)))
+
+(defn reshard-status
+  "Returns the resharding status of the given index."
+  [context index]
+  (indexer/get-reshard-status context indexer-index-set/index-set-id index))

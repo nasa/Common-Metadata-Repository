@@ -26,12 +26,10 @@
     {:status 200
      :body {:message (msg/resharding-started index)}}))
 
-;; TODO add this in CMR-10771
-;; (defn get-status
-;;   "Gets the status of resharding an index."
-;;   [context index]
-;;   {:status 200
-;;    :body (service/resharding-status context index})
+(defn get-status
+  "Gets the status of resharding an index."
+  [context index]
+  (service/reshard-status context index))
 
 (defn finalize
   "Completes resharding the index"

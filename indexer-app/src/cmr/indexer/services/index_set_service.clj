@@ -575,10 +575,34 @@
     ;; TODO CMR-10770 Change progress to "COMPLETE"
   )
 
+(defn get-reshard-status
+  "Get the resharding status for the given index"
+  [context index-set-id index]
+  (let [index-set (index-set-util/get-index-set context index-set-id)
+        concept-type (get-concept-type-for-index index-set index)]
+    (when-not concept-type
+      (errors/throw-service-error
+       :not-found
+       (format
+        "The index [%s] does not exist." index)))
+    (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
+      (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
+        {:original-index index
+         :reshard-index target
+         :reshard-status status}
+        (errors/throw-service-error
+         :internal-error
+         (format
+          "The status of resharding index [%s] is not found." index)))
+      (errors/throw-service-error
+       :not-found
+       (format
+        "The index [%s] is not being resharded." index)))))
+
 (defn update-resharding-status
   "Update the resharding status for the given index"
   [context index-set-id index status]
-    ;; resharding has the same valid statuses as rebalancing
+  ;; resharding has the same valid statuses as rebalancing
   (rebalancing-collections/validate-status status)
   (let [index-set (index-set-util/get-index-set context index-set-id)
         concept-type (get-concept-type-for-index index-set index)]
