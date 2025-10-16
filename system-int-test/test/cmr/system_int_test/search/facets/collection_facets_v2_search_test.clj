@@ -346,17 +346,30 @@
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
   (testing "Default to one level without any search parameters"
     (is (= 1 (fu/get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
-  (are [sk-param expected-depth]
+  (are3 [sk-param expected-depth]
     (= expected-depth (fu/get-lowest-hierarchical-depth
                        (search-and-return-v2-facets {:science-keywords-h {:0 sk-param}})))
 
+    "Category only"
     {:category "Earth Science"} 1
+
+    "Topic only"
     {:topic "Topic1"} 2
+
+    "Topic with category"
     {:topic "Topic1" :category "Earth Science"} 2
+
+    "Term with category and topic"
     {:term "Term1" :category "Earth Science" :topic "Topic1"} 3
+
+    "Variable level 1 with full path"
     {:variable-level-1 "Level1-1" :term "Term1" :category "Earth Science" :topic "Topic1"} 4
+
+    "Variable level 2 with full path"
     {:variable-level-2 "Level1-2" :term "Term1" :category "Earth Science" :topic "Topic1"
      :variable-level-1 "Level1-1"} 5
+
+    "Variable level 3 with complete hierarchy"
     {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1"
      :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 6))
 
@@ -476,24 +489,42 @@
 
 (deftest invalid-facets-v2-response-formats
   (testing "invalid xml response formats"
-    (are [resp-format]
+    (are3 [resp-format]
          (= {:status 400 :errors ["V2 facets are only supported in the JSON format."]}
             (search/get-search-failure-xml-data
               (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
+
+         "ECHO10 format"
          mt/echo10
+
+         "DIF format"
          mt/dif
+
+         "DIF10 format"
          mt/dif10
+
+         "XML format"
          mt/xml
+
+         "KML format"
          mt/kml
+
+         "ATOM format"
          mt/atom
+
+         "ISO19115 format"
          mt/iso19115))
 
   (testing "invalid json response formats"
-     (are [resp-format]
+     (are3 [resp-format]
          (= {:status 400 :errors ["V2 facets are only supported in the JSON format."]}
             (search/get-search-failure-data
               (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
+
+         "UMM JSON format"
          mt/umm-json
+
+         "OpenData format"
          mt/opendata)))
 
 (defn- get-facet-field

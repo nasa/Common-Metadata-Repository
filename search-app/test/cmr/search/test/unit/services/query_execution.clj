@@ -7,7 +7,9 @@
    [cmr.elastic-utils.search.es-params-converter :as pc]
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.metadata-db.data.concepts :as c]
-   [cmr.search.services.query-execution :as search-qe]))
+   [cmr.search.services.query-execution :as search-qe]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2f]))
 
 (def test-context
   {:system
@@ -204,3 +206,77 @@
                                                                           :count 3,
                                                                           :links {:apply "https://cmr.sit.earthdata.nasa.gov:443/search/collections.json?page_num=1&include_granule_counts=true&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&sort_key%5B%5D=has_granules_or_cwic&sort_key%5B%5D=-usage_score&platforms_h%5B0%5D%5Bsub_category%5D=Worldview&page_size=20&include_has_granules=true&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=PlanetScope&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
                                                                           :has_children true}]}]}]}]}})
+
+(deftest has-zero-count-facets-test
+  (testing "Returns true when facets contain zero counts"
+    (is (true? (#'search-qe/has-zero-count-facets? orig-facets))))
+
+  (testing "Returns false when all facets have non-zero counts"
+    (is (false? (#'search-qe/has-zero-count-facets? all-facets))))
+
+  (testing "Returns nil when facets-for-field is empty or nil"
+    (is (nil? (#'search-qe/has-zero-count-facets? {})))
+    (is (nil? (#'search-qe/has-zero-count-facets? nil))))
+
+  (testing "Returns true when at least one facet has zero count among multiple facets"
+    (let [mixed-facets {:facets {:children [{:children [{:title "Item1" :count 10}
+                                                        {:title "Item2" :count 0}
+                                                        {:title "Item3" :count 5}]}]}}]
+      (is (true? (#'search-qe/has-zero-count-facets? mixed-facets))))))
+
+(deftest hierarchical-aggregation-builder-facets-results-feature-test
+  (testing "hierarchical-aggregation-builder in facets-results-feature"
+    (testing "Returns nil when field-hierarchy is empty"
+      (is (nil? (#'frf/hierarchical-aggregation-builder :platforms []))))
+
+    (testing "Builds single level aggregation"
+      (let [result (#'frf/hierarchical-aggregation-builder :platforms [:category])]
+        (is (= :category (first (keys result))))
+        (is (contains? (get-in result [:category :terms]) :field))
+        (is (= "platforms.category" (get-in result [:category :terms :field])))
+        (is (= 10000 (get-in result [:category :terms :size])))))
+
+    (testing "Builds nested aggregation for multiple levels"
+      (let [result (#'frf/hierarchical-aggregation-builder :science-keywords [:category :topic])]
+        (is (= :category (first (keys result))))
+        (is (contains? (get-in result [:category :aggs]) :topic))
+        (is (= "science-keywords.category" (get-in result [:category :terms :field])))
+        (is (= "science-keywords.topic" (get-in result [:category :aggs :topic :terms :field])))))
+
+    (testing "Includes coll-count aggregation at each level"
+      (let [result (#'frf/hierarchical-aggregation-builder :platforms [:category :sub-category])]
+        (is (contains? (get-in result [:category :aggs]) :coll-count))
+        (is (contains? (get-in result [:category :aggs :sub-category :aggs]) :coll-count))))))
+
+(deftest hierarchical-aggregation-builder-hierarchical-v2-facets-test
+  (testing "hierarchical-aggregation-builder in hierarchical-v2-facets"
+    (testing "Returns nil when field-hierarchy is empty"
+      (is (nil? (#'hv2f/hierarchical-aggregation-builder :platforms [] 100))))
+
+    (testing "Builds single level aggregation with size"
+      (let [result (#'hv2f/hierarchical-aggregation-builder :platforms [:category] 50)]
+        (is (= :category (first (keys result))))
+        (is (= 50 (get-in result [:category :terms :size])))
+        (is (= "platforms.category" (get-in result [:category :terms :field])))))
+
+    (testing "Builds aggregation with shard_size when provided"
+      (let [result (#'hv2f/hierarchical-aggregation-builder :platforms [:category] 50 100)]
+        (is (= 50 (get-in result [:category :terms :size])))
+        (is (= 100 (get-in result [:category :terms :shard_size])))))
+
+    (testing "Builds nested aggregation for science-keywords with detailed-variable branch"
+      (let [result (#'hv2f/hierarchical-aggregation-builder :science-keywords-humanized [:term] 50)]
+        (is (contains? (get-in result [:term :aggs]) :detailed-variable))
+        (is (= "science-keywords-humanized.detailed-variable"
+               (get-in result [:term :aggs :detailed-variable :terms :field])))))
+
+    (testing "Builds nested aggregation for platforms with short-name branch"
+      (let [result (#'hv2f/hierarchical-aggregation-builder :platforms2-humanized [:category] 50)]
+        (is (contains? (get-in result [:category :aggs]) :short-name))
+        (is (= "platforms2-humanized.short-name"
+               (get-in result [:category :aggs :short-name :terms :field])))))
+
+    (testing "Includes coll-count aggregation at each level"
+      (let [result (#'hv2f/hierarchical-aggregation-builder :platforms [:category :sub-category] 50)]
+        (is (contains? (get-in result [:category :aggs]) :coll-count))
+        (is (contains? (get-in result [:category :aggs :sub-category :aggs]) :coll-count))))))

@@ -5,7 +5,6 @@
    [camel-snake-kebab.core :as csk]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.log :refer [debug info]]
    [cmr.common.util :as util]
    [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.search.services.query-execution.facets.cycle-facets :as cycle-facets]
