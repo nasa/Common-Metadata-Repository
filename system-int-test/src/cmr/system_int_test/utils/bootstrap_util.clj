@@ -303,6 +303,21 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn get-reshard-status
+  "Gets the reshard status of a given index."
+  ([index-name]
+   (get-reshard-status index-name {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([index-name headers]
+   (let [response (client/request
+                   {:method :get
+                    :headers headers
+                    :url (url/status-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]
