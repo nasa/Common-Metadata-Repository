@@ -43,6 +43,7 @@
                  [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
                  [http-kit "2.9.0-beta2"]
                  [markdown-clj "1.10.0"]
+                 [clj-commons/clj-yaml "1.0.29"]
                  [metosin/reitit-core "0.3.9"]
                  [metosin/reitit-ring "0.3.9"]
                  [metosin/ring-http-response "0.9.1"]
