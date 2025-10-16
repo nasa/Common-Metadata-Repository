@@ -20,8 +20,8 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.api.web-server :as web]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :as log :refer (errorf info debug)]
@@ -37,6 +37,7 @@
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.redis-utils.redis-cache]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-gran-or-cwic-results-feature]
    [cmr.transmit.config :as transmit-config]))
@@ -85,7 +86,10 @@
    (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)
 
    has-gran-or-cwic-results-feature/has-granules-or-opensearch-cache-key
-   (has-gran-or-cwic-results-feature/create-has-granules-or-opensearch-map-cache)})
+   (has-gran-or-cwic-results-feature/create-has-granules-or-opensearch-map-cache)
+   
+   granule-counts-cache/granule-counts-cache-key 
+   (granule-counts-cache/create-granule-counts-cache-client)})
 
 (def jobs-to-schedule
   "Create all the schedules to be added to the sys latter."
