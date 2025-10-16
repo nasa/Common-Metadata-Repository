@@ -118,40 +118,6 @@
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                       [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
 
-(defn get-all-index-sets
-  "Fetch all index-sets in elastic and combines it into one json."
-  [context]
-  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-config/elastic-name)
-        idx-mapping-type (first (keys mapping))
-        non-gran-index-set-array (es/get-index-sets (indexer-util/context->es-store context es-config/elastic-name) index-name idx-mapping-type)
-
-        {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-config/gran-elastic-name)
-        idx-mapping-type (first (keys mapping))
-
-        gran-index-set-array (es/get-index-sets (indexer-util/context->es-store context es-config/gran-elastic-name) index-name idx-mapping-type)
-
-        all-index-set-array (map util/deep-merge gran-index-set-array non-gran-index-set-array)
-        result (map #(select-keys (:index-set %) [:id :name :concepts])
-                    all-index-set-array)]
-    result))
-
-(defn get-index-sets
-  [context es-cluster-name]
-  (let [{:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        idx-mapping-type (first (keys mapping))
-        index-set-array (es/get-index-sets (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type)
-
-        result (map #(select-keys (:index-set %) [:id :name :concepts])
-                    index-set-array)]
-    result))
-
-(defn get-index-set
-  "Fetch index-set associated with an index-set id."
-  [context es-cluster-name index-set-id]
-  (or (es/get-index-set context es-cluster-name index-set-id)
-      (errors/throw-service-error :not-found
-                                  (m/index-set-not-found-msg index-set-id))))
-
 (defn index-set-id-validation
   "Verify id is a positive integer."
   [index-set]
@@ -495,7 +461,7 @@
   (rebalancing-collections/validate-target target concept-id)
   (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
         ;; Don't allow rebalancing a collection while resharding a related index.
-        _ (when (is-resharding-blocking-rebalancing? index-set concept-id)
+        _ (when (is-resharding-blocking-rebalancing? gran-index-set concept-id)
             (errors/throw-service-error
              :bad-request
              (format "Cannot rebalance [%s] while its related indexes are being resharded."
@@ -545,7 +511,7 @@
                           (remove-granule-index-from-index-set index-set concept-id)
                           index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
-    (validate-requested-index-set context es-config/gran-elastic-name index-set true)
+    (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
     (update-index-set context es-config/gran-elastic-name gran-index-set)))
 
 (defn update-collection-rebalancing-status
@@ -593,12 +559,13 @@
     (errors/throw-service-error
      :bad-request
      "Resharding is not allowed for acls or groups."))
-  (let [num-shards (parse-long (:num_shards params))
+  (let [es-cluster-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
+        num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
         _ (info (format "Starting to reshard index [%s] to [%s]" index target-index))
         target-index-no-index-set-id (string/replace-first target-index #".*?_" "")
-        index-set (index-set-util/get-index-set context index-set-id)
+        index-set (index-set-util/get-index-set context es-cluster-name index-set-id)
         ;; Don't allow conflicts with rebalancing
         _ (when (is-rebalancing? index-set index)
             (errors/throw-service-error
@@ -635,14 +602,15 @@
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
     ;; this will create the new index with the new shard count
-    (update-index-set context new-index-set)))
+    (update-index-set context es-cluster-name new-index-set)))
 
 (defn update-resharding-status
   "Update the resharding status for the given index"
   [context index-set-id index status]
     ;; resharding has the same valid statuses as rebalancing
   (rebalancing-collections/validate-status status)
-  (let [index-set (index-set-util/get-index-set context index-set-id)
+  (let [es-cluster-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
+        index-set (index-set-util/get-index-set context es-cluster-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)]
     (when-not (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
       (errors/throw-service-error
@@ -651,6 +619,7 @@
         "The index set does not contain the resharding index [%s]." index)))
     (update-index-set
      context
+     es-cluster-name
      (update-in
       index-set
       [:index-set concept-type :resharding-status]

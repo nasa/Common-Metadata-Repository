@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
    [clj-http.client :as client]
-   [clojure.string :as string]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [info infof warn error]]
@@ -378,17 +377,8 @@
 (defn get-es-cluster-conn
   [context es-index-or-alias]
   ;; if es-index-or-alias is granule type then get granule connection, else get the non-gran cluster connection
-  (let [cluster-name (if
-                       (and (not (= es-index-or-alias (idx-set/collections-index)))
-                            (not (= es-index-or-alias (idx-set/collections-index-alias)))
-                            (or (string/starts-with? es-index-or-alias idx-set/granule-index-name-prefix)
-                                (= es-index-or-alias idx-set/small-collections-index-name)
-                                (= es-index-or-alias idx-set/small-collections-index-alias)
-                                (= es-index-or-alias idx-set/deleted-granule-index-name)
-                                (= es-index-or-alias idx-set/deleted-granules-index-alias)))
-                       (keyword es-config/gran-elastic-name)
-                       (keyword es-config/elastic-name))]
-    (indexer-util/context->conn context cluster-name)))
+  (let [cluster-name (indexer-util/get-es-cluster-name-by-index-or-alias es-index-or-alias)]
+    (indexer-util/context->conn context (keyword cluster-name))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."

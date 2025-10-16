@@ -48,7 +48,7 @@
     ;; respond with index-sets in elastic
     (GET "/" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :read)
-      (r/response (index-set-svc/get-all-index-sets request-context)))
+      (r/response (index-set-util/get-all-index-sets request-context)))
 
     (POST "/reset" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
@@ -59,12 +59,12 @@
     (context "/cluster/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-sets request-context es-cluster-name))))
+        (r/response (index-set-util/get-index-sets request-context es-cluster-name))))
 
     (context "/cluster/:es-cluster-name/:id" [es-cluster-name id]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
-        (r/response (index-set-svc/get-index-set request-context es-cluster-name id))))
+        (r/response (index-set-util/get-index-set request-context es-cluster-name id))))
 
     (context "/:id" [id]
       (GET "/" {request-context :request-context}
