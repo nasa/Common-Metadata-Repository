@@ -24,10 +24,10 @@
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.12.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"
+                 [com.fasterxml.jackson.core/jackson-core "2.20.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.20.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.20.0"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-api-versioning "0.1.1-SNAPSHOT"]
@@ -52,7 +52,7 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
-                 [org.yaml/snakeyaml "1.31"]
+                 [org.yaml/snakeyaml "2.5"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
