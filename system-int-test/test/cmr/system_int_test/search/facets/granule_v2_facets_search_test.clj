@@ -86,7 +86,7 @@
                                                                {:include-facets "v2"}))]
        (is (= 200 (:status response)))
        (is (= 0 (get-in response [:hits]))))
-     
+
      "Non-existent collection" {:collection-concept-id "C5-PROV1"}
      "Non-existent collection concept-id" {:concept-id "C5-PROV1"})))
 

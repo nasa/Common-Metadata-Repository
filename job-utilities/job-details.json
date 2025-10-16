@@ -18,5 +18,62 @@
                 "year" : "*"
             }
         }
+    },
+    "RefreshGranulesCountCache": {
+        "target" : {
+            "endpoint" : "caches/refresh/granule-counts-cache",
+            "service" : "bootstrap",
+            "single-target" : true,
+            "request-type" : "POST"
+        },
+        "scheduling" : {
+            "type" : "interval",
+            "timing" : {
+                "minutes" : 0,
+                "hours" : 1,
+                "day-of-month" : "*",
+                "month" : "*",
+                "day-of-week" : "?",
+                "year" : "*"
+            }
+        }
+    },
+    "RefreshHasGranulesOrCwicMap": {
+        "target" : {
+            "endpoint" : "caches/refresh/has-granules-or-cwic-map",
+            "service" : "bootstrap",
+            "single-target" : true,
+            "request-type" : "POST"
+        },
+        "scheduling" : {
+            "type" : "cron",
+            "timing" : {
+                "minutes" : 10,
+                "hours" : "*",
+                "day-of-month" : "?",
+                "month" : "*",
+                "day-of-week" : "*",
+                "year" : "*"
+            }
+        }
+    },
+    "RefreshHasGranulesOrOpensearchMap": {
+        "target" : {
+            "endpoint" : "caches/refresh/has-granules-or-opensearch-map",
+            "service" : "bootstrap",
+            "single-target" : true,
+            "request-type" : "POST"
+        },
+        "scheduling" : {
+            "type" : "cron",
+            "timing" : {
+                "minutes" : 10,
+                "hours" : "*",
+                "day-of-month" : "?",
+                "month" : "*",
+                "day-of-week" : "*",
+                "year" : "*"
+            }
+        }
     }
 }

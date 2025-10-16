@@ -48,12 +48,6 @@
       "Mapping": "string"
     },
     {
-      "Description": "The nature of the relationship between the cited resource and the collection",
-      "Field": ".RelationshipType",
-      "Name": "Relationship-Type",
-      "Mapping": "string"
-    },
-    {
       "Description": "Science Keywords in keywords",
       "Field": ".ScienceKeywords",
       "Name": "keyword",
@@ -66,8 +60,20 @@
       "Field": ".RelatedIdentifiers",
       "Name": "Related-Identifier",
       "Mapping": "string",
-      "Indexer": "simple-array-field",
-      "Configuration": {"sub-fields": ["RelatedIdentifier"]}
+      "Indexer": "complex-fields-only",
+      "Configuration": {"sub-fields": ["RelatedIdentifier"],
+                        "format": "%s"}
+    },
+    {
+      "Description": "Related Identifiers with Relationship Types", 
+      "Field": ".RelatedIdentifiers",
+      "Name": "Related-Identifier-With-Type",
+      "Mapping": "string", 
+      "Indexer": "complex-fields-only",
+      "Configuration": {
+        "sub-fields": ["RelationshipType", "RelatedIdentifier"],
+        "format": "%s:%s"
+      }
     },
     {
       "Description": "Citation Title",

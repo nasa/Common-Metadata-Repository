@@ -12,9 +12,12 @@
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.indexer.data.index-set :as indexer-index-set]
+   [cmr.indexer.services.index-set-service :as index-set-services]
    [cmr.indexer.system :as indexer-system]
    [cmr.transmit.indexer :as indexer]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   ;; This must be required here to make protocol implementations available.
+   [cmr.transmit.cache.consistent-cache]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -30,6 +33,7 @@
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
+   :migrate-index :core-async-dispatcher
    :fingerprint-by-id :synchronous-dispatcher
    :fingerprint-variables :message-queue-dispatcher
    :delete-concepts-from-index-by-id :core-async-dispatcher
@@ -58,13 +62,13 @@
      [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn validate-collection
-   "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
-   [context provider-id collection-id]
-   (let [provider (get-provider context provider-id)]
-     (when-not (bulk/get-collection context provider collection-id)
-       (errors/throw-service-errors
-        :bad-request
-        [(format "Collection [%s] does not exist." collection-id)]))))
+  "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
+  [context provider-id collection-id]
+  (let [provider (get-provider context provider-id)]
+    (when-not (bulk/get-collection context provider collection-id)
+      (errors/throw-service-errors
+       :bad-request
+       [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
@@ -144,14 +148,18 @@
   all providers' generic documents are (re-)indexed."
   ([context dispatcher concept-type provider-id]
    (if provider-id
-    (dispatch/index-generics dispatcher context concept-type provider-id)
-    (dispatch/index-generics dispatcher context concept-type))))
+     (dispatch/index-generics dispatcher context concept-type provider-id)
+     (dispatch/index-generics dispatcher context concept-type))))
+
+(defn migrate-index
+  "Copy the contents of one index into another. Used during resharding."
+  [context dispatcher source-index target-index]
+  (dispatch/migrate-index dispatcher context source-index target-index))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [context dispatcher provider-id concept-type concept-ids]
-  (dispatch/delete-concepts-from-index-by-id dispatcher context provider-id concept-type
-                                                      concept-ids))
+  (dispatch/delete-concepts-from-index-by-id dispatcher context provider-id concept-type concept-ids))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
@@ -180,6 +188,12 @@
     (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
     (Thread/sleep (* util/second-as-milliseconds sleep-secs))))
 
+(defn- reset-caches-affected-by-rebalancing
+  "Reset caches affected by rebalancing"
+  [context]
+  (let [index-set-cache (get-in context [:system :embedded-systems :indexer :caches indexer-index-set/index-set-cache-key])]
+    (cache/reset index-set-cache)))
+
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set. If no target is specified default to moving to a separate
@@ -191,13 +205,13 @@
     (rebalancing-collections/validate-target target concept-id)
     (when (= "separate-index" target)
       (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id))
-    ;; This will throw an exception if the collection is already rebalancing
+    ;; This will throw an exception if the collection is already rebalancing or resharding
     (indexer/add-rebalancing-collection context indexer-index-set/index-set-id concept-id
                                         (csk/->kebab-case-keyword target))
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (cache/reset-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; We must wait here so that any new granules coming in will start to pick up the new index set
     ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
@@ -228,7 +242,7 @@
     (indexer/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (cache/reset-caches context)
+    (reset-caches-affected-by-rebalancing context)
 
     ;; There is a race condition as noted here: https://wiki.earthdata.nasa.gov/display/CMR/Rebalancing+Collection+Indexes+Approach
     ;; "There's a period of time during which the different indexer applications may be processing
@@ -251,3 +265,31 @@
    (rebalance-util/rebalancing-collection-counts context concept-id)
    :rebalancing-status
    (rebalance-util/rebalancing-collection-status context concept-id)))
+
+(defn start-reshard-index
+  "Kicks off index resharding. Throws exception when failing to change the index set."
+  [context dispatcher index num-shards]
+  (let [target (index-set-services/get-resharded-index-name index num-shards)]
+    (info (format "Starting to reshard index [%s] to target [%s] with [%d] shards."
+                  index target num-shards))
+    ;; This will throw an exception if the index is already resharding
+    (indexer/add-resharding-index context indexer-index-set/index-set-id index num-shards)
+
+    ;; Clear the cache so that the newest index set data will be used.
+    ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    (reset-caches-affected-by-rebalancing context)
+
+    ;; We must wait here so that any new granules coming in will start to pick up the new index set
+    ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
+    ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
+    ;; came in and was indexed only to the old index but after we started migrating to the the index
+    (wait-until-index-set-hash-cache-times-out)
+
+    ;; Copy the contents of the source index to the target index. The dispatcher will handle
+    ;; how this is run.
+    (migrate-index context dispatcher index target)))
+
+(defn reshard-status
+  "Returns the resharding status of the given index."
+  [context index]
+  (indexer/get-reshard-status context indexer-index-set/index-set-id index))

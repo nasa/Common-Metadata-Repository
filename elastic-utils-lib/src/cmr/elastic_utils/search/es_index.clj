@@ -12,11 +12,17 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
-   java.net.UnknownHostException))
+   java.net.UnknownHostException
+   (cmr.common.services.search.query_model MatchNoneCondition)))
+
+(def empty-es-results
+  "An empty result returned by Elasticsearch when no match is found."
+  {:took 0, :timed_out false, :_shards {:total 0, :successful 0, :skipped 0, :failed 0}, :hits {:total {:value 0}, :max_score nil, :hits ()}})
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along
@@ -28,7 +34,7 @@
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)
-                 "1_all_collection_revisions"
+                 (esi-helper/index-alias "1_all_collection_revisions")
                  (es-config/collections-index-alias))
    :type-name "collection"})
 
@@ -229,6 +235,13 @@
   (transmit-conn/handle-socket-exception-retries
    (do-send context index-info query)))
 
+(defn- add-shard-count-to-context
+  "Add information about the shards read during search to the metadata of the context"
+  [context shard-count]
+  (when-let [metadata (meta context)]
+    (let [shard-counts-atom (:shard-counts metadata)]
+      (swap! shard-counts-atom conj shard-count))))
+
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   (fn [_context query]
@@ -248,15 +261,17 @@
                       (set/rename-keys {:search-after :search_after})
                       util/remove-nil-keys)]
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
-          (pr-str elastic-query)
-          "with sort" (pr-str sort-params)
-          "with aggregations" (pr-str aggregations)
-          "and highlights" (pr-str highlights))
+           (pr-str elastic-query)
+           "with sort" (pr-str sort-params)
+           "with aggregations" (pr-str aggregations)
+           "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]
       (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]
       (debug "Using search-after" (pr-str search-after)))
-    (let [response (send-query context index-info query-map)]
+    (let [response (send-query context index-info query-map)
+          shard-count (get-in response [:_shards :total] 0)]
+      (add-shard-count-to-context context shard-count)
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]
@@ -310,7 +325,7 @@
         (if (or (nil? search-after-values)
                 (>= (count accumulated-hits) total-hits))
           ;; We've got all results
-          (do 
+          (do
             (debug "Returning all results with total hits:" total-hits
                    "and took time:" took-total
                    "timed out:" timed-out)
@@ -322,7 +337,7 @@
 
           (let [next-response (send-query-to-elastic
                                context
-                               (assoc query-with-sort 
+                               (assoc query-with-sort
                                       :page-size batch-size
                                       :search-after search-after-values))
                 new-hits (get-in next-response [:hits :hits])]
@@ -334,11 +349,21 @@
                    (+ took-total (:took next-response))
                    (or timed-out (:timed_out next-response)))))))))
 
+(defn- granule-match-none?
+  "Returns true if this is a granule query with a MatchNone condition, meaning we should skip querying ES."
+  [{:keys [concept-type condition]}]
+  (and (= concept-type :granule)
+       (instance? MatchNoneCondition condition)))
+
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]
   (let [start (System/currentTimeMillis)
-        e-results (send-query-to-elastic context query)
+        e-results (if (granule-match-none? query)
+                    (do
+                      (info "This is a granule search with MatchNone condition, skip querying ES.")
+                      empty-es-results)
+                    (send-query-to-elastic context query))
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total :value])]
     (info "Elastic query for concept-type:" (:concept-type query) " and result format: "

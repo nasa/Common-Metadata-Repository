@@ -2,9 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.elastic-utils.search.query-execution :as query-execution]
-   [cmr.search.services.humanizers.humanizer-range-facet-service :as rfs]
-   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
-   [cmr.search.services.query-execution.facets.collection-v2-facets :as cv2f]))
+   [cmr.search.services.humanizers.humanizer-range-facet-service :as rfs]))
 
 (def expected-pre-process-query-result-feature-result
   {:project-h
@@ -28,7 +26,7 @@
       {:coll-count
        {:reverse_nested {},
         :aggs
-        {:concept-id {:terms {:field :concept-id, :size 1}}}},
+        {:concept-id {:cardinality {:field :concept-id}}}},
        :topic
        {:terms
         {:field "science-keywords-humanized.topic", :size 50},
@@ -37,7 +35,7 @@
          {:reverse_nested {},
           :aggs
           {:concept-id
-           {:terms {:field :concept-id, :size 1}}}},
+           {:cardinality {:field :concept-id}}}},
          :term
          {:terms
           {:field "science-keywords-humanized.term", :size 50},
@@ -46,7 +44,7 @@
            {:reverse_nested {},
             :aggs
             {:concept-id
-             {:terms {:field :concept-id, :size 1}}}},
+             {:cardinality {:field :concept-id}}}},
            :detailed-variable
            {:terms
             {:field
@@ -57,8 +55,8 @@
              {:reverse_nested {},
               :aggs
               {:concept-id
-               {:terms
-                {:field :concept-id, :size 1}}}}}}}}}}}}}},
+               {:cardinality
+                {:field :concept-id}}}}}}}}}}}}}},
    :data-center-h
    {:nested {:path :organization-humanized},
     :aggs
@@ -159,7 +157,7 @@
       {:coll-count
        {:reverse_nested {},
         :aggs
-        {:concept-id {:terms {:field :concept-id, :size 1}}}},
+        {:concept-id {:cardinality {:field :concept-id}}}},
        :category
        {:terms
         {:field "platforms2-humanized.category", :size 50},
@@ -168,7 +166,7 @@
          {:reverse_nested {},
           :aggs
           {:concept-id
-           {:terms {:field :concept-id, :size 1}}}},
+           {:cardinality {:field :concept-id}}}},
          :short-name
          {:terms
           {:field "platforms2-humanized.short-name", :size 50},
@@ -177,7 +175,7 @@
            {:reverse_nested {},
             :aggs
             {:concept-id
-             {:terms {:field :concept-id, :size 1}}}}}},
+             {:cardinality {:field :concept-id}}}}}},
          :sub-category
          {:terms
           {:field "platforms2-humanized.sub-category",
@@ -187,7 +185,7 @@
            {:reverse_nested {},
             :aggs
             {:concept-id
-             {:terms {:field :concept-id, :size 1}}}}}}}}}}}},
+             {:cardinality {:field :concept-id}}}}}}}}}}}},
    :two-d-coordinate-system-name-h
    {:terms {:field :two-d-coord-name, :size 50}},
    :variables-h
@@ -199,7 +197,7 @@
       {:coll-count
        {:reverse_nested {},
         :aggs
-        {:concept-id {:terms {:field :concept-id, :size 1}}}},
+        {:concept-id {:cardinality {:field :concept-id}}}},
        :variable
        {:terms {:field "variables.variable", :size 50},
         :aggs
@@ -207,7 +205,7 @@
          {:reverse_nested {},
           :aggs
           {:concept-id
-           {:terms {:field :concept-id, :size 1}}}}}}}}}}})
+           {:cardinality {:field :concept-id}}}}}}}}}}})
 
 (deftest pre-process-query-result-feature-test
   (testing "Testing the preprocessing of the query without facets in the query."

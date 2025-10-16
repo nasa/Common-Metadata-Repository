@@ -41,7 +41,6 @@
      "nil if no acceptable type"
      {"content-type" "text/html2, application/foo"} nil)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
     (is (= mt/json (mt/path->mime-type "granules.json")))

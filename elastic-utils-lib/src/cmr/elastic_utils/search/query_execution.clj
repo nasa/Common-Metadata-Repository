@@ -2,6 +2,7 @@
   "Defines a bunch of defmulti functions and their defaults to handle different stats of the
    query-execution. These will be extended by other files."
   (:require
+   [cmr.common.log :as log :refer [info]]
    [cmr.elastic-utils.search.es-index :as idx]
    [cmr.elastic-utils.search.es-results-to-query-results :as rc]
    [cmr.elastic-utils.search.query-transform :as c2s]
@@ -93,16 +94,34 @@
   (fn [_context query]
     (query->execution-strategy query)))
 
+(defn- granule-no-coll-match?
+  "Returns true if this is a granule query with a collection identifier
+   but no matching collection IDs, meaning we should skip querying ES."
+  [{:keys [query-concept-type has-coll-identifier query-collection-ids]}]
+  (and (= query-concept-type :granule)
+       has-coll-identifier
+       (empty? query-collection-ids)))
+
+(defn- run-elasticsearch-query
+  "Runs the Elasticsearch query pipeline: preprocess, apply ACLs (if needed),
+   reduce, and execute."
+  [context processed-query]
+  (let [processed-query (pre-process-query-result-features context processed-query)]
+    (->> processed-query
+         (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
+             %
+             (add-acl-conditions-to-query context %)))
+         (c2s/reduce-query context)
+         (idx/execute-query context))))
+
+
 (defmethod execute-query :elasticsearch
   [context query]
-  (let [[context processed-query] (concept-type-specific-query-processing
-                                   context query)
-        processed-query (pre-process-query-result-features context processed-query)
-        elastic-results (->> processed-query
-                             (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
-                                 %
-                                 (add-acl-conditions-to-query context %)))
-                             (c2s/reduce-query context)
-                             (idx/execute-query context))
+  (let [[context processed-query] (concept-type-specific-query-processing context query)
+        elastic-results (if (granule-no-coll-match? context)
+                          (do
+                            (info "No collection matched by collection identifying parameters in granule search, skip querying ES.")
+                            idx/empty-es-results)
+                          (run-elasticsearch-query context processed-query))
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))

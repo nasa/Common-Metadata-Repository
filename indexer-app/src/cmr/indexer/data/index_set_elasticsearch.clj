@@ -8,9 +8,14 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
    [cmr.transmit.config :as t-config]))
+
+(def resharding-index-pattern
+  "Regex pattern for index names created by resharding"
+  #"^.+_([0-9]+)_shards$")
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -35,8 +40,25 @@
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error-message (:error body)]
             (error (format "error creating %s elastic index, elastic reported error: %s"
-                          index-name error-message))
+                           index-name error-message))
             (throw e)))))))
+
+(defn create-index-and-alias
+  "Create elastic index and its alias"
+  [es-store idx-w-config]
+  (let [{:keys [conn]} es-store
+        {:keys [index-name]} idx-w-config
+        alias (esi-helper/index-alias index-name)]
+    (create-index es-store idx-w-config)
+    (try
+      (info "Now creating Elastic alias:" alias)
+      (esi/create-index-alias conn index-name alias true)
+      (catch clojure.lang.ExceptionInfo e
+        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
+              error-message (:error body)]
+          (error (format "error creating %s elastic index alias, elastic reported error: %s"
+                         alias error-message))
+          (throw e))))))
 
 (defn update-index
   "Update elastic index"
@@ -47,7 +69,7 @@
         ;; The index exists. Update the mappings.
         (doseq [[type-name] mapping]
           (let [response (esi-helper/update-mapping
-                           conn index-name (name type-name) {:mapping mapping})]
+                          conn index-name (name type-name) {:mapping mapping})]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
@@ -55,11 +77,17 @@
         (do
           (info "Index" index-name "does not exist so it will be created")
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
+
+      ;; if the index is not a resharding index and alias does not exist, add it
+      (when-not (or (esi-helper/alias-exists? conn index-name)
+                    (re-matches resharding-index-pattern index-name))
+        (esi/create-index-alias conn index-name (esi-helper/index-alias index-name) true))
+
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error-message (:error body)]
           (error (format "error updating %s elastic index, elastic reported error: %s"
-                        index-name error-message))
+                         index-name error-message))
           (throw e))))))
 
 (defn index-set-exists?
@@ -113,7 +141,7 @@
                                              :client-id t-config/cmr-client-id}
                                    :throw-exceptions false})
           status (:status response)]
-      (if-not (some #{200 202 204} [status])
+      (when-not (some #{200 202 204} [status])
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
 (defn save-document-in-elastic

@@ -13,6 +13,8 @@
    [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fv2rf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.query-helper-service :as query-helper]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
@@ -39,7 +41,7 @@
   "Returns true if the query should be executed directly against the database and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
-       ;; elastic + the metadata cache for them
+   ;; elastic + the metadata cache for them
    (= :granule concept-type)
    (specific-items-query? query)
    (mt/transformer-supported-format? result-format)
@@ -153,10 +155,13 @@
 (defmethod common-qe/concept-type-specific-query-processing :granule
   [context query]
   (let [processed-query (r/resolve-collection-queries context query)
-        collection-ids (ce/extract-collection-concept-ids processed-query)]
+        collection-ids (ce/extract-collection-concept-ids processed-query)
+        has-spatial? (seq (gcrf/extract-spatial-conditions processed-query))
+        orbit-params (when has-spatial? (query-helper/collection-orbit-parameters context collection-ids true))]
     [(assoc context
             :query-collection-ids collection-ids
-            :query-concept-type (:concept-type query))
+            :query-concept-type (:concept-type query)
+            :orbit-params orbit-params)
      processed-query]))
 
 (defmethod common-qe/concept-type-specific-query-processing :collection

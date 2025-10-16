@@ -1,7 +1,7 @@
-(ns cmr.metadata-db.test.services.subscription-cache-test
+(ns cmr.ingest.test.services.nrt-subscription.subscription-cache-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [cmr.metadata-db.services.subscription-cache :as subscription-cache]
+   [cmr.ingest.services.nrt-subscription.subscription-cache :as subscription-cache]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]))
 

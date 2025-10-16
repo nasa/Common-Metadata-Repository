@@ -160,8 +160,7 @@
   to a spatial search."
   [context shape]
   (let [mbr (sr/mbr shape)
-        {:keys [query-collection-ids]} context
-        orbit-params (query-helper/collection-orbit-parameters context query-collection-ids true)
+        {:keys [orbit-params]} context
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
                                 (let [lon-crossings-lat-ranges (orbit-crossings context mbr stored-ords params)]

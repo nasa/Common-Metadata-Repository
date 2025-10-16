@@ -1,5 +1,5 @@
 (ns cmr.common-app.services.provider-cache
-  "Uses the redis hash cache to access providers in redis. This class 
+  "Uses the redis hash cache to access providers in redis. This class
   provides shared functions for provider data that the CMR apps use."
   (:require
    [clojure.set :as set]
@@ -74,6 +74,12 @@
      :bad-request
      (map provider-does-not-exist invalid-providers)))
   providers)
+
+(defn get-provider
+  "Return the provider for the given provider id."
+  [context provider-id]
+  (let [providers (vals (get-cached-providers context))]
+    (some #(when (= (:provider-id %) provider-id) %) providers)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.

@@ -4,14 +4,15 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
 (use-fixtures :each util/reset-fixture)
 
 ;; Verify index-set creation is successful.
-;; use elastisch to verify all indices of index-set exist and the index-set doc has been indexed
-;; in elastic
+;; use elastisch to verify all indices and aliases of index-set exist
+;; and the index-set doc has been indexed in elastic
 (deftest create-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
@@ -19,10 +20,10 @@
       (is (= 201 status))))
   (testing "indices existence"
     (let [index-set util/sample-index-set
-          index-set-id (get-in index-set [:index-set :id])
           index-names (svc/get-index-names index-set)]
-      (for [idx-name index-names]
-        (is (esi/exists? @util/elastic-connection idx-name)))))
+      (doseq [idx-name index-names]
+        (is (esi/exists? @util/elastic-connection idx-name))
+        (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/elastic-connection idx-name))))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
@@ -86,12 +87,10 @@
         (is (esi/exists? @util/elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
-
 ;; manual reset
 (comment
- (util/reset-fixture (constantly true))
- (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
-
+  (util/reset-fixture (constantly true))
+  (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
 
 (defn assert-rebalancing-collections
   "Asserts that the index set contains the listed rebalancing collections."
@@ -111,7 +110,8 @@
      (doseq [collection expected-coll-indexes
              :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
-       (is (esi/exists? @util/elastic-connection elastic-index-name))))))
+       (is (esi/exists? @util/elastic-connection elastic-index-name))
+       (is (esi-helper/alias-exists? @util/elastic-connection elastic-index-name))))))
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index
@@ -183,21 +183,21 @@
        util/sample-index-set-id
        coll)
       (is (= {:status 400
-              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
-           (select-keys
-            (util/update-rebalancing-collection-status
-             util/sample-index-set-id
-             coll
-             "INVALID_STATUS")
-            [:errors :status])))
+              :errors ["Invalid status [INVALID_STATUS]. Only [\"IN_PROGRESS\" \"COMPLETE\" \"FAILED\"] are allowed."]}
+             (select-keys
+              (util/update-rebalancing-collection-status
+               util/sample-index-set-id
+               coll
+               "INVALID_STATUS")
+              [:errors :status])))
       (is (= {:status 400
-              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\"] are allowed."]}
-           (select-keys
-            (util/update-rebalancing-collection-status
-             util/sample-index-set-id
-             coll
-             nil)
-            [:errors :status])))))
+              :errors ["Invalid status []. Only [\"IN_PROGRESS\" \"COMPLETE\" \"FAILED\"] are allowed."]}
+             (select-keys
+              (util/update-rebalancing-collection-status
+               util/sample-index-set-id
+               coll
+               nil)
+              [:errors :status])))))
   (let [coll "C5-PROV1"
         _ (util/mark-collection-as-rebalancing
            util/sample-index-set-id

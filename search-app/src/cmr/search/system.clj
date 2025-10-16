@@ -11,6 +11,7 @@
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search :as search]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.in-memory-cache :as mem-cache]
@@ -23,6 +24,7 @@
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.routes :as routes]
@@ -119,7 +121,7 @@
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       hgocrf/has-granules-or-cwic-cache-key (hgocrf/create-has-granules-or-cwic-map-cache)
-                      :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
+                      hgocrf/has-granules-or-opensearch-cache-key (hgocrf/create-has-granules-or-opensearch-map-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       acl/token-pc-cache-key (acl/create-token-pc-cache)
@@ -130,6 +132,7 @@
                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+                      provider-cache/cache-key (provider-cache/create-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
@@ -137,7 +140,8 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
-                      hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
+                      hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)
+                      granule-counts-cache/granule-counts-cache-key (granule-counts-cache/create-granule-counts-cache-client)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              ;; Note that some of these jobs only need to run on one node, but we are currently
@@ -146,7 +150,6 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           hgrf/refresh-has-granules-map-job
-                          hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
                           (cache-info/create-log-cache-info-job "search")
@@ -172,3 +175,4 @@
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
     stopped-system))
+

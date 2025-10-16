@@ -101,7 +101,3 @@
                      (ingest-exchange-name)
                      (access-control-exchange-name)
                      (deleted-granule-exchange-name)]))
-
-(defconfig ingest-subscription-enabled
-  "This indicates whether or not ingest granule subscriptions are enabled."
-  {:default true :type Boolean})

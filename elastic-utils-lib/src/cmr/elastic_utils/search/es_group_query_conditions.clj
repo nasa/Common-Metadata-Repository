@@ -28,17 +28,17 @@
 (defmethod filter-group-conds :and
   [_operation conditions]
   ;; Match all conditions can be filtered out of an AND.
-  (if (= conditions [q/match-all])
+  (if (every? #(= q/match-all %) conditions)
     ;; A single match-all should be returned
-    conditions
+    [q/match-all]
     (filter #(not= % q/match-all) conditions)))
 
 (defmethod filter-group-conds :or
   [_operation conditions]
   ;; Match none conditions can be filtered out of an OR.
-  (if (= conditions [q/match-none])
+  (if (every? #(= q/match-none %) conditions)
     ;; A single match-none should be returned
-    conditions
+    [q/match-none]
     (filter #(not= % q/match-none) conditions)))
 
 (defmulti short-circuit-group-conds
@@ -64,18 +64,19 @@
   [operation conditions]
   (when (empty? conditions) (errors/internal-error! "Grouping empty list of conditions"))
 
-  (let [conditions (->> conditions
+  (let [processed-conditions (->> conditions
                         (flatten-group-conds operation)
                         (condition-merger/merge-conditions operation)
                         (short-circuit-group-conds operation)
                         (filter-group-conds operation))]
 
-    (when (empty? conditions)
-      (errors/internal-error! "Logic error while grouping conditions. No conditions found"))
+    (when (empty? processed-conditions)
+      (errors/internal-error! (format "Logic error while grouping initial conditions [%s] with operation [%s]. No conditions found"
+                                      conditions operation)))
 
-    (if (= (count conditions) 1)
-      (first conditions)
-      (q/->ConditionGroup operation conditions))))
+    (if (= (count processed-conditions) 1)
+      (first processed-conditions)
+      (q/->ConditionGroup operation processed-conditions))))
 
 (defn and-conds
   "Returns a condition representing conditions combined using a logical AND."

@@ -22,7 +22,7 @@
   "Used to build an aggregation to get a count of unique concepts included in the current nested
   aggregation."
   {:reverse_nested {}
-   :aggs {:concept-id {:terms {:field :concept-id :size 1}}}})
+   :aggs {:concept-id {:cardinality {:field :concept-id}}}})
 
 (def hierarchical-facet-order
   "Order in which hierarchical facets are returned in the facet response."

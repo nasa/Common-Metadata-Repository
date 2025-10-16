@@ -3,7 +3,7 @@
    [clj-http.client :as client]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [info warn error]]
+   [cmr.common.log :as log :refer [info infof warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
@@ -123,7 +123,6 @@
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
 
-
       ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
       (do
@@ -173,14 +172,13 @@
   (create-indexes context))
 
 (defrecord ESstore
-  [;; configuration of host, port and admin-token for elasticsearch
-   config
+           [;; configuration of host, port and admin-token for elasticsearch
+            config
 
    ;; The connection to elasticsearch
-   conn]
+            conn]
 
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
@@ -246,8 +244,7 @@
                       (update :tool-associations #(parse-non-tombstone-associations context %)))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
-                       context concept-id revision-id options
-                       concept)
+                       context concept-id revision-id options concept)
           elastic-doc (if (:deleted concept)
                         ;; The concept is a tombstone
                         (parsed-concept->elastic-doc context concept concept)
@@ -328,12 +325,12 @@
       (when (:error result)
         (if (= 409 (:status result))
           (if ignore-conflict?
-            (info (str "Ignore conflict: " (str result)))
+            (infof "Ignore conflict: %s" (str result))
             (errors/throw-service-error
              :conflict
-             (str "Save to Elasticsearch failed " (str result))))
+             (format "Save to Elasticsearch failed %s" (str result))))
           (errors/internal-error!
-           (str "Save to Elasticsearch failed " (str result))))))))
+           (format "Save to Elasticsearch failed %s" (str result))))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."
@@ -365,6 +362,6 @@
        (when-not (some #{200 404} [status])
          (if (= 409 status)
            (if ignore-conflict?
-             (info (str "Ignore conflict: " (str response)))
+             (infof "Ignore conflict: %s" (str response))
              (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
            (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))))

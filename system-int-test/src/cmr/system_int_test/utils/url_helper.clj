@@ -205,11 +205,11 @@
    (let [url (if (and (nil? provider-id)
                       (= :subscription concept-type))
                (format "http://localhost:%s/subscriptions"
-                     (transmit-config/ingest-port))
+                       (transmit-config/ingest-port))
                (format "http://localhost:%s/providers/%s/%ss"
-                     (transmit-config/ingest-port)
-                     (codec/url-encode provider-id)
-                     (name concept-type)))]
+                       (transmit-config/ingest-port)
+                       (codec/url-encode provider-id)
+                       (name concept-type)))]
      (if native-id
        (str url "/" (codec/url-encode native-id))
        url))))
@@ -515,6 +515,22 @@
 (defn finalize-rebalance-collection-url
   [concept-id]
   (format "%s/finalize" (rebalance-collection-url concept-id)))
+
+(defn- reshard-index-url
+  [index]
+  (format "http://localhost:%s/reshard/%s" (transmit-config/bootstrap-port) index))
+
+(defn start-reshard-index-url
+  [index]
+  (format "%s/start" (reshard-index-url index)))
+
+(defn status-reshard-index-url
+  [index]
+  (format "%s/status" (reshard-index-url index)))
+
+(defn finalize-reshard-index-url
+  [index]
+  (format "%s/finalize" (reshard-index-url index)))
 
 (defn bulk-index-after-date-time-url
   [date-time]

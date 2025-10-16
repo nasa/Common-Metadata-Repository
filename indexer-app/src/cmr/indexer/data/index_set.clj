@@ -6,6 +6,7 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.generics :as common-generic]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
@@ -65,6 +66,10 @@
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
 
+(def deleted-granules-index-alias
+  "The alias of the deleted granules index in elastic search."
+  "1_deleted_granules_alias")
+
 (def ^:private MAX_RESULT_WINDOW
   "Number of max results can be returned in an Elasticsearch query."
   1000000)
@@ -105,20 +110,20 @@
                              :refresh_interval "1s"}})
 
 (def service-setting {:index
-                       {:number_of_shards (elastic-service-index-num-shards)
-                        :number_of_replicas 1,
-                        :max_result_window MAX_RESULT_WINDOW,
-                        :refresh_interval "1s"}})
+                      {:number_of_shards (elastic-service-index-num-shards)
+                       :number_of_replicas 1,
+                       :max_result_window MAX_RESULT_WINDOW,
+                       :refresh_interval "1s"}})
 
 (def tool-setting {:index
-                    {:number_of_shards (elastic-tool-index-num-shards)
-                     :number_of_replicas 1,
-                     :refresh_interval "1s"}})
+                   {:number_of_shards (elastic-tool-index-num-shards)
+                    :number_of_replicas 1,
+                    :refresh_interval "1s"}})
 
 (def subscription-setting {:index
-                            {:number_of_shards (elastic-subscription-index-num-shards)
-                             :number_of_replicas 1,
-                             :refresh_interval "1s"}})
+                           {:number_of_shards (elastic-subscription-index-num-shards)
+                            :number_of_replicas 1,
+                            :refresh_interval "1s"}})
 
 (declare attributes-field-mapping)
 (defnestedmapping attributes-field-mapping
@@ -969,16 +974,16 @@
                         :subscription {:indexes
                                        [{:name "subscriptions"
                                          :settings subscription-setting}
-                                         ;; This index contains all the revisions (including tombstones) and
-                                         ;; is used for all-revisions searches.
+                                        ;; This index contains all the revisions (including tombstones) and
+                                        ;; is used for all-revisions searches.
                                         {:name "all-subscription-revisions"
                                          :settings subscription-setting}]
                                        :mapping subscription-mapping}}]
 
-               ;; merge into the set of indexes all the configured generic documents
-       {:index-set (reduce (fn [data addition] (merge data addition))
-                           set-of-indexes
-                           (index-set-gen/generic-mappings-generator))}))
+    ;; merge into the set of indexes all the configured generic documents
+    {:index-set (reduce (fn [data addition] (merge data addition))
+                        set-of-indexes
+                        (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -996,12 +1001,13 @@
   ([context index-set-id]
    (let [fetched-index-set (index-set-es/get-index-set context index-set-id)]
      {:index-names (get-in fetched-index-set [:index-set :concepts])
+      :resharding-indices (elastic-search-index-names-cache/get-resharding-targets fetched-index-set)
       :rebalancing-collections (get-in fetched-index-set
                                        [:index-set :granule :rebalancing-collections])})))
 
 (defn get-concept-mapping-types-for-generics
   "This function sets up the concept mapping types for generics. Any generic that doesn't have a
-   map is ommitted."
+   map is omitted."
   [concept-type fetched-index-set]
   (let [index-type (keyword (format "generic-%s" (name concept-type)))
         mapping (get-in fetched-index-set [:index-set index-type :mapping])]
@@ -1064,6 +1070,14 @@
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
+(defn- get-resharding-index-target
+  "Get the target index for the given index.
+   Return nil if the index is not being resharded."
+  [context index]
+  (when index
+    (let [concept-indices (get-concept-type-index-names context)]
+      (get-in concept-indices [:resharding-indices (keyword index)]))))
+
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a
    target-index-key can be specified which indicates that a specific index should be returned"
@@ -1072,20 +1086,26 @@
   ([context coll-concept-id target-index-key]
    (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
-         small-collections-index-name (get indexes :small_collections)]
+         small-collections-index-name (get indexes :small_collections)
+         indexes-for-collection (cond
+                                  target-index-key
+                                  [(get indexes target-index-key)]
 
-     (cond
-       target-index-key
-       [(get indexes target-index-key)]
+                                  ;; The collection is currently rebalancing so it will have granules in both small Collections
+                                  ;; and the separate index
+                                  (some #{coll-concept-id} rebalancing-collections)
+                                  [(get indexes (keyword coll-concept-id)) small-collections-index-name]
 
-       ;; The collection is currently rebalancing so it will have granules in both small Collections
-       ;; and the separate index
-       (some #{coll-concept-id} rebalancing-collections)
-       [(get indexes (keyword coll-concept-id)) small-collections-index-name]
-
-       :else
-       ;; The collection is not rebalancing so it's either in a separate index or small Collections
-       [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
+                                  :else
+                                  ;; The collection is not rebalancing so it's either in a separate index or small Collections
+                                  [(get indexes (keyword coll-concept-id) small-collections-index-name)])]
+     (if (= (count indexes-for-collection) 1)
+       ;; only one index so it's not being rebalanced, but it might be resharding
+       (if-let [target-index (get-resharding-index-target context (first indexes-for-collection))]
+         ;; index is being resharded so we need to return the target index as well
+         (conj indexes-for-collection target-index)
+         indexes-for-collection)
+       indexes-for-collection))))
 
 (defn resolve-generic-concept-type
   "If the concept type is generic, figure out from the concept what the actual document type is"
@@ -1113,52 +1133,58 @@
   ([context concept-id _revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)
          index-concept-type (resolve-generic-concept-type concept-type)
-         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
-     (case concept-type
-       :collection
-       (cond
-         target-index-key [(get indexes target-index-key)]
-         all-revisions-index? [(get indexes :all-collection-revisions)]
-         ;; Else index to all collection indexes except for the all-collection-revisions index.
-         :else (keep (fn [[k v]]
-                       (when-not (= :all-collection-revisions (keyword k))
-                         v))
-                     indexes))
+         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])
+         indexes (case concept-type
+                   :collection
+                   (cond
+                     target-index-key [(get indexes target-index-key)]
+                     all-revisions-index? [(get indexes :all-collection-revisions)]
+                     ;; Else index to all collection indexes except for the all-collection-revisions index.
+                     :else (keep (fn [[k v]]
+                                   (when-not (= :all-collection-revisions (keyword k))
+                                     v))
+                                 indexes))
 
-       :tag
-       [(get indexes (or target-index-key :tags))]
+                   :tag
+                   [(get indexes (or target-index-key :tags))]
 
-       :variable
-       (if all-revisions-index?
-         [(get indexes :all-variable-revisions)]
-         [(get indexes (or target-index-key :variables))])
+                   :variable
+                   (if all-revisions-index?
+                     [(get indexes :all-variable-revisions)]
+                     [(get indexes (or target-index-key :variables))])
 
-       :service
-       (if all-revisions-index?
-         [(get indexes :all-service-revisions)]
-         [(get indexes (or target-index-key :services))])
+                   :service
+                   (if all-revisions-index?
+                     [(get indexes :all-service-revisions)]
+                     [(get indexes (or target-index-key :services))])
 
-       :tool
-       (if all-revisions-index?
-         [(get indexes :all-tool-revisions)]
-         [(get indexes (or target-index-key :tools))])
+                   :tool
+                   (if all-revisions-index?
+                     [(get indexes :all-tool-revisions)]
+                     [(get indexes (or target-index-key :tools))])
 
-       :subscription
-       (if all-revisions-index?
-         [(get indexes :all-subscription-revisions)]
-         [(get indexes (or target-index-key :subscriptions))])
+                   :subscription
+                   (if all-revisions-index?
+                     [(get indexes :all-subscription-revisions)]
+                     [(get indexes (or target-index-key :subscriptions))])
 
-       :granule
-       (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-         (get-granule-index-names-for-collection context coll-concept-id target-index-key))
+                   :granule
+                   (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
+                     (get-granule-index-names-for-collection context coll-concept-id target-index-key))
 
-       ;; Default
-       (when (some? (concept-type (common-generic/latest-approved-documents)))
-         ;; Generics are a bunch of document types, find out which one to work with
-         ;; and return the index name for those
-         (if all-revisions-index?
-           [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
-           [(get indexes (keyword (format "generic-%s" (name concept-type))))]))))))
+                   ;; Default
+                   (when (some? (concept-type (common-generic/latest-approved-documents)))
+                     ;; Generics are a bunch of document types, find out which one to work with
+                     ;; and return the index name for those
+                     (if all-revisions-index?
+                       [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
+                       [(get indexes (keyword (format "generic-%s" (name concept-type))))])))]
+     (if (= (count indexes) 1)
+       ;; check to see if the index is being resharded
+       (if-let [target-index (get-resharding-index-target context (first indexes))]
+         (conj indexes target-index)
+         indexes)
+       indexes))))
 
 (defn get-granule-index-names-for-provider
   "Return the granule index names for the input provider id"
@@ -1166,6 +1192,6 @@
   (let [indexes (get-in (get-concept-type-index-names context) [:index-names :granule])
         filter-fn (fn [[k _v]]
                     (or
-                      (.endsWith (name k) (str "_" provider-id))
-                      (= :small_collections k)))]
+                     (.endsWith (name k) (str "_" provider-id))
+                     (= :small_collections k)))]
     (map second (filter filter-fn indexes))))

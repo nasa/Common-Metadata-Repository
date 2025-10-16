@@ -95,13 +95,13 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/iso:smap+xml          | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json | UMM JSON          | collection, granule, variable, service, subscription, tool |
 
-Note: UMM JSON accepts an additional version parameter for `Content-Type`. Like charset, it is appended with a semicolon (;). UMM JSON version is required.
+**Note**: UMM JSON accepts an additional version parameter for `Content-Type`. Like charset, it is appended with a semicolon (;). UMM JSON version is required.
 
 For an example, the following means version 1.16.2 of the UMM JSON format:
 
     application/vnd.nasa.cmr.umm+json;version=1.16.2
 
-Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
+**Note**: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="authorization-header"></a> Authorization Header
 All Ingest API operations require specifying a Launchpad token, except for subscriptions. Subscription Ingest API operations require specifying an EDL bearer token or a Launchpad token.
@@ -119,12 +119,6 @@ UMM JSON accepts an additional version parameter for `Accept` header. Like chars
 For an example, the following means version 1.16.2 of the UMM JSON format:
 
     application/vnd.nasa.cmr.umm+json;version=1.16.2
-
-#### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
-
-The `Cmr-Pretty` Header set to `true` or using the alias `&pretty=true` URL parameter will tell CMR to format the output with new lines and spaces for better readability by humans.
-
-    curl -H "Cmr-Pretty: true" ...
 
 #### <a name="cmr-pretty-header"></a> Cmr-Pretty Header
 
@@ -1107,7 +1101,7 @@ There are two kinds of subscriptions: Batch Notification and Near-Real-Time Noti
 NOTE: The `%CMR-ENDPOINT%/providers/{provider-id}/subscriptions` API routes for subscriptions are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
 
 ##### Method Options
-Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
+Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`.
 
 The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
@@ -1141,7 +1135,7 @@ The metadata sent in the body of the request is in JSON format and conforms to [
             <li>Valid values: "collection","granule". </li>
             <li>"Type": "granule": must supply a requisite CollectionConceptId field. The subscriber must have read access to the collection here, or the subscription will fail.</li>
             <li>"Type": "collection": cannot have a CollectionConceptId field.</li>
-        </ul>  
+        </ul>
     <li>Method: [required] designates between search (Batch Notification) subscriptions and ingest (Near-Real-Time) subscriptions</li>
         <ul>
             <li>Valid values: "search" or "ingest".</li>
@@ -1153,7 +1147,7 @@ The metadata sent in the body of the request is in JSON format and conforms to [
 </ul>
 
 ##### Additional Data Fields for Near-Real-Time Notification Subscriptions
-For NRT Notification subscriptions to be used there are three new fields that are required in addition to the other fields already described. 
+For NRT Notification subscriptions to be used there are three new fields that are required in addition to the other fields already described.
 <ul>
     <li>Type: [required] Must be set to "granule" because NRT Notification subscriptions are only for granules.</li>
     <li>CollectionConceptId: [required] Because type must be "granule", we must set "CollectionConceptId" as well, as indicated in Data Fields section</li>
@@ -1170,7 +1164,7 @@ For NRT Notification subscriptions to be used there are three new fields that ar
 </ul>
 
 IMPORTANT: There is limit to creating and updating subscriptions related to the specific scenario highlighted below:
-Currently, if <User 1> creates a subscription to <Collection 1> and then <User 2> creates a different subscription 
+Currently, if <User 1> creates a subscription to <Collection 1> and then <User 2> creates a different subscription
 to the same <Collection 1> for the same queue, it will overwrite the first subscription for that specific queue.
 So please, have each queue have only one agreed upon subscription.
 
@@ -1191,9 +1185,9 @@ curl  --request POST '%CMR-ENDPOINT%/ingest/subscriptions/my-native-id-of-my-sub
     "Method":"ingest",
     "MetadataSpecification": {
         "URL": "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1.1",
-        "Name": "UMM-Sub", 
+        "Name": "UMM-Sub",
         "Version": "1.1.1"
-    } 
+    }
 }
 '
 ```
@@ -1291,7 +1285,7 @@ get a JSON response:
 
 ### <a name="delete-subscription"></a> Delete a Subscription
 
-Subscriptions can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. 
+Subscriptions can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`.
 
 The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
@@ -1323,7 +1317,7 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 
 %GENERIC-DOCS%
 
-## <a name="publish-drafts"></a> Publish Drafts 
+## <a name="publish-drafts"></a> Publish Drafts
 #### <a name="publish-draft-endpoint"></a> /publish/&lt;draft-concept-id&gt;/&lt;native-id&gt;
 
 All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records. If a variable to collection association needs to be created upon publishing a variable, a collection-concept-id needs to be provided in the request body. Please see the examples below for details.
@@ -1332,7 +1326,7 @@ Example: Publish a draft record such as an order option with the order option dr
 
 ```
 curl -XPUT \
-     -H "Authorization:  XXXX" \ 
+     -H "Authorization:  XXXX" \
      -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
      %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1\
      -d "{\"format\":\"application/vnd.nasa.cmr.umm+json\"}"
@@ -2088,7 +2082,7 @@ curl -XPOST \
     "updates": [{"GranuleUR": "my-gran-ur",
                  "Links": [{ "from": "https://old-link", "to": "http://new-link" }]}]
 }'
-or 
+or
 '{
     "name": "Update Online Access URL values",
     "operation": "UPDATE_FIELD",
@@ -2144,7 +2138,7 @@ curl -XPOST \
                              "SizeUnit": "MB",
                              "Size": 20}]}]
 }'
-or 
+or
 '{
     "name": "Append Online Access URL values",
     "operation": "APPEND_TO_FIELD",
@@ -2206,7 +2200,7 @@ curl -XPOST \
     "updates": [{"GranuleUR": "my-gran-ur",
                  "Links": [{ "URL": "http://new-link.com"}]}]
 }'
-or 
+or
 '{
     "name": "Remove Online Access URL values",
     "operation": "REMOVE_FIELD",

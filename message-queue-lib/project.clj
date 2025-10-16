@@ -1,23 +1,32 @@
 (def aws-java-sdk-version
   "The java aws sdk version to use."
-  "1.12.663")
+  "1.12.788") ;; latest as of 2025-09-05
 
 (def aws-java-sdk2-version
   "The java aws sdk version to use."
-  "2.28.19")
+  "2.33.4") ;; latest as of 2025-09-05
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :dependencies [[cheshire "5.12.0"]
-                 [clj-http "2.3.0"]
-                 [clj-time "0.15.1"]
-                 [io.netty/netty-handler "4.1.118.Final"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire]
+                 [clj-http "2.3.0"] ;;behind other cmr projects
+                 [clj-time]
+                 [io.netty/netty-handler "4.1.125.Final"]
+                 [io.netty/netty-codec-http "4.1.125.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
-                 [software.amazon.awssdk/sns ~aws-java-sdk2-version]
-                 [software.amazon.awssdk/sqs ~aws-java-sdk2-version]
+                 [software.amazon.awssdk/sns ~aws-java-sdk2-version
+                  :exclusions [io.netty/netty-codec
+                               io.netty/netty-codec-http
+                               io.netty/netty-handler]]
+                 [software.amazon.awssdk/sqs ~aws-java-sdk2-version
+                  :exclusions [io.netty/netty-codec
+                               io.netty/netty-codec-http
+                               io.netty/netty-handler]]
                  [com.fasterxml.jackson.core/jackson-annotations "2.15.4"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
@@ -28,13 +37,18 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.testcontainers/testcontainers "1.19.7"]
+                 ;; testcontainers needs a newer version of commons-compress, for now
+                 ;; we will force it to use the latest version
+                 [org.apache.commons/commons-compress]
+                 [org.testcontainers/testcontainers]
+
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :aot [cmr.message-queue.test.ExitException]

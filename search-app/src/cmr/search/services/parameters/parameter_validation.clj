@@ -2,18 +2,22 @@
   "Contains functions for validating query parameters"
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [clj-time.core :as t]
+   [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.elastic-utils.search.es-messenger :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
+   [cmr.common.generics :as generics]
    [cmr.common.mime-types :as mt]
    [cmr.common.date-time-parser :as dt-parser]
    [cmr.common.parameter-parser :as parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.generics :as e-gen]
+   [cmr.elastic-utils.search.es-messenger :as d-msg]
    [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
    [cmr.search.services.messages.attribute-messages :as attrib-msg]
    [cmr.search.services.messages.common-messages :as msg]
@@ -419,12 +423,23 @@
     :collection-concept-id
     :provider})
 
+;; Dynamicly build out the list of Index name based on the format configuration file.
 (doseq [concept-type (cc/get-generic-concept-types-array)]
   (defmethod cpv/valid-sort-keys concept-type
-    [_]
-    #{:name
-      :revision-date
-      :provider}))
+    [generic-type]
+    (let [gen-name (name generic-type)
+          gen-ver (generics/current-generic-version generic-type)
+          indexes (-> "schemas/%s/v%s/config.json"
+                        (format gen-name gen-ver)
+                        (io/resource)
+                        (slurp)
+                        (json/parse-string true)
+                        (:Indexes)
+                        (e-gen/only-elastic-preferences))
+          names (->> indexes
+                     (map :Name)
+                     (map csk/->kebab-case-keyword))]
+      (into #{:name :revision-date :provider} names))))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -770,6 +785,18 @@
   (when-let [c-concept-ids (util/seqify (:collection-concept-id params))]
     (mapcat (partial cc/concept-id-validation :collection-concept-id) c-concept-ids)))
 
+(defn- timeline-collection-identifier-validation
+  "Validates that collection identifier parameters are present for timeline searches.
+   Accepts collection-concept-id, entry-id, entry-title, provider, or short-name + version combination."
+  [_concept-type params]
+  (when-not (or (:collection-concept-id params)
+                (:concept-id params)
+                (:entry-id params)
+                (:entry-title params)
+                (:echo-collection-id params)
+                (and (:short-name params) (:version params)))
+    ["Timeline searches must include a collection identifier parameter (concept_id, collection_concept_id, entry_id, entry_title, or both short_name and version) to limit the search scope."]))
+
 (defn- timeline-start-date-validation
   "Validates the timeline start date parameter"
   [_concept-type params]
@@ -1042,6 +1069,7 @@
         regular-params (dissoc safe-params :interval :start-date :end-date)
         errors (concat type-errors
                        (mapcat #(% :granule regular-params) (parameter-validations :granule))
+                       (timeline-collection-identifier-validation :granule safe-params)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors)))

@@ -49,8 +49,6 @@
     {:ok? ok?
      :dependencies dep-health}))
 
-(declare delete-concept)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."

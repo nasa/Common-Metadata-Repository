@@ -17,13 +17,13 @@
    [cmr.elastic-utils.connect :as es-util]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.config :as config]
-   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
    [cmr.transmit.metadata-db :as meta-db]
@@ -206,7 +206,7 @@
 (defconfig collection-large-file-providers-reindex-batch-size
   "Batch size used for re-indexing collections from providers that have large collections. These
   are usually ISO collections."
-  {:default 10
+  {:default 1
    :type Long})
 
 (defconfig collection-large-file-provider-list
@@ -328,7 +328,6 @@
             (Long/parseLong (str milliseconds))
             all-value)))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn- send-time-to-visibility-log
   "Send either a JSON message as a report or the original log entry to info."
   [concept-id revision-id ms-durration all-revisions-index?]
@@ -537,8 +536,8 @@
                                          elastic-options)
             ;; This log is very verbose, can be in the millions
             (if (config/reduced-indexer-log)
-             (debug end-log-msg)
-             (info end-log-msg))))))))
+              (debug end-log-msg)
+              (info end-log-msg))))))))
 
 ;; **********************
 
@@ -697,7 +696,6 @@
                            revision-id
                            all-revisions-index?)]
     (if (= concept-type :collection)
-      #_{:clj-kondo/ignore [:unresolved-var]}
       (format "%s. Removing %d granules."
               log-string
               (search/find-granule-hits context {:collection-concept-id concept-id}))
@@ -716,8 +714,8 @@
   [context concept concept-id revision-id options]
   (when (nil? concept)
     (errors/throw-service-error
-      :not-found
-      (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
+     :not-found
+     (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
 
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
@@ -733,26 +731,26 @@
                          (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
                          (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))
                 [tm result] (util/time-execution
-                              (es/save-document-in-elastic
-                                context index-names (concept-mapping-types concept-type)
-                                es-doc concept-id revision-id elastic-version elastic-options))]
+                             (es/save-document-in-elastic
+                              context index-names (concept-mapping-types concept-type)
+                              es-doc concept-id revision-id elastic-version elastic-options))]
             (debug (format "Timed function %s/delete-concept saving tombstone in all-revisions-index took %d ms." (str *ns*) tm))
             result)
           ;; else delete concept from primary concept index
           (do
             (es/delete-document
-              context index-names (concept-mapping-types concept-type)
-              concept-id revision-id elastic-version elastic-options)
+             context index-names (concept-mapping-types concept-type)
+             concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
               (let [[tm result] (util/time-execution
-                                  (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
+                                 (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))]
                 (debug (format "Timed function %s index-deleted-granule took %d ms." (str *ns*) tm))
                 result))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (let [[tm result] (util/time-execution
-                                  (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
+                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result))))))))
 
@@ -873,7 +871,6 @@
          (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (defn publish-provider-event
   "Put a provider event on the message queue."
   [context msg]
@@ -922,7 +919,6 @@
   (es/update-indexes context params)
   (reset-index-set-mappings-cache context))
 
-#_{:clj-kondo/ignore [:unresolved-var]}
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
