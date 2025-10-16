@@ -41,7 +41,7 @@
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
-                 [http-kit "2.9.0-beta2"]
+                 [http-kit "2.8.1"]
                  [markdown-clj "1.10.0"]
                  [clj-commons/clj-yaml "1.0.29"]
                  [metosin/reitit-core "0.3.9"]
