@@ -18,13 +18,6 @@
     (map #(select-keys (:index-set %) [:id :name :concepts])
          index-set-array)))
 
-;(defn index-set-exists?
-;  "Check index-set existence"
-;  [context index-set-id]
-;  (let [{:keys [index-name mapping]} config/idx-cfg-for-index-sets
-;        idx-mapping-type (first (keys mapping))]
-;    (es/index-set-exists? (indexer-util/context->es-store context) index-name idx-mapping-type index-set-id)))
-
 (defn get-index-set
   "Fetch index-set associated with an index-set id."
   [context es-cluster-name index-set-id]
