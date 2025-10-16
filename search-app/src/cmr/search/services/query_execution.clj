@@ -184,8 +184,7 @@
 (defn- has-zero-count-facets?
   "Check to see if any facet count in facets-for-field is 0."
   [facets-for-field]
-  (let [facets-with-count (get-facets-with-count facets-for-field)]
-    (some #(= 0 (:count %)) facets-with-count)))
+  (boolean (some #(= 0 (:count %)) (get-facets-with-count facets-for-field))))
 
 (defn- get-facets-for-field
   "Returns the facets search result on the given field by executing an elasticsearch query

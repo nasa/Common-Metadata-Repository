@@ -214,9 +214,10 @@
   (testing "Returns false when all facets have non-zero counts"
     (is (false? (#'search-qe/has-zero-count-facets? all-facets))))
 
-  (testing "Returns nil when facets-for-field is empty or nil"
-    (is (nil? (#'search-qe/has-zero-count-facets? {})))
-    (is (nil? (#'search-qe/has-zero-count-facets? nil))))
+  (testing "Returns false when facets-for-field is empty, nil, or missing facets key"
+    (is (false? (#'search-qe/has-zero-count-facets? {})))
+    (is (false? (#'search-qe/has-zero-count-facets? nil)))
+    (is (false? (#'search-qe/has-zero-count-facets? {:other-key "value"}))))
 
   (testing "Returns true when at least one facet has zero count among multiple facets"
     (let [mixed-facets {:facets {:children [{:children [{:title "Item1" :count 10}
@@ -257,7 +258,8 @@
       (let [result (#'hv2f/hierarchical-aggregation-builder :platforms [:category] 50)]
         (is (= :category (first (keys result))))
         (is (= 50 (get-in result [:category :terms :size])))
-        (is (= "platforms.category" (get-in result [:category :terms :field])))))
+        (is (= "platforms.category" (get-in result [:category :terms :field])))
+        (is (nil? (get-in result [:category :terms :shard_size])))))
 
     (testing "Builds aggregation with shard_size when provided"
       (let [result (#'hv2f/hierarchical-aggregation-builder :platforms [:category] 50 100)]
