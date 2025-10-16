@@ -118,7 +118,10 @@
      (context "/reshard/:index" [index]
        (POST "/start" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
-         (resharding/start request-context index params)))
+         (resharding/start request-context index params))
+       (POST "/finalize" {:keys [request-context]}
+         (acl/verify-ingest-management-permission request-context :update)
+         (resharding/finalize request-context index)))
      (context "/virtual_products" []
        (POST "/" {:keys [request-context params]}
          (virtual-products/bootstrap request-context params)))

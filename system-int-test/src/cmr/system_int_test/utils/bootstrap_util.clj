@@ -303,6 +303,26 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn finalize-reshard-index
+  "Call the bootstrap app to finalize resharding an index"
+  ([index-name]
+   (finalize-reshard-index index-name {}))
+  ([index-name options]
+   (let [synchronous (get options :synchronous true)
+         num-shards (get options :num-shards 1)
+         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+         response (client/request
+                   {:method :post
+                    :query-params {:synchronous synchronous
+                                   :num_shards num-shards}
+                    :headers headers
+                    :url (url/finalize-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]

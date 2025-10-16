@@ -8,11 +8,14 @@
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.index-util :as es-util]
    [cmr.indexer.common.index-set-util :as index-set-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m]
-   [cmr.indexer.indexer-util :as indexer-util])
+   [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.common.concepts :as concepts])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -68,6 +71,37 @@
          (for [index-name index-names-array]
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
+(defn get-canonical-key-name
+  "Removes the leading number prefix (e.g., '1_') and trailing shard count (e.g., '_100_shards')
+     from an index name. If the index name is a concept ID format (starts with a concept type letter),
+     converts it to standard concept ID format.
+     Examples:
+     '1_small_collections_100_shards' -> 'small_collections'
+     '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
+     '1_c2317033465_nsidc_ecs_5_shards' -> 'C2317033465-NSIDC_ECS'
+     '1_v123_5w5_nsidc_ecs' -> 'V123_5W5-NSIDC_ECS'"
+  [index-name]
+  (when index-name
+    (let [;; Remove leading number and trailing shards
+          cleaned (-> index-name
+                      (string/replace #"^\d+_" "")
+                      (string/replace #"_\d+_shards$" ""))
+            ;; Check if it starts with a concept type letter (c, v, g, etc.)
+          is-concept-id? (re-matches #"^[a-z]\d+.*" cleaned)]
+      (if is-concept-id?
+          ;; Convert to concept ID format: C2317033465-NSIDC_ECS
+        (let [first-underscore-idx (string/index-of cleaned "_")]
+          (if first-underscore-idx
+            (let [concept-part (subs cleaned 0 first-underscore-idx)
+                  provider-part (subs cleaned (inc first-underscore-idx))]
+              (str (string/upper-case concept-part)
+                   "-"
+                   (string/upper-case provider-part)))
+              ;; No underscore found, just uppercase it
+            (string/upper-case cleaned)))
+          ;; Regular index name, return as-is
+        cleaned))))
+
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
   the index name map."
@@ -78,7 +112,7 @@
      :concepts (into {} (for [concept-type (add-searchable-generic-types searchable-concept-types)]
                           [concept-type
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
-                                      [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
+                                      [(keyword (get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))}))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -301,6 +335,32 @@
       (conj resharding-indexes index))
     #{index}))
 
+(defn- remove-resharding-index
+  "Removes index from the set of resharding indexes"
+  [resharding-indexes index]
+  (if resharding-indexes
+    (let [resharding-index-set (set resharding-indexes)]
+      (if (contains? resharding-index-set index)
+        (seq (disj resharding-index-set index))
+        (errors/throw-service-error
+         :bad-request
+         (format
+          "The index set does not contain resharding index [%s]"
+          index))))
+    #{}))
+
+(defn- validate-index-exists-in-index-set
+  "Validates that an index exists in the index-set."
+  [index-set canonical-index-name]
+  (let [all-indexes (for [[_concept-type config] (get index-set "index-set")
+                          index (get config "indexes" [])]
+                      (get index "name"))
+        index-exists? (some #(= % canonical-index-name) all-indexes)]
+    (when-not index-exists?
+      (errors/throw-service-error
+       :bad-request
+       (format "Index [%s] not found in index-set" canonical-index-name)))))
+
 (defn- validate-granule-index-does-not-exist
   "Validates that a granule index does not already exist in the index set for the given collection
   concept ID."
@@ -343,6 +403,18 @@
             (when (= (:name index-config) canonical-index-name)
               index-config))
           (seq indexes))))
+
+(defn- get-key-for-concept-index
+  "Get the key that points to the given index in the index map for a given concept type."
+  [index-set concept-type index]
+  (println "GETTING KEY FOR INDEX ================== " index)
+  (-> index-set
+      (get-in [:index-set :concepts concept-type])
+      ((fn [concept-map]
+         (println "CONCEPT-MAP============")
+         (println concept-map)
+         concept-map))
+      (#(some (fn [[k v]] (when (= v index) k)) %))))
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
@@ -444,10 +516,11 @@
 (defn get-concept-type-for-index
   "Given an index name return the matching concept type by looking the index up in the index-set"
   [index-set index]
-  (some (fn [[concept-type indexes]]
-          (when (some #(= index %) (vals indexes))
-            concept-type))
-        (get-in index-set [:index-set :concepts])))
+  (let [index-key (keyword (get-canonical-key-name index))]
+    (some (fn [[concept-type indexes]]
+            (when (some #(= index-key %) (keys indexes))
+              concept-type))
+          (get-in index-set [:index-set :concepts]))))
 
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
@@ -498,7 +571,9 @@
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
     ;; this will create the new index with the new shard count
-    (update-index-set context new-index-set)))
+    (update-index-set context new-index-set))
+    ;; TODO CMR-10770 Change progress to "COMPLETE"
+  )
 
 (defn update-resharding-status
   "Update the resharding status for the given index"
@@ -518,6 +593,50 @@
       index-set
       [:index-set concept-type :resharding-status]
       assoc (keyword index) status))))
+
+(defn finalize-index-resharding
+  "Complete the resharding of the given index"
+  [context index-set-id index]
+  ;; TODO CMR-10770 add validation that index is being resharded and in the "COMPLETE" state
+  (let [index-set (index-set-util/get-index-set context index-set-id)
+        ;; search for index name in index-set :concepts to get concept type and to validate the
+        ;; index exists
+        concept-type (get-concept-type-for-index index-set index)
+        target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
+        canonical-index-name (string/replace-first index #"^\d+_" "")
+        ;; new-canonical-index-name (string/replace-first target #"^\d+_" "")
+        index-key (get-key-for-concept-index index-set concept-type index)
+        _ (println "INDEX-KEY======================= " index-key)
+        es-store (indexer-util/context->es-store context)
+        new-index-set (-> index-set
+                          ;; delete the old index con
+                          (update-in [:index-set concept-type :indexes]
+                                     #(filter (fn [config]
+                                                (not (= canonical-index-name (:name config))))
+                                              %))
+                          ;; replace name in new index config with old name
+                          ;; (update-in [:index-set concept-type :indexes]
+                          ;;            #(map (fn [config]
+                          ;;                    (if (= new-canonical-index-name (:name config))
+                          ;;                      (assoc config :name (str canonical-index-name "foo"))
+                          ;;                      config))
+                          ;;                  %))
+                          (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
+                          (update-in [:index-set concept-type :resharding-targets]
+                                     dissoc (keyword index))
+                          (update-in [:index-set concept-type :resharding-status]
+                                     dissoc (keyword index))
+                          ;; (update-in [:index-set :concepts concept-type] assoc index-key target)
+                          )]
+    (update-index-set context new-index-set)
+    (println "INDEX-SET ===========" (get-in new-index-set [:index-set :concepts concept-type]))
+    (let [debug-fetch-index-set (index-set-util/get-index-set context index-set-id)]
+      (println "DEBUG-INDEX-SET==========" debug-fetch-index-set))
+    (es-util/move-index-alias (indexer-util/context->conn context)
+                              index
+                              target
+                              (esi-helper/index-alias (string/replace index #"_\d+_shards$" "")))
+    (es/delete-index es-store index)))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-

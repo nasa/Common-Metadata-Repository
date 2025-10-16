@@ -33,10 +33,9 @@
 ;;   {:status 200
 ;;    :body (service/resharding-status context index})
 
-;; TODO add this in CMR-10770
-;; (defn finalize
-;;   "Completes resharding the index"
-;;   [context index]
-;;   (service/finalize-resharding context index)
-;;   {:status 200
-;;    :body {:message (msg/resharding-completed index)}})
+(defn finalize
+  "Completes resharding the index"
+  [context index]
+  (service/finalize-reshard-index context index)
+  {:status 200
+   :body {:message (msg/resharding-completed index)}})

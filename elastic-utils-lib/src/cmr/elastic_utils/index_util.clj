@@ -137,6 +137,16 @@
                      is-write-alias? (assoc :is_write_index true))]
      (esi-helper/update-aliases conn [{:add alias-map}]))))
 
+(defn move-index-alias
+  "Moves an alias that points to an index to point to a different index"
+  [conn old-index new-index alias-name]
+  (println "OLD-INDEX======" old-index)
+  (println "NEW-INDEX=======" new-index)
+  (println "AliAS==========" alias-name)
+  (let [actions [{:remove {:index old-index :alias alias-name}}
+                 {:add {:index new-index :alias alias-name}}]]
+    (esi-helper/update-aliases conn actions)))
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
    follows:
@@ -173,8 +183,8 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (errors/internal-error!
-         (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
-         e#))))
+        (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
+        e#))))
 
 (defn reset
   "Development time helper function to delete an index and recreate it to empty all data."
