@@ -51,14 +51,14 @@
 
     (or (seq (pv/points-in-shape-validation ring))
         ;; basic ring validation
-        (or (seq (concat (ring-closed-validation ring)
-                         (pv/duplicate-point-validation (update-in ring [:points] drop-last))
-                         (pv/consecutive-antipodal-points-validation ring)))
-            ;; Advanced ring validation
-            (let [ring (assoc ring :arcs (gr/ring->arcs ring))]
-              (or (seq (ring-self-intersection-validation ring))
-                  (seq (ring-pole-validation ring))
-                  (seq (ring-geo-point-order-validation ring)))))))
+        (seq (concat (ring-closed-validation ring)
+                      (pv/duplicate-point-validation (update-in ring [:points] drop-last))
+                      (pv/consecutive-antipodal-points-validation ring)))
+        ;; Advanced ring validation
+        (let [ring (assoc ring :arcs (gr/ring->arcs ring))]
+          (or (seq (ring-self-intersection-validation ring))
+              (seq (ring-pole-validation ring))
+              (seq (ring-geo-point-order-validation ring))))))
 
   cmr.spatial.cartesian_ring.CartesianRing
   (validate
@@ -68,9 +68,9 @@
 
     (or (seq (pv/points-in-shape-validation ring))
         ;; basic ring validation
-        (or (seq (concat (ring-closed-validation ring)
-                         (pv/duplicate-point-validation (update-in ring [:points] drop-last))))
-            ;; Advanced ring validation
-            (let [ring (assoc ring :line-segments (cr/ring->line-segments ring))]
-              (or (seq (ring-self-intersection-validation ring))
-                  (seq (ring-point-order-validation ring))))))))
+        (seq (concat (ring-closed-validation ring)
+                      (pv/duplicate-point-validation (update-in ring [:points] drop-last))))
+        ;; Advanced ring validation
+        (let [ring (assoc ring :line-segments (cr/ring->line-segments ring))]
+          (or (seq (ring-self-intersection-validation ring))
+              (seq (ring-point-order-validation ring)))))))

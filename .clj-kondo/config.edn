@@ -10,6 +10,9 @@
                 umm-spec-lib {:linters {:refer-all {:level :off} ;; no suggestions given by linter
                                         :use {:level :off} ;; see above; :refer-all linter is supposed to govern this as well but is not doing so for some reason.
                                         :unused-import {:level :off}}}
+                cmr.transmit.test.kms {:linters {:unresolved-namespace {:level :off}}}
+                cmr.orbits.orbits-runtime {:linters {:unused-import {:level :off}}}
+                cmr.message-queue.test.queue.sqs {:linters {:unresolved-symbol {:level :off}}}
                 cache-in-mem {:linters {:unresolved-symbol {:exclude [cmr.common.cache.in-memory-cache]}}}}
  ;; CMR custom macros
  :lint-as {cmr.common.config/defconfig clojure.core/def

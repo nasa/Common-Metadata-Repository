@@ -223,7 +223,8 @@
       (double-approx= (.lon west-point) (.lon east-point) APPROXIMATION_DELTA)
 
       ;; It crosses a pole
-      (or (crosses-north-pole? a) (crosses-south-pole? a))
+      (crosses-north-pole? a)
+      (crosses-south-pole? a)
 
       ;; one or the other point is a pole
       (and (p/is-pole? west-point) (not (p/is-pole? east-point)))

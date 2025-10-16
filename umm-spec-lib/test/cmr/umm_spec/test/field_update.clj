@@ -489,54 +489,54 @@
                       :Instruments [{:ShortName "Inst 1"
                                      :LongName "Instrument 1"}
                                     {:ShortName "Inst 3"
-                                     :LongName "Instrument 3"}]}]})
+                                     :LongName "Instrument 3"}]}]}
 
-      "Find and replace - multiple instances"
-      :find-and-replace
-      {:ShortName "Inst X"}
-      {:ShortName "Inst 1"}
-      {:Platforms [{:ShortName "Platform 1"
-                    :LongName "Example Platform Long Name 1"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"}
-                                  {:ShortName "Inst 2"
-                                   :LongName "Instrument 2"}]}
-                   {:ShortName "Platform 2"
-                    :LongName "Example Platform Long Name 2"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"}
-                                  {:ShortName "Inst 3"
-                                   :LongName "Instrument 3"}]}]}
+        "Find and replace - multiple instances"
+        :find-and-replace
+        {:ShortName "Inst X"}
+        {:ShortName "Inst 1"}
+        {:Platforms [{:ShortName "Platform 1"
+                      :LongName "Example Platform Long Name 1"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"}
+                                    {:ShortName "Inst 2"
+                                     :LongName "Instrument 2"}]}
+                     {:ShortName "Platform 2"
+                      :LongName "Example Platform Long Name 2"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"}
+                                    {:ShortName "Inst 3"
+                                     :LongName "Instrument 3"}]}]}
 
-      "Find and replace - multiple instances"
-      :find-and-replace
-      {:ShortName "Inst X"}
-      {:ShortName "Inst 2"}
-      {:Platforms [{:ShortName "Platform 1"
-                    :LongName "Example Platform Long Name 1"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"
-                                   :LongName "Instrument 1"}
-                                  {:ShortName "Inst 2"}]}
-                   {:ShortName "Platform 2"
-                    :LongName "Example Platform Long Name 2"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"
-                                   :LongName "Instrument 1"}
-                                  {:ShortName "Inst 3"
-                                   :LongName "Instrument 3"}]}]}
+        "Find and replace - multiple instances"
+        :find-and-replace
+        {:ShortName "Inst X"}
+        {:ShortName "Inst 2"}
+        {:Platforms [{:ShortName "Platform 1"
+                      :LongName "Example Platform Long Name 1"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"
+                                     :LongName "Instrument 1"}
+                                    {:ShortName "Inst 2"}]}
+                     {:ShortName "Platform 2"
+                      :LongName "Example Platform Long Name 2"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"
+                                     :LongName "Instrument 1"}
+                                    {:ShortName "Inst 3"
+                                     :LongName "Instrument 3"}]}]}
 
-      "Find and remove"
-      :find-and-remove
-      nil
-      {:ShortName "Inst 1"}
-      {:Platforms [{:ShortName "Platform 1"
-                    :LongName "Example Platform Long Name 1"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"
-                                   :LongName "Instrument 1"}]}
-                   {:ShortName "Platform 2"
-                    :LongName "Example Platform Long Name 2"
-                    :Type "Aircraft"
-                    :Instruments [{:ShortName "Inst 1"
-                                   :LongName "Instrument 1"}]}]}))))
+        "Find and remove"
+        :find-and-remove
+        nil
+        {:ShortName "Inst 1"}
+        {:Platforms [{:ShortName "Platform 1"
+                      :LongName "Example Platform Long Name 1"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"
+                                     :LongName "Instrument 1"}]}
+                     {:ShortName "Platform 2"
+                      :LongName "Example Platform Long Name 2"
+                      :Type "Aircraft"
+                      :Instruments [{:ShortName "Inst 1"
+                                     :LongName "Instrument 1"}]}]})))))

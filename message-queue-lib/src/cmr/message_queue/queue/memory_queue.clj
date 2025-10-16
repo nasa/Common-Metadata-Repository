@@ -34,7 +34,7 @@
   "Creates a go block that will asynchronously pull messages off the queue, pass
    them to the handler, and process the response."
   [queue-broker queue-name handler]
-  (let [queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
+  (let [_queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
     (async/go
       (try
         (u/while-let

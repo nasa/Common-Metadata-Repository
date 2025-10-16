@@ -1,8 +1,7 @@
 (ns cmr.transmit.test.connection
   (:require
    [clojure.test :refer [deftest is testing]]
-   [cmr.transmit.connection :as c]
-   [clj-http.client :as client]))
+   [cmr.transmit.connection :as c]))
 
 (defn failing-fn
   "Creates a function that fails N times with a socket exception and then returns return-value"

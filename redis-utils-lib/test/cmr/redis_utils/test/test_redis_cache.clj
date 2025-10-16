@@ -1,7 +1,7 @@
 (ns cmr.redis-utils.test.test-redis-cache
   "Namespace to test redis cache."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.cache :as cache]
    [cmr.common.hash-cache :as h-cache]
    [cmr.redis-utils.config :as redis-config]

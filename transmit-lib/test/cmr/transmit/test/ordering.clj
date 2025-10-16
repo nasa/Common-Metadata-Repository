@@ -1,7 +1,6 @@
 (ns cmr.transmit.test.ordering
   "Contains unit tests for verifying ordering notifications."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.common.util :refer [are3]]
             [cmr.transmit.ordering :as ordering]))
 
