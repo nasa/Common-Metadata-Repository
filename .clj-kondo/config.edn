@@ -13,9 +13,10 @@
                 cmr.transmit.test.kms {:linters {:unresolved-namespace {:level :off}}}
                 cmr.orbits.orbits-runtime {:linters {:unused-import {:level :off}}}
                 cmr.message-queue.test.queue.sqs {:linters {:unresolved-symbol {:level :off}}}
+                cmr.umm-spec.test.acl-matchers-test {:linters {:deprecated-var {:level :off}}}
                 cache-in-mem {:linters {:unresolved-symbol {:exclude [cmr.common.cache.in-memory-cache]}}}}
  ;; CMR custom macros
- :lint-as {cmr.common.config/defconfig clojure.core/def
+ :lint-as {cmr.common.config/defconfig clojure.core/defn
            cmr.common.util/defn-timed clojure.core/defn
            cmr.common.util/defn-timed-level clojure.core/defn
            cmr.common.util/while-let clj-kondo.lint-as/def-catch-all

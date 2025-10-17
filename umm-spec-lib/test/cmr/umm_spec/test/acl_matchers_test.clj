@@ -3,7 +3,7 @@
    [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.test.time-util :as tu]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :refer [are3]]
+   [cmr.common.util :refer [are2 are3]]
    [cmr.umm-spec.acl-matchers :as a]
    [taoensso.timbre :as t]))
 
@@ -195,7 +195,7 @@
 
 (deftest collection-applicable-temporal-acl-test
   (tk/set-time-override! (tu/n->date-time now-n))
-  (are3 [applicable? tf coll]
+  (are2 [applicable? tf coll]
         (= applicable? (boolean (a/coll-applicable-acl?
                                   "PROV1" coll
                                   (acl-with-cat-identity
