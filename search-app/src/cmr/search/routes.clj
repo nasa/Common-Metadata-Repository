@@ -107,11 +107,6 @@
        (GET "/robots.txt" req (get-robots-txt-response test-environment)))
      (api-routes/build-routes system)
      (site-routes/build-routes system)
-     ;; Endpoints for managing the granule counts cache
-     (POST "/refresh-granule-counts-cache" {:keys [request-context]}
-       (acl/verify-ingest-management-permission request-context :update)
-       (granule-counts-cache/refresh-granule-counts-cache request-context)
-       {:status 200})
      (common-pages/not-found))))
 
 (defn handlers [system]

@@ -61,18 +61,19 @@
                 num-granules]))))
 
 (defn refresh-granule-counts-cache
-  "This is called from lambda that is triggered by an event bridge schedule refreshes the granule counts cache with the latest data."
+  "Refreshes the granule counts cache with the latest data. This is called from a lambda
+   triggered by an event bridge schedule."
   ([context]
    (refresh-granule-counts-cache context #(get-collection-granule-counts context nil)))
   ([context func]
    (let [granule-counts (func)
          cache (cache/context->cache context granule-counts-cache-key)]
-     (log/info "Refreshing granule counts cache with" (count granule-counts) "entries")
+     (log/info "Attempting to refresh granule counts cache with" (count granule-counts) "entries")
      (if cache
-       (cache/set-value cache granule-counts-cache-key granule-counts)
-       (let [error-msg "Granule counts cache not found in context - refresh skipped"]
-         (log/error error-msg)
-         (throw (IllegalStateException. error-msg)))))))
+       (do
+         (cache/set-value cache granule-counts-cache-key granule-counts)
+         (log/info (format "Successfully refreshed granule counts cache with %d entries" (count granule-counts))))
+       (log/error "Granule counts cache not found in context - refresh skipped")))))
 
 (defn get-granule-counts
   "Retrieves the cached granule counts, or fetches them if not cached."
@@ -84,3 +85,4 @@
    (cache/get-value (cache/context->cache context granule-counts-cache-key)
                     granule-counts-cache-key
                     #(get-collection-granule-counts-fn context provider-ids))))
+

@@ -24,6 +24,7 @@
    [cmr.common.log :refer [info]]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature
     :as has-granules-or-cwic-results-feature]
    [compojure.core :refer [context DELETE GET POST routes]]
@@ -163,9 +164,9 @@
 
              (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
              (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
-
-              (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
-              (granule-counts-cache/refresh-granule-counts-cache request-context)
+             
+             (= keyword-cache-name granule-counts-cache/granule-counts-cache-key) 
+             (granule-counts-cache/refresh-granule-counts-cache request-context)
 
              :else
              (route/not-found "Not Found")))
