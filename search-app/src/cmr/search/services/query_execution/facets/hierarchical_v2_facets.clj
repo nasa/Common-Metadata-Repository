@@ -76,36 +76,42 @@
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
-  [field field-hierarchy size]
-  (when-let [subfield (first field-hierarchy)]
-    {subfield {:terms {:field (str (name field) "." (name subfield))
-                       :size size}
-               :aggs (merge {:coll-count frf/collection-count-aggregation}
-                            (cond
-                              (and (= field :science-keywords-humanized)
-                                   (or (= subfield :term)
-                                       (= subfield :variable-level-1)
-                                       (= subfield :variable-level-2)))
-                              (hierarchical-aggregation-builder field [:detailed-variable] size)
+  ([field field-hierarchy size]
+   (hierarchical-aggregation-builder field field-hierarchy size nil))
+  ([field field-hierarchy size shard-size]
+   (when-let [subfield (first field-hierarchy)]
+     (let [terms-config (cond-> {:field (str (name field) "." (name subfield))
+                                 :size size}
+                          shard-size (assoc :shard_size shard-size))]
+       {subfield {:terms terms-config
+                  :aggs (merge {:coll-count frf/collection-count-aggregation}
+                               (cond
+                                 (and (= field :science-keywords-humanized)
+                                      (or (= subfield :term)
+                                          (= subfield :variable-level-1)
+                                          (= subfield :variable-level-2)))
+                                 (hierarchical-aggregation-builder field [:detailed-variable] size shard-size)
 
-                              (and (= field :platforms2-humanized)
-                                   (= subfield :category))
-                              (hierarchical-aggregation-builder field [:short-name] size)
+                                 (and (= field :platforms2-humanized)
+                                      (= subfield :category))
+                                 (hierarchical-aggregation-builder field [:short-name] size shard-size)
 
-                              :else nil)
-                            (hierarchical-aggregation-builder field (rest field-hierarchy) size))}}))
+                                 :else nil)
+                               (hierarchical-aggregation-builder field (rest field-hierarchy) size shard-size))}}))))
 
 (defn nested-facet
   "Returns the nested aggregation query for the given hierarchical field. Size specifies the number
   of results to return."
   ([field size]
-   (nested-facet field size nil))
+   (nested-facet field size nil nil))
   ([field size depth]
+   (nested-facet field size depth nil))
+  ([field size depth shard-size]
    (let [subfields (if depth
                      (take depth (nested-fields-mappings field))
                      (nested-fields-mappings field))]
      {:nested {:path field}
-      :aggs (hierarchical-aggregation-builder field subfields size)})))
+      :aggs (hierarchical-aggregation-builder field subfields size shard-size)})))
 
 (defn- field-applied?
   "Returns whether any value is set in the passed in query-params for the provided hierarchical

@@ -28,9 +28,13 @@
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results
-  to return."
-  [field size]
-  {:terms {:field field :size size}})
+  to return. Optionally accepts shard_size parameter."
+  ([field size]
+   (terms-facet field size nil))
+  ([field size shard-size]
+   (let [terms-config (cond-> {:field field :size size}
+                        shard-size (assoc :shard_size shard-size))]
+     {:terms terms-config})))
 
 (defn- prioritized-facet-key
   "Produces a keyword for prioritized facets that is :<field>.<key>"
@@ -39,18 +43,22 @@
 
 (defn prioritized-facet
   "Construct a facet query for use with fields that have a priority value"
-  [field size]
-  ;; Facets on the :value field of the nested {:value :priority} map used by
-  ;; humanized facets, yielding the top <size> results sorted first by
-  ;; priority, then by count.
-  ;; Two facets with the same value can have different priorities based
-  ;; on the order of humanizer application, we have to average the priorities
-  ;; within each value bucket and cannot just use min or max.
-  {:nested {:path field}
-   :aggs {:values {:terms {:field (prioritized-facet-key field :value)
-                           :size size
-                           :order [{:priority :desc} {:_count :desc}]}
-                   :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}})
+  ([field size]
+   (prioritized-facet field size nil))
+  ([field size shard-size]
+   ;; Facets on the :value field of the nested {:value :priority} map used by
+   ;; humanized facets, yielding the top <size> results sorted first by
+   ;; priority, then by count.
+   ;; Two facets with the same value can have different priorities based
+   ;; on the order of humanizer application, we have to average the priorities
+   ;; within each value bucket and cannot just use min or max.
+   (let [terms-config (cond-> {:field (prioritized-facet-key field :value)
+                               :size size
+                               :order [{:priority :desc} {:_count :desc}]}
+                        shard-size (assoc :shard_size shard-size))]
+     {:nested {:path field}
+      :aggs {:values {:terms terms-config
+                      :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}})))
 
 (defn prioritized-range-facet
   "Construct a facet query for use with fields that have a priority value"

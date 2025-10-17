@@ -12,6 +12,7 @@
      {:terms
       {:field :project-sn-humanized.value,
        :size 50,
+       :shard_size 4000,
        :order [{:priority :desc} {:_count :desc}]},
       :aggs
       {:priority
@@ -21,7 +22,9 @@
     :aggs
     {:category
      {:terms
-      {:field "science-keywords-humanized.category", :size 50},
+      {:field "science-keywords-humanized.category",
+       :size 50,
+       :shard_size 2000},
       :aggs
       {:coll-count
        {:reverse_nested {},
@@ -29,7 +32,9 @@
         {:concept-id {:cardinality {:field :concept-id}}}},
        :topic
        {:terms
-        {:field "science-keywords-humanized.topic", :size 50},
+        {:field "science-keywords-humanized.topic", 
+         :size 50,
+         :shard_size 2000},
         :aggs
         {:coll-count
          {:reverse_nested {},
@@ -38,7 +43,9 @@
            {:cardinality {:field :concept-id}}}},
          :term
          {:terms
-          {:field "science-keywords-humanized.term", :size 50},
+          {:field "science-keywords-humanized.term",
+           :size 50
+           :shard_size 2000},
           :aggs
           {:coll-count
            {:reverse_nested {},
@@ -49,7 +56,8 @@
            {:terms
             {:field
              "science-keywords-humanized.detailed-variable",
-             :size 50},
+             :size 50
+             :shard_size 2000},
             :aggs
             {:coll-count
              {:reverse_nested {},
@@ -64,6 +72,7 @@
      {:terms
       {:field :organization-humanized.value,
        :size 50,
+       :shard_size 3000,
        :order [{:priority :desc} {:_count :desc}]},
       :aggs
       {:priority
@@ -88,6 +97,7 @@
      {:terms
       {:field :granule-data-format-humanized.value,
        :size 50,
+       :shard_size 1500,
        :order [{:priority :desc} {:_count :desc}]},
       :aggs
       {:priority
@@ -100,6 +110,7 @@
      {:terms
       {:field :instrument-sn-humanized.value,
        :size 50,
+       :shard_size 3000,
        :order [{:priority :desc} {:_count :desc}]},
       :aggs
       {:priority
@@ -152,7 +163,9 @@
    {:nested {:path :platforms2-humanized},
     :aggs
     {:basis
-     {:terms {:field "platforms2-humanized.basis", :size 50},
+     {:terms {:field "platforms2-humanized.basis",
+              :size 50,
+              :shard_size 6000},
       :aggs
       {:coll-count
        {:reverse_nested {},
@@ -160,7 +173,9 @@
         {:concept-id {:cardinality {:field :concept-id}}}},
        :category
        {:terms
-        {:field "platforms2-humanized.category", :size 50},
+        {:field "platforms2-humanized.category",
+         :size 50,
+         :shard_size 6000},
         :aggs
         {:coll-count
          {:reverse_nested {},
@@ -169,7 +184,9 @@
            {:cardinality {:field :concept-id}}}},
          :short-name
          {:terms
-          {:field "platforms2-humanized.short-name", :size 50},
+          {:field "platforms2-humanized.short-name", 
+           :size 50,
+           :shard_size 6000},
           :aggs
           {:coll-count
            {:reverse_nested {},
@@ -179,7 +196,8 @@
          :sub-category
          {:terms
           {:field "platforms2-humanized.sub-category",
-           :size 50},
+           :size 50,
+           :shard_size 6000},
           :aggs
           {:coll-count
            {:reverse_nested {},
