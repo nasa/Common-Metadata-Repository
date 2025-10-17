@@ -87,6 +87,10 @@
       ;; Index resharding routes
       (context "/reshard/:index" [index]
 
+        (GET "/status" {request-context :request-context}
+          (acl/verify-ingest-management-permission request-context :update)
+          (r/response (index-set-svc/get-reshard-status request-context id index)))
+
         (POST "/start" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/start-index-resharding request-context id index params)

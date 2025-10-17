@@ -103,6 +103,19 @@ HTTP/1.1 200 OK
 {"message": "Resharding started for index 1_small_collections"}
 ```
 
+### Get resharding Status
+
+Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
+
+```
+curl -i \
+	-H "Accept: application/json" \
+	http://localhost:3006/reshard/1_c1234_prov1/status
+
+HTTP/1.1 200 OK
+{"original-index":"1_c1234_prov1","reshard-index":"1_c1234_prov1_75_shards", "reshard-status": "COMPLETE"}
+```
+
 ## Bulk Operations
 
 ### Bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db

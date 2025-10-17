@@ -24,6 +24,7 @@
    [cmr.common.log :refer [info]]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature
     :as has-granules-or-cwic-results-feature]
    [compojure.core :refer [context DELETE GET POST routes]]
@@ -119,7 +120,10 @@
      (context "/reshard/:index" [index]
        (POST "/start" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
-         (resharding/start request-context index params)))
+         (resharding/start request-context index params))
+       (GET "/status" {:keys [request-context]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (resharding/get-status request-context index)))
      (context "/virtual_products" []
        (POST "/" {:keys [request-context params]}
          (virtual-products/bootstrap request-context params)))
