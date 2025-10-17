@@ -143,9 +143,6 @@
    Special case: if alias-name is '1_collections_v2_alias', also moves
    'collection_search_alias' to the new index."
   [conn old-index new-index alias-name]
-  (println "OLD-INDEX======" old-index)
-  (println "NEW-INDEX=======" new-index)
-  (println "AlIAS==========" alias-name)
   (let [base-actions [{:remove {:index old-index :alias alias-name}}
                       {:add {:index new-index :alias alias-name}}]
         ;; special case for the legacy collections alias

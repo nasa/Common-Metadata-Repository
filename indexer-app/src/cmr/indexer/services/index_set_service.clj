@@ -408,13 +408,8 @@
 (defn- get-key-for-concept-index
   "Get the key that points to the given index in the index map for a given concept type."
   [index-set concept-type index]
-  (println "GETTING KEY FOR INDEX ================== " index)
   (-> index-set
       (get-in [:index-set :concepts concept-type])
-      ((fn [concept-map]
-         (println "CONCEPT-MAP============")
-         (println concept-map)
-         concept-map))
       (#(some (fn [[k v]] (when (= v index) k)) %))))
 
 (defn- remove-granule-index-from-index-set
@@ -522,6 +517,8 @@
             (when (some #(= index-key %) (keys indexes))
               concept-type))
           (get-in index-set [:index-set :concepts]))))
+
+(get-canonical-key-name "1_cmr_granules_v1")
 
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
@@ -636,7 +633,6 @@
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         canonical-index-name (string/replace-first index #"^\d+_" "")
         index-key (get-key-for-concept-index index-set concept-type index)
-        _ (println "INDEX-KEY======================= " index-key)
         es-store (indexer-util/context->es-store context)
         new-index-set (-> index-set
                           ;; delete the old index config from the index-set
@@ -650,9 +646,6 @@
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index)))]
     (update-index-set context new-index-set)
-    (println "INDEX-SET ===========" (get-in new-index-set [:index-set :concepts concept-type]))
-    (let [debug-fetch-index-set (index-set-util/get-index-set context index-set-id)]
-      (println "DEBUG-INDEX-SET==========" debug-fetch-index-set))
     (es-util/move-index-alias (indexer-util/context->conn context)
                               index
                               target
