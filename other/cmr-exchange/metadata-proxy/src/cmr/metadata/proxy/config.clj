@@ -23,7 +23,7 @@
   (format "%s://%s:%s"
           (or (:protocol service) "https")
           (:host service)
-          (or (:port service) "443")))
+          (or (:port service) "")))
 
 (defn service->url
   [service]
