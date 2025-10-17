@@ -31,7 +31,6 @@
   (fn [_context concept-type _query]
     concept-type))
 
-;; TODO CMR-10770 FIX this for resharding
 (defmethod concept-type->index-info :collection
   [_context _ query]
   {:index-name (if (:all-revisions? query)

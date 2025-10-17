@@ -4,18 +4,18 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common.config :as common-config]
-   [cmr.common.log :as log :refer [info]]
+   [cmr.common.log :as log :refer [error info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.index-util :as es-util]
    [cmr.indexer.common.index-set-util :as index-set-util]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m]
-   [cmr.indexer.indexer-util :as indexer-util]
-   [cmr.common.concepts :as concepts])
+   [cmr.indexer.indexer-util :as indexer-util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -572,9 +572,7 @@
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
     ;; this will create the new index with the new shard count
-    (update-index-set context new-index-set))
-    ;; TODO CMR-10770 Change progress to "COMPLETE"
-  )
+    (update-index-set context new-index-set)))
 
 (defn get-reshard-status
   "Get the resharding status for the given index"
@@ -619,40 +617,38 @@
       [:index-set concept-type :resharding-status]
       assoc (keyword index) status))))
 
+(defn- validate-resharding-complete
+  "Validate that resharding has completed successfully for the given index "
+  [context index-set-id index]
+  (let [status (get-reshard-status context index-set-id index)]
+    (when-not (= (:reshard-status status) "COMPLETE")
+      (errors/throw-service-error
+       :bad-request
+       (format "Index [%s] has not completed resharding" index)))))
+
 (defn finalize-index-resharding
   "Complete the resharding of the given index"
   [context index-set-id index]
-  ;; TODO CMR-10770 add validation that index is being resharded and in the "COMPLETE" state
+  (validate-resharding-complete context index-set-id index)
   (let [index-set (index-set-util/get-index-set context index-set-id)
-        ;; search for index name in index-set :concepts to get concept type and to validate the
-        ;; index exists
+        ;; search for index name in index-set :concepts to get concept type
         concept-type (get-concept-type-for-index index-set index)
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         canonical-index-name (string/replace-first index #"^\d+_" "")
-        ;; new-canonical-index-name (string/replace-first target #"^\d+_" "")
         index-key (get-key-for-concept-index index-set concept-type index)
         _ (println "INDEX-KEY======================= " index-key)
         es-store (indexer-util/context->es-store context)
         new-index-set (-> index-set
-                          ;; delete the old index con
+                          ;; delete the old index config from the index-set
                           (update-in [:index-set concept-type :indexes]
                                      #(filter (fn [config]
                                                 (not (= canonical-index-name (:name config))))
                                               %))
-                          ;; replace name in new index config with old name
-                          ;; (update-in [:index-set concept-type :indexes]
-                          ;;            #(map (fn [config]
-                          ;;                    (if (= new-canonical-index-name (:name config))
-                          ;;                      (assoc config :name (str canonical-index-name "foo"))
-                          ;;                      config))
-                          ;;                  %))
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]
                                      dissoc (keyword index))
                           (update-in [:index-set concept-type :resharding-status]
-                                     dissoc (keyword index))
-                          ;; (update-in [:index-set :concepts concept-type] assoc index-key target)
-                          )]
+                                     dissoc (keyword index)))]
     (update-index-set context new-index-set)
     (println "INDEX-SET ===========" (get-in new-index-set [:index-set :concepts concept-type]))
     (let [debug-fetch-index-set (index-set-util/get-index-set context index-set-id)]

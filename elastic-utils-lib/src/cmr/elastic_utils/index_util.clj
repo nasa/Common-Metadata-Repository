@@ -4,6 +4,7 @@
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.connect :as esc]))
@@ -138,13 +139,21 @@
      (esi-helper/update-aliases conn [{:add alias-map}]))))
 
 (defn move-index-alias
-  "Moves an alias that points to an index to point to a different index"
+  "Moves an alias that points to an index to point to a different index.
+   Special case: if alias-name is '1_collections_v2_alias', also moves
+   'collection_search_alias' to the new index."
   [conn old-index new-index alias-name]
   (println "OLD-INDEX======" old-index)
   (println "NEW-INDEX=======" new-index)
-  (println "AliAS==========" alias-name)
-  (let [actions [{:remove {:index old-index :alias alias-name}}
-                 {:add {:index new-index :alias alias-name}}]]
+  (println "AlIAS==========" alias-name)
+  (let [base-actions [{:remove {:index old-index :alias alias-name}}
+                      {:add {:index new-index :alias alias-name}}]
+        ;; special case for the legacy collections alias
+        actions (if (= alias-name "1_collections_v2_alias")
+                  (concat base-actions
+                          [{:remove {:index old-index :alias (es-config/collections-index-alias)}}
+                           {:add {:index new-index :alias (es-config/collections-index-alias)}}])
+                  base-actions)]
     (esi-helper/update-aliases conn actions)))
 
 (defn create-index-or-update-mappings
