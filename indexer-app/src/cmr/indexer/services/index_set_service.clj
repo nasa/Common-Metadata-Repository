@@ -73,34 +73,35 @@
 
 (defn get-canonical-key-name
   "Removes the leading number prefix (e.g., '1_') and trailing shard count (e.g., '_100_shards')
-     from an index name. If the index name is a concept ID format (starts with a concept type letter),
-     converts it to standard concept ID format.
+     from an index name. If the index name represents a concept ID (starts with a letter followed
+     by numbers), formats it as a concept ID with hyphen separator.
      Examples:
      '1_small_collections_100_shards' -> 'small_collections'
      '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
-     '1_c2317033465_nsidc_ecs_5_shards' -> 'C2317033465-NSIDC_ECS'
+     '1_collections_v2' -> 'collections-v2'
      '1_v123_5w5_nsidc_ecs' -> 'V123_5W5-NSIDC_ECS'"
   [index-name]
   (when index-name
-    (let [;; Remove leading number and trailing shards
+    (let [;; Remove leading number and trailing shard count
           cleaned (-> index-name
                       (string/replace #"^\d+_" "")
                       (string/replace #"_\d+_shards$" ""))
-            ;; Check if it starts with a concept type letter (c, v, g, etc.)
-          is-concept-id? (re-matches #"^[a-z]\d+.*" cleaned)]
-      (if is-concept-id?
-          ;; Convert to concept ID format: C2317033465-NSIDC_ECS
+            ;; Check if it starts with a concept pattern (letter followed by digits)
+          is-concept? (re-matches #"^[a-z]\d+_.*" cleaned)]
+      (if is-concept?
+          ;; Format as concept ID: uppercase and replace first underscore with hyphen
         (let [first-underscore-idx (string/index-of cleaned "_")]
           (if first-underscore-idx
-            (let [concept-part (subs cleaned 0 first-underscore-idx)
-                  provider-part (subs cleaned (inc first-underscore-idx))]
-              (str (string/upper-case concept-part)
-                   "-"
-                   (string/upper-case provider-part)))
-              ;; No underscore found, just uppercase it
+            (str (string/upper-case (subs cleaned 0 first-underscore-idx))
+                 "-"
+                 (string/upper-case (subs cleaned (inc first-underscore-idx))))
             (string/upper-case cleaned)))
-          ;; Regular index name, return as-is
-        cleaned))))
+          ;; Regular index: replace last underscore with hyphen if it has version pattern
+        (if (re-find #"_v\d+" cleaned)
+          (string/replace cleaned #"_(?=v\d+$)" "-")
+          cleaned)))))
+
+(get-canonical-key-name "1_collections_v2")
 
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
