@@ -3,11 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]
@@ -297,6 +294,26 @@
                                    :num_shards num-shards}
                     :headers headers
                     :url (url/start-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
+(defn finalize-reshard-index
+  "Call the bootstrap app to finalize resharding an index"
+  ([index-name]
+   (finalize-reshard-index index-name {}))
+  ([index-name options]
+   (let [synchronous (get options :synchronous true)
+         num-shards (get options :num-shards 1)
+         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+         response (client/request
+                   {:method :post
+                    :query-params {:synchronous synchronous
+                                   :num_shards num-shards}
+                    :headers headers
+                    :url (url/finalize-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})

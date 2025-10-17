@@ -225,58 +225,178 @@
       (is (nil? (#'svc/get-index-config index-set :collection "granule_index_1"))))))
 
 (deftest test-get-concept-type-for-index
-  (testing "returns concept type when index found for granule"
+  (testing "returns concept type for regular index without shards"
     (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"
-                                           "granule-v2" "1_cmr_granules_v2"}
-                                 :collection {"collection-v1" "1_cmr_collections_v1"}}}}]
+                     {:concepts {:granule {:small_collections "1_small_collections"}}}}]
       (is (= :granule
-             (svc/get-concept-type-for-index index-set "1_cmr_granules_v1")))))
+             (svc/get-concept-type-for-index index-set "1_small_collections")))))
 
-  (testing "returns concept type when index found for collection"
+  (testing "returns concept type for regular index with shards"
     (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"}
-                                 :collection {"collection-v1" "1_cmr_collections_v1"
-                                              "collection-v2" "1_cmr_collections_v2"}}}}]
+                     {:concepts {:granule {:small_collections "1_small_collections_100_shards"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_small_collections_100_shards")))))
+
+  (testing "returns concept type for concept ID style index"
+    (let [index-set {:index-set
+                     {:concepts {:granule {(keyword "C2317033465-NSIDC_ECS") "1_c2317033465_nsidc_ecs"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs")))))
+
+  (testing "returns concept type for concept ID with shards"
+    (let [index-set {:index-set
+                     {:concepts {:granule {(keyword "C2317033465-NSIDC_ECS") "1_c2317033465_nsidc_ecs_5_shards"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs_5_shards")))))
+
+  (testing "returns concept type for collection index with version"
+    (let [index-set {:index-set
+                     {:concepts {:collection {(keyword "collections-v2") "1_collections_v2"}}}}]
       (is (= :collection
-             (svc/get-concept-type-for-index index-set "1_cmr_collections_v2")))))
+             (svc/get-concept-type-for-index index-set "1_collections_v2")))))
+
+  (testing "returns concept type for variable concept ID"
+    (let [index-set {:index-set
+                     {:concepts {:variable {(keyword "V123-5W5_NSIDC_ECS") "1_v123_5w5_nsidc_ecs"}}}}]
+      (is (= :variable
+             (svc/get-concept-type-for-index index-set "1_v123_5w5_nsidc_ecs")))))
+
+  (testing "returns concept type for concept ID with single-part provider"
+    (let [index-set {:index-set
+                     {:concepts {:collection {(keyword "C2545314550-LPCLOUD") "1_c2545314550_lpcloud"}}}}]
+      (is (= :collection
+             (svc/get-concept-type-for-index index-set "1_c2545314550_lpcloud")))))
+
+  (testing "returns concept type for concept ID with multi-part provider"
+    (let [index-set {:index-set
+                     {:concepts {:granule {(keyword "C2844842625-NSIDC_CPRD") "1_c2844842625_nsidc_cprd"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_c2844842625_nsidc_cprd")))))
 
   (testing "returns nil when index not found in any concept type"
     (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"}
-                                 :collection {"collection-v1" "1_cmr_collections_v1"}}}}]
-      (is (nil? (svc/get-concept-type-for-index index-set "nonexistent_index")))))
+                     {:concepts {:granule {:small_collections "1_small_collections"}
+                                 :collection {(keyword "collections-v2") "1_collections_v2"}}}}]
+      (is (nil? (svc/get-concept-type-for-index index-set "1_nonexistent_index")))))
+
+  (testing "returns nil when concepts map is empty"
+    (let [index-set {:index-set {:concepts {}}}]
+      (is (nil? (svc/get-concept-type-for-index index-set "1_some_index")))))
+
+  (testing "returns nil when concepts key is missing"
+    (let [index-set {:index-set {}}]
+      (is (nil? (svc/get-concept-type-for-index index-set "1_some_index")))))
+
+  (testing "returns nil when index-set is empty"
+    (is (nil? (svc/get-concept-type-for-index {} "1_some_index"))))
+
+  (testing "handles multiple concept types"
+    (let [index-set {:index-set
+                     {:concepts {:granule {:small_collections "1_small_collections"}
+                                 :collection {(keyword "collections-v2") "1_collections_v2"}
+                                 :tag {:tags "1_tags"}
+                                 :variable {(keyword "V123-PROVIDER") "1_v123_provider"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_small_collections")))
+      (is (= :collection
+             (svc/get-concept-type-for-index index-set "1_collections_v2")))
+      (is (= :tag
+             (svc/get-concept-type-for-index index-set "1_tags")))
+      (is (= :variable
+             (svc/get-concept-type-for-index index-set "1_v123_provider")))))
+
+  (testing "handles indexes with different leading numbers"
+    (let [index-set {:index-set
+                     {:concepts {:granule {:small_collections "2_small_collections"}}}}]
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "2_small_collections")))))
 
   (testing "handles multiple indexes per concept type"
     (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"
-                                           "granule-v2" "1_cmr_granules_v2"
-                                           "granule-v3" "1_cmr_granules_v3"}
-                                 :collection {"collection-v1" "1_cmr_collections_v1"}}}}]
+                     {:concepts {:granule {:small_collections "1_small_collections"
+                                           (keyword "C123-PROV") "1_c123_prov"
+                                           :large_collections "1_large_collections"}}}}]
       (is (= :granule
-             (svc/get-concept-type-for-index index-set "1_cmr_granules_v2")))))
-
-  (testing "handles additional concept types"
-    (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"}
-                                 :collection {"collection-v1" "1_cmr_collections_v1"}
-                                 :tag {"tag-v1" "1_cmr_tags_v1"}
-                                 :variable {"var-v1" "1_cmr_variables_v1"}}}}]
-      (is (= :tag
-             (svc/get-concept-type-for-index index-set "1_cmr_tags_v1")))
-      (is (= :variable
-             (svc/get-concept-type-for-index index-set "1_cmr_variables_v1")))))
-
-  (testing "does not match on partial index names"
-    (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "1_cmr_granules_v1"}}}}]
-      (is (nil? (svc/get-concept-type-for-index index-set "1_cmr_granules")))))
-
-  (testing "exact string matching for index names"
-    (let [index-set {:index-set
-                     {:concepts {:granule {"granule-v1" "index_5_shards"}
-                                 :collection {"collection-v1" "index_10_shards"}}}}]
+             (svc/get-concept-type-for-index index-set "1_small_collections")))
       (is (= :granule
-             (svc/get-concept-type-for-index index-set "index_5_shards")))
-      (is (= :collection
-             (svc/get-concept-type-for-index index-set "index_10_shards"))))))
+             (svc/get-concept-type-for-index index-set "1_c123_prov")))
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_large_collections")))))
+
+  (testing "canonical key matching is case-sensitive for concept IDs"
+    (let [index-set {:index-set
+                     {:concepts {:granule {(keyword "C2317033465-NSIDC_ECS") "1_c2317033465_nsidc_ecs"}}}}]
+      ;; Should find it because get-canonical-key-name uppercases concept IDs
+      (is (= :granule
+             (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs"))))))
+
+(deftest test-validate-index-exists-in-index-set
+  (testing "does not throw when index exists in granule indexes"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" [{"name" "small_collections"}
+                                  {"name" "C1625128303-GHRC_CLOUD"}]}}}]
+      (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
+
+  (testing "does not throw when index exists in different concept type"
+    (let [index-set {"index-set"
+                     {"generic-visualization-draft"
+                      {"indexes" [{"name" "generic-visualization-draft"}
+                                  {"name" "all-generic-visualization-draft-revisions"}]}}}]
+      (is (nil? (#'svc/validate-index-exists-in-index-set index-set "generic-visualization-draft")))))
+
+  (testing "throws exception when index does not exist"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" [{"name" "small_collections"}]}}}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Index \[nonexistent\] not found in index-set"
+           (#'svc/validate-index-exists-in-index-set index-set "nonexistent")))))
+
+  (testing "handles concept types without indexes key"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" [{"name" "small_collections"}]}
+                      "collection"
+                      {}}}]
+      (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
+
+  (testing "handles empty indexes array"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" []}}}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Index \[any_index\] not found in index-set"
+           (#'svc/validate-index-exists-in-index-set index-set "any_index")))))
+
+  (testing "handles empty index-set"
+    (let [index-set {"index-set" {}}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Index \[any_index\] not found in index-set"
+           (#'svc/validate-index-exists-in-index-set index-set "any_index")))))
+
+  (testing "handles missing index-set key"
+    (let [index-set {}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Index \[any_index\] not found in index-set"
+           (#'svc/validate-index-exists-in-index-set index-set "any_index")))))
+
+  (testing "handles indexes with additional properties"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" [{"name" "small_collections"
+                                   "settings" {"index" {"number_of_shards" 20}}}]}}}]
+      (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
+
+  (testing "is case-sensitive for index names"
+    (let [index-set {"index-set"
+                     {"granule"
+                      {"indexes" [{"name" "small_collections"}]}}}]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Index \[Small_Collections\] not found in index-set"
+           (#'svc/validate-index-exists-in-index-set index-set "Small_Collections"))))))

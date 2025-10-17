@@ -38,18 +38,18 @@
               (rest/index-url conn index-name)
               {:content-type :json
                :body (cond-> {:settings (or settings {})}
-                             mappings (assoc :mappings mappings))
+                       mappings (assoc :mappings mappings))
                :throw-exceptions true})))
 
 (defn refresh
- "Refresh an index"
+  "Refresh an index"
   [conn index-name]
   (-> (rest/index-refresh-url conn (join-names index-name))
       (client/post (merge (.http-opts conn)
-                        nil
-                        {:accept :json
-                         :content-type :json
-                         :headers {:client-id config/cmr-client-id}}))
+                          nil
+                          {:accept :json
+                           :content-type :json
+                           :headers {:client-id config/cmr-client-id}}))
       (:body)
       (rest/parse-safely)))
 
