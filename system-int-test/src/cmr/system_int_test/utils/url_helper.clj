@@ -521,16 +521,16 @@
   (format "http://localhost:%s/reshard/%s" (transmit-config/bootstrap-port) index))
 
 (defn start-reshard-index-url
-  [concept-id]
-  (format "%s/start" (reshard-index-url concept-id)))
+  [index]
+  (format "%s/start" (reshard-index-url index)))
 
 (defn status-reshard-index-url
-  [concept-id]
-  (format "%s/status" (reshard-index-url concept-id)))
+  [index]
+  (format "%s/status" (reshard-index-url index)))
 
 (defn finalize-reshard-index-url
-  [concept-id]
-  (format "%s/finalize" (reshard-index-url concept-id)))
+  [index]
+  (format "%s/finalize" (reshard-index-url index)))
 
 (defn bulk-index-after-date-time-url
   [date-time]
