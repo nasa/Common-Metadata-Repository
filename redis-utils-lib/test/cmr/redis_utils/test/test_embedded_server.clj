@@ -1,7 +1,7 @@
 (ns cmr.redis-utils.test.test-embedded-server
   "Namespace to test embedded redis server"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.redis-utils.test.test-util :as test-util]
    [taoensso.carmine :as carmine :refer [wcar]]))
 

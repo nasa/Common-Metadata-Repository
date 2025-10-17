@@ -15,7 +15,7 @@
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
   to the metadata db without blocking."
-  [this context provider-id]
+  [this _context provider-id]
   (let [channel (:provider-db-channel this)]
     (info "Adding provider" provider-id "to provider channel")
     (async/go (>! channel provider-id))))
@@ -23,14 +23,14 @@
 (defn migrate-collection
   "Copy all the data for a given collection (including graunules) from catalog rest
   to the metadata db without blocking."
-  [this context provider-id collection-id]
+  [this _context provider-id collection-id]
   (let [channel (:collection-db-channel this)]
     (info "Adding collection"  collection-id "for provider" provider-id "to collection channel")
     (async/go (>! channel {:collection-id collection-id :provider-id provider-id}))))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
-  [this context provider-id start-index]
+  [this _context provider-id start-index]
   (let [channel (:provider-index-channel this)]
     (info "Adding provider" provider-id "to provider index channel")
     (async/go (>! channel {:provider-id provider-id
@@ -38,7 +38,7 @@
 
 (defn index-collection
   "Bulk index all the granules in a collection"
-  [this context provider-id collection-id options]
+  [this _context provider-id collection-id options]
   (let [channel (:collection-index-channel this)]
     (info "Adding collection" collection-id "to collection index channel")
     (async/go (>! channel (merge options
@@ -47,14 +47,14 @@
 
 (defn index-system-concepts
   "Bulk index all the tags, acls, and access-groups."
-  [this context start-index]
+  [this _context start-index]
   (let [channel (:system-concept-channel this)]
     (info "Adding bulk index request to system concepts channel.")
     (async/go (>! channel {:start-index start-index}))))
 
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
-  [this context provider-id concept-type concept-ids]
+  [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
     (info "Adding bulk index request to concept-id channel.")
     (async/go (>! channel {:provider-id provider-id
@@ -72,7 +72,7 @@
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
-  [this context provider-id concept-type concept-ids]
+  [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
     (info "Adding bulk delete reqeust to concept-id channel.")
     (async/go (>! channel {:provider-id provider-id
@@ -82,7 +82,7 @@
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
-  [this context provider-id entry-title]
+  [this _context provider-id entry-title]
   (let [channel (:virtual-product-channel this)]
     (info "Adding message to virtual products channel.")
     (async/go (>! channel {:provider-id provider-id

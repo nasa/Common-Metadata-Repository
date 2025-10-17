@@ -43,6 +43,7 @@
         (let [timeout (Integer/parseInt (:timeout params))
               expect-timeout? (zero? timeout)]
           (debug (format "Setting message queue publish timeout to %d ms" timeout))
+          #_{:clj-kondo/ignore [:unresolved-var]}
           (config/set-publish-queue-timeout-ms! timeout)
           (wrapper/set-message-queue-timeout-expected!
            broker-wrapper

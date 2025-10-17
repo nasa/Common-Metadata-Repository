@@ -2,11 +2,9 @@
   (:refer-clojure :exclude [update])
   (:require
    [clojure.java.jdbc :as j]
-   [cmr.common.log :refer (debug info warn error)]
-   [sqlingvo.compiler :as sc]
+   [cmr.common.log :refer [info warn]]
    [sqlingvo.core :as s]
-   [sqlingvo.db :as sdb]
-   [sqlingvo.util :as su]))
+   [sqlingvo.db :as sdb]))
 
 (def db-vendor (sdb/oracle))
 

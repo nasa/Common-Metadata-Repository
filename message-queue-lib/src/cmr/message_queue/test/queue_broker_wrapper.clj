@@ -195,6 +195,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Record Definition
 
+#_{:clj-kondo/ignore [:missing-protocol-method]}
 (defrecord BrokerWrapper
   [
    ;; The broker that does the actual work

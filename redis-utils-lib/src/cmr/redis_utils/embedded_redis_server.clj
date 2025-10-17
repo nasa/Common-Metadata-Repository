@@ -27,7 +27,7 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (debug "Starting Redis server on port" http-port)
     (let [network (Network/newNetwork)
           ^FixedHostPortGenericContainer redis (build-redis http-port network)]
@@ -40,7 +40,7 @@
           (throw (ex-info "Redis failure" {:exception e}))))))
 
   (stop
-    [this system]
+    [this _system]
     (when-let [redis (:redis this)]
       (.stop redis))))
 

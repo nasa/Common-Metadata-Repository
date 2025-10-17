@@ -1,9 +1,8 @@
 (ns cmr.bootstrap.test.data.metadata-retrieval.metadata-transformer
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.bootstrap.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 (def original-transform-strategy metadata-transformer/transform-strategy)
@@ -27,7 +26,7 @@
       (with-bindings {#'metadata-transformer/transform-strategy bad-transform-strategy}
         (let [actual (metadata-transformer/transform-to-multiple-formats
                       ;; The second transform fails so dif10 is excluded in the output
-                      {} dif10-concept [:echo10 :dif :iso19115] true true)
+                      {} dif10-concept [:echo10 :dif :iso19115] true)
               actual-formats (set (keys actual))]
           ;; We only check the generated formats, not the actual metadata generated for simplicity reasons
           (is (= #{:echo10 :iso19115} actual-formats)))))))

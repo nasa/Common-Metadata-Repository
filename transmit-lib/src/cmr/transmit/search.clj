@@ -19,7 +19,6 @@
  (assoc (ch/context->http-headers context)
    config/token-header (config/echo-system-token)))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-subscription-notification-time
  "make an http call to the database application"
  [context sub-id last-notified-time]
@@ -41,7 +40,6 @@
      (errors/internal-error!
        (format "Subscription update failed. status: %s body: %s" status body)))))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
   [context params]
@@ -85,7 +83,6 @@
              :name (cx/string-at-path % [:name])
              :location (cx/string-at-path % [:location])}) ref-elems)))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed find-concept-references
   "Find granules by parameters in a post request. The function returns an array of granule
   references, each reference being a map having concept-id and granule-ur as the fields"
@@ -109,7 +106,6 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
-(declare validate-search-params context params concept-type)
 (defn-timed validate-search-params
   "Attempts to search granules using given params via a POST request. If the response contains a
   non-200 http code, returns the response body."

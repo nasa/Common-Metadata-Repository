@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.migration.version.variable
   (:require
-   [clojure.test :refer [deftest is testing]]
+   [clojure.test :refer [deftest is]]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -654,21 +654,21 @@
     (is (= variable-concept-1-8-2 actual) "Document Match")))
 
 (deftest migrate-1-9-with-FillValues->1-8-2
-   "Test that the fill value correctly truncates fields"
-    (let [metadata (-> variable-concept-1-9
-                       (assoc :FillValues
-                              [{:Type "SCIENCE_FILLVALUE" :Description "Short Value, leave alone"}
-                               {:Type "SCIENCE_FILLVALUE" :Description ""}
-                               {:Type "SCIENCE_FILLVALUE"
-                                :Description (apply str (repeatedly 200 #(char (+ (rand 26) 65))))}])
-                       (assoc :Dimensions [{:Name (apply str (repeatedly 256 #(char (+ (rand 26) 65))))}]))
-          actual (migrate-variable "1.9.0" "1.8.2" metadata)
-          first-description (:Description (first (:FillValues actual)))
-          second-description (:Description (second (:FillValues actual)))
-          last-description (:Description (last (:FillValues actual)))
-          long-dim-name (:Name (first (:Dimensions actual)))]
-      (is (= "Short Value, leave alone" first-description) "Should leave short ones alone")
-      (is (= "" second-description) "Handle empty strings")
-      (is (= 160 (count last-description)) "Long field made short")
-      (is (= "..." (subs last-description (- (count last-description) 3))) "Description should end with '...'")
-      (is (= 80 (count long-dim-name)) "Long Dimension Name")))
+  ;; Test that the fill value correctly truncates fields
+  (let [metadata (-> variable-concept-1-9
+                      (assoc :FillValues
+                            [{:Type "SCIENCE_FILLVALUE" :Description "Short Value, leave alone"}
+                              {:Type "SCIENCE_FILLVALUE" :Description ""}
+                              {:Type "SCIENCE_FILLVALUE"
+                              :Description (apply str (repeatedly 200 #(char (+ (rand 26) 65))))}])
+                      (assoc :Dimensions [{:Name (apply str (repeatedly 256 #(char (+ (rand 26) 65))))}]))
+        actual (migrate-variable "1.9.0" "1.8.2" metadata)
+        first-description (:Description (first (:FillValues actual)))
+        second-description (:Description (second (:FillValues actual)))
+        last-description (:Description (last (:FillValues actual)))
+        long-dim-name (:Name (first (:Dimensions actual)))]
+    (is (= "Short Value, leave alone" first-description) "Should leave short ones alone")
+    (is (= "" second-description) "Handle empty strings")
+    (is (= 160 (count last-description)) "Long field made short")
+    (is (= "..." (subs last-description (- (count last-description) 3))) "Description should end with '...'")
+    (is (= 80 (count long-dim-name)) "Long Dimension Name")))

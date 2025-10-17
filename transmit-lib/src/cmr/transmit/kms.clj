@@ -243,6 +243,7 @@
         raw-field-names (second all-lines)
         kms-subfield-names (map csk/->kebab-case-keyword raw-field-names)
         keyword-scheme (if (= keyword-scheme :spatial-keywords)
+                         #_{:clj-kondo/ignore [:deprecated-var]}
                          (get-spatial-scheme-to-use kms-subfield-names)
                          keyword-scheme)]
     (infof "refresh-kms-cache: parsed headers for %s: [%s]." keyword-scheme raw-field-names)

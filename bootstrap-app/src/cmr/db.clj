@@ -3,7 +3,7 @@
   (:import [java.io File])
   (:require
    [cmr.bootstrap.config :as bootstrap-config]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [info error]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
@@ -46,7 +46,7 @@
           ;; trying non-local path to find drift migration files
           (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/drift-migration-files")))]
             (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))
-          (catch Exception e
+          (catch Exception _e
             (println "caught exception trying to find migration files in db.clj file in bootstrap app. We are probably in local env. Trying local route to migration files...")
             (with-redefs [drift.core/user-directory (fn [] (new File (str (.getProperty (System/getProperties) "user.dir") "/src")))]
               (drift.execute/run (conj (vec args) "-c" "config.bootstrap_migrate_config/app-migrate-config")))))

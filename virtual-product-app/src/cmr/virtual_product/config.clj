@@ -1,10 +1,8 @@
 (ns cmr.virtual-product.config
   "Defines configuration for virtual product app."
   (:require
-   [cmr.common.config :as cfg :refer [defconfig]] 
-   [cmr.message-queue.config :as mq-conf])
-  (:import
-   (java.util.regex Pattern)))
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.message-queue.config :as mq-conf]))
 
 (defconfig virtual-products-enabled
   "Enables the updates of virtual products. If this is false every ingest event will be ignored

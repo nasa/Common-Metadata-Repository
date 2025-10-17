@@ -3,19 +3,16 @@
   applies equivalent updates to virtual products."
   (:require
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u :refer [defn-timed]]
-   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.ingest :as ingest]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.umm-core :as umm]
-   [cmr.umm.umm-granule :as umm-g]
    [cmr.virtual-product.config :as config]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
@@ -31,11 +28,11 @@
 (defmulti handle-ingest-event
   "Handles an ingest event. Checks if it is an event that should be applied to virtual granules. If
   it is then delegates to a granule event handler."
-  (fn [context event]
+  (fn [_context event]
     (keyword (:action event))))
 
 (defmethod handle-ingest-event :default
-  [context event])
+  [_context _event])
   ;; Does nothing. We ignore events we don't care about.
 
 
@@ -44,7 +41,7 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/virtual-product-queue-name)]
-    (dotimes [n (config/queue-listener-count)]
+    (dotimes [_n (config/queue-listener-count)]
       (queue-protocol/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
 
 (def source-provider-id-entry-titles
@@ -210,7 +207,7 @@
                            "response body when deleting the virtual granule [%s] : [%s]. "
                            "The delete request will be retried.")
                       granule-ur (pr-str body)))
-        (info (format (str "The number of retries has exceeded the maximum retry count."
+        (info (format (str "The number of retries has exceeded the maximum retry count. "
                            "The delete event for the virtual granule [%s] will be ignored")
                       granule-ur)))
 
@@ -218,8 +215,8 @@
       ;; This would occurs if a delete event with lower revision-id is consumed after an event with
       ;; higher revision id for the same granule. The event is ignored and the revision is lost.
       (= status 409)
-      (info (format (str "Received a response with status code [409] and following body when
-                         deleting the virtual granule [%s] : [%s]. The event will be ignored")
+      (info (format (str "Received a response with status code [409] and following body when "
+                         "deleting the virtual granule [%s] : [%s]. The event will be ignored")
                     granule-ur (pr-str body)))
 
       :else

@@ -174,7 +174,6 @@
    this api to get the current version. We could query the level here, but it can change if using
    taoensso.timbre/with-log-level"
   []
-  #_:clj-kondo/ignore
   (if-some [_ timbre/*config*]
     (:min-level timbre/*config*)
     :warn))

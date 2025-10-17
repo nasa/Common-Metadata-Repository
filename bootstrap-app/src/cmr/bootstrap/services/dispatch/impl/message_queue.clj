@@ -20,7 +20,7 @@
 
 (defn- index-provider
   "Bulk index all the collections and granules for a provider."
-  [this context provider-id start-index]
+  [_this context provider-id start-index]
   (message-queue/publish-bootstrap-provider-event
    context
    (message-queue/bootstrap-provider-event provider-id start-index)))
@@ -28,7 +28,7 @@
 (defn- index-variables
   "Bulk index all the variables. If a provider is passed, only index the variables
   for that provider."
-  ([this context]
+  ([_this context]
    (info "Publishing events to index all variables.")
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -36,7 +36,7 @@
       context
       (message-queue/bootstrap-variables-event provider-id)))
    (info "Publishing events to index all variables completed."))
-  ([this context provider-id]
+  ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-variables-event provider-id))))
@@ -44,7 +44,7 @@
 (defn- index-services
   "Bulk index all the services. If a provider is passed, only index the services
   for that provider."
-  ([this context]
+  ([_this context]
    (info "Publishing events to index all services.")
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -52,7 +52,7 @@
       context
       (message-queue/bootstrap-services-event provider-id)))
    (info "Publishing events to index all services completed."))
-  ([this context provider-id]
+  ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-services-event provider-id))))
@@ -60,7 +60,7 @@
 (defn- index-tools
   "Bulk index all the tools. If a provider is passed, only index the tools
   for that provider."
-  ([this context]
+  ([_this context]
    (info "Publishing events to index all tools.")
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -68,7 +68,7 @@
       context
       (message-queue/bootstrap-tools-event provider-id)))
    (info "Publishing events to index all tools completed."))
-  ([this context provider-id]
+  ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-tools-event provider-id))))
@@ -76,7 +76,7 @@
 (defn- index-subscriptions
   "Bulk index all the subscriptions. If a provider is passed, only index the subscriptions
   for that provider."
-  ([this context]
+  ([_this context]
    (info "Publishing events to index all subscriptions.")
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -84,7 +84,7 @@
       context
       (message-queue/bootstrap-subscriptions-event provider-id)))
    (info "Publishing events to index all subscriptions completed."))
-  ([this context provider-id]
+  ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-subscriptions-event provider-id))))
@@ -92,7 +92,7 @@
 (defn- index-generics
   "Bulk index all the generic documents of a particular type. If a provider is passed, only index
    the documents for that provider."
-  ([this context concept-type]
+  ([_this context concept-type]
    (info "Publishing events to index all generic documents of type " concept-type)
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -100,7 +100,7 @@
       context
       (message-queue/bootstrap-generics-event concept-type provider-id)))
    (info "Completed publishing events to index all generic documents of type " concept-type))
-  ([this context concept-type provider-id]
+  ([_this context concept-type provider-id]
    (info "Publishing events to index all generic documents of type" concept-type "for provider " provider-id)
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -109,7 +109,7 @@
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
-  [this context provider-ids date-time]
+  [_this context provider-ids date-time]
   (info "Publishing events to index all concepts after a given date time.")
   (let [provider-ids (if (seq provider-ids)
                        provider-ids
@@ -124,7 +124,7 @@
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
   variables for that provider."
-  ([this context]
+  ([_this context]
    (info "Publishing fingerprint events for all variables.")
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
@@ -132,7 +132,7 @@
       context
       (message-queue/fingerprint-variables-event provider-id)))
    (info "Publishing fingerprint events for all variables completed."))
-  ([this context provider-id]
+  ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/fingerprint-variables-event provider-id))))
@@ -165,7 +165,7 @@
 
 (defmulti handle-bootstrap-event
   "Handle the actions that can be requested for a provider via the bootstrap-queue."
-  (fn [context msg]
+  (fn [_context msg]
     (keyword (:action msg))))
 
 (defmethod handle-bootstrap-event :index-provider
@@ -213,7 +213,7 @@
   "Subscribe to event messages on bootstrap queues."
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/bootstrap-queue-listener-count)]
+    (dotimes [_n (config/bootstrap-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/bootstrap-queue-name)
                                 #(handle-bootstrap-event context %)))))

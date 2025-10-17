@@ -1,7 +1,7 @@
 (ns cmr.oracle.user
   "Contains functions for creating and dropping users."
   (:require [clojure.java.jdbc :as j]
-            [cmr.oracle.connection :as conn]))
+            [clojure.string :as string]))
 
 (def create-user-sql-template
   "create user %%CMR_USER%%
@@ -36,7 +36,7 @@
   "Replaces values in a sql template using the key values given"
   [key-values template]
   (reduce (fn [temp [key,val]]
-            (clojure.string/replace temp (str "%%" key "%%") val))
+            (string/replace temp (str "%%" key "%%") val))
           template
           key-values))
 

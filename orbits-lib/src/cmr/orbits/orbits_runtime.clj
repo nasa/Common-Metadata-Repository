@@ -1,8 +1,7 @@
 (ns cmr.orbits.orbits-runtime
   "Defines a component which can be used to calculate Orbits"
   (:require
-   [cmr.common.lifecycle :as l]
-   [clojure.java.io :as io])
+   [cmr.common.lifecycle :as l])
   (:import
    (javax.script ScriptEngine ScriptEngineManager Invocable)
    (java.io ByteArrayInputStream)
@@ -12,9 +11,9 @@
   "The key to use when storing the orbit runtime"
   :orbits)
 
-(defn ^JRubyEngine create-jruby-runtime
+(defn create-jruby-runtime
   "Creates and initializes a JRuby runtime."
-  []
+  ^JRubyEngine []
   (let [jruby (.. (ScriptEngineManager.)
                   (getEngineByName "jruby"))]
     (.eval jruby "load 'orbits/echo_orbits_impl.rb'")

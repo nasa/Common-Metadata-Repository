@@ -93,7 +93,7 @@
 
 (defmulti insert-concept
   "Inserts the given concept"
-  (fn [system concept]
+  (fn [_system concept]
     (:concept-type concept)))
 
 (defn insert-concepts

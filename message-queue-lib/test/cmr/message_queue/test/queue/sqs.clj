@@ -1,11 +1,10 @@
 (ns cmr.message-queue.test.queue.sqs
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.test.test-util :refer [with-env-vars]]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.message-queue.queue.sqs :as sqs]
-   [cmr.message-queue.test.queue-broker-wrapper :as broker-wrapper])
+   [cmr.message-queue.queue.sqs :as sqs])
   (:import
    (cmr.message_queue.test ExitException)
    (com.amazonaws.services.sqs AmazonSQSClient)
@@ -31,12 +30,13 @@
   {:default ""
    :type String})
 
+#_{:clj-kondo/ignore [:unused-value]}
 (defn normalize-queue-name
   "Function to call private normalize-queue-name function."
   [queue-name]
   #'sqs/normalize-queue-name queue-name)
 
-(deftest normalize-queue-name
+(deftest normalize-queue-name-test
   (testing "with-and-without-prefix"
     (are3
       [environ queue-name norm-name]
@@ -93,6 +93,7 @@
     ExitException to force the calling thread to exit. This is done to prevent
     test worker threads from persisting after tests complete."
   [url-str receive-fn-index & receive-fns]
+  ;; Unsure how this function might be working
   (set-testing-queue-name! "foo")
   (proxy [AmazonSQSClient]
          []
@@ -109,6 +110,7 @@
   exit. This is done to prevent test worker threads from persisting after
   tests complete."
   [receive-fn-index & receive-fns]
+  ;; Unsure how this function might be working
   (set-testing-queue-name! "gsfc-eosdis-cmr-local-ingest_queue")
   (proxy [AmazonSQSClient]
          []

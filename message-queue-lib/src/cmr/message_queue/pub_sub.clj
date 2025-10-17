@@ -1,7 +1,6 @@
-(ns cmr.message-queue.pub-sub 
+(ns cmr.message-queue.pub-sub
   (:require
    [cmr.message-queue.config :as config]
-   #_{:clj-kondo/ignore [:unused-namespace]}
    [cmr.message-queue.topic.aws-topic :as aws-topic]
    [cmr.message-queue.topic.local-topic :as local-topic]))
 

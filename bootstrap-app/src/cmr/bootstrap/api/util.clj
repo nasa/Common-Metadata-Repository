@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.api.util
   "Utility functions for the bootstrap API."
   (:require
-   [cmr.common.concepts :as concepts]
    [clojure.string :as string]
    [cmr.bootstrap.services.bootstrap-service :as service]))
 

@@ -10,8 +10,7 @@
 
 (deftest token-header-check
   (testing "pull out the token"
-    (let [context {}
-          result (search/token-header {})]
+    (let [result (search/token-header {})]
       (is (= {"authorization" "mock-echo-system-token"} result)))))
 
 (deftest test-search-client-id
@@ -54,7 +53,7 @@
           ;; call to request which holds the actual test
           (let [result (search/find-concept-references context {} :collection)]
             (is (not (true? result))))
-          (catch Exception e)))))
+          (catch Exception _e)))))
 
   (testing "check for client id from validate search params"
     (let [context {:system {:search-connection

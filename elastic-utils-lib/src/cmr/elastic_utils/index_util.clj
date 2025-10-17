@@ -213,10 +213,10 @@
      (when (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
-           (info (str "Ignore conflict: " (str result)))
+           (info (str "Ignore conflict: " result))
            (errors/throw-service-error :conflict
-                                       (str "Save to Elasticsearch failed " (str result))))
-         (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
+                                       (str "Save to Elasticsearch failed " result)))
+         (errors/internal-error! (str "Save to Elasticsearch failed " result)))))))
 
 (defn delete-by-id
   "Delete a document from elastic by ID.

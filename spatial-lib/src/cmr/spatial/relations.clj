@@ -42,6 +42,7 @@
   (intersects-line-string? [shape line-string] "Returns true if the shape intersects the line string"))
 
 ;; Only certain functions are implemented here
+#_{:clj-kondo/ignore [:missing-protocol-method]}
 (extend-protocol SpatialRelations
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

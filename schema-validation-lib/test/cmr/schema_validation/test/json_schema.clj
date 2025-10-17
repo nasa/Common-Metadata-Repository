@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.schema-validation.json-schema :as json-schema])
   (:import
    (org.everit.json.schema SchemaException)))

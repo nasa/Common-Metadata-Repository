@@ -1,6 +1,6 @@
 (ns cmr.transmit.test.config
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing]]
     [cmr.transmit.config :as config]))
 
 (deftest with-echo-system-token-test
