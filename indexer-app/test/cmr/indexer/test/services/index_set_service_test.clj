@@ -258,9 +258,9 @@
 
   (testing "returns concept type for variable concept ID"
     (let [index-set {:index-set
-                     {:concepts {:variable {(keyword "V123-5W5_NSIDC_ECS") "1_v123_5w5_nsidc_ecs"}}}}]
+                     {:concepts {:variable {(keyword "V123-NSIDC_ECS_FOO") "1_v123_nsidc_ecs_foo"}}}}]
       (is (= :variable
-             (svc/get-concept-type-for-index index-set "1_v123_5w5_nsidc_ecs")))))
+             (svc/get-concept-type-for-index index-set "1_v123_nsidc_ecs_foo")))))
 
   (testing "returns concept type for concept ID with single-part provider"
     (let [index-set {:index-set
