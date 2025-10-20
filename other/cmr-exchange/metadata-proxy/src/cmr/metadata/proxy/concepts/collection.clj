@@ -16,8 +16,7 @@
 (defn build-query
   "Returns the query string for a CMR collection query."
   [concept-id]
-  (str "concept_id=" concept-id
-       "&include_tags=" opendap-regex-tag))
+  (str "concept_id=" concept-id))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, get the metadata for the

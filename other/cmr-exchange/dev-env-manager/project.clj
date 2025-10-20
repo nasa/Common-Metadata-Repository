@@ -25,7 +25,7 @@
                                                       org.slf4j/slf4j-nop]]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.maven.wagon/wagon-provider-api "2.10"]
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.3.465" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/tools.macro "0.1.5"]]
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

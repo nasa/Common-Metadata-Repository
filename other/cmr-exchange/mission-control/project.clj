@@ -10,7 +10,7 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[clojusc/twig "0.4.0"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.4.474"]]
   :profiles {:ubercompile {:aot :all}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -25,8 +25,7 @@
                                   [clojusc/trifl "0.4.2"]
                                   [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]]
-                   :plugins [[lein-shell "0.5.0"]
-                             [venantius/ultra "0.5.2"]]
+                   :plugins [[lein-shell "0.5.0"]]
                    :source-paths ["dev-resources/src"]
                    :repl-options {:init-ns cmr.mission-control.dev
                                   :prompt ~get-prompt}}
