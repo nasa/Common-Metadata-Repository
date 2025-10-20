@@ -90,7 +90,8 @@
       (is (true? (#'svc/is-rebalancing? index-set "1_c123_prov")))))
 
   (testing "returns true when rebalancing is happening and the index is small-collections"
-    (let [index-set {:index-set {:concepts {:granule {:small_collections "1_small_collections"}} :granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
+    (let [index-set {:index-set {:concepts {:granule {:small_collections "1_small_collections"}}
+                                 :granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
       (is (true? (#'svc/is-rebalancing? index-set "1_small_collections"))))))
 
 (deftest test-is-resharding?

@@ -317,7 +317,7 @@
   [index-set concept-id]
   ;; get the index names for the concept-id and small_collections
   ;; then check to see if either index is being resharded
-  (let [separate-index (get-in index-set [:index-set :concepts :granule concept-id])
+  (let [separate-index (get-in index-set [:index-set :concepts :granule (keyword concept-id)])
         small-collections-index (get-in index-set [:index-set :concepts :granule :small_collections])]
     (or (is-resharding? index-set separate-index) (is-resharding? index-set small-collections-index))))
 
