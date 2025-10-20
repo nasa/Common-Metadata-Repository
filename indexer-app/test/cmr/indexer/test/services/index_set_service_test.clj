@@ -122,7 +122,7 @@
 
   (testing "returns true if the index for the concept-id is being resharded"
     (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
-                                                                                            "C123_PROV" "1_c123_prov"}}
+                                                                                            :C123_PROV "1_c123_prov"}}
                                                                        :collection {}
                                                                        :granule {:resharding-indexes #{"1_c123_prov"}
                                                                                  :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
@@ -130,8 +130,8 @@
 
   (testing "returns false if the index for the concept-id is not being resharded and neither is small_collections"
     (is (false? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
-                                                                                             "C123_PROV" "1_c123_prov"
-                                                                                             "C124_PROV" "1_c124_prov"}}
+                                                                                             :C123_PROV "1_c123_prov"
+                                                                                             :C124_PROV "1_c124_prov"}}
                                                                         :collection {}
                                                                         :granule {:resharding-indexes #{"1_c123_prov"}
                                                                                   :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
