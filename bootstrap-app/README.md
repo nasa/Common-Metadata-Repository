@@ -96,7 +96,7 @@ the resharding is finalized.
 
 ```
 curl -i \
-  -X POSTS \
+  -X POST \
   "http://localhost:3005/reshard/1_small_collections/start?num_shards=50"
 
 HTTP/1.1 200 OK
@@ -122,7 +122,7 @@ index. Returns a 400 error if the index resharding is not complete.
 
 ```
 curl -i \
-  -X POSTS \
+  -X POST \
   "http://localhost:3005/reshard/1_small_collections/finalize"
 
 HTTP/1.1 200 OK

@@ -74,7 +74,7 @@
      (testing "finalize index that does not exist"
        (is (= {:status 404
                :errors ["The index [1_nonexistent_index] does not exist."]}
-              (bootstrap/get-reshard-status "1_nonexistent_index")))))))
+              (bootstrap/finalize-reshard-index "1_nonexistent_index")))))))
 
 (deftest reshard-index-success-test
   (s/only-with-real-database
@@ -96,4 +96,4 @@
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
-              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false :num-shards 100})))))))
+              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false})))))))

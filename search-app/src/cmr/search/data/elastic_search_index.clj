@@ -38,8 +38,6 @@
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
-        _ (println "GRANULE_INDEX_NAMES==================")
-        _ (println granule-index-names)
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 

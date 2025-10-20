@@ -79,7 +79,7 @@
      '1_small_collections_100_shards' -> 'small_collections'
      '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
      '1_collections_v2' -> 'collections-v2'
-     '1_v123_5w5_nsidc_ecs' -> 'V123_5W5-NSIDC_ECS'"
+     '1_v123_nsidc_ecs' -> 'V123-NSIDC_ECS'"
   [index-name]
   (when index-name
     (let [;; Remove leading number and trailing shard count
@@ -100,8 +100,6 @@
         (if (re-find #"_v\d+" cleaned)
           (string/replace cleaned #"_(?=v\d+$)" "-")
           cleaned)))))
-
-(get-canonical-key-name "1_collections_v2")
 
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
@@ -297,7 +295,7 @@
       ;; no rebalancing is happening
       false
       ;; rebalancing is happening
-      (let [small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
+      (let [small-collections-index (get-in index-set [:index-set :concepts :granule :small_collections])]
         (if (= index small-collections-index)
           ;; the index is the small-collections index and rebalancing always uses that index
           true
@@ -320,7 +318,7 @@
   ;; get the index names for the concept-id and small_collections
   ;; then check to see if either index is being resharded
   (let [separate-index (get-in index-set [:index-set :concepts :granule concept-id])
-        small-collections-index (get-in index-set [:index-set :concepts :granule "small_collections"])]
+        small-collections-index (get-in index-set [:index-set :concepts :granule :small_collections])]
     (or (is-resharding? index-set separate-index) (is-resharding? index-set small-collections-index))))
 
 (defn- add-resharding-index
@@ -353,9 +351,9 @@
 (defn- validate-index-exists-in-index-set
   "Validates that an index exists in the index-set."
   [index-set canonical-index-name]
-  (let [all-indexes (for [[_concept-type config] (get index-set "index-set")
-                          index (get config "indexes" [])]
-                      (get index "name"))
+  (let [all-indexes (for [[_concept-type config] (get index-set :index-set)
+                          index (get config :indexes [])]
+                      (get index :name))
         index-exists? (some #(= % canonical-index-name) all-indexes)]
     (when-not index-exists?
       (errors/throw-service-error
@@ -518,8 +516,6 @@
               concept-type))
           (get-in index-set [:index-set :concepts]))))
 
-(get-canonical-key-name "1_cmr_granules_v1")
-
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
@@ -632,7 +628,6 @@
         concept-type (get-concept-type-for-index index-set index)
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         canonical-index-name (string/replace-first index #"^\d+_" "")
-        index-key (get-key-for-concept-index index-set concept-type index)
         es-store (indexer-util/context->es-store context)
         new-index-set (-> index-set
                           ;; delete the old index config from the index-set
@@ -645,12 +640,20 @@
                                      dissoc (keyword index))
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index)))]
-    (update-index-set context new-index-set)
-    (es-util/move-index-alias (indexer-util/context->conn context)
-                              index
-                              target
-                              (esi-helper/index-alias (string/replace index #"_\d+_shards$" "")))
-    (es/delete-index es-store index)))
+    (try
+            ;; move alias
+      (es-util/move-index-alias (indexer-util/context->conn context)
+                                index
+                                target
+                                (esi-helper/index-alias (string/replace index #"_\d+_shards$" "")))
+            ;; delete old index
+      (es/delete-index es-store index)
+            ;; persist index-set changes
+      (update-index-set context new-index-set)
+      (catch Exception e
+        (error e (format "Failed to finalize resharding for [%s] -> [%s]" index target))
+        (errors/throw-service-error :internal-error
+                                    (format "Failed to finalize resharding for [%s]; see server logs." index))))))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-

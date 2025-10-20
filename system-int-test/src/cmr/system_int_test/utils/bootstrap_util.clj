@@ -306,12 +306,10 @@
    (finalize-reshard-index index-name {}))
   ([index-name options]
    (let [synchronous (get options :synchronous true)
-         num-shards (get options :num-shards 1)
          headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
          response (client/request
                    {:method :post
-                    :query-params {:synchronous synchronous
-                                   :num_shards num-shards}
+                    :query-params {:synchronous synchronous}
                     :headers headers
                     :url (url/finalize-reshard-index-url index-name)
                     :accept :json

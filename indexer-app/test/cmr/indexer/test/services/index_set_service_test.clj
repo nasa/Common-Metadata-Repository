@@ -90,7 +90,7 @@
       (is (true? (#'svc/is-rebalancing? index-set "1_c123_prov")))))
 
   (testing "returns true when rebalancing is happening and the index is small-collections"
-    (let [index-set {:index-set {:concepts {:granule {"small_collections" "1_small_collections"}} :granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
+    (let [index-set {:index-set {:concepts {:granule {:small_collections "1_small_collections"}} :granule {:rebalancing-collections ["C123-PROV" "C456-PROV"]}}}]
       (is (true? (#'svc/is-rebalancing? index-set "1_small_collections"))))))
 
 (deftest test-is-resharding?
@@ -113,14 +113,14 @@
 
 (deftest is-resharding-blocking-rebalancing?
   (testing "returns true if small_collections is being resharded"
-    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"}}
+    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"}}
                                                                        :collection {}
                                                                        :granule {:resharding-indexes #{"1_small_collections"}
                                                                                  :resharding-targets {"1_small_collections" "1_small_collections_100_shards"}}}}
                                                           "C123_PROV"))))
 
   (testing "returns true if the index for the concept-id is being resharded"
-    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"
+    (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
                                                                                             "C123_PROV" "1_c123_prov"}}
                                                                        :collection {}
                                                                        :granule {:resharding-indexes #{"1_c123_prov"}
@@ -128,7 +128,7 @@
                                                           "C123_PROV"))))
 
   (testing "returns false if the index for the concept-id is not being resharded and neither is small_collections"
-    (is (false? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {"small_collections" "1_small_collections"
+    (is (false? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
                                                                                              "C123_PROV" "1_c123_prov"
                                                                                              "C124_PROV" "1_c124_prov"}}
                                                                         :collection {}
@@ -332,47 +332,47 @@
 
 (deftest test-validate-index-exists-in-index-set
   (testing "does not throw when index exists in granule indexes"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" [{"name" "small_collections"}
-                                  {"name" "C1625128303-GHRC_CLOUD"}]}}}]
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes [{:name "small_collections"}
+                                 {:name "C1625128303-GHRC_CLOUD"}]}}}]
       (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
 
   (testing "does not throw when index exists in different concept type"
-    (let [index-set {"index-set"
-                     {"generic-visualization-draft"
-                      {"indexes" [{"name" "generic-visualization-draft"}
-                                  {"name" "all-generic-visualization-draft-revisions"}]}}}]
+    (let [index-set {:index-set
+                     {:generic-visualization-draft
+                      {:indexes [{:name "generic-visualization-draft"}
+                                 {:name "all-generic-visualization-draft-revisions"}]}}}]
       (is (nil? (#'svc/validate-index-exists-in-index-set index-set "generic-visualization-draft")))))
 
   (testing "throws exception when index does not exist"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" [{"name" "small_collections"}]}}}]
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes [{:name "small_collections"}]}}}]
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Index \[nonexistent\] not found in index-set"
            (#'svc/validate-index-exists-in-index-set index-set "nonexistent")))))
 
   (testing "handles concept types without indexes key"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" [{"name" "small_collections"}]}
-                      "collection"
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes [{:name "small_collections"}]}
+                      :collection
                       {}}}]
       (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
 
   (testing "handles empty indexes array"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" []}}}]
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes []}}}]
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Index \[any_index\] not found in index-set"
            (#'svc/validate-index-exists-in-index-set index-set "any_index")))))
 
   (testing "handles empty index-set"
-    (let [index-set {"index-set" {}}]
+    (let [index-set {:index-set {}}]
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Index \[any_index\] not found in index-set"
@@ -386,16 +386,16 @@
            (#'svc/validate-index-exists-in-index-set index-set "any_index")))))
 
   (testing "handles indexes with additional properties"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" [{"name" "small_collections"
-                                   "settings" {"index" {"number_of_shards" 20}}}]}}}]
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes [{:name "small_collections"
+                                  :settings {:index {"number_of_shards" 20}}}]}}}]
       (is (nil? (#'svc/validate-index-exists-in-index-set index-set "small_collections")))))
 
   (testing "is case-sensitive for index names"
-    (let [index-set {"index-set"
-                     {"granule"
-                      {"indexes" [{"name" "small_collections"}]}}}]
+    (let [index-set {:index-set
+                     {:granule
+                      {:indexes [{:name "small_collections"}]}}}]
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Index \[Small_Collections\] not found in index-set"
