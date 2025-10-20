@@ -256,7 +256,7 @@
       (is (= :collection
              (svc/get-concept-type-for-index index-set "1_collections_v2")))))
 
-  (testing "returns concept type for variable concept ID"
+  (testing "returns concept type for variable concept ID where provider has multiple underscores"
     (let [index-set {:index-set
                      {:concepts {:variable {(keyword "V123-NSIDC_ECS_FOO") "1_v123_nsidc_ecs_foo"}}}}]
       (is (= :variable

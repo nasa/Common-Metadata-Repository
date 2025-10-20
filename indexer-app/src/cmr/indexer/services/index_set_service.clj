@@ -403,13 +403,6 @@
               index-config))
           (seq indexes))))
 
-(defn- get-key-for-concept-index
-  "Get the key that points to the given index in the index map for a given concept type."
-  [index-set concept-type index]
-  (-> index-set
-      (get-in [:index-set :concepts concept-type])
-      (#(some (fn [[k v]] (when (= v index) k)) %))))
-
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
   collection index is listed in the index-set."
@@ -626,6 +619,10 @@
   (let [index-set (index-set-util/get-index-set context index-set-id)
         ;; search for index name in index-set :concepts to get concept type
         concept-type (get-concept-type-for-index index-set index)
+        _ (when-not concept-type
+            (errors/throw-service-error
+             :not-found
+             (format "Index [%s] does not exist." index)))
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         canonical-index-name (string/replace-first index #"^\d+_" "")
         es-store (indexer-util/context->es-store context)
