@@ -14,7 +14,7 @@
                  [clojusc/trifl "0.1.0"]
                  [gov.nasa.earthdata/cmr-client "0.3.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-sample-data "0.2.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/java.jdbc "0.7.1"]
                  [potemkin "0.4.4"]]
   :profiles {:uberjar {:aot :all}
