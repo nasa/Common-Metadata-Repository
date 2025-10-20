@@ -118,15 +118,15 @@
                                                                        :collection {}
                                                                        :granule {:resharding-indexes #{"1_small_collections"}
                                                                                  :resharding-targets {"1_small_collections" "1_small_collections_100_shards"}}}}
-                                                          "C123_PROV"))))
+                                                          "C123-PROV"))))
 
   (testing "returns true if the index for the concept-id is being resharded"
     (is (true? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
-                                                                                            :C123_PROV "1_c123_prov"}}
+                                                                                            (keyword "C123-PROV") "1_c123_prov"}}
                                                                        :collection {}
                                                                        :granule {:resharding-indexes #{"1_c123_prov"}
                                                                                  :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
-                                                          "C123_PROV"))))
+                                                          "C123-PROV"))))
 
   (testing "returns false if the index for the concept-id is not being resharded and neither is small_collections"
     (is (false? (#'svc/is-resharding-blocking-rebalancing? {:index-set {:concepts {:granule {:small_collections "1_small_collections"
@@ -135,7 +135,7 @@
                                                                         :collection {}
                                                                         :granule {:resharding-indexes #{"1_c123_prov"}
                                                                                   :resharding-targets {"1_c123_prov" "1_c123_prov_100_shards"}}}}
-                                                           "C124_PROV")))))
+                                                           "C124-PROV")))))
 
 (deftest test-get-resharded-index-name
   (testing "appends shard count to index name without existing shard count"
