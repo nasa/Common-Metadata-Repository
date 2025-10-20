@@ -348,18 +348,6 @@
           index))))
     #{}))
 
-(defn- validate-index-exists-in-index-set
-  "Validates that an index exists in the index-set."
-  [index-set canonical-index-name]
-  (let [all-indexes (for [[_concept-type config] (get index-set :index-set)
-                          index (get config :indexes [])]
-                      (get index :name))
-        index-exists? (some #(= % canonical-index-name) all-indexes)]
-    (when-not index-exists?
-      (errors/throw-service-error
-       :bad-request
-       (format "Index [%s] not found in index-set" canonical-index-name)))))
-
 (defn- validate-granule-index-does-not-exist
   "Validates that a granule index does not already exist in the index set for the given collection
   concept ID."
