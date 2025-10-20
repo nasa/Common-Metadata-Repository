@@ -24,7 +24,6 @@
    [cmr.common.log :refer [info]]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]
-   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature
     :as has-granules-or-cwic-results-feature]
    [compojure.core :refer [context DELETE GET POST routes]]
