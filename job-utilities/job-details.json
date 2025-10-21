@@ -21,7 +21,7 @@
     },
     "RefreshGranulesCountCache": {
         "target" : {
-            "endpoint" : "caches/refresh/granule-counts-cache",
+            "endpoint" : "caches/refresh/granule-counts",
             "service" : "bootstrap",
             "single-target" : true,
             "request-type" : "POST"
