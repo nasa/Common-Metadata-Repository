@@ -295,7 +295,7 @@
   [context index]
   (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
         concept-type (get-concept-type-for-index fetched-index-set index)
-        target (get-in fetched-index-set [:index-set concept-type :rebalancing-targets (keyword index)])]
+        target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
     (info (format "Finalizing reshard index [%s] to target [%s]."
                   index target))
     ;; This will throw an exception if the index is not being resharded

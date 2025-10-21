@@ -86,17 +86,17 @@
           cleaned (-> index-name
                       (string/replace #"^\d+_" "")
                       (string/replace #"_\d+_shards$" ""))
-            ;; Check if it starts with a concept pattern (letter followed by digits)
+          ;; Check if it starts with a concept pattern (letter followed by digits)
           is-concept? (re-matches #"^[a-z]\d+_.*" cleaned)]
       (if is-concept?
-          ;; Format as concept ID: uppercase and replace first underscore with hyphen
+        ;; Format as concept ID: uppercase and replace first underscore with hyphen
         (let [first-underscore-idx (string/index-of cleaned "_")]
           (if first-underscore-idx
             (str (string/upper-case (subs cleaned 0 first-underscore-idx))
                  "-"
                  (string/upper-case (subs cleaned (inc first-underscore-idx))))
             (string/upper-case cleaned)))
-          ;; Regular index: replace last underscore with hyphen if it has version pattern
+        ;; Regular index: replace last underscore with hyphen if it has version pattern
         (if (re-find #"_v\d+" cleaned)
           (string/replace cleaned #"_(?=v\d+$)" "-")
           cleaned)))))
