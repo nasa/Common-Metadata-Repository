@@ -115,9 +115,10 @@
           (get-in [:_source :index-set-request])
           decode-field))))
 
-;; TODO temporary func that will be deleted after split cluster transition
 (defn get-old-index-set
-  "Fetch index-set associated with an id and a specific elastic cluster."
+  "Fetch index-sets that existing in the pre-split cluster archtecture.
+  This func should only be called one the first time we transition to the split cluster.
+  It may be deleted after the transition is determined to be successful and permanent."
   [context es-cluster-name index-set-id]
   (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [mapping]} (config/idx-cfg-for-index-sets es-cluster-name)

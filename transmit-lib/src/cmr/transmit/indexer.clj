@@ -1,13 +1,12 @@
 (ns cmr.transmit.indexer
   "Provides functions for accessing the indexer application"
   (:require
-    [cheshire.core :as json]
-    [cheshire.core :as cheshire]
-    [clj-http.client :as client]
-    [cmr.common.services.errors :as errors]
-    [cmr.transmit.http-helper :as h]
-    [cmr.transmit.config :as config]
-    [cmr.transmit.connection :as conn]))
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.http-helper :as h]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 ;; Defines health check function
 (declare get-indexer-health)
@@ -62,32 +61,6 @@
                                       Index set app reported status: %s, error: %s"
                                       id status (pr-str (flatten (:errors body))))))))
 
-;(defn put-index-set
-;  [context id updated-index-set-map]
-;  (println "CMR-10941 context = " context)
-;  (let [conn (config/context->app-connection context :indexer)
-;        _ (println "CMR-10941 conn = " conn)
-;        url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
-;        _ (println "CMR-10941 url = " url)
-;        params (merge
-;                 (config/conn-params conn)
-;                 {:method :put
-;                  :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
-;                  :content-type :application/json
-;                  :body (json/generate-string updated-index-set-map)
-;                  :accept :json
-;                  :throw-exceptions false
-;                  :headers {:client-id config/cmr-client-id
-;                            config/token-header (config/echo-system-token)}})
-;        response (client/request params)
-;        status (:status response)
-;        body (cheshire/decode (:body response) true)]
-;    (case (int status)
-;      404 nil
-;      200 body
-;      (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
-;                                      Index set app reported status: %s, error: %s"
-;                                      id status (pr-str (flatten (:errors body))))))))
 (defn- submit-rebalancing-collection-request
   "A helper function for submitting a request to modify the list of rebalancing collections."
   [context index-set-id concept-id url-fn target]

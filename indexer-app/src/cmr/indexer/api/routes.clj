@@ -75,18 +75,6 @@
           (r/response combined-index-set)))
 
       (PUT "/" {request-context :request-context body :body}
-        ;(let [index-set (walk/keywordize-keys body)
-        ;      ;; Split the given index set into the proper sub-index-sets per cluster
-        ;      split-index-set-map (index-set-svc/split-index-set-by-cluster index-set)]
-        ;  (acl/verify-ingest-management-permission request-context :update)
-        ;  ;; Validation for both index sets need to happen before we update anything
-        ;  (index-set-svc/validate-requested-index-set request-context es-config/gran-elastic-name index-set true)
-        ;  (index-set-svc/validate-requested-index-set request-context es-config/elastic-name index-set true)
-        ;  ;; upsert indexes and index set based on the split index set
-        ;  (index-set-svc/update-index-set request-context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
-        ;  (index-set-svc/update-index-set request-context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))
-        ;  {:status 200})
-
         (let [index-set (walk/keywordize-keys body)]
           (index-set-svc/put-index-set request-context index-set)
           {:status 200}))
