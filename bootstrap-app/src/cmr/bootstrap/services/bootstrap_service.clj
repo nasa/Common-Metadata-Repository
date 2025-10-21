@@ -11,12 +11,12 @@
    [cmr.common.log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util] ;; This must be required here to make protocol implementations available.
+   [cmr.common.util :as util]
    [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
    [cmr.indexer.data.index-set :as indexer-index-set]
    [cmr.indexer.services.index-set-service :as index-set-services :refer [get-concept-type-for-index]]
    [cmr.indexer.system :as indexer-system]
-   [cmr.transmit.cache.consistent-cache]
+   [cmr.transmit.cache.consistent-cache] ;; This must be required here to make protocol implementations available.
    [cmr.transmit.indexer :as indexer]))
 
 (def request-type->dispatcher

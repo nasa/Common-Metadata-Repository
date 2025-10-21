@@ -626,14 +626,14 @@
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index)))]
     (try
-            ;; move alias
+      ;; move alias
       (es-util/move-index-alias (indexer-util/context->conn context)
                                 index
                                 target
                                 (esi-helper/index-alias (string/replace index #"_\d+_shards$" "")))
-            ;; delete old index
+      ;; delete old index
       (es/delete-index es-store index)
-            ;; persist index-set changes
+      ;; persist index-set changes
       (update-index-set context new-index-set)
       (catch Exception e
         (error e (format "Failed to finalize resharding for [%s] -> [%s]" index target))
