@@ -24,6 +24,10 @@
        (is (= {:status 401
                :errors ["You do not have permission to perform that action."]}
               (bootstrap/start-reshard-index "1_small_collections" {:headers {}}))))
+     (testing "missing shard count"
+       (is (= {:status 400
+               :errors ["num_shards is a required parameter."]}
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false}))))
      (testing "shard count cannot equal zero"
        (is (= {:status 400
                :errors ["Invalid num_shards [0]. Only integers greater than zero are allowed."]}

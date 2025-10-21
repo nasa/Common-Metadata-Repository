@@ -286,7 +286,7 @@
    (start-reshard-index index-name {}))
   ([index-name options]
    (let [synchronous (get options :synchronous true)
-         num-shards (get options :num-shards 1)
+         num-shards (get options :num-shards)
          headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
          response (client/request
                    {:method :post
