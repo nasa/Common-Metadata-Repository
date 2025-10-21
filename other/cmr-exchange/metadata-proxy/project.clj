@@ -49,20 +49,15 @@
                         :exclusions [;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]
-                                     [commons-fileupload]
                                      ;; The following is excluded because it stomps on twig's logger
                                      [org.slf4j/slf4j-simple]]
-                        :dependencies [;; The following pull required deps that have been either been
-                                       ;; explicitly or implicitly excluded above due to CVEs and need
-                                       ;; declare secure versions of the libs pulled in
-                                       [commons-fileupload "1.4"]
-                                       [commons-io "2.6"]]}
+                        :dependencies [[commons-fileupload "1.6.0"]
+                                       [commons-io "2.20.0"]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.6.0"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]
