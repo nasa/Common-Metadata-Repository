@@ -10,7 +10,8 @@
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.search.data.elastic-search-index :as idx]))
+   [cmr.search.data.elastic-search-index :as idx]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]))
 
 (def has-granules-or-cwic-cache-key
   :has-granules-or-cwic-map)
@@ -79,7 +80,7 @@
   "Gets the granule counts for all collections. This function exists so that this function
   can be replaced for testing purposes."
   [context]
-  (idx/get-collection-granule-counts context nil))
+  (granule-counts-cache/get-granule-counts context))
 
 (defn create-has-granules-or-cwic-map
   "Creates the has granules or cwic map by combining all collections
