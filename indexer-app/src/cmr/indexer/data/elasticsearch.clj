@@ -178,6 +178,7 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
+  ;; update non-gran cluster's index-set
   (let [existing-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
         expected-index-set (idx-set/non-gran-index-set)]
     (if (or (= "true" (:force params))
@@ -194,7 +195,9 @@
         (info "Existing non-gran index set:" (pr-str existing-index-set))
         (info "New non-gran index set:" (pr-str expected-index-set)))))
 
+  ;; update gran cluster's index-set
   (let [existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
+        _ (println "CMR-10941 existing-gran-index-set = " existing-gran-index-set)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
@@ -208,7 +211,16 @@
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
         (info "Existing gran index set:" (pr-str existing-gran-index-set))
-        (info "New gran index set:" (pr-str expected-gran-index-set))))))
+        (info "New gran index set:" (pr-str expected-gran-index-set))))
+
+    ;; this is during our transition
+    (if (nil? existing-gran-index-set)
+      (let [_ (println "CMR-10941 creating gran index set for first time, using the old index-sets value if available.")
+            old-index-set (cmr.indexer.data.index-set-elasticsearch/get-old-index-set context es-config/gran-elastic-name idx-set/index-set-id)
+            _ (println "CMR-10941 old-index-set = " old-index-set)]
+        ;; put that value into the new index sets
+        (if (not (nil? old-index-set))
+          (cmr.indexer.services.index-set-service/put-index-set context old-index-set))))))
 
 (defn delete-granule-index
   "Delete an elastic index by name"
