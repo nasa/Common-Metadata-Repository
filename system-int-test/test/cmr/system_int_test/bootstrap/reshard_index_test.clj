@@ -100,4 +100,10 @@
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
-              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false})))))))
+              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false}))))
+     (testing "alias is moved to new index"
+       (is (index/alias-exists? "1_small_collections_100_shards" "1_small_collections_alias")))
+     (testing "index can be resharded more than once"
+       (is (= {:status 200
+               :message "Resharding started for index 1_small_collections_100_shards"}
+              (bootstrap/start-reshard-index "1_small_collections_100_shards" {:synchronous true :num-shards 50})))))))
