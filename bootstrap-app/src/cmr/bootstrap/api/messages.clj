@@ -94,7 +94,7 @@
 (defn delete-concepts-by-id
   [params result]
   (if (api-util/synchronous? params)
-    (format "Processed %s conccepts for bulk deletion from indexes." result)
+    (format "Processed %s concepts for bulk deletion from indexes." result)
     "Processing concepts for bulk deletion from indexes."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

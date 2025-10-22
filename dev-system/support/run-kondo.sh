@@ -14,7 +14,9 @@ fail_level=warning
 # set to the string true to always pass, anything else will be considered a false
 always_pass=false
 
-# Explicitly excluded projects
+# Explicitly excluded projects. These are currently not being linted because they
+# would fail due to linter errors and warnings. As we fix all of the errors and warnings
+# for a project we should remove them from the exclude list.
 exclude_list=(
   "indexer-app"
   "ingest-app"

@@ -30,12 +30,6 @@
   {:default ""
    :type String})
 
-#_{:clj-kondo/ignore [:unused-value]}
-(defn normalize-queue-name
-  "Function to call private normalize-queue-name function."
-  [queue-name]
-  #'sqs/normalize-queue-name queue-name)
-
 (deftest normalize-queue-name-test
   (testing "with-and-without-prefix"
     (are3

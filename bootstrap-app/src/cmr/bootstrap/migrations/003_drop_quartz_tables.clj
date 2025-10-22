@@ -1,5 +1,6 @@
 (ns cmr.bootstrap.migrations.003-drop-quartz-tables
-  (:require [config.bootstrap-migrate-helper :as h]))
+  (:require
+   [config.bootstrap-migrate-helper :as h]))
 
 (defn up
   "Migrates the database up to version 3."
