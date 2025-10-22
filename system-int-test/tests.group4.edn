@@ -1,5 +1,3 @@
 ["test/cmr/system_int_test/ingest/collection"
  "test/cmr/system_int_test/ingest/granule"
- "test/cmr/system_int_test/ingest/misc"
- "test/cmr/system_int_test/search/collection"
- "test/cmr/system_int_test/search/granule"]
+ "test/cmr/system_int_test/ingest/misc"]
