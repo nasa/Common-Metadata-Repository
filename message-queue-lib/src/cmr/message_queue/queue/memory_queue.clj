@@ -29,11 +29,12 @@
         (info (format "Retrying with retry-count =%d" new-retry-count))
         (queue-protocol/publish-to-queue queue-broker queue-name msg)))))
 
-(declare msg)
 (defn- create-async-handler
   "Creates a go block that will asynchronously pull messages off the queue, pass
    them to the handler, and process the response."
   [queue-broker queue-name handler]
+  ;; queue-ch is used inside the while-let loop
+  #_{:clj-kondo/ignore [:unused-binding]}
   (let [queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
     (async/go
       (try

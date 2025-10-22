@@ -134,6 +134,7 @@
   [^String uri]
   (parse-json-schema-from-uri uri))
 
+#_{:clj-kondo/ignore [:redefined-var]}
 (defn -parseSchemaFromURI
   [^java.net.URI uri]
   (parse-json-schema-from-uri uri))

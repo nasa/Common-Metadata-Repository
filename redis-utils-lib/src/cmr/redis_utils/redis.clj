@@ -40,7 +40,7 @@
 
 (defn healthy?
   "Returns true if able to reach Redis."
-  [& args]
+  [& _args]
   {:ok?
    (try
      (and (= "PONG" (wcar* "healthy?" true (config/redis-read-conn-opts) (carmine/ping)))

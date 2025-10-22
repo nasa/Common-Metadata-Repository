@@ -3,18 +3,23 @@
              {:pattern "cmr.umm-spec\\..*" :name umm-spec-lib}
              {:pattern "cmr.common.cache.in-memory-cache" :name cache-in-mem}]
  :config-in-ns {user {:ignore true} ;; no linting for all dev/user.clj namespaces
+                bootstrap-app.support.drop-user {:ignore true} ;; no linting for support namespaces
                 es-spatial-group {:linters {:unused-import {:level :off} ;; are actually used in compile
                                             :unused-private-var {:level :off}
                                             :non-arg-vec-return-type-hint {:level :off}}}
                 umm-spec-lib {:linters {:refer-all {:level :off} ;; no suggestions given by linter
                                         :use {:level :off} ;; see above; :refer-all linter is supposed to govern this as well but is not doing so for some reason.
                                         :unused-import {:level :off}}}
+                cmr.transmit.test.kms {:linters {:unresolved-namespace {:level :off}}}
+                cmr.orbits.orbits-runtime {:linters {:unused-import {:level :off}}}
+                cmr.message-queue.test.queue.sqs {:linters {:unresolved-symbol {:level :off}}}
+                cmr.umm-spec.test.acl-matchers-test {:linters {:deprecated-var {:level :off}}}
                 cache-in-mem {:linters {:unresolved-symbol {:exclude [cmr.common.cache.in-memory-cache]}}}}
  ;; CMR custom macros
  :lint-as {cmr.common.config/defconfig clojure.core/def
            cmr.common.util/defn-timed clojure.core/defn
            cmr.common.util/defn-timed-level clojure.core/defn
-           cmr.common.util/while-let clojure.core/loop
+           cmr.common.util/while-let clj-kondo.lint-as/def-catch-all
            cmr.common.jobs/defjob clojure.core/defn
            cmr.common.jobs/def-stateful-job clojure.core/defn
            cmr.common.util/are3 clj-kondo.lint-as/def-catch-all
@@ -23,24 +28,24 @@
            ;; our defs with ^:dynamic metadata are being caught by this with no clear way to selectively turn off
            :uninitialized-var {:level :off}
            :consistent-alias
-            {:aliases
-             {clojure.datafy datafy
-              clojure.edn edn
-              clojure.java.io io
-              clojure.math math
-              clojure.set set
-              clojure.walk walk
-              clojure.zip zip
-              clojure.core.async async
-              clojure.data.csv csv
-              clojure.data.xml xml
-              clojure.tools.cli cli
-              clojure.java.shell sh
-              clojure.pprint pp
-              clojure.spec.alpha s
-              clojure.string string ;; We have elected to not follow the official style guide for this alias to help avoid confusion around str
-              clojure.core.matrix mat
-              clojure.tools.logging log
-              clojure.core.protocols p
-              clojure.core.reducers r
-              cmr.common.xml cx}}}}
+           {:aliases
+            {clojure.datafy datafy
+             clojure.edn edn
+             clojure.java.io io
+             clojure.math math
+             clojure.set set
+             clojure.walk walk
+             clojure.zip zip
+             clojure.core.async async
+             clojure.data.csv csv
+             clojure.data.xml xml
+             clojure.tools.cli cli
+             clojure.java.shell sh
+             clojure.pprint pp
+             clojure.spec.alpha s
+             clojure.string string ;; We have elected to not follow the official style guide for this alias to help avoid confusion around str
+             clojure.core.matrix mat
+             clojure.tools.logging log
+             clojure.core.protocols p
+             clojure.core.reducers r
+             cmr.common.xml cx}}}}

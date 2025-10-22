@@ -6,9 +6,7 @@
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
    [cmr.virtual-product.config :as vp-config]
-   [cmr.virtual-product.data.ast-l1a :as l1a])
-  (:import
-   (java.util.regex Pattern)))
+   [cmr.virtual-product.data.ast-l1a :as l1a]))
 
 (def source-granule-ur-additional-attr-name
   "The name of the additional attribute used to store the granule-ur of the source granule"
@@ -247,15 +245,15 @@
 
 (defmulti generate-granule-ur
   "Generates a new granule ur for the virtual collection"
-  (fn [provider-id source-short-name virtual-granule granule-ur]
+  (fn [_provider-id source-short-name _virtual-granule _granule-ur]
     source-short-name))
 
 (defmethod generate-granule-ur :default
-  [provider-id source-short-name virtual-granule granule-ur]
+  [_provider-id source-short-name virtual-granule granule-ur]
   (string/replace-first granule-ur source-short-name (:short-name virtual-granule)))
 
 (defmethod generate-granule-ur "AST_L1A"
-  [provider-id source-short-name virtual-granule granule-ur]
+  [_provider-id source-short-name virtual-granule granule-ur]
   (let [virtual-version-id (sanitize-version-id (:version-id virtual-granule))]
     (as-> (string/replace-first granule-ur source-short-name (:short-name virtual-granule)) granule-ur
           (if virtual-version-id
@@ -272,15 +270,15 @@
 (defmulti compute-source-granule-ur
   "Compute source granule ur from the virtual granule ur. This function should be the inverse
   of generate-granule-ur."
-  (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
+  (fn [provider-id source-short-name _virtual-short-name _virtual-granule-ur]
     [(provider-alias->provider-id provider-id) source-short-name]))
 
 (defmethod compute-source-granule-ur :default
-  [provider-id source-short-name virtual-short-name virtual-granule-ur]
+  [_provider-id source-short-name virtual-short-name virtual-granule-ur]
   (string/replace-first virtual-granule-ur virtual-short-name source-short-name))
 
 (defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id source-short-name virtual-short-name virtual-granule-ur]
+  [_provider-id source-short-name virtual-short-name virtual-granule-ur]
   (as-> (string/replace-first virtual-granule-ur virtual-short-name source-short-name) virtual-granule-ur
         (string/replace-first virtual-granule-ur #"\.\d\d\d:" ".003:")))
 
@@ -310,12 +308,12 @@
   "Dispatch function to update virtual granule umm based on source granule umm. All the non-core
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
-  (fn [virtual-umm provider-id source-short-name virtual-short-name]
+  (fn [_virtual-umm provider-id source-short-name _virtual-short-name]
     [(provider-alias->provider-id provider-id) source-short-name]))
 
 ;; Default is to not do any update
 (defmethod update-virtual-granule-umm :default
-  [virtual-umm provider-id source-short-name source-umm]
+  [virtual-umm _provider-id _source-short-name _source-umm]
   virtual-umm)
 
 (defn- subset-opendap-resource-url
@@ -326,7 +324,7 @@
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat
   as an OnlineResourceURL in the virtual granule and the other OnlineResourceURLs or OnlineAccessURLs
   in the source granule will be dropped."
-  [related-urls src-granule-ur opendap-subset]
+  [related-urls _src-granule-ur opendap-subset]
   (seq (for [related-url related-urls
              ;; only opendap OnlineResourceUrls in source granule should be present in the virtual granules
              :when (= (:type related-url) "USE SERVICE API")]
@@ -372,7 +370,7 @@
 
 (defmethod update-virtual-granule-umm ["GES_DISC" "AIRX3STD"]
   [virtual-umm provider-id source-short-name virtual-short-name]
-  (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
+  (let [_virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
     (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
 
 (def airx3stm-opendap-subsets
@@ -439,7 +437,7 @@
 
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1T"]
-  [virtual-umm provider-id source-short-name virtual-short-name]
+  [virtual-umm _provider-id _source-short-name virtual-short-name]
   (-> virtual-umm
       (update-ast-l1t-related-urls virtual-short-name)
       (update-in [:product-specific-attributes]
@@ -450,7 +448,7 @@
                                        (:name %)) psas)))))
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1A"]
-  [virtual-umm provider-id source-short-name virtual-short-name]
+  [virtual-umm _provider-id _source-short-name virtual-short-name]
   (update-in
     virtual-umm
     [:product-specific-attributes]

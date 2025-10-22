@@ -1,6 +1,6 @@
 (ns cmr.virtual-product.test.services.virtual-product-service
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.message-queue.config :as queue-config]
    [cmr.virtual-product.services.virtual-product-service :as vps]))
 

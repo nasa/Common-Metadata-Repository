@@ -24,7 +24,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed ingest-concept
   "Send a request to ingest service to ingest a concept using the optional headers"
   ([context concept headers]
@@ -39,7 +38,6 @@
                                 :content-type (:format concept)
                                 :headers headers
                                 :accept :json}}))))
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed delete-concept
   "Send a request to ingest service to delete a concept using the optional headers"
   ([context concept headers]

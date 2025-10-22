@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.migrations.001-create-quartz-tables
-  (:require [clojure.java.jdbc :as j]
-            [config.bootstrap-migrate-config :as config]
-            [config.bootstrap-migrate-helper :as h]))
+  (:require
+   [config.bootstrap-migrate-helper :as h]))
 
 (defn up
   "Migrates the database up to version 1."

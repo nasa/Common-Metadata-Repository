@@ -3,7 +3,6 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
-   [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    ; [clojure.test.check.clojure-test :refer [defspec]]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
