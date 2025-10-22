@@ -182,15 +182,16 @@
 (defn get-aliases
   "Returns a vector of alias names for the given index."
   [index-name]
-  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root))]
-    (->> (client/get aliases-url
-                     {:accept :json
-                      :connection-manager (s/conn-mgr)
-                      :throw-exceptions false})
-         (:body)
-         (json/parse-string)
-         (filter #(= (get % "index") index-name))
-         (mapv #(get % "alias")))))
+  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root))
+        resp (client/get aliases-url
+                         {:query-params {:format "json"}
+                          :connection-manager (s/conn-mgr)
+                          :throw-exceptions false})]
+    (if (= 200 (:status resp))
+      (->> (json/decode (:body resp) true)
+           (filter #(= (:index %) index-name))
+           (mapv :alias))
+      [])))
 
 (defn alias-exists?
   "Returns true if the given alias exists for the specified index."

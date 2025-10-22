@@ -612,14 +612,16 @@
              :not-found
              (format "Index [%s] does not exist." index)))
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
-        canonical-index-name (string/replace-first index #"^\d+_" "")
         es-store (indexer-util/context->es-store context)
+        prefix-id (get-in index-set [:index-set :id])
         new-index-set (-> index-set
                           ;; delete the old index config from the index-set
                           (update-in [:index-set concept-type :indexes]
-                                     #(filter (fn [config]
-                                                (not (= canonical-index-name (:name config))))
-                                              %))
+                                     (fn [indexes]
+                                       (remove (fn [config]
+                                                 (= (gen-valid-index-name prefix-id (:name config))
+                                                    index))
+                                               indexes)))
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]
                                      dissoc (keyword index))
