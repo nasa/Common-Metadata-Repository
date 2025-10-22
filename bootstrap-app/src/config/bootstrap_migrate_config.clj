@@ -4,7 +4,6 @@
    [clojure.java.jdbc :as j]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.oracle.connection :as oracle]
    [cmr.metadata-db.services.util :as mdb-util]
    [drift.builder :as drift-builder])
   (:import
@@ -23,7 +22,7 @@
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
-  [args]
+  [_args]
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
     (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
@@ -65,7 +64,7 @@
    :current-version current-db-version
    :update-version update-db-version})
 
-(defn migrate-config 
+(defn migrate-config
   "Drift migrate configuration used by lein migrate.
    Calling shutdown-agents allows lein migrate command to terminate faster."
   []

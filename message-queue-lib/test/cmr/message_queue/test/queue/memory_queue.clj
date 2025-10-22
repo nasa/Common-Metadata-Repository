@@ -1,6 +1,6 @@
 (ns cmr.message-queue.test.queue.memory-queue
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.lifecycle :as l]
    [cmr.message-queue.queue.memory-queue :as mq]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
@@ -23,13 +23,13 @@
 
 (defn success-handler
   "A handler that doesn't do anything"
-  [& args])
+  [& _args])
   ;; do nothing
 
 
 (defn retry-handler
   "A handler that forces a retry"
-  [& args]
+  [& _args]
   (throw (Exception. "force retry")))
 
 (defn add-message-capturing-handler

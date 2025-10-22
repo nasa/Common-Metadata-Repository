@@ -6,7 +6,6 @@
    [clojure.test :refer [deftest is testing]]
    [cmr.orbits.orbits-runtime :as orbits-runtime])
   (:import
-   (javax.script ScriptEngineManager)
    (org.jruby.embed.jsr223 JRubyEngine)))
 
 (set! *warn-on-reflection* true)

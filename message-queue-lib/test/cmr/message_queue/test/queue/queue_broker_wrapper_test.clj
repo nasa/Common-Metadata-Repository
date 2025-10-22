@@ -1,7 +1,7 @@
 (ns cmr.message-queue.test.queue.queue-broker-wrapper-test
   "Functions for testing the queue broker wrapper we use for testing."
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is]]
     [cmr.common.lifecycle :as lifecycle]
     [cmr.message-queue.queue.memory-queue :as memory-queue]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -17,7 +17,7 @@
 
 (defn- retry-handler
   "A handler that forces a retry"
-  [& args]
+  [& _args]
   (throw (Exception. "force retry")))
 
 (defn- get-number-of-retries

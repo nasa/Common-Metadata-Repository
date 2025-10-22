@@ -3,7 +3,6 @@
    [clojure.test :refer [are deftest is]]
    [clojure.java.io :as io]
    [cmr.common.util :as util]
-   [cmr.umm.umm-granule :as umm-g]
    [cmr.umm.echo10.granule :as g]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
@@ -46,11 +45,6 @@
         gen-qa-urls (fn [urls] (map #(hash-map :type "Quality Assurance"
                                                :mime-type "text/plain"
                                                :url %) urls))
-        gen-measured-parameter (fn [{:keys [parameter-name qa-stats qa-flags]}]
-                                 (umm-g/map->MeasuredParameter
-                                   {:parameter-name parameter-name
-                                    :qa-stats (when (seq qa-stats) (umm-g/map->QAStats qa-stats))
-                                    :qa-flags (when (seq qa-flags) (umm-g/map->QAFlags qa-flags))}))
         opendap-url "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/some-file-name"
         non-opendap-url "http://s4psci.gesdisc.eosdis.nasa.gov/data/s4pa_TS2/some-file-name"
         frbt-data-pool-url "http://f5eil01v.edn.ecs.nasa.gov/FS1/ASTT/AST_L1T.003/2014.04.27/AST_L1T_00304272014172403_20140428144310_12345_T.tif"

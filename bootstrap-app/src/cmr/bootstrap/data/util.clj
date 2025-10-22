@@ -3,10 +3,9 @@
   processes."
   (:require
    [cmr.bootstrap.embedded-system-helper :as helper]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer [warn error]]
    [cmr.indexer.services.index-service :as index-service]
-   [cmr.metadata-db.services.concept-service :as concept-service]
-   [cmr.metadata-db.services.provider-service :as provider-service]))
+   [cmr.metadata-db.services.concept-service :as concept-service]))
 
 (defn save-and-index-concept
   "Saves the concept to the Metadata DB and indexes it using the indexer"
