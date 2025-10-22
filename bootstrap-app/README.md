@@ -96,7 +96,7 @@ the resharding is finalized.
 
 ```
 curl -i \
-  -X POSTS \
+  -X POST \
   "http://localhost:3005/reshard/1_small_collections/start?num_shards=50"
 
 HTTP/1.1 200 OK
@@ -114,6 +114,19 @@ curl -i \
 
 HTTP/1.1 200 OK
 {"original-index":"1_c1234_prov1","reshard-index":"1_c1234_prov1_75_shards", "reshard-status": "COMPLETE"}
+```
+
+### Finalize Resharding
+Finalizes the resharding process to move the ElasticSearch alias to point to the newly resharded
+index. Returns a 400 error if the index resharding is not complete.
+
+```
+curl -i \
+  -X POST \
+  "http://localhost:3005/reshard/1_small_collections/finalize"
+
+HTTP/1.1 200 OK
+{"message": "Resharding completed for index 1_small_collections"}
 ```
 
 ## Bulk Operations
