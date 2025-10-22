@@ -11,13 +11,13 @@
    [cmr.common.log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
-   [cmr.indexer.data.index-set :as indexer-index-set]
-   [cmr.indexer.services.index-set-service :as index-set-services]
-   [cmr.indexer.system :as indexer-system]
-   [cmr.transmit.indexer :as indexer]
    [cmr.common.util :as util]
-   ;; This must be required here to make protocol implementations available.
-   [cmr.transmit.cache.consistent-cache]))
+   [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
+   [cmr.indexer.data.index-set :as indexer-index-set]
+   [cmr.indexer.services.index-set-service :as index-set-services :refer [get-concept-type-for-index]]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.transmit.cache.consistent-cache] ;; This must be required here to make protocol implementations available.
+   [cmr.transmit.indexer :as indexer]))
 
 (def request-type->dispatcher
   "A map of request types to which dispatcher to use for asynchronous requests."
@@ -192,7 +192,8 @@
   "Reset caches affected by rebalancing"
   [context]
   (let [index-set-cache (get-in context [:system :embedded-systems :indexer :caches indexer-index-set/index-set-cache-key])]
-    (cache/reset index-set-cache)))
+    (cache/reset index-set-cache)
+    (index-names-cache/refresh-index-names-cache context)))
 
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
@@ -288,6 +289,23 @@
     ;; Copy the contents of the source index to the target index. The dispatcher will handle
     ;; how this is run.
     (migrate-index context dispatcher index target)))
+
+(defn finalize-reshard-index
+  "Finalizes index resharding."
+  [context index]
+  (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
+        concept-type (get-concept-type-for-index fetched-index-set index)
+        target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
+    (info (format "Finalizing reshard index [%s] to target [%s]."
+                  index target))
+    ;; This will throw an exception if the index is not being resharded
+    (indexer/finalize-resharding-index context indexer-index-set/index-set-id index)
+    ;; Clear the cache so that the newest index set data will be used.
+    ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    (reset-caches-affected-by-rebalancing context)
+
+    ;; Minimize likelihood of triggering race condition (see `finalize-rebalance-collection` above)
+    (wait-until-index-set-hash-cache-times-out)))
 
 (defn reshard-status
   "Returns the resharding status of the given index."

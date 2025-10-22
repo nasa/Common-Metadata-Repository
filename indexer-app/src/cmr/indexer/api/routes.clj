@@ -87,13 +87,21 @@
       ;; Index resharding routes
       (context "/reshard/:index" [index]
 
+        ;; Starts the resharding process for an index
+        (POST "/start" {:keys [request-context params]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-set-svc/start-index-resharding request-context id index params)
+          {:status 200})
+
         (GET "/status" {request-context :request-context}
           (acl/verify-ingest-management-permission request-context :update)
           (r/response (index-set-svc/get-reshard-status request-context id index)))
 
-        (POST "/start" {:keys [request-context params]}
+        ;; Finalizes resharding of an index, culminating in deleting the index which is replaced
+        ;; by a new index
+        (POST "/finalize" {:keys [request-context]}
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/start-index-resharding request-context id index params)
+          (index-set-svc/finalize-index-resharding request-context id index)
           {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.

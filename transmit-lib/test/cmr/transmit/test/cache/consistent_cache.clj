@@ -1,7 +1,7 @@
 (ns cmr.transmit.test.cache.consistent-cache
   "Unit tests for the consistent cache. It tests everything using in memory caches."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.transmit.cache.consistent-cache :as cc]
    [cmr.transmit.cache.consistent-cache-spec :as consistent-cache-spec]
    [cmr.common.cache :as cache]
@@ -65,7 +65,7 @@
       (testing "when checking the cache size"
         (is (zero? (cache/cache-size consistent-cache))
             "Then the cache size is zero"))
-      
+
       (testing "when putting something into the cache"
         (cache/set-value consistent-cache "test-content-key" "test-content")
         (is (= 44 (cache/cache-size consistent-cache))
