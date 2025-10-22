@@ -54,7 +54,7 @@
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[clojusc/trifl "0.4.2"]
-                                  [clojusc/twig "0.4.1"]
+                                  [clojusc/twig "0.4.2"]
                                   [debugger "0.2.1"]]
                    :repl-options {:init-ns cmr.sizing.dev
                                   :prompt ~get-prompt

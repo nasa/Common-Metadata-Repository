@@ -3,10 +3,10 @@
   :url "https://github.com/cmr-exchange/authz"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[buddy/buddy-sign "3.4.333"]
+  :dependencies [[buddy/buddy-sign "3.6.1-359"]
                  [cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0"]

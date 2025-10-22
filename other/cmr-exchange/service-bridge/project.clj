@@ -23,7 +23,7 @@
   :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.1"]
+                 [clojusc/twig "0.4.2"]
                  [com.fasterxml.jackson.core/jackson-core "2.20.0"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.20.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]

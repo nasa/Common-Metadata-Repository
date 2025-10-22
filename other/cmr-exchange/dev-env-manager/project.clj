@@ -54,7 +54,7 @@
              ;; Environments
              :dev {:dependencies [[clojusc/ltest "0.3.0-SNAPSHOT"]
                                   [clojusc/trifl "0.3.0-SNAPSHOT"]
-                                  [clojusc/twig "0.3.2"]
+                                  [clojusc/twig "0.4.2"]
                                   [gov.nasa.earthdata/cmr-process-manager "0.1.0-SNAPSHOT"]
                                   [me.raynes/conch "0.8.0"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [com.dadrox/quiet-slf4j
