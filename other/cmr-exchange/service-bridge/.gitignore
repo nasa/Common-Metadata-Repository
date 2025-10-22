@@ -10,6 +10,7 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
+.clj-kondo/
 /third-party
 /data/cache
 /junit-test-results

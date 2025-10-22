@@ -54,9 +54,9 @@
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
                  [org.yaml/snakeyaml "2.5"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.2"]
-                 [ring/ring-defaults "0.3.2"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-defaults "0.3.4"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
