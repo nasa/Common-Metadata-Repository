@@ -22,7 +22,7 @@
   :exclusions [org.clojure/clojure]
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.0"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [me.raynes/conch "0.8.0"]

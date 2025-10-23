@@ -255,7 +255,7 @@ Distributed under the Apache License, Version 2.0.
 [deps-badge]: https://img.shields.io/badge/deps%20check-passing-brightgreen.svg
 [tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-nlp.svg
 [tag]: https://github.com/cmr-exchange/cmr-nlp/tags
-[clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
+[clojure-v]: https://img.shields.io/badge/clojure-1.11.2-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-nlp
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-nlp.svg
 [security-scan-badge]: https://img.shields.io/badge/dependency%20check%20security%20scan-passing-brightgreen.svg
