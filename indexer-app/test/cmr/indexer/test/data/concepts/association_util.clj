@@ -2,7 +2,7 @@
   "Code coverage tests for the functions of testing cmr.indexer.data.concepts.association-util
    namespace."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.indexer.data.concepts.association-util :as assoc-util]))
 
 (deftest concept-named-assoc-list->assocs-test
