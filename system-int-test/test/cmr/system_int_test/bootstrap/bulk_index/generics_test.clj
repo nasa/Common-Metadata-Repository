@@ -260,7 +260,7 @@
      (core/reenable-automatic-indexing))))
 
 (deftest ^:oracle bulk-index-generics-multiple-associations
-  (testing "Bulk index three grids multiple grids and a collection ensure associaions are returned"
+  (testing "Bulk index three grids and a collection. Multiple grids ensure associations are returned"
     (system/only-with-real-database
       ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
