@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.api.messages
   "Utility functions for the bootstrap API."
   (:require
-   [clojure.string :as string]
    [cmr.bootstrap.api.util :as api-util]))
 
 (defn required-params
@@ -84,19 +83,19 @@
   [params result]
   (if (api-util/synchronous? params)
     (format "Processed %s system concepts for bulk indexing." result)
-    (str "Processing system concepts for bulk indexing.")))
+    "Processing system concepts for bulk indexing."))
 
 (defn index-concepts-by-id
   [params result]
   (if (api-util/synchronous? params)
     (format "Processed %s concepts for bulk indexing." result)
-    (str "Processing concepts for bulk indexing.")))
+    "Processing concepts for bulk indexing."))
 
 (defn delete-concepts-by-id
   [params result]
   (if (api-util/synchronous? params)
-    (format "Processed %s conccepts for bulk deletion from indexes." result)
-    (str "Processing concepts for bulk deletion from indexes.")))
+    (format "Processed %s concepts for bulk deletion from indexes." result)
+    "Processing concepts for bulk deletion from indexes."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Bulk migration messages

@@ -7,8 +7,7 @@
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as http-helper]
-   [cmr.common.util :as util]))
+   [cmr.transmit.http-helper :as http-helper]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -42,7 +41,7 @@
 
 (def URS_CACHE_TIME
   "The number of milliseconds CMR client bearer token information will be cached."
-  (* 24 60 60 util/second-as-milliseconds))
+  (* 24 60 60 common-util/second-as-milliseconds))
 
 (defn create-urs-cache
   "Creates a cache for which CMR client bearer tokens are stored in memory."

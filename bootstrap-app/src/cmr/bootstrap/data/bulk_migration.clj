@@ -1,11 +1,11 @@
 (ns cmr.bootstrap.data.bulk-migration
   "Functions to support migration of data form catlog rest to metadata db."
   (:require
-   [clojure.core.async :refer [thread alts!! <!!]]
+   [clojure.core.async :refer [thread alts!!]]
    [clojure.java.jdbc :as j]
    [cmr.bootstrap.data.migration-utils :as mu]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.oracle.sql-utils :as su :refer [select insert from where delete]]
+   [cmr.common.log :refer [info error]]
+   [cmr.oracle.sql-utils :as su :refer [select from where delete]]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as transmit-mdb]))
 
@@ -21,20 +21,6 @@
 ;; 3. Insert collections by selecting from dataset table.
 ;; 4. Iterate over dataset ids for provider and insert granules into metadata db table
 ;; by selecting from catlaog-rest table.
-
-(defn- delete-collection-sql
-  "Generate SQL to delete a collection from a provider's collection table."
-  [system provider-id collection-id]
-  (let [collection-table (mu/metadata-db-concept-table provider-id :collection)]
-    (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
-
-(defn- delete-collection
-  "Delete a collection from a provider's collection table."
-  [system provider-id collection-id]
-  (info "Deleting collection" collection-id "from provider" provider-id)
-  (j/with-db-transaction
-    [conn (:db system)]
-    (j/execute! conn (delete-collection-sql system provider-id collection-id))))
 
 (defn- delete-collection-granules-sql
   "Generate SQL to delete granules for a given collection from a provider's granule table."
@@ -176,7 +162,7 @@
         provider-db-channel (:provider-db-channel core-async-dispatcher)
         collection-db-channel (:collection-db-channel core-async-dispatcher)
         channels [provider-db-channel collection-db-channel]]
-    (dotimes [n 2]
+    (dotimes [_n 2]
       (thread (while true
                 (try ; catch any errors and log them, but don't let the thread die
                   (let [[v ch] (alts!! channels)]

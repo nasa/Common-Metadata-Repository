@@ -273,7 +273,7 @@
 
 (defmulti delete-concepts-by-id
   "Delete the concepts of the given type for the given provder with the given concept-ids."
-  (fn [system provider-id concept-type concept-ids] concept-type))
+  (fn [_system _provider-id concept-type _concept-ids] concept-type))
 
 (defmethod delete-concepts-by-id :granule
   [system _ _ concept-ids]

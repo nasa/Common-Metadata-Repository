@@ -3,7 +3,7 @@
    functions only."
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util]
    [cmr.spatial.runner :as runner]))
 

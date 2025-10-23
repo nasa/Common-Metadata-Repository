@@ -36,24 +36,24 @@
    ;; The connection used to get data from redis. This can either be the redis read-only replicas
    ;; or the primary node.
    read-connection
-    
+
    ;; The connection used to write data to redis, this is the primary node.
    primary-connection]
 
   cache/CmrCache
   (get-keys
-    [this]
+    [_this]
     (map deserialize (redis/get-keys read-connection)))
 
   (key-exists
-    [this key]
+    [_this key]
     ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
     (let [exists (wcar* key true read-connection (carmine/exists (serialize key)))]
       (when exists
         (> exists 0))))
 
   (get-value
-    [this key]
+    [_this key]
     (let [s-key (serialize key)]
       (-> (wcar* key
                  true
@@ -74,12 +74,12 @@
           value))))
 
   (reset
-    [this]
+    [_this]
     (doseq [the-key keys-to-track]
       (wcar* the-key false primary-connection (carmine/del (serialize the-key)))))
 
   (set-value
-    [this key value]
+    [_this key value]
     ;; Store value in map to aid deserialization of numbers.
     (let [s-key (serialize key)]
       (wcar* s-key false primary-connection (carmine/set s-key {:value value})

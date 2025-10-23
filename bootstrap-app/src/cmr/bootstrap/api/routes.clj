@@ -120,9 +120,12 @@
        (POST "/start" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
          (resharding/start request-context index params))
+       (POST "/finalize" {:keys [request-context]}
+         (acl/verify-ingest-management-permission request-context :update)
+         (resharding/finalize request-context index))
        (GET "/status" {:keys [request-context]}
-          (acl/verify-ingest-management-permission request-context :update)
-          (resharding/get-status request-context index)))
+         (acl/verify-ingest-management-permission request-context :update)
+         (resharding/get-status request-context index)))
      (context "/virtual_products" []
        (POST "/" {:keys [request-context params]}
          (virtual-products/bootstrap request-context params)))
@@ -163,8 +166,8 @@
 
              (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
              (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
-             
-             (= keyword-cache-name granule-counts-cache/granule-counts-cache-key) 
+
+             (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
              (granule-counts-cache/refresh-granule-counts-cache request-context)
 
              :else
