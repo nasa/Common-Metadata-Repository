@@ -84,23 +84,29 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defn create-association-map-keys
+  "Creates the association map keys that lists out all of the different association types.
+  For example, this function changes the named concept type from variable-association to a
+  key of :variable-associations."
+  [key-str]
+  {key-str (keyword (inf/plural key-str))})
+
+(defn- get-associations
+  "Get all of the associations for the passed in concept. Group the results by concept type
+   so that it aligns with what index-concept :default expects."
+  [context concept]
+  (let [combined-assocs (meta-db/find-associations context concept)
+        grouped-assocs (group-by :concept-type combined-assocs)
+        new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
+    (set/rename-keys grouped-assocs new-key-map)))
+
+
 (defmethod prepare-batch :collection
   [context batch options]
   ;; Get the associations as well.
   (let [batch (map (fn [concept]
-                     (let [tag-associations (meta-db/get-associations-for-collection
-                                             context concept :tag-association)
-                           variable-associations (meta-db/get-associations-for-collection
-                                                  context concept :variable-association)
-                           service-associations (meta-db/get-associations-for-collection
-                                                 context concept :service-association)
-                           tool-associations (meta-db/get-associations-for-collection
-                                              context concept :tool-association)]
-                       (-> concept
-                           (assoc :tag-associations tag-associations)
-                           (assoc :variable-associations variable-associations)
-                           (assoc :service-associations service-associations)
-                           (assoc :tool-associations tool-associations))))
+                     (let [associations (get-associations context concept)]
+                       (merge concept associations)))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
 
@@ -451,22 +457,6 @@
 
     :tool
     (meta-db/get-associations-for-tool context concept)))
-
-(defn create-association-map-keys
-  "Creates the association map keys that lists out all of the different association types.
-  For example, this function changes the named concept type from variable-association to a
-  key of :variable-associations."
-  [key-str]
-  {key-str (keyword (inf/plural key-str))})
-
-(defn- get-associations
-  "Get all of the associations for the passed in concept. Group the results by concept type
-   so that it aligns with what index-concept :default expects."
-  [context concept]
-  (let [combined-assocs (meta-db/find-associations context concept)
-        grouped-assocs (group-by :concept-type combined-assocs)
-        new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
-    (set/rename-keys grouped-assocs new-key-map)))
 
 ;; ***********************************************
 ;; multi method index-concept
