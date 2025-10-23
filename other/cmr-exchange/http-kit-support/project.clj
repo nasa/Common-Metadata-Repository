@@ -30,7 +30,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [ring/ring-defaults "0.3.4"]
-                 [selmer "1.12.5"]
+                 [selmer "1.12.65"]
                  [tolitius/xml-in "0.1.0"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.20.0"]]
