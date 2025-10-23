@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.test :refer [is]]
    [cmr.system-int-test.data2.collection :as dc]
-   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]

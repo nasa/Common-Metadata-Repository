@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.bootstrap.bulk-index.generics-test
   "Integration test for CMR bulk index generic document operations."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.bootstrap.bulk-index.core :as core]
    [cmr.system-int-test.search.misc.generic-association-test :as association-test]
@@ -31,7 +31,7 @@
      (let [grid1 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1" :grid generic/grid-good :post)
            ;; create a grid on a different provider PROV2
            ;; and this grid won't be indexed as a result of indexing grids of PROV1
-           grid2 (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-1" :grid generic/grid-good :post)
+           _ (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-1" :grid generic/grid-good :post)
            {:keys [status errors]} (bootstrap/bulk-index-grids "PROV1" nil)]
 
        ;; The above bulk-index-grids call with nil headers has no token
@@ -138,16 +138,7 @@
        (index/wait-until-indexed)
 
        (testing "After bulk indexing a provider, search found all grid revisions for that provider"
-         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})
-               results-tuples (map
-                               #(hash-map :concept-id (get-in % [:meta :concept-id])
-                                          :revision-id (get-in % [:meta :revision-id]))
-                               (:items results))
-               original-tuples (map
-                                #(hash-map :concept-id (:concept-id %)
-                                           :revision-id (:revision-id %))
-                                [grid1-1, grid1-2-tombstone, grid1-3])]
-
+         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})]
            (is (= 200 status))
            (is (= 3 (:hits results)))))
 
@@ -210,10 +201,9 @@
        ;; Grids should now be indexed
        (is (= 2 (:hits (search/find-refs :grid {}))))
        ;; Associate the two grids
-       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}])
-             _ (index/wait-until-indexed)
-             grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)])
+       (association-util/generic-associate-by-concept-ids-revision-ids
+        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}])
+       (index/wait-until-indexed)
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
          (is empty? (set (:association-details grid-search-pre-bulk))))
@@ -250,11 +240,9 @@
        ;; Grids should now be indexed
        (is (= 2 (:hits (search/find-refs :grid {}))))
        ;; Associate the two grids
-       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}])
-             _ (index/wait-until-indexed)
-             ;; Search the grid for associations
-             grid-search-result (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)])
+       (association-util/generic-associate-by-concept-ids-revision-ids
+        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}])
+       (index/wait-until-indexed)
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)]
          (is empty? (set (:association_details grid-search-pre-bulk))))
@@ -272,12 +260,13 @@
      (core/reenable-automatic-indexing))))
 
 (deftest ^:oracle bulk-index-generics-multiple-associations
-  (testing "Bulk index three grids multiple grids ensure associaions are returned"
+  (testing "Bulk index three grids and a collection. Multiple grids ensure associations are returned"
     (system/only-with-real-database
       ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-     ;; Create two grids
+     ;; Create three grids and a collection
      (let [token (echo-util/login (system/context) "user1")
+           collection1 (core/save-collection "PROV1" 1)
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV1" "tg2" :grid generic/grid-good :post)
            grid3 (generic/ingest-generic-document nil "PROV1" "tg3" :grid generic/grid-good :post)
@@ -286,7 +275,8 @@
            grid3-concept-id (:concept-id grid3)
            grid1-revision-id (:revision-id grid1)
            grid2-revision-id (:revision-id grid2)
-           grid3-revision-id (:revision-id grid3)]
+           grid3-revision-id (:revision-id grid3)
+           coll-concept-id (:concept-id collection1)]
        ;; No indicies since they are disabled
        (is (= 0 (:hits (search/find-refs :grid {}))))
        ;; bulk index to create the indexes for the ingested grids
@@ -295,10 +285,9 @@
        ;; three Grids should now be indexed
        (is (= 3 (:hits (search/find-refs :grid {}))))
        ;; Associate the grids
-       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}, {:concept-id grid3-concept-id :data "some other data" :revision-id grid3-revision-id}])
-             _ (index/wait-until-indexed)
-             grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)])
+       (association-util/generic-associate-by-concept-ids-revision-ids
+        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}, {:concept-id grid3-concept-id :data "some other data" :revision-id grid3-revision-id}])
+       (index/wait-until-indexed)
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
          (is empty? (set (:association-details grid-search-pre-bulk))))
@@ -310,7 +299,32 @@
        ;; The association should still be indexed
        (let [grid-search-result2 (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
          (is (= (set [{:data "some data", :concept-id grid2-concept-id :revision-id grid2-revision-id}, {:data "some other data", :concept-id grid3-concept-id :revision-id grid3-revision-id}])
-                (set (:association-details grid-search-result2))))))
+                (set (:association-details grid-search-result2)))))
+       ;; No indicies since they are disabled
+       (is (= 0 (:hits (search/find-refs :collection {}))))
+       (bootstrap/bulk-index-provider "PROV1")
+       (index/wait-until-indexed)
+       ;; 1 collection should now be indexed
+       (is (= 1 (:hits (search/find-refs :collection {}))))
+       ;; Associate a grid to a collection
+       (let [nil-revision-id nil
+             search-params (str "concept-id=" coll-concept-id)
+             _ (association-util/generic-associate-by-concept-ids-revision-ids
+                token grid1-concept-id nil-revision-id [{:concept-id coll-concept-id :data "some data"}])
+             _ (index/wait-until-indexed)
+             search-result (association-test/get-associations-and-details "collections.umm_json" search-params :grids true)]
+         ;; Associations in the index should be empty since they were not there when the record was re-indexed
+         (is empty? (set (:association-details search-result))))
+       ;; re-index the association since it was not there at the start of the test
+       (bootstrap/bulk-index-provider "PROV1")
+       (index/wait-until-indexed)
+       ;; Should still have one record for collections
+       (is (= 1 (:hits (search/find-refs :collection {}))))
+       ;; The association should still be indexed
+       (let [search-params (str "concept-id=" coll-concept-id)
+             search-result (association-test/get-associations-and-details "collections.umm_json" search-params :grids true)]
+         (is (= (set [{:data "some data", :concept-id grid1-concept-id}])
+                (set (:association-details search-result))))))
      ;; Reenable message publishing
      (core/reenable-automatic-indexing))))
 
@@ -337,10 +351,9 @@
        ;; Grids should now be indexed
        (is (= 2 (:hits (search/find-refs :grid {}))))
        ;; Associate the two grids
-       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id 1}])
-             _ (index/wait-until-indexed)
-             grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)])
+       (association-util/generic-associate-by-concept-ids-revision-ids
+        token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id 1}])
+       (index/wait-until-indexed)
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
          (is empty? (set (:association-details grid-search-pre-bulk))))
@@ -382,8 +395,7 @@
        ;; Associate the the grid and the order-option
        (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                         token grid1-concept-id grid1-revision-id [{:concept-id orderOption1-concept-id :data "some data" :revision-id orderOption1-revision-id}])
-             _ (index/wait-until-indexed)
-             grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :order-options true)]
+             _ (index/wait-until-indexed)]
              (is (= 200 (:status response1))))
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :order-options true)]
@@ -427,8 +439,7 @@
        ;; Associate the two grids
        (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                         token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"} :revision-id grid2-revision-id}])
-             _ (index/wait-until-indexed)
-             grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
+             _ (index/wait-until-indexed)]
          (is (= 200 (:status response1))))
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
          (is empty? (set (:association-details grid-search-pre-bulk))))
@@ -465,10 +476,9 @@
       ;; Grids should now be indexed
       (is (= 2 (:hits (search/find-refs :grid {}))))
       ;; Associate the two grids
-      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                       token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"} :revision-id grid2-revision-id}])
-            _ (index/wait-until-indexed)
-            grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)])
+      (association-util/generic-associate-by-concept-ids-revision-ids
+       token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"} :revision-id grid2-revision-id}])
+      (index/wait-until-indexed)
       ;; Associations in the index should be empty since they were not there when the record was re-indexed
       (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
         (is empty? (set (:association-details grid-search-pre-bulk))))
@@ -514,13 +524,11 @@
       (is (= 2 (:hits (search/find-refs :grid {}))))
       (is (= 1 (:hits (search/find-refs :service {}))))
       ;; Associate the two grids and associate the service to one of the grids
-      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                       token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"} :revision-id grid2-revision-id}])
-            serviceAssociation  (association-util/generic-associate-by-concept-ids-revision-ids token sv1-concept-id sv1-revision-id [{:concept-id grid1-concept-id :data "Some data" :revision-id grid1-revision-id}])
-            _ (index/wait-until-indexed)
-            grid-search-result (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :services true)
-            service-search-result (association-test/get-associations-and-details "services.umm_json" "native_id=sv1" :grids true)]
-            (is (= 200 (:status serviceAssociation))))
+      (association-util/generic-associate-by-concept-ids-revision-ids
+       token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"} :revision-id grid2-revision-id}])
+      (let [serviceAssociation  (association-util/generic-associate-by-concept-ids-revision-ids token sv1-concept-id sv1-revision-id [{:concept-id grid1-concept-id :data "Some data" :revision-id grid1-revision-id}])
+            _ (index/wait-until-indexed)]
+        (is (= 200 (:status serviceAssociation))))
       ;; Associations in the index should be empty since they were not there when the record was re-indexed
       (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :services true)]
         (is empty? (set (:association-details grid-search-pre-bulk))))
