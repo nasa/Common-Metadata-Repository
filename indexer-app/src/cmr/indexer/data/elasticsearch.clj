@@ -213,14 +213,13 @@
         (info "New gran index set:" (pr-str expected-gran-index-set))))
 
     ;; this is during our transition
-    (if (nil? existing-gran-index-set)
-      (let [_ (info "Creating gran index set for first time, using the old index-sets value if available.")
-            old-index-set (cmr.indexer.data.index-set-elasticsearch/get-old-index-set context es-config/gran-elastic-name idx-set/index-set-id)]
+    (when (nil? existing-gran-index-set)
+      (info "Creating gran index set for first time, using the old index-sets value if available.")
+      (let [old-index-set (index-set-es/get-old-index-set context es-config/gran-elastic-name idx-set/index-set-id)]
         ;; put that value into the new index sets
-        (if (not (nil? old-index-set))
-          (do
-            (info "old index-sets was found. Creating gran index-sets index with old index-sets value.")
-            (cmr.indexer.services.index-set-service/put-index-set context old-index-set)))))))
+        (when-not (nil? old-index-set)
+          (info "old index-sets was found. Creating gran index-sets index with old index-sets value.")
+          (index-set-svc/put-index-set context old-index-set))))))
 
 (defn delete-granule-index
   "Delete an elastic index by name"

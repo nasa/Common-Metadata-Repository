@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.acl.core :as acl]
    [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [info warn]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
@@ -285,7 +284,6 @@
   "Upsert the given index-set to the index-sets index in ES."
   [context index-set]
   (let [split-index-set-map (split-index-set-by-cluster index-set)]
-    (acl/verify-ingest-management-permission context :update)
     ;; Validation for both index sets need to happen before we update anything
     (validate-requested-index-set context es-config/gran-elastic-name index-set true)
     (validate-requested-index-set context es-config/elastic-name index-set true)
