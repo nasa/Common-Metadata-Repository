@@ -118,7 +118,7 @@
 (defn get-old-index-set
   "Fetch index-sets that existing in the pre-split cluster archtecture.
   This func should only be called once during the first time we transition to the split cluster.
-  It may be deleted after the transition is determined to be successful and permanent."
+  It may be deleted after the transition is determined to be successful and permanent with the ticket CMR-10949."
   [context es-cluster-name index-set-id]
   (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
         {:keys [mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
