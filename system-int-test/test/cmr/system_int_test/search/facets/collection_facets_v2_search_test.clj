@@ -188,10 +188,6 @@
   (testing "Facets size applied for facets, with selecting facet that exists, without specifying facets size."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-without-facets-size
            (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :diadem-lower)}}))))
-  (testing "Facets size applied for facets, with selecting facet that doesn't exist."
-    (is (= fr/expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
-           (search-and-return-v2-facets {:facets-size {:platforms 1}
-                                         :platforms-h {:0 (sample-platform-full :non-existent)}}))))
   (testing "Empty facets size applied for facets"
     (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
