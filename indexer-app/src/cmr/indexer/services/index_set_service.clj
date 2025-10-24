@@ -348,12 +348,20 @@
           index))))
     #{}))
 
+(defn- collection-ids-from-granule-indexes
+  "Extracts the collection concept IDs corresponding to individual granule indexes in the index set."
+  [index-set]
+  (->> (get-in index-set [:index-set :granule :indexes])
+       (map :name)
+       (map index-name->concept-id)
+       set))
+
 (defn- validate-granule-index-does-not-exist
   "Validates that a granule index does not already exist in the index set for the given collection
   concept ID."
   [index-set collection-concept-id]
-  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)]
-    (when (contains? existing-index-names collection-concept-id)
+  (let [existing-collections (collection-ids-from-granule-indexes index-set)]
+    (when (contains? existing-collections collection-concept-id)
       (errors/throw-service-error
        :bad-request
        (format
@@ -363,8 +371,8 @@
 (defn- validate-granule-index-exists
   "Validates that a granule index exists in the index set for the given collection concept ID."
   [index-set collection-concept-id]
-  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)]
-    (when-not (contains? existing-index-names collection-concept-id)
+  (let [existing-collections (collection-ids-from-granule-indexes index-set)]
+    (when-not (contains? existing-collections collection-concept-id)
       (errors/throw-service-error
        :bad-request
        (format
@@ -398,7 +406,7 @@
   (validate-granule-index-exists index-set collection-concept-id)
   (update-in index-set [:index-set :granule :indexes]
              (fn [indexes]
-               (remove #(= collection-concept-id (:name %))
+               (remove #(= collection-concept-id (index-name->concept-id (:name %)))
                        indexes))))
 
 (defn mark-collection-as-rebalancing
