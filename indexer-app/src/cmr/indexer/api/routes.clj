@@ -76,7 +76,7 @@
 
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
-          (acl/verify-ingest-management-permission context :update)
+          (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/put-index-set request-context index-set)
           {:status 200}))
 
