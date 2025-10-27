@@ -280,6 +280,17 @@
 
     (index-requested-index-set context index-set es-cluster-name)))
 
+(defn put-index-set
+  "Upsert the given index-set to the index-sets index in ES."
+  [context index-set]
+  (let [split-index-set-map (split-index-set-by-cluster index-set)]
+    ;; Validation for both index sets need to happen before we update anything
+    (validate-requested-index-set context es-config/gran-elastic-name index-set true)
+    (validate-requested-index-set context es-config/elastic-name index-set true)
+    ;; upsert indexes and index set based on the split index set
+    (update-index-set context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
+    (update-index-set context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))))
+
 (defn delete-index-set
   "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
