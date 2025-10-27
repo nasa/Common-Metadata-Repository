@@ -166,6 +166,17 @@ An index can be resharded to improve performance. The `start` endpoint begins th
 
   curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50
 
+### Get resharding status of an index
+
+  curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status
+
+### Finalize resharding an index
+
+Finalizing an index resharding moves the ES alias to point to the new resharded index and clean
+up the index-set.
+
+  curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize
+
 ### Reset for dev purposes
 
     curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/reset"

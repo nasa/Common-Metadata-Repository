@@ -3,16 +3,14 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 
@@ -289,7 +287,7 @@
    (start-reshard-index index-name {}))
   ([index-name options]
    (let [synchronous (get options :synchronous true)
-         num-shards (get options :num-shards 1)
+         num-shards (get options :num-shards)
          headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
          response (client/request
                    {:method :post
@@ -297,6 +295,39 @@
                                    :num_shards num-shards}
                     :headers headers
                     :url (url/start-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
+(defn finalize-reshard-index
+  "Call the bootstrap app to finalize resharding an index"
+  ([index-name]
+   (finalize-reshard-index index-name {}))
+  ([index-name options]
+   (let [synchronous (get options :synchronous true)
+         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+         response (client/request
+                   {:method :post
+                    :query-params {:synchronous synchronous}
+                    :headers headers
+                    :url (url/finalize-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
+(defn get-reshard-status
+  "Gets the reshard status of a given index."
+  ([index-name]
+   (get-reshard-status index-name {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([index-name headers]
+   (let [response (client/request
+                   {:method :get
+                    :headers headers
+                    :url (url/status-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
@@ -353,6 +384,12 @@
                     :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
+
+(defn assert-rebalance-status
+  "Check granule counts are as expected during rebalancing"
+  [expected-counts collection]
+  (is (= (assoc expected-counts :status 200)
+         (get-rebalance-status (:concept-id collection)))))
 
 (defn bulk-migrate-provider
   "Call the bootstrap app to bulk db migrate a provider."
@@ -467,3 +504,33 @@
   (client/post (url/bootstrap-clear-cache-url)
                {:connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
+(defn count-by-params
+  "Returns the number of granules found by the given params"
+  [params]
+  (let [response (search/find-refs :granule (assoc params :page-size 0))]
+    (when (= 400 (:status response))
+      (throw (Exception. (str "Search by params failed:" (pr-str response)))))
+    (:hits response)))
+
+(defn verify-provider-holdings
+  "Verifies counts in the search application by searching several different ways for counts."
+  [expected-provider-holdings message]
+  ;; Verify search counts in provider holdings
+  (is (= expected-provider-holdings (:results (search/provider-holdings-in-format :json))) message)
+
+  ;; Verify search counts when searching individually by concept id
+  (let [separate-holdings (for [coll-holding expected-provider-holdings]
+                            (assoc coll-holding
+                                   :granule-count
+                                   (count-by-params {:concept-id (:concept-id coll-holding)})))]
+
+    (is (= expected-provider-holdings separate-holdings)) message)
+  ;; Verify search counts when searching by provider id
+  (let [expected-counts-by-provider (reduce (fn [count-map {:keys [provider-id granule-count]}]
+                                              (update count-map provider-id #(+ (or % 0) granule-count)))
+                                            {}
+                                            expected-provider-holdings)
+        actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
+                                             [provider-id (count-by-params {:provider-id provider-id})]))]
+    (is (= expected-counts-by-provider actual-counts-by-provider) message)))

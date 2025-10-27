@@ -52,8 +52,7 @@
   [context coll-concept-ids]
   (let [indexes (get-granule-index-names context)]
     (distinct
-     (map #(esi-helper/index-alias
-            (collection-concept-id->index-name indexes %))
+     (map #(collection-concept-id->index-name indexes %)
           coll-concept-ids))))
 
 (defn- provider-ids->index-aliases
@@ -167,22 +166,22 @@
     :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name)))))
 
 (comment defn- get-collection-permitted-groups
-  "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
+         "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
    won't work if more than 10,000 collections exist in the CMR.
    called by dev-system/src/cmr/dev_system/control.clj only"
-  [context]
-  (let [index-info (common-esi/concept-type->index-info context :collection nil)
-        results (esd/search (context->conn context)
-                            (:index-name index-info)
-                            [(:type-name index-info)]
-                            :query (q/match-all)
-                            :size 10000
-                            :_source ["permitted-group-ids"])
-        hits (get-in results [:hits :total :value])]
-    (when (> hits (count (get-in results [:hits :hits])))
-      (e/internal-error! "Failed to retrieve all hits."))
-    (into {} (for [hit (get-in results [:hits :hits])]
-               [(:_id hit) (get-in hit [:_source :permitted-group-ids])]))))
+         [context]
+         (let [index-info (common-esi/concept-type->index-info context :collection nil)
+               results (esd/search (context->conn context)
+                                   (:index-name index-info)
+                                   [(:type-name index-info)]
+                                   :query (q/match-all)
+                                   :size 10000
+                                   :_source ["permitted-group-ids"])
+               hits (get-in results [:hits :total :value])]
+           (when (> hits (count (get-in results [:hits :hits])))
+             (e/internal-error! "Failed to retrieve all hits."))
+           (into {} (for [hit (get-in results [:hits :hits])]
+                      [(:_id hit) (get-in hit [:_source :permitted-group-ids])]))))
 
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
@@ -199,8 +198,8 @@
                                                  :size 10000}
                                          :aggs {:by-collection-id
                                                 {:terms {:field (q2e/query-field->elastic-field
-                                                                  :collection-concept-seq-id-long
-                                                                  :granule)
+                                                                 :collection-concept-seq-id-long
+                                                                 :granule)
                                                          :size 10000}}}}}})
         results (common-esi/execute-query context query)
         extra-provider-count (get-in results [:aggregations :by-provider :sum_other_doc_count])]
@@ -220,8 +219,8 @@
                  ;; :sum_other_doc_count will be greater than 0 in that case.
                  (when (> extra-collection-count 0)
                    (e/internal-error!
-                     (format "Provider %s has more collections ([%s]) with granules than we support"
-                             provider-id extra-collection-count)))
+                    (format "Provider %s has more collections ([%s]) with granules than we support"
+                            provider-id extra-collection-count)))
 
                  [(concepts/build-concept-id {:sequence-number coll-seq-id
                                               :provider-id provider-id

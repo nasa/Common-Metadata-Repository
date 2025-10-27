@@ -7,12 +7,13 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh])
   (:import
    ;; This is required as an attempt to avoid NoClassDefFoundError occasionally during startup.
    ;; See CMR-3156
+   #_{:clj-kondo/ignore [:unused-import]}
    (oracle.security.o5logon O5Logon)
    (oracle.ucp.admin UniversalConnectionPoolManagerImpl)
    (oracle.ucp.jdbc PoolDataSourceFactory)))
@@ -77,7 +78,7 @@
 (defmulti oracle-timestamp->clj-time
   "Converts oracle.sql.TIMESTAMP and related instances into a clj-time. Must be called within
   a with-db-transaction block with the connection"
-  (fn [db ot]
+  (fn [_db ot]
     (type ot)))
 
 (defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMPTZ
@@ -86,7 +87,7 @@
     (cr/from-sql-time (.timestampValue ot conn))))
 
 (defmethod oracle-timestamp->clj-time oracle.sql.TIMESTAMP
-  [db ^oracle.sql.TIMESTAMP ot]
+  [_db ^oracle.sql.TIMESTAMP ot]
   (let [cal (java.util.Calendar/getInstance)]
     (.setTimeZone cal (java.util.TimeZone/getTimeZone "GMT"))
     (cr/from-sql-time (.timestampValue ot cal))))
@@ -147,10 +148,10 @@
 
   lifecycle/Lifecycle
 
-  (start [this system]
+  (start [this _system]
          (assoc this :datasource (pool spec)))
 
-  (stop [this system]
+  (stop [this _system]
 
         (try
           ;; Cleanup the connection pool

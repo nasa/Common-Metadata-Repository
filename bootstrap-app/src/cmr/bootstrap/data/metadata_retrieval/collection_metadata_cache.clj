@@ -122,7 +122,7 @@
           (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
 (defjob RefreshCollectionsMetadataCache
-  [ctx system]
+  [_ctx system]
   (refresh-cache {:system system}))
 
 (defn refresh-collections-metadata-cache-job
@@ -135,7 +135,7 @@
    :daily-at-hour-and-minute [06 00]})
 
 (defjob UpdateCollectionsMetadataCache
-  [ctx system]
+  [_ctx system]
   (update-cache {:system system}))
 
 (defn update-collections-metadata-cache-job

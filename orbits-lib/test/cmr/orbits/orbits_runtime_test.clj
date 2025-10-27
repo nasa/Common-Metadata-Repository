@@ -2,7 +2,7 @@
   "This tests that the basics work with the orbits runtime. More thorough tests for this are in the
    Ruby Specs test."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.common.lifecycle :as l]
    [cmr.orbits.orbits-runtime :as o]))
 

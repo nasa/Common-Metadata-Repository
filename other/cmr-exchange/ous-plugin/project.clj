@@ -26,7 +26,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.1"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.3"]
@@ -43,9 +43,9 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-codec "1.1.2"]
-                 [ring/ring-defaults "0.3.2"]
+                 [ring/ring-core "1.14.2"]
+                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-defaults "0.3.4"]
                  [tolitius/xml-in "0.1.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
   :aot [clojure.tools.logging.impl]
@@ -65,8 +65,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.6.0"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]

@@ -4,6 +4,7 @@
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.connect :as esc]))
@@ -137,6 +138,21 @@
                      is-write-alias? (assoc :is_write_index true))]
      (esi-helper/update-aliases conn [{:add alias-map}]))))
 
+(defn move-index-alias
+  "Moves an alias that points to an index to point to a different index.
+   Special case: if alias-name is '1_collections_v2_alias', also moves
+   'collection_search_alias' to the new index."
+  [conn old-index new-index alias-name]
+  (let [base-actions [{:remove {:index old-index :alias alias-name}}
+                      {:add {:index new-index :alias alias-name}}]
+        ;; special case for the legacy collections alias
+        actions (if (= alias-name "1_collections_v2_alias")
+                  (concat base-actions
+                          [{:remove {:index old-index :alias (es-config/collections-index-alias)}}
+                           {:add {:index new-index :alias (es-config/collections-index-alias)}}])
+                  base-actions)]
+    (esi-helper/update-aliases conn actions)))
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
    follows:
@@ -173,8 +189,8 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (errors/internal-error!
-         (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
-         e#))))
+        (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
+        e#))))
 
 (defn reset
   "Development time helper function to delete an index and recreate it to empty all data."
@@ -213,10 +229,10 @@
      (when (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
-           (info (str "Ignore conflict: " (str result)))
+           (info (str "Ignore conflict: " result))
            (errors/throw-service-error :conflict
-                                       (str "Save to Elasticsearch failed " (str result))))
-         (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
+                                       (str "Save to Elasticsearch failed " result)))
+         (errors/internal-error! (str "Save to Elasticsearch failed " result)))))))
 
 (defn delete-by-id
   "Delete a document from elastic by ID.

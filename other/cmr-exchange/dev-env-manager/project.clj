@@ -25,7 +25,7 @@
                                                       org.slf4j/slf4j-nop]]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.maven.wagon/wagon-provider-api "2.10"]
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.3.465" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/tools.macro "0.1.5"]]
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,7 +54,7 @@
              ;; Environments
              :dev {:dependencies [[clojusc/ltest "0.3.0-SNAPSHOT"]
                                   [clojusc/trifl "0.3.0-SNAPSHOT"]
-                                  [clojusc/twig "0.3.2"]
+                                  [clojusc/twig "0.4.2"]
                                   [gov.nasa.earthdata/cmr-process-manager "0.1.0-SNAPSHOT"]
                                   [me.raynes/conch "0.8.0"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT" :exclusions [com.dadrox/quiet-slf4j

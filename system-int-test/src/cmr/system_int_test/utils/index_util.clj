@@ -47,9 +47,9 @@
   "Makes the indexer update the index set mappings and indexes"
   []
   (let [response (client/post (url/indexer-update-indexes)
-                   {:connection-manager (s/conn-mgr)
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})]
+                              {:connection-manager (s/conn-mgr)
+                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                               :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
 (defn delete-tags-from-elastic
@@ -93,12 +93,12 @@
                         {:ignore_conflict ignore_conflict}
                         {})
          response (client/post (url/indexer-url)
-                    {:connection-manager (s/conn-mgr)
-                     :headers {transmit-config/token-header (transmit-config/echo-system-token)
-                               "content-type" "application/json"}
-                     :throw-exceptions false
-                     :body (json/generate-string {:concept-id concept-id :revision-id revision-id})
-                     :query-params query-params})]
+                               {:connection-manager (s/conn-mgr)
+                                :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                                          "content-type" "application/json"}
+                                :throw-exceptions false
+                                :body (json/generate-string {:concept-id concept-id :revision-id revision-id})
+                                :query-params query-params})]
      response)))
 
 (defn doc-present?
@@ -142,8 +142,8 @@
       (f)
       (finally
         (s/only-with-real-message-queue
-          (qb-side-api/set-message-queue-retry-behavior 0)
-          (qb-side-api/set-message-queue-publish-timeout 10000))))))
+         (qb-side-api/set-message-queue-retry-behavior 0)
+         (qb-side-api/set-message-queue-publish-timeout 10000))))))
 
 (defn delete-gran-elastic-index
   "Helper will delete the elasticsearch granule index associated with a collection."
@@ -180,3 +180,23 @@
     (client/head (format "%s/%s" (url/elastic-root es-config/gran-elastic-name) index-name)
                  {:connection-manager (s/conn-mgr)
                   :throw-exceptions false})))
+
+(defn get-aliases
+  "Returns a vector of alias names for the given index."
+  [index-name]
+  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root))
+        resp (client/get aliases-url
+                         {:query-params {:format "json"}
+                          :connection-manager (s/conn-mgr)
+                          :throw-exceptions false})]
+    (if (= 200 (:status resp))
+      (->> (json/decode (:body resp) true)
+           (filter #(= (:index %) index-name))
+           (mapv :alias))
+      [])))
+
+(defn alias-exists?
+  "Returns true if the given alias exists for the specified index."
+  [index-name alias]
+  (contains? (set (get-aliases index-name)) alias))
+

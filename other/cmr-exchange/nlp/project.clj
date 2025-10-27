@@ -21,7 +21,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [clojure-opennlp "0.5.0"]
                  [com.neovisionaries/nv-i18n "1.23"]
                  [com.stuartsierra/component "0.3.2"]
@@ -50,8 +50,7 @@
                      :dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]

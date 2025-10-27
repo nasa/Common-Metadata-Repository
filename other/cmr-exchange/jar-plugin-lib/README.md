@@ -283,7 +283,7 @@ Distributed under the Apache License, Version 2.0.
 [deps-badge]: https://img.shields.io/badge/deps%20check-passing-brightgreen.svg
 [tag-badge]: https://img.shields.io/github/tag/cmr-exchange/cmr-jar-plugin.svg
 [tag]: https://github.com/cmr-exchange/cmr-jar-plugin/tags
-[clojure-v]: https://img.shields.io/badge/clojure-1.9.0-blue.svg
+[clojure-v]: https://img.shields.io/badge/clojure-1.11.2-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-jar-plugin
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-jar-plugin.svg
 [security-scan-badge]: https://img.shields.io/badge/dependency%20check%20security%20scan-passing-brightgreen.svg

@@ -22,9 +22,9 @@
 
 (comment
  ;; Use this to manually run the fixture
- ((ingest/reset-fixture {"provguid1" "PROV1"
-                         "provguid2" "PROV2"})
-  (constantly true)))
+  ((ingest/reset-fixture {"provguid1" "PROV1"
+                          "provguid2" "PROV2"})
+   (constantly true)))
 
 (deftest ^:oracle rebalance-collection-error-test
   (s/only-with-real-database
@@ -62,7 +62,7 @@
      (testing "Finalizing not started collection"
        (is (= {:status 400
                :errors [(str "The index set does not contain the rebalancing collection ["
-                             (:concept-id coll1)"]")]}
+                             (:concept-id coll1) "]")]}
               (bootstrap/finalize-rebalance-collection (:concept-id coll1)))))
      (testing "Finalizing non existent collection"
        (is (= {:status 400
@@ -72,13 +72,13 @@
        (bootstrap/start-rebalance-collection (:concept-id coll1) {:synchronous true})
        (is (= {:status 400
                :errors [(str "The index set already contains rebalancing collection ["
-                             (:concept-id coll1)"]")]}
+                             (:concept-id coll1) "]")]}
               (bootstrap/start-rebalance-collection (:concept-id coll1) {:synchronous false}))))
      (testing "Finalizing already finalized collection"
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
        (is (= {:status 400
                :errors [(str "The index set does not contain the rebalancing collection ["
-                             (:concept-id coll1)"]")]}
+                             (:concept-id coll1) "]")]}
               (bootstrap/finalize-rebalance-collection (:concept-id coll1)))))
      (testing "Starting already rebalanced collection"
        (is (= {:status 400
@@ -96,7 +96,7 @@
        (bootstrap/start-rebalance-collection (:concept-id coll2))
        (is (= {:status 400
                :errors [(str "The index set already contains rebalancing collection ["
-                             (:concept-id coll2)"]")]}
+                             (:concept-id coll2) "]")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
                                     :target "small-collections"}))))
@@ -106,45 +106,10 @@
        (bootstrap/start-rebalance-collection (:concept-id coll2) {:target "small-collections"})
        (is (= {:status 400
                :errors [(str "The index set already contains rebalancing collection ["
-                             (:concept-id coll2)"]")]}
+                             (:concept-id coll2) "]")]}
               (bootstrap/start-rebalance-collection
                (:concept-id coll2) {:synchronous false
                                     :target "separate-index"})))))))
-
-(defn count-by-params
-  "Returns the number of granules found by the given params"
-  [params]
-  (let [response (search/find-refs :granule (assoc params :page-size 0))]
-    (when (= 400 (:status response))
-      (throw (Exception. (str "Search by params failed:" (pr-str response)))))
-    (:hits response)))
-
-(defn verify-provider-holdings
-  "Verifies counts in the search application by searching several different ways for counts."
-  [expected-provider-holdings message]
-  ;; Verify search counts in provider holdings
-  (is (= expected-provider-holdings (:results (search/provider-holdings-in-format :json))) message)
-
-  ;; Verify search counts when searching individually by concept id
-  (let [separate-holdings (for [coll-holding expected-provider-holdings]
-                            (assoc coll-holding
-                                   :granule-count
-                                   (count-by-params {:concept-id (:concept-id coll-holding)})))]
-
-    (is (= expected-provider-holdings separate-holdings)) message)
-  ;; Verify search counts when searching by provider id
-  (let [expected-counts-by-provider (reduce (fn [count-map {:keys [provider-id granule-count]}]
-                                              (update count-map provider-id #(+ (or % 0) granule-count)))
-                                            {}
-                                            expected-provider-holdings)
-        actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
-                                             [provider-id (count-by-params {:provider-id provider-id})]))]
-    (is (= expected-counts-by-provider actual-counts-by-provider) message)))
-
-(defn assert-rebalance-status
-  [expected-counts collection]
-  (is (= (assoc expected-counts :status 200)
-         (bootstrap/get-rebalance-status (:concept-id collection)))))
 
 (defn ingest-granule-for-coll
   [coll n]
@@ -170,41 +135,41 @@
                                         vector)]
      (index/wait-until-indexed)
 
-     (assert-rebalance-status {:small-collections 1 :rebalancing-status "NOT_REBALANCING"} coll1)
-     (verify-provider-holdings expected-provider-holdings "Initial")
+     (bootstrap/assert-rebalance-status {:small-collections 1 :rebalancing-status "NOT_REBALANCING"} coll1)
+     (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
 
      ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
 
      ;; After rebalancing 1 granule is in small collections and in the new index.
-     (assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
 
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
+     (bootstrap/verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
 
      ;; Index new data. It should go into both indexes
      (ingest-granule-for-coll coll1 2)
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll1)
 
      (let [expected-provider-holdings (inc-provider-holdings-for-coll
                                        expected-provider-holdings coll1 1)]
-       (verify-provider-holdings expected-provider-holdings "After indexing more")
+       (bootstrap/verify-provider-holdings expected-provider-holdings "After indexing more")
 
        ;; Finalize rebalancing
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
        (index/wait-until-indexed)
 
        ;; The granules have been removed from small collections
-       (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)
 
        ;; After the cache is cleared the right amount of data is found
        (search/clear-caches)
-       (verify-provider-holdings
-         expected-provider-holdings
-         "After finalize after clear cache")))))
+       (bootstrap/verify-provider-holdings
+        expected-provider-holdings
+        "After finalize after clear cache")))))
 
 (deftest ^:oracle rebalance-collection-test
   (s/only-with-real-database
@@ -213,8 +178,8 @@
          coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
          coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
          _ (doall (for [coll [coll1 coll2 coll3 coll4]
-                               n (range 4)]
-                           (ingest-granule-for-coll coll n)))
+                        n (range 4)]
+                    (ingest-granule-for-coll coll n)))
 
          expected-provider-holdings (for [coll [coll1 coll2 coll3 coll4]]
                                       (-> coll
@@ -222,15 +187,15 @@
                                           (assoc :granule-count 4)))]
      (index/wait-until-indexed)
 
-     (assert-rebalance-status {:small-collections 4 :rebalancing-status "NOT_REBALANCING"} coll1)
-     (verify-provider-holdings expected-provider-holdings "Initial")
+     (bootstrap/assert-rebalance-status {:small-collections 4 :rebalancing-status "NOT_REBALANCING"} coll1)
+     (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
 
      ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
 
      ;; After rebalancing 4 granules are in small collections and in the new index.
-     (assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
      ;; Search counts are correct before cache is cleared
 
      ;; This is currently failing.
@@ -238,28 +203,28 @@
      ;; Search is using the cached index set and doesn't know about the rebalancing collection and
      ;; therefore doesn't know to exclude it.
      ;; Fix during CMR-2668. The problem is described there.
-     ; (verify-provider-holdings expected-provider-holdings "After start before clear cache")
+     ; (bootstrap/verify-provider-holdings expected-provider-holdings "After start before clear cache")
 
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
+     (bootstrap/verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
 
      ;; Index new data. It should go into both indexes
      (ingest-granule-for-coll coll1 4)
      (ingest-granule-for-coll coll1 5)
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll1)
 
      (let [expected-provider-holdings (inc-provider-holdings-for-coll
                                        expected-provider-holdings coll1 2)]
-       (verify-provider-holdings expected-provider-holdings "After indexing more")
+       (bootstrap/verify-provider-holdings expected-provider-holdings "After indexing more")
 
        ;; Finalize rebalancing
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
        (index/wait-until-indexed)
 
        ;; The granules have been removed from small collections
-       (assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll1)
 
        ;; Note that after finalize has run but before search has updated to use the new index set
        ;; it will find 0 granules for this collection. The job for refreshing that cache runs every
@@ -269,16 +234,16 @@
 
        ;; Later: This check was originally here as a demonstration of the failure but sometimes it actually
        ;; "passes". I think there's a race condition where search will use the correct index.
-       ; (verify-provider-holdings
+       ; (bootstrap/verify-provider-holdings
          ; (inc-provider-holdings-for-coll
           ; expected-provider-holdings coll1 -6)
          ; "After finalize before clear cache")
 
        ;; After the cache is cleared the right amount of data is found
        (search/clear-caches)
-       (verify-provider-holdings
-         expected-provider-holdings
-         "After finalize after clear cache")))))
+       (bootstrap/verify-provider-holdings
+        expected-provider-holdings
+        "After finalize after clear cache")))))
 
 ;; Tests rebalancing multiple collections at the same time.
 (deftest ^:oracle rebalance-multiple-collections-test
@@ -288,8 +253,8 @@
          coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
          coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
          _ (doall (for [coll [coll1 coll2 coll3 coll4]
-                               n (range 4)]
-                           (ingest-granule-for-coll coll n)))
+                        n (range 4)]
+                    (ingest-granule-for-coll coll n)))
 
          expected-provider-holdings (for [coll [coll1 coll2 coll3 coll4]]
                                       (-> coll
@@ -303,16 +268,16 @@
      (index/wait-until-indexed)
 
      ;; After rebalancing 4 granules are in small collections and in the new index.
-     (assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
-     (assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll2)
+     (bootstrap/assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll2)
 
      ;; Searches are correct before and after clearing the cache
      ;; Failing as noted in test above.
      ;; Fix during CMR-2668. The problem is described there.
-     ; (verify-provider-holdings expected-provider-holdings)
+     ; (bootstrap/verify-provider-holdings expected-provider-holdings)
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (verify-provider-holdings expected-provider-holdings "After rebalance started after cache cleared")
+     (bootstrap/verify-provider-holdings expected-provider-holdings "After rebalance started after cache cleared")
 
      ;; Index new data. It should go into both indexes
      (ingest-granule-for-coll coll1 4)
@@ -321,13 +286,13 @@
      (ingest-granule-for-coll coll2 7)
      (ingest-granule-for-coll coll2 8)
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll1)
-     (assert-rebalance-status {:small-collections 7 :separate-index 7 :rebalancing-status "COMPLETE"} coll2)
+     (bootstrap/assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll1)
+     (bootstrap/assert-rebalance-status {:small-collections 7 :separate-index 7 :rebalancing-status "COMPLETE"} coll2)
 
      (let [expected-provider-holdings (-> expected-provider-holdings
                                           (inc-provider-holdings-for-coll coll1 2)
                                           (inc-provider-holdings-for-coll coll2 3))]
-       (verify-provider-holdings expected-provider-holdings "After indexing more granules")
+       (bootstrap/verify-provider-holdings expected-provider-holdings "After indexing more granules")
 
        ;; Finalize rebalancing
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
@@ -335,12 +300,12 @@
        (index/wait-until-indexed)
 
        ;; The granules have been removed from small collections
-       (assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll1)
-       (assert-rebalance-status {:small-collections 0 :separate-index 7 :rebalancing-status "NOT_REBALANCING"} coll2)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 7 :rebalancing-status "NOT_REBALANCING"} coll2)
 
        ;; After the cache is cleared the right amount of data is found
        (search/clear-caches)
-       (verify-provider-holdings expected-provider-holdings "After finalizing")))))
+       (bootstrap/verify-provider-holdings expected-provider-holdings "After finalizing")))))
 
 (deftest ^:oracle rebalance-collection-after-other-collections-test
   (s/only-with-real-database
@@ -349,8 +314,8 @@
          coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}) {:validate-keywords false})
          coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}) {:validate-keywords false})
          _ (doall (for [coll [coll1 coll2 coll3 coll4]
-                               n (range 4)]
-                           (ingest-granule-for-coll coll n)))
+                        n (range 4)]
+                    (ingest-granule-for-coll coll n)))
 
          expected-provider-holdings (for [coll [coll1 coll2 coll3 coll4]]
                                       (-> coll
@@ -370,32 +335,32 @@
      (index/wait-until-indexed)
 
      ;; After rebalancing 4 granules are in small collections and in the new index.
-     (assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll3)
+     (bootstrap/assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll3)
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
+     (bootstrap/verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
 
      ;; Index new data. It should go into both indexes
      (ingest-granule-for-coll coll3 4)
      (ingest-granule-for-coll coll3 5)
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll3)
+     (bootstrap/assert-rebalance-status {:small-collections 6 :separate-index 6 :rebalancing-status "COMPLETE"} coll3)
 
      (let [expected-provider-holdings (inc-provider-holdings-for-coll
                                        expected-provider-holdings coll3 2)]
-       (verify-provider-holdings expected-provider-holdings "After indexing more")
+       (bootstrap/verify-provider-holdings expected-provider-holdings "After indexing more")
 
        ;; Finalize rebalancing
        (bootstrap/finalize-rebalance-collection (:concept-id coll3))
        (index/wait-until-indexed)
 
        ;; The granules have been removed from small collections
-       (assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll3)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 6 :rebalancing-status "NOT_REBALANCING"} coll3)
        ;; After the cache is cleared the right amount of data is found
        (search/clear-caches)
-       (verify-provider-holdings
-         expected-provider-holdings
-         "After finalize after clear cache")))))
+       (bootstrap/verify-provider-holdings
+        expected-provider-holdings
+        "After finalize after clear cache")))))
 
 (defn- rebalance-to-separate-index
   "Helper to rebalance a collection to its own index."
@@ -412,76 +377,76 @@
 ;; the rebalancing would fail because of version conflict. It is hard to set up the perfect
 ;; condition for this unrealistic test, so we comment this test out.
 #_(deftest rebalance-collection-back-to-small-collections-test
-  (s/only-with-real-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-         granules (doall (for [coll [coll1 coll2]
-                               n (range 2)]
-                           (ingest-granule-for-coll coll n)))]
-     (index/wait-until-indexed)
+    (s/only-with-real-database
+     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
+           granules (doall (for [coll [coll1 coll2]
+                                 n (range 2)]
+                             (ingest-granule-for-coll coll n)))]
+       (index/wait-until-indexed)
      ;; Start with collections in their own index
-     (rebalance-to-separate-index (:concept-id coll1))
-     (rebalance-to-separate-index (:concept-id coll2))
-     (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)
-     (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll2)
+       (rebalance-to-separate-index (:concept-id coll1))
+       (rebalance-to-separate-index (:concept-id coll2))
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll2)
      ;; Start rebalancing back to small collections
-     (bootstrap/start-rebalance-collection (:concept-id coll1) {:target "small-collections"})
-     (bootstrap/start-rebalance-collection (:concept-id coll2) {:target "small-collections"})
-     (index/wait-until-indexed)
+       (bootstrap/start-rebalance-collection (:concept-id coll1) {:target "small-collections"})
+       (bootstrap/start-rebalance-collection (:concept-id coll2) {:target "small-collections"})
+       (index/wait-until-indexed)
      ;; After rebalancing 2 granules are in small collections and in the new index.
-     (assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll1)
-     (assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll2)
+       (bootstrap/assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 2 :separate-index 2 :rebalancing-status "COMPLETE"} coll2)
      ;; Clear the search cache so it will get the last index set
-     (search/clear-caches)
+       (search/clear-caches)
      ;; Delete the granules from small collections to show that search is still using the separate
      ;; index
-     (index/delete-granules-from-small-collections-elastic-index coll2)
-     (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "COMPLETE"} coll2)
-     (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
-     (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
+       (index/delete-granules-from-small-collections-elastic-index coll2)
+       (index/wait-until-indexed)
+       (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "COMPLETE"} coll2)
+       (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
+       (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
      ;; Index new data. It should go into both indexes
-     (ingest-granule-for-coll coll1 4)
-     (ingest-granule-for-coll coll1 5)
-     (ingest-granule-for-coll coll2 4)
-     (ingest-granule-for-coll coll2 5)
-     (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
-     (assert-rebalance-status {:small-collections 2 :separate-index 4 :rebalancing-status "COMPLETE"} coll2)
+       (ingest-granule-for-coll coll1 4)
+       (ingest-granule-for-coll coll1 5)
+       (ingest-granule-for-coll coll2 4)
+       (ingest-granule-for-coll coll2 5)
+       (index/wait-until-indexed)
+       (bootstrap/assert-rebalance-status {:small-collections 4 :separate-index 4 :rebalancing-status "COMPLETE"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 2 :separate-index 4 :rebalancing-status "COMPLETE"} coll2)
      ;; Verify it is still using the separate index for search
-     (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
-     (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
+       (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
+       (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
      ;; Finalize rebalancing
-     (bootstrap/finalize-rebalance-collection (:concept-id coll1))
-     (bootstrap/finalize-rebalance-collection (:concept-id coll2))
-     (index/wait-until-indexed)
+       (bootstrap/finalize-rebalance-collection (:concept-id coll1))
+       (bootstrap/finalize-rebalance-collection (:concept-id coll2))
+       (index/wait-until-indexed)
      ;; After the cache is cleared the right amount of data is found
-     (search/clear-caches)
+       (search/clear-caches)
      ;; We manually deleted 2 of the granules from coll2 in the small collections index earlier
      ;; so we expect now that there are 2 fewer granules for coll2 and no change for coll1.
-     (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
-     (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
+       (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
+       (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)})))))
      ;; Delete the collection specific indexes to show it has no impact on search after finalize
-     (index/delete-gran-elastic-index coll1)
-     (index/delete-gran-elastic-index coll2)
-     (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 4 :rebalancing-status "NOT_REBALANCING"} coll1)
-     (assert-rebalance-status {:small-collections 2 :rebalancing-status "NOT_REBALANCING"} coll2)
-     (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
-     (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)}))))))))
+       (index/delete-gran-elastic-index coll1)
+       (index/delete-gran-elastic-index coll2)
+       (index/wait-until-indexed)
+       (bootstrap/assert-rebalance-status {:small-collections 4 :rebalancing-status "NOT_REBALANCING"} coll1)
+       (bootstrap/assert-rebalance-status {:small-collections 2 :rebalancing-status "NOT_REBALANCING"} coll2)
+       (is (= 4 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll1)})))))
+       (is (= 2 (count (:refs (search/find-refs :granule {:concept-id (:concept-id coll2)}))))))))
 
 (deftest ^:oracle rebalance-old-deleted-collection-back-to-small-collections-test
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (s/only-with-real-database
    (let [deleted-coll (d/ingest "PROV1" (dc/collection {:entry-title "deleted-coll"}) {:validate-keywords false})
          _ (doseq [n (range 2)]
-                    (ingest-granule-for-coll deleted-coll n))
+             (ingest-granule-for-coll deleted-coll n))
          deleted-coll-concept (mdb/get-concept (:concept-id deleted-coll))]
 
      ;; Start collection with a seperate index
      (index/wait-until-indexed)
      (rebalance-to-separate-index (:concept-id deleted-coll))
-     (assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} deleted-coll)
+     (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} deleted-coll)
      (index/wait-until-indexed)
 
      (dev-sys-util/clear-caches)
@@ -498,7 +463,7 @@
      ;; Rebalance to small-collections
      (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
      (index/wait-until-indexed)
-     (assert-rebalance-status {:small-collections 0 :separate-index 0 :rebalancing-status "COMPLETE"} deleted-coll)
+     (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 0 :rebalancing-status "COMPLETE"} deleted-coll)
      (bootstrap/finalize-rebalance-collection (:concept-id deleted-coll))
 
      ;; Index is already removed, search for granules

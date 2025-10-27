@@ -22,11 +22,11 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[net.sf.geographiclib/GeographicLib-Java]]
   :dependencies [[clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [com.esri.geometry/esri-geometry-api "2.2.1"]
                  [org.locationtech.jts/jts-core "1.19.0"]
                  [net.sf.geographiclib/GeographicLib-Java "1.49"]
-                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.geotools/gt-geometry "24.6"]
                  [org.geotools/gt-referencing "24.6"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
@@ -46,8 +46,7 @@
                                      [org.slf4j/slf4j-simple]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
-                     :plugins [[lein-shell "0.5.0"]
-                               [venantius/ultra "0.5.2"]]
+                     :plugins [[lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:repl-options {:init-ns cmr.exchange.geo.dev
@@ -62,8 +61,7 @@
                               [venantius/yagni "0.1.6"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
-                              [test2junit "1.4.2"]
-                              [venantius/ultra "0.5.2"]]
+                              [test2junit "1.4.2"]]
                     :test2junit-output-dir "junit-test-results"
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))
                                      :integration :integration

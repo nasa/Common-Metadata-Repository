@@ -21,9 +21,9 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[clojusc/results "0.1.0"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [environ "1.1.0"]
-                 [org.clojure/clojure "1.9.0"]]
+                 [org.clojure/clojure "1.11.2"]]
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
@@ -39,7 +39,7 @@
                                   [org.clojure/java.classpath "0.3.0"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [proto-repl "0.3.1"]]
-                   :plugins [[venantius/ultra "0.5.2"]]
+                   :plugins []
                    :source-paths ["dev-resources/src"]
                    :repl-options {:init-ns cmr.exchange.common.dev
                                   :prompt ~get-prompt

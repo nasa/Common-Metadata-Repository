@@ -1,6 +1,6 @@
-(ns cmr.elastic-utils.test.group_conditions
+(ns cmr.elastic-utils.test.group-conditions
   "Tests for the cmr.elastic-utils.search.es-group-query-conditions namespace"
-  (:require 
+  (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]))

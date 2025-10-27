@@ -21,11 +21,11 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.1"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "1.0.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
-                 [org.clojure/clojure "1.10.1"]
-                 [ring/ring-codec "1.1.2"]]
+                 [org.clojure/clojure "1.11.2"]
+                 [ring/ring-codec "1.3.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
@@ -46,8 +46,7 @@
              :local {:dependencies [[org.clojure/tools.namespace "1.0.0"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
-                               [lein-shell "0.5.0"]
-                               [venantius/ultra "0.6.0"]]
+                               [lein-shell "0.5.0"]]
                      :source-paths ["dev-resources/src"]
                      :jvm-opts ["-Dlogging.color=true"]}
              :dev {:dependencies [[debugger "0.2.1"]]

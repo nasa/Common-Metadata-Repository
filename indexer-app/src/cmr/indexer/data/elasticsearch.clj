@@ -312,7 +312,8 @@
                       (update :tag-associations #(parse-non-tombstone-associations context %))
                       (update :variable-associations #(parse-non-tombstone-associations context %))
                       (update :service-associations #(parse-non-tombstone-associations context %))
-                      (update :tool-associations #(parse-non-tombstone-associations context %)))
+                      (update :tool-associations #(parse-non-tombstone-associations context %))
+                      (update :generic-associations #(parse-non-tombstone-associations context %)))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
                        context concept-id revision-id options concept)

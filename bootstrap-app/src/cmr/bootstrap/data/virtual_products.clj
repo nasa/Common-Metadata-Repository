@@ -79,7 +79,6 @@
   [source-collection source-granule virtual-collection]
   (let [provider-id (:provider-id source-collection)
         source-short-name (:short-name source-collection)
-        dest-short-name   (-> virtual-collection :extra-fields :short-name)
         orig-umm (umm/parse-concept source-granule)
         new-umm (svm/generate-virtual-granule-umm provider-id
                                                   source-short-name

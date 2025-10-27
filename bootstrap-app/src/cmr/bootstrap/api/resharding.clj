@@ -7,10 +7,15 @@
    [cmr.common.services.errors :as errors]))
 
 (defn- validate-num-shards
-  "Validate the the number of shards is a positive integer"
+  "Validates that the number of shards is a positive integer."
   [num-shards-str]
+  (when-not (seq num-shards-str)
+    (errors/throw-service-errors
+     :bad-request
+     ["num_shards is a required parameter."]))
+
   (let [num-shards (parse-long num-shards-str)]
-    (when-not (and num-shards (> num-shards 0))
+    (when-not (and num-shards (pos? num-shards))
       (errors/throw-service-errors
        :bad-request
        [(format "Invalid num_shards [%s]. Only integers greater than zero are allowed."
@@ -26,17 +31,14 @@
     {:status 200
      :body {:message (msg/resharding-started index)}}))
 
-;; TODO add this in CMR-10771
-;; (defn get-status
-;;   "Gets the status of resharding an index."
-;;   [context index]
-;;   {:status 200
-;;    :body (service/resharding-status context index})
+(defn get-status
+  "Gets the status of resharding an index."
+  [context index]
+  (service/reshard-status context index))
 
-;; TODO add this in CMR-10770
-;; (defn finalize
-;;   "Completes resharding the index"
-;;   [context index]
-;;   (service/finalize-resharding context index)
-;;   {:status 200
-;;    :body {:message (msg/resharding-completed index)}})
+(defn finalize
+  "Completes resharding the index"
+  [context index]
+  (service/finalize-reshard-index context index)
+  {:status 200
+   :body {:message (msg/resharding-completed index)}})

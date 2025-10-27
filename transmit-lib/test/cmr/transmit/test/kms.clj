@@ -1,7 +1,7 @@
 (ns cmr.transmit.test.kms
   "Contains unit tests for verifying KMS retrieval functionality."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clj-http.client :as client]
    [cmr.common.util :refer [are3]]
    [cmr.transmit.kms :as kms]))
@@ -150,7 +150,7 @@
        "\"CONTINENT\",\"AFRICA\",\"\",\"\",\"\",\"\",\"2ca1b865-5555-4375-aa81-72811335b695\"\n"
        "\"OCEAN\",\"ATLANTIC OCEAN\",\"NORTH ATLANTIC OCEAN\",\"MEDITERRANEAN SEA\",\"ADRIATIC SEA\",\"GULF OF TRIESTE\",\"7b93c892-2fc4-417b-a4da-5c8a2fca361b\"\n"))
 
-(deftest keyword-scheme->kms-resource-test
+(deftest keyword-scheme->kms-resource-test-2
   (testing "Using the 3 subregion and the 4 subregion KMS values to read in spatial-keywords
            (location). The end parsing should be the same until the CMR supports only subregion-4.)."
     (is (= (#'kms/parse-entries-from-csv :spatial-keywords spatial-keywords-3-subregions)
