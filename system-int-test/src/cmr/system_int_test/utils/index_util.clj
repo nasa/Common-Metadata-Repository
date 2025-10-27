@@ -7,6 +7,7 @@
    [clojure.test :refer [is]]
    [cmr.common.log :as log :refer (warn)]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -184,7 +185,8 @@
 (defn get-aliases
   "Returns a vector of alias names for the given index."
   [index-name]
-  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root))
+  (let [elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias index-name)
+        aliases-url (format "%s/_cat/aliases" (url/elastic-root elastic-name))
         resp (client/get aliases-url
                          {:query-params {:format "json"}
                           :connection-manager (s/conn-mgr)
