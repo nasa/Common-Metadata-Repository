@@ -68,8 +68,13 @@
   "Copy the contents of one index to another."
   [system source-index target-index]
   (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
-  (let [indexer-context {:system (helper/get-indexer system)}
-        conn (indexer-util/context->conn indexer-context)]
+  (let [source-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias source-index)
+        target-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias target-index)
+        _ (when-not (= (source-index-elastic-name target-index-elastic-name))
+            (throw (Exception. (format "Failed to migrate index because source index: %s and target index: %s are in
+            two different elastic clusters." source-index target-index))))
+        indexer-context {:system (helper/get-indexer system)}
+        conn (indexer-util/context->conn indexer-context source-index-elastic-name)]
     (try
       (let [result (es-helper/migrate-index conn source-index target-index)]
         (when (:error result)
