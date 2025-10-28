@@ -70,9 +70,10 @@
   (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
   (let [source-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias source-index)
         target-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias target-index)
-        _ (when-not (= (source-index-elastic-name target-index-elastic-name))
-            (throw (Exception. (format "Failed to migrate index because source index: %s and target index: %s are in
-            two different elastic clusters." source-index target-index))))
+        _ (when-not (= source-index-elastic-name target-index-elastic-name)
+            (throw (Exception. (format "Failed to migrate index because source index: %s is in the %s cluster and
+            target index: %s is in the %s cluster. Both should be in same cluster to migrate."
+                                       source-index source-index-elastic-name target-index target-index-elastic-name))))
         indexer-context {:system (helper/get-indexer system)}
         conn (indexer-util/context->conn indexer-context source-index-elastic-name)]
     (try
