@@ -65,25 +65,19 @@
   (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider collection-id))
 
 (defn migrate-index
-  "Copy the contents of one index to another."
-  [system source-index target-index]
-  (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
-  (let [source-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias source-index)
-        target-index-elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias target-index)
-        _ (when-not (= source-index-elastic-name target-index-elastic-name)
-            (throw (Exception. (format "Failed to migrate index because source index: %s is in the %s cluster and
-            target index: %s is in the %s cluster. Both should be in same cluster to migrate."
-                                       source-index source-index-elastic-name target-index target-index-elastic-name))))
-        indexer-context {:system (helper/get-indexer system)}
-        conn (indexer-util/context->conn indexer-context source-index-elastic-name)]
+  "Copy the contents of one index to another. The target index is assumed to be in the same elastic cluster as the source index."
+  [system source-index target-index elastic-name]
+  (info (format "Migrating from index [%s] to index [%s] in es cluster [%s]" source-index target-index elastic-name))
+  (let [indexer-context {:system (helper/get-indexer system)}
+        conn (indexer-util/context->conn indexer-context elastic-name)]
     (try
       (let [result (es-helper/migrate-index conn source-index target-index)]
         (when (:error result)
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE")
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
       (catch Throwable e
         (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
-        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED")
+        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
         (throw e)))))
 
 (defn index-granules-for-collection
@@ -435,7 +429,7 @@
     (let [channel (:migrate-index-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; log errors but keep the thread alive)
-                        (let [{:keys [source-index target-index]} (<!! channel)]
-                          (migrate-index system source-index target-index))
+                        (let [{:keys [source-index target-index elastic-name]} (<!! channel)]
+                          (migrate-index system source-index target-index elastic-name)) ;; TODO Jyna who writes to this channel? What is the content? It needs to pass the elastic cluster name now too.
                         (catch Throwable e
                           (error e (.getMessage e)))))))))

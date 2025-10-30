@@ -625,13 +625,15 @@
     (errors/throw-service-error
      :bad-request
      "Resharding is not allowed for acls or groups."))
-  (let [es-cluster-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
+  (let [elastic-name (:elastic_name params)
+        _ (when (string/blank? elastic-name)
+            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
         num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
         _ (info (format "Starting to reshard index [%s] to [%s]" index target-index))
         target-index-no-index-set-id (string/replace-first target-index #".*?_" "")
-        index-set (index-set-util/get-index-set context es-cluster-name index-set-id)
+        index-set (index-set-util/get-index-set context elastic-name index-set-id)
         ;; Don't allow conflicts with rebalancing
         _ (when (is-rebalancing? index-set index)
             (errors/throw-service-error
@@ -668,12 +670,14 @@
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
     ;; this will create the new index with the new shard count
-    (update-index-set context es-cluster-name new-index-set)))
+    (update-index-set context elastic-name new-index-set)))
 
 (defn get-reshard-status
   "Get the resharding status for the given index"
-  [context index-set-id index]
-  (let [elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
+  [context index-set-id index params]
+  (let [elastic-name (:elastic_name params)
+        _ (when (string/blank? elastic-name)
+            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)]
     (when-not concept-type
@@ -697,11 +701,12 @@
 
 (defn update-resharding-status
   "Update the resharding status for the given index"
-  [context index-set-id index status]
+  [context index-set-id index status elastic-name]
+  (when (string/blank? elastic-name)
+    (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
   ;; resharding has the same valid statuses as rebalancing
   (rebalancing-collections/validate-status status)
-  (let [es-cluster-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
-        index-set (index-set-util/get-index-set context es-cluster-name index-set-id)
+  (let [index-set (index-set-util/get-index-set context elastic-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)]
     (when-not (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
       (errors/throw-service-error
@@ -710,7 +715,7 @@
         "The index set does not contain the resharding index [%s]." index)))
     (update-index-set
      context
-     es-cluster-name
+     elastic-name
      (update-in
       index-set
       [:index-set concept-type :resharding-status]
@@ -718,8 +723,8 @@
 
 (defn- validate-resharding-complete
   "Validate that resharding has completed successfully for the given index "
-  [context index-set-id index]
-  (let [status (get-reshard-status context index-set-id index)]
+  [context index-set-id index elastic-name]
+  (let [status (get-reshard-status context index-set-id index {:elastic_name elastic-name})]
     (when-not (= (:reshard-status status) "COMPLETE")
       (errors/throw-service-error
        :bad-request
@@ -727,16 +732,18 @@
 
 (defn finalize-index-resharding
   "Complete the resharding of the given index"
-  [context index-set-id index]
-  (validate-resharding-complete context index-set-id index)
-  (let [elastic-name (indexer-util/get-es-cluster-name-by-index-or-alias index)
+  [context index-set-id index params]
+  (let [elastic-name (:elastic_name params)
+        _ (when (string/blank? elastic-name)
+            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
+        _ (validate-resharding-complete context index-set-id index elastic-name)
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         ;; search for index name in index-set :concepts to get concept type
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
             (errors/throw-service-error
              :not-found
-             (format "Index [%s] does not exist." index)))
+             (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
         target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         es-store (indexer-util/context->es-store context elastic-name)
         prefix-id (get-in index-set [:index-set :id])

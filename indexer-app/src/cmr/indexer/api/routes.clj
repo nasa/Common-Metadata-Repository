@@ -115,15 +115,15 @@
           (index-set-svc/start-index-resharding request-context id index params)
           {:status 200})
 
-        (GET "/status" {request-context :request-context}
+        (GET "/status" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (r/response (index-set-svc/get-reshard-status request-context id index)))
+          (r/response (index-set-svc/get-reshard-status request-context id index params)))
 
         ;; Finalizes resharding of an index, culminating in deleting the index which is replaced
         ;; by a new index
-        (POST "/finalize" {:keys [request-context]}
+        (POST "/finalize" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (index-set-svc/finalize-index-resharding request-context id index)
+          (index-set-svc/finalize-index-resharding request-context id index params)
           {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.

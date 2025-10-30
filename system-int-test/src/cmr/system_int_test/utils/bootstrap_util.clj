@@ -283,56 +283,57 @@
 
 (defn start-reshard-index
   "Call the bootstrap app to kickoff resharding and index"
-  ([index-name]
-   (start-reshard-index index-name {}))
-  ([index-name options]
-   (let [synchronous (get options :synchronous true)
-         num-shards (get options :num-shards)
-         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
-         response (client/request
+  [index-name options]
+  (let [synchronous (get options :synchronous true)
+        num-shards (get options :num-shards)
+        headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :post
                     :query-params {:synchronous synchronous
-                                   :num_shards num-shards}
+                                 :num_shards num-shards
+                                 :elastic_name elastic-name}
                     :headers headers
                     :url (url/start-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn finalize-reshard-index
   "Call the bootstrap app to finalize resharding an index"
-  ([index-name]
-   (finalize-reshard-index index-name {}))
-  ([index-name options]
-   (let [synchronous (get options :synchronous true)
-         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
-         response (client/request
+  [index-name options]
+  (let [synchronous (get options :synchronous true)
+        headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :post
-                    :query-params {:synchronous synchronous}
+                    :query-params {:synchronous synchronous
+                                   :elastic_name elastic-name}
                     :headers headers
                     :url (url/finalize-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn get-reshard-status
   "Gets the reshard status of a given index."
-  ([index-name]
-   (get-reshard-status index-name {transmit-config/token-header (transmit-config/echo-system-token)}))
-  ([index-name headers]
-   (let [response (client/request
+  [index-name options]
+  (let [headers (assoc (get options :headers) transmit-config/token-header (transmit-config/echo-system-token))
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :get
+                    :query-params {:elastic_name elastic-name}
                     :headers headers
                     :url (url/status-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
