@@ -262,26 +262,28 @@
           (vals (:index-set index-set))))
 
 (defn index-name->concept-id
-  "Extracts a concept ID from a granule index name. Does not work for non-granule indexes.
+  "Extracts a concept ID from a granule index name. Works for both underscore- and dash-delimited names.
    Examples:
    '1_c2317035855_nsidc_ecs' -> 'C2317035855-NSIDC_ECS'
-   '1_c2317035855_nsidc_ecs_5_shards' -> 'C2317035855-NSIDC_ECS'"
+   '1_c2317035855_nsidc_ecs_5_shards' -> 'C2317035855-NSIDC_ECS'
+   'C2317035855-NSIDC_ECS' -> 'C2317035855-NSIDC_ECS'"
   [index-name]
   (when index-name
     (let [;; Remove shard count suffix if present
           without-shards (string/replace index-name #"_\d+_shards$" "")
           ;; Remove leading number prefix (e.g., "1_")
-          without-prefix (string/replace without-shards #"^\d+_" "")
-          ;; Find the first underscore after the concept type+number
-          ;; Concept pattern: letter followed by numbers/underscores until we hit provider
-          ;; Match: concept letter + any combo of numbers/underscores that form the concept ID
-          first-underscore-idx (string/index-of without-prefix "_")]
-      (when first-underscore-idx
-        (let [concept-part (subs without-prefix 0 first-underscore-idx)
-              provider-part (subs without-prefix (inc first-underscore-idx))]
-          (str (string/upper-case concept-part)
-               "-"
-               (string/upper-case provider-part)))))))
+          without-prefix (string/replace without-shards #"^\d+_" "")]
+      (if (re-matches #"(?i)c\d+-[a-z0-9_]+" without-prefix)
+        ;; Already in canonical C#######-PROVIDER format
+        (string/upper-case without-prefix)
+        ;; Otherwise parse underscore format
+        (let [first-underscore-idx (string/index-of without-prefix "_")]
+          (when first-underscore-idx
+            (let [concept-part (subs without-prefix 0 first-underscore-idx)
+                  provider-part (subs without-prefix (inc first-underscore-idx))]
+              (str (string/upper-case concept-part)
+                   "-"
+                   (string/upper-case provider-part)))))))))
 
 (defn- is-rebalancing?
   "Evaluates to true if the index is being used for rebalancing"
