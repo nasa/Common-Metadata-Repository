@@ -291,8 +291,8 @@
         response (client/request
                    {:method :post
                     :query-params {:synchronous synchronous
-                                 :num_shards num-shards
-                                 :elastic_name elastic-name}
+                                   :num_shards num-shards
+                                   :elastic_name elastic-name}
                     :headers headers
                     :url (url/start-reshard-index-url index-name)
                     :accept :json
