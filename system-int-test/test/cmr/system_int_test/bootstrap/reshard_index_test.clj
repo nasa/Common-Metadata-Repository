@@ -162,7 +162,8 @@
                                       (-> coll
                                           (select-keys [:provider-id :concept-id :entry-title])
                                           (assoc :granule-count 1)))
-         coll1-index (index-set-service/gen-valid-index-name "1" (:concept-id coll1))]
+         coll1-index (index-set-service/gen-valid-index-name "1" (:concept-id coll1))
+         gran-elastic-name "gran-elastic"]
      (index/wait-until-indexed)
      (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
      ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
@@ -180,19 +181,19 @@
      (testing "resharding an individual granule index"
        (is (= {:status 200
                :message (format "Resharding started for index %s" coll1-index)}
-              (bootstrap/start-reshard-index coll1-index {:synchronous true :num-shards 2}))))
+              (bootstrap/start-reshard-index coll1-index {:synchronous true :num-shards 2 :elastic-name gran-elastic-name}))))
      (testing "get the resharding status"
        (is (= {:status 200
                :original-index coll1-index
                :reshard-index (str coll1-index "_2_shards")
                :reshard-status "COMPLETE"}
-              (bootstrap/get-reshard-status coll1-index))))
+              (bootstrap/get-reshard-status coll1-index {:elastic-name gran-elastic-name}))))
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message (format "Resharding completed for index %s" coll1-index)}
-              (bootstrap/finalize-reshard-index coll1-index {:synchronous false}))))
+              (bootstrap/finalize-reshard-index coll1-index {:synchronous false :elastic-name gran-elastic-name}))))
      (testing "alias is moved to new index"
-       (is (index/alias-exists? (str coll1-index "_2_shards") (str coll1-index "_alias"))))
+       (is (index/alias-exists? (str coll1-index "_2_shards") (str coll1-index "_alias") gran-elastic-name)))
 
      ;; Start rebalancing of collection 1 back to the small_collections. After this it will be in small collections and a separate index
      (bootstrap/start-rebalance-collection (:concept-id coll1) {:target "small-collections"})
