@@ -1,6 +1,6 @@
 (ns cmr.elastic-utils.test.config-test
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing]]
     [cmr.elastic-utils.config :as es-config]
     [cmr.common.util :refer [are3]]))
 
