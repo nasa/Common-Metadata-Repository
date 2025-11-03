@@ -430,6 +430,6 @@
       (async/thread (while true
                       (try ; log errors but keep the thread alive)
                         (let [{:keys [source-index target-index elastic-name]} (<!! channel)]
-                          (migrate-index system source-index target-index elastic-name)) ;; TODO Jyna who writes to this channel? What is the content? It needs to pass the elastic cluster name now too.
+                          (migrate-index system source-index target-index elastic-name))
                         (catch Throwable e
                           (error e (.getMessage e)))))))))
