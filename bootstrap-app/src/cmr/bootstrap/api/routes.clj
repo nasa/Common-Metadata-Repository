@@ -120,12 +120,12 @@
        (POST "/start" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
          (resharding/start request-context index params))
-       (POST "/finalize" {:keys [request-context]}
+       (POST "/finalize" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
-         (resharding/finalize request-context index))
-       (GET "/status" {:keys [request-context]}
+         (resharding/finalize request-context index params))
+       (GET "/status" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
-         (resharding/get-status request-context index)))
+         (resharding/get-status request-context index params)))
      (context "/virtual_products" []
        (POST "/" {:keys [request-context params]}
          (virtual-products/bootstrap request-context params)))

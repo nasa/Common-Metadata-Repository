@@ -65,19 +65,19 @@
   (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider collection-id))
 
 (defn migrate-index
-  "Copy the contents of one index to another."
-  [system source-index target-index]
-  (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
+  "Copy the contents of one index to another. The target index is assumed to be in the same elastic cluster as the source index."
+  [system source-index target-index elastic-name]
+  (info (format "Migrating from index [%s] to index [%s] in es cluster [%s]" source-index target-index elastic-name))
   (let [indexer-context {:system (helper/get-indexer system)}
-        conn (indexer-util/context->conn indexer-context)]
+        conn (indexer-util/context->conn indexer-context elastic-name)]
     (try
       (let [result (es-helper/migrate-index conn source-index target-index)]
         (when (:error result)
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE")
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
       (catch Throwable e
         (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
-        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED")
+        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
         (throw e)))))
 
 (defn index-granules-for-collection
@@ -429,7 +429,7 @@
     (let [channel (:migrate-index-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; log errors but keep the thread alive)
-                        (let [{:keys [source-index target-index]} (<!! channel)]
-                          (migrate-index system source-index target-index))
+                        (let [{:keys [source-index target-index elastic-name]} (<!! channel)]
+                          (migrate-index system source-index target-index elastic-name))
                         (catch Throwable e
                           (error e (.getMessage e)))))))))

@@ -97,8 +97,10 @@
 
 (defn- submit-reshard-index-request
   "A helper function for submitting a request to reshard an index."
-  [context index-set-id index url-fn num-shards]
-  (let [query-params (when num-shards {:num_shards num-shards})]
+  [context index-set-id index url-fn num-shards elastic-name]
+  (let [query-params (cond-> {}
+                           num-shards (assoc :num_shards num-shards)
+                           :always-true (assoc :elastic_name elastic-name))]
     (h/request context :indexer
                {:url-fn #(url-fn % index-set-id index)
                 :method :post
@@ -116,16 +118,17 @@
 
 (defn add-resharding-index
   "Adds the specified index to the set of resharding indexes."
-  [context index-set-id index num-shards]
-  (submit-reshard-index-request context index-set-id index start-reshard-index-url num-shards))
+  [context index-set-id index num-shards elastic-name]
+  (submit-reshard-index-request context index-set-id index start-reshard-index-url num-shards elastic-name))
 
 (defn get-reshard-status
   "Get the resharding status of the given index."
-  [context index-set-id index]
+  [context index-set-id index elastic-name]
   (let [conn (config/context->app-connection context :indexer)
          params (merge
                  (config/conn-params conn)
                  {:method :get
+                  :query-params {:elastic_name elastic-name}
                   :url (get-reshard-status-url conn index-set-id index)
                   :accept :json
                   :throw-exceptions false
@@ -143,5 +146,5 @@
 
 (defn finalize-resharding-index
   "Finalizes the resharding index specified in the indexer application."
-  [context index-set-id index]
-  (submit-reshard-index-request context index-set-id index finalize-reshard-index-url nil))
+  [context index-set-id index elastic-name]
+  (submit-reshard-index-request context index-set-id index finalize-reshard-index-url nil elastic-name))

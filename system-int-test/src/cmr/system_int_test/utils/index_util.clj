@@ -183,8 +183,8 @@
 
 (defn get-aliases
   "Returns a vector of alias names for the given index."
-  [index-name]
-  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root))
+  [index-name elastic-name]
+  (let [aliases-url (format "%s/_cat/aliases" (url/elastic-root elastic-name))
         resp (client/get aliases-url
                          {:query-params {:format "json"}
                           :connection-manager (s/conn-mgr)
@@ -197,6 +197,5 @@
 
 (defn alias-exists?
   "Returns true if the given alias exists for the specified index."
-  [index-name alias]
-  (contains? (set (get-aliases index-name)) alias))
-
+  [index-name alias elastic-name]
+  (contains? (set (get-aliases index-name elastic-name)) alias))
