@@ -129,6 +129,14 @@
     (is (= "C2317035855-NSIDC_ECS"
            (#'svc/index-name->concept-id "2_c2317035855_nsidc_ecs"))))
 
+  (testing "handles without leading numbers"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "c2317035855_nsidc_ecs"))))
+
+  (testing "handles concept-id as index name"
+    (is (= "C2317035855-NSIDC_ECS"
+           (#'svc/index-name->concept-id "C2317035855-NSIDC_ECS"))))
+
   (testing "returns nil for nil input"
     (is (nil? (#'svc/index-name->concept-id nil))))
 
