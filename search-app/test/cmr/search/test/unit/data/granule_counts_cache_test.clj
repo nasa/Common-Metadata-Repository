@@ -18,10 +18,32 @@
 
 (defn mock-get-collection-granule-counts
   "This is a test mock function to mock getting granule counts from elastic search."
-  [_context _provider-ids]
+  [& _]
   collection-granule-counts-mock-data)
 
-(deftest next-cache-test
+(deftest get-granule-counts-test ;;TODO: Rename to something more semantically sound. IE : granule-count-filtered-retrieval-test
+  (testing "Granule count retrieval with provider filtering"
+    (let [cache-key granule-counts-cache/granule-counts-cache-key
+          test-context {:system {:caches {cache-key (granule-counts-cache/create-granule-counts-cache-client)}}}
+          granule-counts-cache (get-in test-context [:system :caches cache-key])]
+      (cache/reset granule-counts-cache)
+      (granule-counts-cache/refresh-granule-counts-cache test-context mock-get-collection-granule-counts)
+      (testing "Retrieve all granule counts"
+        (let [result (granule-counts-cache/get-granule-counts test-context nil mock-get-collection-granule-counts)]
+          (println "All granule counts:" result)
+          (is (= collection-granule-counts-mock-data result))))
+
+      (testing "Retrieve granule counts for specific provider"
+        (let [result (granule-counts-cache/get-granule-counts test-context ["PROV1"] mock-get-collection-granule-counts)]
+          (println "PROV1 granule counts:" result)
+          (is (= {"C1-PROV1" 10, "C2-PROV1" 20} result))))
+
+     (testing "Retrieve granule counts for non-existent provider"
+        (let [result (granule-counts-cache/get-granule-counts test-context ["PROV3"] mock-get-collection-granule-counts)]
+          (println "PROV3 granule counts:" result)
+          (is (= {} result)))))))
+
+(deftest granule-counts-cache-operations-test
   (testing "Granule count cache operations"
    (let [cache-key granule-counts-cache/granule-counts-cache-key
          test-context {:system {:caches {cache-key (granule-counts-cache/create-granule-counts-cache-client)}}}
@@ -50,3 +72,4 @@
             cached-value (cache/get-value cache cache-key)]
         (is (= collection-granule-counts-mock-data cached-value)
             "Cache should be updated with mock granule counts after refresh")))))
+

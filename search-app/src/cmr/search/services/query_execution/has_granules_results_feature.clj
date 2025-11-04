@@ -5,7 +5,6 @@
   (:require [cmr.elastic-utils.search.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.search.data.elastic-search-index :as idx]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.search.data.granule-counts-cache :as granule-counts-cache]))
 

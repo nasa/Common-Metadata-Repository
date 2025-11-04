@@ -10,7 +10,6 @@
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]))
 
 (def has-granules-or-cwic-cache-key

@@ -28,7 +28,6 @@
    [cmr.elastic-utils.search.es-params-converter :as common-params]
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.search.api.core :refer [log-search-result-metadata]]
-   [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -40,12 +39,11 @@
    [cmr.search.services.parameters.provider-short-name :as psn]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.spatial.codec :as spatial-codec]
-   [cmr.spatial.tile :as tile])
-  ;; These must be required here to make multimethod implementations available.
-  ;; XXX This is not a good pattern for large software systems; we need to
-  ;;     find a different way to accomplish this goal ... possibly use protocols
-  ;;     instead.
-  (:require
+   [cmr.spatial.tile :as tile]
+   ;; These must be required here to make multimethod implementations available.
+   ;; XXX This is not a good pattern for large software systems; we need to
+   ;;     find a different way to accomplish this goal ... possibly use protocols
+   ;;     instead.
    cmr.search.data.complex-to-simple-converters.attribute
    cmr.search.data.complex-to-simple-converters.has-granules
    cmr.search.data.complex-to-simple-converters.has-granules-or-cwic
@@ -93,8 +91,7 @@
    cmr.search.validators.equator-crossing-longitude
    cmr.search.validators.orbit-number
    cmr.search.validators.temporal
-   cmr.search.validators.validation
-   [cmr.search.data.granule-counts-cache :as granule-counts-cache]])
+   cmr.search.validators.validation))
 
 (def query-aggregation-size
   "Page size for query aggregations. This should be large enough
