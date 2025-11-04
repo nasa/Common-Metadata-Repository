@@ -21,7 +21,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [clojure-opennlp "0.5.0"]
                  [com.neovisionaries/nv-i18n "1.23"]
                  [com.stuartsierra/component "0.3.2"]

@@ -9,7 +9,7 @@
   :url "https://github.com/cmr-exchange/cmr-mission-control"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[clojusc/twig "0.4.0"]
+  :dependencies [[clojusc/twig "0.4.2"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.4.474"]]
   :profiles {:ubercompile {:aot :all}

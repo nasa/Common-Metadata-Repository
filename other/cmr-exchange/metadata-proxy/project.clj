@@ -24,7 +24,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.1"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.3"]

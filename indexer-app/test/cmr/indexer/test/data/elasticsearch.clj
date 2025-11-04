@@ -1,6 +1,6 @@
 (ns cmr.indexer.test.data.elasticsearch
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as i]
    [cmr.indexer.data.index-set-generics :as index-set-gen]))

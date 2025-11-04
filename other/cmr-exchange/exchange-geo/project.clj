@@ -22,7 +22,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[net.sf.geographiclib/GeographicLib-Java]]
   :dependencies [[clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [com.esri.geometry/esri-geometry-api "2.2.1"]
                  [org.locationtech.jts/jts-core "1.19.0"]
                  [net.sf.geographiclib/GeographicLib-Java "1.49"]

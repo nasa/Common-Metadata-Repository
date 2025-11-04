@@ -21,11 +21,11 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.1"]
+                 [clojusc/twig "0.4.2"]
                  [com.stuartsierra/component "1.0.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
-                 [org.clojure/clojure "1.10.1"]
-                 [ring/ring-codec "1.1.2"]]
+                 [org.clojure/clojure "1.11.2"]
+                 [ring/ring-codec "1.3.0"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]

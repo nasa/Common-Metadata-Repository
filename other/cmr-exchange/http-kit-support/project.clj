@@ -22,7 +22,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
-                 [clojusc/twig "0.4.0"]
+                 [clojusc/twig "0.4.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
                  [http-kit "2.8.1"]
@@ -30,7 +30,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [ring/ring-defaults "0.3.4"]
-                 [selmer "1.12.5"]
+                 [selmer "1.12.65"]
                  [tolitius/xml-in "0.1.0"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.20.0"]]
