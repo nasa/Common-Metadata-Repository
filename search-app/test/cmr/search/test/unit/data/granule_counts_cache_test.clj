@@ -68,7 +68,7 @@
 (deftest refresh-test
   (let [{:keys [test-context cache cache-key]} (setup-test-cache)]
     (testing "Refreshing granule counts cache"
-      (granule-counts-cache/refresh-granule-counts-cache test-context #(mock-get-collection-granule-counts test-context nil))
+      (granule-counts-cache/refresh-granule-counts-cache test-context mock-get-collection-granule-counts)
       (let [cached-value (cache/get-value cache cache-key)]
         (is (= collection-granule-counts-mock-data cached-value)
             "Cache should be updated with mock granule counts after refresh")))))
