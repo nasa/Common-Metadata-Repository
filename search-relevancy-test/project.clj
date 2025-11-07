@@ -3,8 +3,10 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"]
+                 [cheshire]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
@@ -17,7 +19,8 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :main ^:skip-aot search-relevancy-test.runner
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"

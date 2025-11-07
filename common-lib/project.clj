@@ -1,8 +1,10 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"
+                 [cheshire
                   :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time "0.15.1"]
                  [clojail "1.0.6"]
@@ -49,6 +51,7 @@
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
