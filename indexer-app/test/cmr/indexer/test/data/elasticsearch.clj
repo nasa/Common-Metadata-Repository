@@ -8,7 +8,7 @@
 (def test-index-set
   "A real copy of an index set from UAT with the mappings replaced to be smaller and reduce churn"
   {:index-set
-   (merge 
+   (merge
     {:name "cmr-base-index-set",
      :id 1,
      :create-reason "indexer app requires this index set",
@@ -113,3 +113,52 @@
   (testing "Updates required from individual index settings"
     (is (es/requires-update? (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)
                              (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
+
+(deftest reconcile-resharded-index-test
+  (let [initial-index-set
+        {:index-set
+         {:service
+          {:indexes
+           [{:name "services"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1}}}
+            {:name "all-service-revisions"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1}}}]}
+          :collection
+          {:indexes
+           [{:name "collections-v2"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1}}}
+            {:name "all-collection-revisions"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1}}}]}}}
+
+        ;; Case 1: same name exists — should NOT update anything
+        resharded-already-exists
+        [{:concept-type "service"
+          :index-key "services"
+          :index-name-without-id "services"
+          :num-shards 10}]
+
+        ;; Case 2: new resharded version — should update canonical
+        resharded-new
+        [{:concept-type "collection"
+          :index-key "collections-v2"
+          :index-name-without-id "collections_v2_2_shards"
+          :num-shards 2}]]
+
+    (testing "does nothing when the resharded index already exists"
+      (let [result (es/reconcile-resharded-index
+                    initial-index-set resharded-already-exists)
+            updated-shards (get-in result [:index-set :service :indexes 0 :settings :index :number_of_shards])]
+        (is (= 5 updated-shards))
+        (is (= "services" (get-in result [:index-set :service :indexes 0 :name])))))
+
+    (testing "updates canonical index when resharded version not present"
+      (let [result (es/reconcile-resharded-index
+                    initial-index-set resharded-new)
+            updated-index (first (filter #(= "collections_v2_2_shards" (:name %))
+                                         (get-in result [:index-set :collection :indexes])))]
+        (is (= "collections_v2_2_shards" (:name updated-index)))
+        (is (= 2 (get-in updated-index [:settings :index :number_of_shards])))))))

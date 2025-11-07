@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -985,12 +986,46 @@
                         set-of-indexes
                         (index-set-gen/generic-mappings-generator))}))
 
+
+(defn get-canonical-key-name
+  "Returns a canonical index name by:
+   - Removing the leading number prefix (e.g., '1_')
+   - Removing the trailing shard suffix (e.g., '_100_shards')
+   - Converting concept IDs (e.g., 'c2317033465_nsidc_ecs') to 'C2317033465-NSIDC_ECS'
+   - Handling special cases:
+       '1_small_collections' -> 'small_collections'
+       '1_deleted_granules'  -> 'deleted_granules'
+   - Replacing underscores with hyphens for regular names.
+
+   Examples:
+     '1_small_collections_100_shards' -> 'small_collections'
+     '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
+     '1_collections_v2' -> 'collections-v2'"
+  [index-name]
+  (when index-name
+    (let [cleaned (-> index-name
+                      (string/replace #"^\d+_" "")
+                      (string/replace #"_\d+_shards$" ""))]
+      (cond
+        ;; Special cases
+        (#{"small_collections" "deleted_granules"} cleaned)
+        cleaned
+
+        ;; Concept ID pattern like c12345_xxx
+        (re-matches #"^[a-z]\d+_.*" cleaned)
+        (let [[id rest] (string/split cleaned #"_" 2)]
+          (str (string/upper-case id) "-" (string/upper-case rest)))
+
+        ;; Regular index name: replace underscores with hyphens
+        :else
+        (string/replace cleaned #"_" "-")))))
+
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
   [index-set]
   (->> (get-in index-set [:index-set :granule :indexes])
        (map :name)
-       (remove #(= % "small_collections"))))
+       (remove #(= (get-canonical-key-name %) "small_collections"))))
 
 (defn fetch-concept-type-index-names
   "Fetch a map containing index names for each concept type from index-set app along with the list

@@ -13,6 +13,7 @@
    [cmr.elastic-utils.index-util :as es-util]
    [cmr.indexer.common.index-set-util :as index-set-util]
    [cmr.indexer.config :as config]
+   [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m]
    [cmr.indexer.indexer-util :as indexer-util])
@@ -71,39 +72,6 @@
          (for [index-name index-names-array]
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
-(defn get-canonical-key-name
-  "Returns a canonical index name by:
-   - Removing the leading number prefix (e.g., '1_')
-   - Removing the trailing shard suffix (e.g., '_100_shards')
-   - Converting concept IDs (e.g., 'c2317033465_nsidc_ecs') to 'C2317033465-NSIDC_ECS'
-   - Handling special cases:
-       '1_small_collections' -> 'small_collections'
-       '1_deleted_granules'  -> 'deleted_granules'
-   - Replacing underscores with hyphens for regular names.
-
-   Examples:
-     '1_small_collections_100_shards' -> 'small_collections'
-     '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
-     '1_collections_v2' -> 'collections-v2'"
-  [index-name]
-  (when index-name
-    (let [cleaned (-> index-name
-                      (string/replace #"^\d+_" "")
-                      (string/replace #"_\d+_shards$" ""))]
-      (cond
-        ;; Special cases
-        (#{"small_collections" "deleted_granules"} cleaned)
-        cleaned
-
-        ;; Concept ID pattern like c12345_xxx
-        (re-matches #"^[a-z]\d+_.*" cleaned)
-        (let [[id rest] (string/split cleaned #"_" 2)]
-          (str (string/upper-case id) "-" (string/upper-case rest)))
-
-        ;; Regular index name: replace underscores with hyphens
-        :else
-        (string/replace cleaned #"_" "-")))))
-
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
   the index name map."
@@ -114,7 +82,7 @@
      :concepts (into {} (for [concept-type (add-searchable-generic-types searchable-concept-types)]
                           [concept-type
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
-                                      [(keyword (get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))}))
+                                      [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))}))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -398,8 +366,8 @@
 (defn- get-index-config
   "Returns the index configuration from the index-set that matches the canonical index name."
   [index-set concept-type canonical-index-name]
-  (let [canonical (get-canonical-key-name canonical-index-name)]
-    (some #(when (= (get-canonical-key-name (:name %)) canonical) %)
+  (let [canonical (index-set/get-canonical-key-name canonical-index-name)]
+    (some #(when (= (index-set/get-canonical-key-name (:name %)) canonical) %)
           (get-in index-set [:index-set concept-type :indexes]))))
 
 (defn- remove-granule-index-from-index-set
@@ -469,7 +437,7 @@
                       (remove-granule-index-from-index-set index-set concept-id)
                       index-set))]
     ;; Update the index set. This will create the new collection indexes as needed.
-    (update-index-set context index-set)))
+    (update-index-set context (util/remove-nils-empty-maps-seqs index-set))))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -502,7 +470,7 @@
 (defn get-concept-type-for-index
   "Given an index name return the matching concept type by looking the index up in the index-set"
   [index-set index]
-  (let [index-key (keyword (get-canonical-key-name index))]
+  (let [index-key (keyword (index-set/get-canonical-key-name index))]
     (some (fn [[concept-type indexes]]
             (when (some #(= index-key %) (keys indexes))
               concept-type))
@@ -640,7 +608,8 @@
                           (update-in [:index-set concept-type :resharding-targets]
                                      dissoc (keyword index))
                           (update-in [:index-set concept-type :resharding-status]
-                                     dissoc (keyword index)))]
+                                     dissoc (keyword index))
+                          util/remove-nils-empty-maps-seqs)]
     (try
       ;; move alias
       (es-util/move-index-alias (indexer-util/context->conn context)
