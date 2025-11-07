@@ -396,13 +396,11 @@
                 :settings individual-index-settings})))
 
 (defn- get-index-config
-  "Get the configuration for the given index from the index-set"
+  "Returns the index configuration from the index-set that matches the canonical index name."
   [index-set concept-type canonical-index-name]
-  (let [indexes (get-in index-set [:index-set concept-type :indexes])]
-    (some (fn [index-config]
-            (when (= (:name index-config) canonical-index-name)
-              index-config))
-          (seq indexes))))
+  (let [canonical (get-canonical-key-name canonical-index-name)]
+    (some #(when (= (get-canonical-key-name (:name %)) canonical) %)
+          (get-in index-set [:index-set concept-type :indexes]))))
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
@@ -539,11 +537,14 @@
         _ (when-not concept-type (errors/throw-service-error
                                   :not-found
                                   (format "Index [%s] does not exist." index)))
-        ;; get the index configuration from the index-set under :<concept-type> :indexes then
-        ;; change the shard count and index name to create a new configuration
-        new-index-config (-> (get-index-config index-set concept-type canonical-index-name)
-                             (assoc-in [:settings :index :number_of_shards] num-shards)
-                             (assoc :name target-index-no-index-set-id))
+        ;; Find the original index configuration
+        orig-index-config (get-index-config index-set concept-type canonical-index-name)
+
+        ;; Copy and modify it for the new index
+        new-index-config (-> orig-index-config
+                             (assoc :name target-index-no-index-set-id)
+                             (assoc-in [:settings :index :number_of_shards] num-shards))
+        ;; Update index-set: add new entry, mark resharding status
         ;; update the index-set to have the new index config and to mark the original index
         ;; as resharding
         new-index-set (-> index-set

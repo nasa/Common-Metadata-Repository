@@ -221,6 +221,13 @@
       (is (= {:name "collection_index" :number_of_shards 3}
              (#'svc/get-index-config index-set :collection "collection_index")))))
 
+  (testing "returns index config when found resharded index"
+    (let [index-set {:index-set
+                     {:collection
+                      {:indexes [{:name "collection_index" :number_of_shards 3}]}}}]
+      (is (= {:name "collection_index" :number_of_shards 3}
+             (#'svc/get-index-config index-set :collection "collection_index_2_shards")))))
+
   (testing "returns nil when index name not found"
     (let [index-set {:index-set
                      {:granule
