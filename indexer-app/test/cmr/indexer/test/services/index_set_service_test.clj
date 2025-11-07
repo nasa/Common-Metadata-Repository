@@ -324,7 +324,7 @@
     (let [index-set {:index-set
                      {:concepts {:granule {:small_collections "1_small_collections"
                                            (keyword "C123-PROV") "1_c123_prov"
-                                           :large_collections "1_large_collections"}}}}]
+                                           :large-collections "1_large_collections"}}}}]
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_small_collections")))
       (is (= :granule
