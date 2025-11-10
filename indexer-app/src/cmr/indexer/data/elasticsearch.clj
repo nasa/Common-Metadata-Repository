@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [info infof warn error]]
@@ -94,25 +95,78 @@
   (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
+(defn- index-set->resharded-indexes
+  "Given a map of concepts and their index mappings, return all indexes whose names
+   end with `_\\d+_shards`, as a list of maps like:
+   {:concept-type ..., :index-key ..., :index-name-without-id ..., :num-shards ...}"
+  [concepts-map]
+  (for [[concept-type index-map] (:concepts concepts-map)
+        [index-key index-name] index-map
+        :let [m (re-matches #".*_(\d+)_shards$" index-name)]
+        :when m]
+    {:concept-type concept-type
+     :index-key (name index-key)
+     :index-name-without-id (string/replace-first index-name #".*?_" "")
+     :num-shards (parse-long (second m))}))
+
+(defn reconcile-resharded-index
+  "Update existing canonical index configs in expected-index-set
+   based on resharded-indexes.
+
+   For each resharded index:
+   - If an index with name = index-name-without-id already exists, do nothing.
+   - Otherwise, find the index in the given concept-type whose canonical key name
+     matches the resharded index-name-without-id.
+   - Update that index's :name to index-name-without-id and
+     :settings :index :number_of_shards to num-shards.
+   - Leave all other fields untouched."
+  [expected-index-set resharded-indexes]
+  (reduce
+   (fn [updated-set {:keys [concept-type index-key index-name-without-id num-shards]}]
+     (let [indexes-path [:index-set (keyword concept-type) :indexes]
+           indexes (get-in updated-set indexes-path)
+           ;; Check if the resharded index name already exists
+           index-exists? (some #(= (:name %) index-name-without-id) indexes)]
+       (if index-exists?
+         ;; Skip if the index already exists
+         updated-set
+         ;; Otherwise update the matching canonical index
+         (update-in updated-set indexes-path
+                    (fn [idxs]
+                      (mapv (fn [index]
+                              (if (= (:name index) index-key)
+                                (-> index
+                                    (assoc :name index-name-without-id)
+                                    (assoc-in [:settings :index :number_of_shards] num-shards))
+                                index))
+                            idxs))))))
+   expected-index-set
+   resharded-indexes))
+
+(defn- compute-expected-index-set
+  "Returns [existing-index-set expected-index-set] for a given context."
+  [context]
+  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
+        existing-index-set (util/remove-nils-empty-maps-seqs existing-index-set)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        expected-index-set (idx-set/index-set extra-granule-indexes)
+        resharded-indexes (index-set->resharded-indexes (:index-set existing-index-set))
+        expected-index-set (reconcile-resharded-index expected-index-set resharded-indexes)]
+    [existing-index-set expected-index-set]))
+
 (defn requires-update?
-  "Returns true if the existing index set does not match the expected index set and requires
-  update. Takes either the context which will be used to request index sets or the existing
-  and expected index sets."
+  "Returns true if the existing index set differs from the expected index set."
   ([context]
-   (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-         expected-index-set (idx-set/index-set extra-granule-indexes)]
-     (requires-update? existing-index-set expected-index-set)))
-  ([existing-index-set expected-index-set]
-   (not= (update-in existing-index-set [:index-set] dissoc :concepts)
-         expected-index-set)))
+   (let [[existing expected] (compute-expected-index-set context)]
+     (requires-update? existing expected)))
+  ([existing expected]
+   (not= (update-in existing [:index-set] dissoc :concepts)
+         expected)))
 
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        expected-index-set (idx-set/index-set extra-granule-indexes)]
+  (let [[existing-index-set expected-index-set] (compute-expected-index-set context)]
     (cond
       (nil? existing-index-set)
       (do
@@ -136,11 +190,7 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        ;; We use the extra granule indexes from the existing configured index set when determining
-        ;; the expected index set.
-        expected-index-set (idx-set/index-set extra-granule-indexes)]
+  (let [[existing-index-set expected-index-set] (compute-expected-index-set context)]
     (if (or (= "true" (:force params))
             (requires-update? existing-index-set expected-index-set))
       (do
@@ -175,7 +225,7 @@
            [;; configuration of host, port and admin-token for elasticsearch
             config
 
-   ;; The connection to elasticsearch
+            ;; The connection to elasticsearch
             conn]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
