@@ -133,7 +133,19 @@
                                 :refresh_interval "1s"}}}
             {:name "all-collection-revisions"
              :settings {:index {:number_of_shards 5
-                                :number_of_replicas 1}}}]}}}
+                                :number_of_replicas 1}}}]}
+          :granule
+          {:indexes
+           [{:name "small_collections"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1
+                                :max_result_window 1000000
+                                :refresh_interval "1s"}}}
+            {:name "C1200000009-PROV1"
+             :settings {:index {:number_of_shards 5
+                                :number_of_replicas 1
+                                :max_result_window 1000000
+                                :refresh_interval "1s"}}}]}}}
 
         ;; Case 1: same name exists — should NOT update anything
         resharded-already-exists
@@ -147,7 +159,18 @@
         [{:concept-type "collection"
           :index-key "collections-v2"
           :index-name-without-id "collections_v2_3_shards"
-          :num-shards 3}]]
+          :num-shards 3}]
+
+        ;; Case 3: granule resharded version — should update canonical
+        resharded-granule
+        [{:concept-type "granule"
+          :index-key "small_collections"
+          :index-name-without-id "small_collections_50_shards"
+          :num-shards 50}
+         {:concept-type "granule"
+          :index-key "C1200000009-PROV1"
+          :index-name-without-id "c1200000009_prov1_10_shards"
+          :num-shards 10}]]
 
     (testing "does nothing when the resharded index already exists"
       (let [result (es/reconcile-resharded-index
@@ -168,4 +191,28 @@
         (is (= 1 (get-in updated-index [:settings :index :number_of_replicas]))
             "number_of_replicas should be preserved")
         (is (= "1s" (get-in updated-index [:settings :index :refresh_interval]))
-            "custom settings should be preserved")))))
+            "custom settings should be preserved")))
+
+    (testing "updates granule canonical indexes when resharded versions provided, preserving other settings"
+        (let [result (es/reconcile-resharded-index
+                      initial-index-set resharded-granule)
+              granule-indexes (get-in result [:index-set :granule :indexes])
+              small-idx (first (filter #(= "small_collections_50_shards" (:name %)) granule-indexes))
+              c120-idx  (first (filter #(= "c1200000009_prov1_10_shards" (:name %)) granule-indexes))]
+
+          ;; Verify both were updated correctly
+          (is (= "small_collections_50_shards" (:name small-idx)))
+          (is (= 50 (get-in small-idx [:settings :index :number_of_shards]))
+              "small_collections shard count should be updated to 50")
+          (is (= "c1200000009_prov1_10_shards" (:name c120-idx)))
+          (is (= 10 (get-in c120-idx [:settings :index :number_of_shards]))
+              "C1200000009-PROV1 shard count should be updated to 10")
+
+          ;; Common property checks
+          (doseq [idx [small-idx c120-idx]]
+            (is (= 1 (get-in idx [:settings :index :number_of_replicas]))
+                "number_of_replicas should remain unchanged")
+            (is (= "1s" (get-in idx [:settings :index :refresh_interval]))
+                "refresh_interval should be preserved")
+            (is (= 1000000 (get-in idx [:settings :index :max_result_window]))
+                "max_result_window should be preserved"))))))
