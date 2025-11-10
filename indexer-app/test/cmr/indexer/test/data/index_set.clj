@@ -9,6 +9,10 @@
   (are3 [expected index-name]
         (is (= expected (index-set/get-canonical-key-name index-name)))
 
+        "index name in concept id format"
+        "C2317033465-NSIDC_ECS"
+        "C2317033465-NSIDC_ECS"
+
         "small_collections keep underscore"
         "small_collections"
         "1_small_collections"
