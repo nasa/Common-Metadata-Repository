@@ -13,7 +13,7 @@
         "small_collections"
         "1_small_collections"
 
-        "reshared small_collections"
+        "resharded small_collections"
         "small_collections"
         "1_small_collections_20_shards"
 
@@ -21,7 +21,7 @@
         "deleted_granules"
         "1_deleted_granules"
 
-        "reshared deleted_granules"
+        "resharded deleted_granules"
         "deleted_granules"
         "1_deleted_granules_2_shards"
 
@@ -37,7 +37,7 @@
         "collections-v2"
         "1_collections_v2"
 
-        "reshareded collections index"
+        "reshardeded collections index"
         "collections-v2"
         "1_collections_v2_2_shards"
 

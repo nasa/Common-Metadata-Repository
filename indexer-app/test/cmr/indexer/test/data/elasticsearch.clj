@@ -119,8 +119,8 @@
         {:index-set
          {:service
           {:indexes
-           [{:name "services"
-             :settings {:index {:number_of_shards 5
+           [{:name "services_2_shards"
+             :settings {:index {:number_of_shards 2
                                 :number_of_replicas 1}}}
             {:name "all-service-revisions"
              :settings {:index {:number_of_shards 5
@@ -129,7 +129,8 @@
           {:indexes
            [{:name "collections-v2"
              :settings {:index {:number_of_shards 5
-                                :number_of_replicas 1}}}
+                                :number_of_replicas 1
+                                :refresh_interval "1s"}}}
             {:name "all-collection-revisions"
              :settings {:index {:number_of_shards 5
                                 :number_of_replicas 1}}}]}}}
@@ -138,27 +139,33 @@
         resharded-already-exists
         [{:concept-type "service"
           :index-key "services"
-          :index-name-without-id "services"
-          :num-shards 10}]
+          :index-name-without-id "services_2_shards"
+          :num-shards 2}]
 
         ;; Case 2: new resharded version — should update canonical
         resharded-new
         [{:concept-type "collection"
           :index-key "collections-v2"
-          :index-name-without-id "collections_v2_2_shards"
-          :num-shards 2}]]
+          :index-name-without-id "collections_v2_3_shards"
+          :num-shards 3}]]
 
     (testing "does nothing when the resharded index already exists"
       (let [result (es/reconcile-resharded-index
                     initial-index-set resharded-already-exists)
-            updated-shards (get-in result [:index-set :service :indexes 0 :settings :index :number_of_shards])]
-        (is (= 5 updated-shards))
-        (is (= "services" (get-in result [:index-set :service :indexes 0 :name])))))
+            updated-index (get-in result [:index-set :service :indexes 0])]
+        (is (= "services_2_shards" (:name updated-index)))
+        (is (= 2 (get-in updated-index [:settings :index :number_of_shards])))
+        (is (= 1 (get-in updated-index [:settings :index :number_of_replicas])))))
 
-    (testing "updates canonical index when resharded version not present"
+    (testing "updates canonical index when resharded version not present, preserving other settings"
       (let [result (es/reconcile-resharded-index
                     initial-index-set resharded-new)
-            updated-index (first (filter #(= "collections_v2_2_shards" (:name %))
+            updated-index (first (filter #(= "collections_v2_3_shards" (:name %))
                                          (get-in result [:index-set :collection :indexes])))]
-        (is (= "collections_v2_2_shards" (:name updated-index)))
-        (is (= 2 (get-in updated-index [:settings :index :number_of_shards])))))))
+        (is (= "collections_v2_3_shards" (:name updated-index)))
+        (is (= 3 (get-in updated-index [:settings :index :number_of_shards]))
+            "number_of_shards should be updated to the new shard count")
+        (is (= 1 (get-in updated-index [:settings :index :number_of_replicas]))
+            "number_of_replicas should be preserved")
+        (is (= "1s" (get-in updated-index [:settings :index :refresh_interval]))
+            "custom settings should be preserved")))))

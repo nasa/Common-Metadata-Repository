@@ -95,7 +95,7 @@
   (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
-(defn- index-set->reshared-indexes
+(defn- index-set->resharded-indexes
   "Given a map of concepts and their index mappings, return all indexes whose names
    end with `_\\d+_shards`, as a list of maps like:
    {:concept-type ..., :index-key ..., :index-name-without-id ..., :num-shards ...}"
@@ -150,8 +150,8 @@
         existing-index-set (util/remove-nils-empty-maps-seqs existing-index-set)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         expected-index-set (idx-set/index-set extra-granule-indexes)
-        reshared-indexes (index-set->reshared-indexes (:index-set existing-index-set))
-        expected-index-set (reconcile-resharded-index expected-index-set reshared-indexes)]
+        resharded-indexes (index-set->resharded-indexes (:index-set existing-index-set))
+        expected-index-set (reconcile-resharded-index expected-index-set resharded-indexes)]
     [existing-index-set expected-index-set]))
 
 (defn requires-update?
