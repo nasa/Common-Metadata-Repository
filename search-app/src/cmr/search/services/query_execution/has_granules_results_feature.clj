@@ -5,8 +5,8 @@
   (:require [cmr.elastic-utils.search.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.search.data.elastic-search-index :as idx]
-            [cmr.common.cache.in-memory-cache :as mem-cache]))
+            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.search.data.granule-counts-cache :as granule-counts-cache]))
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
   "The frequency in seconds of the refresh-has-granules-map-job"
@@ -28,11 +28,16 @@
   (into {} (for [[coll-id num-granules] coll-gran-counts]
              [coll-id (> num-granules 0)])))
 
+(defn get-collection-granule-counts
+  "Gets the granule counts for all collections using the granule counts cache."
+  [context]
+  (granule-counts-cache/get-granule-counts context))
+
 (defn refresh-has-granules-map
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
   (let [has-granules-map (collection-granule-counts->has-granules-map
-                           (idx/get-collection-granule-counts context nil))]
+                           (get-collection-granule-counts context))]
     (cache/set-value (cache/context->cache context has-granule-cache-key)
                      :has-granules has-granules-map)))
 
@@ -46,7 +51,7 @@
                      :has-granules
                      (fn []
                        (collection-granule-counts->has-granules-map
-                         (idx/get-collection-granule-counts context nil))))))
+                         (get-collection-granule-counts context))))))
 
 ;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
 (defmethod query-execution/post-process-query-result-feature :has-granules
