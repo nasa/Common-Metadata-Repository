@@ -107,34 +107,37 @@
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn get-canonical-key-name
-  "Removes the leading number prefix (e.g., '1_') and trailing shard count (e.g., '_100_shards')
-     from an index name. If the index name represents a concept ID (starts with a letter followed
-     by numbers), formats it as a concept ID with hyphen separator.
-     Examples:
+  "Returns a canonical index name by:
+   - Removing the leading number prefix (e.g., '1_')
+   - Removing the trailing shard suffix (e.g., '_100_shards')
+   - Converting concept IDs (e.g., 'c2317033465_nsidc_ecs') to 'C2317033465-NSIDC_ECS'
+   - Handling special cases:
+       '1_small_collections' -> 'small_collections'
+       '1_deleted_granules'  -> 'deleted_granules'
+   - Replacing underscores with hyphens for regular names.
+
+   Examples:
      '1_small_collections_100_shards' -> 'small_collections'
      '1_c2317033465_nsidc_ecs' -> 'C2317033465-NSIDC_ECS'
-     '1_collections_v2' -> 'collections-v2'
-     '1_v123_nsidc_ecs' -> 'V123-NSIDC_ECS'"
+     '1_collections_v2' -> 'collections-v2'"
   [index-name]
   (when index-name
-    (let [;; Remove leading number and trailing shard count
-          cleaned (-> index-name
+    (let [cleaned (-> index-name
                       (string/replace #"^\d+_" "")
-                      (string/replace #"_\d+_shards$" ""))
-          ;; Check if it starts with a concept pattern (letter followed by digits)
-          is-concept? (re-matches #"^[a-z]\d+_.*" cleaned)]
-      (if is-concept?
-        ;; Format as concept ID: uppercase and replace first underscore with hyphen
-        (let [first-underscore-idx (string/index-of cleaned "_")]
-          (if first-underscore-idx
-            (str (string/upper-case (subs cleaned 0 first-underscore-idx))
-                 "-"
-                 (string/upper-case (subs cleaned (inc first-underscore-idx))))
-            (string/upper-case cleaned)))
-        ;; Regular index: replace last underscore with hyphen if it has version pattern
-        (if (re-find #"_v\d+" cleaned)
-          (string/replace cleaned #"_(?=v\d+$)" "-")
-          cleaned)))))
+                      (string/replace #"_\d+_shards$" ""))]
+      (cond
+        ;; Special cases
+        (#{"small_collections" "deleted_granules"} cleaned)
+        cleaned
+
+        ;; Concept ID pattern like c12345_xxx
+        (re-matches #"^[a-z]\d+_.*" cleaned)
+        (let [[id rest] (string/split cleaned #"_" 2)]
+          (str (string/upper-case id) "-" (string/upper-case rest)))
+
+        ;; Regular index name: replace underscores with hyphens
+        :else
+        (string/replace cleaned #"_" "-")))))
 
 (defn prune-index-set
   "Returns the index set with only the id, name, and a map of concept types to
@@ -510,13 +513,11 @@
                 :settings individual-index-settings})))
 
 (defn- get-index-config
-  "Get the configuration for the given index from the index-set"
+  "Returns the index configuration from the index-set that matches the canonical index name."
   [index-set concept-type canonical-index-name]
-  (let [indexes (get-in index-set [:index-set concept-type :indexes])]
-    (some (fn [index-config]
-            (when (= (:name index-config) canonical-index-name)
-              index-config))
-          (seq indexes))))
+  (let [canonical (get-canonical-key-name canonical-index-name)]
+    (some #(when (= (get-canonical-key-name (:name %)) canonical) %)
+          (get-in index-set [:index-set concept-type :indexes]))))
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
@@ -660,11 +661,14 @@
         _ (when-not concept-type (errors/throw-service-error
                                   :not-found
                                   (format "Index [%s] does not exist." index)))
-        ;; get the index configuration from the index-set under :<concept-type> :indexes then
-        ;; change the shard count and index name to create a new configuration
-        new-index-config (-> (get-index-config index-set concept-type canonical-index-name)
-                             (assoc-in [:settings :index :number_of_shards] num-shards)
-                             (assoc :name target-index-no-index-set-id))
+        ;; Find the original index configuration
+        orig-index-config (get-index-config index-set concept-type canonical-index-name)
+
+        ;; Copy and modify it for the new index
+        new-index-config (-> orig-index-config
+                             (assoc :name target-index-no-index-set-id)
+                             (assoc-in [:settings :index :number_of_shards] num-shards))
+        ;; Update index-set: add new entry, mark resharding status
         ;; update the index-set to have the new index config and to mark the original index
         ;; as resharding
         new-index-set (-> index-set

@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.data.index-set :as index-set]
+   [cmr.common.util :refer [are3]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
@@ -284,6 +285,13 @@
       (is (= {:name "collection_index" :number_of_shards 3}
              (#'svc/get-index-config index-set :collection "collection_index")))))
 
+  (testing "returns index config when found resharded index"
+    (let [index-set {:index-set
+                     {:collection
+                      {:indexes [{:name "collection_index" :number_of_shards 3}]}}}]
+      (is (= {:name "collection_index" :number_of_shards 3}
+             (#'svc/get-index-config index-set :collection "collection_index_2_shards")))))
+
   (testing "returns nil when index name not found"
     (let [index-set {:index-set
                      {:granule
@@ -387,7 +395,7 @@
     (let [index-set {:index-set
                      {:concepts {:granule {:small_collections "1_small_collections"
                                            (keyword "C123-PROV") "1_c123_prov"
-                                           :large_collections "1_large_collections"}}}}]
+                                           :large-collections "1_large_collections"}}}}]
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_small_collections")))
       (is (= :granule
@@ -401,3 +409,56 @@
       ;; Should find it because get-canonical-key-name uppercases concept IDs
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs"))))))
+
+(deftest get-canonical-key-name-test
+  (are3 [expected index-name]
+        (is (= expected (svc/get-canonical-key-name index-name)))
+
+        "small_collections keep underscore"
+        "small_collections"
+        "1_small_collections"
+
+        "reshared small_collections"
+        "small_collections"
+        "1_small_collections_20_shards"
+
+        "deleted_granules keep underscore"
+        "deleted_granules"
+        "1_deleted_granules"
+
+        "reshared deleted_granules"
+        "deleted_granules"
+        "1_deleted_granules_2_shards"
+
+        "individual granule index"
+        "C2317033465-NSIDC_ECS"
+        "1_c2317033465_nsidc_ecs"
+
+        "resharded individual granule index"
+        "C2317033465-NSIDC_ECS"
+        "1_c2317033465_nsidc_ecs_8_shards"
+
+        "collections index"
+        "collections-v2"
+        "1_collections_v2"
+
+        "reshareded collections index"
+        "collections-v2"
+        "1_collections_v2_2_shards"
+
+        "generic concept index"
+        "generic-citation-draft"
+        "1_generic_citation_draft"
+
+        "resharded generic concept index"
+        "generic-citation-draft"
+        "1_generic_citation_draft_1_shards"
+
+        "generic concept all revisions index"
+        "all-generic-service-draft-revisions"
+        "1_all_generic_service_draft_revisions"
+
+        "resharded generic concept all revisions index"
+        "all-generic-service-draft-revisions"
+        "1_all_generic_service_draft_revisions_1_shards"))
+
