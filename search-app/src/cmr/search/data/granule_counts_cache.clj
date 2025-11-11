@@ -1,12 +1,12 @@
 (ns cmr.search.data.granule-counts-cache
   (:require
+   [cmr.common.log :as log]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :as log]
    [cmr.common.services.errors :as e]
    [cmr.common.services.search.query-model :as qm]
-   [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]))
 
@@ -88,13 +88,6 @@
   ([context provider-ids]
    (get-granule-counts context provider-ids get-collection-granule-counts))
   ([context provider-ids get-collection-granule-counts-fn]
-   (let [cache (cache/context->cache context granule-counts-cache-key)
-         all-counts (cache/get-value cache
-                                     granule-counts-cache-key
-                                     #(get-collection-granule-counts-fn context nil))]
-     (if (seq provider-ids)
-       (into {} (filter (fn [[k _]]
-                          (some #(= (concepts/concept-id->provider-id k) %) provider-ids))
-                        all-counts))
-       all-counts))))
-
+   (cache/get-value (cache/context->cache context granule-counts-cache-key)
+                    granule-counts-cache-key
+                    #(get-collection-granule-counts-fn context provider-ids))))
