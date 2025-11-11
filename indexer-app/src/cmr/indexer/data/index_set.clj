@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [update])
   (:require
    [cmr.common.log :as log :refer [info warn error]]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -917,6 +918,39 @@
            :max_result_window MAX_RESULT_WINDOW,
            :refresh_interval "1s"}})
 
+(defn get-canonical-key-name
+  "Returns a canonical index name by:
+   - Returning the original string if it's already a concept ID (e.g., 'C2317033465-NSIDC_ECS')
+   - Removing the leading number prefix (e.g., '1_')
+   - Removing the trailing shard suffix (e.g., '_100_shards')
+   - Converting concept IDs (e.g., 'c2317033465_nsidc_ecs') to 'C2317033465-NSIDC_ECS'
+   - Handling special cases:
+       '1_small_collections' -> 'small_collections'
+       '1_deleted_granules'  -> 'deleted_granules'
+   - Replacing underscores with hyphens for regular names."
+  [index-name]
+  (when index-name
+    (let [cleaned (-> index-name
+                      (string/replace #"^\d+_" "")
+                      (string/replace #"_\d+_shards$" ""))]
+      (cond
+        ;; Already in concept-id format (e.g., C2317033465-NSIDC_ECS)
+        (re-matches #"^[A-Z]\d+-[A-Z0-9_]+$" cleaned)
+        cleaned
+
+        ;; Special cases
+        (#{"small_collections" "deleted_granules"} cleaned)
+        cleaned
+
+        ;; Lowercase concept ID pattern (e.g., c2317033465_nsidc_ecs)
+        (re-matches #"^[a-z]\d+_.*" cleaned)
+        (let [[id rest] (string/split cleaned #"_" 2)]
+          (str (string/upper-case id) "-" (string/upper-case rest)))
+
+        ;; Regular index name — replace underscores with hyphens
+        :else
+        (string/replace cleaned #"_" "-")))))
+
 (defn gran-index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
    granule indexes that should exist in addition to small_collections. This function
@@ -1030,7 +1064,7 @@
   [index-set]
   (->> (get-in index-set [:index-set :granule :indexes])
        (map :name)
-       (remove #(= % "small_collections"))))
+       (remove #(= (get-canonical-key-name %) "small_collections"))))
 
 (defn fetch-concept-type-index-names
   "Fetch a map containing index names for each concept type from index-set app along with the list
