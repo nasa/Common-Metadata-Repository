@@ -147,24 +147,17 @@
 
 (defn- compute-expected-index-set
   "Returns [existing-index-set expected-index-set] for a given context."
-  [context]
-  (let [existing-index-set (index-set-es/get-index-set context idx-set/index-set-id)
+  [context elastic-name]
+  (let [existing-index-set (index-set-es/get-index-set context elastic-name idx-set/index-set-id)
         existing-index-set (util/remove-nils-empty-maps-seqs existing-index-set)
+        ;; We use the extra granule indexes from the existing configured index set when determining the expected index set.
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
-        expected-index-set (idx-set/index-set extra-granule-indexes)
+        expected-index-set (if (= elastic-name es-config/gran-elastic-name)
+                             (idx-set/gran-index-set extra-granule-indexes)
+                             (idx-set/non-gran-index-set))
         resharded-indexes (index-set->resharded-indexes (:index-set existing-index-set))
         expected-index-set (reconcile-resharded-index expected-index-set resharded-indexes)]
     [existing-index-set expected-index-set]))
-
-;; old func. do we still need this?
-;(defn requires-update?
-;  "Returns true if the existing index set differs from the expected index set."
-;  ([context]
-;   (let [[existing expected] (compute-expected-index-set context)]
-;     (requires-update? existing expected)))
-;  ([existing expected]
-;   (not= (update-in existing [:index-set] dissoc :concepts)
-;         expected)))
 
 (defn index-set-requires-update?
   "Returns true if the existing index set does not match the expected index set and requires
@@ -196,16 +189,10 @@
 (defn create-default-indexes
   "Create elastic indexes for each index name for both es clusters."
   [context]
-  ;; create indexes for non-gran-cluster
-  (let [;; setup for non-gran-cluster
-        ;existing-non-gran-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
-        ;expected-non-gran-index-set (idx-set/non-gran-index-set)
-        [existing-non-gran-index-set expected-non-gran-index-set (compute-expected-index-set context)]
-
+  (let [;; setup for non-gran cluster
+        [existing-non-gran-index-set expected-non-gran-index-set] (compute-expected-index-set context es-config/elastic-name)
         ;; setup for gran cluster
-        existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
-        expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
+        [existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)]
 
     (cond
       ;; Check if we need to create
@@ -242,18 +229,13 @@
         (warn "Actual:" (pr-str existing-gran-index-set)))
 
       :else
-      (info "Gran index set exists and matches."))
-    )
-  )
+      (info "Gran index set exists and matches."))))
 
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
   ;; update non-gran cluster's index-set
-  (let [
-        ;existing-index-set (index-set-es/get-index-set context es-config/elastic-name idx-set/index-set-id)
-        ;expected-index-set (idx-set/non-gran-index-set)
-        [existing-index-set expected-index-set] (compute-expected-index-set context)]
+  (let [[existing-index-set expected-index-set] (compute-expected-index-set context es-config/elastic-name)]
     (if (or (= "true" (:force params))
             (index-set-requires-update? existing-index-set expected-index-set))
       (do
@@ -269,11 +251,7 @@
         (info "New non-gran index set:" (pr-str expected-index-set)))))
 
   ;; update gran cluster's index-set
-  (let [existing-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name idx-set/index-set-id)
-        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-gran-index-set)
-        ;; We use the extra granule indexes from the existing configured index set when determining
-        ;; the expected index set.
-        expected-gran-index-set (idx-set/gran-index-set extra-granule-indexes)]
+  (let [[existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)]
     (if (or (= "true" (:force params))
             (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
       (do
