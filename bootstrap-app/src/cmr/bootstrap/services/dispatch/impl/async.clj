@@ -65,6 +65,7 @@
 (defn migrate-index
   "Copy the contents of one index to another. Used during resharding."
   [this _context source-index target-index elastic-name]
+  (info "CMR 11008 migrate index in async with channel STARTED")
   (let [channel (:migrate-index-channel this)]
     (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
     (async/go (>! channel {:source-index source-index

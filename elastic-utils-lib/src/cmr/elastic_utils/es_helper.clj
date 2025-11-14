@@ -127,9 +127,11 @@
 (defn migrate-index
   "Copies the contents of one index into another. Used for resharding."
   [conn source-index target-index]
+  (info "CMR 11008 migrate index in es_helper STARTED")
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (rest/url-with-path conn "_reindex")]
+        url (rest/url-with-path conn "_reindex")
+        _ (info "CMR 11008 sending request to ES with url " url " and body " body)]
     (rest/post-string conn url
                       {:body (json/encode body)
                        :content-type "application/json"})))
