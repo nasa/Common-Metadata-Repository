@@ -78,7 +78,13 @@
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
       (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
       (catch Throwable e
-        (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
+        (info "CMR 11008 error was " (.toString e))
+        (.printStackTrace e)
+        (when-let [cause (.getCause e)]
+          (println "CMR 11008 Caused by :" (.toString cause))
+          (println "CMR 11008 Cause Stack Trace:")
+          (.printStackTrace cause))
+        (error e (format "CMR 11008 Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
         (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
         (throw e)))))
 
