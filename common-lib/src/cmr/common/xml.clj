@@ -3,22 +3,30 @@
   See the test file for examples."
   (:require
    [clojure.string :as string]
+   [cmr.common.log :refer [warn]]
    [cmr.common.date-time-parser :as p])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import
-   javax.xml.validation.SchemaFactory
-   javax.xml.XMLConstants
-   javax.xml.transform.stream.StreamSource
-   org.xml.sax.ext.DefaultHandler2
    java.io.StringReader
    java.io.StringWriter
+   javax.xml.parsers.DocumentBuilderFactory
+   javax.xml.parsers.SAXParser
+   javax.xml.parsers.SAXParserFactory
+   javax.xml.transform.sax.SAXSource
+   javax.xml.validation.Schema
+   javax.xml.validation.SchemaFactory
+   javax.xml.validation.Validator
+   javax.xml.XMLConstants
    org.w3c.dom.Node
    org.w3c.dom.bootstrap.DOMImplementationRegistry
    org.w3c.dom.ls.DOMImplementationLS
    org.w3c.dom.ls.LSSerializer
+   org.xml.sax.EntityResolver
+   org.xml.sax.ext.DefaultHandler2
    org.xml.sax.InputSource
+   org.xml.sax.SAXException
    org.xml.sax.SAXParseException
-   javax.xml.parsers.DocumentBuilderFactory))
+   org.xml.sax.XMLReader))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -166,19 +174,59 @@
 (defn validate-xml
   "Validates the XML against the schema in the given resource. schema-resource should be a classpath
   resource as returned by clojure.java.io/resource.
-  Returns a list of errors in the XML schema."
+  Returns a list of errors in the XML schema.
+  DTD validation is turned off and an error message is given."
   [^java.net.URL schema-resource xml]
-  (let [^SchemaFactory factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
-        schema (.newSchema factory schema-resource)
-        validator (.newValidator schema)
-        errors-atom (atom [])]
-    (.setErrorHandler validator (create-error-handler errors-atom))
-    (try
-      (.validate validator (StreamSource. (StringReader. xml)))
-      (catch SAXParseException e
-        ;; An exception can be thrown if it is completely invalid XML.
-        (reset! errors-atom [(sax-parse-exception->str e)])))
-    (seq @errors-atom)))
+  (let [spf (SAXParserFactory/newInstance)]
+    ;Important: disables DTD validation specific features
+    (.setValidating spf false)
+    (.setNamespaceAware spf true)
+    ;; Force parser to throw an exception if DOCTYPE is encountered
+    (.setFeature spf "http://apache.org/xml/features/disallow-doctype-decl" true)
+    ;; Disable external general and parameter entities
+    (.setFeature spf "http://xml.org/sax/features/external-general-entities" false)
+    (.setFeature spf "http://xml.org/sax/features/external-parameter-entities" false)
+    ;; Enable secure processing feature
+    (.setFeature spf XMLConstants/FEATURE_SECURE_PROCESSING true)
+
+    ;; Configure the SchemaFactory and apply Schema to the SAXParserFactory
+    (let [schema-factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+          _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_DTD "")
+          _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_SCHEMA "")
+          schema (.newSchema schema-factory schema-resource)
+          sax-parser (.newSAXParser spf)
+          xml-reader (.getXMLReader sax-parser)
+          ;; Set a "blanking" EntityResolver on the XMLReader
+          ;; This ensures that even if a DOCTYPE is present, the resolver prevents fetching any external DTD files.
+          _ (.setEntityResolver xml-reader
+                                (reify EntityResolver
+                                  (resolveEntity [_ _public-id _system-id]
+                                    (println "XXE issue")
+                                    (InputSource. (StringReader. "")))))
+          ;; Create a SAXSource with the configured XMLReader.
+          input-source (InputSource. (StringReader. xml))
+          sax-source   (SAXSource. xml-reader input-source)
+          validator    (.newValidator schema)
+          errors-atom (atom [])]
+      (try
+        (.setErrorHandler validator (create-error-handler errors-atom))
+        (.validate validator sax-source)
+        (catch SAXParseException e
+          ;; An exception can be thrown if it is completely invalid XML.
+          (reset! errors-atom [(sax-parse-exception->str e)]))
+        (catch SAXException e
+          (reset! errors-atom [(sax-parse-exception->str e)])))
+      ;; Check if a DOCTYPE is used. If so put out a generic error message. CMR-11010
+      (let [string-to-check "DOCTYPE is disallowed"
+            doc-type-filter (filter #(string/includes? % string-to-check) @errors-atom)]
+        (if (seq doc-type-filter)
+          (do
+            (warn (first doc-type-filter))
+            (map #(if (string/includes? % string-to-check)
+                    "DOCTYPE declarations are not allowed"
+                    %)
+                 @errors-atom))
+          (seq @errors-atom))))))
 
 (defn pretty-print-xml
   "Returns the pretty printed xml for the given xml string"

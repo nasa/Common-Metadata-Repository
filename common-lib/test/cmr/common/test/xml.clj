@@ -2,6 +2,8 @@
   (:require
    [clj-time.core :as t]
    [clojure.data.xml :as xml]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer [are deftest is]]
    [cmr.common.xml :as cx]))
 
@@ -172,3 +174,23 @@
 
 (deftest pretty-print-xml-test
   (is (= pretty-printed-iso-xml (cx/pretty-print-xml iso-xml))))
+
+(def valid-xml
+  "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId></Collection>")
+
+(def to-much-xml
+  "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId><NewField>test</NewField></Collection>")
+
+(def bad-xml
+  "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId><NewField>test</Collection>")
+
+(def xxe-xml
+  "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >] ><Collection><ShortName>test</ShortName><VersionId>&xxe;</VersionId></Collection>")
+
+(deftest validating-xml-test
+  (let [schema-loc (io/file "resources/test_schema.xsd")
+        schema-url (io/as-url schema-loc)]
+    (is (nil? (cx/validate-xml schema-url valid-xml)))
+    (is (string/includes? (first (cx/validate-xml schema-url to-much-xml)) "Invalid content was found starting with element 'NewField'."))
+    (is (string/includes? (first (cx/validate-xml schema-url bad-xml)) "must be terminated by the matching end-tag"))
+    (is (= "DOCTYPE declarations are not allowed" (first (cx/validate-xml schema-url xxe-xml))))))

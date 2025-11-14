@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<xs:schema elementFormDefault="qualified"
+xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Collection" type="Collection" />
+  <!-- #mark Collection Type -->
+  <xs:complexType name="Collection">
+    <xs:sequence>
+      <xs:element name="ShortName" type="CollectionShortName"></xs:element>
+      <xs:element name="VersionId">
+        <xs:annotation>
+          <xs:documentation>The version of an input collection
+          and/or a dependent collection that is somehow associated
+          with this collection.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80" />
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:simpleType name="CollectionShortName">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="85" />
+			<xs:minLength value="1"></xs:minLength>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
