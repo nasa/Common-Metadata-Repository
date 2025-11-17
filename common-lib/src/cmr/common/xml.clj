@@ -199,7 +199,8 @@
         schema (try
                  ;; Loads the schema as a file url
                  (.newSchema schema-factory schema-resource)
-                 (catch Exception _e
+                 (catch Exception e
+                   (warn "Failed to load schema as URL, attempting as string - this is normal for a unit test:" (.getMessage e))
                    ;; Loads the schema as a string needed for unit test
                    (.newSchema schema-factory (StreamSource. (StringReader. schema-resource)))))
         sax-parser (.newSAXParser spf)
@@ -225,35 +226,35 @@
         (reset! errors-atom [(sax-parse-exception->str e)]))
       (catch Exception e
         ;; This is to catch XML Bomb bomb.
-        (reset! errors-atom [(sax-parse-exception->str e)])))
+        (reset! errors-atom [(.getMessage e)])))
     ;; Check if a DOCTYPE is used. If so log the issue as a warning. For CMR-11010
     (when-not (nil? xml)
       (let [string-to-check "<!doctype"
             xml-lowercase (string/lower-case xml)]
         (when (string/includes? xml-lowercase string-to-check)
-          (warn (format "Record [%s] includes XML DOCTYPE." xml)))))
+          (warn "XML record includes DOCTYPE declaration, which is discouraged for security reasons."))))
     (seq @errors-atom)))
 
-  (defn pretty-print-xml
-    "Returns the pretty printed xml for the given xml string"
-    [^String xml]
-    (let [src (InputSource. (StringReader. xml))
-          builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
-          document (.getDocumentElement (.parse builder src))
-          keep-declaration (.startsWith xml "<?xml")
-          registry (DOMImplementationRegistry/newInstance)
-          ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
-          writer (.createLSSerializer impl)
-          _dom-config (doto (.getDomConfig writer)
-                        (.setParameter "format-pretty-print" true)
-                        (.setParameter "xml-declaration" keep-declaration))
-          output (doto (.createLSOutput impl)
-                   (.setCharacterStream (StringWriter.))
-                   (.setEncoding "UTF-8"))]
-      (.write writer document output)
-      ;; manual massage to handle newer JDK 9 and later behavior with missing newlines
-      (-> (str (.getCharacterStream output))
-          (as-> data (if keep-declaration
-                       (string/replace-first data #">" ">\n")
-                       data))
-          (string/replace #"\s+xmlns:" "\n    xmlns:"))))
+(defn pretty-print-xml
+  "Returns the pretty printed xml for the given xml string"
+  [^String xml]
+  (let [src (InputSource. (StringReader. xml))
+        builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
+        document (.getDocumentElement (.parse builder src))
+        keep-declaration (.startsWith xml "<?xml")
+        registry (DOMImplementationRegistry/newInstance)
+        ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
+        writer (.createLSSerializer impl)
+        _dom-config (doto (.getDomConfig writer)
+                      (.setParameter "format-pretty-print" true)
+                      (.setParameter "xml-declaration" keep-declaration))
+        output (doto (.createLSOutput impl)
+                 (.setCharacterStream (StringWriter.))
+                 (.setEncoding "UTF-8"))]
+    (.write writer document output)
+    ;; manual massage to handle newer JDK 9 and later behavior with missing newlines
+    (-> (str (.getCharacterStream output))
+        (as-> data (if keep-declaration
+                     (string/replace-first data #">" ">\n")
+                     data))
+        (string/replace #"\s+xmlns:" "\n    xmlns:"))))
