@@ -2,7 +2,6 @@
   (:require
    [clj-time.core :as t]
    [clojure.data.xml :as xml]
-   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer [are deftest is]]
    [cmr.common.xml :as cx]))
@@ -187,9 +186,37 @@
 (def xxe-xml
   "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >] ><Collection><ShortName>test</ShortName><VersionId>&xxe;</VersionId></Collection>")
 
+(def test-schema
+  "<?xml version=\"1.0\" encoding=\"us-ascii\"?>
+  <xs:schema elementFormDefault=\"qualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">
+    <xs:element name=\"Collection\" type=\"Collection\" />
+    <!-- #mark Collection Type -->
+    <xs:complexType name=\"Collection\">
+      <xs:sequence>
+        <xs:element name=\"ShortName\" type=\"CollectionShortName\"></xs:element>
+        <xs:element name=\"VersionId\">
+          <xs:annotation>
+            <xs:documentation>The version of an input collection and/or a dependent collection that is somehow associated with this collection.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base=\"xs:string\">
+              <xs:maxLength value=\"80\" />
+              <xs:minLength value=\"1\"></xs:minLength>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name=\"CollectionShortName\">
+      <xs:restriction base=\"xs:string\">
+        <xs:maxLength value=\"85\" />
+        <xs:minLength value=\"1\"></xs:minLength>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:schema>")
+
 (deftest validating-xml-test
-  (let [schema-loc (io/file "resources/test_schema.xsd")
-        schema-url (io/as-url schema-loc)]
+  (let [schema-url test-schema]
     (is (nil? (cx/validate-xml schema-url valid-xml)))
     (is (string/includes? (first (cx/validate-xml schema-url to-much-xml)) "Invalid content was found starting with element 'NewField'."))
     (is (string/includes? (first (cx/validate-xml schema-url bad-xml)) "must be terminated by the matching end-tag"))

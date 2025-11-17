@@ -13,6 +13,7 @@
    javax.xml.parsers.SAXParser
    javax.xml.parsers.SAXParserFactory
    javax.xml.transform.sax.SAXSource
+   javax.xml.transform.stream.StreamSource
    javax.xml.validation.Schema
    javax.xml.validation.SchemaFactory
    javax.xml.validation.Validator
@@ -70,14 +71,14 @@
     (let [tag (first path)
           rest-of-path (rest path)]
       (update-in
-        element [:content]
-        (fn [children]
-          (map (fn [child]
-                 (if (= tag (:tag child))
-                   (apply update-elements-at-path
-                          (concat [child rest-of-path updater-fn] args))
-                   child))
-               children))))))
+       element [:content]
+       (fn [children]
+         (map (fn [child]
+                (if (= tag (:tag child))
+                  (apply update-elements-at-path
+                         (concat [child rest-of-path updater-fn] args))
+                  child))
+              children))))))
 
 (defn element-at-path
   "Returns a single element from within an XML structure at the given path."
@@ -171,12 +172,9 @@
       [e]
       (swap! errors-atom conj (sax-parse-exception->str e)))))
 
-(defn validate-xml
-  "Validates the XML against the schema in the given resource. schema-resource should be a classpath
-  resource as returned by clojure.java.io/resource.
-  Returns a list of errors in the XML schema.
-  DTD validation is turned off and an error message is given."
-  [^java.net.URL schema-resource xml]
+(defn create-and-set-sax-parse-features
+  "Creates a SAX parser factory instance and sets specific features."
+  []
   (let [spf (SAXParserFactory/newInstance)]
     ;Important: disables DTD validation specific features
     (.setValidating spf false)
@@ -188,66 +186,78 @@
     (.setFeature spf "http://xml.org/sax/features/external-parameter-entities" false)
     ;; Enable secure processing feature
     (.setFeature spf XMLConstants/FEATURE_SECURE_PROCESSING true)
+    spf))
 
-    ;; Configure the SchemaFactory and apply Schema to the SAXParserFactory
-    (let [schema-factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
-          _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_DTD "")
-          _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_SCHEMA "")
-          schema (.newSchema schema-factory schema-resource)
-          sax-parser (.newSAXParser spf)
-          xml-reader (.getXMLReader sax-parser)
-          ;; Set a "blanking" EntityResolver on the XMLReader
-          ;; This ensures that even if a DOCTYPE is present, the resolver prevents fetching any external DTD files.
-          _ (.setEntityResolver xml-reader
-                                (reify EntityResolver
-                                  (resolveEntity [_ _public-id _system-id]
-                                    (println "XXE issue")
-                                    (InputSource. (StringReader. "")))))
-          ;; Create a SAXSource with the configured XMLReader.
-          input-source (InputSource. (StringReader. xml))
-          sax-source   (SAXSource. xml-reader input-source)
-          validator    (.newValidator schema)
-          errors-atom (atom [])]
-      (try
-        (.setErrorHandler validator (create-error-handler errors-atom))
-        (.validate validator sax-source)
-        (catch SAXParseException e
-          ;; An exception can be thrown if it is completely invalid XML.
-          (reset! errors-atom [(sax-parse-exception->str e)]))
-        (catch SAXException e
-          (reset! errors-atom [(sax-parse-exception->str e)])))
-      ;; Check if a DOCTYPE is used. If so put out a generic error message. CMR-11010
-      (let [string-to-check "DOCTYPE is disallowed"
-            doc-type-filter (filter #(string/includes? % string-to-check) @errors-atom)]
-        (if (seq doc-type-filter)
-          (do
-            (warn (first doc-type-filter))
-            (map #(if (string/includes? % string-to-check)
-                    "DOCTYPE declarations are not allowed"
-                    %)
-                 @errors-atom))
-          (seq @errors-atom))))))
+(defn validate-xml
+  "Validates the XML against the schema in the given resource. schema-resource should be a classpath
+  resource as returned by clojure.java.io/resource.
+  Returns a list of errors in the XML schema.
+  DTD validation is turned off and an error message is given."
+  [^java.net.URL schema-resource xml]
+  (let [spf (create-and-set-sax-parse-features)
+        ;; Configure the SchemaFactory and apply Schema to the SAXParserFactory
+        schema-factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+        _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_DTD "")
+        schema (try
+                 ;; Loads the schema as a file url
+                 (.newSchema schema-factory schema-resource)
+                 (catch Exception _e
+                   ;; Loads the schema as a string needed for unit test
+                   (.newSchema schema-factory (StreamSource. (StringReader. schema-resource)))))
+        sax-parser (.newSAXParser spf)
+        xml-reader (.getXMLReader sax-parser)
+        ;; Set a "blanking" EntityResolver on the XMLReader
+        ;; This ensures that even if a DOCTYPE is present, the resolver prevents fetching any external DTD files.
+        _ (.setEntityResolver xml-reader
+                              (reify EntityResolver
+                                (resolveEntity [_ _public-id _system-id]
+                                  (println "XXE issue")
+                                  (InputSource. (StringReader. "")))))
+        ;; Create a SAXSource with the configured XMLReader.
+        input-source (InputSource. (StringReader. xml))
+        sax-source   (SAXSource. xml-reader input-source)
+        validator    (.newValidator schema)
+        errors-atom (atom [])]
+    (try
+      (.setErrorHandler validator (create-error-handler errors-atom))
+      (.validate validator sax-source)
+      (catch SAXParseException e
+        ;; An exception can be thrown if it is completely invalid XML.
+        (reset! errors-atom [(sax-parse-exception->str e)]))
+      (catch SAXException e
+        (reset! errors-atom [(sax-parse-exception->str e)])))
+    ;; Check if a DOCTYPE is used. If so put out a generic error message. CMR-11010
+    (let [string-to-check "DOCTYPE is disallowed"
+          doc-type-filter (filter #(string/includes? % string-to-check) @errors-atom)]
+      (if (seq doc-type-filter)
+        (do
+          (warn (first doc-type-filter))
+          (map #(if (string/includes? % string-to-check)
+                  "DOCTYPE declarations are not allowed"
+                  %)
+               @errors-atom))
+        (seq @errors-atom)))))
 
-(defn pretty-print-xml
-  "Returns the pretty printed xml for the given xml string"
-  [^String xml]
-  (let [src (InputSource. (StringReader. xml))
-        builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
-        document (.getDocumentElement (.parse builder src))
-        keep-declaration (.startsWith xml "<?xml")
-        registry (DOMImplementationRegistry/newInstance)
-        ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
-        writer (.createLSSerializer impl)
-        _dom-config (doto (.getDomConfig writer)
-                     (.setParameter "format-pretty-print" true)
-                     (.setParameter "xml-declaration" keep-declaration))
-        output (doto (.createLSOutput impl)
-                 (.setCharacterStream (StringWriter.))
-                 (.setEncoding "UTF-8"))]
-    (.write writer document output)
-    ;; manual massage to handle newer JDK 9 and later behavior with missing newlines
-    (-> (str (.getCharacterStream output))
-        (as-> data (if keep-declaration
-                     (string/replace-first data #">" ">\n")
-                     data))
-        (string/replace #"\s+xmlns:" "\n    xmlns:"))))
+  (defn pretty-print-xml
+    "Returns the pretty printed xml for the given xml string"
+    [^String xml]
+    (let [src (InputSource. (StringReader. xml))
+          builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
+          document (.getDocumentElement (.parse builder src))
+          keep-declaration (.startsWith xml "<?xml")
+          registry (DOMImplementationRegistry/newInstance)
+          ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
+          writer (.createLSSerializer impl)
+          _dom-config (doto (.getDomConfig writer)
+                        (.setParameter "format-pretty-print" true)
+                        (.setParameter "xml-declaration" keep-declaration))
+          output (doto (.createLSOutput impl)
+                   (.setCharacterStream (StringWriter.))
+                   (.setEncoding "UTF-8"))]
+      (.write writer document output)
+      ;; manual massage to handle newer JDK 9 and later behavior with missing newlines
+      (-> (str (.getCharacterStream output))
+          (as-> data (if keep-declaration
+                       (string/replace-first data #">" ">\n")
+                       data))
+          (string/replace #"\s+xmlns:" "\n    xmlns:"))))
