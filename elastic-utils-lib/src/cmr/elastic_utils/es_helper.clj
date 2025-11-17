@@ -130,8 +130,38 @@
   (info "CMR 11008 migrate index in es_helper STARTED")
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (rest/url-with-path conn "_reindex")
+        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")
         _ (info "CMR 11008 sending request to ES with url " url " and body " body)]
     (rest/post-string conn url
                       {:body (json/encode body)
                        :content-type "application/json"})))
+
+;; TODO unit test
+(defn reindexing-still-in-progress
+  [conn index]
+  (info "CMR 11008 finding all active reindex tasks")
+  (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
+        _ (info "CMR 11008 sending request to ES with url " url)
+        resp (rest/get conn url)
+        _ (info "CMR 11008 get reindex tasks response = " resp)
+        nodes-map (:nodes resp)
+        _ (info "CMR 11008 nodes map = " nodes-map)
+        current-reindexing-descriptions (->> nodes-map
+                                        ;; get list of nodes
+                                        vals
+                                        ;; from each node get tasks map
+                                        (mapcat vals)
+                                        ;; flatten sequence of task maps into single sequence of tasks
+                                        (map :description)
+                                             ;; convert every description to lower case to allow for non-case search
+                                             (map clojure.string/lower-case)
+                                        ;; convert final sequence to vector
+                                        vec)
+        _ (info "CMR 11008 current reindexing descriptions = " current-reindexing-descriptions)
+        found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)
+        _ (info "CMR 11008 found reindexing index = " found-reindexing-index)
+        ]
+    found-reindexing-index
+
+    )
+  )

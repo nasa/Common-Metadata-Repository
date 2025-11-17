@@ -596,6 +596,12 @@
               concept-type))
           (get-in index-set [:index-set :concepts]))))
 
+;; TODO there is a func that is already very similar to this. Find it and use that one instead.
+(defn- verify-elastic-name-not-blank
+  [elastic-name]
+  (when (string/blank? elastic-name)
+    (errors/throw-service-error :bad-request "Empty elastic name is not allowed")))
+
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
@@ -604,8 +610,7 @@
      :bad-request
      "Resharding is not allowed for acls or groups."))
   (let [elastic-name (:elastic_name params)
-        _ (when (string/blank? elastic-name)
-            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
+        _ (verify-elastic-name-not-blank elastic-name)
         num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
@@ -653,36 +658,10 @@
     ;; this will create the new index with the new shard count
     (update-index-set context elastic-name new-index-set)))
 
-(defn get-reshard-status
-  "Get the resharding status for the given index"
-  [context index-set-id index params]
-  (let [elastic-name (:elastic_name params)
-        _ (when (string/blank? elastic-name)
-            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
-        index-set (index-set-util/get-index-set context elastic-name index-set-id)
-        concept-type (get-concept-type-for-index index-set index)]
-    (when-not concept-type
-      (errors/throw-service-error
-       :not-found
-       (format
-        "The index [%s] does not exist." index)))
-    (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
-      (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
-        {:original-index index
-         :reshard-index target
-         :reshard-status status}
-        (errors/throw-service-error
-         :internal-error
-         (format
-          "The status of resharding index [%s] is not found." index)))
-      (errors/throw-service-error
-       :not-found
-       (format
-        "The index [%s] is not being resharded." index)))))
-
 (defn update-resharding-status
   "Update the resharding status for the given index"
   [context index-set-id index status elastic-name]
+  (info "CMR 11008 updating reshard status for index " index " to status " status)
   (when (string/blank? elastic-name)
     (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
   ;; resharding has the same valid statuses as rebalancing
@@ -701,6 +680,39 @@
       index-set
       [:index-set concept-type :resharding-status]
       assoc (keyword index) status))))
+
+;; TODO
+(defn get-reshard-status
+  "Get the resharding status for the given index"
+  [context index-set-id index params]
+  (let [elastic-name (:elastic_name params)
+        _ (verify-elastic-name-not-blank elastic-name)
+        conn (indexer-util/context->conn context elastic-name)
+        index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        concept-type (get-concept-type-for-index index-set index)
+        _ (when-not concept-type
+            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
+        reindexing-still-in-progress (es-helper/reindexing-still-in-progress conn index)
+        index-set (when-not reindexing-still-in-progress
+                    (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
+                    (index-set-util/get-index-set context elastic-name index-set-id)
+                    )
+        _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)]
+    ;; check if es _reindex is still happening when we started the reshard asynchronously
+
+    (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
+      (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
+        {:original-index index
+         :reshard-index target
+         :reshard-status status}
+        (errors/throw-service-error
+          :internal-error
+          (format
+            "The status of resharding index [%s] is not found." index)))
+      (errors/throw-service-error
+        :not-found
+        (format
+          "The index [%s] is not being resharded." index)))))
 
 (defn- validate-resharding-complete
   "Validate that resharding has completed successfully for the given index "

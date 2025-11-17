@@ -64,6 +64,7 @@
   [context provider collection-id]
   (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider collection-id))
 
+;; TODO this is the func that needs to change
 (defn migrate-index
   "Copy the contents of one index to another. The target index is assumed to be in the same elastic cluster as the source index."
   [system source-index target-index elastic-name]
@@ -76,7 +77,9 @@
             _ (info "CMR 11008 result of calling ES reindex is " result)]
         (when (:error result)
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
+      ;; TODO this status cannot be COMPLETE
+      ;(index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "IN_PROGRESS" elastic-name)
       (catch Throwable e
         (info "CMR 11008 error was " (.toString e))
         (.printStackTrace e)
