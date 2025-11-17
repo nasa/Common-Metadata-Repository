@@ -179,8 +179,6 @@
     ;Important: disables DTD validation specific features
     (.setValidating spf false)
     (.setNamespaceAware spf true)
-    ;; Force parser to throw an exception if DOCTYPE is encountered
-    (.setFeature spf "http://apache.org/xml/features/disallow-doctype-decl" true)
     ;; Disable external general and parameter entities
     (.setFeature spf "http://xml.org/sax/features/external-general-entities" false)
     (.setFeature spf "http://xml.org/sax/features/external-parameter-entities" false)
@@ -211,7 +209,6 @@
         _ (.setEntityResolver xml-reader
                               (reify EntityResolver
                                 (resolveEntity [_ _public-id _system-id]
-                                  (println "XXE issue")
                                   (InputSource. (StringReader. "")))))
         ;; Create a SAXSource with the configured XMLReader.
         input-source (InputSource. (StringReader. xml))
@@ -225,18 +222,17 @@
         ;; An exception can be thrown if it is completely invalid XML.
         (reset! errors-atom [(sax-parse-exception->str e)]))
       (catch SAXException e
+        (reset! errors-atom [(sax-parse-exception->str e)]))
+      (catch Exception e
+        ;; This is to catch XML Bomb bomb.
         (reset! errors-atom [(sax-parse-exception->str e)])))
-    ;; Check if a DOCTYPE is used. If so put out a generic error message. CMR-11010
-    (let [string-to-check "DOCTYPE is disallowed"
-          doc-type-filter (filter #(string/includes? % string-to-check) @errors-atom)]
-      (if (seq doc-type-filter)
-        (do
-          (warn (first doc-type-filter))
-          (map #(if (string/includes? % string-to-check)
-                  "DOCTYPE declarations are not allowed"
-                  %)
-               @errors-atom))
-        (seq @errors-atom)))))
+    ;; Check if a DOCTYPE is used. If so log the issue as a warning. For CMR-11010
+    (when-not (nil? xml)
+      (let [string-to-check "<!doctype"
+            xml-lowercase (string/lower-case xml)]
+        (when (string/includes? xml-lowercase string-to-check)
+          (warn (format "Record [%s] includes XML DOCTYPE." xml)))))
+    (seq @errors-atom)))
 
   (defn pretty-print-xml
     "Returns the pretty printed xml for the given xml string"

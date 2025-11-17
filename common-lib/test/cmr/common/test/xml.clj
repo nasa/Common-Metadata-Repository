@@ -184,7 +184,7 @@
   "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId><NewField>test</Collection>")
 
 (def xxe-xml
-  "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >] ><Collection><ShortName>test</ShortName><VersionId>&xxe;</VersionId></Collection>")
+  "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >] ><Collection><ShortName>test</ShortName><VersionId>&xxe;1</VersionId></Collection>")
 
 (def test-schema
   "<?xml version=\"1.0\" encoding=\"us-ascii\"?>
@@ -220,4 +220,6 @@
     (is (nil? (cx/validate-xml schema-url valid-xml)))
     (is (string/includes? (first (cx/validate-xml schema-url to-much-xml)) "Invalid content was found starting with element 'NewField'."))
     (is (string/includes? (first (cx/validate-xml schema-url bad-xml)) "must be terminated by the matching end-tag"))
-    (is (= "DOCTYPE declarations are not allowed" (first (cx/validate-xml schema-url xxe-xml))))))
+    ;; The DocType parsing has been disabled and no errors should be 
+    ;; given, but warning log message is produced.
+    (is (nil? (first (cx/validate-xml schema-url xxe-xml))))))
