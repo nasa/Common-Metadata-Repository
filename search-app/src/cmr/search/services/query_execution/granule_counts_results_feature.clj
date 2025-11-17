@@ -63,10 +63,39 @@
         (validate-path-to-condition query condition-path)
         true))))
 
+(defn- is-spatial-or-condition-group?
+  "Returns true if the condition is an OR ConditionGroup containing only SpatialConditions.
+  This identifies groups created by MultiPolygon/multi-feature shapefiles that should preserve
+  their OR semantics."
+  [condition]
+  (and (instance? ConditionGroup condition)
+       (= :or (:operation condition))
+       (seq (:conditions condition))
+       (every? #(instance? SpatialCondition %) (:conditions condition))))
+
 (defn extract-spatial-conditions
-  "Returns a list of the spatial conditions in the query."
+  "Returns a list of the spatial conditions in the query. If the conditions are wrapped
+  in an OR group (e.g., from a MultiPolygon shapefile), preserves that structure by returning
+  the entire group. Individual SpatialConditions not in OR groups are also extracted."
   [query]
-  (extract-conditions query SpatialCondition))
+  ;; Extract both OR groups of SpatialConditions AND individual SpatialConditions not in such groups
+  ;; This handles:
+  ;; 1. MultiPolygon shapefiles: OR(SpatialCond1, SpatialCond2) -> returns the OR group
+  ;; 2. Single polygon shapefiles: SpatialCond -> returns the single condition
+  ;; 3. Mixed queries: Both groups and individual conditions
+  (let [spatial-or-groups (condition-extractor/extract-conditions
+                           query
+                           (fn [condition-path condition]
+                             (when (is-spatial-or-condition-group? condition)
+                               (validate-path-to-condition query condition-path)
+                               true)))
+        ;; Get all individual SpatialConditions
+        all-spatial-conds (extract-conditions query SpatialCondition)
+        ;; Filter out conditions that are already part of extracted OR groups
+        grouped-conds (set (mapcat :conditions spatial-or-groups))
+        ungrouped-conds (remove grouped-conds all-spatial-conds)]
+    ;; Return both OR groups (preserving their structure) and ungrouped conditions
+    (concat spatial-or-groups ungrouped-conds)))
 
 (defn- sanitize-temporal-condition
   "Returns the temporal condition with collection related info cleared out."
