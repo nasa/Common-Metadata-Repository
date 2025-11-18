@@ -136,32 +136,26 @@
                       {:body (json/encode body)
                        :content-type "application/json"})))
 
-;; TODO unit test
-(defn reindexing-still-in-progress
+(defn- extract-descriptions-from-reindex-resp
+  [reindex-resp-json]
+  (let [nodes-map (:nodes reindex-resp-json)]
+    (info "CMR 11008 nodes map = " nodes-map)
+    (->> nodes-map
+         (vals)
+         (map :tasks)
+         (mapcat vals)
+         (map :description)
+         (map clojure.string/lower-case))))
+
+(defn reindexing-still-in-progress?
   [conn index]
   (info "CMR 11008 finding all active reindex tasks")
   (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
         _ (info "CMR 11008 sending request to ES with url " url)
         resp (rest/get conn url)
         _ (info "CMR 11008 get reindex tasks response = " resp)
-        nodes-map (:nodes resp)
-        _ (info "CMR 11008 nodes map = " nodes-map)
-        current-reindexing-descriptions (->> nodes-map
-                                        ;; get list of nodes
-                                        vals
-                                        ;; from each node get tasks map
-                                        (mapcat vals)
-                                        ;; flatten sequence of task maps into single sequence of tasks
-                                        (map :description)
-                                             ;; convert every description to lower case to allow for non-case search
-                                             (map clojure.string/lower-case)
-                                        ;; convert final sequence to vector
-                                        vec)
+        current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
         _ (info "CMR 11008 current reindexing descriptions = " current-reindexing-descriptions)
         found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)
-        _ (info "CMR 11008 found reindexing index = " found-reindexing-index)
-        ]
-    found-reindexing-index
-
-    )
-  )
+        _ (info "CMR 11008 found reindexing index = " found-reindexing-index)]
+    found-reindexing-index))

@@ -692,11 +692,10 @@
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
             (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
-        reindexing-still-in-progress (es-helper/reindexing-still-in-progress conn index)
+        reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)
         index-set (when-not reindexing-still-in-progress
                     (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
-                    (index-set-util/get-index-set context elastic-name index-set-id)
-                    )
+                    (index-set-util/get-index-set context elastic-name index-set-id))
         _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)]
     ;; check if es _reindex is still happening when we started the reshard asynchronously
 
