@@ -474,6 +474,60 @@
           "Case Insensitive"
           "Atm" "aIRBORNE Topographic Mapper"))
 
+  (testing "Blank and 'Not provided' long names should not cause validation errors"
+    (testing "Platform with 'Not provided' long name should be valid"
+      (assert-valid-keywords
+        {:Platforms [(data-umm-cmn/platform {:ShortName "CESSNA 188"
+                                             :LongName "Not provided"
+                                             :Type "Propeller"})]}))
+
+    (testing "Instrument with 'Not provided' long name should be valid"
+      (assert-valid-keywords
+        {:Platforms
+         [(data-umm-cmn/platform
+            {:ShortName "A340-600"
+             :LongName "Airbus A340-600"
+             :Type "Jet"
+             :Instruments [(data-umm-cmn/instrument {:ShortName "ACOUSTIC SOUNDERS"
+                                                     :LongName "Not provided"})]})]}))
+
+    (testing "Project with 'Not provided' long name should be valid"
+      (assert-valid-keywords
+        {:Projects [(assoc (data-umm-cmn/project "EUCREX-94" "") :LongName "Not provided")]}))
+
+    (testing "Invalid long names with valid short names should still fail validation"
+      (testing "Platform with invalid long name should fail"
+        (assert-invalid-keywords
+          {:Platforms [(data-umm-cmn/platform {:ShortName "CESSNA 188"
+                                               :LongName "Invalid Long Name"
+                                               :Type "Propeller"})]}
+          ["Platforms" 0]
+          [(format (str "Platform short name [%s], long name [%s], and type [%s]"
+                        " was not a valid keyword combination.")
+                   "CESSNA 188" "Invalid Long Name" "Propeller")]))
+
+      (testing "Instrument with invalid long name should fail"
+        (assert-invalid-keywords
+          {:Platforms
+           [(data-umm-cmn/platform
+              {:ShortName "A340-600"
+               :LongName "Airbus A340-600"
+               :Type "Jet"
+               :Instruments [(data-umm-cmn/instrument {:ShortName "ACOUSTIC SOUNDERS"
+                                                       :LongName "Invalid Long Name"})]})]}
+          ["Platforms" 0 "Instruments" 0]
+          [(format (str "Instrument short name [%s] and long name [%s]"
+                        " was not a valid keyword combination.")
+                   "ACOUSTIC SOUNDERS" "Invalid Long Name")]))
+
+      (testing "Project with invalid long name should fail"
+        (assert-invalid-keywords
+          {:Projects [(assoc (data-umm-cmn/project "EUCREX-94" "") :LongName "Invalid Long Name")]}
+          ["Projects" 0]
+          [(format (str "Project short name [%s] and long name [%s]"
+                        " was not a valid keyword combination.")
+                   "EUCREX-94" "Invalid Long Name")]))))
+
   (testing "Science Keyword validation"
     (are [attribs]
          (let [sk (data-umm-cmn/science-keyword attribs)]

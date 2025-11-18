@@ -267,6 +267,15 @@
         (error "lookup-by-location-string found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
+(defn- skip-long-name-validation?
+  "Returns true if the long name should be skipped in validation.
+   Long name is skipped if it's nil, empty string, or 'Not provided' (case-insensitive)."
+  [long-name]
+  (or (nil? long-name)
+      (string/blank? long-name)
+      (when (string? long-name)
+        (= "not provided" (string/lower-case (string/trim long-name))))))
+
 (defn- remove-long-name-from-kms-index
   "Removes long-name from the umm-c-index keys in order to prevent validation when
    long-name is not present in the umm-c-keyword.  We only want to validate long-name if it is not nil."
@@ -296,30 +305,56 @@
         (error "lookup-by-umm-c-keyword-data-format found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
+(defn- lookup-by-umm-c-keyword-with-long-name
+  "Generic lookup function for keyword types that have long-name field (platforms, instruments, projects).
+  Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
+  as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively.
+  The transform-fn parameter is an optional function to apply additional transformations to the keyword
+  before lookup (e.g., renaming :type to :category for platforms)."
+  ([context keyword-scheme umm-c-keyword]
+   (lookup-by-umm-c-keyword-with-long-name context keyword-scheme umm-c-keyword identity))
+  ([context keyword-scheme umm-c-keyword transform-fn]
+   (try
+     (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+           umm-c-keyword (transform-fn umm-c-keyword)
+           skip-long-name? (skip-long-name-validation? (get umm-c-keyword :long-name))
+           ;; If long-name should be skipped (nil, empty, or "Not provided"), remove it before normalization
+           keyword-for-comparison (if skip-long-name? (dissoc umm-c-keyword :long-name) umm-c-keyword)
+           comparison-map (normalize-for-lookup keyword-for-comparison (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
+           umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
+           [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
+           _ (rl-util/log-redis-read-complete (str "lookup-by-umm-c-keyword-" keyword-scheme) kms-umm-c-cache-key tm)
+           ;; When skipping long-name, remove it from KMS index keys to enable matching on remaining fields
+           value-for-lookup (if skip-long-name? (remove-long-name-from-kms-index value) value)]
+       (get value-for-lookup comparison-map))
+     (catch Exception e
+       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+         (error (str "lookup-by-umm-c-keyword-" keyword-scheme " found redis carmine exception. Will return nil result.") e)
+         (throw e))))))
+
 (defn lookup-by-umm-c-keyword-platforms
   "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
   as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme umm-c-keyword]
-  (try
-    (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-          ;; CMR-3696 This is needed to compare the keyword category, which is mapped
-          ;; to the UMM Platform Type field.  This will avoid complications with facets.
-          umm-c-keyword (set/rename-keys umm-c-keyword {:type :category})
-          comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
-          umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-          [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
-          _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)]
-      (if (get umm-c-keyword :long-name)
-        ;; Check both longname and shortname
-        (get-in value [comparison-map])
-        ;; Check just shortname
-        (-> value
-            (remove-long-name-from-kms-index)
-            (get comparison-map))))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-by-umm-c-keyword-platforms found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  ;; CMR-3696 This is needed to compare the keyword category, which is mapped
+  ;; to the UMM Platform Type field.  This will avoid complications with facets.
+  (lookup-by-umm-c-keyword-with-long-name
+   context
+   keyword-scheme
+   umm-c-keyword
+   #(set/rename-keys % {:type :category})))
+
+(defn lookup-by-umm-c-keyword-instruments
+  "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
+  as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context keyword-scheme umm-c-keyword]
+  (lookup-by-umm-c-keyword-with-long-name context keyword-scheme umm-c-keyword))
+
+(defn lookup-by-umm-c-keyword-projects
+  "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
+  as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context keyword-scheme umm-c-keyword]
+  (lookup-by-umm-c-keyword-with-long-name context keyword-scheme umm-c-keyword))
 
 (defn lookup-by-umm-c-keyword
   "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists
@@ -329,6 +364,8 @@
     (when-not (:ignore-kms-keywords context)
       (case keyword-scheme
         :platforms (lookup-by-umm-c-keyword-platforms context keyword-scheme umm-c-keyword)
+        :instruments (lookup-by-umm-c-keyword-instruments context keyword-scheme umm-c-keyword)
+        :projects (lookup-by-umm-c-keyword-projects context keyword-scheme umm-c-keyword)
         :granule-data-format (lookup-by-umm-c-keyword-data-format context keyword-scheme umm-c-keyword)
         ;; default
         (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
