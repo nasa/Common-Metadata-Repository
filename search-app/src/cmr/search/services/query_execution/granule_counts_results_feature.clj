@@ -63,39 +63,39 @@
         (validate-path-to-condition query condition-path)
         true))))
 
-(defn- is-spatial-or-condition-group?
-  "Returns true if the condition is an OR ConditionGroup containing only SpatialConditions.
-  This identifies groups created by MultiPolygon/multi-feature shapefiles that should preserve
-  their OR semantics."
-  [condition]
-  (and (instance? ConditionGroup condition)
-       (= :or (:operation condition))
-       (seq (:conditions condition))
-       (every? #(instance? SpatialCondition %) (:conditions condition))))
+(defn- is-spatial-or-at-path?
+  "Returns true if the condition at the given path in the query is an OR group
+  containing only SpatialConditions. Used to identify spatial OR groups from
+  MultiPolygon shapefiles and check if a condition's parent is a spatial OR group."
+  [query path]
+  (when-let [condition (get-in query path)]
+    (and (instance? ConditionGroup condition)
+         (= :or (:operation condition))
+         (seq (:conditions condition))
+         (every? #(instance? SpatialCondition %) (:conditions condition)))))
 
 (defn extract-spatial-conditions
   "Returns a list of the spatial conditions in the query. If the conditions are wrapped
-  in an OR group (e.g., from a MultiPolygon shapefile), preserves that structure by returning
-  the entire group. Individual SpatialConditions not in OR groups are also extracted."
+  in an OR group (e.g., from a MultiPolygon shapefile), preserves that structure by
+  returning the entire group. Individual SpatialConditions not in such groups are also extracted."
   [query]
-  ;; Extract both OR groups of SpatialConditions AND individual SpatialConditions not in such groups
-  ;; This handles:
-  ;; 1. MultiPolygon shapefiles: OR(SpatialCond1, SpatialCond2) -> returns the OR group
-  ;; 2. Single polygon shapefiles: SpatialCond -> returns the single condition
-  ;; 3. Mixed queries: Both groups and individual conditions
+  ;; Step 1: Extract OR groups containing only SpatialConditions
   (let [spatial-or-groups (condition-extractor/extract-conditions
                            query
                            (fn [condition-path condition]
-                             (when (is-spatial-or-condition-group? condition)
+                             (when (is-spatial-or-at-path? query condition-path)
                                (validate-path-to-condition query condition-path)
                                true)))
-        ;; Get all individual SpatialConditions
-        all-spatial-conds (extract-conditions query SpatialCondition)
-        ;; Filter out conditions that are already part of extracted OR groups
-        grouped-conds (set (mapcat :conditions spatial-or-groups))
-        ungrouped-conds (remove grouped-conds all-spatial-conds)]
-    ;; Return both OR groups (preserving their structure) and ungrouped conditions
-    (concat spatial-or-groups ungrouped-conds)))
+
+        ;; Step 2: Extract individual SpatialConditions whose parent is NOT a spatial OR group
+        ungrouped-spatial-conds (condition-extractor/extract-conditions
+                                 query
+                                 (fn [condition-path condition]
+                                   (when (and (instance? SpatialCondition condition)
+                                              (not (is-spatial-or-at-path? query (butlast condition-path))))
+                                     true)))]
+
+    (concat spatial-or-groups ungrouped-spatial-conds)))
 
 (defn- sanitize-temporal-condition
   "Returns the temporal condition with collection related info cleared out."

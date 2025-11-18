@@ -21,28 +21,42 @@
         polygon (poly/polygon :geodetic [ring])]
     (qm/->SpatialCondition polygon)))
 
-(deftest is-spatial-or-condition-group-test
+(deftest is-spatial-or-at-path-test
   (testing "Returns true for OR group of SpatialConditions"
     (let [cond1 (make-spatial-condition 10 0)
           cond2 (make-spatial-condition 44 -25)
-          or-group (gc/or-conds [cond1 cond2])]
-      (is (true? (#'gcrf/is-spatial-or-condition-group? or-group)))))
+          or-group (gc/or-conds [cond1 cond2])
+          query (q/query {:concept-type :collection
+                          :condition or-group})]
+      (is (true? (#'gcrf/is-spatial-or-at-path? query [:condition])))))
 
-  (testing "Returns false for AND group of SpatialConditions"
+  (testing "Returns nil for AND group of SpatialConditions"
     (let [cond1 (make-spatial-condition 10 0)
           cond2 (make-spatial-condition 44 -25)
-          and-group (gc/and-conds [cond1 cond2])]
-      (is (false? (#'gcrf/is-spatial-or-condition-group? and-group)))))
+          and-group (gc/and-conds [cond1 cond2])
+          query (q/query {:concept-type :collection
+                          :condition and-group})]
+      (is (nil? (#'gcrf/is-spatial-or-at-path? query [:condition])))))
 
-  (testing "Returns false for OR group with non-SpatialConditions"
+  (testing "Returns nil for OR group with non-SpatialConditions"
     (let [cond1 (make-spatial-condition 10 0)
           cond2 (q/string-condition :entry-title "test")
-          or-group (gc/or-conds [cond1 cond2])]
-      (is (false? (#'gcrf/is-spatial-or-condition-group? or-group)))))
+          or-group (gc/or-conds [cond1 cond2])
+          query (q/query {:concept-type :collection
+                          :condition or-group})]
+      (is (nil? (#'gcrf/is-spatial-or-at-path? query [:condition])))))
 
-  (testing "Returns false for single SpatialCondition"
-    (let [cond1 (make-spatial-condition 10 0)]
-      (is (false? (#'gcrf/is-spatial-or-condition-group? cond1))))))
+  (testing "Returns nil for single SpatialCondition"
+    (let [cond1 (make-spatial-condition 10 0)
+          query (q/query {:concept-type :collection
+                          :condition cond1})]
+      (is (nil? (#'gcrf/is-spatial-or-at-path? query [:condition])))))
+
+  (testing "Returns nil for non-existent path"
+    (let [cond1 (make-spatial-condition 10 0)
+          query (q/query {:concept-type :collection
+                          :condition cond1})]
+      (is (nil? (#'gcrf/is-spatial-or-at-path? query [:non-existent-path]))))))
 
 (deftest extract-spatial-conditions-preserves-or-groups-test
   (testing "Extracts OR group of SpatialConditions preserving structure"
@@ -125,3 +139,15 @@
                           :condition combined})
           result (gcrf/extract-spatial-conditions query)]
       (is (= [] result)))))
+
+(deftest extract-spatial-conditions-with-duplicate-polygon-test
+  (testing "Extracts both OR group and standalone duplicate SpatialCondition"
+    (let [cond1 (make-spatial-condition 10 0)
+          cond2 (make-spatial-condition 44 -25)
+          cond3 (make-spatial-condition 10 0)
+          or-group (gc/or-conds [cond1 cond2])
+          combined (gc/and-conds [or-group cond3])
+          query (q/query {:concept-type :collection
+                          :condition combined})
+          result (gcrf/extract-spatial-conditions query)]
+      (is (= [or-group cond3] result)))))
