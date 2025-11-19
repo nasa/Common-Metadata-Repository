@@ -177,7 +177,7 @@
 (def valid-xml
   "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId></Collection>")
 
-(def to-much-xml
+(def too-much-xml
   "<?xml version= \"1.0\" ?><Collection><ShortName>test</ShortName><VersionId>22</VersionId><NewField>test</NewField></Collection>")
 
 (def bad-xml
@@ -218,7 +218,7 @@
 (deftest validating-xml-test
   (let [schema-url test-schema]
     (is (nil? (cx/validate-xml schema-url valid-xml)))
-    (is (string/includes? (first (cx/validate-xml schema-url to-much-xml)) "Invalid content was found starting with element 'NewField'."))
+    (is (string/includes? (first (cx/validate-xml schema-url too-much-xml)) "Invalid content was found starting with element 'NewField'."))
     (is (string/includes? (first (cx/validate-xml schema-url bad-xml)) "must be terminated by the matching end-tag"))
     ;; The DocType parsing has been disabled and no errors should be 
     ;; given, but warning log message is produced.
