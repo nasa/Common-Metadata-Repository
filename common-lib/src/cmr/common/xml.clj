@@ -191,26 +191,14 @@
   (doto (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
     (.setProperty XMLConstants/ACCESS_EXTERNAL_DTD "")))
 
-;; Create a sax parser factory for each thread instance - this way
-;; its not created for each call, but also the validation won't get
-;; blocked when many threads are running at the same time.
-(def ^:private sax-parser-factory-fn
-  (memoize create-sax-parser-factory))
-
-;; Create a schema factory for each thread instance - this way
-;; its not created for each call, but also the validation won't get
-;; blocked when many threads are running at the same time.
-(def ^:private schema-factory-fn
-  (memoize create-schema-factory))
-
 (defn validate-xml
   "Validates the XML against the schema in the given resource. schema-resource should be a classpath
   resource as returned by clojure.java.io/resource.
   Returns a list of errors in the XML schema.
   DTD validation is turned off and an error message is logged."
   [^java.net.URL schema-resource xml]
-  (let [sax-parser-factory (sax-parser-factory-fn)
-        schema-factory (schema-factory-fn)
+  (let [sax-parser-factory (create-sax-parser-factory)
+        schema-factory (create-schema-factory)
         schema (try
                  ;; Loads the schema as a file url
                  (.newSchema schema-factory schema-resource)
