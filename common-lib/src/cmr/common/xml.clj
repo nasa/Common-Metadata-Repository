@@ -3,22 +3,31 @@
   See the test file for examples."
   (:require
    [clojure.string :as string]
+   [cmr.common.log :refer [warn]]
    [cmr.common.date-time-parser :as p])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import
-   javax.xml.validation.SchemaFactory
-   javax.xml.XMLConstants
-   javax.xml.transform.stream.StreamSource
-   org.xml.sax.ext.DefaultHandler2
    java.io.StringReader
    java.io.StringWriter
+   javax.xml.parsers.DocumentBuilderFactory
+   javax.xml.parsers.SAXParser
+   javax.xml.parsers.SAXParserFactory
+   javax.xml.transform.sax.SAXSource
+   javax.xml.transform.stream.StreamSource
+   javax.xml.validation.Schema
+   javax.xml.validation.SchemaFactory
+   javax.xml.validation.Validator
+   javax.xml.XMLConstants
    org.w3c.dom.Node
    org.w3c.dom.bootstrap.DOMImplementationRegistry
    org.w3c.dom.ls.DOMImplementationLS
    org.w3c.dom.ls.LSSerializer
+   org.xml.sax.EntityResolver
+   org.xml.sax.ext.DefaultHandler2
    org.xml.sax.InputSource
+   org.xml.sax.SAXException
    org.xml.sax.SAXParseException
-   javax.xml.parsers.DocumentBuilderFactory))
+   org.xml.sax.XMLReader))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -62,14 +71,14 @@
     (let [tag (first path)
           rest-of-path (rest path)]
       (update-in
-        element [:content]
-        (fn [children]
-          (map (fn [child]
-                 (if (= tag (:tag child))
-                   (apply update-elements-at-path
-                          (concat [child rest-of-path updater-fn] args))
-                   child))
-               children))))))
+       element [:content]
+       (fn [children]
+         (map (fn [child]
+                (if (= tag (:tag child))
+                  (apply update-elements-at-path
+                         (concat [child rest-of-path updater-fn] args))
+                  child))
+              children))))))
 
 (defn element-at-path
   "Returns a single element from within an XML structure at the given path."
@@ -163,21 +172,70 @@
       [e]
       (swap! errors-atom conj (sax-parse-exception->str e)))))
 
+(defn create-sax-parser-factory
+  "Creates a SAX parser factory instance and sets specific features."
+  []
+  (doto (SAXParserFactory/newInstance)
+    ;Important: disables DTD validation specific features
+    (.setValidating false)
+    (.setNamespaceAware true)
+    ;; Disable external general and parameter entities
+    (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+    (.setFeature "http://xml.org/sax/features/external-parameter-entities" false)
+    ;; Enable secure processing feature
+    (.setFeature XMLConstants/FEATURE_SECURE_PROCESSING true)))
+
+(defn create-schema-factory
+  "Creates a schema factory instance and does not allow access to an external DTD."
+  []
+  (doto (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+    (.setProperty XMLConstants/ACCESS_EXTERNAL_DTD "")))
+
 (defn validate-xml
   "Validates the XML against the schema in the given resource. schema-resource should be a classpath
   resource as returned by clojure.java.io/resource.
-  Returns a list of errors in the XML schema."
+  Returns a list of errors in the XML schema.
+  DTD validation is turned off and an error message is logged."
   [^java.net.URL schema-resource xml]
-  (let [^SchemaFactory factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
-        schema (.newSchema factory schema-resource)
-        validator (.newValidator schema)
+  (let [sax-parser-factory (create-sax-parser-factory)
+        schema-factory (create-schema-factory)
+        schema (try
+                 ;; Loads the schema as a file url
+                 (.newSchema schema-factory schema-resource)
+                 (catch Exception e
+                   (warn "Failed to load schema as URL, attempting as string" (.getMessage e))
+                   ;; Loads the schema as a string needed for unit test
+                   (.newSchema schema-factory (StreamSource. (StringReader. schema-resource)))))
+        sax-parser (.newSAXParser sax-parser-factory)
+        xml-reader (.getXMLReader sax-parser)
+        ;; Set a "blanking" EntityResolver on the XMLReader
+        ;; This ensures that even if a DOCTYPE is present, the resolver prevents fetching any external DTD files.
+        _ (.setEntityResolver xml-reader
+                              (reify EntityResolver
+                                (resolveEntity [_ _public-id _system-id]
+                                  (InputSource. (StringReader. "")))))
+        ;; Create a SAXSource with the configured XMLReader.
+        input-source (InputSource. (StringReader. xml))
+        sax-source   (SAXSource. xml-reader input-source)
+        validator    (.newValidator schema)
         errors-atom (atom [])]
-    (.setErrorHandler validator (create-error-handler errors-atom))
     (try
-      (.validate validator (StreamSource. (StringReader. xml)))
+      (.setErrorHandler validator (create-error-handler errors-atom))
+      (.validate validator sax-source)
       (catch SAXParseException e
         ;; An exception can be thrown if it is completely invalid XML.
-        (reset! errors-atom [(sax-parse-exception->str e)])))
+        (reset! errors-atom [(sax-parse-exception->str e)]))
+      (catch SAXException e
+        (reset! errors-atom [(.getMessage e)]))
+      (catch Exception e
+        ;; This is to catch XML bomb.
+        (reset! errors-atom [(.getMessage e)])))
+    ;; Check if a DOCTYPE is used. If so log the issue as a warning. For CMR-11010
+    (when-not (nil? xml)
+      (let [string-to-check "<!doctype"
+            xml-lowercase (string/lower-case xml)]
+        (when (string/includes? xml-lowercase string-to-check)
+          (warn "XML record includes DOCTYPE declaration, which is discouraged for security reasons."))))
     (seq @errors-atom)))
 
 (defn pretty-print-xml
@@ -191,8 +249,8 @@
         ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
         writer (.createLSSerializer impl)
         _dom-config (doto (.getDomConfig writer)
-                     (.setParameter "format-pretty-print" true)
-                     (.setParameter "xml-declaration" keep-declaration))
+                      (.setParameter "format-pretty-print" true)
+                      (.setParameter "xml-declaration" keep-declaration))
         output (doto (.createLSOutput impl)
                  (.setCharacterStream (StringWriter.))
                  (.setEncoding "UTF-8"))]
