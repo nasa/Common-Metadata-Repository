@@ -172,38 +172,53 @@
       [e]
       (swap! errors-atom conj (sax-parse-exception->str e)))))
 
-(defn create-and-set-sax-parse-features
+(defn create-sax-parser-factory
   "Creates a SAX parser factory instance and sets specific features."
   []
-  (let [spf (SAXParserFactory/newInstance)]
+  (doto (SAXParserFactory/newInstance)
     ;Important: disables DTD validation specific features
-    (.setValidating spf false)
-    (.setNamespaceAware spf true)
+    (.setValidating false)
+    (.setNamespaceAware true)
     ;; Disable external general and parameter entities
-    (.setFeature spf "http://xml.org/sax/features/external-general-entities" false)
-    (.setFeature spf "http://xml.org/sax/features/external-parameter-entities" false)
+    (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+    (.setFeature "http://xml.org/sax/features/external-parameter-entities" false)
     ;; Enable secure processing feature
-    (.setFeature spf XMLConstants/FEATURE_SECURE_PROCESSING true)
-    spf))
+    (.setFeature XMLConstants/FEATURE_SECURE_PROCESSING true)))
+
+(defn create-schema-factory
+  "Creates a schema factory instance and does not allow access to an external DTD."
+  []
+  (doto (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+    (.setProperty XMLConstants/ACCESS_EXTERNAL_DTD "")))
+
+;; Create a sax parser factory for each thread instance - this way
+;; its not created for each call, but also the validation won't get
+;; blocked when many threads are running at the same time.
+(def ^:private sax-parser-factory-fn
+  (memoize create-sax-parser-factory))
+
+;; Create a schema factory for each thread instance - this way
+;; its not created for each call, but also the validation won't get
+;; blocked when many threads are running at the same time.
+(def ^:private schema-factory-fn
+  (memoize create-schema-factory))
 
 (defn validate-xml
   "Validates the XML against the schema in the given resource. schema-resource should be a classpath
   resource as returned by clojure.java.io/resource.
   Returns a list of errors in the XML schema.
-  DTD validation is turned off and an error message is given."
+  DTD validation is turned off and an error message is logged."
   [^java.net.URL schema-resource xml]
-  (let [spf (create-and-set-sax-parse-features)
-        ;; Configure the SchemaFactory and apply Schema to the SAXParserFactory
-        schema-factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
-        _ (.setProperty schema-factory XMLConstants/ACCESS_EXTERNAL_DTD "")
+  (let [sax-parser-factory (sax-parser-factory-fn)
+        schema-factory (schema-factory-fn)
         schema (try
                  ;; Loads the schema as a file url
                  (.newSchema schema-factory schema-resource)
                  (catch Exception e
-                   (warn "Failed to load schema as URL, attempting as string - this is normal for a unit test:" (.getMessage e))
+                   (warn "Failed to load schema as URL, attempting as string" (.getMessage e))
                    ;; Loads the schema as a string needed for unit test
                    (.newSchema schema-factory (StreamSource. (StringReader. schema-resource)))))
-        sax-parser (.newSAXParser spf)
+        sax-parser (.newSAXParser sax-parser-factory)
         xml-reader (.getXMLReader sax-parser)
         ;; Set a "blanking" EntityResolver on the XMLReader
         ;; This ensures that even if a DOCTYPE is present, the resolver prevents fetching any external DTD files.
@@ -225,7 +240,7 @@
       (catch SAXException e
         (reset! errors-atom [(sax-parse-exception->str e)]))
       (catch Exception e
-        ;; This is to catch XML Bomb bomb.
+        ;; This is to catch XML bomb.
         (reset! errors-atom [(.getMessage e)])))
     ;; Check if a DOCTYPE is used. If so log the issue as a warning. For CMR-11010
     (when-not (nil? xml)
