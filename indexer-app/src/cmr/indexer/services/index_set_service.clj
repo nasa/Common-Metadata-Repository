@@ -688,16 +688,17 @@
   (let [elastic-name (:elastic_name params)
         _ (verify-elastic-name-not-blank elastic-name)
         conn (indexer-util/context->conn context elastic-name)
+        ;; check if es _reindex is still happening when we started the reshard asynchronously
+        reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)
+        ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
+        _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)
+        _ (when-not reindexing-still-in-progress
+            (update-resharding-status context index-set-id index "COMPLETE" elastic-name))
+        ;; getting the most updated index-set
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
-            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
-        reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)
-        index-set (when-not reindexing-still-in-progress
-                    (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
-                    (index-set-util/get-index-set context elastic-name index-set-id))
-        _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)]
-    ;; check if es _reindex is still happening when we started the reshard asynchronously
+            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))]
 
     (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
       (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
