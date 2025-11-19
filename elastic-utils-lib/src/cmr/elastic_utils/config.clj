@@ -2,7 +2,8 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :refer [defconfig]]))
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.services.errors :as errors]))
 
 (declare elastic-name)
 (def elastic-name
@@ -139,3 +140,8 @@
             (= es-cluster-name-keyword (keyword elastic-name)))
       es-cluster-name-keyword
       (throw (Exception. (invalid-elastic-cluster-name-msg es-cluster-name))))))
+
+(defn validate-elastic-name
+  [elastic-name]
+  (when-not (or (= elastic-name) (= gran-elastic-name))
+    (errors/throw-service-error :bad-request (invalid-elastic-cluster-name-msg elastic-name))))

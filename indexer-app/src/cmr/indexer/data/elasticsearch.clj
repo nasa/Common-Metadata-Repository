@@ -174,15 +174,8 @@
   update. Takes either the context which will be used to request index sets or the existing
   and expected index sets."
   [context es-cluster-name]
-  (let [existing-index-set (index-set-es/get-index-set context es-cluster-name idx-set/index-set-id)
-        expected-index-set (cond
-                             (= es-cluster-name es-config/elastic-name)
-                             idx-set/non-gran-index-set
-
-                             (= es-cluster-name es-config/gran-elastic-name)
-                             idx-set/gran-index-set
-
-                             :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))]
+  (let [_ (es-config/validate-elastic-name es-cluster-name)
+        [existing-index-set expected-index-set] (compute-expected-index-set context es-cluster-name)]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
 

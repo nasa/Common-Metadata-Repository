@@ -180,7 +180,7 @@
 (defn delete-document
   "Delete the document from specific elastic cluster, raise error on failure."
   [context index-name _mapping-type id es-cluster-name]
-  (let [{:keys [host port admin-token]} (get-in context [:system (keyword es-cluster-name) :config])
+  (let [{:keys [host port admin-token]} (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token
