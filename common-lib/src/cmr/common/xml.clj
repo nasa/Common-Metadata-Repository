@@ -226,7 +226,7 @@
         ;; An exception can be thrown if it is completely invalid XML.
         (reset! errors-atom [(sax-parse-exception->str e)]))
       (catch SAXException e
-        (reset! errors-atom [(sax-parse-exception->str e)]))
+        (reset! errors-atom [(.getMessage e)]))
       (catch Exception e
         ;; This is to catch XML bomb.
         (reset! errors-atom [(.getMessage e)])))
