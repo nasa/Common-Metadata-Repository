@@ -10,7 +10,7 @@
 
 (defn migrate
   []
-  (let [elastic-store (l/start (search-index/create-elastic-search-index es-config/elastic-config) nil)]
+  (let [elastic-store (l/start (search-index/create-elastic-search-index es-config/elastic-name) nil)]
     (ac-index/create-index-or-update-mappings elastic-store)))
 
 (defn -main

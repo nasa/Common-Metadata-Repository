@@ -102,7 +102,7 @@
           expected-idx-cnt (* 2 indices-cnt)
           body (-> (util/get-index-sets) :response :body)
           actual-es-indices (util/list-es-indices body)]
-      (for [es-idx-name actual-es-indices]
+      (doseq [es-idx-name actual-es-indices]
         (is (esi/exists? @util/gran-elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
