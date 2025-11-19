@@ -590,14 +590,14 @@
 (defn get-concept-type-for-index
   "Given an index name return the matching concept type by looking the index up in the index-set"
   [index-set index]
-  (let [index-key (keyword (index-set/get-canonical-key-name index))]
+  (let [index-key (keyword (index-set/get-canonical-key-name index))
+        _ (info "CMR 11008 index-key is " index-key)]
     (some (fn [[concept-type indexes]]
             (when (some #(= index-key %) (keys indexes))
               concept-type))
           (get-in index-set [:index-set :concepts]))))
 
-;; TODO there is a func that is already very similar to this. Find it and use that one instead.
-(defn- verify-elastic-name-not-blank
+(defn- validate-elastic-name
   [elastic-name]
   (when (string/blank? elastic-name)
     (errors/throw-service-error :bad-request "Empty elastic name is not allowed")))
@@ -610,7 +610,7 @@
      :bad-request
      "Resharding is not allowed for acls or groups."))
   (let [elastic-name (:elastic_name params)
-        _ (verify-elastic-name-not-blank elastic-name)
+        _ (validate-elastic-name elastic-name)
         num-shards (parse-long (:num_shards params))
         canonical-index-name (string/replace-first index #"^\d+_" "")
         target-index (get-resharded-index-name index num-shards)
@@ -662,8 +662,7 @@
   "Update the resharding status for the given index"
   [context index-set-id index status elastic-name]
   (info "CMR 11008 updating reshard status for index " index " to status " status)
-  (when (string/blank? elastic-name)
-    (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
+  (validate-elastic-name elastic-name)
   ;; resharding has the same valid statuses as rebalancing
   (rebalancing-collections/validate-status status)
   (let [index-set (index-set-util/get-index-set context elastic-name index-set-id)
@@ -686,22 +685,32 @@
   "Get the resharding status for the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
-        _ (verify-elastic-name-not-blank elastic-name)
+        _ (validate-elastic-name elastic-name)
         conn (indexer-util/context->conn context elastic-name)
-        ;; check if es _reindex is still happening when we started the reshard asynchronously
-        reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)
-        ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
-        _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)
-        _ (when-not reindexing-still-in-progress
-            (update-resharding-status context index-set-id index "COMPLETE" elastic-name))
-        ;; getting the most updated index-set
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        _ (info "CMR 11009 index set = " index-set)
         concept-type (get-concept-type-for-index index-set index)
+        _ (info "CMR 11008 concept-type = " concept-type)
         _ (when-not concept-type
-            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))]
+            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
+        current_status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
+        _ (info "CMR 11008 current status is " current_status)
+        updated-index-set (if-not (= current_status "COMPLETE")
+                            ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
+                            (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
+                              _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)
+                              ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
+                              (when-not reindexing-still-in-progress
+                                (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
+                                ;; getting the most updated index-set
+                                (index-set-util/get-index-set context elastic-name index-set-id)))
+                            ;; or use existing index-set
+                            index-set)]
 
-    (if-let [target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])]
-      (if-let [status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
+    (info "CMR 11008 updated index set = " updated-index-set)
+
+    (if-let [target (get-in updated-index-set [:index-set concept-type :resharding-targets (keyword index)])]
+      (if-let [status (get-in updated-index-set [:index-set concept-type :resharding-status (keyword index)])]
         {:original-index index
          :reshard-index target
          :reshard-status status}
@@ -727,8 +736,7 @@
   "Complete the resharding of the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
-        _ (when (string/blank? elastic-name)
-            (errors/throw-service-error :bad-request "Empty elastic name is not allowed"))
+        _ (validate-elastic-name elastic-name)
         _ (validate-resharding-complete context index-set-id index elastic-name)
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         ;; search for index name in index-set :concepts to get concept type
