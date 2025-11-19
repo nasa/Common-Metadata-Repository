@@ -142,15 +142,32 @@ curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST
 
     curl -XDELETE "http://localhost:3004/index-sets/3"
 
+## Rebalance a collection
+There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index.
+Once a collection gets to a certain size, we can manually 'rebalance' that collection by moving the collection's granule docs into a separate granule index.
+This process is specific to the following steps:
+
+1. Mark the collection as rebalancing
+2. Finalize the rebalance process
+3. Update the rebalance status as COMPLETE
+
+IMPORTANT: This process is required to do ONE collection at a time. Do not attempt to rebalance multiple collections at the same time.
+
 ### Mark a collection as rebalancing
 
-There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. When calling the endpoint the `target` query parameter is required, and it has two valid values, `separate-index` and `small-collections`. In either case the collection is added to the list of collections being rebalanced. If `target=separate-index` a new granule index is created in addition to updating the index-set.
+Collection is added to the list of collections being rebalanced. 
+
+Required params:
+- target = string 
+  - options: `separate-index` and `small-collections`
+    - if `target=separate-index` a new granule index is created in addition to updating the index-set.
+
 
     curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/start?target=separate-index
 
 ### Finalize a rebalancing collection
 
-Finalizing a rebalancing collection removes the collection from the list of collections are are being rebalanced and updates the index-set appropriately based on what the target destination was set to on the call to start.
+Finalizing a rebalancing collection removes the collection from the list of collections are being rebalanced and updates the index-set appropriately based on what the target destination was set to on the call to start.
 
     curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/finalize
 
@@ -158,24 +175,52 @@ Finalizing a rebalancing collection removes the collection from the list of coll
 
 Make changes to the collection's rebalancing status. This will update a mapping of collection id to rebalancing status in the index-set.
 
+Required params:
+- status = string
+  - Options: `COMPLETE`
+
+      
     curl -XPOST http://localhost:3004/index-sets/3/rebalancing-collections/C5-PROV1/update-status?status=COMPLETE
+
+## Reshard an index
+In order to reshard an index to have a different number of shards in elasticsearch clusters, you will do the following:
+
+1. Start a reshard process
+2. Check the status
+3. Finalize the reshard process with the following API's below.
+
+IMPORTANT: Only reshard one index at a time. Make sure you start, status, and finalize a reshard process COMPLETELY before resharding the next index.
 
 ### Start resharding an index
 
-An index can be resharded to improve performance. The `start` endpoint begins the process.
+Required params:
+- num_shards = int (num of shards you want the index to have at the end)
+- elastic_name = string (elastic cluster name you want to reshard in)
+  - Options: `gran-elastic` or `elastic` 
 
-  curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic
 
 ### Get resharding status of an index
 
-  curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status
+Required params:
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
+
+
+    curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic
 
 ### Finalize resharding an index
 
-Finalizing an index resharding moves the ES alias to point to the new resharded index and clean
-up the index-set.
+Once the status of the rehard returns 'COMPLETE', you can move on to finalizing the reshard process. 
+Finalizing an index resharding moves the ES alias to point to the new resharded index and clean up the index-set.
 
-  curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize
+Required params:
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
+
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize?elastic_name=gran-elastic
 
 ### Reset for dev purposes
 
