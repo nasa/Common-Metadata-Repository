@@ -1,10 +1,10 @@
 (ns cmr.indexer.indexer-util
   "Provide util functions for indexer functionality"
   (:require
-    [clojure.string :as string]
-    [cmr.common.services.errors :as errors]
-    [cmr.elastic-utils.config :as es-util-config]
-    [cmr.indexer.data.index-set :as idx-set]))
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config :as es-util-config]
+   [cmr.indexer.data.index-set :as idx-set]))
 
 (defn context->es-store
   "Returns the elastic store object in the context."
