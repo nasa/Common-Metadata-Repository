@@ -127,21 +127,21 @@
 
 (defn invalid-elastic-cluster-name-msg
   "Create a message stating that the given elastic cluster name is incorrect."
-  [given-elastic-cluster-name]
-  (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-cluster-name))
+  [given-elastic-name]
+  (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-name))
 
-(defn es-cluster-name-str->keyword
+(defn elastic-name-str->keyword
   "Converts the elastic cluster name from string to keyword."
-  [es-cluster-name]
-  (let [es-cluster-name-keyword (if (keyword? es-cluster-name)
-                                  es-cluster-name
-                                  (keyword es-cluster-name))]
+  [given-elastic-name]
+  (let [es-cluster-name-keyword (if (keyword? given-elastic-name)
+                                  given-elastic-name
+                                  (keyword given-elastic-name))]
     (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
             (= es-cluster-name-keyword (keyword elastic-name)))
       es-cluster-name-keyword
-      (throw (Exception. (invalid-elastic-cluster-name-msg es-cluster-name))))))
+      (throw (Exception. (invalid-elastic-cluster-name-msg given-elastic-name))))))
 
 (defn validate-elastic-name
-  [elastic-name]
-  (when-not (or (= elastic-name) (= gran-elastic-name))
-    (errors/throw-service-error :bad-request (invalid-elastic-cluster-name-msg elastic-name))))
+  [given-elastic-name]
+  (when-not (or (= given-elastic-name elastic-name) (= given-elastic-name gran-elastic-name))
+    (errors/throw-service-error :bad-request (invalid-elastic-cluster-name-msg given-elastic-name))))

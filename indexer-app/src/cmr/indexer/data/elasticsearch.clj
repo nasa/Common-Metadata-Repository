@@ -332,7 +332,7 @@
 (defn- context->es-config
   "Returns the elastic config in the context"
   [context es-cluster-name]
-  (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :config]))
+  (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :config]))
 
 (defn parse-non-tombstone-associations
   "Returns the parsed associations that are not tombstones"
