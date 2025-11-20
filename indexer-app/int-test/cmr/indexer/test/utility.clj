@@ -220,7 +220,7 @@
     {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn update-index-set
-  "submit a request to index-set app to create indices"
+  "Submit a request to index-set app to create or update indices"
   [idx-set id]
   (let [response (client/request
                    {:method :put

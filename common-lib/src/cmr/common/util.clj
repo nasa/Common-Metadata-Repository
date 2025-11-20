@@ -1178,9 +1178,13 @@
    it recursively merges those inner maps. Otherwise,
    it prefers the value from the second map."
   [m1 m2]
-  (merge-with
-    (fn [v1 v2]
-      (cond
-        (and (map? v1) (map? v2)) (deep-merge v1 v2)
-        :else v2))
-    m1 m2))
+  (cond
+    (nil? m1) m2
+    (nil? m2) m1
+    :else
+    (merge-with
+      (fn [v1 v2]
+        (cond
+          (and (map? v1) (map? v2)) (deep-merge v1 v2)
+          :else v2))
+      m1 m2)))

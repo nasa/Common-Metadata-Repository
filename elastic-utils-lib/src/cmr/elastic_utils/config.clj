@@ -131,7 +131,7 @@
   (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-name))
 
 (defn elastic-name-str->keyword
-  "Converts the elastic cluster name from string to keyword."
+  "Converts the elastic cluster name or keyword to keyword."
   [given-elastic-name]
   (let [es-cluster-name-keyword (if (keyword? given-elastic-name)
                                   given-elastic-name

@@ -286,7 +286,7 @@
     (let [{:keys [status]} (util/reset)]
       (is (= 204 status)))))
 
-(deftest get-index-set-by-elastic-cluster
+(deftest get-index-set-by-elastic-cluster-test
   (testing "get index set apis by elastic cluster"
     (let [;; create index set
           index-set util/sample-index-set
@@ -376,6 +376,9 @@
                                                                     :generic-grid {}
                                                                     :generic-data-quality-summary {}
                                                                     :subscription {}}}}]
+
+      (is (= 201 status))
+      (is (= nil errors))
 
       (is (= expected-gran-index-sets gran-index-sets))
       (is (= expected-non-gran-index-sets non-gran-index-sets))

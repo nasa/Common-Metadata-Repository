@@ -11,6 +11,9 @@
    (org.testcontainers.containers.wait.strategy Wait)
    (org.testcontainers.images.builder ImageFromDockerfile)))
 
+(def DEFAULT_MEMORY_BYTES
+  (* 4 1024 1024 1024))
+
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
   "docker.elastic.co/elasticsearch/elasticsearch:7.17.14")
@@ -31,9 +34,8 @@
   "In order to limit the local memory that embedded elastic uses, we have to create a function
   to pass into the container cmd modifier to limit the memory. This func defines the command that will be
   triggered by the container to update its memory setting."
-  [cmd]
-  (.withMemory cmd (* 4 1024 1024 1024))
-  cmd)
+  [cmd memory-bytes]
+  (doto cmd (.withMemory memory-bytes)))
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
@@ -61,7 +63,7 @@
                  elasticsearch-official-docker-image)
          container (FixedHostPortGenericContainer. image)
          ;; create the consumer object that will accept a func that defines a command that the container will use to update its settings
-         cmd-consumer (reify Consumer (accept [_ cmd] (container-cmd cmd)))
+         cmd-consumer (reify Consumer (accept [_ cmd] (container-cmd cmd DEFAULT_MEMORY_BYTES)))
          network (Network/newNetwork)
          kibana (when kibana-port
                   (build-kibana kibana-port network))]

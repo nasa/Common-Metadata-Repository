@@ -30,11 +30,12 @@
 (defn start
   "Kicks off resharding of an index."
   [context index params]
-  (let [dispatcher (api-util/get-dispatcher context params :migrate-index)
+  (let [es-cluster-name (:elastic_name params)
+        _ (validate-es-cluster-name-not-blank es-cluster-name)
         num-shards-str (:num_shards params)
-        es-cluster-name (:elastic_name params)]
-    (validate-es-cluster-name-not-blank es-cluster-name)
-    (validate-num-shards num-shards-str)
+        _ (validate-num-shards num-shards-str)
+        dispatcher (api-util/get-dispatcher context params :migrate-index)]
+
     (service/start-reshard-index context dispatcher index (parse-long num-shards-str) es-cluster-name)
     {:status 200
      :body {:message (msg/resharding-started index)}}))
