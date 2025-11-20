@@ -6,6 +6,7 @@
    [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
@@ -25,9 +26,11 @@
           index-names-from-non-gran-cluster (svc/get-index-names index-set es-config/elastic-name)]
       (doseq [idx-name index-names-from-gran-cluster]
         (is (esi/exists? @util/gran-elastic-connection idx-name))
+        (is (not (esi/exists? @util/elastic-connection idx-name)))
         (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/gran-elastic-connection idx-name))))
       (doseq [idx-name index-names-from-non-gran-cluster]
         (is (esi/exists? @util/elastic-connection idx-name))
+        (is (not (esi/exists? @util/gran-elastic-connection idx-name)))
         (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/elastic-connection idx-name))))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
@@ -41,7 +44,7 @@
 (deftest get-index-set-test
   (testing "index-set fetch by id"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-PROV2"
+          suffix-idx-name "collections-v2"
           index-set-id (get-in index-set [:index-set :id])
           expected-coll-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)
@@ -59,31 +62,29 @@
 ;; First create a index-set, verify a specified index in index-set is created, delete index-set
 ;; and verify specified index is not present now to ensure delete is successful
 (deftest delete-index-set-test
-  (testing "create index-set"
-    (let [index-set util/sample-index-set
-          index-set-id (get-in index-set [:index-set :id])
-          expected-coll-idx-name (svc/gen-valid-index-name index-set-id "C4-PROV2")
-          expected-gran-idx-name (svc/gen-valid-index-name index-set-id "C5-PROV5")
-          {:keys [status]} (util/create-index-set index-set)]
-      (is (= 201 status))
-      ;; this is creating a collection index, so we need to check the non-gran elastic cluster
-      (is (esi/exists? @util/elastic-connection expected-coll-idx-name))
-      (is (esi/exists? @util/gran-elastic-connection expected-gran-idx-name))
+  (let [index-set util/sample-index-set
+        index-set-id (get-in index-set [:index-set :id])
+        coll-idx-name (svc/gen-valid-index-name index-set-id "collections-v2")
+        gran-idx-name (svc/gen-valid-index-name index-set-id "C5-PROV5")]
+    (testing "create index-set"
+      (let [{:keys [status]} (util/create-index-set index-set)]
+        (is (= 201 status))
 
-      ;; check that coll index does not exist in gran cluster
-      (is (not (esi/exists? @util/gran-elastic-connection expected-coll-idx-name)))
+        ;; check that coll idx is in non-gran cluster only
+        (is (esi/exists? @util/elastic-connection coll-idx-name))
+        (is (not (esi/exists? @util/gran-elastic-connection coll-idx-name)))
 
-      ;; check that gran index does not exist in non-gran cluster
-      (is (not (esi/exists? @util/elastic-connection expected-gran-idx-name)))))
-  (testing "delete index-set"
-    (let [index-set util/sample-index-set
-          index-set-id (get-in index-set [:index-set :id])
-          expected-coll-idx-name (svc/gen-valid-index-name index-set-id "C4-PROV2")
-          expected-gran-idx-name (svc/gen-valid-index-name index-set-id "C5-PROV5")
-          {:keys [status]} (util/delete-index-set index-set-id)]
-      (is (= 204 status))
-      (is (not (esi/exists? @util/gran-elastic-connection expected-gran-idx-name)))
-      (is (not (esi/exists? @util/elastic-connection expected-coll-idx-name))))))
+        ;; check that gran idx is in gran cluster only
+        (is (esi/exists? @util/gran-elastic-connection gran-idx-name))
+        (is (not (esi/exists? @util/elastic-connection gran-idx-name)))))
+    (testing "delete index-set"
+      (let [{:keys [status]} (util/create-index-set index-set)
+            _ (is (= 201 status))
+            {:keys [status]} (util/delete-index-set index-set-id)
+            _ (is (= 204 status))
+            {:keys [status resp]} (util/get-index-set index-set-id)
+            _ (is (= 200 status))]
+        (is (empty? (:body resp)))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
 ;; Create 2 index-sets with different ids but with same number of concepts and indices associated
@@ -103,7 +104,8 @@
           body (-> (util/get-index-sets) :response :body)
           actual-es-indices (util/list-es-indices body)]
       (doseq [es-idx-name actual-es-indices]
-        (is (esi/exists? @util/gran-elastic-connection es-idx-name)))
+        (is (or (esi/exists? @util/gran-elastic-connection es-idx-name)
+                (esi/exists? @util/elastic-connection es-idx-name))))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 ;; Verify that you can update an index set multiple times and get the correct indices created and deleted
@@ -275,7 +277,6 @@
       (is (= 201 status))))
   (testing "create same index-set"
     (let [index-set util/sample-index-set
-          index-set-id (get-in index-set [:index-set :id])
           {:keys [status errors]} (util/create-index-set index-set)]
       (is (= 409 status))
       (is (re-find #"already exists" (first errors))))))
@@ -335,8 +336,8 @@
                                                    :generic-grid {}
                                                    :generic-data-quality-summary {}
                                                    :collection {
-                                                                :C4-PROV2 "3_c4_prov2",
-                                                                :C6-PROV3 "3_c6_prov3"}
+                                                                :collections-v2 "3_collections_v2",
+                                                                :all-collection-revisions "3_all_collection_revisions"}
                                                    :subscription {}}}]
 
           expected-gran-index-set-by-id {:index-set {
@@ -354,8 +355,8 @@
                                                          :create-reason index-set-create-reason
                                                          :collection (get-in index-set [:index-set :collection])
                                                          :concepts {
-                                                                    :collection {:C4-PROV2 "3_c4_prov2",
-                                                                                 :C6-PROV3 "3_c6_prov3"}
+                                                                    :collection {:collections-v2 "3_collection_v2",
+                                                                                 :all-collection-revisions "3_all_collection_revisions"}
                                                                     :generic-order-option {}
                                                                     :service {}
                                                                     :generic-tool-draft {}
