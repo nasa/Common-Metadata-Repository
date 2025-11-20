@@ -1,8 +1,12 @@
 (ns cmr.system-int-test.search.granule.granule-counts-search-test
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
   (:require
+   [clojure.java.io :as io]
    [clojure.test :refer [are deftest is testing use-fixtures]]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.search.services.parameters.converters.shapefile :as shapefile]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
@@ -749,3 +753,42 @@
 
               "granule count in json format"
               :atom (search/find-concepts-json :collection {:include-granule-counts false})))))
+
+(deftest multipolygon-shapefile-granule-counts-test
+  (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+
+  (let [coll (make-coll 1 m/whole-world nil)]
+    ;; Granule in first polygon of MultiPolygon
+    (make-gran coll (p/point 20.0 5.0) nil)
+    ;; Granule in second polygon of MultiPolygon
+    (make-gran coll (p/point 47.0 -20.0) nil)
+    ;; Granule outside MultiPolygon
+    (make-gran coll (p/point -100.0 40.0) nil)
+
+    (index/wait-until-indexed)
+    (index/full-refresh-collection-granule-aggregate-cache)
+    (ingest/reindex-all-collections)
+    (index/wait-until-indexed)
+
+    (testing "MultiPolygon shapefile granule counts match direct granule search"
+      (let [granule-results (search/find-refs-with-multi-part-form-post
+                              :granule
+                              [{:name "shapefile"
+                                :content (io/file (io/resource "shapefiles/multipolygon_test.geojson"))
+                                :mime-type mt/geojson}
+                               {:name "collection_concept_id"
+                                :content (:concept-id coll)}])
+            granule-hits (:hits granule-results)]
+        (is (= 2 granule-hits) "Granule search should find 2 granules in MultiPolygon")
+
+        (let [collection-response (search/find-refs-with-multi-part-form-post
+                                    :collection
+                                    [{:name "shapefile"
+                                      :content (io/file (io/resource "shapefiles/multipolygon_test.geojson"))
+                                      :mime-type mt/geojson}
+                                     {:name "concept_id"
+                                      :content (:concept-id coll)}
+                                     {:name "include_granule_counts"
+                                      :content "true"}])]
+          (is (gran-counts/granule-counts-match? :xml {coll granule-hits} collection-response)
+              "MultiPolygon shapefile: collection granule counts should match granule search hits"))))))
