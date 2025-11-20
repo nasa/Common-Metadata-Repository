@@ -20,10 +20,12 @@
 (defn get-es-cluster-name-by-index-or-alias
   [es-index-or-alias]
   ;; guard against invalid input
-  (if (or (string? es-index-or-alias) (nil? es-index-or-alias) (string/blank? es-index-or-alias))
+  (if (or (nil? es-index-or-alias)
+          (not (string? es-index-or-alias))
+          (string/blank? es-index-or-alias))
     (errors/throw-service-error
-      :internal-error
-      (format "Nil, non-string or blank elastic index or alias of %s is not allowed when determining elastic cluster name." es-index-or-alias)))
+     :internal-error
+     (format "Nil, non-string or blank elastic index or alias of %s is not allowed when determining elastic cluster name." es-index-or-alias)))
   ;; if es-index-or-alias is granule type then get granule connection, else get the non-gran cluster connection
   ;; determining granule indexes by 'startswith' because when resharding, index names will be changed and use the name of index as a prefix
   (if
