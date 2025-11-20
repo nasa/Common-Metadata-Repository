@@ -78,9 +78,7 @@
         (is (esi/exists? @util/gran-elastic-connection gran-idx-name))
         (is (not (esi/exists? @util/elastic-connection gran-idx-name)))))
     (testing "delete index-set"
-      (let [{:keys [status]} (util/create-index-set index-set)
-            _ (is (= 201 status))
-            {:keys [status]} (util/delete-index-set index-set-id)
+      (let [{:keys [status]} (util/delete-index-set index-set-id)
             _ (is (= 204 status))
             {:keys [status resp]} (util/get-index-set index-set-id)
             _ (is (= 200 status))]
@@ -355,7 +353,7 @@
                                                          :create-reason index-set-create-reason
                                                          :collection (get-in index-set [:index-set :collection])
                                                          :concepts {
-                                                                    :collection {:collections-v2 "3_collection_v2",
+                                                                    :collection {:collections-v2 "3_collections_v2",
                                                                                  :all-collection-revisions "3_all_collection_revisions"}
                                                                     :generic-order-option {}
                                                                     :service {}
