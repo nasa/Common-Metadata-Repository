@@ -137,3 +137,44 @@
                           :condition combined})
           result (gcrf/extract-spatial-conditions query)]
       (is (= [or-group cond3] result)))))
+
+(deftest extract-spatial-conditions-validates-parent-path-test
+  (testing "Rejects SpatialCondition under NegatedCondition"
+    (let [spatial-cond (make-spatial-condition 10 0)
+          negated (q/negated-condition spatial-cond)
+          query (q/query {:concept-type :collection
+                          :condition negated})]
+      (is (thrown? Exception
+                   (gcrf/extract-spatial-conditions query)))))
+
+  (testing "Rejects SpatialCondition nested under NegatedCondition in AND group"
+    (let [spatial-cond (make-spatial-condition 10 0)
+          title-cond (q/string-condition :entry-title "test")
+          negated (q/negated-condition spatial-cond)
+          combined (gc/and-conds [title-cond negated])
+          query (q/query {:concept-type :collection
+                          :condition combined})]
+      (is (thrown? Exception
+                   (gcrf/extract-spatial-conditions query)))))
+
+  (testing "Accepts valid SpatialCondition in AND group"
+    (let [spatial-cond (make-spatial-condition 10 0)
+          title-cond (q/string-condition :entry-title "test")
+          combined (gc/and-conds [title-cond spatial-cond])
+          query (q/query {:concept-type :collection
+                          :condition combined})]
+      (is (seq (gcrf/extract-spatial-conditions query)))))
+
+  (testing "Accepts valid SpatialCondition at top level"
+    (let [spatial-cond (make-spatial-condition 10 0)
+          query (q/query {:concept-type :collection
+                          :condition spatial-cond})]
+      (is (seq (gcrf/extract-spatial-conditions query)))))
+
+  (testing "Preserves MultiPolygon OR groups with validation"
+    (let [spatial-cond-1 (make-spatial-condition 10 0)
+          spatial-cond-2 (make-spatial-condition 20 10)
+          or-group (gc/or-conds [spatial-cond-1 spatial-cond-2])
+          query (q/query {:concept-type :collection
+                          :condition or-group})]
+      (is (= [or-group] (gcrf/extract-spatial-conditions query))))))

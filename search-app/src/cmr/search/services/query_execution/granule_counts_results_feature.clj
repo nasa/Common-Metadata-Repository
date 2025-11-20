@@ -92,6 +92,7 @@
                                  (fn [condition-path condition]
                                    (when (and (instance? SpatialCondition condition)
                                               (not (is-spatial-or-group? (last condition-path))))
+                                     (validate-path-to-condition query condition-path)
                                      true)))]
 
     (concat spatial-or-groups ungrouped-spatial-conds)))
