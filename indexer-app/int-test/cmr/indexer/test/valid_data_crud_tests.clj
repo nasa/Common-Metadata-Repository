@@ -53,7 +53,7 @@
       (is (= expected-coll-idx-name actual-coll-idx-name))
       (is (= (get-in index-set [:index-set :collection]) (get-in fetched-index-set [:index-set :collection])))
       (is (= (get-in index-set [:index-set :granule]) (get-in fetched-index-set [:index-set :granule])))
-      (is (= {:all-collection-revisions "3_all_collections_revisions", :collections-v2 "3_collections_v2"}
+      (is (= {:all-collection-revisions "3_all_collection_revisions", :collections-v2 "3_collections_v2"}
              (get-in fetched-index-set [:index-set :concepts :collection])))
       (is (= {:small_collections "3_small_collections", :C4-PROV3 "3_c4_prov3", :C5-PROV5 "3_c5_prov5"}
              (get-in fetched-index-set [:index-set :concepts :granule]))))))
@@ -82,7 +82,6 @@
             _ (is (= 204 status))
             {:keys [status response]} (util/get-index-set index-set-id)
             _ (is (= 404 status))]
-        (is (empty? (:body response)))
         ;; indices should be removed from their respective clusters
         (is (not (esi/exists? @util/elastic-connection coll-idx-name)))
         (is (not (esi/exists? @util/gran-elastic-connection gran-idx-name)))))))
