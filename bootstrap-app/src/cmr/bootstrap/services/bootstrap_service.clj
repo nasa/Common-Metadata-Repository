@@ -153,8 +153,8 @@
 
 (defn migrate-index
   "Copy the contents of one index into another. Used during resharding."
-  [context dispatcher source-index target-index]
-  (dispatch/migrate-index dispatcher context source-index target-index))
+  [context dispatcher source-index target-index elastic-name]
+  (dispatch/migrate-index dispatcher context source-index target-index elastic-name))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
@@ -269,12 +269,12 @@
 
 (defn start-reshard-index
   "Kicks off index resharding. Throws exception when failing to change the index set."
-  [context dispatcher index num-shards]
+  [context dispatcher index num-shards elastic-name]
   (let [target (index-set-services/get-resharded-index-name index num-shards)]
     (info (format "Starting to reshard index [%s] to target [%s] with [%d] shards."
                   index target num-shards))
     ;; This will throw an exception if the index is already resharding
-    (indexer/add-resharding-index context indexer-index-set/index-set-id index num-shards)
+    (indexer/add-resharding-index context indexer-index-set/index-set-id index num-shards elastic-name)
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
@@ -288,18 +288,18 @@
 
     ;; Copy the contents of the source index to the target index. The dispatcher will handle
     ;; how this is run.
-    (migrate-index context dispatcher index target)))
+    (migrate-index context dispatcher index target elastic-name)))
 
 (defn finalize-reshard-index
   "Finalizes index resharding."
-  [context index]
+  [context index elastic-name]
   (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
         concept-type (get-concept-type-for-index fetched-index-set index)
         target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
     (info (format "Finalizing reshard index [%s] to target [%s]."
                   index target))
     ;; This will throw an exception if the index is not being resharded
-    (indexer/finalize-resharding-index context indexer-index-set/index-set-id index)
+    (indexer/finalize-resharding-index context indexer-index-set/index-set-id index elastic-name)
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
     (reset-caches-affected-by-rebalancing context)
@@ -309,5 +309,5 @@
 
 (defn reshard-status
   "Returns the resharding status of the given index."
-  [context index]
-  (indexer/get-reshard-status context indexer-index-set/index-set-id index))
+  [context index elastic-name]
+  (indexer/get-reshard-status context indexer-index-set/index-set-id index elastic-name))

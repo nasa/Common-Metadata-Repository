@@ -1,0 +1,1829 @@
+{
+  "index-set":
+  {
+    "generic-order-option":
+    {
+      "indexes":
+      [
+        {
+          "name": "generic-order-option",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 5,
+              "number_of_replicas": 1,
+              "refresh_interval": "1s"
+            }
+          }
+        },
+        {
+          "name": "all-generic-order-option-revisions",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 5,
+              "number_of_replicas": 1,
+              "refresh_interval": "1s"
+            }
+          }
+        }
+      ],
+      "mapping":
+      {
+        "properties":
+        {
+          "revision-id":
+          {
+            "type": "integer"
+          },
+          "associations-gzip-b64":
+          {
+            "type": "binary"
+          },
+          "deleted":
+          {
+            "type": "boolean"
+          },
+          "native-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "provider-id":
+          {
+            "type": "keyword"
+          },
+          "name":
+          {
+            "type": "keyword"
+          },
+          "keyword-lowercase":
+          {
+            "type": "text",
+            "norms": false,
+            "analyzer": "whitespace",
+            "index_options": "docs"
+          },
+          "cmr-version":
+          {
+            "type": "keyword"
+          },
+          "generic-type":
+          {
+            "type": "keyword"
+          },
+          "user-id":
+          {
+            "type": "keyword"
+          },
+          "gen-name-lowercase":
+          {
+            "type": "keyword"
+          },
+          "provider-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "gen-name":
+          {
+            "type": "keyword"
+          },
+          "keyword":
+          {
+            "type": "text",
+            "norms": false,
+            "analyzer": "whitespace",
+            "index_options": "docs"
+          },
+          "name-lowercase":
+          {
+            "type": "keyword"
+          },
+          "id":
+          {
+            "type": "keyword"
+          },
+          "native-id":
+          {
+            "type": "keyword"
+          },
+          "gen-version":
+          {
+            "type": "keyword"
+          },
+          "concept-id":
+          {
+            "type": "keyword"
+          },
+          "revision-date":
+          {
+            "type": "date"
+          }
+        }
+      }
+    },
+    "service":
+    {
+      "indexes":
+      [
+        {
+          "name": "services",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 5,
+              "number_of_replicas": 1,
+              "max_result_window": 1000000,
+              "refresh_interval": "1s"
+            }
+          }
+        },
+        {
+          "name": "all-service-revisions",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 5,
+              "number_of_replicas": 1,
+              "max_result_window": 1000000,
+              "refresh_interval": "1s"
+            }
+          }
+        }
+      ],
+      "mapping":
+      {
+        "properties":
+        {
+          "revision-id":
+          {
+            "type": "integer",
+            "doc_values": true
+          },
+          "associations-gzip-b64":
+          {
+            "type": "binary"
+          },
+          "deleted":
+          {
+            "type": "boolean",
+            "doc_values": true
+          },
+          "native-id-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "service-name":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "provider-id":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "long-name-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "service-name-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "metadata-format":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "service-type-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "user-id":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "provider-id-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "keyword":
+          {
+            "type": "text",
+            "norms": false,
+            "analyzer": "whitespace",
+            "index_options": "docs"
+          },
+          "native-id":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "long-name":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "concept-id":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "revision-date":
+          {
+            "type": "date",
+            "doc_values": true
+          }
+        },
+        "dynamic": "strict",
+        "_source":
+        {
+          "enabled": true
+        }
+      }
+    },
+    "name": "cmr-base-index-set",
+    "concepts":
+    {
+      "generic-order-option":
+      {
+        "generic-order-option": "1_generic_order_option",
+        "all-generic-order-option-revisions": "1_all_generic_order_option_revisions"
+      },
+      "service":
+      {
+        "services": "1_services",
+        "all-service-revisions": "1_all_service_revisions"
+      },
+      "collection":
+      {
+        "collections-v2": "1_collections_v2",
+        "all-collection-revisions": "1_all_collection_revisions"
+      }
+    },
+    "id": 3,
+    "collection":
+    {
+      "indexes":
+      [
+        {
+          "name": "collections-v2",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 10,
+              "number_of_replicas": 1,
+              "max_result_window": 1000000,
+              "refresh_interval": "1s"
+            }
+          }
+        },
+        {
+          "name": "all-collection-revisions",
+          "settings":
+          {
+            "index":
+            {
+              "number_of_shards": 5,
+              "number_of_replicas": 1,
+              "max_result_window": 1000000,
+              "refresh_interval": "1s"
+            }
+          }
+        }
+      ],
+      "mapping":
+      {
+        "properties":
+        {
+          "service-concept-ids":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "tool-names-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "parsed-version-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "inclination-angle":
+          {
+            "type": "double"
+          },
+          "category":
+          {
+            "type": "keyword"
+          },
+          "archive-center-lowercase":
+          {
+            "type": "keyword"
+          },
+          "standard-product":
+          {
+            "type": "boolean"
+          },
+          "mbr-crosses-antimeridian":
+          {
+            "type": "boolean"
+          },
+          "has-granules-or-cwic":
+          {
+            "type": "boolean"
+          },
+          "granule-start-date":
+          {
+            "type": "date"
+          },
+          "tags":
+          {
+            "properties":
+            {
+              "tag-key-lowercase":
+              {
+                "type": "keyword"
+              },
+              "originator-id-lowercase":
+              {
+                "type": "keyword"
+              },
+              "tag-value-lowercase":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "variable-level-2":
+          {
+            "type": "keyword"
+          },
+          "revision-id":
+          {
+            "type": "integer"
+          },
+          "associations-gzip-b64":
+          {
+            "type": "binary"
+          },
+          "archive-center":
+          {
+            "type": "keyword"
+          },
+          "deleted":
+          {
+            "type": "boolean"
+          },
+          "short-name":
+          {
+            "type": "keyword"
+          },
+          "eula-identifiers":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "sensor-sn-lowercase":
+          {
+            "type": "keyword"
+          },
+          "limit-to-granules-temporals":
+          {
+            "properties":
+            {
+              "start-date":
+              {
+                "type": "date"
+              },
+              "end-date":
+              {
+                "type": "date"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "usage-relevancy-score":
+          {
+            "type": "integer"
+          },
+          "s3-bucket-and-object-prefix-names":
+          {
+            "type": "keyword"
+          },
+          "lr-south":
+          {
+            "type": "float"
+          },
+          "sensor-ln-lowercase":
+          {
+            "type": "keyword"
+          },
+          "mbr-south-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "cloud-hosted":
+          {
+            "type": "boolean"
+          },
+          "native-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "concept-seq-id":
+          {
+            "type": "integer"
+          },
+          "instrument-sn-lowercase-humanized":
+          {
+            "type": "keyword"
+          },
+          "ords-info":
+          {
+            "type": "integer",
+            "store": true,
+            "index": false
+          },
+          "ords":
+          {
+            "type": "integer",
+            "store": true,
+            "index": false
+          },
+          "create-data-date":
+          {
+            "type": "date"
+          },
+          "latency-lowercase":
+          {
+            "type": "keyword"
+          },
+          "granule-data-format":
+          {
+            "type": "keyword"
+          },
+          "provider-id":
+          {
+            "type": "keyword"
+          },
+          "mbr-north-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "platform-sn-lowercase":
+          {
+            "type": "keyword"
+          },
+          "end-date":
+          {
+            "type": "date"
+          },
+          "location-keywords":
+          {
+            "properties":
+            {
+              "category":
+              {
+                "type": "keyword"
+              },
+              "detailed-location-lowercase":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "subregion-3-lowercase":
+              {
+                "type": "keyword"
+              },
+              "detailed-location":
+              {
+                "type": "keyword"
+              },
+              "subregion-2-lowercase":
+              {
+                "type": "keyword"
+              },
+              "type":
+              {
+                "type": "keyword"
+              },
+              "subregion-1":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "subregion-1-lowercase":
+              {
+                "type": "keyword"
+              },
+              "type-lowercase":
+              {
+                "type": "keyword"
+              },
+              "subregion-2":
+              {
+                "type": "keyword"
+              },
+              "subregion-3":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "long-name-lowercase":
+          {
+            "type": "keyword"
+          },
+          "service-names-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "tool-types-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "lr-north-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "has-combine":
+          {
+            "type": "boolean"
+          },
+          "has-granules-or-opensearch":
+          {
+            "type": "boolean"
+          },
+          "measurements":
+          {
+            "type": "keyword"
+          },
+          "temporals":
+          {
+            "properties":
+            {
+              "start-date":
+              {
+                "type": "date"
+              },
+              "end-date":
+              {
+                "type": "date"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "science-keywords-flat":
+          {
+            "type": "keyword"
+          },
+          "short-name-lowercase":
+          {
+            "type": "keyword"
+          },
+          "granule-data-format-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "instrument-sn":
+          {
+            "type": "keyword"
+          },
+          "associated-difs":
+          {
+            "type": "keyword"
+          },
+          "detailed-variable":
+          {
+            "type": "keyword"
+          },
+          "related-urls":
+          {
+            "type": "keyword"
+          },
+          "measurements-lowercase":
+          {
+            "type": "keyword"
+          },
+          "has-granules":
+          {
+            "type": "boolean"
+          },
+          "update-time":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "service-names":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "version-id":
+          {
+            "type": "keyword"
+          },
+          "downloadable":
+          {
+            "type": "boolean"
+          },
+          "atom-links":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "two-d-coord-name-lowercase":
+          {
+            "type": "keyword"
+          },
+          "ongoing":
+          {
+            "type": "date"
+          },
+          "entry-title-lowercase":
+          {
+            "type": "keyword"
+          },
+          "collection-data-type-lowercase":
+          {
+            "type": "keyword"
+          },
+          "mbr-south":
+          {
+            "type": "float"
+          },
+          "metadata-format":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "version-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "variable-native-ids":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "insert-time":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "granule-end-date":
+          {
+            "type": "date"
+          },
+          "authors-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "topic":
+          {
+            "type": "keyword"
+          },
+          "user-id":
+          {
+            "type": "keyword"
+          },
+          "doi-stored":
+          {
+            "type": "keyword"
+          },
+          "variable-native-ids-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "mbr-north":
+          {
+            "type": "float"
+          },
+          "has-formats":
+          {
+            "type": "boolean"
+          },
+          "variables":
+          {
+            "properties":
+            {
+              "measurement":
+              {
+                "type": "keyword"
+              },
+              "measurement-lowercase":
+              {
+                "type": "keyword"
+              },
+              "variable":
+              {
+                "type": "keyword"
+              },
+              "variable-lowercase":
+              {
+                "type": "keyword"
+              },
+              "originator-id-lowercase":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "doi":
+          {
+            "type": "keyword"
+          },
+          "granule-end-date-stored":
+          {
+            "type": "date"
+          },
+          "lr-east":
+          {
+            "type": "float"
+          },
+          "lr-west":
+          {
+            "type": "float"
+          },
+          "project-ln-lowercase":
+          {
+            "type": "keyword"
+          },
+          "provider-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "project-sn":
+          {
+            "type": "keyword"
+          },
+          "instrument-sn-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "temporal-keyword-lowercase":
+          {
+            "type": "keyword"
+          },
+          "instrument-ln-lowercase":
+          {
+            "type": "keyword"
+          },
+          "processing-level-id-lowercase-humanized":
+          {
+            "type": "keyword"
+          },
+          "science-keywords-humanized":
+          {
+            "properties":
+            {
+              "topic-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category":
+              {
+                "type": "keyword"
+              },
+              "variable-level-2":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "detailed-variable":
+              {
+                "type": "keyword"
+              },
+              "topic":
+              {
+                "type": "keyword"
+              },
+              "variable-level-1-lowercase":
+              {
+                "type": "keyword"
+              },
+              "term":
+              {
+                "type": "keyword"
+              },
+              "variable-level-2-lowercase":
+              {
+                "type": "keyword"
+              },
+              "variable-level-3-lowercase":
+              {
+                "type": "keyword"
+              },
+              "term-lowercase":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "variable-level-1":
+              {
+                "type": "keyword"
+              },
+              "detailed-variable-lowercase":
+              {
+                "type": "keyword"
+              },
+              "variable-level-3":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "project-sn-lowercase":
+          {
+            "type": "keyword"
+          },
+          "term":
+          {
+            "type": "keyword"
+          },
+          "summary":
+          {
+            "type": "text",
+            "analyzer": "english",
+            "index": true
+          },
+          "mbr-east-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "has-spatial-subsetting":
+          {
+            "type": "boolean"
+          },
+          "instruments":
+          {
+            "properties":
+            {
+              "category":
+              {
+                "type": "keyword"
+              },
+              "class-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "type":
+              {
+                "type": "keyword"
+              },
+              "class":
+              {
+                "type": "keyword"
+              },
+              "subtype-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "type-lowercase":
+              {
+                "type": "keyword"
+              },
+              "subtype":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "science-keywords":
+          {
+            "properties":
+            {
+              "topic-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category":
+              {
+                "type": "keyword"
+              },
+              "variable-level-2":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "detailed-variable":
+              {
+                "type": "keyword"
+              },
+              "topic":
+              {
+                "type": "keyword"
+              },
+              "variable-level-1-lowercase":
+              {
+                "type": "keyword"
+              },
+              "term":
+              {
+                "type": "keyword"
+              },
+              "variable-level-2-lowercase":
+              {
+                "type": "keyword"
+              },
+              "variable-level-3-lowercase":
+              {
+                "type": "keyword"
+              },
+              "term-lowercase":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "variable-level-1":
+              {
+                "type": "keyword"
+              },
+              "detailed-variable-lowercase":
+              {
+                "type": "keyword"
+              },
+              "variable-level-3":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "lr-east-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "collection-data-type":
+          {
+            "type": "keyword"
+          },
+          "contact-email":
+          {
+            "type": "keyword"
+          },
+          "start-circular-latitude":
+          {
+            "type": "double"
+          },
+          "spatial-keyword-lowercase":
+          {
+            "type": "keyword"
+          },
+          "data-center":
+          {
+            "type": "keyword"
+          },
+          "horizontal-data-resolutions":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "float"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "archive-centers":
+          {
+            "properties":
+            {
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "level-1-lowercase":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-3-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-3":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-0-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-1":
+              {
+                "type": "keyword"
+              },
+              "level-2-lowercase":
+              {
+                "type": "keyword"
+              },
+              "url-lowercase":
+              {
+                "type": "keyword"
+              },
+              "url":
+              {
+                "type": "keyword"
+              },
+              "level-0":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "level-2":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "sensor-sn":
+          {
+            "type": "keyword"
+          },
+          "variable-concept-ids":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "tool-concept-ids":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "temporal-ranges":
+          {
+            "type": "date"
+          },
+          "number-of-orbits":
+          {
+            "type": "double"
+          },
+          "mbr-east":
+          {
+            "type": "float"
+          },
+          "lr-crosses-antimeridian":
+          {
+            "type": "boolean"
+          },
+          "spatial-keyword":
+          {
+            "type": "keyword"
+          },
+          "tags-gzip-b64":
+          {
+            "type": "binary"
+          },
+          "platform-sn":
+          {
+            "type": "keyword"
+          },
+          "personnel":
+          {
+            "type": "keyword"
+          },
+          "latency":
+          {
+            "type": "keyword"
+          },
+          "data-center-lowercase":
+          {
+            "type": "keyword"
+          },
+          "variable-names-lowercase":
+          {
+            "type": "keyword"
+          },
+          "consortiums-lowercase":
+          {
+            "type": "keyword"
+          },
+          "native-id":
+          {
+            "type": "keyword"
+          },
+          "platforms2-humanized":
+          {
+            "properties":
+            {
+              "category":
+              {
+                "type": "keyword"
+              },
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "basis":
+              {
+                "type": "keyword"
+              },
+              "basis-lowercase":
+              {
+                "type": "keyword"
+              },
+              "sub-category":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "sub-category-lowercase":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "index-time":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "associated-difs-lowercase":
+          {
+            "type": "keyword"
+          },
+          "entry-id":
+          {
+            "type": "keyword"
+          },
+          "granule-start-date-stored":
+          {
+            "type": "date"
+          },
+          "platform-sn-lowercase-humanized":
+          {
+            "type": "keyword"
+          },
+          "browsable":
+          {
+            "type": "boolean"
+          },
+          "consortiums":
+          {
+            "type": "keyword"
+          },
+          "platform-ln-lowercase":
+          {
+            "type": "keyword"
+          },
+          "keyword2":
+          {
+            "type": "text",
+            "norms": false,
+            "analyzer": "keyword",
+            "index_options": "offsets"
+          },
+          "doi-lowercase":
+          {
+            "type": "keyword"
+          },
+          "has-transforms":
+          {
+            "type": "boolean"
+          },
+          "variable-names":
+          {
+            "type": "keyword"
+          },
+          "processing-level-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "has-variables":
+          {
+            "type": "boolean"
+          },
+          "coordinate-system":
+          {
+            "type": "keyword",
+            "index": false
+          },
+          "period":
+          {
+            "type": "double"
+          },
+          "variable-level-1":
+          {
+            "type": "keyword"
+          },
+          "mbr-west-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "entry-id-lowercase":
+          {
+            "type": "keyword"
+          },
+          "service-features-gzip-b64":
+          {
+            "type": "binary"
+          },
+          "granule-data-format-lowercase":
+          {
+            "type": "keyword"
+          },
+          "swath-width":
+          {
+            "type": "double"
+          },
+          "processing-level-id-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "concept-seq-id-long":
+          {
+            "type": "unsigned_long"
+          },
+          "mbr-west":
+          {
+            "type": "float"
+          },
+          "start-date":
+          {
+            "type": "date"
+          },
+          "project-sn-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "project-sn-lowercase-humanized":
+          {
+            "type": "keyword"
+          },
+          "concept-id":
+          {
+            "type": "keyword"
+          },
+          "attributes":
+          {
+            "properties":
+            {
+              "time-value":
+              {
+                "type": "date"
+              },
+              "float-value":
+              {
+                "type": "double"
+              },
+              "datetime-value":
+              {
+                "type": "date"
+              },
+              "group":
+              {
+                "type": "keyword"
+              },
+              "int-value":
+              {
+                "type": "integer"
+              },
+              "name":
+              {
+                "type": "keyword"
+              },
+              "date-value":
+              {
+                "type": "date"
+              },
+              "string-value":
+              {
+                "type": "keyword"
+              },
+              "group-lowercase":
+              {
+                "type": "keyword"
+              },
+              "string-value-lowercase":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "instrument-sn-lowercase":
+          {
+            "type": "keyword"
+          },
+          "created-at":
+          {
+            "type": "date"
+          },
+          "authors":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "platforms2":
+          {
+            "properties":
+            {
+              "category":
+              {
+                "type": "keyword"
+              },
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "basis":
+              {
+                "type": "keyword"
+              },
+              "basis-lowercase":
+              {
+                "type": "keyword"
+              },
+              "sub-category":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "sub-category-lowercase":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "publication-references":
+          {
+            "type": "keyword"
+          },
+          "organization-lowercase-humanized":
+          {
+            "type": "keyword"
+          },
+          "lr-north":
+          {
+            "type": "float"
+          },
+          "entry-title":
+          {
+            "type": "keyword"
+          },
+          "platform-sn-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "collection-citations":
+          {
+            "type": "keyword"
+          },
+          "revision-date":
+          {
+            "type": "date"
+          },
+          "has-opendap-url":
+          {
+            "type": "boolean"
+          },
+          "platforms":
+          {
+            "properties":
+            {
+              "category":
+              {
+                "type": "keyword"
+              },
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "category-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "series-entity-lowercase":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "series-entity":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "service-types-lowercase":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "lr-south-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          },
+          "variable-level-3":
+          {
+            "type": "keyword"
+          },
+          "permitted-group-ids":
+          {
+            "type": "keyword"
+          },
+          "tool-names":
+          {
+            "type": "keyword",
+            "doc_values": true
+          },
+          "two-d-coord-name":
+          {
+            "type": "keyword"
+          },
+          "has-temporal-subsetting":
+          {
+            "type": "boolean"
+          },
+          "access-value":
+          {
+            "type": "float"
+          },
+          "processing-level-id":
+          {
+            "type": "keyword"
+          },
+          "data-centers":
+          {
+            "properties":
+            {
+              "short-name":
+              {
+                "type": "keyword"
+              },
+              "level-1-lowercase":
+              {
+                "type": "keyword"
+              },
+              "uuid-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-3-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-3":
+              {
+                "type": "keyword"
+              },
+              "long-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "short-name-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-0-lowercase":
+              {
+                "type": "keyword"
+              },
+              "level-1":
+              {
+                "type": "keyword"
+              },
+              "level-2-lowercase":
+              {
+                "type": "keyword"
+              },
+              "url-lowercase":
+              {
+                "type": "keyword"
+              },
+              "url":
+              {
+                "type": "keyword"
+              },
+              "level-0":
+              {
+                "type": "keyword"
+              },
+              "long-name":
+              {
+                "type": "keyword"
+              },
+              "uuid":
+              {
+                "type": "keyword"
+              },
+              "level-2":
+              {
+                "type": "keyword"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "organization-humanized":
+          {
+            "properties":
+            {
+              "value":
+              {
+                "type": "keyword"
+              },
+              "value-lowercase":
+              {
+                "type": "keyword"
+              },
+              "priority":
+              {
+                "type": "integer"
+              }
+            },
+            "type": "nested",
+            "dynamic": "strict"
+          },
+          "lr-west-doc-values":
+          {
+            "type": "float",
+            "doc_values": true
+          }
+        },
+        "dynamic": "strict",
+        "_source":
+        {
+          "enabled": true
+        }
+      }
+    },
+    "create-reason": "indexer app requires this index set"
+  }
+}

@@ -21,10 +21,10 @@
       (index/wait-until-indexed)
       (bootstrap/finalize-rebalance-collection (:concept-id collection))
       (index/wait-until-indexed)
-      (let [index-exists-before-delete-response (index/check-index-exists collection)
+      (let [index-exists-before-delete-response (index/gran-elastic-index-exists? collection)
             _ (ingest/delete-concept (data-core/umm-c-collection->concept collection :echo10) {})
             _ (index/wait-until-indexed)
-            index-exists-after-delete-response (index/check-index-exists collection)]
+            index-exists-after-delete-response (index/gran-elastic-index-exists? collection)]
         (is (= 200 (:status index-exists-before-delete-response)))
         (is (= 404 (:status index-exists-after-delete-response))))))
   (testing "Ingest collection, rebalance collection, delete collection, ingest collection, ingest granule, check index exists again"
@@ -37,7 +37,7 @@
       (index/wait-until-indexed)
       (ingest/delete-concept (data-core/umm-c-collection->concept collection :echo10) {})
       (index/wait-until-indexed)
-      (let [index-not-exists-before-reingest-response (index/check-index-exists collection)
+      (let [index-not-exists-before-reingest-response (index/gran-elastic-index-exists? collection)
             new-collection (data-core/ingest-umm-spec-collection "PROV1"
                                                                  (data-umm-c/collection {})
                                                                  {:validate-keywords false})
@@ -46,6 +46,6 @@
                                                    dissoc :ShortName :Version))
             _ (index/wait-until-indexed)
 
-            index-not-exists-after-reingest-response (index/check-index-exists collection)]
+            index-not-exists-after-reingest-response (index/gran-elastic-index-exists? collection)]
         (is (= 404 (:status index-not-exists-before-reingest-response)))
         (is (= 200 (:status index-not-exists-after-reingest-response)))))))

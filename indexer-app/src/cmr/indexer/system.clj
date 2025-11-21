@@ -32,7 +32,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :scheduler :queue-broker :web :nrepl])
+  [:log :caches :gran-elastic :elastic :scheduler :queue-broker :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -57,7 +57,8 @@
   []
   (let [sys {:instance-name (common-sys/instance-name "indexer")
              :log (log/create-logger-with-log-level (log-level))
-             :db (es/create-elasticsearch-store (es-config/elastic-config))
+             :gran-elastic (es/create-elasticsearch-store (es-config/gran-elastic-config) es-config/gran-elastic-name)
+             :elastic (es/create-elasticsearch-store (es-config/elastic-config) es-config/elastic-name)
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
@@ -105,8 +106,9 @@
         context {:system started-system}]
     ;; The indexes/alias will not be created if they already exist.
     (try
-      (es/create-indexes context)
-      (when (es/requires-update? context)
+      (es/create-default-indexes context)
+      (when (or (es/cluster-requires-update? context es-config/gran-elastic-name)
+                (es/cluster-requires-update? context es-config/elastic-name))
         (es/update-indexes context {}))
       (template-service/make-templates context)
       (catch Exception e

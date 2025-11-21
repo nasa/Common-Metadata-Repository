@@ -17,6 +17,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-service :as index-service]
@@ -103,7 +104,7 @@
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
    concept id to collection information. The collection will only be in the map if it has granules."
   [context]
-  (-> (es-helper/search (indexer-util/context->conn context)
+  (-> (es-helper/search (indexer-util/context->conn context es-config/gran-elastic-name)
                         "1_small_collections_alias,1_c*_alias" ;; Searching all granule indexes
                         ["granule"] ;; With the granule type.
                         {:query (esq/match-all)
@@ -118,7 +119,7 @@
   [context granules-updated-in-last-n]
   (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
         revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
-    (-> (es-helper/search (indexer-util/context->conn context)
+    (-> (es-helper/search (indexer-util/context->conn context es-config/gran-elastic-name)
                           "1_small_collections_alias,1_c*_alias" ;; Searching all granule indexes
                           ["granule"] ;; With the granule type.
                           {:query {:bool {:must (esq/match-all)
@@ -229,7 +230,7 @@
                (meta-db/get-latest-concepts context)
                ;; wrap it in a vector to make a batch to bulk index
                vector
-               (index-service/bulk-index context)))))
+               (index-service/bulk-index context es-config/elastic-name)))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))
