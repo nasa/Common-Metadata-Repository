@@ -54,7 +54,8 @@
       (is (= expected-coll-idx-name actual-coll-idx-name))
       (is (= (get-in index-set [:index-set :collection]) (get-in fetched-index-set [:index-set :collection])))
       (is (= (get-in index-set [:index-set :granule]) (get-in fetched-index-set [:index-set :granule])))
-      (is (= {:C4-PROV2 "3_c4_prov2", :C6-PROV3 "3_c6_prov3"} (get-in fetched-index-set [:index-set :concepts :collection])))
+      (is (= {:all-collection-revisions "3_all_collections_revisions", :collections-v2 "3_collections_v2"}
+             (get-in fetched-index-set [:index-set :concepts :collection])))
       (is (= {:small_collections "3_small_collections", :C4-PROV3 "3_c4_prov3", :C5-PROV5 "3_c5_prov5"}
              (get-in fetched-index-set [:index-set :concepts :granule]))))))
 
@@ -81,7 +82,7 @@
       (let [{:keys [status]} (util/delete-index-set index-set-id)
             _ (is (= 204 status))
             {:keys [status resp]} (util/get-index-set index-set-id)
-            _ (is (= 200 status))]
+            _ (is (= 404 status))]
         (is (empty? (:body resp)))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
