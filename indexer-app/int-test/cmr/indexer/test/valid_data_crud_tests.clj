@@ -6,7 +6,6 @@
    [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
-   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
@@ -83,7 +82,10 @@
             _ (is (= 204 status))
             {:keys [status resp]} (util/get-index-set index-set-id)
             _ (is (= 404 status))]
-        (is (empty? (:body resp)))))))
+        (is (empty? (:body resp)))
+        ;; indices should be removed from both clusters
+        (is (not (esi/exists? @util/elastic-connection coll-idx-name)))
+        (is (not (esi/exists? @util/gran-elastic-connection gran-idx-name)))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
 ;; Create 2 index-sets with different ids but with same number of concepts and indices associated

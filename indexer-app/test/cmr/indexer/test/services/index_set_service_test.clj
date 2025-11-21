@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.indexer.data.index-set :as index-set]
    [cmr.common.util :refer [are3]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
