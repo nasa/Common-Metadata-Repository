@@ -80,10 +80,10 @@
     (testing "delete index-set"
       (let [{:keys [status]} (util/delete-index-set index-set-id)
             _ (is (= 204 status))
-            {:keys [status resp]} (util/get-index-set index-set-id)
+            {:keys [status response]} (util/get-index-set index-set-id)
             _ (is (= 404 status))]
-        (is (empty? (:body resp)))
-        ;; indices should be removed from both clusters
+        (is (empty? (:body response)))
+        ;; indices should be removed from their respective clusters
         (is (not (esi/exists? @util/elastic-connection coll-idx-name)))
         (is (not (esi/exists? @util/gran-elastic-connection gran-idx-name)))))))
 
