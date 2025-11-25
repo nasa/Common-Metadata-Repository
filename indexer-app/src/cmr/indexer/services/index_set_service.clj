@@ -700,10 +700,12 @@
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
                               _ (info "CMR 11008 reindexing still in progress = " reindexing-still-in-progress)
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
-                              (when-not reindexing-still-in-progress
-                                (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
-                                ;; getting the most updated index-set
-                                (index-set-util/get-index-set context elastic-name index-set-id)))
+                              (if reindexing-still-in-progress
+                                index-set
+                                (do
+                                  (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
+                                  ;; getting the most updated index-set
+                                  (index-set-util/get-index-set context elastic-name index-set-id))))
                             ;; or use existing index-set
                             index-set)]
 
