@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.indexer.data.index-set :as index-set]
    [cmr.common.util :refer [are3]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
@@ -36,8 +35,8 @@
         expected-pruned-non-gran-index-set {:id 3
                                             :name "cmr-base-index-set"
                                             :concepts (merge
-                                                        {:collection  {:C6-PROV3 "3_c6_prov3"
-                                                                       :C4-PROV2 "3_c4_prov2"}
+                                                        {:collection  {:all-collection-revisions "3_all_collection_revisions"
+                                                                       :collections-v2 "3_collections_v2"}
                                                          :tag {}
                                                          :variable {}
                                                          :service {}

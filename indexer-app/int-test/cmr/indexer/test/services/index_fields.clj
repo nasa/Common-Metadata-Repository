@@ -105,7 +105,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn server-setup
-  "Fixture that starts all instances of elastic in the JVM that runs the tests and then shuts it down."
+  "Fixture that starts all instances of elastic in the JVM that runs the tests."
   [f]
   (do
     (reset! context {:system

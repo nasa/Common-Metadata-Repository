@@ -10,9 +10,8 @@
   []
   (let [gran-elastic-conn (conn/try-connect (es-config/gran-elastic-config))
         elastic-conn (conn/try-connect (es-config/elastic-config))]
-    (:ok? (conn/health {:system {:db {:conn gran-elastic-conn}}} :db))
-    (:ok? (conn/health {:system {:db {:conn elastic-conn}}} :db))))
-
+    (and (:ok? (conn/health {:system {:db {:conn gran-elastic-conn}}} :db))
+         (:ok? (conn/health {:system {:db {:conn elastic-conn}}} :db)))))
 
 (defn run-elastic-fixture
   "Test fixture that will automatically run elasticsearch if it is not detected as currently

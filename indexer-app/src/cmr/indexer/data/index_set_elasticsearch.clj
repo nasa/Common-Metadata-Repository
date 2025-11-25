@@ -106,7 +106,7 @@
 (defn get-index-set
   "Fetch index-set associated with an id and a specific elastic cluster."
   [context es-cluster-name index-set-id]
-  (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
+  (let [es-cluster-name-keyword (es-config/elastic-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?
@@ -120,7 +120,7 @@
   This func should only be called once during the first time we transition to the split cluster.
   It may be deleted after the transition is determined to be successful and permanent with the ticket CMR-10949."
   [context es-cluster-name index-set-id]
-  (let [es-cluster-name-keyword (es-config/es-cluster-name-str->keyword es-cluster-name)
+  (let [es-cluster-name-keyword (es-config/elastic-name-str->keyword es-cluster-name)
         {:keys [mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
     (when-let [result (index-set-exists?
@@ -164,7 +164,7 @@
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc es-cluster-name]
   (try
-    (let [conn (get-in context [:system (es-config/es-cluster-name-str->keyword es-cluster-name) :conn])
+    (let [conn (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :conn])
           result (es-helper/put conn es-index es-mapping-type doc-id es-doc)
           _ (esi-helper/refresh conn es-index)
           {:keys [error status]} result]
@@ -180,7 +180,7 @@
 (defn delete-document
   "Delete the document from specific elastic cluster, raise error on failure."
   [context index-name _mapping-type id es-cluster-name]
-  (let [{:keys [host port admin-token]} (get-in context [:system (keyword es-cluster-name) :config])
+  (let [{:keys [host port admin-token]} (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token

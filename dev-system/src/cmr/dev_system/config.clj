@@ -25,12 +25,12 @@
    :type Long})
 
 (defconfig embedded-kibana-gran-port
-  "Specifies port to run an embedded kibana on."
+  "Specifies port to run an embedded kibana on for the granule Elasticsearch cluster."
   {:default 5601
    :type Long})
 
 (defconfig embedded-kibana-port
-  "Specifies port to run an embedded kibana on."
+  "Specifies port to run an embedded kibana on for the non-granule Elasticsearch cluster."
   {:default 5602
    :type Long})
 
