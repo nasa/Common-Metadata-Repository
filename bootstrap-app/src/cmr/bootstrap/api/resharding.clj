@@ -25,7 +25,7 @@
 (defn- validate-es-cluster-name-not-blank
   [es-cluster-name]
   (when (string/blank? es-cluster-name)
-    (errors/throw-service-error :bad-request "Empty elastic name is not allowed.")))
+    (errors/throw-service-error :bad-request "Empty elastic cluster name is not allowed.")))
 
 (defn start
   "Kicks off resharding of an index."

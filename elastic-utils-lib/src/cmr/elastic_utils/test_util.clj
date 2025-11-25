@@ -6,7 +6,7 @@
             [cmr.common.lifecycle :as l]))
 
 (defn elastic-running?
-  "Checks if all elastic clusters running."
+  "Checks if all elastic clusters are running."
   []
   (let [gran-elastic-conn (conn/try-connect (es-config/gran-elastic-config))
         elastic-conn (conn/try-connect (es-config/elastic-config))]
