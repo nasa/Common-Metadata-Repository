@@ -55,7 +55,7 @@
      (testing "groups are not supported"
        (is (= {:status 400
                :errors ["Resharding is not allowed for acls or groups."]}
-              (bootstrap/start-reshard-index "groups" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
+              (bootstrap/start-reshard-index "groups" {:synchronous false :num-shards 1 :elastic-name elastic-name}))))
      (testing "shard count must be a number"
        (is (= {:status 400
                :errors ["Invalid num_shards [abc]. Only integers greater than zero are allowed."]}

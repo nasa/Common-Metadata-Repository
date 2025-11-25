@@ -19,11 +19,12 @@
   [f]
   (if (elastic-running?)
     (f)
-    (let [gran-elastic-server (l/start (ees/create-server (es-config/gran-elastic-port)) nil)
-          elastic-server (l/start (ees/create-server (es-config/elastic-port)) nil)]
+    (let [gran-elastic-server (l/start (ees/create-server (es-config/gran-elastic-port)) nil)]
       (try
-        (f)
+        (let [elastic-server (l/start (ees/create-server (es-config/elastic-port)) nil)]
+          (try
+            (f)
+            (finally
+              (l/stop elastic-server nil))))
         (finally
-          (do
-            (l/stop gran-elastic-server nil)
-            (l/stop elastic-server nil)))))))
+          (l/stop gran-elastic-server nil))))))
