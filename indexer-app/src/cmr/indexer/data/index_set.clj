@@ -84,11 +84,11 @@
 
 (def deleted-granules-index-alias
   "The alias of the deleted granules index in elastic search."
-  "1_deleted_granules_alias")
+  (str index-set-id "_deleted_granules_alias"))
 
 (def deleted-granule-index-name
   "The name of the index in elastic search."
-  "1_deleted_granules")
+  (str index-set-id "_deleted_granules"))
 
 (def granule-index-name-prefix
   "The prefix to all granule indexes"

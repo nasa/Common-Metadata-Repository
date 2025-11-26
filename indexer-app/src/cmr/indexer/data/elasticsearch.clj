@@ -416,8 +416,7 @@
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (indexer-util/context->conn context es-config/elastic-name)
           response (es-helper/bulk conn bulk-operations)]
-      (handle-bulk-index-response response)))
-  nil)
+      (handle-bulk-index-response response))))
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."

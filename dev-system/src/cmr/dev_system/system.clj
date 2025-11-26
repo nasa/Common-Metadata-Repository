@@ -101,8 +101,9 @@
   (atom :info))
 
 (defmulti create-elastic-server
-  "Sets elastic configuration values and returns an instance of an Elasticsearch component representing the non-granule cluster to run
-  in memory if applicable. This non-granule cluster will hold all CMR concept indexes that are NOT the granule or deleted granule indexes."
+  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
+  in memory if applicable. This function is used to create both the granule cluster (which holds granule
+  and deleted-granule indexes) and the non-granule cluster (which holds all other CMR concept indexes)."
   (fn [type elastic-port kibana-port]
     type))
 
