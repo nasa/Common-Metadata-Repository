@@ -101,8 +101,8 @@
   (atom :info))
 
 (defmulti create-gran-elastic-server
-  "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-  in memory if applicable."
+  "Sets elastic configuration values and returns an instance of an Elasticsearch component representing the granule cluster to run
+  in memory if applicable. A granule elasticsearch cluster will hold only the granule and deleted granule indexes."
   (fn [type]
     type))
 
@@ -122,8 +122,8 @@
   nil)
 
 (defmulti create-elastic-server
-          "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
-          in memory if applicable."
+          "Sets elastic configuration values and returns an instance of an Elasticsearch component representing the non-granule cluster to run
+          in memory if applicable. This non-granule cluster will hold all CMR concept indexes that are NOT the granule or deleted granule indexes."
           (fn [type]
             type))
 
