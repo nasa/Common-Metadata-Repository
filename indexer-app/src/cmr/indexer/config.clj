@@ -14,8 +14,9 @@
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully
 ;; foot print of this index will remain small
-(def idx-cfg-for-index-sets
-  {:index-name "index-sets"
+(defn idx-cfg-for-index-sets
+  [es-cluster-name]
+  {:index-name (str es-cluster-name "-index-sets")
    :settings {"index" {"number_of_shards" 1
                        "number_of_replicas"  1
                        "refresh_interval" "30s"}}

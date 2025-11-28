@@ -100,19 +100,19 @@
     (is (= ["C274209-USGS_EROS" "C274211-USGS_EROS"]
            (i/index-set->extra-granule-indexes test-index-set))))
   (testing "no extra indexes configured"
-    (is (empty? (i/index-set->extra-granule-indexes (i/index-set nil)))))
+    (is (empty? (i/index-set->extra-granule-indexes (i/gran-index-set nil)))))
   (testing "Nil index set"
     ;; A nil index set is possible if there is no existing index set.
     (is (empty? (i/index-set->extra-granule-indexes nil)))))
 
 (deftest requires-update-test
   (testing "No updates required"
-    (is (not (es/requires-update?
-              test-index-set
-              (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
+    (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)]
+      (is (not (es/index-set-requires-update? test-index-set expected-index-set)))))
   (testing "Updates required from individual index settings"
-    (is (es/requires-update? (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)
-                             (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
+    (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)
+          existing-gran-index-set (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)]
+      (is (es/index-set-requires-update? existing-gran-index-set expected-index-set)))))
 
 (deftest reconcile-resharded-index-test
   (let [initial-index-set

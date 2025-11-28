@@ -6,8 +6,9 @@
    [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3] :as util]
-   [cmr.indexer.data.index-set :as idx-set]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
+   [cmr.indexer.data.index-set :as idx-set]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -26,7 +27,8 @@
   [concept-id]
   (index/doc-present? idx-set/deleted-granules-index-alias
                       deleted-granule/deleted-granule-type-name
-                      concept-id))
+                      concept-id
+                      es-config/gran-elastic-name))
 
 (defn- find-deleted-granules
   "Calls get-deleted-granules endpoint and returns parsed items from response"
