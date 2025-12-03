@@ -11,9 +11,12 @@
   {:providers [{:level-0 "ACADEMIC" :level-1 "OR-STATE/EOARC" :short-name "PROV1"
                 :long-name "Eastern Oregon Agriculture Research Center, Oregon State University"
                 :uuid "prov1-uuid"}]
-   :platforms [{:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}]
-   :instruments [{:short-name "INST1" :long-name "Instrument 1" :uuid "inst1-uuid"}]
-   :projects [{:short-name "PROJ1" :long-name "Project 1" :uuid "proj1-uuid"}]
+   :platforms [{:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
+               {:short-name "PLAT2" :category "Spacecraft" :uuid "plat2-uuid"}]
+   :instruments [{:short-name "INST1" :long-name "Instrument 1" :uuid "inst1-uuid"}
+                 {:short-name "INST2" :uuid "inst2-uuid"}]
+   :projects [{:short-name "PROJ1" :long-name "Project 1" :uuid "proj1-uuid"}
+              {:short-name "PROJ2" :uuid "proj2-uuid"}]
    :spatial-keywords [{:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
                        :subregion-2 "CHAD" :subregion-3 "AOUZOU" :uuid "location1-uuid"}
                       {:category "CONTINENT" :type "AFRICA" :uuid "location2-uuid"}
@@ -236,3 +239,72 @@
    "Checking invalid measurement names with quantities. Getting back the error map."
    '({:context-medium "atmosphere-at_cloud_base" :object "air_bad" :quantity "pressure"})
    {:MeasurementContextMedium "atmosphere-at_cloud_base", :MeasurementContextMediumURI nil, :MeasurementObject "air_bad", :MeasurementObjectURI nil, :MeasurementQuantities [{:Value "pressure", :MeasurementQuantityURI nil}]}))
+
+(deftest blank-and-not-provided-long-name-validation-test
+  (testing "Platform long name validation with blank and 'Not provided' values"
+    (are3
+     [long-name expected-uuid]
+     (is (= expected-uuid
+            (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
+                                                       {:short-name "PLAT2" :long-name long-name :type "Spacecraft"}))))
+
+     "Nil long name should match platform without long name in KMS"
+     nil "plat2-uuid"
+
+     "Empty string long name should match platform without long name in KMS"
+     "" "plat2-uuid"
+
+     "Case insensitive 'Not provided' should match"
+     "nOt PrOvIdEd" "plat2-uuid"
+
+     "Invalid long name should not match even with valid short name"
+     "Invalid Long Name" nil))
+
+  (testing "Instrument long name validation with blank and 'Not provided' values"
+    (are3
+     [long-name expected-uuid]
+     (is (= expected-uuid
+            (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :instruments
+                                                       {:short-name "INST2" :long-name long-name}))))
+
+     "Nil long name should match instrument without long name in KMS"
+     nil "inst2-uuid"
+
+     "Empty string long name should match instrument without long name in KMS"
+     "" "inst2-uuid"
+
+     "Case insensitive 'Not provided' should match"
+     "nOt PrOvIdEd" "inst2-uuid"
+
+     "Invalid long name should not match even with valid short name"
+     "Invalid Long Name" nil))
+
+  (testing "Project long name validation with blank and 'Not provided' values"
+    (are3
+     [long-name expected-uuid]
+     (is (= expected-uuid
+            (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :projects
+                                                       {:short-name "PROJ2" :long-name long-name}))))
+
+     "Nil long name should match project without long name in KMS"
+     nil "proj2-uuid"
+
+     "Empty string long name should match project without long name in KMS"
+     "" "proj2-uuid"
+
+     "Case insensitive 'Not provided' should match"
+     "nOt PrOvIdEd" "proj2-uuid"
+
+     "Invalid long name should not match even with valid short name"
+     "Invalid Long Name" nil))
+
+  (testing "Platforms with long names in KMS can be matched with or without long name"
+    (is (= "plat1-uuid"
+           (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
+                                                      {:short-name "PLAT1" :long-name nil :type "Aircraft"})))
+        "Platform lookup with nil long name when KMS has long name should match (CMR-4400 behavior)")
+
+    (is (= "plat1-uuid"
+           (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
+                                                      {:short-name "PLAT1" :long-name "Platform 1" :type "Aircraft"})))
+        "Platform lookup with exact long name match should also match")))
