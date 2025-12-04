@@ -8,12 +8,16 @@
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+   [cmr.common.log :refer [info]]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
 
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
   [conn index _mapping-type opts]
+  ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
+  (when (es-config/split-cluster-log-toggle)
+    (info "CMR-10600 ES search for index: " index " connected to " conn))
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))

@@ -177,7 +177,7 @@
 (deftest token-test
   (let [user1-token (e/login (s/context) "user1" [(e/get-or-create-group (s/context) "group1")])
         user3-token (e/login (s/context) "user3" [(e/get-or-create-group (s/context) "group3")])
-        _ (index/refresh-elastic-index)]
+        _ (index/refresh-all-elastic-indexes)]
     (testing "Suggestions associated to collections with access constraints are returned"
       (compare-autocomplete-results
        (get-in (search/get-autocomplete-json "q=From" {:headers {:authorization user1-token}}) [:feed :entry])

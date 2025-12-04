@@ -985,3 +985,41 @@
 
           "Empty string"
           "" "d41d8cd98f00b204e9800998ecf8427e")))
+
+(deftest deep-merge-test
+  (testing "deep merge"
+    (util/are3 [m1 m2 expected-merged-map]
+                (is (= expected-merged-map (util/deep-merge m1 m2)))
+
+                "Give m1 is nil and m2 is not, return m2"
+                nil
+                {:key1 "value1"}
+                {:key1 "value1"}
+
+                "Given m2 is nil and m1 is not, return m1"
+                {:key1 "value1"}
+                nil
+                {:key1 "value1"}
+
+                "Given m1 is nil and m2 is nil, return nil"
+                nil
+                nil
+                nil
+
+                "Given m1 and m2 nested maps, return correct deep merged map"
+                {:key1 "value1"
+                 :key2 {:key3 {:key4 "value4"}
+                        :key5 {:key6 "value6"}}
+                 :key7 "value7"}
+                {:key1 "value1"
+                 :key2 {:key3 {:key8 "value8"}
+                        :key9 "value9"}
+                 :key10 "value10"}
+                {:key1 "value1"
+                 :key2 {:key3 {:key4 "value4"
+                               :key8 "value8"}
+                        :key5 {:key6 "value6"}
+                        :key9 "value9"}
+                 :key7 "value7"
+                 :key10 "value10"}
+                )))
