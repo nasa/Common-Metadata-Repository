@@ -211,6 +211,13 @@
   (has-management-permission?
     context permission-type object-identity-type provider-id "PROVIDER_CONTEXT"))
 
+(defn has-non-nasa-draft-permission?
+  "Returns true if the user has been granted NON_NASA_DRAFT_USER permission.
+  Required for EDL+MFA (assurance level 4) JWT tokens."
+  [context permission-type object-identity-type provider-id]
+  (has-management-permission?
+    context permission-type object-identity-type provider-id "NON_NASA_DRAFT_USER"))
+
 (defn- verify-management-permission
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
   [context permission-type object-identity-type provider-id cache-key permission-fn]
@@ -308,3 +315,10 @@
      provider-id
      token-pc-cache-key
      has-provider-context-permission?)))
+
+(defn verify-non-nasa-draft-permission
+  "Verifies the user has NON_NASA_DRAFT_USER permission for a provider.
+  Required for EDL+MFA (assurance level 4) JWT tokens."
+  [context permission-type object-identity-type provider-id]
+  (when-not (has-non-nasa-draft-permission? context permission-type object-identity-type provider-id)
+    (errors/throw-service-error :unauthorized "You do not have permission to perform that action.")))
