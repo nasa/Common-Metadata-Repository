@@ -364,6 +364,32 @@
          {:target ingest-management-acl
           :provider_id provider-guid}))
 
+(defn grant-group-ingest-management
+  "Creates a catalog item ACL granting INGEST_MANAGEMENT_ACL permissions to a group for a provider.
+  Creates the group if it doesn't exist."
+  [context user-specs permission-type provider-id]
+  (let [group-name (str "group-" (java.util.UUID/randomUUID))
+        group-concept-id (get-or-create-group context group-name)]
+    (grant context
+           [(group-ace group-concept-id [permission-type])]
+           :catalog_item_identity
+           {:name "INGEST_MANAGEMENT_ACL"
+            :provider_id provider-id
+            :collection_applicable true})))
+
+(defn grant-group-non-nasa-draft-user
+  "Creates a catalog item ACL granting NON_NASA_DRAFT_USER permissions to a group for a provider.
+  Creates the group if it doesn't exist."
+  [context user-specs permission-type provider-id]
+  (let [group-name (str "group-" (java.util.UUID/randomUUID))
+        group-concept-id (get-or-create-group context group-name)]
+    (grant context
+           [(group-ace group-concept-id [permission-type])]
+           :catalog_item_identity
+           {:name "NON_NASA_DRAFT_USER"
+            :provider_id provider-id
+            :collection_applicable true})))
+
 (defn grant-all-tag
   "Creates an ACL in mock echo granting registered users ability to tag anything"
   [context]

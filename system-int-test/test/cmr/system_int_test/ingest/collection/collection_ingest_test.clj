@@ -70,7 +70,7 @@
     (side/eval-form `(common-config/set-launchpad-token-enforced! true))
     (let [concept (data-umm-c/collection-concept {})
           result (ingest/ingest-concept concept {:validate-keywords false})]
-      (is (= ["Launchpad token is required. Token [XXX] is not a launchpad token."] (:errors result))))
+      (is (= ["You do not have permission to perform that action."] (:errors result))))
     (side/eval-form `(common-config/set-launchpad-token-enforced! false)))
   (testing "ingest of a concept with a revision id"
     (let [concept (data-umm-c/collection-concept {:revision-id 5})
