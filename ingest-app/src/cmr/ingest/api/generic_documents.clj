@@ -119,7 +119,7 @@
                         (:provider-id route-params))
         native-id (:native-id route-params)
         concept-type (concept-type->singular route-params)
-        _ (lt-validation/validate-launchpad-token request-context)
+        _ (lt-validation/validate-write-token request-context provider-id)
         _ (api-core/verify-provider-exists request-context provider-id)
         _ (if-not (is-draft-concept? request)
             (acl/verify-ingest-management-permission
