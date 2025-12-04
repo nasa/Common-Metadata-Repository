@@ -988,8 +988,7 @@
     {:index-set set-of-gran-indexes}))
 
 (defn non-gran-index-set
-  "Returns the index-set configuration for a brand new index. Takes a list of the extra
-   granule indexes that should exist in addition to small_collections. This function
+  "Returns the index-set configuration for a brand new non-granule index set. This function
    produces a map containing a list of indexes which contain a settings and a mapping
    map like this:
    {:index-set {
