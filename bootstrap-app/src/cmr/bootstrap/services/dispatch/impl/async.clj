@@ -64,11 +64,12 @@
 
 (defn migrate-index
   "Copy the contents of one index to another. Used during resharding."
-  [this _context source-index target-index]
+  [this _context source-index target-index elastic-name]
   (let [channel (:migrate-index-channel this)]
     (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
     (async/go (>! channel {:source-index source-index
-                           :target-index target-index}))))
+                           :target-index target-index
+                           :elastic-name elastic-name}))))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"

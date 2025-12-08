@@ -27,9 +27,10 @@
 
 (def good-indexer-health
   {:ok? true
-   :dependencies {:elastic_search {:ok? true}
+   :dependencies {:gran-elastic  {:ok? true}
+                  :elastic       {:ok? true}
                   :message-queue {:ok? true}
-                  :metadata-db good-metadata-db-health}})
+                  :metadata-db   good-metadata-db-health}})
 
 (def good-ingest-health
   {:ok? true
@@ -63,9 +64,10 @@
 
 (deftest ^:oracle indexer-health-test
   (s/only-with-real-database
-    (is (= [200 {:elastic_search {:ok? true}
+    (is (= [200 {:gran-elastic  {:ok? true}
+                 :elastic       {:ok? true}
                  :message-queue {:ok? true}
-                 :metadata-db good-metadata-db-health}]
+                 :metadata-db   good-metadata-db-health}]
            (get-app-health (url/indexer-health-url))))))
 
 (deftest ^:oracle ingest-health-test

@@ -2,7 +2,26 @@
   "Contains configuration functions for communicating with elastic search"
   (:require
    [clojure.data.codec.base64 :as b64]
-   [cmr.common.config :as config :refer [defconfig]]))
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.services.errors :as errors]))
+
+(declare split-cluster-log-toggle)
+(defconfig split-cluster-log-toggle
+  "This is the temporary feature toggle that will turn on and off the split cluster logs. True means on."
+  {:default false
+   :type Boolean})
+
+(declare elastic-name)
+(def elastic-name
+  "Defining the elastic cluster name for non-gran elastic cluster.
+  This is a source of truth var, so change with caution."
+  "elastic")
+
+(declare gran-elastic-name)
+(def gran-elastic-name
+  "Defining the granule elastic cluster name for granule elastic cluster.
+  This is a source of truth var, so change with caution."
+  "gran-elastic")
 
 (declare es-unlimited-page-size)
 (defconfig es-unlimited-page-size
@@ -19,20 +38,30 @@
   {:default 200000
    :type Long})
 
-(declare elastic-host)
-(defconfig elastic-host
-  "Elastic host or VIP."
+(declare gran-elastic-host)
+(defconfig gran-elastic-host
+  "Elastic host or VIP for granule ES cluster."
   {:default "localhost"})
 
-(declare elastic-port)
-(defconfig elastic-port
+(declare elastic-host)
+(defconfig elastic-host
+  "Elastic host for non-granule ES cluster"
+  {:default "localhost"})
+
+(declare gran-elastic-port)
+(defconfig gran-elastic-port
   "Port elastic is listening on."
   {:default 9210 :type Long})
 
+(declare elastic-port)
+(defconfig elastic-port
+   "Port elastic non-granule is listening on."
+  {:default 9211 :type Long})
+
 (declare elastic-admin-token)
 (defconfig elastic-admin-token
-    "Token used for basic auth authentication with elastic."
-    {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
+  "Token used for basic auth authentication with elastic."
+  {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
 (declare elastic-scroll-timeout)
 (defconfig elastic-scroll-timeout
@@ -80,6 +109,17 @@
   {:type Boolean
    :default false})
 
+(defn gran-elastic-config
+  "Returns the elastic config as a map"
+  []
+  {:host (gran-elastic-host)
+   :port (gran-elastic-port)
+   ;; This can be set to specify an Apached HTTP retry handler function to use. The arguments of the
+   ;; function is that as specified in clj-http's documentation. It returns true or false of whether
+   ;; to retry again
+   :retry-handler nil
+   :admin-token (elastic-admin-token)})
+
 (defn elastic-config
   "Returns the elastic config as a map"
   []
@@ -90,3 +130,24 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
+
+(defn invalid-elastic-cluster-name-msg
+  "Create a message stating that the given elastic cluster name is incorrect."
+  [given-elastic-name]
+  (format "Expected valid elastic cluster name of %s or %s, but got %s instead" elastic-name gran-elastic-name given-elastic-name))
+
+(defn elastic-name-str->keyword
+  "Converts the elastic cluster name or keyword to keyword."
+  [given-elastic-name]
+  (let [es-cluster-name-keyword (if (keyword? given-elastic-name)
+                                  given-elastic-name
+                                  (keyword given-elastic-name))]
+    (if (or (= es-cluster-name-keyword (keyword gran-elastic-name))
+            (= es-cluster-name-keyword (keyword elastic-name)))
+      es-cluster-name-keyword
+      (throw (Exception. (invalid-elastic-cluster-name-msg given-elastic-name))))))
+
+(defn validate-elastic-name
+  [given-elastic-name]
+  (when-not (or (= given-elastic-name elastic-name) (= given-elastic-name gran-elastic-name))
+    (errors/throw-service-error :bad-request (invalid-elastic-cluster-name-msg given-elastic-name))))

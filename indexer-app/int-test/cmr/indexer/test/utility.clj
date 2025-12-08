@@ -54,11 +54,11 @@
     :id sample-index-set-id
     :create-reason "include message about reasons for creating this index set"
     :collection {:indexes
-                 [{:name "C4-PROV2"
+                 [{:name "collections-v2"
                    :settings {:index {:number_of_shards 1,
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}
-                  {:name "C6-PROV3"
+                  {:name "all-collection-revisions"
                    :settings {:index {:number_of_shards 1,
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
@@ -86,6 +86,50 @@
                                   :_source {:enabled true},
                                   :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
                                                :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
+
+(def sample-index-set-updated
+  {:index-set
+   {:name "cmr-base-index-set-updated"
+    :id sample-index-set-id
+    :create-reason "updated index set from sample index"
+    :random {:indexes
+             [{:name "RAND1-PROV0"
+               :settings {:index {:number_of_shards 1,
+                                  :number_of_replicas 0,
+                                  :refresh_interval "20s"}}}]
+             :mapping {:dynamic "strict",
+                       :_source {:enabled true},
+                       :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                    :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
+    :collection {:indexes
+                 [{:name "COLL2-PROV1"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}]
+                 :mapping {:dynamic "strict",
+                           :_source {:enabled true},
+                           :properties {:concept-id  {:type "keyword" :norms false :index_options "docs"},
+                                        :entry-title {:type "keyword" :norms false :index_options "docs"}}}}
+    :granule {:indexes
+              [{:name "small_collections"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "GRAN5-PROV3"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "GRAN6-PROV4"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}]
+              :individual-index-settings {:index {:number_of_shards 1,
+                                                  :number_of_replicas 0,
+                                                  :refresh_interval "10s"}}
+              :mapping {:dynamic "strict",
+                        :_source {:enabled true},
+                        :properties {:concept-id {:type "keyword" :norms false :index_options "docs"},
+                                     :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}}})
 
 (def invalid-sample-index-set
   {:index-set
@@ -144,6 +188,10 @@
 ;;; utility methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn gran-elastic-root
+  []
+  (format "http://%s:%s" (es-config/gran-elastic-host) (es-config/gran-elastic-port)))
+
 (defn elastic-root
   []
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
@@ -167,6 +215,21 @@
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
                    :throw-exceptions false})
+        status (:status response)
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
+
+(defn update-index-set
+  "Submit a request to index-set app to create or update indices"
+  [idx-set id]
+  (let [response (client/request
+                   {:method :put
+                    :url (index-set-url id)
+                    :body (cheshire.core/generate-string idx-set)
+                    :content-type :json
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :accept :json
+                    :throw-exceptions false})
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
@@ -227,7 +290,7 @@
 
 (defn get-index-set
   "submit a request to index-set app to fetch an index-set assoc with an id"
-  [id]
+  ([id]
   (let [response (client/request
                   {:method :get
                    :url (index-set-url id)
@@ -237,10 +300,21 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([id es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/cluster/%s/%s" (index-sets-url) es-cluster-name id)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
+
 
 (defn get-index-sets
   "submit a request to index-set app to fetch all index-sets"
-  []
+  ([]
   (let [response (client/request
                   {:method :get
                    :url (index-sets-url)
@@ -250,6 +324,16 @@
         status (:status response)
         body (cheshire/decode (:body response) true)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
+  ([es-cluster-name]
+   (let [response (client/request
+                    {:method :get
+                     :url (format "%s/index-sets/cluster/%s" (indexer-root-url) es-cluster-name)
+                     :accept :json
+                     :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                     :throw-exceptions false})
+         status (:status response)
+         body (cheshire/decode (:body response) true)]
+     {:status status :errors (:errors body) :response (assoc response :body body)})))
 
 (defn reset
   "test deletion of indices and index-sets"
@@ -270,10 +354,12 @@
            (vals (get-in idx-set [:concepts concept])))))
 
 
+(def gran-elastic-connection (atom nil))
 (def elastic-connection (atom nil))
 
 (defn reset-fixture [f]
   (reset)
+  (reset! gran-elastic-connection (esr/connect (gran-elastic-root)))
   (reset! elastic-connection (esr/connect (elastic-root)))
   (f)
   (reset))
