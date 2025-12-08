@@ -121,7 +121,6 @@
   [context index-set-id index num-shards elastic-name]
   (submit-reshard-index-request context index-set-id index start-reshard-index-url num-shards elastic-name))
 
-;; TODO change this func. Need to get the _reindex task status of the index in question first and determine if it is really in progress
 (defn get-reshard-status
   "Get the resharding status of the given index."
   [context index-set-id index elastic-name]

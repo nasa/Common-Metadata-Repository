@@ -128,11 +128,9 @@
 (defn migrate-index
   "Copies the contents of one index into another. Used for resharding."
   [conn source-index target-index]
-  (info "CMR 11008 migrate index in es_helper STARTED")
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")
-        _ (info "CMR 11008 sending request to ES with url " url " and body " body)]
+        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
     (rest/post-string conn url
                       {:body (json/encode body)
                        :content-type "application/json"})))
@@ -140,7 +138,6 @@
 (defn- extract-descriptions-from-reindex-resp
   [reindex-resp-json]
   (let [nodes-map (:nodes reindex-resp-json)]
-    (info "CMR 11008 nodes map = " nodes-map)
     (->> nodes-map
          (vals)
          (map :tasks)
@@ -150,13 +147,8 @@
 
 (defn reindexing-still-in-progress?
   [conn index]
-  (info "CMR 11008 finding all active reindex tasks")
   (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
-        _ (info "CMR 11008 sending request to ES with url " url)
         resp (rest/get conn url)
-        _ (info "CMR 11008 get reindex tasks response = " resp)
         current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
-        _ (info "CMR 11008 current reindexing descriptions = " current-reindexing-descriptions)
-        found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)
-        _ (info "CMR 11008 found reindexing index = " found-reindexing-index)]
+        found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)]
     found-reindexing-index))
