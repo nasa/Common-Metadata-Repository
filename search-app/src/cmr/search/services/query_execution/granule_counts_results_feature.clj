@@ -63,10 +63,39 @@
         (validate-path-to-condition query condition-path)
         true))))
 
+(defn- is-spatial-or-group?
+  "Returns true if the condition is an OR ConditionGroup containing only SpatialConditions.
+  This identifies groups created by MultiPolygon/multi-feature shapefiles that should preserve
+  their OR semantics."
+  [condition]
+  (and (instance? ConditionGroup condition)
+       (= :or (:operation condition))
+       (seq (:conditions condition))
+       (every? #(instance? SpatialCondition %) (:conditions condition))))
+
 (defn extract-spatial-conditions
-  "Returns a list of the spatial conditions in the query."
+  "Returns a list of the spatial conditions in the query. If the conditions are wrapped
+  in an OR group (e.g., from a MultiPolygon shapefile), preserves that structure by
+  returning the entire group. Individual SpatialConditions not in such groups are also extracted."
   [query]
-  (extract-conditions query SpatialCondition))
+  ;; Step 1: Extract OR groups containing only SpatialConditions
+  (let [spatial-or-groups (condition-extractor/extract-conditions
+                           query
+                           (fn [condition-path condition]
+                             (when (is-spatial-or-group? condition)
+                               (validate-path-to-condition query condition-path)
+                               true)))
+
+        ;; Step 2: Extract individual SpatialConditions whose parent is NOT a spatial OR group
+        ungrouped-spatial-conds (condition-extractor/extract-conditions
+                                 query
+                                 (fn [condition-path condition]
+                                   (when (and (instance? SpatialCondition condition)
+                                              (not (is-spatial-or-group? (last condition-path))))
+                                     (validate-path-to-condition query condition-path)
+                                     true)))]
+
+    (concat spatial-or-groups ungrouped-spatial-conds)))
 
 (defn- sanitize-temporal-condition
   "Returns the temporal condition with collection related info cleared out."

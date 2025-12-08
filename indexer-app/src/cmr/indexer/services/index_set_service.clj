@@ -680,7 +680,6 @@
       [:index-set concept-type :resharding-status]
       assoc (keyword index) status))))
 
-;; TODO
 (defn get-reshard-status
   "Get the resharding status for the given index"
   [context index-set-id index params]

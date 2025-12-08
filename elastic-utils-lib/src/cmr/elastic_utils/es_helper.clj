@@ -16,7 +16,8 @@
   "Performs a search query across one or more indexes and one or more mapping types"
   [conn index _mapping-type opts]
   ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-  (info "CMR-10600 ES search for index: " index " connected to " conn)
+  (when (es-config/split-cluster-log-toggle)
+    (info "CMR-10600 ES search for index: " index " connected to " conn))
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))

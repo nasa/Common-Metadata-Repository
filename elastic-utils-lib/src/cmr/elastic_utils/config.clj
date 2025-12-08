@@ -5,6 +5,12 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]))
 
+(declare split-cluster-log-toggle)
+(defconfig split-cluster-log-toggle
+  "This is the temporary feature toggle that will turn on and off the split cluster logs. True means on."
+  {:default false
+   :type Boolean})
+
 (declare elastic-name)
 (def elastic-name
   "Defining the elastic cluster name for non-gran elastic cluster.

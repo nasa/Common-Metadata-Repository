@@ -84,11 +84,11 @@
 
 (def deleted-granules-index-alias
   "The alias of the deleted granules index in elastic search."
-  "1_deleted_granules_alias")
+  (str index-set-id "_deleted_granules_alias"))
 
 (def deleted-granule-index-name
   "The name of the index in elastic search."
-  "1_deleted_granules")
+  (str index-set-id "_deleted_granules"))
 
 (def granule-index-name-prefix
   "The prefix to all granule indexes"
@@ -988,8 +988,7 @@
     {:index-set set-of-gran-indexes}))
 
 (defn non-gran-index-set
-  "Returns the index-set configuration for a brand new index. Takes a list of the extra
-   granule indexes that should exist in addition to small_collections. This function
+  "Returns the index-set configuration for a brand new non-granule index set. This function
    produces a map containing a list of indexes which contain a settings and a mapping
    map like this:
    {:index-set {

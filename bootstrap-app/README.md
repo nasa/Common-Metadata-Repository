@@ -95,7 +95,10 @@ the data from the old index to the new index. Both indexes will be used for inge
 the resharding is finalized.
 
 You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
-The options are: gran-elastic and elastic
+
+- Required params:
+    - elastic_name (str)
+        - options: gran-elastic and elastic
 
 ```
 curl -i \
@@ -111,7 +114,10 @@ HTTP/1.1 200 OK
 Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
 
 You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
-The options are: gran-elastic and elastic
+
+- Required params:
+    - elastic_name (str)
+        - options: gran-elastic and elastic
 
 ```
 curl -i \
@@ -127,7 +133,10 @@ Finalizes the resharding process to move the ElasticSearch alias to point to the
 index. Returns a 400 error if the index resharding is not complete.
 
 You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
-The options are: gran-elastic and elastic
+
+- Required params:
+  - elastic_name (str)
+    - options: gran-elastic and elastic
 
 ```
 curl -i \

@@ -4,8 +4,7 @@
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.bulk-migration :as bulk-migration]
    [cmr.bootstrap.data.fingerprint :as fingerprint]
-   [cmr.bootstrap.data.virtual-products :as virtual-products]
-   [cmr.common.log :refer [info]]))
+   [cmr.bootstrap.data.virtual-products :as virtual-products]))
 
 (defn- migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -87,7 +86,6 @@
 (defn- migrate-index
   "Copy the contents of one index to another. Used during resharding."
   [_this context source-index target-index elastic-name]
-  (info "CMR 11008 migrate index in sync STARTED")
   (bulk-index/migrate-index (:system context) source-index target-index elastic-name))
 
 (defn- delete-concepts-from-index-by-id

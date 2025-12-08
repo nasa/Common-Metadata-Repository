@@ -154,7 +154,6 @@
 (defn migrate-index
   "Copy the contents of one index into another. Used during resharding."
   [context dispatcher source-index target-index elastic-name]
-  (info "CMR 11008 migrate index in boostrap service STARTED")
   (dispatch/migrate-index dispatcher context source-index target-index elastic-name))
 
 (defn delete-concepts-from-index-by-id
@@ -272,29 +271,23 @@
   "Kicks off index resharding. Throws exception when failing to change the index set."
   [context dispatcher index num-shards elastic-name]
   (let [target (index-set-services/get-resharded-index-name index num-shards)]
-    (info (format "CMR 11008 Starting to reshard index [%s] to target [%s] with [%d] shards."
+    (info (format "Starting to reshard index [%s] to target [%s] with [%d] shards."
                   index target num-shards))
     ;; This will throw an exception if the index is already resharding
-    (info "CMR 11008 add resharding index STARTED")
     (indexer/add-resharding-index context indexer-index-set/index-set-id index num-shards elastic-name)
-    (info "CMR 11008 add resharding index SUCCEEDED")
 
     ;; Clear the cache so that the newest index set data will be used.
     ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
-    (info "CMR 11008 reset caches by rebalancing STARTED")
     (reset-caches-affected-by-rebalancing context)
-    (info "CMR 11008 reset caches by rebalancing SUCCEEDED")
 
     ;; We must wait here so that any new granules coming in will start to pick up the new index set
     ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
     ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
     ;; came in and was indexed only to the old index but after we started migrating to the the index
     (wait-until-index-set-hash-cache-times-out)
-    (info "CMR 11008 wait until index set hash cache times out SUCCEEDED")
 
     ;; Copy the contents of the source index to the target index. The dispatcher will handle
     ;; how this is run.
-    (info "CMR 11008 migrate index started")
     (migrate-index context dispatcher index target elastic-name)))
 
 (defn finalize-reshard-index

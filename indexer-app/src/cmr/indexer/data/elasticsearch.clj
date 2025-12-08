@@ -416,8 +416,7 @@
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (indexer-util/context->conn context es-config/elastic-name)
           response (es-helper/bulk conn bulk-operations)]
-      (handle-bulk-index-response response)))
-  nil)
+      (handle-bulk-index-response response))))
 
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
@@ -442,7 +441,8 @@
   (doseq [es-index es-indexes]
     (let [conn (get-es-cluster-conn context es-index)
           ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-          _ (info "CMR-10600 Saving doc for concept " concept-id " under index " es-index " in es cluster " conn)
+          _ (when (es-config/split-cluster-log-toggle)
+              (info "CMR-10600 Saving doc for concept " concept-id " under index " es-index " in es cluster " conn))
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
@@ -462,7 +462,8 @@
   [context es-index es-type elastic-id]
   (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id elastic-id)]
     ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-    (info "CMR-10600 Get document of index " es-index " from ES cluster " es-cluster-name)
+    (when (es-config/split-cluster-log-toggle)
+      (info "CMR-10600 Get document of index " es-index " from ES cluster " es-cluster-name))
     (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)))
 
 (defn delete-document
@@ -474,7 +475,8 @@
      ;; Cannot use elasticsearch for deletion as we require special headers on delete
      (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id concept-id)
            ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-           _ (info "CMR-10600 Deleting concept " concept-id " with index " es-index " in ES cluster " es-cluster-name)
+           _ (when (es-config/split-cluster-log-toggle)
+               (info "CMR-10600 Deleting concept " concept-id " with index " es-index " in ES cluster " es-cluster-name))
            {:keys [admin-token]} (context->es-config context es-cluster-name)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options

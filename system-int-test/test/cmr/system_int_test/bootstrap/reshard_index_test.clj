@@ -26,7 +26,7 @@
      (index/wait-until-indexed)
      (testing "no elastic cluster name given"
        (is (= {:status 400
-               :errors ["Empty elastic name is not allowed."]}
+               :errors ["Empty elastic cluster name is not allowed."]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous true :num-shards 100}))))
      (testing "no permission for start-reshard-index"
        (is (= {:status 401
@@ -55,7 +55,7 @@
      (testing "groups are not supported"
        (is (= {:status 400
                :errors ["Resharding is not allowed for acls or groups."]}
-              (bootstrap/start-reshard-index "groups" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
+              (bootstrap/start-reshard-index "groups" {:synchronous false :num-shards 1 :elastic-name elastic-name}))))
      (testing "shard count must be a number"
        (is (= {:status 400
                :errors ["Invalid num_shards [abc]. Only integers greater than zero are allowed."]}
@@ -73,7 +73,7 @@
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name}))))
      (testing "no elastic name given to get resharding status"
        (is (= {:status 400
-               :errors ["Empty elastic name is not allowed."]}
+               :errors ["Empty elastic cluster name is not allowed."]}
               (bootstrap/get-reshard-status "1_small_collections" {}))))
      (testing "get the resharding status of an index not being resharded"
        (is (= {:status 404
@@ -85,7 +85,7 @@
               (bootstrap/get-reshard-status "1_nonexistent_index" {:elastic-name gran-elastic-name}))))
      (testing "no elastic name given to finalize"
        (is (= {:status 400
-               :errors ["Empty elastic name is not allowed."]}
+               :errors ["Empty elastic cluster name is not allowed."]}
               (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false}))))
      (testing "finalize index that does not exist"
        (is (= {:status 404
