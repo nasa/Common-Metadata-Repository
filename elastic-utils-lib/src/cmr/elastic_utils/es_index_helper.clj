@@ -17,6 +17,7 @@
 (defn exists?
   "Return true if the given index exists"
   [conn index-name]
+  (println "CMR-10600 inside exists? with conn = " conn " and index-name = " index-name)
   (esi/exists? conn index-name))
 
 (defn update-mapping
