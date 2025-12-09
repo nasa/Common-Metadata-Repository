@@ -688,20 +688,18 @@
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
             (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
-        current_target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
-        _ (when-not current_target
+        current-target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
+        _ (when-not current-target
             (errors/throw-service-error
               :not-found
-              (format
-                "The index [%s] is not being resharded." index)))
-        current_status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
-        _ (when-not current_status
+              (format "The index [%s] is not being resharded." index)))
+        current-status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
+        _ (when-not current-status
             (errors/throw-service-error
               :internal-error
               (format
                 "The status of resharding index [%s] is not found." index)))
-        _ (print "CURRENT STATUS = " current_status)
-        updated-index-set (if-not (= current_status "COMPLETE")
+        updated-index-set (if-not (= current-status "COMPLETE")
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
@@ -726,10 +724,7 @@
       (errors/throw-service-error
         :not-found
         (format
-          "The index [%s] is not being resharded." index)))
-
-
-    ))
+          "The index [%s] is not being resharded." index)))))
 
 (defn- validate-resharding-complete
   "Validate that resharding has completed successfully for the given index "
