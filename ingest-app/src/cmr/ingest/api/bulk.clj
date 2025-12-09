@@ -24,7 +24,7 @@
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
           user-id (api-core/get-user-id request-context headers)]
-      (lt-validation/validate-launchpad-token request-context)
+      (lt-validation/validate-write-token request-context provider-id)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
       (let [task-id (bulk-update/validate-and-save-bulk-update
@@ -46,7 +46,7 @@
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)
           user-id (api-core/get-user-id request-context headers)]
-      (lt-validation/validate-launchpad-token request-context)
+      (lt-validation/validate-write-token request-context provider-id)
       (api-core/verify-provider-exists request-context provider-id)
       (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
       (let [task-id (gran-bulk-update/validate-and-save-bulk-granule-update
