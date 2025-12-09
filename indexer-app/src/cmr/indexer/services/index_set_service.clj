@@ -688,7 +688,19 @@
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
             (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
+        current_target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
+        _ (when-not current_target
+            (errors/throw-service-error
+              :not-found
+              (format
+                "The index [%s] is not being resharded." index)))
         current_status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
+        _ (when-not current_status
+            (errors/throw-service-error
+              :internal-error
+              (format
+                "The status of resharding index [%s] is not found." index)))
+        _ (print "CURRENT STATUS = " current_status)
         updated-index-set (if-not (= current_status "COMPLETE")
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
@@ -702,11 +714,11 @@
                             ;; or use existing index-set
                             index-set)]
 
-    (if-let [target (get-in updated-index-set [:index-set concept-type :resharding-targets (keyword index)])]
-      (if-let [status (get-in updated-index-set [:index-set concept-type :resharding-status (keyword index)])]
+    (if-let [updated-target (get-in updated-index-set [:index-set concept-type :resharding-targets (keyword index)])]
+      (if-let [updated-status (get-in updated-index-set [:index-set concept-type :resharding-status (keyword index)])]
         {:original-index index
-         :reshard-index target
-         :reshard-status status}
+         :reshard-index updated-target
+         :reshard-status updated-status}
         (errors/throw-service-error
           :internal-error
           (format
@@ -714,7 +726,10 @@
       (errors/throw-service-error
         :not-found
         (format
-          "The index [%s] is not being resharded." index)))))
+          "The index [%s] is not being resharded." index)))
+
+
+    ))
 
 (defn- validate-resharding-complete
   "Validate that resharding has completed successfully for the given index "

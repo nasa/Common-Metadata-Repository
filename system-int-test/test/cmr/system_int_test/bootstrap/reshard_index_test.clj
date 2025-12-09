@@ -146,6 +146,9 @@
      (search/clear-caches)
      (bootstrap/verify-provider-holdings expected-provider-holdings "After finalize after clear cache"))))
 
+;; TODO
+(deftest reshard-updating-status-test)
+
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,
 ;; the granule deleted version is still in the small_collections index waiting to be permanently
