@@ -38,7 +38,20 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 All Access Control API operations require specifying a token.
 
-An EDL token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
+##### EDL Bearer Tokens
+
+An EDL bearer token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
+
+CMR also supports federated EDL JWT tokens with different assurance levels:
+
+**Assurance Levels:**
+
+- **Level 5 (Launchpad)**: Full access to all CMR operations
+- **Level 4 (EDL MFA)**: Limited access; requires NON_NASA_DRAFT_USER ACL for certain operations
+
+The minimum required assurance level is configurable via the `CMR_REQUIRED_ASSURANCE_LEVEL` environment variable. Tokens with an assurance level below the configured minimum will be rejected.
+
+##### Launchpad SAML Tokens
 
 An example for generating a Launchpad token can he found on the Earthdata [wiki][token-example]. The token should be specified using the `Authorization:` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on the [Launchpad Authentication User's Guide][launch-guide].
 

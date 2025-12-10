@@ -104,9 +104,27 @@ For an example, the following means version 1.16.2 of the UMM JSON format:
 **Note**: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="authorization-header"></a> Authorization Header
-All Ingest API operations require specifying a Launchpad token, except for subscriptions. Subscription Ingest API operations require specifying an EDL bearer token or a Launchpad token.
+Ingest API operations support authentication via EDL Bearer Tokens or Launchpad SAML tokens. The specific token requirements depend on the operation and the user's authorization level.
+
+##### EDL Bearer Tokens
 
 An EDL Bearer token can be obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+
+CMR also supports federated EDL JWT tokens with different assurance levels:
+
+**Assurance Levels:**
+
+- **Level 5 (Launchpad)**: Full access to all ingest operations
+- **Level 4 (EDL MFA)**: Limited access for write operations. Requires:
+  - A `NON_NASA_DRAFT_USER` catalog item ACL granting the appropriate permissions to the user
+  - The provider ID must be specified in the request URL path (e.g., `/providers/PROV1/collections/...`)
+  - Supports write operations for collections, granules, variables, services, and tools
+
+When a Level 4 token is used for write operations without the required `NON_NASA_DRAFT_USER` ACL or when the provider context is missing, the request will be rejected with an HTTP 401 status and an error message indicating insufficient permissions.
+
+The minimum required assurance level is configurable via the `CMR_REQUIRED_ASSURANCE_LEVEL` environment variable. Tokens with an assurance level below the configured minimum will be rejected with an HTTP 401 status.
+
+##### Launchpad SAML Tokens
 
 An example for generating a Launchpad token can he found [here](https://wiki.earthdata.nasa.gov/display/CMR/Example+Code+for+Requesting+Launchpad+Token). The token should be specified using the `Authorization` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on [this guide](https://wiki.earthdata.nasa.gov/display/CMR/Launchpad+Authentication+User%27s+Guide)
 

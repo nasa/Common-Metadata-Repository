@@ -319,7 +319,7 @@
                              :concept-type concept-type}
                             (set-revision-id headers)
                             (set-user-id request-context headers))]
-    (lt-validation/validate-launchpad-token request-context)
+    (lt-validation/validate-write-token request-context provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)

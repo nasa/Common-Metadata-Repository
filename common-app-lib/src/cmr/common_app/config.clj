@@ -51,3 +51,21 @@
   "Write a HotSpotDiagnostic file to the path provided. If no path is provided,
    or the value of 'none' is given, then no file will be written."
   {:default ""})
+
+(defconfig enable-idfed-jwt-authentication
+  "Enable EDL Identity Federated JWT tokens for write operations.
+   JWT tokens must meet the required-assurance-level to be accepted."
+  {:default false
+   :type Boolean})
+
+(defconfig enable-launchpad-saml-authentication
+  "Enable Launchpad SAML tokens for write operations."
+  {:default true
+   :type Boolean})
+
+(defconfig required-assurance-level
+  "Minimum assurance level required for JWT tokens (1-5).
+   Level 4 (EDL+MFA) requires NON_NASA_DRAFT_USER ACL for the provider.
+   Level 5 (Launchpad/PIV) bypasses the NON_NASA_DRAFT_USER ACL check."
+  {:default 4
+   :type Long})
