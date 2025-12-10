@@ -130,7 +130,27 @@
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (rest/url-with-path conn "_reindex")]
+        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
     (rest/post-string conn url
                       {:body (json/encode body)
                        :content-type "application/json"})))
+
+(defn- extract-descriptions-from-reindex-resp
+  "Pulls out description value from the elastic reindex response."
+  [reindex-resp-json]
+  (let [nodes-map (:nodes reindex-resp-json)]
+    (->> nodes-map
+         (vals)
+         (map :tasks)
+         (mapcat vals)
+         (map :description)
+         (map clojure.string/lower-case))))
+
+(defn reindexing-still-in-progress?
+  "Returns boolean of whether elastic is still reindexing the given index."
+  [conn index]
+  (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
+        resp (rest/get conn url)
+        current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
+        found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)]
+    found-reindexing-index))
