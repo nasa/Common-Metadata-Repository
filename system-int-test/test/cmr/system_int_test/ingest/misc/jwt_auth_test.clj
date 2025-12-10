@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.ingest.misc.jwt-auth-test
-  "Integration tests for JWT authentication across collections, granules, and bulk operations"
+  "Integration tests for JWT authentication across collections and granules"
   (:require
-   [clojure.test :refer [deftest is testing use-fixtures]]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.test.side-api :as side]
    [cmr.common-app.config :as config]
    [cmr.common.util :as util]
@@ -29,15 +29,16 @@
     nil))
 
 (use-fixtures :each
-  (fn [f]
-    (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
-                  util/is-jwt-token? (fn [token] (re-find #"^MOCK-JWT-" token))]
-      (ingest/reset-fixture {"provguid1" "PROV1"})
-      ;; Enable JWT authentication for all tests
-      (side/eval-form `(config/set-enable-idfed-jwt-authentication! true))
-      (side/eval-form `(config/set-launchpad-token-enforced! true))
-      (side/eval-form `(config/set-required-assurance-level! 4))
-      (f))))
+  (join-fixtures
+   [(ingest/reset-fixture {"provguid1" "PROV1"})
+    (fn [f]
+      (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
+                    util/is-jwt-token? (fn [token] (re-find #"^MOCK-JWT-" token))]
+        ;; Enable JWT authentication for all tests
+        (side/eval-form `(config/set-enable-idfed-jwt-authentication! true))
+        (side/eval-form `(config/set-launchpad-token-enforced! true))
+        (side/eval-form `(config/set-required-assurance-level! 4))
+        (f)))]))
 
 ;; =============================================================================
 ;; Collection Tests
