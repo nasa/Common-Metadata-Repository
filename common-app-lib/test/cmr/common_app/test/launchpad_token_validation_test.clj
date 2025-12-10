@@ -27,8 +27,7 @@
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
-                config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/required-assurance-level (constantly 4)]
 
     (testing "Level 5 JWT passes validation without ACL check"
       (is (nil? (lt-validation/validate-write-token
@@ -43,7 +42,6 @@
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
                 config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")
                 ;; Mock ACL check to pass
                 acl/verify-non-nasa-draft-permission (fn [_ _ _ _] nil)]
 
@@ -59,8 +57,7 @@
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
-                config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/required-assurance-level (constantly 4)]
 
     (testing "Level 4 JWT without provider-id throws permission error"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
@@ -75,8 +72,7 @@
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
-                config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/required-assurance-level (constantly 4)]
 
     (testing "Level 3 JWT is rejected (below minimum assurance level)"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -91,8 +87,7 @@
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
-                config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/required-assurance-level (constantly 4)]
 
     (testing "Level 2 JWT is rejected (below minimum assurance level)"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -107,8 +102,7 @@
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
                 config/enable-launchpad-saml-authentication (constantly false)
-                config/required-assurance-level (constantly 4)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/required-assurance-level (constantly 4)]
 
     (testing "JWT without assurance_level claim is rejected"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -122,8 +116,7 @@
                 util/is-launchpad-token? (constantly false)
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
-                config/enable-launchpad-saml-authentication (constantly false)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/enable-launchpad-saml-authentication (constantly false)]
 
     (testing "Invalid JWT (fails decryption) is rejected"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -137,8 +130,7 @@
                 util/is-launchpad-token? (fn [token] (= token "SAML-TOKEN"))
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly true)
-                config/enable-launchpad-saml-authentication (constantly true)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/enable-launchpad-saml-authentication (constantly true)]
 
     (testing "Launchpad SAML token passes when enabled"
       (is (nil? (lt-validation/validate-write-token
@@ -151,8 +143,7 @@
                 util/is-launchpad-token? (constantly false)
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly false)
-                config/enable-launchpad-saml-authentication (constantly false)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/enable-launchpad-saml-authentication (constantly false)]
 
     (testing "JWT tokens rejected when feature toggle disabled"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -166,8 +157,7 @@
                 util/is-launchpad-token? (fn [token] (= token "SAML-TOKEN"))
                 config/launchpad-token-enforced (constantly true)
                 config/enable-idfed-jwt-authentication (constantly false)
-                config/enable-launchpad-saml-authentication (constantly false)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/enable-launchpad-saml-authentication (constantly false)]
 
     (testing "SAML tokens rejected when feature toggle disabled"
       (is (thrown? clojure.lang.ExceptionInfo
@@ -179,8 +169,7 @@
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
                 util/is-jwt-token? (fn [token] (re-find #"^JWT-" token))
                 util/is-launchpad-token? (constantly false)
-                config/launchpad-token-enforced (constantly false)
-                transmit-config/echo-system-token (constantly "SYSTEM-TOKEN")]
+                config/launchpad-token-enforced (constantly false)]
 
     (testing "Token validation skipped when enforcement disabled"
       ;; Should not validate or throw when enforcement is off
