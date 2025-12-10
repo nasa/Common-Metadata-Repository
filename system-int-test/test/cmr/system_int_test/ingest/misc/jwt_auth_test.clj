@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.jwt-auth-test
+(ns cmr.system-int-test.ingest.misc.jwt-auth-test
   "Integration tests for JWT authentication across collections, granules, and bulk operations"
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
