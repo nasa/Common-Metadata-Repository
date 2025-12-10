@@ -32,8 +32,8 @@
 
     (testing "Level 5 JWT passes validation without ACL check"
       (is (nil? (lt-validation/validate-write-token
-                  (mock-context "JWT-L5")
-                  "PROV1"))))))
+                 (mock-context "JWT-L5")
+                 "PROV1"))))))
 
 (deftest validate-write-token-level-4-success-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -49,8 +49,8 @@
 
     (testing "Level 4 JWT passes when NON_NASA_DRAFT_USER ACL check succeeds"
       (is (nil? (lt-validation/validate-write-token
-                  (mock-context "JWT-L4")
-                  "PROV1"))))))
+                 (mock-context "JWT-L4")
+                 "PROV1"))))))
 
 (deftest validate-write-token-level-4-no-provider-id-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -66,7 +66,7 @@
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
                             #"You do not have permission to perform that action"
                             (lt-validation/validate-write-token
-                              (mock-context "JWT-L4")))))))
+                             (mock-context "JWT-L4")))))))
 
 (deftest validate-write-token-level-3-rejected-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -81,8 +81,8 @@
     (testing "Level 3 JWT is rejected (below minimum assurance level)"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "JWT-L3")
-                     "PROV1"))))))
+                    (mock-context "JWT-L3")
+                    "PROV1"))))))
 
 (deftest validate-write-token-level-2-rejected-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -97,8 +97,8 @@
     (testing "Level 2 JWT is rejected (below minimum assurance level)"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "JWT-L2")
-                     "PROV1"))))))
+                    (mock-context "JWT-L2")
+                    "PROV1"))))))
 
 (deftest validate-write-token-missing-assurance-level-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -113,8 +113,8 @@
     (testing "JWT without assurance_level claim is rejected"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "JWT-NO-LEVEL")
-                     "PROV1"))))))
+                    (mock-context "JWT-NO-LEVEL")
+                    "PROV1"))))))
 
 (deftest validate-write-token-invalid-jwt-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -128,8 +128,8 @@
     (testing "Invalid JWT (fails decryption) is rejected"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "JWT-INVALID")
-                     "PROV1"))))))
+                    (mock-context "JWT-INVALID")
+                    "PROV1"))))))
 
 (deftest validate-write-token-saml-token-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -142,8 +142,8 @@
 
     (testing "Launchpad SAML token passes when enabled"
       (is (nil? (lt-validation/validate-write-token
-                  (mock-context "SAML-TOKEN")
-                  "PROV1"))))))
+                 (mock-context "SAML-TOKEN")
+                 "PROV1"))))))
 
 (deftest validate-write-token-jwt-disabled-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -157,8 +157,8 @@
     (testing "JWT tokens rejected when feature toggle disabled"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "JWT-L5")
-                     "PROV1"))))))
+                    (mock-context "JWT-L5")
+                    "PROV1"))))))
 
 (deftest validate-write-token-saml-disabled-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -172,8 +172,8 @@
     (testing "SAML tokens rejected when feature toggle disabled"
       (is (thrown? clojure.lang.ExceptionInfo
                    (lt-validation/validate-write-token
-                     (mock-context "SAML-TOKEN")
-                     "PROV1"))))))
+                    (mock-context "SAML-TOKEN")
+                    "PROV1"))))))
 
 (deftest validate-write-token-enforcement-disabled-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -185,8 +185,8 @@
     (testing "Token validation skipped when enforcement disabled"
       ;; Should not validate or throw when enforcement is off
       (is (nil? (lt-validation/validate-write-token
-                  (mock-context "JWT-L3")
-                  "PROV1"))))))
+                 (mock-context "JWT-L3")
+                 "PROV1"))))))
 
 (deftest validate-write-token-system-token-test
   (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
@@ -195,5 +195,5 @@
 
     (testing "System token always passes"
       (is (nil? (lt-validation/validate-write-token
-                  (mock-context "SYSTEM-TOKEN")
-                  "PROV1"))))))
+                 (mock-context "SYSTEM-TOKEN")
+                 "PROV1"))))))

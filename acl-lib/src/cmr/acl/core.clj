@@ -78,8 +78,8 @@
   (let [{:keys [token]} context]
     (if token
       (->
-        (access-control/get-current-sids context (:token context))
-        json/parse-string)
+       (access-control/get-current-sids context (:token context))
+       json/parse-string)
       [:guest])))
 
 (defn context->sids
@@ -94,8 +94,8 @@
   "Returns true if the ACE is applicable to the SID."
   [sid group-permission]
   (or
-    (= (keyword sid) (keyword (:user-type group-permission)))
-    (= sid (:group-id group-permission))))
+   (= (keyword sid) (keyword (:user-type group-permission)))
+   (= sid (:group-id group-permission))))
 
 (defn acl-matches-sids-and-permission?
   "Returns true if the acl is applicable to any of the sids."
@@ -195,82 +195,82 @@
   SUBSCRIPTION_MANAGEMENT permission in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   (has-management-permission?
-    context permission-type object-identity-type provider-id "SUBSCRIPTION_MANAGEMENT"))
+   context permission-type object-identity-type provider-id "SUBSCRIPTION_MANAGEMENT"))
 
 (defn has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT permission in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   (has-management-permission?
-    context permission-type object-identity-type provider-id "INGEST_MANAGEMENT_ACL"))
+   context permission-type object-identity-type provider-id "INGEST_MANAGEMENT_ACL"))
 
 (defn has-provider-context-permission?
   "Returns true if the user identified by the token in the cache has been granted
   PROVIDER_CONTEXT permission in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   (has-management-permission?
-    context permission-type object-identity-type provider-id "PROVIDER_CONTEXT"))
+   context permission-type object-identity-type provider-id "PROVIDER_CONTEXT"))
 
 (defn has-non-nasa-draft-permission?
   "Returns true if the user has been granted NON_NASA_DRAFT_USER permission.
   Required for EDL+MFA (assurance level 4) JWT tokens."
   [context permission-type object-identity-type provider-id]
   (has-management-permission?
-    context permission-type object-identity-type provider-id "NON_NASA_DRAFT_USER"))
+   context permission-type object-identity-type provider-id "NON_NASA_DRAFT_USER"))
 
 (defn- verify-management-permission
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
   [context permission-type object-identity-type provider-id cache-key permission-fn]
   (let [has-permission-fn (fn []
                             (permission-fn
-                              context permission-type object-identity-type provider-id))
+                             context permission-type object-identity-type provider-id))
         has-permission? (if-let [cache (cache/context->cache context cache-key)]
                           ;; Read using cache. Cache key is combo of token and permission type
                           (if (= permission-fn has-subscription-management-permission?)
                             ;; add provider-id to the lookup key for subscription acl cache.
                             (cache/get-value
-                              cache [(:token context) permission-type provider-id] has-permission-fn)
+                             cache [(:token context) permission-type provider-id] has-permission-fn)
                             (cache/get-value
-                              cache [(:token context) permission-type] has-permission-fn))
+                             cache [(:token context) permission-type] has-permission-fn))
                           ;; No token cache so directly check permission.
                           (has-permission-fn))]
     (when-not has-permission?
       (errors/throw-service-error
-        :unauthorized
-        "You do not have permission to perform that action."))))
+       :unauthorized
+       "You do not have permission to perform that action."))))
 
 (defn- verify-management-permission-for-provider
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs for a provider."
   [context permission-type object-identity-type provider-id cache-key permission-fn]
   (let [has-permission-fn (fn []
                             (permission-fn
-                              context permission-type object-identity-type provider-id))
+                             context permission-type object-identity-type provider-id))
         has-permission? (if-let [cache (cache/context->cache context cache-key)]
                           ;; Read using cache. Cache key is combo of token, permission type and provider id.
                           (cache/get-value
-                            cache [(:token context) permission-type provider-id] has-permission-fn)
+                           cache [(:token context) permission-type provider-id] has-permission-fn)
                           ;; No token cache so directly check permission.
                           (has-permission-fn))]
     (when-not has-permission?
       (if (= cache-key token-pc-cache-key)
         (errors/throw-service-error
-          :unauthorized
-          "You do not have PROVIDER_CONTEXT permission to perform that action.")
+         :unauthorized
+         "You do not have PROVIDER_CONTEXT permission to perform that action.")
         (errors/throw-service-error
-          :unauthorized
-          "You do not have permission to perform that action.")))))
+         :unauthorized
+         "You do not have permission to perform that action.")))))
 
 (defn verify-subscription-management-permission
   "Verifies the current user has been granted SUBSCRIPTION_MANAGEMENT
   permission in ECHO ACLs"
   [context permission-type object-identity-type provider-id]
   (verify-management-permission
-    context
-    permission-type
-    object-identity-type
-    provider-id
-    token-smp-cache-key
-    has-subscription-management-permission?))
+   context
+   permission-type
+   object-identity-type
+   provider-id
+   token-smp-cache-key
+   has-subscription-management-permission?))
 
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
@@ -281,24 +281,24 @@
    (verify-ingest-management-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
    (verify-management-permission
-     context
-     permission-type
-     object-identity-type
-     provider-id
-     token-imp-cache-key
-     has-ingest-management-permission?)))
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-imp-cache-key
+    has-ingest-management-permission?)))
 
 (defn verify-ingest-management-permission-for-provider
   "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
   permission in ECHO ACLs for a provider."
   [context permission-type object-identity-type provider-id]
   (verify-management-permission-for-provider
-    context
-    permission-type
-    object-identity-type
-    provider-id
-    token-imp-cache-key
-    has-ingest-management-permission?))
+   context
+   permission-type
+   object-identity-type
+   provider-id
+   token-imp-cache-key
+   has-ingest-management-permission?))
 
 (defn verify-provider-context-permission
   "Verifies the current user has been granted PROVIDER_CONTEXT acl.
@@ -309,12 +309,12 @@
    (verify-provider-context-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
    (verify-management-permission-for-provider
-     context
-     permission-type
-     object-identity-type
-     provider-id
-     token-pc-cache-key
-     has-provider-context-permission?)))
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-pc-cache-key
+    has-provider-context-permission?)))
 
 (defn verify-non-nasa-draft-permission
   "Verifies the user has NON_NASA_DRAFT_USER permission for a provider.

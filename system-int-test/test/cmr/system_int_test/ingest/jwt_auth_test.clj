@@ -46,54 +46,54 @@
 (deftest collection-ingest-with-level-5-jwt-test
   (testing "Level 5 JWT - Full access without NON_NASA_DRAFT_USER ACL"
     (echo-util/grant-group-ingest-management
-      (system/context)
-      [{:user-id "jwt-user-l5"}]
-      :update
-      "PROV1")
+     (system/context)
+     [{:user-id "jwt-user-l5"}]
+     :update
+     "PROV1")
 
     (let [concept (data-umm-c/collection-concept {:provider-id "PROV1"})
           {:keys [status concept-id errors]} (ingest/ingest-concept
-                                               concept
-                                               {:token mock-jwt-level-5
-                                                :validate-keywords false})]
+                                              concept
+                                              {:token mock-jwt-level-5
+                                               :validate-keywords false})]
       (is (= 201 status) (str "Errors: " errors))
       (is concept-id))))
 
 (deftest collection-ingest-with-level-4-jwt-with-acl-test
   (testing "Level 4 JWT - Success with NON_NASA_DRAFT_USER ACL"
     (echo-util/grant-group-ingest-management
-      (system/context)
-      [{:user-id "jwt-user-l4-1"}]
-      :update
-      "PROV1")
+     (system/context)
+     [{:user-id "jwt-user-l4-1"}]
+     :update
+     "PROV1")
 
     (echo-util/grant-group-non-nasa-draft-user
-      (system/context)
-      [{:user-id "jwt-user-l4-1"}]
-      :update
-      "PROV1")
+     (system/context)
+     [{:user-id "jwt-user-l4-1"}]
+     :update
+     "PROV1")
 
     (let [concept (data-umm-c/collection-concept {:provider-id "PROV1"})
           {:keys [status concept-id errors]} (ingest/ingest-concept
-                                               concept
-                                               {:token mock-jwt-level-4-user1
-                                                :validate-keywords false})]
+                                              concept
+                                              {:token mock-jwt-level-4-user1
+                                               :validate-keywords false})]
       (is (= 201 status) (str "Errors: " errors))
       (is concept-id))))
 
 (deftest collection-ingest-with-level-4-jwt-without-acl-test
   (testing "Level 4 JWT - Failure without NON_NASA_DRAFT_USER ACL"
     (echo-util/grant-group-ingest-management
-      (system/context)
-      [{:user-id "jwt-user-l4-2"}]
-      :update
-      "PROV1")
+     (system/context)
+     [{:user-id "jwt-user-l4-2"}]
+     :update
+     "PROV1")
 
     (let [concept (data-umm-c/collection-concept {:provider-id "PROV1"})
           {:keys [status errors]} (ingest/ingest-concept
-                                    concept
-                                    {:token mock-jwt-level-4-user2
-                                     :validate-keywords false})]
+                                   concept
+                                   {:token mock-jwt-level-4-user2
+                                    :validate-keywords false})]
       (is (= 401 status))
       (is (some #(re-find #"permission" %) errors)))))
 
@@ -101,16 +101,16 @@
   (testing "Level 3 JWT - Rejected (insufficient assurance level)"
     ;; Even with full permissions, level 3 should be rejected
     (echo-util/grant-group-ingest-management
-      (system/context)
-      [{:user-id "jwt-user-l3"}]
-      :update
-      "PROV1")
+     (system/context)
+     [{:user-id "jwt-user-l3"}]
+     :update
+     "PROV1")
 
     (let [concept (data-umm-c/collection-concept {:provider-id "PROV1"})
           {:keys [status errors]} (ingest/ingest-concept
-                                    concept
-                                    {:token mock-jwt-level-3
-                                     :validate-keywords false})]
+                                   concept
+                                   {:token mock-jwt-level-3
+                                    :validate-keywords false})]
       (is (= 401 status))
       (is (some #(re-find #"permission" %) errors)))))
 
@@ -123,15 +123,15 @@
     (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))]
 
       (echo-util/grant-group-ingest-management
-        (system/context)
-        [{:user-id "jwt-user-l5"}]
-        :update
-        "PROV1")
+       (system/context)
+       [{:user-id "jwt-user-l5"}]
+       :update
+       "PROV1")
 
       (let [granule (dg/granule-with-umm-spec-collection coll "C1-PROV1")
             {:keys [status concept-id]} (d/ingest "PROV1"
-                                                   granule
-                                                   {:token mock-jwt-level-5})]
+                                                  granule
+                                                  {:token mock-jwt-level-5})]
         (is (= 201 status))
         (is concept-id)))))
 
@@ -142,17 +142,17 @@
           {:keys [concept-id]} (d/ingest "PROV1" granule)]
 
       (echo-util/grant-group-ingest-management
-        (system/context)
-        [{:user-id "jwt-user-l4-1"}]
-        :update
-        "PROV1")
+       (system/context)
+       [{:user-id "jwt-user-l4-1"}]
+       :update
+       "PROV1")
       (echo-util/grant-group-non-nasa-draft-user
-        (system/context)
-        [{:user-id "jwt-user-l4-1"}]
-        :update
-        "PROV1")
+       (system/context)
+       [{:user-id "jwt-user-l4-1"}]
+       :update
+       "PROV1")
 
       (let [{:keys [status]} (ingest/delete-concept
-                               concept-id
-                               {:token mock-jwt-level-4-user1})]
+                              concept-id
+                              {:token mock-jwt-level-4-user1})]
         (is (= 200 status))))))

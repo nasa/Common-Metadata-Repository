@@ -17,9 +17,6 @@
    [cmr.transmit.connection :as conn]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
-(def edl-assurance-level-social-login 1)
-(def edl-assurance-level-social-login-mfa 2)
-(def edl-assurance-level-edl 3)
 (def edl-assurance-level-edl-mfa 4)
 (def edl-assurance-level-launchpad-piv 5)
 
@@ -129,7 +126,7 @@
    {:accept :json
     :throw-exceptions false
     :headers {"Authorization" (transmit-config/echo-system-token)}
-     ;; Overrides the socket timeout from conn-params
+    ;; Overrides the socket timeout from conn-params
     :socket-timeout (transmit-config/echo-http-socket-timeout)}))
 
 (defn post-options
@@ -167,9 +164,9 @@
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
         (let [[status parsed body] (rest-post context "/tokens/get_token_info"
-                                                    {:headers {"Accept" mt/json
-                                                               "Authorization" (transmit-config/echo-system-token)}
-                                                     :form-params {:id token}})]
-             (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                           (common-util/scrub-token token) status))
-             (handle-get-user-id token status parsed body))))))
+                                              {:headers {"Accept" mt/json
+                                                         "Authorization" (transmit-config/echo-system-token)}
+                                               :form-params {:id token}})]
+          (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                        (common-util/scrub-token token) status))
+          (handle-get-user-id token status parsed body))))))
