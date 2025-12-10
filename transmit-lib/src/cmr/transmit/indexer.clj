@@ -138,16 +138,12 @@
          status (:status response)
          body (cheshire/decode (:body response) true)]
 
-    {:status status :body body}
-
-     ;(case (int status)
-     ;  404 {:status status :body body}
-     ;  200 {:status status :body body}
-     ;  (errors/internal-error! (format "Unexpected error fetching resharding status for index: %s,
-     ;                                   Index set app reported status: %s, error: %s"
-     ;                                  index status (pr-str (flatten (:errors body))))))
-
-    ))
+    (case (int status)
+      404 {:status status :body body}
+      200 {:status status :body body}
+      (errors/internal-error! (format "Unexpected error fetching resharding status for index: %s,
+                                        Index set app reported status: %s, error: %s"
+                                      index status (pr-str (flatten (:errors body))))))))
 
 (defn finalize-resharding-index
   "Finalizes the resharding index specified in the indexer application."

@@ -479,5 +479,4 @@
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "COMPLETE"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))
-        ))))
+                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))))

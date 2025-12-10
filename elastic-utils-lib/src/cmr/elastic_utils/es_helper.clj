@@ -136,6 +136,7 @@
                        :content-type "application/json"})))
 
 (defn- extract-descriptions-from-reindex-resp
+  "Pulls out description value from the elastic reindex response."
   [reindex-resp-json]
   (let [nodes-map (:nodes reindex-resp-json)]
     (->> nodes-map
@@ -146,6 +147,7 @@
          (map clojure.string/lower-case))))
 
 (defn reindexing-still-in-progress?
+  "Returns boolean of whether elastic is still reindexing the given index."
   [conn index]
   (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
         resp (rest/get conn url)
