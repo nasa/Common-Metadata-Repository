@@ -390,10 +390,14 @@
         ;; Search for ACLs with either GET or POST
         (GET "/"
              {ctx :request-context params :params headers :headers}
+             (when (access-control-config/lockdown-acl-get-requests)
+               (lt-validation/validate-launchpad-token ctx))
              (search-for-acls ctx headers params))
         ;; POST search is at a different route to avoid a collision with the ACL creation route
         (POST "/search"
               {ctx :request-context params :params headers :headers}
+              (when (access-control-config/lockdown-acl-get-requests)
+                (lt-validation/validate-launchpad-token ctx))
               (search-for-acls ctx headers params))
 
         ;; Create an ACL
@@ -421,6 +425,8 @@
           ;; Retrieve an ACL
           (GET "/"
                {ctx :request-context params :params}
+               (when (access-control-config/lockdown-acl-get-requests)
+                 (lt-validation/validate-launchpad-token ctx))
                (get-acl ctx concept-id params))))
 
       (context "/permissions" []
