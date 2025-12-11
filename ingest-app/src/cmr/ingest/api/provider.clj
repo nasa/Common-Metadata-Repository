@@ -22,6 +22,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.util :as util]
+   [cmr.ingest.services.provider-service :as provider-service]
    [compojure.core :refer [DELETE GET POST PUT context]]))
 
 (defn- drop-metadata
