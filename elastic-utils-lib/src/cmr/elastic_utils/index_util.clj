@@ -164,6 +164,7 @@
   * elastic-store - A component containing an elastic connection under the :conn key"
   [index-name index-settings type-name mappings elastic-store]
   (let [conn (:conn elastic-store)]
+    (info "CMR-10600 INSIDE create-index-or-update-mappings with conn = " conn)
     (if (esi-helper/exists? conn index-name)
       (do
         (info (format "Updating %s mappings and settings" index-name))
