@@ -176,6 +176,9 @@
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  (let [cluster-name (get-es-cluster-name-from-index-info index-info)
+        conn (context->conn context cluster-name)]
+    (info "CMR-10600 INSIDE do-send-with-retry with index-info " index-info " and cluster-name " cluster-name " and conn found is " conn))
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
