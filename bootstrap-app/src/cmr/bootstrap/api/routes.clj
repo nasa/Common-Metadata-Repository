@@ -171,10 +171,10 @@
                  (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
                  (granule-counts-cache/refresh-granule-counts-cache request-context)
 
-                 :else nil)]
-           (if refresh-result
-             {:status 200}
-             (route/not-found "Not Found")))))
+                 :else :not-found)]
+           (if (= refresh-result :not-found)
+             (route/not-found "Not Found")
+             {:status 200}))))
 
      ;; db migration route
      (POST "/db-migrate" {:keys [request-context params]}
