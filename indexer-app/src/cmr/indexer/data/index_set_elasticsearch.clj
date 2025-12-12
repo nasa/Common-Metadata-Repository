@@ -32,7 +32,9 @@
 (defn create-index
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
+  (info "CMR-10600 INSIDE create-index with idx-w-config = " idx-w-config)
   (let [{:keys [index-name settings mapping]} idx-w-config]
+    (info "CMR-10600 INSIDE create-index. Check if index-name " index-name " exists in conn = " conn)
     (when-not (esi-helper/exists? conn index-name)
       (try
         (info "Now creating Elastic Index:" index-name)

@@ -84,7 +84,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
+  [:log :caches :gran-search-index :search-index :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -97,6 +97,7 @@
   []
   (let [sys {:instance-name (common-sys/instance-name "access-control")
              :log (log/create-logger-with-log-level (log-level))
+             :gran-search-index (search-index/create-elastic-search-index es-config/gran-elastic-name)
              :search-index (search-index/create-elastic-search-index es-config/elastic-name)
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))

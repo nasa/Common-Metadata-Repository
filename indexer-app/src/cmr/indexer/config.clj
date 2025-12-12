@@ -10,12 +10,12 @@
          ingest-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
          deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
 
-
 ;; index name and config for storing index-set requests
 ;; index the request after creating all of the requested indices successfully
-;; foot print of this index will remain small
+;; footprint of this index will remain small
 (defn idx-cfg-for-index-sets
   [es-cluster-name]
+  (println "CMR-10600 INSIDE idx-cfg-for-index-sets with es-cluster-name = " es-cluster-name " and index name will become " (str es-cluster-name "-index-sets"))
   {:index-name (str es-cluster-name "-index-sets")
    :settings {"index" {"number_of_shards" 1
                        "number_of_replicas"  1
