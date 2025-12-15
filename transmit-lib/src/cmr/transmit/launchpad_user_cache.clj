@@ -9,6 +9,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as common-util]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.urs :as urs]))
 
 (def launchpad-user-cache-key
@@ -41,7 +42,7 @@
                                   (catch Exception e
                                     {:valid false
                                      :error-message (.getMessage e)
-                                     :expiration-time (t/plus (time-keeper/now) (t/minutes 5))})))]
+                                     :expiration-time (t/plus (time-keeper/now) (t/minutes (transmit-config/invalid-token-timeout)))})))]
     (if-let [cache (cache/context->cache context launchpad-user-cache-key)]
       (let [token-info (cache/get-value cache (keyword (str (hash token))) get-launchpad-user-fn)]
         (if (t/before? (:expiration-time token-info) (time-keeper/now))
