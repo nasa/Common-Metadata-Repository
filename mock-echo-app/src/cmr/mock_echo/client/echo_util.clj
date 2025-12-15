@@ -364,6 +364,38 @@
          {:target ingest-management-acl
           :provider_id provider-guid}))
 
+(defn grant-group-ingest-management
+  "Creates a provider ACL granting INGEST_MANAGEMENT_ACL permissions to a group for a provider.
+  Creates the group if it doesn't exist and adds the specified users to it."
+  [context user-specs permission-type provider-id]
+  (let [group-name (str "group-" (java.util.UUID/randomUUID))
+        group-concept-id (get-or-create-group context group-name)
+        token (config/echo-system-token)]
+    (doseq [user-spec user-specs
+            :let [user-id (:user-id user-spec)]]
+      (add-user-to-group context group-concept-id user-id token))
+    (grant context
+           [(group-ace group-concept-id [permission-type])]
+           :provider_identity
+           {:target ingest-management-acl
+            :provider_id provider-id})))
+
+(defn grant-group-non-nasa-draft-user
+  "Creates a provider ACL granting NON_NASA_DRAFT_USER permissions to a group for a provider.
+  Creates the group if it doesn't exist and adds the specified users to it."
+  [context user-specs permission-type provider-id]
+  (let [group-name (str "group-" (java.util.UUID/randomUUID))
+        group-concept-id (get-or-create-group context group-name)
+        token (config/echo-system-token)]
+    (doseq [user-spec user-specs
+            :let [user-id (:user-id user-spec)]]
+      (add-user-to-group context group-concept-id user-id token))
+    (grant context
+           [(group-ace group-concept-id [permission-type])]
+           :provider_identity
+           {:target "NON_NASA_DRAFT_USER"
+            :provider_id provider-id})))
+
 (defn grant-all-tag
   "Creates an ACL in mock echo granting registered users ability to tag anything"
   [context]
