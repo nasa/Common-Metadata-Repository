@@ -8,7 +8,7 @@
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.log :refer [info error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
