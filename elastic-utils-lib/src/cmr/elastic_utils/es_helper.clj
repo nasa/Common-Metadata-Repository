@@ -153,9 +153,9 @@
   (try
     (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
           resp (rest/get conn url)
-          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
-          found-reindexing-index (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)]
-      found-reindexing-index)
+          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)]
+      ;; if the resp's descriptions still has the index in it, then it is still re-indexing
+      (boolean (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)))
     (catch Exception e
       (errors/throw-service-error
         :internal-error
