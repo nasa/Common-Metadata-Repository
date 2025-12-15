@@ -48,7 +48,7 @@
 (defn ingest-collection
   [provider-id native-id request]
   (let [{:keys [body content-type _params headers request-context]} request]
-    (lt-validation/validate-launchpad-token request-context)
+    (lt-validation/validate-write-token request-context provider-id)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")

@@ -39,7 +39,7 @@
   (let [{:keys [body content-type headers request-context]} request
         concept (api-core/body->concept!
                  :service provider-id native-id body content-type headers)]
-    (lt-validation/validate-launchpad-token request-context)
+    (lt-validation/validate-write-token request-context provider-id)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission
       request-context :update :provider-object provider-id)
