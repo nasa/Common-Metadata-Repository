@@ -309,6 +309,7 @@
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
   [config es-cluster-name]
+  (info "CMR-10600 Creating elasticsearch store with config : " config " and es-cluster-name : " es-cluster-name)
   (->ESstore config nil es-cluster-name))
 
 (defn- try-elastic-operation

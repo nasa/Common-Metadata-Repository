@@ -19,6 +19,7 @@
   "Connects to ES with the given config"
   [config]
   (let [{:keys [host port retry-handler]} config
+        _ (info "CMR-10600 trying to connect to elastic with config: " config " using the keys: host, port, and retry-handler.")
         http-options {:conn-mgr (conn-mgr/make-reusable-conn-manager
                                   {;; Maximum number of threads that will be used for connecting.
                                    ;; Very important that this matches the maximum number of threads
