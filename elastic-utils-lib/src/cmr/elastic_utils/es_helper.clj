@@ -1,17 +1,17 @@
 (ns cmr.elastic-utils.es-helper
   "Defines helper functions for invoking ES"
   (:require
-    [cheshire.core :as json]
-    [clj-http.client :as http]
-    [clojure.string :as string]
-    [clojurewerkz.elastisch.rest :as rest]
-    [clojurewerkz.elastisch.rest.document :as doc]
-    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
-    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-    [cmr.common.log :refer [info error]]
-    [cmr.common.services.errors :as errors]
-    [cmr.elastic-utils.config :as es-config]
-    [cmr.transmit.config :as t-config]))
+   [cheshire.core :as json]
+   [clj-http.client :as http]
+   [clojure.string :as string]
+   [clojurewerkz.elastisch.rest :as rest]
+   [clojurewerkz.elastisch.rest.document :as doc]
+   [clojurewerkz.elastisch.rest.response :refer [not-found?]]
+   [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+   [cmr.common.log :refer [info error]]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.transmit.config :as t-config]))
 
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
