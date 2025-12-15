@@ -154,9 +154,9 @@
     (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
           resp (rest/get conn url)
           current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
-          found-reindexing-index (some #(string/includes? (.toLowerCase %) index) current-reindexing-descriptions)]
+          found-reindexing-index (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)]
       found-reindexing-index)
     (catch Exception e
       (errors/throw-service-error
         :internal-error
-        (format "Something went wrong when calling elastic to get reindexing status for index " index "With exception details: " e)))))
+        (str "Something went wrong when calling elastic to get reindexing status for index " index "With exception details: " e)))))

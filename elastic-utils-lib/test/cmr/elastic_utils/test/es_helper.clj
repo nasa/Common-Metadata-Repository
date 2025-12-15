@@ -29,9 +29,9 @@
     (testing "get correct list of descriptions"
       (is (= expected-desc-list (extract-fn reindex-resp-example))))
     (testing "empty node map gives empty desc list"
-      (is (empty (extract-fn {:nodes {}}))))
+      (is (empty? (extract-fn {:nodes {}}))))
     (testing "empty resp gives empty desc list"
-      (is (empty (extract-fn {}))))))
+      (is (empty? (extract-fn {}))))))
 
 (deftest test-reindexing-still-in-progress
   (testing "when error resp from elasticsearch, then give error message and throw exception"
