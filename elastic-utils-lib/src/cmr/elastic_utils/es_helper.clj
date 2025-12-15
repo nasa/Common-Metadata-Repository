@@ -1,16 +1,17 @@
 (ns cmr.elastic-utils.es-helper
   "Defines helper functions for invoking ES"
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as http]
-   [clojure.string :as string]
-   [clojurewerkz.elastisch.rest :as rest]
-   [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.response :refer [not-found?]]
-   [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.log :refer [info]]
-   [cmr.elastic-utils.config :as es-config]
-   [cmr.transmit.config :as t-config]))
+    [cheshire.core :as json]
+    [clj-http.client :as http]
+    [clojure.string :as string]
+    [clojurewerkz.elastisch.rest :as rest]
+    [clojurewerkz.elastisch.rest.document :as doc]
+    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
+    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+    [cmr.common.log :refer [info error]]
+    [cmr.common.services.errors :as errors]
+    [cmr.elastic-utils.config :as es-config]
+    [cmr.transmit.config :as t-config]))
 
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
@@ -149,8 +150,13 @@
 (defn reindexing-still-in-progress?
   "Returns boolean of whether elastic is still reindexing the given index."
   [conn index]
-  (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
-        resp (rest/get conn url)
-        current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
-        found-reindexing-index (some #(clojure.string/includes? (.toLowerCase %) index) current-reindexing-descriptions)]
-    found-reindexing-index))
+  (try
+    (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
+          resp (rest/get conn url)
+          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)
+          found-reindexing-index (some #(string/includes? (.toLowerCase %) index) current-reindexing-descriptions)]
+      found-reindexing-index)
+    (catch Exception e
+      (errors/throw-service-error
+        :internal-error
+        (format "Something went wrong when calling elastic to get reindexing status for index " index "With exception details: " e)))))
