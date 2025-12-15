@@ -212,7 +212,7 @@ Required params:
 
 ### Finalize resharding an index
 
-Once the status of the rehard returns 'COMPLETE', you can move on to finalizing the reshard process. 
+Once the status of the reshard returns 'COMPLETE', you can move on to finalizing the reshard process. 
 Finalizing an index resharding moves the ES alias to point to the new resharded index and clean up the index-set.
 
 Required params:
