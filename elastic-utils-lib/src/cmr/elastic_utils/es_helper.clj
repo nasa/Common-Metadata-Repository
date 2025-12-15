@@ -159,4 +159,4 @@
     (catch Exception e
       (errors/throw-service-error
         :internal-error
-        (str "Something went wrong when calling elastic to get reindexing status for index " index "With exception details: " e)))))
+        (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
