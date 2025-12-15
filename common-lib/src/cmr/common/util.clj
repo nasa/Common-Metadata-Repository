@@ -1170,11 +1170,6 @@
   [s]
   (hp-util/escape-html s))
 
-(defn tee
-  "Tee a copy of input to the console, but does so to allow for inline use with ->"
-  ([anything] (println anything) anything)
-  ([anything note] (println note anything) anything))
-
 (defn normalize-parameters
   "Returns a normalized url parameter string by splitting the string of parameters on '&' and
    sorting them alphabetically"
