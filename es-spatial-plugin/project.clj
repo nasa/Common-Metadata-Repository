@@ -59,7 +59,11 @@
                                                     [joda-time]
                                                     [org.ow2.asm/asm]
                                                     [org.ow2.asm/asm-all]
+                                                    ;; Both lz4 libraries are linked together. yawk
+                                                    ;; is suppose to be a drop in replacment and
+                                                    ;; uses the same package name as the original.
                                                     [net.jpountz.lz4/lz4]
+                                                    [at.yawk.lz4/lz4-java]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
