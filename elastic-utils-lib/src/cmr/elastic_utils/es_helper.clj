@@ -144,7 +144,7 @@
          (vals)
          (map :tasks)
          (mapcat vals)
-         (map :description)
+         (keep :description)
          (map clojure.string/lower-case))))
 
 (defn reindexing-still-in-progress?
