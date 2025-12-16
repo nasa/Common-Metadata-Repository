@@ -186,7 +186,7 @@
       (let [input {:a {:b {:c "value"}}}
             expected {:a {:b {}}}
             result (util/remove-nested-key input [:a :b :c])]
-        (is (= expected result) "Should remove parent keys if they become empty")))
+        (is (= expected result) "Should preserve empty parent maps after removal")))
 
     (testing "with non-map input"
       (let [input "not a map"

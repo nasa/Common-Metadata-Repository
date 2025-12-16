@@ -58,8 +58,7 @@
   - :body is the parsed JSON with specified keys removed"
   [result remove-list]
   (let [{:keys [status body]} result
-        metadata (-> body
-                     (json/parse-string))]
+        metadata (json/parse-string body true)]
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body (util/remove-nested-key metadata remove-list)}))
@@ -158,9 +157,13 @@
         (try
           (acl/verify-ingest-management-permission request-context :read)
           (result->response-map response)
-          (catch clojure.lang.ExceptionInfo _
+          (catch clojure.lang.ExceptionInfo err
             ;; Drop the administrators as this is an unprivileged call.
-            (result->response-map-sans-item response ["metadata" "Administrators"])))))
+            (let [err-msg (.getMessage err)
+                  match #"You do not have (PROVIDER_CONTEXT )?permission to perform that action\."]
+              (if (re-matches match err-msg)
+                (result->response-map-sans-item response [:metadata :Administrators])
+                (throw err)))))))
 
     ;; update an existing provider
     (PUT "/:provider-id" {request-context :request-context
