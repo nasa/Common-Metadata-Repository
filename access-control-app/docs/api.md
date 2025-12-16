@@ -36,7 +36,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 #### <a name="authorization-header"></a> Authorization Header
 
-All Access Control API operations require specifying a token.
+Many Access Control API operations require specifying a token.
 
 ##### EDL Bearer Tokens
 
