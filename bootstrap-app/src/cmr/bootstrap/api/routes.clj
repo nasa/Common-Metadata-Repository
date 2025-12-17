@@ -141,38 +141,41 @@
      (context "/caches/refresh/:cache-name" [cache-name]
        (POST "/" {:keys [request-context]}
          (acl/verify-ingest-management-permission request-context :update)
-         (let [keyword-cache-name (keyword cache-name)]
-           (cond
-             (= keyword-cache-name mc/cache-key)
-             (cmc/refresh-cache request-context)
+         (let [keyword-cache-name (keyword cache-name)
+               refresh-result
+               (cond
+                 (= keyword-cache-name mc/cache-key)
+                 (cmc/refresh-cache request-context)
 
-             (= keyword-cache-name kms-fetcher/kms-cache-key)
-             (kms-fetcher/refresh-kms-cache request-context)
+                 (= keyword-cache-name kms-fetcher/kms-cache-key)
+                 (kms-fetcher/refresh-kms-cache request-context)
 
-             (= keyword-cache-name provider-cache/cache-key)
-             (provider-cache/refresh-provider-cache request-context)
+                 (= keyword-cache-name provider-cache/cache-key)
+                 (provider-cache/refresh-provider-cache request-context)
 
-             (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
-             (coll-for-gran-acls-caches/refresh-entire-cache request-context)
+                 (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
+                 (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
-             (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
-             (elastic-search-index-names-cache/refresh-index-names-cache request-context)
+                 (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
+                 (elastic-search-index-names-cache/refresh-index-names-cache request-context)
 
-             (= keyword-cache-name humanizer-alias-cache/humanizer-alias-cache-key)
-             (humanizer-alias-cache/refresh-entire-cache request-context)
+                 (= keyword-cache-name humanizer-alias-cache/humanizer-alias-cache-key)
+                 (humanizer-alias-cache/refresh-entire-cache request-context)
 
-             (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-cwic-cache-key)
-             (has-granules-or-cwic-results-feature/refresh-has-granules-or-cwic-map request-context)
+                 (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-cwic-cache-key)
+                 (has-granules-or-cwic-results-feature/refresh-has-granules-or-cwic-map request-context)
 
-             (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
-             (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
+                 (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-opensearch-cache-key)
+                 (has-granules-or-cwic-results-feature/refresh-has-granules-or-opensearch-map request-context)
 
-             (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
-             (granule-counts-cache/refresh-granule-counts-cache request-context)
+                 (= keyword-cache-name granule-counts-cache/granule-counts-cache-key)
+                 (granule-counts-cache/refresh-granule-counts-cache request-context)
 
-             :else
-             (route/not-found "Not Found")))
-         {:status 200}))
+                 :else :not-found)]
+           (if (= refresh-result :not-found)
+             (route/not-found "Not Found")
+             {:status 200}))))
+
      ;; db migration route
      (POST "/db-migrate" {:keys [request-context params]}
        (acl/verify-ingest-management-permission request-context :update)
