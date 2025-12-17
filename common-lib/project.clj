@@ -1,10 +1,12 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"
+                 [cheshire
                   :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
-                 [clj-time "0.15.1"]
+                 [clj-time]
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
                  [clojusc/ltest "0.3.0"]
@@ -26,8 +28,8 @@
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]
                  ;; at.yawk.lz4 is a drop in replacment for net.jpountz.lz4 and actually impliments
                  ;; the exact same class path so no code change is needed.
-                 [at.yawk.lz4/lz4-java "1.10.1"]
-                 [org.clojure/clojure "1.11.2"]
+                 [at.yawk.lz4/lz4-java]
+                 [org.clojure/clojure]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.codec "0.1.1"]
@@ -51,6 +53,7 @@
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
@@ -66,7 +69,7 @@
                                   [proto-repl "0.3.1"]
                                   [ring/ring-core "1.14.2"]
                                   [ring/ring-jetty-adapter "1.14.2"]
-                                  [clj-http "2.3.0"]]
+                                  [clj-http]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
                    ;;     with no need to comment/uncomment.

@@ -15,6 +15,8 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure]
 
+                 ;; org.lz4 is no longer supported and at.yawk.lz4 is a drop in replacement for it.
+                 ;; Exclude these libraries to prevent conflicts.
                  [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
                  [at.yawk.lz4/lz4-java]
 
