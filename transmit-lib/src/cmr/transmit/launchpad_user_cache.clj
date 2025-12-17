@@ -65,5 +65,7 @@
           result
           (errors/throw-service-error
            :unauthorized
-           (:error-message result)))))))
+           (or (:error-message result)
+               (format "Invalid Launchpad token (partially redacted) [%s]"
+                       (common-util/scrub-token token)))))))))
 
