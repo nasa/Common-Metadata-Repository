@@ -9,7 +9,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as common-util]
-   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.urs :as urs]))
 
 (def launchpad-user-cache-key
@@ -27,22 +26,14 @@
 
 (defn get-launchpad-user
   "Get the launchpad user from the cache, uses token as key on miss.
-  Expiration time is calculated via the response from EDL and saved in the cache.
-  Failed validations are also cached to prevent repeated requests with bad tokens."
+  Expiration time is calculated via the response from EDL and saved in the cache."
   [context token]
   (let [get-launchpad-user-fn (fn []
-                                (try
-                                  (let [resp (urs/get-launchpad-user context token)]
-                                    (assoc resp
-                                           :expiration-time (-> (or (:lp_token_expires_in resp)
-                                                                    (/ LAUNCHPAD_USER_CACHE_TIME 1000))
-                                                                (t/seconds)
-                                                                (t/from-now))
-                                           :valid true))
-                                  (catch Exception e
-                                    {:valid false
-                                     :error-message (.getMessage e)
-                                     :expiration-time (t/plus (time-keeper/now) (t/minutes (transmit-config/invalid-token-timeout)))})))]
+                                (when-let [resp (urs/get-launchpad-user context token)]
+                                  (assoc resp :expiration-time (-> (or (:lp_token_expires_in resp)
+                                                                       (/ LAUNCHPAD_USER_CACHE_TIME 1000))
+                                                                   (t/seconds)
+                                                                   (t/from-now)))))]
     (if-let [cache (cache/context->cache context launchpad-user-cache-key)]
       (let [token-info (cache/get-value cache (keyword (str (hash token))) get-launchpad-user-fn)]
         (if (t/before? (:expiration-time token-info) (time-keeper/now))
@@ -53,19 +44,5 @@
              :unauthorized
              (format "Launchpad token (partially redacted) [%s] has expired."
                      (common-util/scrub-token token))))
-          (if (:valid token-info)
-            token-info
-            (errors/throw-service-error
-             :unauthorized
-             (or (:error-message token-info)
-                 (format "Invalid Launchpad token (partially redacted) [%s]"
-                         (common-util/scrub-token token)))))))
-      (let [result (get-launchpad-user-fn)]
-        (if (:valid result)
-          result
-          (errors/throw-service-error
-           :unauthorized
-           (or (:error-message result)
-               (format "Invalid Launchpad token (partially redacted) [%s]"
-                       (common-util/scrub-token token)))))))))
-
+          token-info))
+      (get-launchpad-user-fn))))
