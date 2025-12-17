@@ -464,7 +464,7 @@
                 :reshard-index "1_small_collections_10_shards"
                 :reshard-status "IN_PROGRESS"}
                (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will updated. Correct status resp will be returned."
+    (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will be updated. Correct status resp will be returned."
       (let [mock-calls (atom 0)
             get-index-set-mock-fn (fn [& args]
                                     (swap! mock-calls inc)
