@@ -17,6 +17,37 @@
    [cmr.transmit.connection :as conn]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
+(def edl-assurance-level-edl-mfa 4)
+(def edl-assurance-level-launchpad-piv 5)
+
+(defn get-jwt-claims
+  "Extracts claims from a JWT token. Returns nil if invalid."
+  [token]
+  (try
+    (let [public-key (buddy-keys/jwk->public-key (json/parse-string (transmit-config/edl-public-key) true))
+          bearer-stripped-token (string/replace token #"Bearer\W+" "")]
+      (jwt/unsign bearer-stripped-token public-key {:alg :rs256}))
+    (catch Exception _e
+      nil)))
+
+(defn get-assurance-level
+  "Returns the assurance level from a JWT token, or nil if not found."
+  [token]
+  (when-let [claims (get-jwt-claims token)]
+    (:assurance_level claims)))
+
+(defn is-launchpad-federated-jwt?
+  "Returns true if token is level 5 (Launchpad/PIV)."
+  [token]
+  (when (common-util/is-jwt-token? token)
+    (= edl-assurance-level-launchpad-piv (get-assurance-level token))))
+
+(defn is-edl-mfa-jwt?
+  "Returns true if token is level 4 (EDL+MFA)."
+  [token]
+  (when (common-util/is-jwt-token? token)
+    (= edl-assurance-level-edl-mfa (get-assurance-level token))))
+
 (defn verify-edl-token-locally
   "Uses the EDL public key to verify jwt tokens locally."
   [token]
@@ -95,7 +126,7 @@
    {:accept :json
     :throw-exceptions false
     :headers {"Authorization" (transmit-config/echo-system-token)}
-     ;; Overrides the socket timeout from conn-params
+    ;; Overrides the socket timeout from conn-params
     :socket-timeout (transmit-config/echo-http-socket-timeout)}))
 
 (defn post-options
@@ -123,21 +154,19 @@
      [status parsed body])))
 
 (defn get-user-id
-  "Get the user-id from EDL or Launchpad for the given token"
+  "Returns the user-id for the given token."
   [context token]
   (if (transmit-config/echo-system-token? token)
-    ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
     (if (and (common-util/is-jwt-token? token)
              (transmit-config/local-edl-verification))
       (verify-edl-token-locally token)
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
-        ;; Legacy services has been shut down, we still use a mock for tests, we will leave this here and handle the 301.
         (let [[status parsed body] (rest-post context "/tokens/get_token_info"
-                                                    {:headers {"Accept" mt/json
-                                                               "Authorization" (transmit-config/echo-system-token)}
-                                                     :form-params {:id token}})]
-             (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                           (common-util/scrub-token token) status))
-             (handle-get-user-id token status parsed body))))))
+                                              {:headers {"Accept" mt/json
+                                                         "Authorization" (transmit-config/echo-system-token)}
+                                               :form-params {:id token}})]
+          (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                        (common-util/scrub-token token) status))
+          (handle-get-user-id token status parsed body))))))
