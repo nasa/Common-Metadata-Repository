@@ -74,7 +74,7 @@
       (let [result (es-helper/migrate-index conn source-index target-index)]
         (when (:error result)
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "COMPLETE" elastic-name)
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "IN_PROGRESS" elastic-name)
       (catch Throwable e
         (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
         (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
