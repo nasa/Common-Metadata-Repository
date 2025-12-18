@@ -397,6 +397,8 @@
                                               (if (sequential? collection-data-type)
                                                 (map string/lower-case collection-data-type)
                                                 (string/lower-case collection-data-type)))
+            :collection-progress (:CollectionProgress collection)
+            :collection-progress-lowercase (util/safe-lowercase (:CollectionProgress collection))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
             ;; hierarchical fields
