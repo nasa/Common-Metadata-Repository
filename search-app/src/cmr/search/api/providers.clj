@@ -56,6 +56,8 @@
         hits (count response-body)
         provider-metadata (-> response-body
                               (as-> body (map :metadata body))
+                              (as-> metadata-list
+                                    (map #(util/remove-nested-key % [:Administrators]) metadata-list))
                               json/generate-string)
         new-response {}]
     (assoc new-response :hits hits :took time-taken :items (json/parse-string provider-metadata true))))
