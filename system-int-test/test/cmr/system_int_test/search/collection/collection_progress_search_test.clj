@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection.collection-collection-progress-search-test
+(ns cmr.system-int-test.search.collection.collection-progress-search-test
   "Integration test for CMR collection search by collection progress"
   (:require
    [clojure.test :refer :all]
