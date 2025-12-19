@@ -14,13 +14,25 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure]
-                 [org.elasticsearch/elasticsearch ~elastic-version]
+
+                 ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
+                 ;; replacement for it. Exclude these libraries to prevent conflicts.
+                 [org.elasticsearch/elasticsearch-lz4 ~elastic-version
+                  :exclusions [org.lz4/lz4-java]]
+                 [org.elasticsearch/elasticsearch ~elastic-version
+                  :exclusions [net.jpountz.lz4/lz4
+                               org.lz4/lz4-java]] ;; force use of at.yawk.lz4 below
+                 [com.taoensso/carmine "3.0.1" :exclusions [com.taoensso/nippy]]
+                 [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
+                 [at.yawk.lz4/lz4-java]
+
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
+  :exclusions [org.lz4/lz4-java]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
