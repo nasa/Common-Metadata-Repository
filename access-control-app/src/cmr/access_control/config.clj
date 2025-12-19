@@ -54,6 +54,11 @@
   "Feature toggle to enable the GET verb for /current-sids - remove after all clients have been migrated"
   {:default true :type Boolean})
 
+;; TODO: This can be removed if no clients are found to need open access to ACLs.
+(defconfig lockdown-acl-get-requests
+  "Flag for whether or not launchpad token is required to access acl get requests."
+  {:default true :type Boolean})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []

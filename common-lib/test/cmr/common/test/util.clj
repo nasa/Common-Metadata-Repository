@@ -158,6 +158,41 @@
            (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
+(deftest remove-nested-key-test
+  (testing "remove-nested-key function"
+    (testing "removing nested key as per example"
+      (let [input {:ignore "hi" :parent {:keep "value" :drop "loose"}}
+            expected {:ignore "hi" :parent {:keep "value"}}
+            result (util/remove-nested-key input [:parent :drop])]
+        (is (= expected result) "Should remove nested key :drop from :parent")))
+
+    (testing "removing non-existent key"
+      (let [input {:a {:b {:c "value"}}}
+            result (util/remove-nested-key input [:a :b :d])]
+        (is (= input result) "Should return original map when key doesn't exist")))
+
+    (testing "removing from empty map"
+      (let [input {}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= input result) "Should return empty map when input is empty")))
+
+    (testing "removing nested key with multiple levels"
+      (let [input {:a {:b {:c {:d "value"}}}}
+            expected {:a {:b {}}}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= expected result) "Should remove deeply nested key")))
+
+    (testing "removing key that would result in empty nested map"
+      (let [input {:a {:b {:c "value"}}}
+            expected {:a {:b {}}}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= expected result) "Should preserve empty parent maps after removal")))
+
+    (testing "with non-map input"
+      (let [input "not a map"
+            result (util/remove-nested-key input [:a :b])]
+        (is (= input result) "Should return non-map input unchanged")))))
+
 (deftest remove-empty-maps-test
   (are [x y]
     (= x (util/remove-empty-maps y))

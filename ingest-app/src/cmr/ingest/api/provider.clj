@@ -21,6 +21,7 @@
    [cmr.common.generics :as gcom]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
+   [cmr.common.util :as util]
    [cmr.ingest.services.provider-service :as provider-service]
    [compojure.core :refer [DELETE GET POST PUT context]]))
 
@@ -42,6 +43,25 @@
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body body}))
+
+(defn- result->response-map-sans-item
+  "Transforms an API result into a response map, removing specified items from the body.
+
+  Parameters:
+  - result: A map containing :status and :body keys, where :body is a JSON string.
+  - remove-list: A list of keys to be removed from the parsed JSON body.
+
+  Returns:
+  A map with :status, :headers, and :body keys, where:
+  - :status is the original status code
+  - :headers specify the Content-Type as JSON with UTF-8 encoding
+  - :body is the parsed JSON with specified keys removed"
+  [result remove-list]
+  (let [{:keys [status body]} result
+        metadata (json/parse-string body true)]
+    {:status status
+     :headers {"Content-Type" (mt/with-utf-8 mt/json)}
+     :body (util/remove-nested-key metadata remove-list)}))
 
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be
@@ -126,14 +146,24 @@
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
       (one-result->response-map
-        (provider-service/create-provider request-context
-                                          (validate-and-prepare-provider-concept
-                                           (read-body headers body)))))
+       (provider-service/create-provider request-context
+                                         (validate-and-prepare-provider-concept
+                                          (read-body headers body)))))
 
     ;; read a provider
     (GET "/:provider-id" {{:keys [provider-id]} :params
                           request-context :request-context}
-      (one-result->response-map (provider-service/read-provider request-context provider-id)))
+      (let [response (provider-service/read-provider request-context provider-id)]
+        (try
+          (acl/verify-ingest-management-permission request-context :read)
+          (result->response-map response)
+          (catch clojure.lang.ExceptionInfo err
+            ;; Drop the administrators as this is an unprivileged call.
+            (let [err-msg (.getMessage err)
+                  match #"You do not have (PROVIDER_CONTEXT )?permission to perform that action\."]
+              (if (re-matches match err-msg)
+                (result->response-map-sans-item response [:metadata :Administrators])
+                (throw err)))))))
 
     ;; update an existing provider
     (PUT "/:provider-id" {request-context :request-context
