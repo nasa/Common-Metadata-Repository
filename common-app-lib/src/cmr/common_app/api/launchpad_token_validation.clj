@@ -90,6 +90,8 @@
   "Validates token is valid for read operations."
   [request-context]
   (let [token (:token request-context)]
+    (when (or (nil? token) (empty? token))
+      (errors/throw-service-error :unauthorized "No token provided"))
     (when (and (config/launchpad-token-enforced)
                (not= token (transmit-config/echo-system-token)))
 
