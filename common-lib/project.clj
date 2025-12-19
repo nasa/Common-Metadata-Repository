@@ -26,7 +26,7 @@
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]
-                 ;; at.yawk.lz4 is a drop in replacment for net.jpountz.lz4 and actually impliments
+                 ;; at.yawk.lz4 is a drop in replacement for net.jpountz.lz4 and actually implements
                  ;; the exact same class path so no code change is needed.
                  [at.yawk.lz4/lz4-java]
                  [org.clojure/clojure]

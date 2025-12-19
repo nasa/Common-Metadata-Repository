@@ -15,7 +15,7 @@
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure]
 
-                 ;; net.jponntz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
+                 ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
                  ;; replacement for it. Exclude these libraries to prevent conflicts.
                  [org.elasticsearch/elasticsearch-lz4 ~elastic-version
                   :exclusions [org.lz4/lz4-java]]
