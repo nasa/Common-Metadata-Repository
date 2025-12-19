@@ -10,7 +10,8 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.access-control :as ac]))
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1"])
@@ -24,13 +25,17 @@
             :body {:errors ["Must be collection or granule concept id."]}
             :content-type :json}
            (ac/search-for-acls
-            (u/conn-context) {:permitted-concept-id "BAD_CONCEPT_ID"} {:raw? true}))))
+            (u/conn-context)
+            {:permitted-concept-id "BAD_CONCEPT_ID"}
+            {:token (transmit-config/echo-system-token) :raw? true}))))
   (testing "Permitted concept id does not exist"
     (is (= {:status 400
             :body {:errors ["permitted_concept_id does not exist."]}
             :content-type :json}
            (ac/search-for-acls
-            (u/conn-context) {:permitted-concept-id "C1200000001-PROV1"} {:raw? true})))))
+            (u/conn-context)
+            {:permitted-concept-id "C1200000001-PROV1"}
+            {:token (transmit-config/echo-system-token) :raw? true})))))
 
 (deftest acl-search-permitted-concept-id-through-temporal
   (declare params acls)
@@ -162,7 +167,7 @@
                                                                 :provider_id "PROV1"}))]
     (testing "collection concept id search temporal"
       (are3 [params acls]
-        (let [response (ac/search-for-acls (u/conn-context) params)]
+        (let [response (ac/search-for-acls (u/conn-context) params {:token token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
@@ -352,7 +357,7 @@
 
     (testing "collection concept id search access value"
       (are3 [params acls]
-        (let [response (ac/search-for-acls (u/conn-context) params)]
+        (let [response (ac/search-for-acls (u/conn-context) params {:token token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
@@ -446,7 +451,7 @@
 
     (testing "collection concept id search entry title"
       (are3 [params acls]
-        (let [response (ac/search-for-acls (u/conn-context) params)]
+        (let [response (ac/search-for-acls (u/conn-context) params {:token token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "coll1 test"
@@ -648,7 +653,7 @@
                               :provider_id "PROV2"}))
         expected-acls [acl1 acl2 acl3 acl4 acl5 acl6]]
     (testing "granule concept id search parent collection"
-      (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
+      (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1} {:token token})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
 
@@ -712,7 +717,7 @@
                                                              :mask "contains"}})]
     (testing "collection identifier multiple filters search"
       (let [expected-acls [acl1 acl2 acl3 acl4]
-            response (ac/search-for-acls (u/conn-context) {:permitted-concept-id coll1})]
+            response (ac/search-for-acls (u/conn-context) {:permitted-concept-id coll1} {:token token})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
 
@@ -764,6 +769,6 @@
                                                                 :mask "contains"}})]
     (testing "granule identifier multiple filters search"
       (let [expected-acls [acl1 acl2 acl3]
-            response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
+            response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1} {:token token})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
