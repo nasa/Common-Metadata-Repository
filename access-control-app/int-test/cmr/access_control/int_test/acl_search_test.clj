@@ -9,7 +9,8 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as elastic-config]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.access-control :as ac]))
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
   (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
@@ -25,16 +26,24 @@
       (is (= {:status 400
               :body {:errors ["The mime types specified in the accept header [application/text] are not supported."]}
               :content-type :json}
-             (ac/search-for-acls (u/conn-context) {} {:http-options {:accept "application/text"}
+             (ac/search-for-acls (u/conn-context) {} {:token (transmit-config/echo-system-token)
+                                                      :http-options {:accept "application/text"}
                                                       :raw? true}))))
     (testing "No Accept header is ok"
       (is (= 200
-             (:status (ac/search-for-acls (u/conn-context) {} {:http-options {:accept nil} :raw? true}))))))
+             (:status (ac/search-for-acls
+                       (u/conn-context)
+                       {}
+                       {:token (transmit-config/echo-system-token)
+                        :http-options {:accept nil}
+                        :raw? true}))))))
   (testing "Unknown parameters are rejected"
     (is (= {:status 400
             :body {:errors ["Parameter [foo] was not recognized."]}
             :content-type :json}
-           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
+           (ac/search-for-acls (u/conn-context)
+                               {:foo "bar"}
+                               {:token (transmit-config/echo-system-token) :raw? true})))))
 
 (defn- generate-query-map-for-group-permissions
   "Returns a query map generated from group permission pairs.
@@ -195,16 +204,23 @@
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls provider-group-acls system-group-acl)]
 
     (testing "passing search-after header"
-      (let [results-with-headers (ac/search-for-acls-with-returned-headers (u/conn-context) {:page-size 1})
+      (let [results-with-headers (ac/search-for-acls-with-returned-headers
+                                  (u/conn-context)
+                                  {:page-size 1}
+                                  {:token admin-token})
             search-after1 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])
-            results-with-headers (ac/search-for-acls-with-returned-headers (u/conn-context)
-                                                                           {:page-size 1}
-                                                                           {:headers {routes/SEARCH_AFTER_HEADER search-after1}})
+            results-with-headers (ac/search-for-acls-with-returned-headers
+                                  (u/conn-context)
+                                  {:page-size 1}
+                                  {:token admin-token
+                                   :headers {routes/SEARCH_AFTER_HEADER search-after1}})
             search-after2 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])]
         (is (not= search-after1 search-after2))))
 
     (testing "Find all ACLs"
-      (let [response (ac/search-for-acls (u/conn-context) {:page_size 20})]
+      (let [response (ac/search-for-acls (u/conn-context)
+                                         {:page_size 20}
+                                         {:token admin-token})]
         (is (= (u/acls->search-response (count all-acls) all-acls)
                (dissoc response :took)))
         (testing "Expected Names"
@@ -227,21 +243,33 @@
                   "System - SYSTEM_INITIALIZER"]
                  (map :name (:items response)))))))
     (testing "Find acls with full search response"
-      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
+      (let [response (ac/search-for-acls (u/conn-context)
+                                         {:include_full_acl true :page_size 20}
+                                         {:token admin-token})]
         (is (= (u/acls->search-response (count all-acls) all-acls {:include-full-acl true})
                (dissoc response :took)))))
     (testing "ACL Search Paging"
       (testing "Page Size"
         (is (= (u/acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 1})
-               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4}) :took))))
+               (dissoc (ac/search-for-acls (u/conn-context)
+                                           {:page_size 4}
+                                           {:token admin-token}) :took))))
       (testing "Page Number"
         (is (= (u/acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 2})
-               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))
+               (dissoc (ac/search-for-acls (u/conn-context)
+                                           {:page_size 4 :page_num 2}
+                                           {:token admin-token}) :took)))))
     (testing "GET and POST return the same results"
-      (is (some? (:hits (ac/search-for-acls-get (u/conn-context) {:page_size 3 :page_num 2}))))
+      (is (some? (:hits (ac/search-for-acls-get (u/conn-context)
+                                                {:page_size 3 :page_num 2}
+                                                {:token admin-token}))))
       (is
-        (= (dissoc (ac/search-for-acls (u/conn-context) {:page_size 3 :page_num 2}) :took)
-           (dissoc (ac/search-for-acls-get (u/conn-context) {:page_size 3 :page_num 2}) :took))))))
+        (= (dissoc (ac/search-for-acls (u/conn-context)
+                                       {:page_size 3 :page_num 2}
+                                       {:token admin-token}) :took)
+           (dissoc (ac/search-for-acls-get (u/conn-context)
+                                          {:page_size 3 :page_num 2}
+                                          {:token admin-token}) :took))))))
 
 (deftest acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
@@ -255,7 +283,7 @@
                  (set
                   (map :name
                        (:items
-                        (ac/search-for-acls (u/conn-context) params))))))
+                        (ac/search-for-acls (u/conn-context) params {:token token}))))))
 
           "by concept ID"
           ["All Collections" "All Granules"] {:id [(:concept-id acl1) (:concept-id acl2)]}
@@ -313,7 +341,9 @@
 
     (testing "Search ACLs by permitted group"
       (are [permitted-groups acls]
-           (let [response (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups})]
+           (let [response (ac/search-for-acls (u/conn-context)
+                                              {:permitted-group permitted-groups}
+                                              {:token token})]
              (= (u/acls->search-response (count acls) acls)
                 (dissoc response :took)))
 
@@ -330,7 +360,8 @@
     (testing "Search ACLs by permitted group with options"
       (are [permitted-groups options acls]
            (let [response (ac/search-for-acls (u/conn-context)
-                                              (merge {:permitted-group permitted-groups} options))]
+                                              (merge {:permitted-group permitted-groups} options)
+                                              {:token token})]
              (= (u/acls->search-response (count acls) acls)
                 (dissoc response :took)))
 
@@ -340,7 +371,7 @@
     (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
            (let [query-map (generate-query-map-for-group-permissions group-permissions)
-                 response (ac/search-for-acls (u/conn-context) query-map)]
+                 response (ac/search-for-acls (u/conn-context) query-map {:token token})]
              (is (= (u/acls->search-response (count acls) acls)
                     (dissoc response :took))))
            ;; CMR-3154 acceptance criterium 1
@@ -384,7 +415,9 @@
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map} :page_size 20})]
+        (let [response (ac/search-for-acls (u/conn-context)
+                                           {:group-permission {:0 query-map} :page_size 20}
+                                           {:token token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "Just user type"
@@ -405,7 +438,7 @@
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid index value [foo]. Only integers greater than or equal to zero may be specified."]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+               (ac/search-for-acls (u/conn-context) query {:token token :raw? true})))))
 
     ;; CMR-3154 acceptance criterium 5
     (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
@@ -413,14 +446,14 @@
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+               (ac/search-for-acls (u/conn-context) query {:token token :raw? true})))))
 
     (testing "Searching ACLS by group permission with permission values other than read, create, update, delete, or order is an error"
       (let [query {:group-permission {:0 {:permitted_group "guest" :permission "foo"}}}]
         (is (= {:status 400
                 :body {:errors ["Sub-parameter permission of parameter group_permissions has invalid values [foo]. Only 'read', 'update', 'create', 'delete', or 'order' may be specified."]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:raw? true})))))))
+               (ac/search-for-acls (u/conn-context) query {:token token :raw? true})))))))
 
 (deftest acl-search-by-identity-type-test
   (declare identity-types expected-acls)
@@ -442,11 +475,11 @@
               :body {:errors [(str "Parameter identity_type has invalid values [foo]. "
                                    "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")]}
               :content-type :json}
-             (ac/search-for-acls (u/conn-context) {:identity-type "foo"} {:raw? true}))))
+             (ac/search-for-acls (u/conn-context) {:identity-type "foo"} {:token admin-token :raw? true}))))
 
     (testing "Search with valid identity types"
       (are3 [identity-types expected-acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:identity-type identity-types})]
+        (let [response (ac/search-for-acls (u/conn-context) {:identity-type identity-types} {:token admin-token})]
           (is (= (u/acls->search-response (count expected-acls) expected-acls)
                  (dissoc response :took))))
 
@@ -479,7 +512,7 @@
                                            :single_instance_identity {:target "GROUP_MANAGEMENT"
                                                                       :target_id "AG1200000000-CMR"}})]
     (are3 [target expected-acls]
-      (let [response (ac/search-for-acls (u/conn-context) {:target target})]
+      (let [response (ac/search-for-acls (u/conn-context) {:target target} {:token token})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took))))
 
@@ -530,7 +563,7 @@
         (is (= {:status 400
                 :body {:errors [(format "The following users do not exist [%s]" user)]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) {:permitted-user user} {:raw? true})))
+               (ac/search-for-acls (u/conn-context) {:permitted-user user} {:token admin-token :raw? true})))
 
         "Invalid user"
         "foo"
@@ -543,7 +576,7 @@
 
     (testing "Search with valid users"
       (are3 [users expected-acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users})]
+        (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users} {:token admin-token})]
           (is (= (u/acls->search-response (count expected-acls) expected-acls)
                  (dissoc response :took))))
 
@@ -589,14 +622,14 @@
         prov3-acls [acl2]]
 
     ;;Remove fixture acls set up for each provider.  We only care about the ones created in this test.
-    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
-    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
-    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"} {:token admin-token})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"} {:token admin-token})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"} {:token admin-token})))))
 
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
       (are3 [provider-ids acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids})]
+        (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids} {:token admin-token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
@@ -624,7 +657,8 @@
     (testing "Search ACLs by provider with options"
       (are3 [provider-ids options acls]
        (let [response (ac/search-for-acls (u/conn-context)
-                                          (merge {:provider provider-ids} options))]
+                                          (merge {:provider provider-ids} options)
+                                          {:token admin-token})]
          (is (= (u/acls->search-response (count acls) acls)
                 (dissoc response :took))))
 
@@ -670,12 +704,12 @@
                                            [:catalog_item_identity :provider_id] "PROV2"))]
 
     ;;Remove stock acls set up for each provider.  We only care about the ones created in this test.
-    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
-    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"} {:token admin-token})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"} {:token admin-token})))))
 
     (testing "Search with every criteria"
       (are3 [params acls]
-        (let [response (ac/search-for-acls (u/conn-context) params)]
+        (let [response (ac/search-for-acls (u/conn-context) params {:token admin-token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "Multiple search criteria"
@@ -765,7 +799,7 @@
                                                  provider-group-acls-legacy)]
 
     (testing "Find acls without legacy group guid"
-      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20} {:token admin-token})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
                (dissoc response :took)))))))
 
@@ -782,15 +816,15 @@
                                        :group_permissions
                                        [{:user_type "guest" :permissions ["read"]}]))
          search-for-all-acls (fn []
-                               (dissoc (ac/search-for-acls (u/conn-context) {}) :took))
+                               (dissoc (ac/search-for-acls (u/conn-context) {} {:token token}) :took))
          fixture-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*]
          expected-acls-after-reindexing (concat fixture-acls [acl2 acl3])]
      ;;Remove stock acls set up for each provider.  We only care about the ones created in this test.
-     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
-     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
-     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"})))))
-     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV4" :target "GROUP"})))))
-     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:identity_type "SYSTEM" :target "GROUP"})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"} {:token token})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"} {:token token})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"} {:token token})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV4" :target "GROUP"} {:token token})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:identity_type "SYSTEM" :target "GROUP"} {:token token})))))
 
      ;; Unindex acl1 directly through elastic to simulate an inconsistent state
      (client/delete (format "http://%s:%s/acls/_doc/%s"
@@ -833,19 +867,23 @@
         (is (= {:status 400
                 :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id} {:raw? true}))))
+               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id} {:token admin-token :raw? true}))))
       (testing "All but single_instance identity-type specified"
         (is (= {:status 400
                 :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id :identity_type ["provider" "system" "catalog_item"]} {:raw? true})))))
+               (ac/search-for-acls (u/conn-context)
+                                   {:target-id group1-concept-id :identity_type ["provider" "system" "catalog_item"]}
+                                   {:token admin-token :raw? true})))))
 
     (testing "Valid target-id search where only single_instance identity-type is specified"
       (declare target-group-id)
       (declare expected-acls)
       (are3 [target-group-id expected-acls]
-            (let [response (ac/search-for-acls (u/conn-context) {:target-id target-group-id
-                                                                 :identity-type ["single_instance"]})]
+            (let [response (ac/search-for-acls (u/conn-context)
+                                               {:target-id target-group-id
+                                                :identity-type ["single_instance"]}
+                                               {:token admin-token})]
               (is (= (u/acls->search-response (count expected-acls) expected-acls)
                      (dissoc response :took))))
 
@@ -874,8 +912,10 @@
             [acl1 acl2]))
 
     (testing "Valid target-id search where multiple identity-types including single_instance is specified"
-      (let [response (ac/search-for-acls (u/conn-context) {:target-id [group1-concept-id group2-concept-id]
-                                                           :identity-type ["single_instance" "system" "provider" "catalog_item"]})
+      (let [response (ac/search-for-acls (u/conn-context)
+                                         {:target-id [group1-concept-id group2-concept-id]
+                                          :identity-type ["single_instance" "system" "provider" "catalog_item"]}
+                                         {:token admin-token})
             expected-acls [acl1 acl2]]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
