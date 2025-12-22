@@ -30,6 +30,7 @@
    :bounding-box :bounding-box
    :browsable :boolean
    :collection-data-type :collection-data-type
+   :collection-progress :string
    :concept-id :string
    :created-at :multi-date-range
    :data-center :string
@@ -468,6 +469,22 @@
          [(cqm/string-condition :collection-data-type value case-sensitive pattern)
           (cqm/map->MissingCondition {:field :collection-data-type})])
         (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
+
+;; Converts collection progress parameter and values into conditions.
+;; Supports OR (default) and AND operations for multiple values.
+(defmethod common-params/parameter->condition :collection-progress
+  [context concept-type param value options]
+  (if (sequential? value)
+    ;; Handle multiple values with AND or OR logic
+    (if (= "true" (get-in options [param :and]))
+      (gc/and-conds
+       (map #(common-params/parameter->condition context concept-type param % options) value))
+      (gc/or-conds
+       (map #(common-params/parameter->condition context concept-type param % options) value)))
+    ;; Handle single value with case sensitivity and pattern matching support
+    (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-progress options)
+          pattern (common-params/pattern-field? concept-type :collection-progress options)]
+      (cqm/string-condition :collection-progress value case-sensitive pattern))))
 
 ;; Converts variable measurement identifiers parameter and values into conditions
 (defmethod common-params/parameter->condition :measurement-identifiers
