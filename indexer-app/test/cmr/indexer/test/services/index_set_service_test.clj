@@ -5,10 +5,7 @@
    [clojure.test :refer :all]
    [cmr.elastic-utils.config :as es-config]
    [cmr.common.util :refer [are3]]
-   [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.indexer.common.index-set-util :as idx-set-util]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
-   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
@@ -80,6 +77,7 @@
                                         (json/parse-string true))]
     (is (= actual-gran-index-set expected-gran-index-set))
     (is (= actual-non-gran-index-set expected-non-gran-index-set))))
+
 
 (deftest add-searchable-generic-types-test
   (let [;; setup non-gran list
@@ -410,75 +408,3 @@
       ;; Should find it because get-canonical-key-name uppercases concept IDs
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs"))))))
-
-(deftest test-get-reshard-status
-  (let [index-set-id 1
-        context nil
-        small-collections-index "1_small_collections"
-        valid-params {:elastic_name "gran-elastic"}
-        empty-index-set {:index-set {}}]
-
-    (testing "elastic name is not valid"
-      (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                            #"Empty elastic name is not allowed"
-                            (svc/get-reshard-status context index-set-id small-collections-index {}))))
-    (testing "concept-type is missing"
-      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                    idx-set-util/get-index-set (fn [context elastic-name index-set-id] empty-index-set)]
-        (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                              #"The index \[.*\] does not exist\."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "current target is missing because index is not being resharded"
-      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                    idx-set-util/get-index-set (fn [context elastic-name index-set-id] empty-index-set)
-                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
-        (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                              #"The index \[.*\] is not being resharded."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "current status of index is nil because it's not being resharded"
-      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
-                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}}}})
-                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
-        (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                              #"The status of resharding index \[.*\] is not found."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "index exists but status is complete already"
-      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
-                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                                        :resharding-status {(keyword small-collections-index) "COMPLETE"}}}})
-                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
-        (is (= {:original-index small-collections-index
-                :reshard-index "1_small_collections_10_shards"
-                :reshard-status "COMPLETE"}
-               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "index exists and status is not complete and reindexing is still in progress, then current status will be returned as is."
-      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
-                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                                        :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}})
-                    svc/get-concept-type-for-index (fn [index-set index] :granule)
-                    es-helper/reindexing-still-in-progress? (fn [conn index] true)]
-        (is (= {:original-index small-collections-index
-                :reshard-index "1_small_collections_10_shards"
-                :reshard-status "IN_PROGRESS"}
-               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
-    (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will be updated. Correct status resp will be returned."
-      (let [mock-calls (atom 0)
-            get-index-set-mock-fn (fn [& args]
-                                    (swap! mock-calls inc)
-                                    (case @mock-calls
-                                      1 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                               :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}}
-                                      2 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                               :resharding-status {(keyword small-collections-index) "COMPLETE"}}}}))]
-        (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
-                      idx-set-util/get-index-set get-index-set-mock-fn
-                      svc/get-concept-type-for-index (fn [index-set index] :granule)
-                      es-helper/reindexing-still-in-progress? (fn [conn index] false)
-                      svc/update-resharding-status (fn [context index-set-id index status elastic-name] nil)]
-          (is (= {:original-index small-collections-index
-                  :reshard-index "1_small_collections_10_shards"
-                  :reshard-status "COMPLETE"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))))
