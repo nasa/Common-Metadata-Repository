@@ -9,7 +9,6 @@
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
    [cmr.common.log :refer [info]]
-   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
 
@@ -131,32 +130,7 @@
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
+        url (rest/url-with-path conn "_reindex")]
     (rest/post-string conn url
                       {:body (json/encode body)
                        :content-type "application/json"})))
-
-(defn- extract-descriptions-from-reindex-resp
-  "Pulls out description value from the elastic reindex response."
-  [reindex-resp-json]
-  (let [nodes-map (:nodes reindex-resp-json)]
-    (->> nodes-map
-         (vals)
-         (map :tasks)
-         (mapcat vals)
-         (keep :description)
-         (map clojure.string/lower-case))))
-
-(defn reindexing-still-in-progress?
-  "Returns boolean of whether elastic is still reindexing the given index."
-  [conn index]
-  (try
-    (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
-          resp (rest/get conn url)
-          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)]
-      ;; if the resp's descriptions still has the index in it, then it is still re-indexing
-      (boolean (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)))
-    (catch Exception e
-      (errors/throw-service-error
-        :internal-error
-        (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
