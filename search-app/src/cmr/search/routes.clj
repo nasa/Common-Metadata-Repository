@@ -16,7 +16,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
-   [cmr.search.api.routes :as api-routes] 
+   [cmr.search.api.routes :as api-routes]
    [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.middleware.shapefile :as shapefile]
    [cmr.search.middleware.shapefile-simplification :as shapefile-simplifier]
@@ -24,6 +24,7 @@
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET POST context routes]]
    [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.multipart-params :as multipart]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]))
 
@@ -55,13 +56,21 @@
        [(msg/mixed-arity-parameter-msg mixed-param)]))
     (handler request)))
 
+(defn parse-multipart-body [request]
+  (let [parsed (multipart/multipart-params-request request)]
+    (string/join "&" (for [[k v] (:multipart-params parsed)]
+                       (str (name k) "=" v)))))
+
 (defn copy-of-body-handler
   "Copies the body into a new attribute called :body-copy so that after a post
   of form content type the original body can still be read. The default ring
   params reads the body and parses it and we don't have access to it."
   [handler]
   (fn [request]
-    (let [^String body (slurp (:body request))]
+    (let [content-type (get-in request [:headers "content-type"])
+          body (if (and content-type (string/starts-with? content-type "multipart/form-data"))
+                 (parse-multipart-body request)
+                 (slurp (:body request)))]
       (handler (assoc
                 request
                 :body-copy body
