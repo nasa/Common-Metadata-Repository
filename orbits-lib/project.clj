@@ -41,7 +41,7 @@
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
-             ;; ~/.lein/profiles.clj file.
+             ;; `~/.lein/profiles.clj` file.
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
