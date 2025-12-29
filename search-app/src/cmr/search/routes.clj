@@ -56,9 +56,9 @@
        [(msg/mixed-arity-parameter-msg mixed-param)]))
     (handler request)))
 
-(defn parse-multipart-body [request]
-  (let [parsed (multipart/multipart-params-request request)]
-    (string/join "&" (for [[k v] (:multipart-params parsed)]
+(defn parse-body [request]
+  (let [parsed (params/params-request request)]
+    (string/join "&" (for [[k v] (:params parsed)]
                        (str (name k) "=" v)))))
 
 (defn copy-of-body-handler
@@ -67,10 +67,7 @@
   params reads the body and parses it and we don't have access to it."
   [handler]
   (fn [request]
-    (let [content-type (get-in request [:headers "content-type"])
-          body (if (and content-type (string/starts-with? content-type "multipart/form-data"))
-                 (parse-multipart-body request)
-                 (slurp (:body request)))]
+    (let [body (parse-body request)]
       (handler (assoc
                 request
                 :body-copy body
