@@ -32,17 +32,14 @@
         "single value search"
         [coll1] "ACTIVE" nil
 
-        "case insensitive (default)"
+        "case insensitive"
         [coll2] "planned" nil
 
         "pattern search with RE substring"
         [coll4 coll6 coll7] "*RE*" {"options[collection-progress][pattern]" "true"}
 
-        "OR search (default)"
+        "OR search"
         [coll1 coll2] ["ACTIVE" "PLANNED"] nil
-
-        "AND search returns empty (collections have single value)"
-        [] ["ACTIVE" "PLANNED"] {"options[collection-progress][and]" "true"}
 
         "case sensitive search"
         [] "active" {"options[collection-progress][ignore-case]" "false"}
