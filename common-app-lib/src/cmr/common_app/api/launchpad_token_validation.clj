@@ -43,6 +43,7 @@
                is-saml? :saml
                (and is-jwt? (= assurance-level 5)) :jwt-level-5
                (and is-jwt? (= assurance-level 4)) :jwt-level-4
+               (and is-jwt? (= assurance-level 3)) :jwt-level-3
                is-jwt? :jwt-other
                :else :unknown)
        :valid? (and (not auth-disabled?) (or valid-saml? valid-jwt?))
@@ -71,7 +72,7 @@
              valid? (and (:valid? token-info)
                          (or (not (:requires-draft-acl? token-info))
                              provider-id))]
-         (debug (format "Token validation - Type: %s, Valid: %s, Assurance Level: %s, Provider ID: %s, Requires Draft ACL: %s, Token: %s"
+         (debug (format "Token validation (write) - Type: %s, Valid: %s, Assurance Level: %s, Provider ID: %s, Requires Draft ACL: %s, Token: %s"
                         (:type token-info)
                         valid?
                         (:assurance-level token-info)
@@ -85,3 +86,23 @@
          (when (:requires-draft-acl? token-info)
            (acl/verify-non-nasa-draft-permission request-context :update :provider-object provider-id)))))))
 
+(defn validate-read-token
+  "Validates token is valid for read operations."
+  [request-context]
+  (let [token (:token request-context)]
+    (when (or (nil? token) (empty? token))
+      (errors/throw-service-error :unauthorized "No token provided"))
+    (when (and (config/launchpad-token-enforced)
+               (not= token (transmit-config/echo-system-token)))
+
+      (let [token-info (get-token-info token)
+            valid? (not= :unknown (:type token-info))]
+        (debug (format "Token validation (read)- Type: %s, Valid: %s, Assurance Level: %s, Requires Draft ACL: %s, Token: %s"
+                       (:type token-info)
+                       valid?
+                       (:assurance-level token-info)
+                       (:requires-draft-acl? token-info)
+                       (common-util/scrub-token token)))
+
+        (when-not valid?
+          (errors/throw-service-error :unauthorized (build-error-message token-info)))))))

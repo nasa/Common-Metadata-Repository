@@ -17,7 +17,8 @@
   :plugins [[lein-modules "0.3.11"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
-   :managed-dependencies [[cheshire "5.12.0"] ;; latest is 6.1.0
+   :managed-dependencies [[at.yawk.lz4/lz4-java "1.10.1"]
+                          [cheshire "5.12.0"] ;; latest is 6.1.0
                           [clj-http "3.11.0"] ;; latest is 3.13.1
                           [clj-time "0.15.1"] ;; latest is 0.15.2
                           [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
