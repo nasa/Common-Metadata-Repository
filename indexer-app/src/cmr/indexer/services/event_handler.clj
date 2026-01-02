@@ -63,6 +63,7 @@
 (defmethod handle-ingest-event :default
   [_ _ _])
 
+;; TODO JYNA this is where we want to start looking at concept create/updates for ES
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id more-concepts]}]
   ;; combine concept-id revision-id with more-concepts

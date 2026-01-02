@@ -120,13 +120,64 @@
                                            (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
                                            :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
+        _ (info "CMR-11024 - INSIDE prune-index-set with es-cluster-name " es-cluster-name " and generic-serachable-concept-types = " generic-searchable-concept-types " and given index-set = " index-set)
+        ;; EXAMPLE 1
+        ;; :granule
+        ;; {:indexes [
+        ;;  {:name "small_collections", :settings {:index {:number_of_shards 20, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}}
+        ;;  {:name "small_collections_2_shards", :settings {:index {:number_of_shards 2, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}}
+        ;; ]
+
+        ;:resharding-indexes #{"1_small_collections"},
+        ;
+        ;:resharding-targets {:1_small_collections "1_small_collections_2_shards"},
+        ;
+        ;:resharding-status {:1_small_collections "IN_PROGRESS"}},
+
+        ;; EXAMPLE 2
+        ;; :granule
+        ;; {:indexes [
+        ;;  {:name "small_collections_20_shards", :settings {:index {:number_of_shards 20, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}} ;; new
+        ;;  {:name "small_collections_2_shards", :settings {:index {:number_of_shards 2, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}} ;; old
+        ;; ]
+
+        ;:resharding-indexes #{"1_small_collections_2_shards"},
+        ;
+        ;:resharding-targets {:1_small_collections_2_shards "1_small_collections_20_shards"},
+        ;
+        ;:resharding-status {:1_small_collections_2_shards "IN_PROGRESS"}}
+
+        ;; TODO ok that worked, but got to make sure it works for other uses of prune-index-set ALSO need to update reshard finalize to update the index-set mapping once done to the new index
+        finalized-concepts (reduce (fn [acc concept-type]
+                                     (if (and (= concept-type :granule) (some? (get-in index-set [:concepts])))
+                                       ;; Merge the entire :concepts map into the accumulator
+                                       (merge acc (get-in index-set [:concepts]))
+                                       ;; Add a single key-value pair for other types
+                                       (assoc acc concept-type
+                                                  (into {} (for [idx (get-in index-set [concept-type :indexes])]
+                                                             [(keyword (index-set/get-canonical-key-name (:name idx)))
+                                                              (gen-valid-index-name prefix (:name idx))])))))
+                                   {}
+                                   generic-searchable-concept-types)
+        ;finalized-concepts (into {} (for [concept-type generic-searchable-concept-types]
+        ;                              [concept-type
+        ;                               (into {} (for [idx (get-in index-set [concept-type :indexes])]
+        ;                                          [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))
+
+        ;; TODO this is not going to work in general with resharding... how did it work with rebalancing? Because those were completely new indexes.
+        ;; When we are renaming indexes, that's a completely different thing...
+        ;; We need to not recreate the indexes, but just take what the index-set gave us and pass that back with the additional generic concepts...
         ]
+    (info "CMR-11024 - INSIDE prune-index-set with finalized-concepts = " finalized-concepts)
+
+
+    ;; Ah so the problem is that it picks up these two indexes and then for the small_collections canonical name,
+    ;; it writes 1_small_collections first and then overwrites it with 1_small_collections_2_shards, because they are both under the same canonical name
+    ;; TODO Soooo, we can say, IF the canonical index is being resharded right now with status IN_PROGRESS from the given index-set,
+    ;; then use the original index name from :resharding to be the mapping
     {:id (:id index-set)
      :name (:name index-set)
-     :concepts (into {} (for [concept-type generic-searchable-concept-types]
-                          [concept-type
-                           (into {} (for [idx (get-in index-set [concept-type :indexes])]
-                                      [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))}))
+     :concepts finalized-concepts}))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -176,12 +227,16 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
+;; TODO JYNA maybe the issue is in here
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
-  (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
+  (info "CMR-11024 - INSIDE index-requested-index-set with index-set = " index-set " and es-cluster-name = " es-cluster-name)
+  (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name) ;; TODO this is where the
+        _ (info "CMR-11024 - INSIDE index-requested-index-set with indexes-w-added-concepts = " indexes-w-added-concepts)
         index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
+        _ (info "CMR-11024 - INSIDE index-requested-index-set with index-set-w-es-index-names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -190,6 +245,7 @@
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
+        _ (info "CMR-11024 - INSIDE index-requested-index-set with index-name = " index-name " and mapping = " mapping)
         idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc es-cluster-name)))
 
@@ -283,6 +339,7 @@
   "Updates indices in the index set"
   [context es-cluster-name index-set]
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
+        _ (info "CMR-11024 - INSIDE update-index-set with indices-w-config = " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
@@ -654,6 +711,7 @@
                           (update-in
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
+    (info "CMR-11024 - INSIDE start-index-resharding with new-index-set = " new-index-set)
     ;; this will create the new index with the new shard count
     (update-index-set context elastic-name new-index-set)))
 

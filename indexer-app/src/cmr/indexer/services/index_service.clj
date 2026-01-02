@@ -476,6 +476,7 @@
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept
+        _ (info "CMR-11024 - INSIDE index-concept default with concept-id = " concept-id)
         start-log-msg (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                               concept-id revision-id all-revisions-index?)
         end-log-msg (format "Finished indexing concept %s, revision-id %s, all-revisions-index? %s"
@@ -510,6 +511,7 @@
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
+                _ (info "CMR-11024 - concept-indexes = " concept-indexes)
                 es-doc (es/parsed-concept->elastic-doc
                         context
                         (-> concept
