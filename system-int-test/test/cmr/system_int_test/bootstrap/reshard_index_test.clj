@@ -8,6 +8,7 @@
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+   [cmr.system-int-test.utils.elastic-util :as es-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -145,6 +146,74 @@
      ;; After the cache is cleared the right amount of data is found
      (search/clear-caches)
      (bootstrap/verify-provider-holdings expected-provider-holdings "After finalize after clear cache"))))
+
+(deftest reshard-index-with-granule-updates-test
+  ;; When a granule is upserted during the reshard process, it should save to both indexes and the index set
+  ;; should not update the index mapping until the reshard is finalized
+  (testing "Creating and updating granule during reshard saves to both old and target indexes"
+    (let [gran-elastic-name "gran-elastic"
+          ;; create collection into small_collections index
+          coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+          small-collections-index-name "1_small_collections"
+          small-collections-canonical-name "small_collections"
+
+          ;; start reshard
+          _ (is (= {:status 200
+                    :message "Resharding started for index 1_small_collections"}
+                   (bootstrap/start-reshard-index small-collections-index-name
+                                                  {:synchronous true :num-shards 4 :elastic-name gran-elastic-name})))
+
+          ;; check original index set is still mapped to original target
+          orig-index-set (index/get-index-set-by-id 1)
+          _ (is (= small-collections-index-name (get-in orig-index-set [:index-set :concepts :granule (keyword small-collections-canonical-name)])))
+
+          ;; create granule
+          gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+
+          _ (index/wait-until-indexed)
+
+          ;; check granule doc is saved to old index
+          gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-orig-index-revision-id (get-in gran-doc-in-orig-index [:_source :revision-id])
+          _ (is (= gran-doc-in-orig-index-revision-id 1))
+
+          ;; check granule doc is saved in new index too
+          gran-doc-in-new-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-new-index-revision-id (get-in gran-doc-in-new-index [:_source :revision-id])
+          _ (is (= gran-doc-in-new-index-revision-id 1))
+
+          ;; update granule
+          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+
+          _ (index/wait-until-indexed)
+
+          ;; check granule doc is saved to old index with updated revision
+          gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-orig-index-revision-id (get-in gran-doc-in-orig-index [:_source :revision-id])
+          _ (is (= gran-doc-in-orig-index-revision-id 2))
+
+          ;; check granule doc is saved in new index too with updated revision
+          gran-doc-in-new-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-new-index-revision-id (get-in gran-doc-in-new-index [:_source :revision-id])
+          _ (is (= gran-doc-in-new-index-revision-id 2))
+
+          ;; wait until reshard is complete
+          _ (bootstrap/wait-for-reshard-complete small-collections-index-name gran-elastic-name {})
+
+          ;; finalize reshard
+          _ (is (= {:status 200
+                    :message "Resharding completed for index 1_small_collections"}
+                   (bootstrap/finalize-reshard-index small-collections-index-name {:synchronous false :elastic-name gran-elastic-name})))
+
+          resharded-small-collections-index-name (str small-collections-index-name "_4_shards")
+
+          ;; check collection index is mapped to new target
+          updated-index-set (index/get-index-set-by-id 1)
+          _ (is (= resharded-small-collections-index-name (get-in updated-index-set [:index-set :concepts :granule (keyword small-collections-canonical-name)])))]
+
+      ;; check orig index is deleted from index-set and elastic
+      (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:granule :indexes])))
+      (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name))))))
 
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,

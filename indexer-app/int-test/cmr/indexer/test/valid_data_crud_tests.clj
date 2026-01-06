@@ -109,6 +109,7 @@
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 ;; Verify that you can update an index set multiple times and get the correct indices created and deleted
+;; TODO update to also update generics and 1_service and granule concept names. Need to be more robust test.
 (deftest update-index-sets-test
   (testing "update index sets"
     (let [;; create index set

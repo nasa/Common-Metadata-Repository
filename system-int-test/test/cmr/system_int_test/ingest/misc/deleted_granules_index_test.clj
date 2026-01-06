@@ -14,6 +14,7 @@
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.elastic-util :as es-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb-util]
@@ -25,7 +26,7 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? idx-set/deleted-granules-index-alias
+  (es-util/doc-present? idx-set/deleted-granules-index-alias
                       deleted-granule/deleted-granule-type-name
                       concept-id
                       es-config/gran-elastic-name))

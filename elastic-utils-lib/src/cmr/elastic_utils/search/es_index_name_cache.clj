@@ -63,7 +63,6 @@
                                          :rebalancing-targets])
         moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
-    (info "CMR-11024 INSDIE fetch-concept-type-index-names, index-names-map = " index-names-map)
     {:index-names index-names-map
      :resharding-indices (get-resharding-targets fetched-index-set)
      :rebalancing-collections moving-to-separate-index}))

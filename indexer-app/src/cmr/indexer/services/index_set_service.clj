@@ -149,10 +149,10 @@
 
         ;; TODO ok that worked, but got to make sure it works for other uses of prune-index-set ALSO need to update reshard finalize to update the index-set mapping once done to the new index
         finalized-concepts (reduce (fn [acc concept-type]
+                                     ;; if the concept type is granule and the concepts list is not empty, merge the entire :concepts map into the accumulator
                                      (if (and (= concept-type :granule) (some? (get-in index-set [:concepts])))
-                                       ;; Merge the entire :concepts map into the accumulator
                                        (merge acc (get-in index-set [:concepts]))
-                                       ;; Add a single key-value pair for other types
+                                       ;; Else add a single key-value pair for other types
                                        (assoc acc concept-type
                                                   (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                                              [(keyword (index-set/get-canonical-key-name (:name idx)))
@@ -168,13 +168,6 @@
         ;; When we are renaming indexes, that's a completely different thing...
         ;; We need to not recreate the indexes, but just take what the index-set gave us and pass that back with the additional generic concepts...
         ]
-    (info "CMR-11024 - INSIDE prune-index-set with finalized-concepts = " finalized-concepts)
-
-
-    ;; Ah so the problem is that it picks up these two indexes and then for the small_collections canonical name,
-    ;; it writes 1_small_collections first and then overwrites it with 1_small_collections_2_shards, because they are both under the same canonical name
-    ;; TODO Soooo, we can say, IF the canonical index is being resharded right now with status IN_PROGRESS from the given index-set,
-    ;; then use the original index name from :resharding to be the mapping
     {:id (:id index-set)
      :name (:name index-set)
      :concepts finalized-concepts}))
@@ -338,6 +331,7 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
+  (info "CMR-11024 - INSIDE update-index-set with requested update index-set to be index-set = " index-set)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         _ (info "CMR-11024 - INSIDE update-index-set with indices-w-config = " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
@@ -817,12 +811,16 @@
                                                  (= (gen-valid-index-name prefix-id (:name config))
                                                     index))
                                                indexes)))
+                          (update-in [:index-set :concepts concept-type]
+                                     assoc (keyword (index-set/get-canonical-key-name index)) target)
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]
                                      dissoc (keyword index))
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index))
                           util/remove-nils-empty-maps-seqs)]
+    (info "CMR-11024 INSIDE finalize-index-resharding where original index is = " index", target = " target
+          ", old index-set =" index-set ", new index-set = " new-index-set)
     (try
       ;; move alias
       (es-util/move-index-alias (indexer-util/context->conn context elastic-name)

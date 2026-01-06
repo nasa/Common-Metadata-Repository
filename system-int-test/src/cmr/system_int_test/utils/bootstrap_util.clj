@@ -535,3 +535,26 @@
         actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
                                              [provider-id (count-by-params {:provider-id provider-id})]))]
     (is (= expected-counts-by-provider actual-counts-by-provider) message)))
+
+(defn wait-for-reshard-complete
+  [coll-index-name elastic-name {:keys [max-attempts sleep-ms] :or {max-attempts 100 sleep-ms 5000}}]
+  (loop [attempt 1]
+    (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name})
+          status (get-in res [:reshard-status])]
+      (cond
+        ;; Success condition
+        (= status "COMPLETE")
+        (println "Success: Resharding is COMPLETE.")
+
+        ;; Timeout condition
+        (>= attempt max-attempts)
+        (throw (Exception. (str "Timeout: Resharding failed to complete after "
+                                attempt " attempts.")))
+
+        ;; Continue polling
+        :else
+        (do
+          (println (format "[Attempt %d/%d] Status: %s. Retrying in %dms..."
+                           attempt max-attempts status sleep-ms))
+          (Thread/sleep sleep-ms)
+          (recur (inc attempt)))))))

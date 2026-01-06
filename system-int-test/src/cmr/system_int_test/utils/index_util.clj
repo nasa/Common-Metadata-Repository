@@ -101,17 +101,6 @@
                                 :query-params query-params})]
      response)))
 
-(defn doc-present?
-  "If doc is present return true, otherwise return false"
-  [index-name type-name doc-id elastic-name]
-  (let [response (client/get
-                  (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root elastic-name) index-name doc-id)
-                  {:throw-exceptions false
-                   :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (and (= 1 (get-in body [:hits :total :value]))
-         (= doc-id (get-in body [:hits :hits 0 :_id])))))
-
 (defn- messages+id->message
   "Returns the first message for a given message id."
   [messages id]
@@ -199,3 +188,27 @@
   "Returns true if the given alias exists for the specified index."
   [index-name alias elastic-name]
   (contains? (set (get-aliases index-name elastic-name)) alias))
+
+(defn get-index-set-by-id
+  [id]
+  "Gets index set by id in clojure map form.
+  Example of returned map:
+  {:index-set {
+    :granule {
+      :indexes [...]
+    }
+    :concepts {
+      :granule {
+        :small-collections '1_small_collections'
+        :C1234-PROV1 '1_c1234_prov1'
+      }
+    }
+  }"
+  (let [resp (client/get (url/indexer-get-index-sets-by-id-url id)
+                         {:query-params {:format "json"}
+                          :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                                    "content-type" "application/json"}
+                          :connection-manager (s/conn-mgr)
+                          :throw-exceptions false})
+        index-sets (json/parse-string (:body resp) true)]
+    index-sets))

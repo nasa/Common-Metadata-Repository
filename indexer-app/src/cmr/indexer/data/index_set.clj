@@ -1152,8 +1152,7 @@
    Return nil if the index is not being resharded."
   [context index]
   (when index
-    (let [concept-indices (get-concept-type-index-names context)
-          _ (info "CMR-11024 - INSIDE get-resharding-index-target, concept-indices = " concept-indices " for index = " index)]
+    (let [concept-indices (get-concept-type-index-names context)]
       (get-in concept-indices [:resharding-indices (keyword index)]))))
 
 (defn get-granule-index-names-for-collection
@@ -1162,12 +1161,9 @@
   ([context coll-concept-id]
    (get-granule-index-names-for-collection context coll-concept-id nil))
   ([context coll-concept-id target-index-key]
-   (info "CMR-11024 - INSIDE get-granule-index-names-for-collection for coll-concept-id = " coll-concept-id " and target-index-key = " target-index-key) ;; target-index-key is NIL
-   (let [_ (info "CMR-11024 get-concept-type-index-names = " (get-concept-type-index-names context))
-         {:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
+   (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
          indexes (:granule index-names)
          small-collections-index-name (get indexes :small_collections)
-         resharding-indexes (get indexes :resharding-indices)
          indexes-for-collection (cond
                                   target-index-key
                                   [(get indexes target-index-key)]
@@ -1180,15 +1176,12 @@
                                   :else
                                   ;; The collection is not rebalancing so it's either in a separate index or small Collections
                                   [(get indexes (keyword coll-concept-id) small-collections-index-name)])]
-     (info "CMR-11024 - indexes-for-collection = " indexes-for-collection)
      ;; check if index is resharding
      (if (= (count indexes-for-collection) 1)
        ;; only one index so it's not being rebalanced, but it might be resharding
        (if-let [target-index (get-resharding-index-target context (first indexes-for-collection))]
          ;; index is being resharded so we need to return the target index as well
-         (do
-           (info "CMR-11024 - inside check reshard logic - target-index = " target-index)
-           (conj indexes-for-collection target-index))
+         (conj indexes-for-collection target-index)
          indexes-for-collection)
        indexes-for-collection))))
 
@@ -1216,12 +1209,9 @@
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id _revision-id {:keys [target-index-key all-revisions-index?]} concept]
-   (info "CMR-11024 - INSIDE get-concept-index-names")
    (let [concept-type (cs/concept-id->type concept-id)
-         _ (info "CMR-11024 - concept-type = " concept-type)
          index-concept-type (resolve-generic-concept-type concept-type)
          indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])
-         _ (info "CMR-11024 - indexes = " indexes)
          indexes (case concept-type
                    :collection
                    (cond
@@ -1267,7 +1257,6 @@
                      (if all-revisions-index?
                        [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
                        [(get indexes (keyword (format "generic-%s" (name concept-type))))])))]
-     (info "CMR-11024 - INSIDE get-concept-index-names with indexes = " indexes)
      (if (= (count indexes) 1)
        ;; check to see if the index is being resharded
        (if-let [target-index (get-resharding-index-target context (first indexes))]
