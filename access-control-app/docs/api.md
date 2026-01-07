@@ -36,7 +36,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 #### <a name="authorization-header"></a> Authorization Header
 
-All Access Control API operations require specifying a token.
+Access Control API operations that are mutable require specifying a token.
 
 An EDL token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
 
@@ -234,7 +234,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token or Launchpad token is required to search ACLs. If no token is supplied then guest permissions are used.
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token or Launchpad token can be used to search ACLs. If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 
@@ -296,13 +296,13 @@ The response is always returned in JSON and includes the following parts.
     * `location` - A URL to retrieve the ACL
     * `acl` - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
-The response also returns some headers. search-after header is one of them. 
+The response also returns some headers. search-after header is one of them.
 
-* CMR-Search-After Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. 
+* CMR-Search-After Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page.
 
 ##### ACL Search Examples
 
-###### Using search-after header 
+###### Using search-after header
 
 ```
 curl -XPOST -i "%CMR-ENDPOINT%/acls/search?pretty=true&page_size=1"
