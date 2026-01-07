@@ -87,8 +87,8 @@
 
    has-gran-or-cwic-results-feature/has-granules-or-opensearch-cache-key
    (has-gran-or-cwic-results-feature/create-has-granules-or-opensearch-map-cache)
-
-   granule-counts-cache/granule-counts-cache-key
+   
+   granule-counts-cache/granule-counts-cache-key 
    (granule-counts-cache/create-granule-counts-cache-client)})
 
 (def jobs-to-schedule

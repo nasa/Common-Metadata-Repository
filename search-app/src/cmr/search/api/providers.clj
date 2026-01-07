@@ -5,7 +5,6 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.search.api.core :as core-api]
    [cmr.search.services.provider-service :as provider-service]
    [cmr.search.services.query-service :as query-svc]
@@ -72,12 +71,11 @@
                             :body
                             (json/parse-string true)
                             (:metadata)
-                            ;; Remove the user ids from the output for security reasons
-                            (util/remove-nested-key [:Administrators]))
+                            json/generate-string)
       new-response {}]
   (if (not= (:status response-body) 200)
         (json/parse-string (:body response-body) true)
-        (assoc new-response :hits hits :took time-taken :items [provider-metadata]))))
+        (assoc new-response :hits hits :took time-taken :items [(json/parse-string provider-metadata)]))))
 
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be

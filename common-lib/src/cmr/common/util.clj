@@ -256,23 +256,6 @@
                         :when (f v)]
                     k)))
 
-(defn remove-nested-key
-  "Recursively remove a nested key from a map following a list of keys.
-
-   Example:
-   (remove-nested-key {:ignore \"hi\" :parent {:keep \"value\" :drop \"loose\"}} [:parent :drop])
-   Returns: {:ignore \"hi\" :parent {:keep \"value\"}}
-   "
-  [metadata [key & remaining-keys]]
-  (cond
-    (not key) metadata
-    (not (map? metadata)) metadata
-    (empty? remaining-keys) (dissoc metadata key)
-    :else (let [nested-val (get metadata key)]
-            (if (nil? nested-val)
-              metadata
-              (assoc metadata key (remove-nested-key nested-val remaining-keys))))))
-
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
@@ -1169,6 +1152,11 @@
   "Html escape the given string. it is used to deal with potential xss issues in user input."
   [s]
   (hp-util/escape-html s))
+
+(defn tee
+  "Tee a copy of input to the console, but does so to allow for inline use with ->"
+  ([anything] (println anything) anything)
+  ([anything note] (println note anything) anything))
 
 (defn normalize-parameters
   "Returns a normalized url parameter string by splitting the string of parameters on '&' and
