@@ -1028,8 +1028,7 @@
         (is (= {:concept_id concept-id :revision_id 2} response))
         (is (= (:legacy_guid provider-acl) (:legacy_guid (access-control/get-acl
                                                           (test-util/conn-context)
-                                                          concept-id
-                                                          {:token token}))))))))
+                                                          concept-id))))))))
 
 (deftest delete-acl-with-revision-id-test
   (let [token (echo-util/login-guest (test-util/conn-context))
@@ -1101,7 +1100,7 @@
              (access-control/delete-acl (test-util/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"
       (is (= nil
-             (access-control/get-acl (test-util/conn-context) acl-concept-id {:token token}))))
+             (access-control/get-acl (test-util/conn-context) acl-concept-id))))
     (testing "tombstone can be retrieved from Metadata DB"
       (is (= {:deleted true
               :revision-id 2

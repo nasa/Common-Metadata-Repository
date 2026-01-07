@@ -198,8 +198,7 @@
       ;; search for ACLs related to managing group and found none
       (let [{:keys [hits]} (access-control/search-for-acls
                             (test-util/conn-context)
-                            {:permitted-group [managing-group-id]}
-                            {:token token-user1})]
+                            {:permitted-group [managing-group-id]})]
         (is (= 0 hits)))
 
       ;; create a new group with the managing group
@@ -209,8 +208,7 @@
         (is (= 200 status))
         ;; verify a new ACL is now created on the managing group
         (is (= 1 (:hits (access-control/search-for-acls (test-util/conn-context)
-                                                        {:permitted-group [managing-group-id]}
-                                                        {:token token-user1}))))
+                                                        {:permitted-group [managing-group-id]}))))
 
         ;; the group starts with no members
         (is (= {:status 200 :body []} (test-util/get-members token-user1 concept_id)))
