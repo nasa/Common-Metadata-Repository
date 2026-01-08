@@ -5,7 +5,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.config :as common-config]
-   [cmr.common.log :as log :refer [error info warn]]
+   [cmr.common.log :as log :refer [error debug info warn]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -120,54 +120,24 @@
                                            (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
                                            :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
-        _ (info "CMR-11024 - INSIDE prune-index-set with es-cluster-name " es-cluster-name " and generic-serachable-concept-types = " generic-searchable-concept-types " and given index-set = " index-set)
-        ;; EXAMPLE 1
-        ;; :granule
-        ;; {:indexes [
-        ;;  {:name "small_collections", :settings {:index {:number_of_shards 20, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}}
-        ;;  {:name "small_collections_2_shards", :settings {:index {:number_of_shards 2, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}}
-        ;; ]
 
-        ;:resharding-indexes #{"1_small_collections"},
-        ;
-        ;:resharding-targets {:1_small_collections "1_small_collections_2_shards"},
-        ;
-        ;:resharding-status {:1_small_collections "IN_PROGRESS"}},
+        generated-concepts (into {} (for [concept-type generic-searchable-concept-types]
+                                      [concept-type
+                                       (into {} (for [idx (get-in index-set [concept-type :indexes])]
+                                                  [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))
 
-        ;; EXAMPLE 2
-        ;; :granule
-        ;; {:indexes [
-        ;;  {:name "small_collections_20_shards", :settings {:index {:number_of_shards 20, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}} ;; new
-        ;;  {:name "small_collections_2_shards", :settings {:index {:number_of_shards 2, :number_of_replicas 1, :max_result_window 1000000, :refresh_interval "1s"}}} ;; old
-        ;; ]
+        ;; check granule concept list to see if it needs to be replaced
+        requested-updated-granule-concepts (get-in index-set [:concepts :granule])
+        generated-updated-granule-concepts (get-in generated-concepts [:granule])
 
-        ;:resharding-indexes #{"1_small_collections_2_shards"},
-        ;
-        ;:resharding-targets {:1_small_collections_2_shards "1_small_collections_20_shards"},
-        ;
-        ;:resharding-status {:1_small_collections_2_shards "IN_PROGRESS"}}
-
-        ;; TODO ok that worked, but got to make sure it works for other uses of prune-index-set ALSO need to update reshard finalize to update the index-set mapping once done to the new index
-        finalized-concepts (reduce (fn [acc concept-type]
-                                     ;; if the concept type is granule and the concepts list is not empty, merge the entire :concepts map into the accumulator
-                                     (if (and (= concept-type :granule) (some? (get-in index-set [:concepts])))
-                                       (merge acc (get-in index-set [:concepts]))
-                                       ;; Else add a single key-value pair for other types
-                                       (assoc acc concept-type
-                                                  (into {} (for [idx (get-in index-set [concept-type :indexes])]
-                                                             [(keyword (index-set/get-canonical-key-name (:name idx)))
-                                                              (gen-valid-index-name prefix (:name idx))])))))
-                                   {}
-                                   generic-searchable-concept-types)
-        ;finalized-concepts (into {} (for [concept-type generic-searchable-concept-types]
-        ;                              [concept-type
-        ;                               (into {} (for [idx (get-in index-set [concept-type :indexes])]
-        ;                                          [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))
-
-        ;; TODO this is not going to work in general with resharding... how did it work with rebalancing? Because those were completely new indexes.
-        ;; When we are renaming indexes, that's a completely different thing...
-        ;; We need to not recreate the indexes, but just take what the index-set gave us and pass that back with the additional generic concepts...
-        ]
+        finalized-concepts (if (and (not (= requested-updated-granule-concepts generated-updated-granule-concepts))
+                                    (not (nil? generated-updated-granule-concepts)))
+                             (do
+                               (debug "Generated updated granule concepts = " generated-updated-granule-concepts
+                                      " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
+                                      " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
+                               (assoc-in generated-concepts [:granule] (merge generated-updated-granule-concepts requested-updated-granule-concepts)))
+                             generated-concepts)]
     {:id (:id index-set)
      :name (:name index-set)
      :concepts finalized-concepts}))
@@ -225,7 +195,7 @@
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
   (info "CMR-11024 - INSIDE index-requested-index-set with index-set = " index-set " and es-cluster-name = " es-cluster-name)
-  (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name) ;; TODO this is where the
+  (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
         _ (info "CMR-11024 - INSIDE index-requested-index-set with indexes-w-added-concepts = " indexes-w-added-concepts)
         index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
@@ -292,6 +262,7 @@
   }
   "
   [context split-index-set-map]
+  (info "CMR-11024 INSIDE create-index-set with split-index-set-map = " split-index-set-map)
   (let [;; setup gran index set configs
         gran-index-set ((keyword es-config/gran-elastic-name) split-index-set-map)
         gran-index-names (get-index-names gran-index-set es-config/gran-elastic-name)
@@ -307,7 +278,7 @@
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
 
-    ;; create indices and rollback if index creation fails
+    ;; create indices and aliases and rollback if index creation fails
     (try
       (dorun (map #(es/create-index-and-alias gran-es-store %) gran-indices-w-config))
       (dorun (map #(es/create-index-and-alias non-gran-es-store %) non-gran-indices-w-config))
@@ -331,7 +302,7 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  (info "CMR-11024 - INSIDE update-index-set with requested update index-set to be index-set = " index-set)
+  (info "CMR-11024 - INSIDE update-index-set with es-cluster-name =  " es-cluster-name " and requested update index-set to be index-set = " index-set)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         _ (info "CMR-11024 - INSIDE update-index-set with indices-w-config = " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
@@ -539,13 +510,17 @@
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
-  collection index is listed in the index-set."
+  collection index is listed in the index-set.
+  Returns the updated given index-set."
   [index-set collection-concept-id]
   (validate-granule-index-exists index-set collection-concept-id)
+  ;; removes granule index from the :granule key indexes details
   (update-in index-set [:index-set :granule :indexes]
              (fn [indexes]
                (remove #(= collection-concept-id (index-name->concept-id (:name %)))
-                       indexes))))
+                       indexes)))
+  ;; removes granule index from concepts list
+  (dissoc index-set [:index-set :concepts :granule] (keyword (index-name->concept-id collection-concept-id))))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."

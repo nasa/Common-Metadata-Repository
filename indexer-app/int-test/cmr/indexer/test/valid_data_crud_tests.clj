@@ -109,29 +109,45 @@
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 ;; Verify that you can update an index set multiple times and get the correct indices created and deleted
-;; TODO update to also update generics and 1_service and granule concept names. Need to be more robust test.
 (deftest update-index-sets-test
-  (testing "update index sets"
-    (let [;; create index set
+  (testing "create and update index set"
+    (let [index-set-id util/sample-index-set-id
+          ;; create original index set
           index-set util/sample-index-set
           _ (util/create-index-set index-set)
-          ;; create updated index set input
-          updated-index-set util/sample-index-set-updated
-          updated-index-set-id (get-in updated-index-set [:index-set :id]) ;; should be the same as the original sample-index-set
+          found-orig-index-set (-> (util/get-index-set index-set-id) :response :body)
+          ;; check original index set is correct
+          _ (is (= util/expected-orig-index-set found-orig-index-set))
           ;; update index set
-          updated-resp (util/update-index-set updated-index-set updated-index-set-id)
-          found-index-set (-> (util/get-index-set updated-index-set-id) :response :body)]
+          updated-resp (util/update-index-set util/sample-index-set-updated index-set-id)
+          _ (is (= (:status updated-resp) 200))
+          found-updated-index-set (-> (util/get-index-set index-set-id) :response :body)]
 
-      (is (= (:status updated-resp) 200))
+      (is (= util/expected-sample-index-set-after-update found-updated-index-set))))
+  (testing "create index set from put call (not post)"
+    (let [index-set-id util/sample-index-set-id
+          ;; create index set
+          create-resp (util/update-index-set util/sample-index-set-updated index-set-id)
+          _ (is (= (:status create-resp) 200))
+          found-index-set (-> (util/get-index-set index-set-id) :response :body)]
+      (is (= util/expected-sample-index-set-after-update found-index-set)))))
+(deftest update-index-sets-with-empty-inputs
+  (testing "update index set from put call with no input creates default index set correctly"
+    (let [index-set-id util/sample-index-set-id
+          ;; update index set that doesn't exist yet
+          create-resp (util/update-index-set {:index-set {:id index-set-id :name "test-index-set"}} index-set-id)
+          _ (is (= (:status create-resp) 200))
+          found-index-set (-> (util/get-index-set index-set-id) :response :body)]
+      (is (= util/expected-empty-index-set found-index-set)))))
 
-      (is (= (get-in updated-index-set [:index-set :name]) (get-in found-index-set [:index-set :name])))
-      (is (= (get-in updated-index-set [:index-set :create-reason]) (get-in found-index-set [:index-set :create-reason])))
-      (is (= (get-in updated-index-set [:index-set :collection]) (get-in found-index-set [:index-set :collection])))
-      (is (= (get-in updated-index-set [:index-set :granule]) (get-in found-index-set [:index-set :granule])))
-      (is (= (get-in updated-index-set [:index-set :random]) (get-in found-index-set [:index-set :random])))
-      (is (= {:COLL2-PROV1 "3_coll2_prov1"} (get-in found-index-set [:index-set :concepts :collection])))
-      (is (= {:small_collections "3_small_collections", :GRAN5-PROV3 "3_gran5_prov3", :GRAN6-PROV4 "3_gran6_prov4"}
-             (get-in found-index-set [:index-set :concepts :granule]))))))
+(deftest create-index-set-with-empty-input
+  (testing "create index set from post call with no input creates default index set correctly"
+    (let [index-set-id util/sample-index-set-id
+          ;; create index set
+          create-resp (util/create-index-set {:index-set {:id index-set-id :name "test-index-set"}})
+          _ (is (= (:status create-resp) 201))
+          found-index-set (-> (util/get-index-set index-set-id) :response :body)]
+      (is (= util/expected-empty-index-set found-index-set)))))
 
 ;; manual reset
 (comment
