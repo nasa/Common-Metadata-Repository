@@ -27,9 +27,8 @@
    Returns true if document exists, false if it does not."
   [concept-id]
   (es-util/doc-present? idx-set/deleted-granules-index-alias
-                      deleted-granule/deleted-granule-type-name
-                      concept-id
-                      es-config/gran-elastic-name))
+                        concept-id
+                        es-config/gran-elastic-name))
 
 (defn- find-deleted-granules
   "Calls get-deleted-granules endpoint and returns parsed items from response"
