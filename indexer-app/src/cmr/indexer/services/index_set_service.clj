@@ -513,14 +513,17 @@
   collection index is listed in the index-set.
   Returns the updated given index-set."
   [index-set collection-concept-id]
-  (validate-granule-index-exists index-set collection-concept-id)
-  ;; removes granule index from the :granule key indexes details
-  (update-in index-set [:index-set :granule :indexes]
-             (fn [indexes]
-               (remove #(= collection-concept-id (index-name->concept-id (:name %)))
-                       indexes)))
-  ;; removes granule index from concepts list
-  (dissoc index-set [:index-set :concepts :granule] (keyword (index-name->concept-id collection-concept-id))))
+  (info "CMR-11024 INSIDE remove-granule-index-from-index-set with collection " (keyword (index-name->concept-id collection-concept-id)))
+  (let [_ (validate-granule-index-exists index-set collection-concept-id)
+        ;; remove granule index from the :granule key indexes details
+        index-set (update-in index-set [:index-set :granule :indexes]
+                     (fn [indexes]
+                       (remove #(= collection-concept-id (index-name->concept-id (:name %)))
+                               indexes)))
+        coll-base-name (keyword (index-name->concept-id collection-concept-id))
+        ;; remove granule index from concepts list
+        index-set (update-in index-set [:index-set :concepts :granule] dissoc coll-base-name)]
+    index-set))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
@@ -579,6 +582,7 @@
                         (if (= "small-collections" target)
                           (remove-granule-index-from-index-set index-set concept-id)
                           index-set))]
+    (info "CMR-11024 - INSIDE finalize-collection-rebalancing with gran-index-set updated to be = " gran-index-set)
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
     (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs gran-index-set))))
