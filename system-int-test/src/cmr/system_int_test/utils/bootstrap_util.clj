@@ -543,15 +543,12 @@
     (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name})
           status (get-in res [:reshard-status])]
       (cond
-        ;; Success condition
         (= status "COMPLETE")
         (info "Success: Resharding is COMPLETE.")
 
-        ;; Timeout condition
         (>= attempt max-attempts)
         (throw (Exception. (str "Timeout: Resharding failed to complete after " attempt " attempts.")))
 
-        ;; Continue polling
         :else
         (do
           (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..."
@@ -563,14 +560,11 @@
   [collection {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
   (loop [attempt 1]
     (let [res (get-rebalance-status (:concept-id collection))
-          _ (info "response from get balance status is " res)
           status (get-in res [:rebalancing-status])]
       (cond
-        ;; Success condition
         (= status "COMPLETE")
         (info "Success: Rebalance is COMPLETE.")
 
-        ;; Timeout condition
         (>= attempt max-attempts)
         (throw (Exception. (str "Timeout: Rebalance failed to complete after " attempt " attempts.")))
 

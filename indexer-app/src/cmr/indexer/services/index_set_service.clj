@@ -190,16 +190,12 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
-;; TODO JYNA maybe the issue is in here
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
-  (info "CMR-11024 - INSIDE index-requested-index-set with index-set = " index-set " and es-cluster-name = " es-cluster-name)
   (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
-        _ (info "CMR-11024 - INSIDE index-requested-index-set with indexes-w-added-concepts = " indexes-w-added-concepts)
         index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
-        _ (info "CMR-11024 - INSIDE index-requested-index-set with index-set-w-es-index-names = " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -208,7 +204,6 @@
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        _ (info "CMR-11024 - INSIDE index-requested-index-set with index-name = " index-name " and mapping = " mapping)
         idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc es-cluster-name)))
 
@@ -262,7 +257,6 @@
   }
   "
   [context split-index-set-map]
-  (info "CMR-11024 INSIDE create-index-set with split-index-set-map = " split-index-set-map)
   (let [;; setup gran index set configs
         gran-index-set ((keyword es-config/gran-elastic-name) split-index-set-map)
         gran-index-names (get-index-names gran-index-set es-config/gran-elastic-name)
@@ -302,9 +296,7 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
-  (info "CMR-11024 - INSIDE update-index-set with es-cluster-name =  " es-cluster-name " and requested update index-set to be index-set = " index-set)
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
-        _ (info "CMR-11024 - INSIDE update-index-set with indices-w-config = " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
@@ -513,7 +505,6 @@
   collection index is listed in the index-set.
   Returns the updated given index-set."
   [index-set collection-concept-id]
-  (info "CMR-11024 INSIDE remove-granule-index-from-index-set with collection " (keyword (index-name->concept-id collection-concept-id)))
   (let [_ (validate-granule-index-exists index-set collection-concept-id)
         ;; remove granule index from the :granule key indexes details
         index-set (update-in index-set [:index-set :granule :indexes]
@@ -582,7 +573,6 @@
                         (if (= "small-collections" target)
                           (remove-granule-index-from-index-set index-set concept-id)
                           index-set))]
-    (info "CMR-11024 - INSIDE finalize-collection-rebalancing with gran-index-set updated to be = " gran-index-set)
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
     (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs gran-index-set))))
@@ -684,7 +674,6 @@
                           (update-in
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
-    (info "CMR-11024 - INSIDE start-index-resharding with new-index-set = " new-index-set)
     ;; this will create the new index with the new shard count
     (update-index-set context elastic-name new-index-set)))
 
@@ -798,8 +787,6 @@
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index))
                           util/remove-nils-empty-maps-seqs)]
-    (info "CMR-11024 INSIDE finalize-index-resharding where original index is = " index", target = " target
-          ", old index-set =" index-set ", new index-set = " new-index-set)
     (try
       ;; move alias
       (es-util/move-index-alias (indexer-util/context->conn context elastic-name)

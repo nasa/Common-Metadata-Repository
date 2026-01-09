@@ -2,7 +2,6 @@
   "Contains various utitiltiy methods to support integeration tests."
   (:require
    [cheshire.core :as cheshire]
-   [clojure.walk :as walk]
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [clojurewerkz.elastisch.rest :as esr]

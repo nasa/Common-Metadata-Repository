@@ -25,7 +25,6 @@
                    {:throw-exceptions false
                     :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (println "INSIDE get-doc and body = " body)
     body))
 
 (defn index-exists?
