@@ -5,7 +5,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.config :as common-config]
-   [cmr.common.log :as log :refer [error debug info warn]]
+   [cmr.common.log :as log :refer [error info warn]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -133,7 +133,7 @@
         finalized-concepts (if (and (not (= requested-updated-granule-concepts generated-updated-granule-concepts))
                                     (not (nil? generated-updated-granule-concepts)))
                              (do
-                               (debug "Generated updated granule concepts = " generated-updated-granule-concepts
+                               (info "Generated updated granule concepts = " generated-updated-granule-concepts
                                       " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
                                       " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
                                (assoc-in generated-concepts [:granule] (merge generated-updated-granule-concepts requested-updated-granule-concepts)))
@@ -502,19 +502,13 @@
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
-  collection index is listed in the index-set.
-  Returns the updated given index-set."
+  collection index is listed in the index-set."
   [index-set collection-concept-id]
-  (let [_ (validate-granule-index-exists index-set collection-concept-id)
-        ;; remove granule index from the :granule key indexes details
-        index-set (update-in index-set [:index-set :granule :indexes]
-                     (fn [indexes]
-                       (remove #(= collection-concept-id (index-name->concept-id (:name %)))
-                               indexes)))
-        coll-base-name (keyword (index-name->concept-id collection-concept-id))
-        ;; remove granule index from concepts list
-        index-set (update-in index-set [:index-set :concepts :granule] dissoc coll-base-name)]
-    index-set))
+  (validate-granule-index-exists index-set collection-concept-id)
+  (update-in index-set [:index-set :granule :indexes]
+             (fn [indexes]
+               (remove #(= collection-concept-id (index-name->concept-id (:name %)))
+                       indexes))))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."

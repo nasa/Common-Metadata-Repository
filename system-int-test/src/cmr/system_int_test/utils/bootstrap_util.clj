@@ -568,7 +568,6 @@
         (>= attempt max-attempts)
         (throw (Exception. (str "Timeout: Rebalance failed to complete after " attempt " attempts.")))
 
-        ;; Continue polling
         :else
         (do
           (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..." attempt max-attempts status sleep-ms))
