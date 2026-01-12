@@ -157,6 +157,7 @@
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
           small-collections-canonical-name "small_collections"
           small-collections-index-name (str "1_" small-collections-canonical-name)
+          resharded-small-collections-index-name (str small-collections-index-name "_4_shards") ;; this is for further down the test
 
           ;; start reshard
           _ (is (= {:status 200
@@ -164,9 +165,18 @@
                    (bootstrap/start-reshard-index small-collections-index-name
                                                   {:synchronous true :num-shards 4 :elastic-name gran-elastic-name})))
 
-          ;; check original index set is still mapped to original target
+          ;; check original index set's granule concept list is still mapped to original index
           orig-index-set (index/get-index-set-by-id 1)
+          _ (println "CMR-11024 - granule concepts list = " (get-in orig-index-set [:index-set :concepts :granule]))
           _ (is (= small-collections-index-name (get-in orig-index-set [:index-set :concepts :granule (keyword small-collections-canonical-name)])))
+
+          ;; NOTE: There is a bug that needs to be fixed in which this test will be used for
+          ;; check original index set's granule indexes list has both the original index and target index created
+          ;orig-gran-index-list (get-in orig-index-set [:index-set :granule :indexes])
+          ;resharded-index-details (first (filter #(= (:name %) resharded-small-collections-index-name) orig-gran-index-list))
+          ;_ (is (not (nil? resharded-index-details)))
+          ;orig-index-details (first (filter #(= (:name %) small-collections-index-name) orig-gran-index-list))
+          ;_ (is (not (nil? orig-index-details)))
 
           ;; create granule
           gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
@@ -206,7 +216,7 @@
                     :message "Resharding completed for index 1_small_collections"}
                    (bootstrap/finalize-reshard-index small-collections-index-name {:synchronous false :elastic-name gran-elastic-name})))
 
-          resharded-small-collections-index-name (str small-collections-index-name "_4_shards")
+
 
           ;; check collection index is mapped to new target
           updated-index-set (index/get-index-set-by-id 1)
@@ -234,7 +244,6 @@
 ;                                          (assoc :granule-count 1)))
 ;         coll1-concept-id (:concept-id coll1)
 ;         coll1-index (index-set-service/gen-valid-index-name "1" (:concept-id coll1))
-;         coll1-index-base-name (str/replace-first coll1-index #"^1_" "")
 ;         gran-elastic-name "gran-elastic"]
 ;     (index/wait-until-indexed)
 ;     (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
@@ -283,7 +292,7 @@
 ;             expected-granule-concepts {:small_collections "1_small_collections"
 ;                                        (keyword coll1-concept-id) resharded-coll1-index-name}
 ;             orig-gran-indexes (get-in orig-index-set [:index-set :granule :indexes])
-;             orig-coll1-gran-index-details (first (filter #(= (:name %) (str coll1-index-base-name "_2_shards")) orig-gran-indexes))
+;             orig-coll1-gran-index-details (first (filter #(= (:name %) (str coll1-concept-id "_2_shards")) orig-gran-indexes))
 ;             found-idx-mapping-num-of-shards (get-in orig-coll1-gran-index-details [:settings :index :number_of_shards])]
 ;
 ;         (is (= expected-granule-concepts orig-granule-concepts))
@@ -291,30 +300,30 @@
 ;
 ;     (testing "elasticsearch has new resharded index"
 ;       (is (true? (es-util/index-exists? (str coll1-index "_2_shards") gran-elastic-name))))
-
-     ;; It is hard to control the timing of force delete in Elasticsearch, so we skip the testing of exact doc count in the following steps
-     ;(testing "alias is moved to new index"
-     ;  (is (index/alias-exists? (str coll1-index "_2_shards") (str coll1-index "_alias") gran-elastic-name)))
-     ;
-     ;;;; Start rebalancing of collection 1 back to the small_collections. After this it will be in small collections and the separate index will be removed
-     ;(bootstrap/start-rebalance-collection (:concept-id coll1) {:target "small-collections"})
-     ;(index/wait-until-indexed)
-     ;
-     ;(bootstrap/wait-for-rebalance-to-complete coll1 {})
-     ;(bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
-     ;;;; Finalize rebalancing
-     ;(bootstrap/finalize-rebalance-collection (:concept-id coll1))
-     ;(index/wait-until-indexed)
-     ;
-     ;(testing "index set is in correct state after returning coll1 to small_collections index"
-     ;  (let [orig-index-set (index/get-index-set-by-id 1)
-     ;        orig-granule-concepts (get-in orig-index-set [:index-set :concepts :granule])
-     ;        expected-granule-concepts {:small_collections "1_small_collections"}
-     ;        orig-gran-indexes (get-in orig-index-set [:index-set :granule :indexes])]
-     ;    (is (= expected-granule-concepts orig-granule-concepts))
-     ;    (is (= 1 (count orig-gran-indexes)))))
-
-     ;; After the cache is cleared the right amount of data is found
-     ;(search/clear-caches)
-     ;(bootstrap/verify-provider-holdings expected-provider-holdings "After finalize after clear cache")
-     ;)))
+;
+;     ; It is hard to control the timing of force delete in Elasticsearch, so we skip the testing of exact doc count in the following steps
+;     (testing "alias is moved to new index"
+;       (is (index/alias-exists? (str coll1-index "_2_shards") (str coll1-index "_alias") gran-elastic-name)))
+;
+;     ;;; Start rebalancing of collection 1 back to the small_collections. After this it will be in small collections and the separate index will be removed
+;     (bootstrap/start-rebalance-collection (:concept-id coll1) {:target "small-collections"})
+;     (index/wait-until-indexed)
+;
+;     (bootstrap/wait-for-rebalance-to-complete coll1 {})
+;     (bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
+;     ;;; Finalize rebalancing
+;     (bootstrap/finalize-rebalance-collection (:concept-id coll1))
+;     (index/wait-until-indexed)
+;
+;     (testing "index set is in correct state after returning coll1 to small_collections index"
+;       (let [orig-index-set (index/get-index-set-by-id 1)
+;             orig-granule-concepts (get-in orig-index-set [:index-set :concepts :granule])
+;             expected-granule-concepts {:small_collections "1_small_collections"}
+;             orig-gran-indexes (get-in orig-index-set [:index-set :granule :indexes])]
+;         (is (= expected-granule-concepts orig-granule-concepts))
+;         (is (= 1 (count orig-gran-indexes)))))
+;
+;     ; After the cache is cleared the right amount of data is found
+;     (search/clear-caches)
+;     (bootstrap/verify-provider-holdings expected-provider-holdings "After finalize after clear cache")
+;     )))
