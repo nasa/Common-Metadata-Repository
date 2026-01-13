@@ -18,8 +18,8 @@
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
 (defn get-doc
-  [index-name doc-id elastic-name]
   "Get a specific doc (granule) from a specified elastic cluster"
+  [index-name doc-id elastic-name]
   (let [response (client/get
                    (format "%s/%s/_doc/%s" (url/elastic-root elastic-name) index-name doc-id)
                    {:throw-exceptions false

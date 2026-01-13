@@ -7,7 +7,6 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3] :as util]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.data2.core :as d]

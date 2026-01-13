@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.bootstrap.reshard-index-test
   "Tests the resharding API endpoint for index resharding operations."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.system-int-test.data2.collection :as dc]
@@ -157,6 +157,7 @@
           coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
           small-collections-canonical-name "small_collections"
           small-collections-index-name (str "1_" small-collections-canonical-name)
+          resharded-small-collections-index-name (str small-collections-index-name "_4_shards")
 
           ;; start reshard
           _ (is (= {:status 200
@@ -179,7 +180,7 @@
           _ (is (= gran-doc-in-orig-index-revision-id 1))
 
           ;; check granule doc is saved in new index too
-          gran-doc-in-new-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-new-index (es-util/get-doc resharded-small-collections-index-name (:concept-id gran1) gran-elastic-name)
           gran-doc-in-new-index-revision-id (get-in gran-doc-in-new-index [:_source :revision-id])
           _ (is (= gran-doc-in-new-index-revision-id 1))
 
@@ -194,7 +195,7 @@
           _ (is (= gran-doc-in-orig-index-revision-id 2))
 
           ;; check granule doc is saved in new index too with updated revision
-          gran-doc-in-new-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
+          gran-doc-in-new-index (es-util/get-doc resharded-small-collections-index-name (:concept-id gran1) gran-elastic-name)
           gran-doc-in-new-index-revision-id (get-in gran-doc-in-new-index [:_source :revision-id])
           _ (is (= gran-doc-in-new-index-revision-id 2))
 
@@ -205,8 +206,6 @@
           _ (is (= {:status 200
                     :message "Resharding completed for index 1_small_collections"}
                    (bootstrap/finalize-reshard-index small-collections-index-name {:synchronous false :elastic-name gran-elastic-name})))
-
-          resharded-small-collections-index-name (str small-collections-index-name "_4_shards")
 
           ;; check collection index is mapped to new target
           updated-index-set (index/get-index-set-by-id 1)
@@ -234,7 +233,7 @@
 ;                                          (assoc :granule-count 1)))
 ;         coll1-concept-id (:concept-id coll1)
 ;         coll1-index (index-set-service/gen-valid-index-name "1" (:concept-id coll1))
-;         coll1-index-base-name (str/replace-first coll1-index #"^1_" "")
+;         coll1-index-base-name (string/replace-first coll1-index #"^1_" "")
 ;         gran-elastic-name "gran-elastic"]
 ;     (index/wait-until-indexed)
 ;     (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
