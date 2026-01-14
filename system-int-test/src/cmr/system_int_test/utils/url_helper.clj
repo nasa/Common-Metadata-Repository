@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.utils.url-helper
   "helper to provide the urls to various service endpoints"
   (:require
-   [cmr.common.config :as config]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]
@@ -660,6 +659,11 @@
   "Updates the indexes in the indexer to update mappings and settings"
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
+
+(defn indexer-get-index-sets-by-id-url
+  "Gets the index set by id from indexer"
+  [id]
+  (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))
 
 (defn full-refresh-collection-granule-aggregate-cache-url
   []

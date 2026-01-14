@@ -120,13 +120,27 @@
                                            (add-searchable-generic-types searchable-non-gran-concept-types es-cluster-name)
 
                                            :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))
-        ]
+
+        generated-concepts (into {} (for [concept-type generic-searchable-concept-types]
+                                      [concept-type
+                                       (into {} (for [idx (get-in index-set [concept-type :indexes])]
+                                                  [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))
+
+        ;; check granule concept list to see if it needs to be replaced
+        requested-updated-granule-concepts (get-in index-set [:concepts :granule])
+        generated-updated-granule-concepts (get-in generated-concepts [:granule])
+
+        finalized-concepts (if (and (not (= requested-updated-granule-concepts generated-updated-granule-concepts))
+                                    (not (nil? generated-updated-granule-concepts)))
+                             (do
+                               (info "Generated updated granule concepts = " generated-updated-granule-concepts
+                                      " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
+                                      " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
+                               (assoc-in generated-concepts [:granule] (merge generated-updated-granule-concepts requested-updated-granule-concepts)))
+                             generated-concepts)]
     {:id (:id index-set)
      :name (:name index-set)
-     :concepts (into {} (for [concept-type generic-searchable-concept-types]
-                          [concept-type
-                           (into {} (for [idx (get-in index-set [concept-type :indexes])]
-                                      [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))}))
+     :concepts finalized-concepts}))
 
 (defn index-set-id-validation
   "Verify id is a positive integer."
@@ -258,7 +272,7 @@
     (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
       (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
 
-    ;; create indices and rollback if index creation fails
+    ;; create indices and aliases and rollback if index creation fails
     (try
       (dorun (map #(es/create-index-and-alias gran-es-store %) gran-indices-w-config))
       (dorun (map #(es/create-index-and-alias non-gran-es-store %) non-gran-indices-w-config))
@@ -759,6 +773,8 @@
                                                  (= (gen-valid-index-name prefix-id (:name config))
                                                     index))
                                                indexes)))
+                          (update-in [:index-set :concepts concept-type]
+                                     assoc (keyword (index-set/get-canonical-key-name index)) target)
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]
                                      dissoc (keyword index))

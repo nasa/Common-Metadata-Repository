@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]
@@ -535,3 +536,40 @@
         actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
                                              [provider-id (count-by-params {:provider-id provider-id})]))]
     (is (= expected-counts-by-provider actual-counts-by-provider) message)))
+
+(defn wait-for-reshard-complete
+  [coll-index-name elastic-name {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
+  (loop [attempt 1]
+    (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name})
+          status (get-in res [:reshard-status])]
+      (cond
+        (= status "COMPLETE")
+        (info "Success: Resharding is COMPLETE.")
+
+        (>= attempt max-attempts)
+        (throw (Exception. (str "Timeout: Resharding failed to complete after " attempt " attempts.")))
+
+        :else
+        (do
+          (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..."
+                           attempt max-attempts status sleep-ms))
+          (Thread/sleep sleep-ms)
+          (recur (inc attempt)))))))
+
+(defn wait-for-rebalance-to-complete
+  [collection {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
+  (loop [attempt 1]
+    (let [res (get-rebalance-status (:concept-id collection))
+          status (get-in res [:rebalancing-status])]
+      (cond
+        (= status "COMPLETE")
+        (info "Success: Rebalance is COMPLETE.")
+
+        (>= attempt max-attempts)
+        (throw (Exception. (str "Timeout: Rebalance failed to complete after " attempt " attempts.")))
+
+        :else
+        (do
+          (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..." attempt max-attempts status sleep-ms))
+          (Thread/sleep sleep-ms)
+          (recur (inc attempt)))))))

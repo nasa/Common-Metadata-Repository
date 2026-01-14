@@ -1178,6 +1178,7 @@
                                   :else
                                   ;; The collection is not rebalancing so it's either in a separate index or small Collections
                                   [(get indexes (keyword coll-concept-id) small-collections-index-name)])]
+     ;; check if index is resharding
      (if (= (count indexes-for-collection) 1)
        ;; only one index so it's not being rebalanced, but it might be resharding
        (if-let [target-index (get-resharding-index-target context (first indexes-for-collection))]

@@ -7,13 +7,13 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3] :as util]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.elastic-util :as es-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb-util]
@@ -25,10 +25,9 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? idx-set/deleted-granules-index-alias
-                      deleted-granule/deleted-granule-type-name
-                      concept-id
-                      es-config/gran-elastic-name))
+  (es-util/doc-present? idx-set/deleted-granules-index-alias
+                        concept-id
+                        es-config/gran-elastic-name))
 
 (defn- find-deleted-granules
   "Calls get-deleted-granules endpoint and returns parsed items from response"
