@@ -5,7 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
-   [cmr.common.log :as log :refer [error info]]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]

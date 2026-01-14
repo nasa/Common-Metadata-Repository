@@ -663,7 +663,7 @@
 (defn indexer-get-index-sets-by-id-url
   "Gets the index set by id from indexer"
   [id]
-  (format "http://localhost:%s/index-sets/%d" (transmit-config/indexer-port) id))
+  (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))
 
 (defn full-refresh-collection-granule-aggregate-cache-url
   []
