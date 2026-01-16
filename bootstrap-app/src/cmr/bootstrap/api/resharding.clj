@@ -25,15 +25,16 @@
                 num-shards-str)]))))
 
 (defn- validate-es-cluster-name-not-blank
+  "Validates that the Elasticsearch cluster name given is not blank."
   [es-cluster-name]
   (when (string/blank? es-cluster-name)
     (errors/throw-service-error :bad-request "Empty elastic cluster name is not allowed.")))
 
 (defn- validate-index-exists
+  "Validates that the Elasticsearch index given exists in the cluster given."
   [context index es-cluster-name]
   (let [conn (es-index/context->conn context es-cluster-name)]
-    (when-not (or (es-helper/exists? conn index)
-                  (es-helper/alias-exists? conn index))
+    (when-not (es-helper/exists? conn index)
       (errors/throw-service-error
        :not-found
        (format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]"
