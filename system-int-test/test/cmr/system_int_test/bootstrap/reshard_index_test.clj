@@ -215,6 +215,47 @@
       (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:granule :indexes])))
       (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name))))))
 
+(deftest reshard-rollback-test
+  (let [gran-elastic-name "gran-elastic"
+        elastic-name "elastic"
+        non-existent-index-name "non-existant-index"
+        deleted-gran-index "1_delete_granules"
+        services-index "1_services"]
+    (testing "Rollback reshard validations"
+      (testing "Given rollback reshard on non-existant index, Return error"
+        (is (= {:status 400
+                        :errors ["TODO"]}
+                       (bootstrap/rollback-reshard-index non-existent-index-name
+                                                         {:synchronous true :num-shards 4 :elastic-name gran-elastic-name}))))
+      (testing "Given rollback reshard on index that is not being resharded, Return error"
+        (is (= {:status 400
+                :errors ["TODO"]}
+               (bootstrap/rollback-reshard-index deleted-gran-index
+                                                 {:synchronous true :num-shards 4 :elastic-name gran-elastic-name}))))
+      (testing "Given rollback reshard on index that is COMPLETE, Return error"
+        ;; TODO update index set to have an index be resharding that is COMPLETE
+        (is (= {:status 400
+                :errors ["TODO"]}
+               (bootstrap/rollback-reshard-index services-index
+                                                 {:synchronous true :num-shards 4 :elastic-name elastic-name}))))
+
+      (testing "Given rollback reshard on index that is IN PROGRESS, Return error"
+        ;; TODO update index set to have an index be resharding that is IN PROGRESS
+        (is (= {:status 400
+                :errors ["TODO"]}
+               (bootstrap/rollback-reshard-index services-index
+                                                 {:synchronous true :num-shards 4 :elastic-name elastic-name})))
+        )))
+  (testing "Rollback reshard"
+    ;; TODO start the reshard
+    ;; TODO force reshard to fail
+    ;; TODO rollback reshard
+    ;; TODO check index-set that it is gone in indexes list and gone in resharding list
+    ;; TODO check resharded index is deleted in ES
+    ))
+
+
+
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,
 ;; the granule deleted version is still in the small_collections index waiting to be permanently

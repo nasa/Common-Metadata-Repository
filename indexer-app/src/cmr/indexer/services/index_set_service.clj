@@ -796,6 +796,56 @@
         (errors/throw-service-error :internal-error
                                     (format "Failed to finalize resharding for [%s]; see server logs." index))))))
 
+(defn rollback-index-resharding
+  "Rollback resharding of the given index"
+  [context index-set-id index params]
+  ;(let [elastic-name (:elastic_name params)
+  ;      _ (validate-elastic-name elastic-name)
+  ;      _ (validate-resharding-complete context index-set-id index elastic-name)
+  ;      index-set (index-set-util/get-index-set context elastic-name index-set-id)
+  ;      ;; search for index name in index-set :concepts to get concept type
+  ;      concept-type (get-concept-type-for-index index-set index)
+  ;      _ (when-not concept-type
+  ;          (errors/throw-service-error
+  ;            :not-found
+  ;            (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
+  ;      target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
+  ;      es-store (indexer-util/context->es-store context elastic-name)
+  ;      prefix-id (get-in index-set [:index-set :id])
+  ;      new-index-set (-> index-set
+  ;                        ;; delete the old index config from the index-set
+  ;                        (update-in [:index-set concept-type :indexes]
+  ;                                   (fn [indexes]
+  ;                                     (remove (fn [config]
+  ;                                               (= (gen-valid-index-name prefix-id (:name config))
+  ;                                                  index))
+  ;                                             indexes)))
+  ;                        (update-in [:index-set :concepts concept-type]
+  ;                                   assoc (keyword (index-set/get-canonical-key-name index)) target)
+  ;                        (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
+  ;                        (update-in [:index-set concept-type :resharding-targets]
+  ;                                   dissoc (keyword index))
+  ;                        (update-in [:index-set concept-type :resharding-status]
+  ;                                   dissoc (keyword index))
+  ;                        util/remove-nils-empty-maps-seqs)]
+  ;  (try
+  ;    ;; move alias
+  ;    (es-util/move-index-alias (indexer-util/context->conn context elastic-name)
+  ;                              index
+  ;                              target
+  ;                              (esi-helper/index-alias (string/replace index #"_\d+_shards$" "")))
+  ;    ;; delete old index
+  ;    (es/delete-index es-store index)
+  ;    ;; persist index-set changes
+  ;    (update-index-set context elastic-name new-index-set)
+  ;    (catch Exception e
+  ;      (error e (format "Failed to finalize resharding for [%s] -> [%s]" index target))
+  ;      (errors/throw-service-error :internal-error
+  ;                                  (format "Failed to finalize resharding for [%s]; see server logs." index)))))
+
+  )
+
+
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]

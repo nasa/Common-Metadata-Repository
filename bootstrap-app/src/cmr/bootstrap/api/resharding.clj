@@ -55,3 +55,12 @@
     (service/finalize-reshard-index context index es-cluster-name)
     {:status 200
      :body {:message (msg/resharding-completed index)}}))
+
+(defn rollback
+  "Rollback attempted resharding of index due to failures"
+  [context index params]
+  (let [es-cluster-name (:elastic_name params)]
+    (validate-es-cluster-name-not-blank es-cluster-name)
+    (service/rollback-reshard-index context index es-cluster-name)
+    {:status 200
+     :body {:message (msg/rollback-completed index)}}))
