@@ -315,13 +315,14 @@
 (defn rollback-reshard-index
   "Rollback attempted resharding of index due to failures"
   [context index elastic-name]
-  ;; TODO validate here
-  ;; TODO validate index is indeed being resharded right now
   ;; TODO validate index exists
-  ;; TODO validate index did fail resharding
   (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
         concept-type (get-concept-type-for-index fetched-index-set index)
         target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
+    ;; validate index is indeed being resharded right now
+    (if (nil? target)
+      (errors/throw-service-error :bad-request (format "The index [%s] is not being resharded and will not be rolled back." index)))
+
     (info (format "Rolling back reshard index [%s] to original state and removing index [%s]."
                   index target))
     ;; This will throw an exception if the index is not being resharded

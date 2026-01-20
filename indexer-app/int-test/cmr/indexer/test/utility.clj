@@ -137,8 +137,8 @@
                  :mapping {:dynamic "strict",
                            :_source {:enabled true},
                            :properties {:concept-id {:type "keyword", :norms false, :index_options "docs"},
-                                        :entry-title {:type "keyword", :norms false, :index_options "docs"}}}}}}
-  )
+                                        :entry-title {:type "keyword", :norms false, :index_options "docs"}}}}}})
+
 (def sample-index-set-updated
   {:index-set
    {:name "cmr-base-index-set-updated"

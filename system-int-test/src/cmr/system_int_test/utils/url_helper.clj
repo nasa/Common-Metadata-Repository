@@ -664,7 +664,7 @@
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
-(defn indexer-get-index-sets-by-id-url
+(defn indexer-index-sets-by-id-url
   "Gets the index set by id from indexer"
   [id]
   (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))
