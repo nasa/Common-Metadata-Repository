@@ -65,7 +65,7 @@
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards "abc" :elastic-name gran-elastic-name}))))
      (testing "index must exist"
        (is (= {:status 404
-               :errors ["Index [1_non-existing-index] does not exist."]}
+               :errors [(format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
               (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
      (testing "attempting to reshard an index that is already being resharded fails"
        (is (= {:status 200
