@@ -175,6 +175,10 @@
 
           _ (index/wait-until-indexed)
 
+          ;; check granule is found by search with revision 1
+          found-gran1 (search/retrieve-concept (:concept-id gran1) 1)
+          _ (is (= 200 (:status found-gran1)))
+
           ;; check granule doc is saved to old index
           gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
           gran-doc-in-orig-index-revision-id (get-in gran-doc-in-orig-index [:_source :revision-id])
@@ -189,6 +193,10 @@
           _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
 
           _ (index/wait-until-indexed)
+
+          ;; check granule is found by search with revision 2
+          found-gran1 (search/retrieve-concept (:concept-id gran1) 2)
+          _ (is (= 200 (:status found-gran1)))
 
           ;; check granule doc is saved to old index with updated revision
           gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
@@ -253,7 +261,11 @@
        (is (= 200 (:status resp)))
        (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
     (testing "Rollback reshard"
-      (let [;; start the reshard
+      (let [;; create collection
+            coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+            ;; create granule
+            gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+            ;; start the reshard
             start-resp (bootstrap/start-reshard-index small-collections-index-name {:synchronous true :num-shards 2 :elastic-name gran-elastic-name})
             _ (is (= 200 (:status start-resp)))
             ;; rollback reshard
@@ -273,7 +285,9 @@
         ;; check index-set that started resharded index is gone from granule indexes list
         (is (= expected-gran-index-list (get-in inner-granule-index-map [:indexes])))
         ;; check resharded index is deleted in ES
-        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))))))
+        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))
+        ;; check that you can still search for the granule
+        (is (= 200 (:status (search/retrieve-concept (:concept-id gran1) 1))))))))
 
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,
