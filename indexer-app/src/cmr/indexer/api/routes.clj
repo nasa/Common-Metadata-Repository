@@ -126,14 +126,12 @@
           (index-set-svc/finalize-index-resharding request-context id index params)
           {:status 200})
 
-        ;; Rollback resharding of an index, culminating in deleting the intended new resharded index and
-        ;; setting the original index back to its beginning state before resharding
+        ;; Rollback resharding of an index, which deletes the intended new resharded index and
+        ;; setting the original index set back to its beginning state before resharding
         (POST "/rollback" {:keys [request-context params]}
           (acl/verify-ingest-management-permission request-context :update)
           (index-set-svc/rollback-index-resharding request-context id index params)
-          {:status 200})
-
-        ))))
+          {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.
 (defn- build-routes [system]

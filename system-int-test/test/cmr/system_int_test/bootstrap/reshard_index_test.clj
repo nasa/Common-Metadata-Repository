@@ -65,7 +65,7 @@
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards "abc" :elastic-name gran-elastic-name}))))
      (testing "index must exist"
        (is (= {:status 404
-               :errors [(format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
+               :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
               (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
      (testing "attempting to reshard an index that is already being resharded fails"
        (is (= {:status 200
@@ -223,12 +223,11 @@
         services-index "1_services"
         small-collections-base-name "small_collections"
         small-collections-index-name (str "1_" small-collections-base-name)
-        resharded-small-collections-index-name (str small-collections-index-name "_2_shards")
-        resharded-small-collections-base-name (str small-collections-base-name "_2_shards")]
-   ;(testing "Given rollback reshard on non-existent index, Return error"
-   ;     (is (= {:status 400
-   ;             :errors ["TODO"]}
-   ;            (bootstrap/rollback-reshard-index non-existent-index-name {:elastic-name gran-elastic-name}))))
+        resharded-small-collections-index-name (str small-collections-index-name "_2_shards")]
+   (testing "Given rollback reshard on non-existent index, Return error"
+        (is (= {:status 404
+                :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" non-existent-index-name gran-elastic-name)]}
+               (bootstrap/rollback-reshard-index non-existent-index-name {:elastic-name gran-elastic-name}))))
    (testing "Given rollback reshard on index that is not being resharded, Return error"
      (is (= {:status 400
              :errors [(format "The index [%s] is not being resharded and will not be rolled back." small-collections-index-name)]}
@@ -260,17 +259,21 @@
             ;; rollback reshard
             rollback-resp (bootstrap/rollback-reshard-index small-collections-index-name {:elastic-name gran-elastic-name})
             _ (is (= 200 (:status rollback-resp)))
-            ;; check index-set that started resharded index is gone from resharding list
             index-set (index/get-index-set-by-id 1)
-            inner-granule-index-map (get-in index-set [:index-set :granule])]
+            inner-granule-index-map (get-in index-set [:index-set :granule])
+            ;; note: the index set was changed by the above previous tests which is why the settings expected below
+            ;; reflects the dis/sample-index-set settings and not the system default settings
+            expected-gran-index-list [{:name small-collections-base-name
+                                       :settings {:index {:number_of_shards 1 :number_of_replicas 0 :refresh_interval "10s"}}}
+                                      {:name "C6-PROV3"
+                                       :settings {:index {:number_of_shards 1 :number_of_replicas 0 :refresh_interval "10s"}}}]]
+
+        ;; check index-set that started resharded index is gone from resharding list
         (not-any? #(contains? inner-granule-index-map %) [:resharding-indexes :resharding-targets :resharding-status])
         ;; check index-set that started resharded index is gone from granule indexes list
-        ;;TODO remove one of these checks once the renaming of the index happens
-        (is (nil? (some #(= resharded-small-collections-index-name (:name %)) (:indexes inner-granule-index-map))))
-        (is (nil? (some #(= resharded-small-collections-base-name (:name %)) (:indexes inner-granule-index-map))))
+        (is (= expected-gran-index-list (get-in inner-granule-index-map [:indexes])))
         ;; check resharded index is deleted in ES
-        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))))
-   ))
+        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))))))
 
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,

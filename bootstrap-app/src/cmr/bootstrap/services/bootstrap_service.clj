@@ -315,14 +315,9 @@
 (defn rollback-reshard-index
   "Rollback attempted resharding of index due to failures"
   [context index elastic-name]
-  (info "CMR-11022 - INSIDE rollback-reshard-index in bootstrap service with index = " index " and elastic name = " elastic-name)
-  ;; TODO validate index exists
   (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
-        _ (info "CMR-11022 fetched-index-set = " fetched-index-set)
         concept-type (get-concept-type-for-index fetched-index-set index)
-        _ (info "CMR-11022 concept-type = " concept-type)
         target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
-    (info "CMR-11022 - target = " target)
     ;; validate index is indeed being resharded right now
     (if (nil? target)
       (errors/throw-service-error :bad-request (format "The index [%s] is not being resharded and will not be rolled back." index)))

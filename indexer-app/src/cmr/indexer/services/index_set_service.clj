@@ -804,7 +804,6 @@
   (let [elastic-name (:elastic_name params)
         _ (validate-elastic-name elastic-name)
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
-        _ (info "CMR-11022 index-set = " index-set)
         ;; search for index name in index-set :concepts to get concept type
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
@@ -819,10 +818,9 @@
                           (update-in [:index-set concept-type :indexes]
                                      (fn [indexes]
                                        (remove (fn [config]
-                                                 ;; TODO we need to replace with canonical once fix is made in other ticket
+                                                 ;; TODO we need to replace with base name once fix is made in other ticket
                                                  (= (gen-valid-index-name prefix-id (:name config)) target-index-name))
                                                indexes)))
-                          ;(remove #(= ((keyword (index-set/get-canonical-key-name target-index-name)) (:name %))))
                           ;; remove the target index from the resharding lists
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]
@@ -830,7 +828,6 @@
                           (update-in [:index-set concept-type :resharding-status]
                                      dissoc (keyword index))
                           util/remove-nils-empty-maps-seqs)]
-    (info "CMR-11022 new-index-set = " new-index-set)
     (try
       ;; delete attempted resharding index
       (es/delete-index es-store target-index-name)

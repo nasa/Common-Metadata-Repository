@@ -75,5 +75,4 @@
                :subscription {},
                :tag {},
                :tool {},
-               :variable {}}
-    }})
+               :variable {}}}})
