@@ -818,7 +818,7 @@
                           (update-in [:index-set concept-type :indexes]
                                      (fn [indexes]
                                        (remove (fn [config]
-                                                 ;; TODO we need to replace with base name once fix is made in other ticket
+                                                 ;; TODO CMR-11022 we need to replace with base name once fix is made in other ticket
                                                  (= (gen-valid-index-name prefix-id (:name config)) target-index-name))
                                                indexes)))
                           ;; remove the target index from the resharding lists
