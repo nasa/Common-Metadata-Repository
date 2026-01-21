@@ -1,11 +1,11 @@
 (ns cmr.system-int-test.data2.index-set)
 
-(def sample-index-set-id 5)
-(def sample-index-set
+(defn sample-index-set
+  [id]
   {:index-set
    {:name "cmr-base-index-set-updated"
-    :id sample-index-set-id
-    :create-reason "updated index set from sample index"
+    :id id
+    :create-reason "sample index"
     :collection {:indexes
                  [{:name "COLL2-PROV1"
                    :settings {:index {:number_of_shards 1,
@@ -52,11 +52,11 @@
                                      :collection-concept-id {:type "keyword" :norms false :index_options "docs"}}}}
     ;; added concepts list
     :concepts {
-               :generic-citation {:generic-citation "5_generic_citation"}
-               :granule {:small_collections "5_small_collections"
-                         :C6-PROV3 "5_c6_prov3"}
-               :collection {:COLL2-PROV1 "5_coll2_prov1"}
-               :service {:services "5_services"}
+               :generic-citation {:generic-citation (str id "_generic_citation")}
+               :granule {:small_collections (str id "_small_collections")
+                         :C6-PROV3 (str id "_c6_prov3")}
+               :collection {:COLL2-PROV1 (str id "_coll2_prov1")}
+               :service {:services (str id "_services")}
                :autocomplete {},
                :deleted-granule {},
                :generic-citation-draft {},

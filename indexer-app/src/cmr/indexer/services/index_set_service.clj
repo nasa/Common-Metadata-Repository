@@ -813,14 +813,16 @@
               (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
         target-index-name (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         es-store (indexer-util/context->es-store context elastic-name)
+        prefix-id (get-in index-set [:index-set :id])
         new-index-set (-> index-set
                           ;; remove the target index from the concept-type's index list
-                          ;(update-in [:index-set concept-type :indexes]
-                          ;           (fn [indexes]
-                          ;             (remove (fn [config]
-                          ;                       (= (gen-valid-index-name prefix-id (:name config)) index))
-                          ;                     indexes)))
-                          (remove #(= ((keyword (index-set/get-canonical-key-name target-index-name)) (:name %))))
+                          (update-in [:index-set concept-type :indexes]
+                                     (fn [indexes]
+                                       (remove (fn [config]
+                                                 ;; TODO we need to replace with canonical once fix is made in other ticket
+                                                 (= (gen-valid-index-name prefix-id (:name config)) target-index-name))
+                                               indexes)))
+                          ;(remove #(= ((keyword (index-set/get-canonical-key-name target-index-name)) (:name %))))
                           ;; remove the target index from the resharding lists
                           (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
                           (update-in [:index-set concept-type :resharding-targets]

@@ -220,10 +220,12 @@
   (let [gran-elastic-name "gran-elastic"
         elastic-name "elastic"
         non-existent-index-name "non-existent-index"
-        services-index "5_services"
-        small-collections-canonical-name "small_collections"
-        small-collections-index-name (str "1_" small-collections-canonical-name)]
-   ;(testing "Given rollback reshard on non-existant index, Return error"
+        services-index "1_services"
+        small-collections-base-name "small_collections"
+        small-collections-index-name (str "1_" small-collections-base-name)
+        resharded-small-collections-index-name (str small-collections-index-name "_2_shards")
+        resharded-small-collections-base-name (str small-collections-base-name "_2_shards")]
+   ;(testing "Given rollback reshard on non-existent index, Return error"
    ;     (is (= {:status 400
    ;             :errors ["TODO"]}
    ;            (bootstrap/rollback-reshard-index non-existent-index-name {:elastic-name gran-elastic-name}))))
@@ -231,28 +233,26 @@
      (is (= {:status 400
              :errors [(format "The index [%s] is not being resharded and will not be rolled back." small-collections-index-name)]}
             (bootstrap/rollback-reshard-index small-collections-index-name {:elastic-name gran-elastic-name}))))
-   ;(testing "Given rollback reshard on index that is COMPLETE, allow rollback"
-   ;  (let [index-set (update-in dis/sample-index-set
-   ;                             [:index-set :granule]
-   ;                             merge
-   ;                             {:resharding-indexes #{services-index}
-   ;                              :resharding-targets {services-index (str services-index "_5_shards")}
-   ;                              :resharding-status {services-index "COMPLETE"}})
-   ;        resp (index/update-index-set index-set dis/sample-index-set-id)]
-   ;    (is (= 200 (:status resp)))
-   ;    (is (= {:status 200}
-   ;           (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name})))))
-   ;(testing "Given rollback reshard on index that is IN PROGRESS, allow rollback"
-   ;  (let [index-set (update-in (dis/sample-index-set)
-   ;                             [:index-set :granule]
-   ;                             merge
-   ;                             {:resharding-indexes #{services-index}
-   ;                              :resharding-targets {services-index (str services-index "_5_shards")}
-   ;                              :resharding-status {services-index "IN PROGRESS"}})
-   ;        resp (index/update-index-set index-set dis/sample-index-set-id)]
-   ;    (is (= 200 (:status resp)))
-   ;    (is (= {:status 200}
-   ;           (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name})))))
+   (testing "Given rollback reshard on index that is COMPLETE, allow rollback"
+     (let [index-set (update-in (dis/sample-index-set 1)
+                                [:index-set :service]
+                                merge
+                                {:resharding-indexes #{services-index}
+                                 :resharding-targets {services-index (str services-index "_5_shards")}
+                                 :resharding-status {services-index "COMPLETE"}})
+           resp (index/update-index-set index-set 1)]
+       (is (= 200 (:status resp)))
+       (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
+   (testing "Given rollback reshard on index that is IN PROGRESS, allow rollback"
+     (let [index-set (update-in (dis/sample-index-set 1)
+                                [:index-set :service]
+                                merge
+                                {:resharding-indexes #{services-index}
+                                 :resharding-targets {services-index (str services-index "_5_shards")}
+                                 :resharding-status {services-index "IN PROGRESS"}})
+           resp (index/update-index-set index-set 1)]
+       (is (= 200 (:status resp)))
+       (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
     (testing "Rollback reshard"
       (let [;; start the reshard
             start-resp (bootstrap/start-reshard-index small-collections-index-name {:synchronous true :num-shards 2 :elastic-name gran-elastic-name})
@@ -265,12 +265,12 @@
             inner-granule-index-map (get-in index-set [:index-set :granule])]
         (not-any? #(contains? inner-granule-index-map %) [:resharding-indexes :resharding-targets :resharding-status])
         ;; check index-set that started resharded index is gone from granule indexes list
-        (is (nil? (some #(= (str small-collections-index-name "_2_shards") (:name %)) (:indexes inner-granule-index-map))))
+        ;;TODO remove one of these checks once the renaming of the index happens
+        (is (nil? (some #(= resharded-small-collections-index-name (:name %)) (:indexes inner-granule-index-map))))
+        (is (nil? (some #(= resharded-small-collections-base-name (:name %)) (:indexes inner-granule-index-map))))
         ;; check resharded index is deleted in ES
-        (is (false? (es-util/index-exists? (str small-collections-index-name "_2_shards") gran-elastic-name)))))
+        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))))
    ))
-
-
 
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,
