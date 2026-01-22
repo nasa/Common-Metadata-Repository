@@ -1,11 +1,9 @@
-
 (ns cmr.system-int-test.search.granule.granule-counts-cache-integration-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.index-util :as index]
-   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gc]
@@ -18,21 +16,15 @@
    (create-collection n "PROV1"))
   ([n provider-id]
    (let [collection (dc/collection {:entry-title (str "coll" n)})
-         {:keys [concept-id] :as response} (ingest/ingest-concept (dc/collection-concept provider-id collection))]
+         {:keys [concept-id]} (ingest/ingest-concept (dc/collection-concept provider-id collection))]
      (assoc collection :concept-id concept-id))))
-
-(defn- create-collections [provider-id count]
-  (doall
-   (for [n (range count)]
-     (create-collection n provider-id))))
 
 (defn- create-granule
   ([coll n]
    (create-granule coll n "PROV1"))
   ([coll n provider-id]
-   (let [granule (dg/granule coll {:granule-ur (str "gran" n)})
-         concept (dg/granule-concept provider-id granule)]
-     (ingest/ingest-concept concept))))
+   (let [granule (dg/granule coll {:granule-ur (str "gran" n)})]
+     (ingest/ingest-concept (dg/granule-concept provider-id coll granule)))))
 
 (defn- refresh-cache []
   (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/refresh-granule-counts-cache)))
@@ -102,8 +94,8 @@
 
     (testing "Cache performance under load"
       (let [num-collections 100
-            collections (doall (for [i (range num-collections)]
-                                 (create-collection (+ i 10))))
+            _ (doall (for [i (range num-collections)]
+                       (create-collection (+ i 10))))
             _ (index/wait-until-indexed)
             start-time (System/currentTimeMillis)
             _ (refresh-cache)
@@ -111,6 +103,40 @@
             elapsed-time (- end-time start-time)]
         (println "Cache refresh time for" num-collections "collections:" elapsed-time "ms")
         (is (< elapsed-time 10000) "Cache refresh should complete in less than 10 seconds for 100 collections")))
+
+    (testing "Cache behavior with larger dataset"
+      (let [num-collections 1000
+            _ (doall (for [i (range num-collections)]
+                       (create-collection (+ i 1000))))
+            _ (index/wait-until-indexed)
+            start-time (System/currentTimeMillis)
+            _ (refresh-cache)
+            end-time (System/currentTimeMillis)
+            elapsed-time (- end-time start-time)]
+        (println "Cache refresh time for" num-collections "collections:" elapsed-time "ms")
+        (is (< elapsed-time 60000) "Cache refresh should complete in less than 60 seconds for 1000 collections")))
+
+    (testing "Cache behavior during simulated system restart"
+      (let [initial-counts (get-cache-counts)
+            _ (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/reset-granule-counts-cache))
+            _ (refresh-cache)
+            restarted-counts (get-cache-counts)]
+        (is (= initial-counts restarted-counts) "Cache should be consistent after simulated restart")))
+
+    (testing "Granular performance metrics"
+      (let [coll (create-collection 1000)
+            _ (dotimes [n 100] (create-granule coll n))
+            _ (index/wait-until-indexed)
+            start-time (System/currentTimeMillis)
+            _ (refresh-cache)
+            refresh-time (- (System/currentTimeMillis) start-time)
+            retrieval-start (System/currentTimeMillis)
+            _ (get-cache-counts)
+            retrieval-time (- (System/currentTimeMillis) retrieval-start)]
+        (println "Cache refresh time for single collection with 100 granules:" refresh-time "ms")
+        (println "Cache retrieval time:" retrieval-time "ms")
+        (is (< refresh-time 5000) "Single collection refresh should complete in less than 5 seconds")
+        (is (< retrieval-time 100) "Cache retrieval should complete in less than 100 ms")))
 
     (testing "Cache behavior with multiple providers"
       (let [coll-prov3 (create-collection 4 "PROV3")
@@ -167,4 +193,16 @@
         (is (true? (get has-granules-map (:concept-id coll1))))
         (is (true? (get has-granules-map (:concept-id coll2))))
         (is (true? (get has-granules-map (:concept-id coll3))))
-        (is (false? (get has-granules-map (:concept-id (create-collection 5)))))))))
+        (is (false? (get has-granules-map (:concept-id (create-collection 5)))))))
+
+    (testing "Concurrent access to cache"
+      (let [num-threads 10
+            iterations 100
+            futures (doall (repeatedly num-threads
+                                       #(future
+                                          (dotimes [_ iterations]
+                                            (let [counts (get-cache-counts)]
+                                              (is (map? counts))
+                                              (is (every? number? (vals counts))))))))]
+        (run! deref futures)
+        (is true "Concurrent access test completed without exceptions")))))
