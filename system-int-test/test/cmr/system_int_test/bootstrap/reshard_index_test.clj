@@ -281,7 +281,7 @@
                                        :settings {:index {:number_of_shards 1 :number_of_replicas 0 :refresh_interval "10s"}}}]]
 
         ;; check index-set that started resharded index is gone from resharding list
-        (not-any? #(contains? inner-granule-index-map %) [:resharding-indexes :resharding-targets :resharding-status])
+        (is (not-any? #(contains? inner-granule-index-map %) [:resharding-indexes :resharding-targets :resharding-status]))
         ;; check index-set that started resharded index is gone from granule indexes list
         (is (= expected-gran-index-list (get-in inner-granule-index-map [:indexes])))
         ;; check resharded index is deleted in ES

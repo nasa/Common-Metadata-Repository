@@ -319,7 +319,7 @@
         concept-type (get-concept-type-for-index fetched-index-set index)
         target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
     ;; validate index is indeed being resharded right now
-    (if (nil? target)
+    (when-not target
       (errors/throw-service-error :bad-request (format "The index [%s] is not being resharded and will not be rolled back." index)))
 
     (info (format "Rolling back reshard index [%s] to original state and removing index [%s]."
