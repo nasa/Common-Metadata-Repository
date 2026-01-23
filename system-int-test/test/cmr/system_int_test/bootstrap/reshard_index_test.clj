@@ -265,6 +265,7 @@
             coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
             ;; create granule
             gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+            _ (index/wait-until-indexed)
             ;; start the reshard
             start-resp (bootstrap/start-reshard-index small-collections-index-name {:synchronous true :num-shards 2 :elastic-name gran-elastic-name})
             _ (is (= 200 (:status start-resp)))
