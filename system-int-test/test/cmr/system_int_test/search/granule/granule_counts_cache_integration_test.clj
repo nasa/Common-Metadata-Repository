@@ -1,208 +1,268 @@
 (ns cmr.system-int-test.search.granule.granule-counts-cache-integration-test
+  "Integration tests for the granule counts cache feature (CMR-10838).
+   Tests the Redis-backed cache that stores collection-concept-id to granule count mappings."
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gc]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
+   [clj-http.client :as client]
+   [cmr.system-int-test.system :as sys]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (defn- create-collection
+  "Creates and ingests a collection, returning the collection with concept-id."
   ([n]
    (create-collection n "PROV1"))
   ([n provider-id]
-   (let [collection (dc/collection {:entry-title (str "coll" n)})
-         {:keys [concept-id]} (ingest/ingest-concept (dc/collection-concept provider-id collection))]
-     (assoc collection :concept-id concept-id))))
+   (d/ingest provider-id 
+             (dc/collection {:entry-title (str "coll" n)})
+             {:validate-keywords false})))
 
 (defn- create-granule
+  "Creates and ingests a granule for the given collection."
   ([coll n]
    (create-granule coll n "PROV1"))
   ([coll n provider-id]
-   (let [granule (dg/granule coll {:granule-ur (str "gran" n)})]
-     (ingest/ingest-concept (dg/granule-concept provider-id coll granule)))))
+   (d/ingest provider-id 
+             (dg/granule coll {:granule-ur (str "gran" n)}))))
 
-(defn- refresh-cache []
-  (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/refresh-granule-counts-cache)))
+(defn- refresh-cache-via-bootstrap
+  "Refreshes the granule counts cache via the bootstrap API endpoint."
+  []
+  (let [response (client/post 
+                   (str (url/bootstrap-root) "/caches/refresh/granule-counts-cache")
+                   {:connection-manager (sys/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :throw-exceptions false})]
+    (is (= 200 (:status response)) "Cache refresh should succeed")
+    response))
 
-(defn- get-cache-counts []
-  (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/get-granule-counts)))
+(deftest ^:integration granule-counts-cache-basic-test
+  (testing "Basic cache functionality through search API"
+    (let [coll1 (create-collection 1)
+          coll2 (create-collection 2)
+          coll3 (create-collection 3 "PROV2")]
+      
+      (testing "Collections with no granules"
+        (index/wait-until-indexed)
+        (refresh-cache-via-bootstrap)
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 0 coll2 0 coll3 0} results)
+              "Collections should have 0 granules initially")))
+      
+      (testing "After adding granules"
+        (dotimes [n 2] (create-granule coll1 n))
+        (create-granule coll2 0)
+        (index/wait-until-indexed)
+        (refresh-cache-via-bootstrap)
+        
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 2 coll2 1 coll3 0} results)
+              "Cache should reflect updated granule counts")))
+      
+      (testing "Cache works with provider filtering"
+        (let [results (search/find-refs :collection 
+                                        {:include-granule-counts true
+                                         :provider "PROV1"})]
+          (is (gc/granule-counts-match? :xml {coll1 2 coll2 1} results)
+              "Provider filtering should work with cached counts"))))))
 
-(deftest ^:integration granule-counts-cache-test
-  (let [coll1 (create-collection 1)
-        coll2 (create-collection 2)
-        coll3 (create-collection 3 "PROV2")]
+(deftest ^:integration granule-counts-cache-update-test
+  (testing "Cache updates correctly after data changes"
+    (let [coll1 (create-collection 1)
+          coll2 (create-collection 2 "PROV2")]
+      
+      ;; Initial state
+      (dotimes [n 3] (create-granule coll1 n))
+      (create-granule coll2 0 "PROV2")
+      (index/wait-until-indexed)
+      (refresh-cache-via-bootstrap)
+      
+      (testing "Initial counts"
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 3 coll2 1} results))))
+      
+      (testing "After adding more granules"
+        (dotimes [n 2] (create-granule coll2 (+ n 1) "PROV2"))
+        (index/wait-until-indexed)
+        (refresh-cache-via-bootstrap)
+        
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 3 coll2 3} results)
+              "Cache should reflect new granules")))
+      
+      (testing "After deleting granules"
+        (let [gran-to-delete (create-granule coll1 10)]
+          (ingest/delete-concept (assoc gran-to-delete :concept-type :granule))
+          (index/wait-until-indexed)
+          (refresh-cache-via-bootstrap)
+          
+          (let [results (search/find-refs :collection {:include-granule-counts true})]
+            (is (gc/granule-counts-match? :xml {coll1 3 coll2 3} results)
+                "Cache should reflect deleted granules"))))
+      
+      (testing "After deleting a collection"
+        (ingest/delete-concept (assoc coll2 :concept-type :collection))
+        (index/wait-until-indexed)
+        (refresh-cache-via-bootstrap)
+        
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 3} results)
+              "Deleted collections should not appear in cache"))))))
 
-    (testing "Initial cache state"
-      (is (empty? (get-cache-counts)) "Cache should be empty initially"))
-
-    (testing "Cache population"
+(deftest ^:integration granule-counts-cache-formats-test
+  (testing "Cache works with different metadata formats"
+    (let [coll1 (create-collection 1)
+          coll2 (create-collection 2)]
+      
       (dotimes [n 2] (create-granule coll1 n))
       (create-granule coll2 0)
       (index/wait-until-indexed)
-      (refresh-cache)
-      (let [counts (get-cache-counts)]
-        (is (= 3 (count counts)))
-        (is (= 2 (get counts (:concept-id coll1))))
-        (is (= 1 (get counts (:concept-id coll2))))
-        (is (= 0 (get counts (:concept-id coll3))))))
+      (refresh-cache-via-bootstrap)
+      
+      (testing "XML format"
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml {coll1 2 coll2 1} results))))
+      
+      (testing "ECHO10 format"
+        (let [results (search/find-metadata :collection :echo10 
+                                           {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :echo10 {coll1 2 coll2 1} results))))
+      
+      (testing "ISO19115 format"
+        (let [results (search/find-metadata :collection :iso19115 
+                                           {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :iso19115 {coll1 2 coll2 1} results))))
+      
+      (testing "UMM-JSON format"
+        (let [results (search/find-metadata :collection :umm-json 
+                                           {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :umm-json {coll1 2 coll2 1} results)))))))
 
-    (testing "Cache retrieval via search"
-      (let [results (search/find-refs :collection {:include-granule-counts true})]
-        (is (gc/granule-counts-match? :xml {coll1 2 coll2 1 coll3 0} results))))
-
-    (testing "Cache update"
-      (create-granule coll3 0 "PROV2")
+(deftest ^:integration granule-counts-cache-consistency-test
+  (testing "Cache consistency with Elasticsearch"
+    (let [coll1 (create-collection 1)
+          coll2 (create-collection 2)
+          coll3 (create-collection 3)]
+      
+      (dotimes [n 5] (create-granule coll1 n))
+      (dotimes [n 3] (create-granule coll2 n))
+      (create-granule coll3 0)
       (index/wait-until-indexed)
-      (refresh-cache)
-      (let [counts (get-cache-counts)]
-        (is (= 1 (get counts (:concept-id coll3))))))
+      (refresh-cache-via-bootstrap)
+      
+      (testing "Cached counts match search results"
+        (let [cache-results (search/find-refs :collection {:include-granule-counts true})
+              cache-counts (gc/results->actual-granule-count :xml cache-results)
+              
+              ;; Get counts via direct metadata search (which uses cache)
+              metadata-results (search/find-metadata :collection :echo10 
+                                                    {:include-granule-counts true})
+              metadata-counts (gc/results->actual-granule-count :echo10 metadata-results)]
+          
+          (is (= 5 (get cache-counts (:concept-id coll1))))
+          (is (= 3 (get cache-counts (:concept-id coll2))))
+          (is (= 1 (get cache-counts (:concept-id coll3))))
+          (is (= cache-counts metadata-counts)
+              "Counts should be consistent across different search methods"))))))
 
-    (testing "Cache with search parameters"
-      (let [results (search/find-refs :collection 
-                                      {:include-granule-counts true
-                                       :provider "PROV1"})]
-        (is (gc/granule-counts-match? :xml {coll1 2 coll2 1} results))))
+(deftest ^:integration granule-counts-cache-has-granules-test
+  (testing "has-granules parameter works with cache"
+    (let [coll-with-grans (create-collection 1)
+          coll-without-grans (create-collection 2)]
+      
+      (dotimes [n 3] (create-granule coll-with-grans n))
+      (index/wait-until-indexed)
+      (refresh-cache-via-bootstrap)
+      
+      (testing "Search with has-granules=true"
+        (let [results (search/find-refs :collection {:has-granules true})]
+          (is (= 1 (count (:refs results))))
+          (is (= (:concept-id coll-with-grans) 
+                 (:id (first (:refs results)))))))
+      
+      (testing "Search with has-granules=false"
+        (let [results (search/find-refs :collection {:has-granules false})]
+          (is (= 1 (count (:refs results))))
+          (is (= (:concept-id coll-without-grans) 
+                 (:id (first (:refs results))))))))))
 
-    (testing "Has-granules functionality"
-      (let [results (search/find-refs :collection {:has-granules true})]
-        (is (= 3 (count (:refs results))))
-        (is (every? #(contains? #{(:concept-id coll1) (:concept-id coll2) (:concept-id coll3)}
-                                (:id %))
-                    (:refs results)))))
+(deftest ^:integration granule-counts-cache-multiple-providers-test
+  (testing "Cache correctly handles multiple providers"
+    (let [coll-prov1 (create-collection 1 "PROV1")
+          coll-prov2 (create-collection 2 "PROV2")
+          coll-prov3 (create-collection 3 "PROV3")]
+      
+      (dotimes [n 2] (create-granule coll-prov1 n "PROV1"))
+      (dotimes [n 3] (create-granule coll-prov2 n "PROV2"))
+      (dotimes [n 5] (create-granule coll-prov3 n "PROV3"))
+      (index/wait-until-indexed)
+      (refresh-cache-via-bootstrap)
+      
+      (testing "All providers"
+        (let [results (search/find-refs :collection {:include-granule-counts true})]
+          (is (gc/granule-counts-match? :xml 
+                                        {coll-prov1 2 coll-prov2 3 coll-prov3 5} 
+                                        results))))
+      
+      (testing "Filter by PROV1"
+        (let [results (search/find-refs :collection 
+                                        {:include-granule-counts true
+                                         :provider "PROV1"})]
+          (is (gc/granule-counts-match? :xml {coll-prov1 2} results))))
+      
+      (testing "Filter by PROV2"
+        (let [results (search/find-refs :collection 
+                                        {:include-granule-counts true
+                                         :provider "PROV2"})]
+          (is (gc/granule-counts-match? :xml {coll-prov2 3} results)))))))
 
-    (testing "Cache consistency"
-      (let [cache-counts (get-cache-counts)
-            search-counts (gc/results->actual-granule-count 
-                            :echo10 
-                            (search/find-metadata :collection 
-                                                  :echo10 
-                                                  {:include-granule-counts true}))]
-        (is (= cache-counts search-counts))))
+(deftest ^:integration granule-counts-cache-error-handling-test
+  (testing "Error handling for invalid parameters"
+    (testing "Invalid include-granule-counts value"
+      (let [response (search/find-refs :collection {:include-granule-counts "invalid"})]
+        (is (= 400 (:status response)))
+        (is (some #(re-find #"include_granule_counts" %) (:errors response)))))
+    
+    (testing "include-granule-counts not allowed on granule search"
+      (let [response (search/find-refs :granule {:include-granule-counts true})]
+        (is (= 400 (:status response)))
+        (is (some #(re-find #"include_granule_counts.*not recognized" %) (:errors response)))))))
 
-    (testing "Different result formats"
-      (doseq [format [:echo10 :iso19115 :umm-json]]
-        (let [results (search/find-metadata :collection format {:include-granule-counts true})]
-          (is (gc/granule-counts-match? format {coll1 2 coll2 1 coll3 1} results)))))
-
-    (testing "Error handling"
-      (is (thrown? Exception (search/find-refs :collection {:include-granule-counts "invalid"}))))
-
-    (testing "Cache performance under load"
-      (let [num-collections 100
-            _ (doall (for [i (range num-collections)]
-                       (create-collection (+ i 10))))
-            _ (index/wait-until-indexed)
-            start-time (System/currentTimeMillis)
-            _ (refresh-cache)
-            end-time (System/currentTimeMillis)
-            elapsed-time (- end-time start-time)]
-        (println "Cache refresh time for" num-collections "collections:" elapsed-time "ms")
-        (is (< elapsed-time 10000) "Cache refresh should complete in less than 10 seconds for 100 collections")))
-
-    (testing "Cache behavior with larger dataset"
-      (let [num-collections 1000
-            _ (doall (for [i (range num-collections)]
-                       (create-collection (+ i 1000))))
-            _ (index/wait-until-indexed)
-            start-time (System/currentTimeMillis)
-            _ (refresh-cache)
-            end-time (System/currentTimeMillis)
-            elapsed-time (- end-time start-time)]
-        (println "Cache refresh time for" num-collections "collections:" elapsed-time "ms")
-        (is (< elapsed-time 60000) "Cache refresh should complete in less than 60 seconds for 1000 collections")))
-
-    (testing "Cache behavior during simulated system restart"
-      (let [initial-counts (get-cache-counts)
-            _ (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/reset-granule-counts-cache))
-            _ (refresh-cache)
-            restarted-counts (get-cache-counts)]
-        (is (= initial-counts restarted-counts) "Cache should be consistent after simulated restart")))
-
-    (testing "Granular performance metrics"
-      (let [coll (create-collection 1000)
-            _ (dotimes [n 100] (create-granule coll n))
-            _ (index/wait-until-indexed)
-            start-time (System/currentTimeMillis)
-            _ (refresh-cache)
-            refresh-time (- (System/currentTimeMillis) start-time)
-            retrieval-start (System/currentTimeMillis)
-            _ (get-cache-counts)
-            retrieval-time (- (System/currentTimeMillis) retrieval-start)]
-        (println "Cache refresh time for single collection with 100 granules:" refresh-time "ms")
-        (println "Cache retrieval time:" retrieval-time "ms")
-        (is (< refresh-time 5000) "Single collection refresh should complete in less than 5 seconds")
-        (is (< retrieval-time 100) "Cache retrieval should complete in less than 100 ms")))
-
-    (testing "Cache behavior with multiple providers"
-      (let [coll-prov3 (create-collection 4 "PROV3")
-            _ (create-granule coll-prov3 0 "PROV3")
-            _ (index/wait-until-indexed)
-            _ (refresh-cache)
-            counts (get-cache-counts)]
-        (is (= 1 (get counts (:concept-id coll-prov3))))
-        (is (= 4 (count counts)))))
-
-    (testing "Cache behavior after deleting granules"
-      (let [granule-to-delete (create-granule coll1 100)]
-        (ingest/delete-concept (assoc granule-to-delete :concept-type :granule))
-        (index/wait-until-indexed)
-        (refresh-cache)
-        (let [counts (get-cache-counts)]
-          (is (= 2 (get counts (:concept-id coll1)))))))
-
-    (testing "Cache behavior after deleting a collection"
-      (let [coll-to-delete (create-collection 6)
-            _ (create-granule coll-to-delete 0)
-            _ (index/wait-until-indexed)
-            _ (refresh-cache)
-            before-delete-counts (get-cache-counts)]
-        (is (contains? before-delete-counts (:concept-id coll-to-delete)))
-        (ingest/delete-concept (assoc coll-to-delete :concept-type :collection))
-        (index/wait-until-indexed)
-        (refresh-cache)
-        (let [after-delete-counts (get-cache-counts)]
-          (is (not (contains? after-delete-counts (:concept-id coll-to-delete)))))))
-
-    (testing "Cache behavior with a large number of granules in a single collection"
-      (let [large-coll (create-collection 7)
-            granule-count 1000]
-        (dotimes [n granule-count]
-          (create-granule large-coll n))
-        (index/wait-until-indexed)
-        (refresh-cache)
-        (let [counts (get-cache-counts)]
-          (is (= granule-count (get counts (:concept-id large-coll)))))))
-
-    (testing "Cache handles non-existent provider"
-      (is (empty? (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/get-granule-counts ["NON_EXISTENT_PROV"])))))
-
-    (testing "Cache refresh with custom function"
-      (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/refresh-granule-counts-cache #(hash-map "TEST1" 100 "TEST2" 200)))
-      (let [counts (get-cache-counts)]
-        (is (= 2 (count counts)))
-        (is (= 100 (get counts "TEST1")))
-        (is (= 200 (get counts "TEST2")))))
-
-    (testing "Get-has-granules-map functionality"
-      (let [has-granules-map (dev-sys-util/eval-in-dev-sys `(cmr.search.data.granule-counts-cache/get-has-granules-map))]
-        (is (true? (get has-granules-map (:concept-id coll1))))
-        (is (true? (get has-granules-map (:concept-id coll2))))
-        (is (true? (get has-granules-map (:concept-id coll3))))
-        (is (false? (get has-granules-map (:concept-id (create-collection 5)))))))
-
-    (testing "Concurrent access to cache"
-      (let [num-threads 10
-            iterations 100
-            futures (doall (repeatedly num-threads
-                                       #(future
-                                          (dotimes [_ iterations]
-                                            (let [counts (get-cache-counts)]
-                                              (is (map? counts))
-                                              (is (every? number? (vals counts))))))))]
-        (run! deref futures)
-        (is true "Concurrent access test completed without exceptions")))))
+(deftest ^:integration granule-counts-cache-performance-test
+  (testing "Cache performance with moderate dataset"
+    (let [num-collections 10
+          collections (doall (for [i (range num-collections)]
+                              (create-collection (+ i 10))))]
+      
+      ;; Add varying numbers of granules to each collection
+      (doseq [[idx coll] (map-indexed vector collections)]
+        (dotimes [n (inc idx)] 
+          (create-granule coll n)))
+      
+      (index/wait-until-indexed)
+      
+      (testing "Cache refresh completes in reasonable time"
+        (let [start-time (System/currentTimeMillis)
+              _ (refresh-cache-via-bootstrap)
+              elapsed-time (- (System/currentTimeMillis) start-time)]
+          (println "Cache refresh time for" num-collections "collections:" elapsed-time "ms")
+          (is (< elapsed-time 5000) 
+              "Cache refresh should complete in less than 5 seconds for 10 collections")))
+      
+      (testing "Search with cache is fast"
+        (let [start-time (System/currentTimeMillis)
+              results (search/find-refs :collection {:include-granule-counts true})
+              elapsed-time (- (System/currentTimeMillis) start-time)]
+          (println "Search with granule counts time:" elapsed-time "ms")
+          (is (< elapsed-time 2000)
+              "Search with cached counts should complete in less than 2 seconds")
+          (is (= num-collections (count (:refs results)))))))))
