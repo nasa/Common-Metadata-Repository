@@ -89,7 +89,7 @@
               (is (= "COMPLETE" (:task-status (ingest/granule-bulk-update-task-status task-id)))))
 
             (testing "The data is reflected in the updated values in search"
-              (index/refresh-elastic-index)
+              (index/refresh-all-elastic-indexes)
               (let [next-granules (-> (search/find-concepts-umm-json :granule {:granule-ur urs})
                                       :body
                                       (json/parse-string true)

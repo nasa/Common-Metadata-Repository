@@ -28,6 +28,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.indexer.data.concepts.granule :as g]
@@ -52,7 +53,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :search-index :db :queue-broker :scheduler :web :nrepl])
+  [:log :caches :gran-search-index :search-index :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -87,8 +88,8 @@
 
    has-gran-or-cwic-results-feature/has-granules-or-opensearch-cache-key
    (has-gran-or-cwic-results-feature/create-has-granules-or-opensearch-map-cache)
-   
-   granule-counts-cache/granule-counts-cache-key 
+
+   granule-counts-cache/granule-counts-cache-key
    (granule-counts-cache/create-granule-counts-cache-client)})
 
 (def jobs-to-schedule
@@ -151,13 +152,15 @@
                     (assoc-in [:caches g/parent-collection-cache-key]
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
-                    (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
+                    (assoc-in [:gran-elastic :config :retry-handler] bi/elastic-retry-handler)
+                    (assoc-in [:elastic :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
         sys {:instance-name (common-sys/instance-name "bootstrap")
              :log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
-             :search-index (search-index/create-elastic-search-index)
+             :gran-search-index (search-index/create-elastic-search-index es-config/gran-elastic-name)
+             :search-index (search-index/create-elastic-search-index es-config/elastic-name)
              :db-batch-size (db-batch-size)
              :core-async-dispatcher (dispatch/create-backend :async)
              :synchronous-dispatcher (dispatch/create-backend :sync)

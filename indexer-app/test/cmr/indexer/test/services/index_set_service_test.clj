@@ -1,8 +1,14 @@
 (ns cmr.indexer.test.services.index-set-service-test
   "unit tests for index-set app service functions"
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.common.util :refer [are3]]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.indexer.common.index-set-util :as idx-set-util]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
+   [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
@@ -22,23 +28,83 @@
     (is (= expected-index-name3 actual-index-name3))))
 
 (deftest prune-index-set-test
-  (let [pruned-index-set {:id 3
-                          :name "cmr-base-index-set"
-                          :concepts (merge
-                                     {:collection  {:C6-PROV3 "3_c6_prov3"
-                                                    :C4-PROV2 "3_c4_prov2"}
-                                      :granule {:small_collections "3_small_collections"
-                                                :C4-PROV3 "3_c4_prov3"
-                                                :C5-PROV5 "3_c5_prov5"}
-                                      :tag {}
-                                      :variable {}
-                                      :service {}
-                                      :tool {}
-                                      :deleted-granule {}
-                                      :autocomplete {}
-                                      :subscription {}}
-                                     (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}]
-    (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
+  (let [expected-pruned-gran-index-set {:id 3
+                                        :name "cmr-base-index-set"
+                                        :concepts (merge
+                                                    {:granule {:small_collections "3_small_collections"
+                                                               :C4-PROV3 "3_c4_prov3"
+                                                               :C5-PROV5 "3_c5_prov5"}
+                                                     :deleted-granule {}})}
+        expected-pruned-non-gran-index-set {:id 3
+                                            :name "cmr-base-index-set"
+                                            :concepts (merge
+                                                        {:collection  {:all-collection-revisions "3_all_collection_revisions"
+                                                                       :collections-v2 "3_collections_v2"}
+                                                         :tag {}
+                                                         :variable {}
+                                                         :service {}
+                                                         :tool {}
+                                                         :autocomplete {}
+                                                         :subscription {}}
+                                                        (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}
+        actual-pruned-non-gran-index-set (svc/prune-index-set
+                                           (:index-set util/sample-index-set) es-config/elastic-name)
+        actual-pruned-gran-index-set (svc/prune-index-set
+                                       (:index-set util/sample-index-set) es-config/gran-elastic-name)]
+    (is (= expected-pruned-gran-index-set actual-pruned-gran-index-set))
+    (is (= expected-pruned-non-gran-index-set actual-pruned-non-gran-index-set))))
+
+(deftest split-index-set-by-cluster-test
+  (let [file-path (str
+                    (-> (clojure.java.io/file ".") .getAbsolutePath)
+                    "/test/cmr/indexer/test/services/test_files/combined-index-set.json")
+        combined-index-set-map (-> file-path
+                                   slurp
+                                   (json/parse-string true))
+        split-index-set-map (svc/split-index-set-by-cluster combined-index-set-map)
+
+        actual-gran-index-set (get split-index-set-map (keyword es-config/gran-elastic-name))
+        actual-non-gran-index-set (get split-index-set-map (keyword es-config/elastic-name))
+
+        expected-gran-index-set-file-path (str
+                                            (-> (clojure.java.io/file ".") .getAbsolutePath)
+                                            "/test/cmr/indexer/test/services/test_files/expected-gran-index-set.json")
+        expected-gran-index-set (-> expected-gran-index-set-file-path
+                                    slurp
+                                    (json/parse-string true))
+        expected-non-gran-index-set-file-path (str
+                                                (-> (clojure.java.io/file ".") .getAbsolutePath)
+                                                "/test/cmr/indexer/test/services/test_files/expected-non-gran-index-set.json")
+        expected-non-gran-index-set (-> expected-non-gran-index-set-file-path
+                                        slurp
+                                        (json/parse-string true))]
+    (is (= actual-gran-index-set expected-gran-index-set))
+    (is (= actual-non-gran-index-set expected-non-gran-index-set))))
+
+(deftest add-searchable-generic-types-test
+  (let [;; setup non-gran list
+        initial-non-gran-concept-list [:autocomplete
+                                       :collection
+                                       :service
+                                       :subscription
+                                       :tag
+                                       :tool
+                                       :variable]
+        updated-non-gran-list (svc/add-searchable-generic-types initial-non-gran-concept-list es-config/elastic-name)
+        expected-non-gran-list [:autocomplete :collection :service :subscription :tag :tool
+                                :variable :generic-order-option-draft :generic-grid-draft
+                                :generic-variable-draft :generic-grid :generic-data-quality-summary-draft
+                                :generic-citation :generic-visualization-draft :generic-tool-draft
+                                :generic-order-option :generic-visualization :generic-data-quality-summary
+                                :generic-citation-draft :generic-collection-draft :generic-service-draft]
+
+        ;; setup gran list
+        initial-gran-concept-list [:deleted-granule :granule]
+        updated-gran-list (svc/add-searchable-generic-types initial-gran-concept-list es-config/gran-elastic-name)
+        expected-gran-list [:deleted-granule :granule]]
+
+    (is (= updated-non-gran-list expected-non-gran-list))
+    (is (= updated-gran-list expected-gran-list))))
 
 (deftest test-index-name->concept-id
   (testing "converts basic granule index name to concept ID"
@@ -220,6 +286,13 @@
       (is (= {:name "collection_index" :number_of_shards 3}
              (#'svc/get-index-config index-set :collection "collection_index")))))
 
+  (testing "returns index config when found resharded index"
+    (let [index-set {:index-set
+                     {:collection
+                      {:indexes [{:name "collection_index" :number_of_shards 3}]}}}]
+      (is (= {:name "collection_index" :number_of_shards 3}
+             (#'svc/get-index-config index-set :collection "collection_index_2_shards")))))
+
   (testing "returns nil when index name not found"
     (let [index-set {:index-set
                      {:granule
@@ -323,7 +396,7 @@
     (let [index-set {:index-set
                      {:concepts {:granule {:small_collections "1_small_collections"
                                            (keyword "C123-PROV") "1_c123_prov"
-                                           :large_collections "1_large_collections"}}}}]
+                                           :large-collections "1_large_collections"}}}}]
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_small_collections")))
       (is (= :granule
@@ -337,3 +410,75 @@
       ;; Should find it because get-canonical-key-name uppercases concept IDs
       (is (= :granule
              (svc/get-concept-type-for-index index-set "1_c2317033465_nsidc_ecs"))))))
+
+(deftest test-get-reshard-status
+  (let [index-set-id 1
+        context nil
+        small-collections-index "1_small_collections"
+        valid-params {:elastic_name "gran-elastic"}
+        empty-index-set {:index-set {}}]
+
+    (testing "elastic name is not valid"
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"Empty elastic name is not allowed"
+                            (svc/get-reshard-status context index-set-id small-collections-index {}))))
+    (testing "concept-type is missing"
+      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                    idx-set-util/get-index-set (fn [context elastic-name index-set-id] empty-index-set)]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                              #"The index \[.*\] does not exist\."
+                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+    (testing "current target is missing because index is not being resharded"
+      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                    idx-set-util/get-index-set (fn [context elastic-name index-set-id] empty-index-set)
+                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                              #"The index \[.*\] is not being resharded."
+                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+    (testing "current status of index is nil because it's not being resharded"
+      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
+                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}}}})
+                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                              #"The status of resharding index \[.*\] is not found."
+                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+    (testing "index exists but status is complete already"
+      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
+                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                                        :resharding-status {(keyword small-collections-index) "COMPLETE"}}}})
+                    svc/get-concept-type-for-index (fn [index-set index] :granule)]
+        (is (= {:original-index small-collections-index
+                :reshard-index "1_small_collections_10_shards"
+                :reshard-status "COMPLETE"}
+               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+    (testing "index exists and status is not complete and reindexing is still in progress, then current status will be returned as is."
+      (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                    idx-set-util/get-index-set (fn [context elastic-name index-set-id]
+                                                 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                                        :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}})
+                    svc/get-concept-type-for-index (fn [index-set index] :granule)
+                    es-helper/reindexing-still-in-progress? (fn [conn index] true)]
+        (is (= {:original-index small-collections-index
+                :reshard-index "1_small_collections_10_shards"
+                :reshard-status "IN_PROGRESS"}
+               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+    (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will be updated. Correct status resp will be returned."
+      (let [mock-calls (atom 0)
+            get-index-set-mock-fn (fn [& args]
+                                    (swap! mock-calls inc)
+                                    (case @mock-calls
+                                      1 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                               :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}}
+                                      2 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                               :resharding-status {(keyword small-collections-index) "COMPLETE"}}}}))]
+        (with-redefs [indexer-util/context->conn (fn [context elastic-name] nil)
+                      idx-set-util/get-index-set get-index-set-mock-fn
+                      svc/get-concept-type-for-index (fn [index-set index] :granule)
+                      es-helper/reindexing-still-in-progress? (fn [conn index] false)
+                      svc/update-resharding-status (fn [context index-set-id index status elastic-name] nil)]
+          (is (= {:original-index small-collections-index
+                  :reshard-index "1_small_collections_10_shards"
+                  :reshard-status "COMPLETE"}
+                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))))

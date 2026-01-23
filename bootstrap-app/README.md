@@ -94,10 +94,16 @@ Starts the resharding process to create a new index with the given number of sha
 the data from the old index to the new index. Both indexes will be used for ingest until
 the resharding is finalized.
 
+You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+
+- Required params:
+    - elastic_name (str)
+        - options: gran-elastic and elastic
+
 ```
 curl -i \
   -X POST \
-  "http://localhost:3005/reshard/1_small_collections/start?num_shards=50"
+  "http://localhost:3005/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic"
 
 HTTP/1.1 200 OK
 {"message": "Resharding started for index 1_small_collections"}
@@ -107,10 +113,16 @@ HTTP/1.1 200 OK
 
 Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
 
+You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+
+- Required params:
+    - elastic_name (str)
+        - options: gran-elastic and elastic
+
 ```
 curl -i \
 	-H "Accept: application/json" \
-	http://localhost:3006/reshard/1_c1234_prov1/status
+	http://localhost:3006/reshard/1_c1234_prov1/status?elastic_name=gran-elastic
 
 HTTP/1.1 200 OK
 {"original-index":"1_c1234_prov1","reshard-index":"1_c1234_prov1_75_shards", "reshard-status": "COMPLETE"}
@@ -120,10 +132,16 @@ HTTP/1.1 200 OK
 Finalizes the resharding process to move the ElasticSearch alias to point to the newly resharded
 index. Returns a 400 error if the index resharding is not complete.
 
+You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+
+- Required params:
+  - elastic_name (str)
+    - options: gran-elastic and elastic
+
 ```
 curl -i \
   -X POST \
-  "http://localhost:3005/reshard/1_small_collections/finalize"
+  "http://localhost:3005/reshard/1_small_collections/finalize?elastic_name=gran-elastic"
 
 HTTP/1.1 200 OK
 {"message": "Resharding completed for index 1_small_collections"}

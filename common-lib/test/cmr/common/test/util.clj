@@ -158,6 +158,41 @@
            (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
+(deftest remove-nested-key-test
+  (testing "remove-nested-key function"
+    (testing "removing nested key as per example"
+      (let [input {:ignore "hi" :parent {:keep "value" :drop "loose"}}
+            expected {:ignore "hi" :parent {:keep "value"}}
+            result (util/remove-nested-key input [:parent :drop])]
+        (is (= expected result) "Should remove nested key :drop from :parent")))
+
+    (testing "removing non-existent key"
+      (let [input {:a {:b {:c "value"}}}
+            result (util/remove-nested-key input [:a :b :d])]
+        (is (= input result) "Should return original map when key doesn't exist")))
+
+    (testing "removing from empty map"
+      (let [input {}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= input result) "Should return empty map when input is empty")))
+
+    (testing "removing nested key with multiple levels"
+      (let [input {:a {:b {:c {:d "value"}}}}
+            expected {:a {:b {}}}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= expected result) "Should remove deeply nested key")))
+
+    (testing "removing key that would result in empty nested map"
+      (let [input {:a {:b {:c "value"}}}
+            expected {:a {:b {}}}
+            result (util/remove-nested-key input [:a :b :c])]
+        (is (= expected result) "Should preserve empty parent maps after removal")))
+
+    (testing "with non-map input"
+      (let [input "not a map"
+            result (util/remove-nested-key input [:a :b])]
+        (is (= input result) "Should return non-map input unchanged")))))
+
 (deftest remove-empty-maps-test
   (are [x y]
     (= x (util/remove-empty-maps y))
@@ -985,3 +1020,41 @@
 
           "Empty string"
           "" "d41d8cd98f00b204e9800998ecf8427e")))
+
+(deftest deep-merge-test
+  (testing "deep merge"
+    (util/are3 [m1 m2 expected-merged-map]
+                (is (= expected-merged-map (util/deep-merge m1 m2)))
+
+                "Give m1 is nil and m2 is not, return m2"
+                nil
+                {:key1 "value1"}
+                {:key1 "value1"}
+
+                "Given m2 is nil and m1 is not, return m1"
+                {:key1 "value1"}
+                nil
+                {:key1 "value1"}
+
+                "Given m1 is nil and m2 is nil, return nil"
+                nil
+                nil
+                nil
+
+                "Given m1 and m2 nested maps, return correct deep merged map"
+                {:key1 "value1"
+                 :key2 {:key3 {:key4 "value4"}
+                        :key5 {:key6 "value6"}}
+                 :key7 "value7"}
+                {:key1 "value1"
+                 :key2 {:key3 {:key8 "value8"}
+                        :key9 "value9"}
+                 :key10 "value10"}
+                {:key1 "value1"
+                 :key2 {:key3 {:key4 "value4"
+                               :key8 "value8"}
+                        :key5 {:key6 "value6"}
+                        :key9 "value9"}
+                 :key7 "value7"
+                 :key10 "value10"}
+                )))

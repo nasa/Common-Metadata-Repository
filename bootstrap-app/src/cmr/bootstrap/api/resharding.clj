@@ -1,10 +1,13 @@
 (ns cmr.bootstrap.api.resharding
   "Defines the resharding functions for the bootstrap API."
   (:require
+   [clojure.string :as string]
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
    [cmr.bootstrap.services.bootstrap-service :as service]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.es-index-helper :as es-helper]
+   [cmr.elastic-utils.search.es-index :as es-index]))
 
 (defn- validate-num-shards
   "Validates that the number of shards is a positive integer."
@@ -21,24 +24,49 @@
        [(format "Invalid num_shards [%s]. Only integers greater than zero are allowed."
                 num-shards-str)]))))
 
+(defn- validate-es-cluster-name-not-blank
+  "Validates that the Elasticsearch cluster name given is not blank."
+  [es-cluster-name]
+  (when (string/blank? es-cluster-name)
+    (errors/throw-service-error :bad-request "Empty elastic cluster name is not allowed.")))
+
+(defn- validate-index-exists
+  "Validates that the Elasticsearch index given exists in the cluster given."
+  [context index es-cluster-name]
+  (let [conn (es-index/context->conn context es-cluster-name)]
+    (when-not (es-helper/exists? conn index)
+      (errors/throw-service-error
+       :not-found
+       (format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]"
+               index
+               es-cluster-name)))))
+
 (defn start
   "Kicks off resharding of an index."
   [context index params]
-  (let [dispatcher (api-util/get-dispatcher context params :migrate-index)
-        num-shards-str (:num_shards params)]
-    (validate-num-shards num-shards-str)
-    (service/start-reshard-index context dispatcher index (parse-long num-shards-str))
+  (let [es-cluster-name (:elastic_name params)
+        _ (validate-es-cluster-name-not-blank es-cluster-name)
+        _ (validate-index-exists context index es-cluster-name)
+        num-shards-str (:num_shards params)
+        _ (validate-num-shards num-shards-str)
+        dispatcher (api-util/get-dispatcher context params :migrate-index)]
+
+    (service/start-reshard-index context dispatcher index (parse-long num-shards-str) es-cluster-name)
     {:status 200
      :body {:message (msg/resharding-started index)}}))
 
 (defn get-status
   "Gets the status of resharding an index."
-  [context index]
-  (service/reshard-status context index))
+  [context index params]
+  (let [es-cluster-name (:elastic_name params)]
+    (validate-es-cluster-name-not-blank es-cluster-name)
+    (service/reshard-status context index es-cluster-name)))
 
 (defn finalize
   "Completes resharding the index"
-  [context index]
-  (service/finalize-reshard-index context index)
-  {:status 200
-   :body {:message (msg/resharding-completed index)}})
+  [context index params]
+  (let [es-cluster-name (:elastic_name params)]
+    (validate-es-cluster-name-not-blank es-cluster-name)
+    (service/finalize-reshard-index context index es-cluster-name)
+    {:status 200
+     :body {:message (msg/resharding-completed index)}}))

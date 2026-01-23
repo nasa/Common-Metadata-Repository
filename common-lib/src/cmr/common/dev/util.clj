@@ -48,3 +48,8 @@
   (let [clipboard (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (.setContents clipboard (StringSelection. s) nil))
   s)
+
+(defn tee
+  "Tee a copy of input to the console, but does so to allow for inline use with ->"
+  ([anything] (println anything) anything)
+  ([anything note] (println note anything) anything))

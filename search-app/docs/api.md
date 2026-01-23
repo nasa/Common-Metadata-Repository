@@ -59,6 +59,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Science keywords](#c-science-keywords)
     * [TwoD coordinate system](#c-twod-coordinate-system)
     * [Collection data type](#c-collection-data-type)
+    * [Collection progress](#c-collection-progress)
     * [Granule data format](#c-granule-data-format)
     * [Online only](#c-online-only)
     * [Downloadable](#c-downloadable)
@@ -1933,6 +1934,22 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
   Find collections matching any of the 'collection\_data\_type' param values
 
      curl "%CMR-ENDPOINT%/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
+
+#### <a name="c-collection-progress"></a> Find collections by collection\_progress
+
+Supports ignore_case and pattern matching.
+
+  Find collections matching 'collection\_progress' param value
+
+     curl "%CMR-ENDPOINT%/collections?collection_progress=ACTIVE"
+
+  Find collections matching any of the 'collection\_progress' param values
+
+     curl "%CMR-ENDPOINT%/collections?collection_progress\[\]=ACTIVE&collection_progress\[\]=PLANNED"
+
+  Find collections using pattern matching
+
+     curl "%CMR-ENDPOINT%/collections?collection_progress=*RE*&options\[collection_progress\]\[pattern\]=true"
 
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 

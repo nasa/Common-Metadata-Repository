@@ -36,9 +36,22 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 #### <a name="authorization-header"></a> Authorization Header
 
-All Access Control API operations require specifying a token.
+Many Access Control API operations require specifying a token.
 
-An EDL token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
+##### EDL Bearer Tokens
+
+An EDL bearer token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
+
+CMR also supports federated EDL JWT tokens with different assurance levels:
+
+**Assurance Levels:**
+
+- **Level 5 (Launchpad)**: Full access to all CMR operations
+- **Level 4 (EDL MFA)**: Limited access; requires NON_NASA_DRAFT_USER ACL for certain operations
+
+The minimum required assurance level is configurable via the `CMR_REQUIRED_ASSURANCE_LEVEL` environment variable. Tokens with an assurance level below the configured minimum will be rejected.
+
+##### Launchpad SAML Tokens
 
 An example for generating a Launchpad token can he found on the Earthdata [wiki][token-example]. The token should be specified using the `Authorization:` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on the [Launchpad Authentication User's Guide][launch-guide].
 
@@ -296,13 +309,13 @@ The response is always returned in JSON and includes the following parts.
     * `location` - A URL to retrieve the ACL
     * `acl` - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
-The response also returns some headers. search-after header is one of them. 
+The response also returns some headers. search-after header is one of them.
 
-* CMR-Search-After Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. 
+* CMR-Search-After Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page.
 
 ##### ACL Search Examples
 
-###### Using search-after header 
+###### Using search-after header
 
 ```
 curl -XPOST -i "%CMR-ENDPOINT%/acls/search?pretty=true&page_size=1"
@@ -756,7 +769,7 @@ This endpoint will return a JSON list of S3 buckets a user has access to. If a l
 
 Example request:
 ```
-curl -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1
+curl -i "%CMR-ENDPOINT%/s3-buckets?user_id=user1
 
 HTTP/1.1 200 OK
 Content-Length: 81
@@ -768,7 +781,7 @@ Content-Type: application/json
 
 Example request with providers specified:
 ```
-curl -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
+curl -i "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
 
 HTTP/1.1 200 OK
 Content-Length: 51

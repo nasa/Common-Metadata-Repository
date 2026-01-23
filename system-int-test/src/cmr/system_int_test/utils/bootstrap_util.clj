@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.bootstrap.test.catalog-rest :as cat-rest]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.system-int-test.system :as s]
@@ -283,56 +284,57 @@
 
 (defn start-reshard-index
   "Call the bootstrap app to kickoff resharding and index"
-  ([index-name]
-   (start-reshard-index index-name {}))
-  ([index-name options]
-   (let [synchronous (get options :synchronous true)
-         num-shards (get options :num-shards)
-         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
-         response (client/request
+  [index-name options]
+  (let [synchronous (get options :synchronous true)
+        num-shards (get options :num-shards)
+        headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :post
                     :query-params {:synchronous synchronous
-                                   :num_shards num-shards}
+                                   :num_shards num-shards
+                                   :elastic_name elastic-name}
                     :headers headers
                     :url (url/start-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn finalize-reshard-index
   "Call the bootstrap app to finalize resharding an index"
-  ([index-name]
-   (finalize-reshard-index index-name {}))
-  ([index-name options]
-   (let [synchronous (get options :synchronous true)
-         headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
-         response (client/request
+  [index-name options]
+  (let [synchronous (get options :synchronous true)
+        headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :post
-                    :query-params {:synchronous synchronous}
+                    :query-params {:synchronous synchronous
+                                   :elastic_name elastic-name}
                     :headers headers
                     :url (url/finalize-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn get-reshard-status
   "Gets the reshard status of a given index."
-  ([index-name]
-   (get-reshard-status index-name {transmit-config/token-header (transmit-config/echo-system-token)}))
-  ([index-name headers]
-   (let [response (client/request
+  [index-name options]
+  (let [headers (assoc (get options :headers) transmit-config/token-header (transmit-config/echo-system-token))
+        elastic-name (get options :elastic-name)
+        response (client/request
                    {:method :get
+                    :query-params {:elastic_name elastic-name}
                     :headers headers
                     :url (url/status-reshard-index-url index-name)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
 
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
@@ -534,3 +536,40 @@
         actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
                                              [provider-id (count-by-params {:provider-id provider-id})]))]
     (is (= expected-counts-by-provider actual-counts-by-provider) message)))
+
+(defn wait-for-reshard-complete
+  [coll-index-name elastic-name {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
+  (loop [attempt 1]
+    (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name})
+          status (get-in res [:reshard-status])]
+      (cond
+        (= status "COMPLETE")
+        (info "Success: Resharding is COMPLETE.")
+
+        (>= attempt max-attempts)
+        (throw (Exception. (str "Timeout: Resharding failed to complete after " attempt " attempts.")))
+
+        :else
+        (do
+          (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..."
+                           attempt max-attempts status sleep-ms))
+          (Thread/sleep sleep-ms)
+          (recur (inc attempt)))))))
+
+(defn wait-for-rebalance-to-complete
+  [collection {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
+  (loop [attempt 1]
+    (let [res (get-rebalance-status (:concept-id collection))
+          status (get-in res [:rebalancing-status])]
+      (cond
+        (= status "COMPLETE")
+        (info "Success: Rebalance is COMPLETE.")
+
+        (>= attempt max-attempts)
+        (throw (Exception. (str "Timeout: Rebalance failed to complete after " attempt " attempts.")))
+
+        :else
+        (do
+          (info (format "[Attempt %d/%d] Status: %s. Retrying in %dms..." attempt max-attempts status sleep-ms))
+          (Thread/sleep sleep-ms)
+          (recur (inc attempt)))))))

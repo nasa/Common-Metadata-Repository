@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.utils.url-helper
   "helper to provide the urls to various service endpoints"
   (:require
-   [cmr.common.config :as config]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]
@@ -56,16 +55,24 @@
 ;; Elasticsearch URLs
 
 (defn elastic-root
-  []
-  (format "http://localhost:%s" (es-config/elastic-port)))
+  [elastic-name]
+  (cond
+    (= elastic-name es-config/gran-elastic-name)
+    (format "http://localhost:%s" (es-config/gran-elastic-port))
+
+    (= elastic-name es-config/elastic-name)
+    (format "http://localhost:%s" (es-config/elastic-port))
+
+    :else
+    (throw (Exception. (str "Given wrong elastic-name: " elastic-name " to create elastic root url.")))))
 
 (defn elastic-refresh-url
-  []
-  (str (elastic-root) "/_refresh"))
+  [elastic-name]
+  (str (elastic-root elastic-name) "/_refresh"))
 
 (defn elastic-delete-tag-url
   [id]
-  (format "%s/1_tags/_doc/%s" (elastic-root) id))
+  (format "%s/1_tags/_doc/%s" (elastic-root es-config/elastic-name) id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
@@ -652,6 +659,11 @@
   "Updates the indexes in the indexer to update mappings and settings"
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
+
+(defn indexer-get-index-sets-by-id-url
+  "Gets the index set by id from indexer"
+  [id]
+  (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))
 
 (defn full-refresh-collection-granule-aggregate-cache-url
   []

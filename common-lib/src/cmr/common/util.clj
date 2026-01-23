@@ -256,6 +256,23 @@
                         :when (f v)]
                     k)))
 
+(defn remove-nested-key
+  "Recursively remove a nested key from a map following a list of keys.
+
+   Example:
+   (remove-nested-key {:ignore \"hi\" :parent {:keep \"value\" :drop \"loose\"}} [:parent :drop])
+   Returns: {:ignore \"hi\" :parent {:keep \"value\"}}
+   "
+  [metadata [key & remaining-keys]]
+  (cond
+    (not key) metadata
+    (not (map? metadata)) metadata
+    (empty? remaining-keys) (dissoc metadata key)
+    :else (let [nested-val (get metadata key)]
+            (if (nil? nested-val)
+              metadata
+              (assoc metadata key (remove-nested-key nested-val remaining-keys))))))
+
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
@@ -1153,11 +1170,6 @@
   [s]
   (hp-util/escape-html s))
 
-(defn tee
-  "Tee a copy of input to the console, but does so to allow for inline use with ->"
-  ([anything] (println anything) anything)
-  ([anything note] (println note anything) anything))
-
 (defn normalize-parameters
   "Returns a normalized url parameter string by splitting the string of parameters on '&' and
    sorting them alphabetically"
@@ -1171,3 +1183,20 @@
         (as-> $ (string/join "&" $))
         string/trim
         digest/md5)))
+
+(defn deep-merge
+  "Recursively merges two maps.
+   If a key exists in both and its value is also a map,
+   it recursively merges those inner maps. Otherwise,
+   it prefers the value from the second map."
+  [m1 m2]
+  (cond
+    (nil? m1) m2
+    (nil? m2) m1
+    :else
+    (merge-with
+      (fn [v1 v2]
+        (cond
+          (and (map? v1) (map? v2)) (deep-merge v1 v2)
+          :else v2))
+      m1 m2)))
