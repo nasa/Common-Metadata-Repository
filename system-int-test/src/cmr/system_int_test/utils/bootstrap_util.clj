@@ -336,6 +336,24 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn rollback-reshard-index
+  "Rollback reshard of index"
+  [index-name options]
+  (let [synchronous (get options :synchronous true)
+        headers (get options :headers {transmit-config/token-header (transmit-config/echo-system-token)})
+        elastic-name (get options :elastic-name)
+        response (client/request
+                   {:method :post
+                    :query-params {:synchronous synchronous
+                                   :elastic_name elastic-name}
+                    :headers headers
+                    :url (url/rollback-reshard-index-url index-name)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
   ([collection-id]

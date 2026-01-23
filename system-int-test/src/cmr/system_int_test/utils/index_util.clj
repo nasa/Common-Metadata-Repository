@@ -204,7 +204,7 @@
       }
     }
   }"
-  (let [resp (client/get (url/indexer-get-index-sets-by-id-url id)
+  (let [resp (client/get (url/indexer-index-sets-by-id-url id)
                          {:query-params {:format "json"}
                           :headers {transmit-config/token-header (transmit-config/echo-system-token)
                                     "content-type" "application/json"}
@@ -212,3 +212,15 @@
                           :throw-exceptions false})
         index-sets (json/parse-string (:body resp) true)]
     index-sets))
+
+(defn update-index-set
+  "Updates index-set to be the given index-set
+  Returns the response of the update"
+  [index-set id]
+  (client/put (url/indexer-index-sets-by-id-url id)
+              {:query-params {:format "json"}
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                         "content-type" "application/json"}
+               :body (json/generate-string index-set)
+               :connection-manager (s/conn-mgr)
+               :throw-exceptions false}))

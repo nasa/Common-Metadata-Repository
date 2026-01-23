@@ -7,6 +7,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.index-set :as dis]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.elastic-util :as es-util]
@@ -64,7 +65,7 @@
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards "abc" :elastic-name gran-elastic-name}))))
      (testing "index must exist"
        (is (= {:status 404
-               :errors [(format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
+               :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
               (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
      (testing "attempting to reshard an index that is already being resharded fails"
        (is (= {:status 200
@@ -174,6 +175,10 @@
 
           _ (index/wait-until-indexed)
 
+          ;; check granule is found by search with revision 1
+          found-gran1 (search/retrieve-concept (:concept-id gran1) 1)
+          _ (is (= 200 (:status found-gran1)))
+
           ;; check granule doc is saved to old index
           gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
           gran-doc-in-orig-index-revision-id (get-in gran-doc-in-orig-index [:_source :revision-id])
@@ -188,6 +193,10 @@
           _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
 
           _ (index/wait-until-indexed)
+
+          ;; check granule is found by search with revision 2
+          found-gran1 (search/retrieve-concept (:concept-id gran1) 2)
+          _ (is (= 200 (:status found-gran1)))
 
           ;; check granule doc is saved to old index with updated revision
           gran-doc-in-orig-index (es-util/get-doc small-collections-index-name (:concept-id gran1) gran-elastic-name)
@@ -214,6 +223,72 @@
       ;; check orig index is deleted from index-set and elastic
       (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:granule :indexes])))
       (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name))))))
+
+(deftest reshard-rollback-test
+  (let [gran-elastic-name "gran-elastic"
+        elastic-name "elastic"
+        non-existent-index-name "non-existent-index"
+        services-index "1_services"
+        small-collections-base-name "small_collections"
+        small-collections-index-name (str "1_" small-collections-base-name)
+        resharded-small-collections-index-name (str small-collections-index-name "_2_shards")]
+   (testing "Given rollback reshard on non-existent index, Return error"
+        (is (= {:status 404
+                :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" non-existent-index-name gran-elastic-name)]}
+               (bootstrap/rollback-reshard-index non-existent-index-name {:elastic-name gran-elastic-name}))))
+   (testing "Given rollback reshard on index that is not being resharded, Return error"
+     (is (= {:status 400
+             :errors [(format "The index [%s] is not being resharded and will not be rolled back." small-collections-index-name)]}
+            (bootstrap/rollback-reshard-index small-collections-index-name {:elastic-name gran-elastic-name}))))
+   (testing "Given rollback reshard on index that is COMPLETE, allow rollback"
+     (let [index-set (update-in (dis/sample-index-set 1)
+                                [:index-set :service]
+                                merge
+                                {:resharding-indexes #{services-index}
+                                 :resharding-targets {services-index (str services-index "_5_shards")}
+                                 :resharding-status {services-index "COMPLETE"}})
+           resp (index/update-index-set index-set 1)]
+       (is (= 200 (:status resp)))
+       (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
+   (testing "Given rollback reshard on index that is IN PROGRESS, allow rollback"
+     (let [index-set (update-in (dis/sample-index-set 1)
+                                [:index-set :service]
+                                merge
+                                {:resharding-indexes #{services-index}
+                                 :resharding-targets {services-index (str services-index "_5_shards")}
+                                 :resharding-status {services-index "IN PROGRESS"}})
+           resp (index/update-index-set index-set 1)]
+       (is (= 200 (:status resp)))
+       (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
+    (testing "Rollback reshard"
+      (let [;; create collection
+            coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+            ;; create granule
+            gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+            _ (index/wait-until-indexed)
+            ;; start the reshard
+            start-resp (bootstrap/start-reshard-index small-collections-index-name {:synchronous true :num-shards 2 :elastic-name gran-elastic-name})
+            _ (is (= 200 (:status start-resp)))
+            ;; rollback reshard
+            rollback-resp (bootstrap/rollback-reshard-index small-collections-index-name {:elastic-name gran-elastic-name})
+            _ (is (= 200 (:status rollback-resp)))
+            index-set (index/get-index-set-by-id 1)
+            inner-granule-index-map (get-in index-set [:index-set :granule])
+            ;; note: the index set was changed by the above previous tests which is why the settings expected below
+            ;; reflects the dis/sample-index-set settings and not the system default settings
+            expected-gran-index-list [{:name small-collections-base-name
+                                       :settings {:index {:number_of_shards 1 :number_of_replicas 0 :refresh_interval "10s"}}}
+                                      {:name "C6-PROV3"
+                                       :settings {:index {:number_of_shards 1 :number_of_replicas 0 :refresh_interval "10s"}}}]]
+
+        ;; check index-set that started resharded index is gone from resharding list
+        (is (not-any? #(contains? inner-granule-index-map %) [:resharding-indexes :resharding-targets :resharding-status]))
+        ;; check index-set that started resharded index is gone from granule indexes list
+        (is (= expected-gran-index-list (get-in inner-granule-index-map [:indexes])))
+        ;; check resharded index is deleted in ES
+        (is (false? (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name)))
+        ;; check that you can still search for the granule
+        (is (= 200 (:status (search/retrieve-concept (:concept-id gran1) 1))))))))
 
 ;; Rebalance collections uses delete-by-query which cannot be force refreshed.
 ;; As a result, after the granules are moved from small_collections index to separate index,

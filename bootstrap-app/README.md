@@ -103,7 +103,7 @@ You MUST give the elastic_name parameter to tell CMR which cluster your index is
 ```
 curl -i \
   -X POST \
-  "http://localhost:3005/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic"
+  "http://localhost:3006/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic"
 
 HTTP/1.1 200 OK
 {"message": "Resharding started for index 1_small_collections"}
@@ -141,10 +141,30 @@ You MUST give the elastic_name parameter to tell CMR which cluster your index is
 ```
 curl -i \
   -X POST \
-  "http://localhost:3005/reshard/1_small_collections/finalize?elastic_name=gran-elastic"
+  "http://localhost:3006/reshard/1_small_collections/finalize?elastic_name=gran-elastic"
 
 HTTP/1.1 200 OK
 {"message": "Resharding completed for index 1_small_collections"}
+```
+
+### Rollback a Resharding
+Rollback the resharding of a specified index to its original state before reshard was attempted.
+
+You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+
+- Required params:
+    - elastic_name (str)
+        - options: gran-elastic and elastic
+
+Rollback will be allowed IF the reshard has not been finalized, else it will not allow
+
+```
+curl -i \
+  -X POST \
+  "http://localhost:3006/reshard/1_small_collections/rollback?elastic_name=gran-elastic"
+
+HTTP/1.1 200 OK
+{"message": "Resharding rollback completed for index 1_small_collections"}
 ```
 
 ## Bulk Operations

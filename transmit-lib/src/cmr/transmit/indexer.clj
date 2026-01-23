@@ -43,6 +43,10 @@
   [conn index-set-id index]
   (str (reshard-index-url conn index-set-id index) "/finalize"))
 
+(defn- rollback-reshard-index-url
+  [conn index-set-id index]
+  (str (reshard-index-url conn index-set-id index) "/rollback"))
+
 (defn get-index-set
   "Submit a request to indexer to fetch an index-set assoc with an id"
   [context id]
@@ -148,3 +152,8 @@
   "Finalizes the resharding index specified in the indexer application."
   [context index-set-id index elastic-name]
   (submit-reshard-index-request context index-set-id index finalize-reshard-index-url nil elastic-name))
+
+(defn rollback-resharding-index
+  "Rollback the resharding index"
+  [context index-set-id index elastic-name]
+  (submit-reshard-index-request context index-set-id index rollback-reshard-index-url nil elastic-name))

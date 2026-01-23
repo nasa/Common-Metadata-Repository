@@ -37,7 +37,7 @@
     (when-not (es-helper/exists? conn index)
       (errors/throw-service-error
        :not-found
-       (format "Index or alias [%s] does not exist in the Elasticsearch cluster [%s]"
+       (format "Index [%s] does not exist in the Elasticsearch cluster [%s]"
                index
                es-cluster-name)))))
 
@@ -70,3 +70,13 @@
     (service/finalize-reshard-index context index es-cluster-name)
     {:status 200
      :body {:message (msg/resharding-completed index)}}))
+
+(defn rollback
+  "Rollback attempted resharding of index due to failures"
+  [context index params]
+  (let [es-cluster-name (:elastic_name params)]
+    (validate-es-cluster-name-not-blank es-cluster-name)
+    (validate-index-exists context index es-cluster-name)
+    (service/rollback-reshard-index context index es-cluster-name)
+    {:status 200
+     :body {:message (msg/rollback-completed index)}}))

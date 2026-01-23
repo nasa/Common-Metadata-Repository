@@ -539,6 +539,10 @@
   [index]
   (format "%s/finalize" (reshard-index-url index)))
 
+(defn rollback-reshard-index-url
+  [index]
+  (format "%s/rollback" (reshard-index-url index)))
+
 (defn bulk-index-after-date-time-url
   [date-time]
   (format "http://localhost:%s/bulk_index/after_date_time?date_time=%s"
@@ -660,7 +664,7 @@
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
-(defn indexer-get-index-sets-by-id-url
+(defn indexer-index-sets-by-id-url
   "Gets the index set by id from indexer"
   [id]
   (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))

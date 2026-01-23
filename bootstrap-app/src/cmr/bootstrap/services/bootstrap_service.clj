@@ -311,3 +311,25 @@
   "Returns the resharding status of the given index."
   [context index elastic-name]
   (indexer/get-reshard-status context indexer-index-set/index-set-id index elastic-name))
+
+(defn rollback-reshard-index
+  "Rollback attempted resharding of index due to failures"
+  [context index elastic-name]
+  (let [fetched-index-set (indexer/get-index-set context indexer-index-set/index-set-id)
+        concept-type (get-concept-type-for-index fetched-index-set index)
+        target (get-in fetched-index-set [:index-set concept-type :resharding-targets (keyword index)])]
+    ;; validate index is indeed being resharded right now
+    (when-not target
+      (errors/throw-service-error :bad-request (format "The index [%s] is not being resharded and will not be rolled back." index)))
+
+    (info (format "Rolling back reshard index [%s] to original state and removing index [%s]."
+                  index target))
+    ;; This will throw an exception if the index is not being resharded
+    (indexer/rollback-resharding-index context indexer-index-set/index-set-id index elastic-name)
+    ;; Clear the cache so that the newest index set data will be used.
+    ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+    (reset-caches-affected-by-rebalancing context)
+
+    ;; Minimize likelihood of triggering race condition (see `finalize-rebalance-collection` above)
+    (wait-until-index-set-hash-cache-times-out)))
+

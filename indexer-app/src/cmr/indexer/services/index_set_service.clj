@@ -796,6 +796,48 @@
         (errors/throw-service-error :internal-error
                                     (format "Failed to finalize resharding for [%s]; see server logs." index))))))
 
+(defn rollback-index-resharding
+  "Rollback resharding of the given index"
+  [context index-set-id index params]
+  ;; Rollbacks happen only before finalize, so we just need to focus on undoing what reshard start and status possibly did
+  ;; delete the new resharding index from es, remove it from the resharding list in index-set and remove its existence in index-set
+  (let [elastic-name (:elastic_name params)
+        _ (validate-elastic-name elastic-name)
+        index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        ;; search for index name in index-set :concepts to get concept type
+        concept-type (get-concept-type-for-index index-set index)
+        _ (when-not concept-type
+            (errors/throw-service-error
+              :not-found
+              (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
+        target-index-name (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
+        es-store (indexer-util/context->es-store context elastic-name)
+        prefix-id (get-in index-set [:index-set :id])
+        new-index-set (-> index-set
+                          ;; remove the target index from the concept-type's index list
+                          (update-in [:index-set concept-type :indexes]
+                                     (fn [indexes]
+                                       (remove (fn [config]
+                                                 (= (gen-valid-index-name prefix-id (:name config)) target-index-name))
+                                               indexes)))
+                          ;; remove the target index from the resharding lists
+                          (update-in [:index-set concept-type :resharding-indexes] remove-resharding-index index)
+                          (update-in [:index-set concept-type :resharding-targets]
+                                     dissoc (keyword index))
+                          (update-in [:index-set concept-type :resharding-status]
+                                     dissoc (keyword index))
+                          util/remove-nils-empty-maps-seqs)]
+    (try
+      ;; delete attempted resharding index
+      (es/delete-index es-store target-index-name)
+      ;; persist index-set changes
+      (update-index-set context elastic-name new-index-set)
+      (catch Exception e
+        (error e (format "Failed to rollback resharding from [%s] -> [%s]" target-index-name index))
+        (errors/throw-service-error :internal-error
+                                    (format "Failed to rollback resharding for [%s]; see server logs." index))))))
+
+
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]
