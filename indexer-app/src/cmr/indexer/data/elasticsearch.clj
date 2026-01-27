@@ -416,7 +416,7 @@
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
   [context docs]
-  (doseq [docs-batch (partition-all max-bulk-operations-per-request docs)]
+  (doseq [docs-batch (partition-all (max-bulk-operations-per-request) docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (indexer-util/context->conn context es-config/elastic-name)
           response (es-helper/bulk conn bulk-operations)]
@@ -427,7 +427,7 @@
   ([context docs es-cluster-name]
    (bulk-index-documents context docs es-cluster-name nil))
   ([context docs es-cluster-name {:keys [all-revisions-index?]}]
-   (doseq [docs-batch (partition-all max-bulk-operations-per-request docs)]
+   (doseq [docs-batch (partition-all (max-bulk-operations-per-request) docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (indexer-util/context->conn context es-cluster-name)
            response (es-helper/bulk conn bulk-operations)]
