@@ -27,7 +27,7 @@
   "Convert hierarchical keywords to colon-separated elastic docs for indexing.
   The keywords may not be hierarchical all the way to the end - some can be skipped to the last
   keyword and may be nil."
-  [index type keywords keyword-hierarchy public-collection? permitted-group-ids modified-date]
+  [index type keywords keyword-hierarchy public-collection? permitted-group-ids modified-date public-suggestions-cache]
   (when (and (map? keywords)
              (pos? (count keywords)))
     (let [k-strings (->> keyword-hierarchy
@@ -37,20 +37,24 @@
           keyword-value (last k-strings)
           id (-> (string/lower-case keyword-string)
                  (str "_" type)
-                 hash)]
+                 hash)
+          already-public? (contains? @public-suggestions-cache id)
+          contains-public? (or public-collection? already-public?)]
+      (when contains-public?
+        (swap! public-suggestions-cache conj id))
         {:_id id
          :type type
          :value keyword-value
          :fields keyword-string
          :_index index
-         :contains-public-collections public-collection?
+         :contains-public-collections contains-public?
          :permitted-group-ids permitted-group-ids
          :modified modified-date})))
 
 (defn- science-keywords->elastic-docs
   "Convert hierarchical science-keywords to colon-separated elastic docs for indexing.
   Below 'term', variable may not be hierarchical - they can be skipped - and may be nil."
-  [index science-keywords public-collection? permitted-group-ids modified-date]
+  [index science-keywords public-collection? permitted-group-ids modified-date public-suggestions-cache]
   (let [keyword-hierarchy [:topic
                            :term
                            :variable-level-1
@@ -64,13 +68,14 @@
                             keyword-hierarchy
                             public-collection?
                             permitted-group-ids
-                            modified-date)))
+                            modified-date
+                            public-suggestions-cache)))
 
 (defn- platform-keywords->elastic-docs
   "Convert hierarchical platform keywords to colon-separated elastic docs for indexing.
   Below 'category', the keywords may not be hierarchical - sub-category can be skipped - and may be
   nil."
-  [index platform-keywords public-collection? permitted-group-ids modified-date]
+  [index platform-keywords public-collection? permitted-group-ids modified-date public-suggestions-cache]
   (let [keyword-hierarchy [:basis :category :sub-category :short-name]
         type "platforms"]
     (keywords->elastic-docs index
@@ -79,11 +84,12 @@
                             keyword-hierarchy
                             public-collection?
                             permitted-group-ids
-                            modified-date)))
+                            modified-date
+                            public-suggestions-cache)))
 
 (defn- suggestion-doc
   "Creates elasticsearch docs from a given humanized map"
-  [index permissions key-name value-map]
+  [index permissions key-name value-map public-suggestions-cache]
   (let [values (->> value-map
                     seq
                     (remove #(string/includes? (name (key %)) "-lowercase")))
@@ -103,14 +109,16 @@
                                       value-map
                                       public-collection?
                                       permitted-group-ids
-                                      modified-date)
+                                      modified-date
+                                      public-suggestions-cache)
 
       (seq (re-find platform-matcher))
       (platform-keywords->elastic-docs index
                                        value-map
                                        public-collection?
                                        permitted-group-ids
-                                       modified-date)
+                                       modified-date
+                                       public-suggestions-cache)
 
       :else
       (map (fn [value]
@@ -120,13 +128,17 @@
                             (string/replace #"_humanized|:" ""))
                    id (-> (string/lower-case v)
                           (str "_" type)
-                          hash)]
+                          hash)
+                   already-public? (contains? @public-suggestions-cache id)
+                   contains-public? (or public-collection? already-public?)]
+               (when contains-public?
+                 (swap! public-suggestions-cache conj id))
               {:type type
                :_id id
                :value v
                :fields v
                :_index index
-               :contains-public-collections public-collection?
+               :contains-public-collections contains-public?
                :permitted-group-ids permitted-group-ids
                :modified modified-date}))
            values))))
@@ -134,7 +146,7 @@
 (defn- get-suggestion-docs
   "Given the humanized fields from a collection, assemble an elastic doc for each
   value available for indexing into elasticsearch"
-  [index humanized-fields]
+  [index humanized-fields public-suggestions-cache]
   (let [{:keys [permissions]} humanized-fields
         fields-without-permissions (dissoc humanized-fields :id :permissions)]
     (for [humanized-field fields-without-permissions
@@ -147,7 +159,7 @@
                                 (map util/remove-nil-keys h)
                                 (map #(dissoc % :priority) h))
                 suggestion-docs (->> value-map
-                                     (map #(suggestion-doc index permissions key-name %))
+                                     (map #(suggestion-doc index permissions key-name % public-suggestions-cache))
                                      (remove nil?))]]
       suggestion-docs)))
 
@@ -196,7 +208,7 @@
 (defn- collections->suggestion-docs
   "Convert collection concept metadata to UMM-C and pull facet fields
   to be indexed as autocomplete suggestion doc"
-  [context collections provider-id]
+  [context collections provider-id public-suggestions-cache]
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         index (get-in index-names [:autocomplete :autocomplete])
         humanized-fields-fn (partial get-humanized-collections context)
@@ -211,7 +223,7 @@
         humanized-fields (map humanized-fields-fn parsed-concepts)
         humanized-fields-with-permissions (map merge collection-permissions humanized-fields)]
     (->> humanized-fields-with-permissions
-         (map #(get-suggestion-docs index %))
+         (map #(get-suggestion-docs index % public-suggestions-cache))
          flatten
          (remove anti-value-suggestion?))))
 
@@ -221,13 +233,14 @@
   "Reindex autocomplete suggestion for a given provider"
   [context provider-id]
   (info "Reindexing autocomplete suggestions for provider" provider-id)
-  (let [latest-collection-batches (meta-db/find-in-batches
+  (let [public-suggestions-cache (atom #{})
+        latest-collection-batches (meta-db/find-in-batches
                                    context
                                    :collection
                                    (service/determine-reindex-batch-size provider-id)
                                    {:provider-id provider-id :latest true})]
     (reduce (fn [num-indexed coll-batch]
-              (let [batch (collections->suggestion-docs context coll-batch provider-id)]
+              (let [batch (collections->suggestion-docs context coll-batch provider-id public-suggestions-cache)]
                 (es/bulk-index-autocomplete-suggestions context batch)
                 (+ num-indexed (count coll-batch))))
             0
@@ -248,3 +261,4 @@
      index
      mapping-type
      {:range {(service/query-field->elastic-field :modified :suggestion) {:lt document-age}}})))
+
