@@ -9,14 +9,14 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (defn refresh-granule-counts-cache
   []
-  (let [url (format "http://localhost:%s/caches/refresh/granule-counts" 
-                    (transmit-config/bootstrap-port))]
+  (let [url (url/bootstrap-url "caches/refresh/granule-counts")]
     (try
       (client/post url {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                         :throw-exceptions true})
