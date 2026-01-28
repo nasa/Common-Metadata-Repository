@@ -27,9 +27,9 @@
 
 (deftest provider-holdings-using-cache-test
   (testing "Provider Holdings API relies on the granule counts cache"
-    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-          coll2 (d/ingest "PROV2" (dc/collection {:entry-title "coll2"}))
-          _ (d/ingest "PROV1" (dg/granule coll1))
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:token "mock-echo-system-token" :validate-keywords false})
+          coll2 (d/ingest "PROV2" (dc/collection {:entry-title "coll2"}) {:token "mock-echo-system-token" :validate-keywords false})
+          _ (d/ingest "PROV1" (dg/granule coll1) {:token "mock-echo-system-token" :validate-keywords false})
           _ (index/wait-until-indexed)]
 
       (testing "Initial State"
@@ -44,7 +44,7 @@
            (is (not-any? #(= "PROV2" (:provider-id %)) holdings))))
 
       (testing "Cache Refresh (Addition)"
-        (d/ingest "PROV2" (dg/granule coll2))
+        (d/ingest "PROV2" (dg/granule coll2) {:token "mock-echo-system-token" :validate-keywords false})
         (index/wait-until-indexed)
         (refresh-granule-counts-cache)
         (let [holdings (search/provider-holdings-in-format :json)]
@@ -52,7 +52,7 @@
 
       (testing "Cache Refresh (Deletion)"
         (let [gran (first (:refs (search/find-refs :granule {:collection-concept-id (:concept-id coll2)})))]
-          (ingest/delete-concept (assoc gran :concept-type :granule :provider-id "PROV2"))
+          (ingest/delete-concept (assoc gran :concept-type :granule :provider-id "PROV2") {:token "mock-echo-system-token" :validate-keywords false})
           (index/wait-until-indexed)
           (refresh-granule-counts-cache)
           (let [holdings (search/provider-holdings-in-format :json)]
@@ -60,9 +60,9 @@
 
 (deftest has-granules-flags-usage-test
   (testing "Search Parameters utilizing the granule counts cache"
-    (let [coll-with-gran (d/ingest "PROV1" (dc/collection {:entry-title "c-has-granules"}))
-          coll-no-gran (d/ingest "PROV1" (dc/collection {:entry-title "c-no-granules"}))
-          _ (d/ingest "PROV1" (dg/granule coll-with-gran))
+    (let [coll-with-gran (d/ingest "PROV1" (dc/collection {:entry-title "c-has-granules"}) {:token "mock-echo-system-token" :validate-keywords false})
+          coll-no-gran (d/ingest "PROV1" (dc/collection {:entry-title "c-no-granules"}) {:token "mock-echo-system-token" :validate-keywords false})
+          _ (d/ingest "PROV1" (dg/granule coll-with-gran) {:token "mock-echo-system-token" :validate-keywords false})
           _ (index/wait-until-indexed)]
       
       (testing "has_granules"
