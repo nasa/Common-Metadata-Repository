@@ -631,4 +631,7 @@
                        service-type)]
     (-> umm-s
         (assoc :Type service-type)
+        (update-in [:ServiceOptions :SupportedReformattings] service-options/remove-reformattings-non-valid-formats-1_5_3-to-1_5_2)
+        (update-in [:ServiceOptions :SupportedInputFormats] service-options/remove-non-valid-formats-1_5_3-to-1_5_2)
+        (update-in [:ServiceOptions :SupportedOutputFormats] service-options/remove-non-valid-formats-1_5_3-to-1_5_2)
         (m-spec/update-version :service "1.5.2"))))

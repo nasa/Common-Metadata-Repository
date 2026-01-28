@@ -347,3 +347,22 @@
   "Replace the non valid formats going from UMM-S version 1.3.4 to UMM-S version 1.3.3"
   [reformattings]
   (remove nil? (map #(remove-reformattings-when-input-not-valid-1_3_4-to-1_3_3 %) reformattings)))
+
+(defn remove-non-valid-formats-1_5_3-to-1_5_2
+  "Remove the non valid Supported Format enumerations when migrating from 1.5.3 to 1.5.2."
+  [supported-formats]
+  (->> supported-formats
+       (remove #(= "NETCDF-4 (OPeNDAP URL)" %))
+       seq))
+
+(defn- remove-reformattings-when-input-not-valid-1_5_3-to-1_5_2
+  [reformatting]
+  (let [input (remove-non-valid-formats-1_5_3-to-1_5_2 (vector (:SupportedInputFormat reformatting)))
+        outputs (remove-non-valid-formats-1_5_3-to-1_5_2 (:SupportedOutputFormats reformatting))]
+    (when (and input outputs)
+      (assoc reformatting :SupportedOutputFormats outputs))))
+
+(defn remove-reformattings-non-valid-formats-1_5_3-to-1_5_2
+  "Remove the non valid formats going from UMM-S version 1.5.3 to UMM-S version 1.5.2"
+  [reformattings]
+  (remove nil? (map #(remove-reformattings-when-input-not-valid-1_5_3-to-1_5_2 %) reformattings)))

@@ -352,3 +352,11 @@
       (is (= 400 status4))
       (is (= 2 (count errors4)))
       (is (= [{:path ["RelatedUrLs" 0 "Format"], :errors ["Format [invalid] was not a valid keyword."]} {:path ["RelatedUrLs" 0 "MimeType"], :errors ["MimeType [invalid] was not a valid keyword."]}] errors4)))))
+
+(deftest service-opendap-url-test
+  (testing "ingest of service with NETCDF-4 (OPeNDAP URL) format"
+    (let [service-options {:SupportedReformattings [{:SupportedInputFormat "HDF4"
+                                                     :SupportedOutputFormats ["NETCDF-4 (OPeNDAP URL)"]}]}
+          concept (service-util/make-service-concept {:ServiceOptions service-options})
+          {:keys [status]} (ingest/ingest-concept concept)]
+      (is (= 201 status)))))
