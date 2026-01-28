@@ -16,10 +16,8 @@
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gran-counts]
    [cmr.system-int-test.utils.index-util :as index]
-   [clj-http.client :as client]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.config :as transmit-config]
    [cmr.umm.umm-spatial :as umm-spatial]))
 
 (use-fixtures :each (ingest/reset-fixture
@@ -89,21 +87,6 @@
                (dg/granule coll (merge {:granule-ur ur
                                         :spatial-coverage (apply dg/spatial orbit nil)}
                                        other-attribs))))))
-
-(defn refresh-granule-counts-cache
-  "Simulates the Lambda trigger by calling the Bootstrap App's refresh endpoint.
-   If Bootstrap is not running (e.g. isolated search test), this might fail with Connection Refused.
-   We expect the Bootstrap app to be running for full system integration tests."
-  []
-  (let [bootstrap-port (transmit-config/bootstrap-port)
-        url (format "http://localhost:%s/caches/refresh/granule-counts" bootstrap-port)]
-    (try
-      (client/post url {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                        :throw-exceptions true})
-      (catch java.net.ConnectException e
-        (println "WARNING: Could not connect to Bootstrap to refresh cache. Is Bootstrap running?" 
-                 "Tests might fail if cache is stale or architecture is misunderstood.")
-        (throw e)))))
 
 (deftest granule-related-collection-query-results-features-test
   (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
@@ -182,7 +165,7 @@
 
     (index/wait-until-indexed)
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
-    (refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
@@ -400,7 +383,7 @@
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
-    (refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
@@ -708,7 +691,7 @@
 
     (index/wait-until-indexed)
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
-    (refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
@@ -783,7 +766,7 @@
     (make-gran coll (p/point -100.0 40.0) nil)
 
     (index/wait-until-indexed)
-    (refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
 
