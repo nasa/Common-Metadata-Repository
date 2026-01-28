@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.granule.granule-counts-cache-test
-  "Integration tests for the granule counts cache mechanism (PR #2329)."
+  "Integration tests for the granule counts cache."
   (:require
    [clj-http.client :as client]
    [clojure.test :refer [deftest is testing use-fixtures]]
@@ -33,12 +33,12 @@
           _ (index/wait-until-indexed)]
 
       (testing "Initial State"
-        (let [holdings (search/get-provider-holdings-in-format :json)]
+        (let [holdings (search/provider-holdings-in-format :json)]
           (is (= 1 (some #(when (= (:entry-title %) "coll1") (:granule-count %)) holdings)))
           (is (= 0 (some #(when (= (:entry-title %) "coll2") (:granule-count %)) holdings)))))
 
       (testing "Provider Isolation"
-         (let [holdings (search/get-provider-holdings-in-format :json {:provider-id "PROV1"})]
+         (let [holdings (search/provider-holdings-in-format :json {:provider-id "PROV1"})]
            (is (= 1 (count holdings)))
            (is (= "PROV1" (:provider-id (first holdings))))
            (is (not-any? #(= "PROV2" (:provider-id %)) holdings))))
@@ -47,7 +47,7 @@
         (d/ingest "PROV2" (dg/granule coll2))
         (index/wait-until-indexed)
         (refresh-granule-counts-cache)
-        (let [holdings (search/get-provider-holdings-in-format :json)]
+        (let [holdings (search/provider-holdings-in-format :json)]
           (is (= 1 (some #(when (= (:entry-title %) "coll2") (:granule-count %)) holdings)))))
 
       (testing "Cache Refresh (Deletion)"
@@ -55,7 +55,7 @@
           (ingest/delete-concept (assoc gran :concept-type :granule :provider-id "PROV2"))
           (index/wait-until-indexed)
           (refresh-granule-counts-cache)
-          (let [holdings (search/get-provider-holdings-in-format :json)]
+          (let [holdings (search/provider-holdings-in-format :json)]
             (is (= 0 (some #(when (= (:entry-title %) "coll2") (:granule-count %)) holdings)))))))))
 
 (deftest has-granules-flags-usage-test
