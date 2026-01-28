@@ -107,7 +107,7 @@ You MUST give the elastic_name parameter to tell CMR which elastic cluster your 
 Required params:
 - num_shards = int (num of shards you want the index to have at the end)
 - elastic_name = string (elastic cluster name you want to reshard in)
-    - Options: `gran-elastic` or `elastic`
+  - Options: `gran-elastic` or `elastic`
 
 ```
 curl -i \
@@ -124,7 +124,7 @@ Retrieves the resharding status for an index, including the original index name,
 
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
-    - Options: `gran-elastic` or `elastic`
+  - Options: `gran-elastic` or `elastic`
 
 ```
 curl -i \
@@ -141,7 +141,7 @@ Finalizing an index resharding moves the ES alias to point to the new resharded 
 
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
-    - Options: `gran-elastic` or `elastic`
+  - Options: `gran-elastic` or `elastic`
 
 IMPORTANT: Only finalize if the reshard status is 'COMPLETE'
 
@@ -161,7 +161,7 @@ You MUST give the elastic_name parameter to tell CMR which cluster your index is
 
 Required params:
 - elastic_name (str)
-    - Options: `gran-elastic` or `elastic`
+  - Options: `gran-elastic` or `elastic`
 
 Rollback will be allowed IF the reshard has not been finalized, else it will not allow
 
