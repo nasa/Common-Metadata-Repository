@@ -189,7 +189,7 @@ In order to reshard an index to have a different number of shards in elasticsear
 2. Check the status
 3. Finalize the reshard process with the following API's below.
 
-IMPORTANT: Only reshard one index at a time. Make sure you start, status, and finalize a reshard process COMPLETELY before resharding the next index.
+***IMPORTANT***: Only reshard one index at a time. Make sure you start, status, and finalize a reshard process COMPLETELY before resharding the next index.
 
 ### Start resharding an index
 
@@ -220,7 +220,7 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
 
-IMPORTANT: Only finalize if the reshard status is 'COMPLETE'
+***IMPORTANT***: Only finalize if the reshard status is 'COMPLETE'
 
 ```
 curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize?elastic_name=gran-elastic
