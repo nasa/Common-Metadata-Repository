@@ -16,7 +16,7 @@
 
 (defn refresh-granule-counts-cache
   []
-  (let [url (url/bootstrap-url "caches/refresh/granule-counts")]
+  (let [url (url/bootstrap-url "caches/refresh/granule-counts-cache")]
     (try
       (client/post url {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                         :throw-exceptions true})
