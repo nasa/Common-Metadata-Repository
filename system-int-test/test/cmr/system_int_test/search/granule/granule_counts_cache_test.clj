@@ -20,58 +20,47 @@
   []
   (let [url (url/bootstrap-url "caches/refresh/granule-counts-cache")]
     (try
-      (println "Attempting to refresh granule counts cache at URL:" url)
       (let [response (client/post url {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                                        :throw-exceptions false})]
-        (println "Refresh cache response status:" (:status response))
-        (println "Refresh cache response headers:" (:headers response))
-        (println "Refresh cache response body:" (:body response))
         (if (= 200 (:status response))
-          (println "Cache refreshed successfully")
+          true
           (throw (Exception. (str "Failed to refresh cache. Status: " (:status response))))))
       (catch Exception e
-        (println "Error refreshing granule counts cache:" (.getMessage e))
         (throw e)))))
 
 (deftest provider-holdings-using-cache-test
   (testing "Provider Holdings API relies on the granule counts cache"
+    (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
+    (e/grant-all (s/context) (e/coll-catalog-item-id "PROV2"))
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:token "mock-echo-system-token" :validate-keywords false})
           coll2 (d/ingest "PROV2" (dc/collection {:entry-title "coll2"}) {:token "mock-echo-system-token" :validate-keywords false})
           _ (d/ingest "PROV1" (dg/granule coll1) {:token "mock-echo-system-token" :validate-keywords false})
           _ (index/wait-until-indexed)
-          _ (search/clear-caches)
-          _ (println "Cache refreshed")]
-
+          _ (search/clear-caches)]
       (testing "Initial State"
         (let [holdings (:results (search/provider-holdings-in-format :json))]
-          (println "Initial holdings:" holdings)
           (is (= 1 (:granule-count (first (filter #(= (:entry-title %) "coll1") holdings)))))
           (is (= 0 (:granule-count (first (filter #(= (:entry-title %) "coll2") holdings)))))))
       (testing "Provider Isolation"
          (let [holdings (:results (search/provider-holdings-in-format :json {:token "mock-echo-system-token" :provider-id "PROV1"}))]
-           (println "PROV1 holdings:" holdings)
            (is (= 1 (count holdings)))
            (is (= "PROV1" (:provider-id (first holdings))))
            (is (not-any? #(= "PROV2" (:provider-id %)) holdings))))
-
       (testing "Cache Refresh (Addition)"
         (d/ingest "PROV2" (dg/granule coll2) {:token "mock-echo-system-token" :validate-keywords false})
         (index/wait-until-indexed)
         (refresh-granule-counts-cache)
-        (Thread/sleep 1000)  ; Add a small delay
+        (Thread/sleep 2000)  
         (let [holdings (:results (search/provider-holdings-in-format :json {:token "mock-echo-system-token"}))]
-          (println "Holdings after addition:" holdings)
           (is (= 1 (:granule-count (first (filter #(= (:entry-title %) "coll2") holdings)))))))
       (testing "Cache Refresh (Deletion)"
         (let [gran (first (:refs (search/find-refs :granule {:collection-concept-id (:concept-id coll2)})))]
-          ;(ingest/delete-concept (assoc gran :concept-type :granule :provider-id "PROV2") {:token "mock-echo-system-token" :validate-keywords false})
           (ingest/delete-concept {:concept-type :granule :provider-id "PROV2" 
                                   :native-id (:name gran)} {:token "mock-echo-system-token" :validate-keywords false})
           (index/wait-until-indexed)
           (refresh-granule-counts-cache)
-          (Thread/sleep 1000)  ; Add a small delay
+          (Thread/sleep 2000)  
           (let [holdings (:results (search/provider-holdings-in-format :json {:token "mock-echo-system-token"}))]
-            (println "Holdings after deletion:" holdings)
             (is (= 0 (:granule-count (first (filter #(= (:entry-title %) "coll2") holdings)))))))))))
 
 (deftest has-granules-flags-usage-test
@@ -92,3 +81,4 @@
       (testing "has_granules_or_opensearch"
         (let [refs (search/find-refs :collection {:has_granules_or_opensearch true})]
           (is (some #(= (:id %) (:concept-id coll-with-gran)) (:refs refs))))))))
+
