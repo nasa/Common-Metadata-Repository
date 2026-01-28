@@ -219,8 +219,24 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
     - Options: `gran-elastic` or `elastic`
 
+IMPORTANT: Only finalize if the reshard status is 'COMPLETE'
 
     curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize?elastic_name=gran-elastic
+
+### Rollback resharding an index
+
+Rollback the resharding of a specified index to its original state before reshard was attempted.
+
+You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+
+Required params:
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
+
+Rollback will be allowed IF the reshard has not been finalized, else it will not allow
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/rollback?elastic_name=gran-elastic
+
 
 ### Reset for dev purposes
 

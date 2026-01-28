@@ -89,16 +89,25 @@ HTTP/1.1 200 OK
 
 ## Resharding Indexes
 
+In order to reshard an index to have a different number of shards in elasticsearch clusters, you will do the following:
+
+1. Start a reshard process
+2. Check the status for a 'COMPLETE' state
+3. Finalize the reshard process with the following API's below.
+
+IMPORTANT: Only reshard one index at a time. Make sure you start, status, and finalize a reshard process COMPLETELY before resharding the next index.
+
 ### Start Resharding
 Starts the resharding process to create a new index with the given number of shards and copies
 the data from the old index to the new index. Both indexes will be used for ingest until
 the resharding is finalized.
 
-You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+You MUST give the elastic_name parameter to tell CMR which elastic cluster your index is in that is going to be resharded.
 
-- Required params:
-    - elastic_name (str)
-        - options: gran-elastic and elastic
+Required params:
+- num_shards = int (num of shards you want the index to have at the end)
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
 
 ```
 curl -i \
@@ -113,11 +122,9 @@ HTTP/1.1 200 OK
 
 Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
 
-You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
-
-- Required params:
-    - elastic_name (str)
-        - options: gran-elastic and elastic
+Required params:
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
 
 ```
 curl -i \
@@ -129,14 +136,14 @@ HTTP/1.1 200 OK
 ```
 
 ### Finalize Resharding
-Finalizes the resharding process to move the ElasticSearch alias to point to the newly resharded
-index. Returns a 400 error if the index resharding is not complete.
+Once the status of the reshard returns 'COMPLETE', you can move on to finalizing the reshard process.
+Finalizing an index resharding moves the ES alias to point to the new resharded index and clean up the index-set.
 
-You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
+Required params:
+- elastic_name = string (elastic cluster name you want to reshard in)
+    - Options: `gran-elastic` or `elastic`
 
-- Required params:
-  - elastic_name (str)
-    - options: gran-elastic and elastic
+IMPORTANT: Only finalize if the reshard status is 'COMPLETE'
 
 ```
 curl -i \
@@ -152,9 +159,9 @@ Rollback the resharding of a specified index to its original state before reshar
 
 You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
 
-- Required params:
-    - elastic_name (str)
-        - options: gran-elastic and elastic
+Required params:
+- elastic_name (str)
+    - Options: `gran-elastic` or `elastic`
 
 Rollback will be allowed IF the reshard has not been finalized, else it will not allow
 
