@@ -3,6 +3,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [cmr.common.concepts :as cs]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [info infof warn error]]
    [cmr.common.services.errors :as errors]
@@ -29,9 +30,12 @@
   "The maximum size in bytes that a string can be in Elasticsearch to be indexed as text"
   32766)
 
-(def MAX_BULK_OPERATIONS_PER_REQUEST
-  "The maximum number of operations to batch in a single request"
-  100)
+(defconfig max-bulk-operations-per-request
+  "The maximum number of operations to batch in a single request. Be careful when increasing
+  this number. If this number gets too big then with a lot of searches and other indexing
+  it is easy to get an out of memory exception in elastic search."
+  {:default 50
+   :type Long})
 
 (defmulti get-elastic-version
   "Get the proper elastic document version for the concept based on type.
@@ -412,7 +416,7 @@
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
   [context docs]
-  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+  (doseq [docs-batch (partition-all (max-bulk-operations-per-request) docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (indexer-util/context->conn context es-config/elastic-name)
           response (es-helper/bulk conn bulk-operations)]
@@ -423,7 +427,7 @@
   ([context docs es-cluster-name]
    (bulk-index-documents context docs es-cluster-name nil))
   ([context docs es-cluster-name {:keys [all-revisions-index?]}]
-   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+   (doseq [docs-batch (partition-all (max-bulk-operations-per-request) docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (indexer-util/context->conn context es-cluster-name)
            response (es-helper/bulk conn bulk-operations)]

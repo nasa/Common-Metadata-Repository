@@ -146,3 +146,7 @@
 (defn resharding-completed
   [index]
   (str "Resharding completed for index " index))
+
+(defn rollback-completed
+  [index]
+  (str "Rollback completed of attempted resharding of index " index))
