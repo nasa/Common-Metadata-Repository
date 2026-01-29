@@ -43,15 +43,6 @@
                    :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
-(defn refresh-granule-counts-cache
-  "Refreshes the granule counts cache in the bootstrap app."
-  []
-  (let [response (client/post (url/bootstrap-url "caches/refresh/granule-counts-cache")
-                              {:connection-manager (s/conn-mgr)
-                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                               :throw-exceptions false})]
-    (is (= 200 (:status response)) (:body response))))
-
 (defn update-indexes
   "Makes the indexer update the index set mappings and indexes"
   []

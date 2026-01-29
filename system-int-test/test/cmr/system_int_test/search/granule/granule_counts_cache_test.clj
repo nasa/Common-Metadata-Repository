@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule.granule-counts-cache-test
   "Integration tests for the granule counts cache."
   (:require
-
+   [clj-http.client :as client]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.index-util :as index]
@@ -9,12 +9,24 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-
+(defn refresh-granule-counts-cache
+  []
+  (let [url (url/bootstrap-url "caches/refresh/granule-counts-cache")]
+    (try
+      (let [response (client/post url {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                                       :throw-exceptions false})]
+        (if (= 200 (:status response))
+          true
+          (throw (Exception. (str "Failed to refresh cache. Status: " (:status response))))))
+      (catch Exception e
+        (throw e)))))
 
 (deftest provider-holdings-using-cache-test
   (testing "Provider Holdings API relies on the granule counts cache"
@@ -37,7 +49,7 @@
       (testing "Cache Refresh (Addition)"
         (d/ingest "PROV2" (dg/granule coll2) {:token "mock-echo-system-token" :validate-keywords false})
         (index/wait-until-indexed)
-        (index/refresh-granule-counts-cache)
+        (refresh-granule-counts-cache)
         (Thread/sleep 2000)  
         (let [holdings (:results (search/provider-holdings-in-format :json {:token "mock-echo-system-token"}))]
           (is (= 1 (:granule-count (first (filter #(= (:entry-title %) "coll2") holdings)))))))
@@ -46,7 +58,7 @@
           (ingest/delete-concept {:concept-type :granule :provider-id "PROV2" 
                                   :native-id (:name gran)} {:token "mock-echo-system-token" :validate-keywords false})
           (index/wait-until-indexed)
-          (index/refresh-granule-counts-cache)
+          (refresh-granule-counts-cache)
           (Thread/sleep 2000)  
           (let [holdings (:results (search/provider-holdings-in-format :json {:token "mock-echo-system-token"}))]
             (is (= 0 (:granule-count (first (filter #(= (:entry-title %) "coll2") holdings)))))))))))
