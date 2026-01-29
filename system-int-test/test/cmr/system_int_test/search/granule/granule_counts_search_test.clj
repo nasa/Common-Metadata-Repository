@@ -88,6 +88,9 @@
                                         :spatial-coverage (apply dg/spatial orbit nil)}
                                        other-attribs))))))
 
+
+
+
 (deftest granule-related-collection-query-results-features-test
   (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
                            :ending-date-time "1991-01-01T00:00:00"}
@@ -165,6 +168,7 @@
 
     (index/wait-until-indexed)
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/refresh-granule-counts-cache)
     (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
@@ -383,6 +387,7 @@
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/refresh-granule-counts-cache)
     (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
@@ -476,6 +481,8 @@
     (make-gran coll1 (p/point 0 90) nil)
 
     (index/wait-until-indexed)
+    (index/refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
 
     (testing "granule counts"
       (testing "granule counts for all collections"
@@ -497,6 +504,8 @@
       (make-gran coll2 (p/point 0 90) nil)
 
       (index/wait-until-indexed)
+      (index/refresh-granule-counts-cache)
+      (index/full-refresh-collection-granule-aggregate-cache)
 
       (testing "granule counts"
         (testing "granule counts for all collections"
@@ -691,6 +700,7 @@
 
     (index/wait-until-indexed)
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/refresh-granule-counts-cache)
     (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
@@ -727,6 +737,8 @@
     (make-gran coll1 (p/point 0 90) nil)
 
     (index/wait-until-indexed)
+    (index/refresh-granule-counts-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
 
       (testing "test that the granule-count field doesn't exist when it it isn't requested"
         (are3 [result-format results]
@@ -766,6 +778,7 @@
     (make-gran coll (p/point -100.0 40.0) nil)
 
     (index/wait-until-indexed)
+    (index/refresh-granule-counts-cache)
     (index/full-refresh-collection-granule-aggregate-cache)
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
