@@ -509,6 +509,40 @@
         {:Type "ECHO ORDERS"}
         {:Type "ECHO ORDERS"}))
 
+(deftest migrate-1_5_4-down-to-1_5_3
+  (is (= {:Type "OPeNDAP"
+          :Name "Test"
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
+                                  :Name "UMM-S"
+                                  :Version "1.5.3"}
+          :ServiceOptions {:SupportedInputFormats ["HDF4"]
+                           :SupportedOutputFormats ["HDF4"]}}
+         (vm/migrate-umm {} :service "1.5.4" "1.5.3"
+                         {:Type "OPeNDAP"
+                          :Name "Test"
+                          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
+                                                  :Name "UMM-S"
+                                                  :Version "1.5.4"}
+                          :ServiceOptions {:SupportedInputFormats ["HDF4" "NETCDF-4 (OPeNDAP URL)"]
+                                           :SupportedOutputFormats ["HDF4" "NETCDF-4 (OPeNDAP URL)"]}}))))
+
+(deftest migrate-1_5_3-up-to-1_5_4
+  (is (= {:Type "OPeNDAP"
+          :Name "Test"
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
+                                  :Name "UMM-S"
+                                  :Version "1.5.4"}
+          :ServiceOptions {:SupportedInputFormats ["HDF4"]
+                           :SupportedOutputFormats ["HDF4"]}}
+         (vm/migrate-umm {} :service "1.5.3" "1.5.4"
+                         {:Type "OPeNDAP"
+                          :Name "Test"
+                          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
+                                                  :Name "UMM-S"
+                                                  :Version "1.5.3"}
+                          :ServiceOptions {:SupportedInputFormats ["HDF4"]
+                                           :SupportedOutputFormats ["HDF4"]}}))))
+
 (defn- load-service-file
   "Load a test data file for services"
   [version-file]
@@ -623,7 +657,16 @@
 
    "Migrating up from 1.5.2 to 1.5.3"
    "1.5.2" "v1.5.2/Service_v1.5.2.json"
-   "1.5.3" "v1.5.3/Service_v1.5.2-to-v1.5.3.json"))
+   "1.5.3" "v1.5.3/Service_v1.5.2-to-v1.5.3.json"
+
+   ;; ---- 1.5.4 tests ----
+   "Migrating down from 1.5.4 to 1.5.3"
+   "1.5.4" "v1.5.4/Service_v1.5.4.json"
+   "1.5.3" "v1.5.4/Service_v1.5.4-to-v1.5.3.json"
+
+   "Migrating up from 1.5.3 to 1.5.4"
+   "1.5.3" "v1.5.3/Service_v1.5.3.json"
+   "1.5.4" "v1.5.3/Service_v1.5.3-to-v1.5.4.json"))
 
 (comment
 
