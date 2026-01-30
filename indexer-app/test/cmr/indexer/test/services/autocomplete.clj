@@ -210,7 +210,7 @@
   (testing "Testing the autocomplete document creation."
      (is (= expected-suggestion-docs
             (->> humanized-fields
-                 (map #(#'autocomplete/get-suggestion-docs "1_autocomplete" %))
+                 (map #(#'autocomplete/get-suggestion-docs "1_autocomplete" % (atom #{})))
                  flatten
                  (remove autocomplete/anti-value-suggestion?)
                  (map #(dissoc % :modified)))))))
