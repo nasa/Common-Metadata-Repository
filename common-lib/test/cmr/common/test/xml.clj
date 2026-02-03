@@ -1,7 +1,6 @@
 (ns cmr.common.test.xml
   (:require
    [clj-time.core :as t]
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.test :refer [are deftest is]]
    [cmr.common.xml :as cx]))
@@ -31,10 +30,10 @@
   </top>")
 
 (def parsed-sample-xml
-  (xml/parse-str sample-xml))
+  (cx/parse-str sample-xml))
 
 (deftest element-at-path-test
-  (are [xml path] (= (when xml (xml/parse-str xml))
+  (are [xml path] (= (when xml (cx/parse-str xml))
                      (cx/element-at-path parsed-sample-xml path))
        "<alpha>45</alpha>" [:inner :alpha]
        "<bravo>ovarb</bravo>" [:inner :bravo]
@@ -96,10 +95,10 @@
   </top>")
 
 (def parsed-sample-multiple-elements-xml
-  (xml/parse-str sample-multiple-elements-xml))
+  (cx/parse-str sample-multiple-elements-xml))
 
 (deftest elements-at-path-test
-  (are [xml path] (= (:content (xml/parse-str xml))
+  (are [xml path] (= (:content (cx/parse-str xml))
                      (cx/elements-at-path parsed-sample-multiple-elements-xml path))
        "<a><alpha>45</alpha><alpha>46</alpha></a>" [:inner :alpha]
        "<a><bravo>ovarb</bravo><bravo>ovary</bravo></a>" [:inner :bravo]
@@ -186,6 +185,9 @@
 (def xxe-xml
   "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY xxe SYSTEM \"file:///etc/passwd\" >] ><Collection><ShortName>test</ShortName><VersionId>&xxe;1</VersionId></Collection>")
 
+(def xxe-xml-html
+  "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY % xxe SYSTEM \"http://localhost:8080/test.dtd\"> %xxe;]><Collection><ShortName>Test</ShortName><VersionId>1</VersionId></Collection>")
+
 (def test-schema
   "<?xml version=\"1.0\" encoding=\"us-ascii\"?>
   <xs:schema elementFormDefault=\"qualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">
@@ -220,6 +222,7 @@
     (is (nil? (cx/validate-xml schema-url valid-xml)))
     (is (string/includes? (first (cx/validate-xml schema-url too-much-xml)) "Invalid content was found starting with element 'NewField'."))
     (is (string/includes? (first (cx/validate-xml schema-url bad-xml)) "must be terminated by the matching end-tag"))
+    (is (nil? (first (cx/validate-xml schema-url xxe-xml-html)) ))
     ;; The DocType parsing has been disabled and no errors should be 
     ;; given, but warning log message is produced.
     (is (nil? (first (cx/validate-xml schema-url xxe-xml))))))

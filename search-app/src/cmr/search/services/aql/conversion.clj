@@ -2,7 +2,6 @@
   "Contains functions for parsing and converting aql to query conditions"
   (:require
    [clj-time.core :as t]
-   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
@@ -106,8 +105,9 @@
           [:granule :instrument] true
           [:granule :sensor] true} key)))
 
-(defn- update-map-values [m f & args]
+(defn- update-map-values
   "update values in a map by applying the given function and args"
+  [m f & args]
   (into {} (for [[k v] m] [k (apply f v args)])))
 
 (defn- inheritance-condition
@@ -211,7 +211,7 @@
     [start-date stop-date]))
 
 (defn element->num-range
-  [concept-type element]
+  [_concept-type element]
   (let [string-double-fn #(when-not (string/blank? %) (Double. (remove-outer-single-quotes %)))
         range-val (-> (cx/attrs-at-path element [:range])
                       (set/rename-keys {:lower :min-value :upper :max-value})
@@ -276,7 +276,7 @@
     (gc/and-conds [coll-query-condition gran-condition])))
 
 (defmethod element->condition :equator-crossing-date
-  [concept-type element]
+  [_concept-type element]
   (let [[start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange]))]
     (qm/map->EquatorCrossingDateCondition {:start-date start-date
                                            :end-date stop-date})))
@@ -296,7 +296,7 @@
     (qm/map->OrbitNumberRangeCondition (element->num-range concept-type element))))
 
 (defmethod element->condition :day-night
-  [concept-type element]
+  [_concept-type element]
   (let [value (get-in element [:attrs :value] "DAY")]
     (cqm/string-condition :day-night value)))
 
@@ -364,7 +364,7 @@
   (validate-aql aql)
   (let [;; remove the DocType from the aql string as clojure.data.xml does not handle it correctly
         ;; by adding attributes to elements when it is present.
-        xml-struct (xml/parse-str (cx/remove-xml-processing-instructions aql))
+        xml-struct (cx/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-standard-query-parameters concept-type params)]
     (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))

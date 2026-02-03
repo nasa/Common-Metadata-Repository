@@ -56,8 +56,8 @@
 
   The `:context` key always contains the result of an XPath evaluation."
   (:require
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
+   [cmr.common.xml :as cx]
    [cmr.common.util :as u])
   (:import
    (clojure.data.xml Element)))
@@ -506,10 +506,7 @@
   (defn create-xpath-context-for-xml
     "Creates an XPath context for evaluating XPaths from an XML string."
     [xml-str]
-    (let [xml-root {:tag :root :attrs {} :content [(xml/parse-str xml-str
-                                                                  :supporting-external-entities false
-                                                                  :support-dtd false
-                                                                  :coalescing true)]}]
+    (let [xml-root {:tag :root :attrs {} :content [(cx/parse-str xml-str)]}]
       {:type :xml
        :root xml-root
        :context [xml-root]}))

@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.data2.kml
   "Contains functions for parsing kml results into spatial shapes."
   (:require
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.test]
    [cmr.common.util :as util]
@@ -34,7 +33,7 @@
 
 (defmulti shape-element->shape
   "Converts an XML shape element into a cmr spatial shape record."
-  (fn [coordinate-system shape-elem]
+  (fn [_coordinate-system shape-elem]
     (:tag shape-elem)))
 
 (defmethod shape-element->shape :Polygon
@@ -58,7 +57,7 @@
   (l/line-string coordinate-system (coordinates-container-elem->points shape-elem)))
 
 (defmethod shape-element->shape :Point
-  [coordinate-system shape-elem]
+  [_coordinate-system shape-elem]
   (first (coordinates-container-elem->points shape-elem)))
 
 (defn placemark-elem->item
@@ -79,7 +78,7 @@
 (defn parse-kml-results
   "Takes kml as a string and returns expected items which will contain a name and a list of shapes"
   [kml-string]
-  (map placemark-elem->item (cx/elements-at-path (xml/parse-str kml-string) [:Document :Placemark])))
+  (map placemark-elem->item (cx/elements-at-path (cx/parse-str kml-string) [:Document :Placemark])))
 
 (defmulti shape->kml-representation
   "Converts a CMR spatial shape into the KML representation of that shape"
@@ -137,7 +136,7 @@
 (defn- update-result-shapes
   "Returns the result with shapes in a set if applicable"
   [result]
-  (if-let [shapes (:shapes result)]
+  (if (:shapes result)
     (update-in result [:shapes] #(when % (set %)))
     result))
 

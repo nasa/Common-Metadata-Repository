@@ -3,8 +3,8 @@
   (:require
    [clj-http.client :as http]
    [clojure.data.json :as json]
-   [clojure.data.xml :as xml]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [cmr.common.xml :as cx])
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,7 +56,7 @@
   [response content-type]
   (case content-type
      :json (json/read-str (:body response) :key-fn keyword)
-     :xml (xml/parse-str (:body response))
+     :xml (cx/parse-str (:body response))
      :unsupported (:body response)))
 
 (defn parse-body!
@@ -160,31 +160,31 @@
 (defn- delete
   ([this url]
     (delete this url {}))
-  ([this url options]
+  ([_this _url _options]
     :not-implemented))
 
 (defn- copy
   ([this url]
     (copy this url {}))
-  ([this url options]
+  ([_this _url _options]
     :not-implemented))
 
 (defn- move
   ([this url]
     (move this url {}))
-  ([this url options]
+  ([_this _url _options]
     :not-implemented))
 
 (defn- patch
   ([this url]
     (patch this url {}))
-  ([this url options]
+  ([_this _url _options]
     :not-implemented))
 
 (defn- options
   ([this url]
     (options this url {}))
-  ([this url options]
+  ([_this _url _options]
     :not-implemented))
 
 (def client-behaviour

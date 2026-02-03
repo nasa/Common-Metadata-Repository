@@ -2,7 +2,8 @@
   "Contains functions to update ECHO10 granule xml for format bulk granule update."
   (:require
    [clojure.data.xml :as xml]
-   [clojure.zip :as zip]))
+   [clojure.zip :as zip]
+   [cmr.common.xml :as cx]))
 
 (def ^:private tags-after-data-format
   "Defines the element tags that come after DataFormat in ECHO10 Granule xml schema"
@@ -44,7 +45,7 @@
   "Takes the granule ECHO10 xml and format value.
   Update the ECHO10 granule metadata with the format. Returns the updated metadata."
   [gran-xml format]
-  (let [parsed (xml/parse-str gran-xml)]
+  (let [parsed (cx/parse-str gran-xml)]
     (xml/indent-str (update-data-format-element parsed format))))
 
 (defn update-format

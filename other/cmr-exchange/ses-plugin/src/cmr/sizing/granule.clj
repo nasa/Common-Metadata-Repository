@@ -1,6 +1,6 @@
 (ns cmr.sizing.granule
   (:require
-   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
    [cmr.sizing.util :as util]
    [xml-in.core :as xml-in]))
 
@@ -16,5 +16,5 @@
   "Returns granule file size in bytes."
   [xml-metadata]
   (-> xml-metadata
-      xml/parse-str
+      cx/parse-str
       extract-size-data))

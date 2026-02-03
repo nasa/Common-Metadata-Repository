@@ -12,7 +12,7 @@
 (defn- aql-string-elem->condition
   [aql-snippet]
   (let [aql (format "<query><dataCenterId>%s</dataCenterId></query>" aql-snippet)
-        xml-struct (xml/parse-str aql)]
+        xml-struct (cx/parse-str aql)]
     (a/element->condition :collection (cx/element-at-path xml-struct [:dataCenterId]))))
 
 (deftest remove-outer-single-quotes-test
@@ -129,7 +129,7 @@
 (defn- aql-date-range-elem->condition
   [aql-snippet]
   (let [aql (format "<ECHOLastUpdate><dateRange>%s</dateRange></ECHOLastUpdate>" aql-snippet)
-        xml-struct (xml/parse-str aql)]
+        xml-struct (cx/parse-str aql)]
     (a/element->condition :collection xml-struct)))
 
 (deftest aql-date-range-conversion-test
@@ -161,7 +161,7 @@
 
 (defn- aql-boolean-elem->condition
   [aql-snippet]
-  (let [xml-struct (xml/parse-str aql-snippet)]
+  (let [xml-struct (cx/parse-str aql-snippet)]
     (a/element->condition :collection xml-struct)))
 
 (deftest aql-boolean-conversion-test
