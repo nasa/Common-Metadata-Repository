@@ -506,7 +506,10 @@
   (defn create-xpath-context-for-xml
     "Creates an XPath context for evaluating XPaths from an XML string."
     [xml-str]
-    (let [xml-root {:tag :root :attrs {} :content [(xml/parse-str xml-str)]}]
+    (let [xml-root {:tag :root :attrs {} :content [(xml/parse-str xml-str
+                                                                  :supporting-external-entities false
+                                                                  :support-dtd false
+                                                                  :coalescing true)]}]
       {:type :xml
        :root xml-root
        :context [xml-root]}))

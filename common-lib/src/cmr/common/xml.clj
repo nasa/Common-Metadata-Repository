@@ -182,6 +182,7 @@
     ;; Disable external general and parameter entities
     (.setFeature "http://xml.org/sax/features/external-general-entities" false)
     (.setFeature "http://xml.org/sax/features/external-parameter-entities" false)
+    (.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd" false)
     ;; Enable secure processing feature
     (.setFeature XMLConstants/FEATURE_SECURE_PROCESSING true)))
 
