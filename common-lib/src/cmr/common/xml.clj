@@ -265,7 +265,7 @@
         (string/replace #"\s+xmlns:" "\n    xmlns:"))))
 
 (defn parse-str 
-  "This function calls clojure.xml.data/parse-str with options to not parse included DTD in XML records.
+  "This function calls clojure.data.xml/parse-str with options to not parse included DTD in XML records.
   This protects the CMR from XML External Entity (XXE) injection attacks."
   [xml-str]
   (xml/parse-str xml-str
