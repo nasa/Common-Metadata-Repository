@@ -6,8 +6,8 @@
    [buddy.core.keys :as buddy-keys]
    [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
+   [clojure.data.xml :as xml]
    [clojure.string :as string]
-   [cmr.common.xml :as cx]
    [cmr.authz.components.config :as config]
    [cmr.authz.http :as http]
    [cmr.http.kit.request :as request]
@@ -45,7 +45,7 @@
 (defn find-xml
   [xml-str in-keys]
   (log/trace "Got token XML data:" xml-str)
-  (xml-in/find-first (cx/parse-str xml-str) in-keys))
+  (xml-in/find-first (xml/parse-str xml-str) in-keys))
 
 (defn parse-token-data
   "Parse the XML that is returned when querying the CMR Access Control API for

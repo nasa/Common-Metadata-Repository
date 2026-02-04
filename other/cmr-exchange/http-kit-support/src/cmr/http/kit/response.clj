@@ -7,8 +7,8 @@
   (:require
    [cheshire.core :as json]
    [cheshire.generate :as json-gen]
+   [clojure.data.xml :as xml]
    [clojure.string :as string]
-   [cmr.common.xml :as cx]
    [cmr.exchange.common.results.errors :as errors]
    [ring.util.http-response :as response]
    [taoensso.timbre :as log]
@@ -70,7 +70,7 @@
 (defn parse-xml-body
   [body]
   (let [str-data (if (string? body) body (slurp body))
-        xml-data (cx/parse-str str-data)]
+        xml-data (xml/parse-str str-data)]
     (log/trace "str-data:" str-data)
     (log/trace "xml-data:" xml-data)
     xml-data))
@@ -141,7 +141,7 @@
     headers
     body
     (format "Unexpected cmr-authz error (%s)." status)))
-  ([_status headers body default-msg]
+  ([status headers body default-msg]
    (let [ct (:content-type headers)]
      (log/trace "Headers:" headers)
      (log/trace "Content-Type:" ct)
@@ -220,7 +220,7 @@
      :status 200}))
 
 (defn process-err-results
-  [_data]
+  [data]
   {:status errors/default-error-code})
 
 (defn process-results
