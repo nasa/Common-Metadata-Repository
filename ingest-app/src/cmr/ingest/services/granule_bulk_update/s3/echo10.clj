@@ -132,7 +132,7 @@
   :replace
   :append"
   [gran-xml urls operation]
-  (let [parsed (xml/parse-str gran-xml)
+  (let [parsed (cx/parse-str gran-xml)
         online-accesses (xml-elem->online-access-urls parsed)]
     (xml/indent-str (add-s3-url* parsed online-accesses urls operation))))
 

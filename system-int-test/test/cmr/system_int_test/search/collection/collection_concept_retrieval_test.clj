@@ -3,7 +3,6 @@
   /concepts/:concept-id/:revision-id endpoints."
   (:require
    [cheshire.core :as json]
-   [clojure.data.xml :as xml]
    [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3] :as util]
@@ -49,14 +48,8 @@
 
 (defmulti result-matches?
   "Compare UMM record to the response from concept retrieval"
-  (fn [original-format format-key umm response]
+  (fn [_original-format format-key _umm _response]
     format-key))
-
-(defn- update-iso-entry-title
-  "Returns the ISO19115 collection with entry title updated to the given value.
-  This is a temporary workaround and should be removed once CMR-3256 is fixed."
-  [coll correct-entry-title]
-  (assoc coll :entry-title correct-entry-title))
 
 (defmethod result-matches? :default
   [original-format format-key umm response]
@@ -87,10 +80,10 @@
   (let [umm-coll (dc/collection {:entry-title "coll1"
                                  :projects (dc/projects "ESI_3")})
         coll1 (d/ingest "PROV1" umm-coll {:validate-keywords false})
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}) {:validate-keywords false})
+        _ (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}) {:validate-keywords false})
         del-coll (d/ingest "PROV1" (dc/collection) {:validate-keywords false})
         ;; tokens
-        guest-token (e/login-guest (s/context))
+        _ (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
     (ingest/delete-concept (d/item->concept del-coll :echo10))
     (index/wait-until-indexed)
@@ -273,7 +266,7 @@
                                                          :long-name "ET9"})
                            {:format :dif10
                             :validate-keywords false})
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
+        _ [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
     (index/wait-until-indexed)
 
     (testing "Get by concept id in formats"
@@ -347,7 +340,7 @@
         (are [mime-type xml?]
              (let [response (search/retrieve-concept (:concept-id c1-echo) nil {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (xml/parse-str (:body response)) [:error])
+                             (cx/string-at-path (cx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
@@ -379,16 +372,16 @@
         ;; to vars to make it easier to see what is being ingested.
 
         ;; Ingest a collection twice.
-        coll1-1 (d/ingest "PROV1" umm-coll1-1 {:validate-keywords false})
-        coll1-2 (d/ingest "PROV1" umm-coll1-2 {:validate-keywords false})
+        _ (d/ingest "PROV1" umm-coll1-1 {:validate-keywords false})
+        _ (d/ingest "PROV1" umm-coll1-2 {:validate-keywords false})
 
         ;; Ingest collection once, delete, then ingest again.
         coll2-1 (d/ingest "PROV1" umm-coll2-1 {:validate-keywords false})
         _ (ingest/delete-concept (d/item->concept coll2-1))
-        coll2-3 (d/ingest "PROV1" umm-coll2-3 {:validate-keywords false})
+        _ (d/ingest "PROV1" umm-coll2-3 {:validate-keywords false})
 
         ;; Ingest a collection for PROV2 that is not visible to guests.
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
+        _ (d/ingest "PROV2" (dc/collection {:entry-title "et1"
                                                 :version-id "v1"
                                                 :short-name "s1"})
                         {:validate-keywords false})]
@@ -440,9 +433,9 @@
               umm-coll1-2 :echo10 mt/native "C1200000019-PROV1" 2))
 
       (testing "Requests for tombstone revision returns a 400 error"
-        (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
-                                                     (search/retrieve-concept
-                                                       (:concept-id coll2-1) 2 {:throw-exceptions true}))]
+        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                       (search/retrieve-concept
+                                        (:concept-id coll2-1) 2 {:throw-exceptions true}))]
           (is (= 400 status))
           (is (= #{"The revision [2] of concept [C1200000020-PROV1] represents a deleted concept and does not contain metadata."}
                  (set errors)))))

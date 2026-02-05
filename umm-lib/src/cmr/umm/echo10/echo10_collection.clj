@@ -138,14 +138,14 @@
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
   [xml]
-  (xml-elem->Collection (xml/parse-str xml)))
+  (xml-elem->Collection (cx/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
   (when-let [single-element (util/extract-between-strings xml "<Temporal>" "</Temporal>")]
     (let [smaller-xml (str "<Collection>" single-element "</Collection>")]
-      (temporal/xml-elem->Temporal (xml/parse-str smaller-xml)))))
+      (temporal/xml-elem->Temporal (cx/parse-str smaller-xml)))))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"

@@ -5,7 +5,6 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clj-time.coerce :as tc]
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.test :refer [deftest is]]
    [clojure.walk]
@@ -124,7 +123,7 @@
 (defn safe-parse-error-xml
   [xml]
   (try
-    (cx/strings-at-path (xml/parse-str xml) [:error])
+    (cx/strings-at-path (cx/parse-str xml) [:error])
     (catch Exception e
       (.printStackTrace e)
       [xml])))
@@ -458,7 +457,7 @@
           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
           search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
           body (:body response)
-          parsed (xml/parse-str body)
+          parsed (cx/parse-str body)
           hits (cx/long-at-path parsed [:hits])
           metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
@@ -499,7 +498,7 @@
     (let [format-mime-type (mime-types/format->mime-type format-key)
           response (find-concepts-in-format format-mime-type concept-type params options)
           body (:body response)
-          parsed (xml/parse-str body)
+          parsed (cx/parse-str body)
            ;; First we parse out the metadata and tags from each result, then we parse tags out.
           metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
@@ -507,7 +506,7 @@
                        (let [{{:keys [concept-id]} :attrs} result
                              tags (when-let [tags-metadata (second (string/split metadata #"<tags>"))]
                                     (->> (cx/elements-at-path
-                                          (xml/parse-str (str "<tags>" tags-metadata)) [:tag])
+                                          (cx/parse-str (str "<tags>" tags-metadata)) [:tag])
                                          (map da/xml-elem->tag)
                                          (into {})))]
                          [concept-id tags]))
@@ -518,7 +517,7 @@
 
 (defn- parse-reference-response-default
   [response]
-  (let [parsed (-> response :body xml/parse-str)
+  (let [parsed (-> response :body cx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
@@ -546,7 +545,7 @@
 
 (defn- parse-reference-response-true
   [response]
-  (let [parsed (-> response :body xml/parse-str)
+  (let [parsed (-> response :body cx/parse-str)
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
@@ -578,7 +577,7 @@
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
   [response]
-  (let [parsed (-> response :body xml/parse-str)]
+  (let [parsed (-> response :body cx/parse-str)]
     (facets/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
@@ -822,10 +821,10 @@
   3-arity from path."
   ([response elements-path]
    (map #(get-in % [:attrs :concept-id])
-        (cx/elements-at-path (xml/parse-str response) elements-path)))
+        (cx/elements-at-path (cx/parse-str response) elements-path)))
   ([response elements-path concept-id-path]
    (map #(cx/string-at-path % concept-id-path)
-        (cx/elements-at-path (xml/parse-str response) elements-path))))
+        (cx/elements-at-path (cx/parse-str response) elements-path))))
 
 (defn search-concept-ids-in-format
   "Call search in format and return concept-ids from those results."
