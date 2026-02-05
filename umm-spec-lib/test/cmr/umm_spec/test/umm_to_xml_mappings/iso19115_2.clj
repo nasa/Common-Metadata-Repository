@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.test.umm-to-xml-mappings.iso19115-2
   "Tests to verify that ISO19115-2 is generated correctly."
   (:require
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [cmr.common.date-time-parser :as dtp]
@@ -791,10 +790,10 @@
 (deftest iso-constraints
   (testing "Use constraints"
    (are3 [expected-iso umm-map]
-     (let [expected-iso-parsed (xml/parse-str expected-iso)
+     (let [expected-iso-parsed (cx/parse-str expected-iso)
            expected-iso-constraints (cx/element-at-path expected-iso-parsed constraints-path)
            generated-iso (iso/umm-c-to-iso19115-2-xml (coll/map->UMM-C umm-map))
-           generated-iso-parsed (xml/parse-str generated-iso)
+           generated-iso-parsed (cx/parse-str generated-iso)
            generated-iso-constraints (cx/element-at-path generated-iso-parsed constraints-path)]
        (is (= expected-iso-constraints generated-iso-constraints)))
 

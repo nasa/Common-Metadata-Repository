@@ -60,7 +60,7 @@
 (deftest test-decode-gmd-xml
   (testing "GMD decode"
     (testing "Minimum bounding box"
-      (is (= (flatten (map gmd/decode (cx/elements-at-path (xml/parse-str gmd-xml-mbr) [:geographicElement])))
+      (is (= (flatten (map gmd/decode (cx/elements-at-path (cx/parse-str gmd-xml-mbr) [:geographicElement])))
              [(mbr/mbr -178.0 75.0 180.0 -78.0)
               (p/point -110.45 45.256)])))))
 
@@ -73,7 +73,7 @@
                                  spatial-gen/points
                                  spatial-gen/cartesian-lines
                                  spatial-gen/cartesian-polygons-with-holes])]
-    (let [decoded (first (-> spatial gmd/encode emit-gmd-str xml/parse-str gmd/decode))]
+    (let [decoded (first (-> spatial gmd/encode emit-gmd-str cx/parse-str gmd/decode))]
       (or (= spatial decoded)
           ;; special fudge for polygons
           (= (:points spatial) (:points decoded))))))

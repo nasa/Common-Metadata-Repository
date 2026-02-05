@@ -101,17 +101,17 @@
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."
   [xml]
-  (xml-elem->Collection (xml/parse-str xml)))
+  (xml-elem->Collection (cx/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
-  (temporal/xml-elem->Temporal (core/id-elem (xml/parse-str xml))))
+  (temporal/xml-elem->Temporal (core/id-elem (cx/parse-str xml))))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
   [xml]
-  (xml-elem->access-value (core/id-elem (xml/parse-str xml))))
+  (xml-elem->access-value (core/id-elem (cx/parse-str xml))))
 
 (def iso-header-attributes
   "The set of attributes that go on the dif root element"

@@ -1,8 +1,8 @@
 (ns cmr.common.test.xml.simple-xpath
   (:require
-   [clojure.data.xml :as xml]
    [clojure.test :refer [are deftest is testing]]
    [cmr.common.util :as u :refer [are3]]
+   [cmr.common.xml :as cx]
    [cmr.common.xml.simple-xpath :as sx]))
 
 ;; From Microsoft sample XML online
@@ -104,7 +104,7 @@
          (get-in sample-xml [:root :content])
 
          "/catalog/book/author"
-         (mapv xml/parse-str ["<author>Gambardella, Matthew</author>"
+         (mapv cx/parse-str ["<author>Gambardella, Matthew</author>"
                             "<author>Ralls, Kim</author>"
                             "<author>Corets, Eva</author>"
                             "<author>Lucy, Steven</author>"
@@ -113,7 +113,7 @@
 
          ;; namespaces are ignored
          "/x:catalog/abc:book/author1:author"
-         (mapv xml/parse-str ["<author>Gambardella, Matthew</author>"
+         (mapv cx/parse-str ["<author>Gambardella, Matthew</author>"
                             "<author>Ralls, Kim</author>"
                             "<author>Corets, Eva</author>"
                             "<author>Lucy, Steven</author>"
@@ -122,65 +122,65 @@
 
 
          "/catalog/book[@id='bk101']/author"
-         [(xml/parse-str "<author>Gambardella, Matthew</author>")]
+         [(cx/parse-str "<author>Gambardella, Matthew</author>")]
 
          "/catalog/book[price='5.95']/title"
-         (mapv xml/parse-str ["<title>Midnight Rain</title>"
+         (mapv cx/parse-str ["<title>Midnight Rain</title>"
                             "<title>Maeve Ascendant</title>"
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
          "/catalog/book[price!='5.95']/title"
-         (mapv xml/parse-str ["<title>XML Developer's Guide</title>"])
+         (mapv cx/parse-str ["<title>XML Developer's Guide</title>"])
 
          "/catalog/book[1]/author"
-         [(xml/parse-str "<author>Gambardella, Matthew</author>")]
+         [(cx/parse-str "<author>Gambardella, Matthew</author>")]
 
          "/catalog/book/author[1]"
-         [(xml/parse-str "<author>Gambardella, Matthew</author>")]
+         [(cx/parse-str "<author>Gambardella, Matthew</author>")]
 
          "/catalog/book[2]/author"
-         [(xml/parse-str "<author>Ralls, Kim</author>")]
+         [(cx/parse-str "<author>Ralls, Kim</author>")]
 
          ;; multiple nested nth
          "/catalog/book[3]/author[1]"
-         [(xml/parse-str "<author>Corets, Eva</author>")]
+         [(cx/parse-str "<author>Corets, Eva</author>")]
 
          "/catalog/book[3]/author[2]"
-         [(xml/parse-str "<author>Lucy, Steven</author>")]
+         [(cx/parse-str "<author>Lucy, Steven</author>")]
 
          ;; Select index range
          "/catalog/book[1..3]/title"
-         (mapv xml/parse-str ["<title>XML Developer's Guide</title>"
+         (mapv cx/parse-str ["<title>XML Developer's Guide</title>"
                             "<title>Midnight Rain</title>"
                             "<title>Maeve Ascendant</title>"])
 
          "/catalog/book[2..4]/title"
-         (mapv xml/parse-str ["<title>Midnight Rain</title>"
+         (mapv cx/parse-str ["<title>Midnight Rain</title>"
                             "<title>Maeve Ascendant</title>"
                             "<title>Oberon's Legacy</title>"])
 
          ;; Range past the end of the list
          "/catalog/book[2..9]/title"
-         (mapv xml/parse-str ["<title>Midnight Rain</title>"
+         (mapv cx/parse-str ["<title>Midnight Rain</title>"
                             "<title>Maeve Ascendant</title>"
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
          ;; Select open ended index range
          "/catalog/book[2..]/title"
-         (mapv xml/parse-str ["<title>Midnight Rain</title>"
+         (mapv cx/parse-str ["<title>Midnight Rain</title>"
                             "<title>Maeve Ascendant</title>"
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
          ;; From very end
          "/catalog/book[5..]/title"
-         [(xml/parse-str "<title>The Sundered Grail</title>")]
+         [(cx/parse-str "<title>The Sundered Grail</title>")]
 
          ;; Using the same index for both
          "/catalog/book[5..5]/title"
-         [(xml/parse-str "<title>The Sundered Grail</title>")]
+         [(cx/parse-str "<title>The Sundered Grail</title>")]
 
          ;; Past the end of the list
          "/catalog/book[7..]/title"
@@ -190,11 +190,11 @@
 
          ;; Uses nested elements in subselector
          "/catalog/book[dates/publish_date='2001-09-10']/title"
-         [(xml/parse-str "<title>The Sundered Grail</title>")]
+         [(cx/parse-str "<title>The Sundered Grail</title>")]
 
          ;; Tests nested element subselector that finds multiple elements
          "/catalog/book[author='Lucy, Steven']/title"
-         [(xml/parse-str "<title>Maeve Ascendant</title>")]
+         [(cx/parse-str "<title>Maeve Ascendant</title>")]
 
          ;; Select an attribute
          "/catalog/book/dates/publish_date/@importance"
@@ -204,8 +204,8 @@
           "medium"]
 
          "/catalog/book[dates/publish_date/@importance='high']/title"
-         [(xml/parse-str "<title>Midnight Rain</title>")
-          (xml/parse-str "<title>Oberon's Legacy</title>")]
+         [(cx/parse-str "<title>Midnight Rain</title>")
+          (cx/parse-str "<title>Oberon's Legacy</title>")]
 
 
          ;; Doesn't reference a real element
@@ -214,7 +214,7 @@
 
          ;; Doesn't reference a real element
          "/catalog/book[contains(@id, 'bk1')]/author"
-         (mapv xml/parse-str ["<author>Gambardella, Matthew</author>"
+         (mapv cx/parse-str ["<author>Gambardella, Matthew</author>"
                             "<author>Ralls, Kim</author>"
                             "<author>Corets, Eva</author>"
                             "<author>Lucy, Steven</author>"
@@ -222,7 +222,7 @@
                             "<author>Corets, Eva</author>"])
 
          "/catalog/book[contains(genre, 'anta')]/author"
-         (mapv xml/parse-str ["<author>Ralls, Kim</author>"
+         (mapv cx/parse-str ["<author>Ralls, Kim</author>"
                             "<author>Corets, Eva</author>"
                             "<author>Lucy, Steven</author>"
                             "<author>Corets, Eva</author>"
@@ -238,7 +238,7 @@
            (get-in sample-xml [:root :content])
 
            "."
-           (:content (xml/parse-str "<book id=\"bk101\">
+           (:content (cx/parse-str "<book id=\"bk101\">
                                   <author>Gambardella, Matthew</author>
                                   <title>XML Developer's Guide</title>
                                   <genre>Computer</genre>
@@ -248,7 +248,7 @@
                                   </dates>
                                   </book>"))
            "author"
-           [(xml/parse-str "<author>Gambardella, Matthew</author>")]))))
+           [(cx/parse-str "<author>Gambardella, Matthew</author>")]))))
 
 (deftest xpaths-with-data-test
   (testing "xpaths from root"
@@ -357,7 +357,7 @@
   (are3
    [xpath result-xml]
 
-   (is (= [(xml/parse-str result-xml)]
+   (is (= [(cx/parse-str result-xml)]
           (:context (sx/evaluate sample-xml (sx/parse-xpath xpath)))))
 
    "XPath with attribute without namespace predicate"
@@ -367,3 +367,10 @@
    "XPath with attribute with namespace predicate"
    "/catalog/book[@foo:bar='bat']/title"
    "<title>Midnight Rain</title>"))
+
+(def xxe-xml-html
+  "<?xml version= \"1.0\" ?><!DOCTYPE Collection [<!ENTITY % xxe SYSTEM \"http://localhost:8080/test.dtd\"> %xxe;]><Collection><ShortName>Test</ShortName><VersionId>1</VersionId></Collection>")
+
+(deftest xml-str-xxe-parse-test
+  (testing "Testing a XML string with XXE parses correctly."
+    (is (= :Collection (:tag (cx/parse-str xxe-xml-html))))))

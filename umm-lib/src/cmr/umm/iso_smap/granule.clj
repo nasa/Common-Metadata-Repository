@@ -114,22 +114,22 @@
 (defn parse-granule
   "Parses SMAP XML into a UMM Granule record."
   [xml]
-  (xml-elem->Granule (xml/parse-str xml)))
+  (xml-elem->Granule (cx/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
-  (gt/xml-elem->Temporal (xml/parse-str xml)))
+  (gt/xml-elem->Temporal (cx/parse-str xml)))
 
 (defn parse-spatial
   "Parses the XML and extracts the SpatialCoverage data."
   [xml]
-  (spatial/xml-elem->SpatialCoverage (xml/parse-str xml)))
+  (spatial/xml-elem->SpatialCoverage (cx/parse-str xml)))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
   [xml]
-  (xml-elem->access-value (get-id-elems (xml/parse-str xml))))
+  (xml-elem->access-value (get-id-elems (cx/parse-str xml))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators

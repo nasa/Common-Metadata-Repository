@@ -180,7 +180,7 @@
   Update the ECHO10 granule metadata with the OPeNDAP urls.
   Returns the updated metadata."
   [gran-xml grouped-urls operation]
-  (let [parsed (xml/parse-str gran-xml)
+  (let [parsed (cx/parse-str gran-xml)
         online-resources (xml-elem->online-resources parsed)]
     (xml/indent-str (add-opendap-url* parsed online-resources grouped-urls operation))))
 
@@ -220,7 +220,7 @@
   ([concept]
    (update-opendap-type concept nil))
   ([concept target-type]
-   (let [parsed (xml/parse-str (:metadata concept))
+   (let [parsed (cx/parse-str (:metadata concept))
          online-resources (xml-elem->online-resources parsed)
          resources (if target-type
                      (filter-other-resources online-resources target-type)
