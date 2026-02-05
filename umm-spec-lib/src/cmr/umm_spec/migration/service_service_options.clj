@@ -355,12 +355,14 @@
 
 (defn- remove-reformattings-when-input-not-valid-1_5_4-to-1_5_3
   [reformatting]
-  (let [input (remove-non-valid-formats-1_5_4-to-1_5_3 (vector (:SupportedInputFormat reformatting)))
+  (let [input (remove-non-valid-formats-1_5_4-to-1_5_3 [(:SupportedInputFormat reformatting)])
         outputs (remove-non-valid-formats-1_5_4-to-1_5_3 (:SupportedOutputFormats reformatting))]
     (when (and (seq input) (seq outputs))
-      (assoc reformatting :SupportedOutputFormats outputs))))
+      (assoc reformatting 
+             :SupportedInputFormat (first input)
+             :SupportedOutputFormats outputs))))
 
 (defn remove-reformattings-non-valid-formats-1_5_4-to-1_5_3
   "Remove the non valid formats going from UMM-S version 1.5.4 to UMM-S version 1.5.3"
   [reformattings]
-  (vec (remove nil? (map #(remove-reformattings-when-input-not-valid-1_5_4-to-1_5_3 %) reformattings))))
+  (vec (keep remove-reformattings-when-input-not-valid-1_5_4-to-1_5_3 reformattings)))
