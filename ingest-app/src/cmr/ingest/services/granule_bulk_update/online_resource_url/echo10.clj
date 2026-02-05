@@ -14,7 +14,7 @@
   "Update the the URL for elements within the passed in node-path-vector - for example
   [:OnlineResources :OnlineResource] - in echo10 granule metadata and return metadata."
   [concept links node-path-vector user-id] 
-  (let [parsed (xml/parse-str (:metadata concept))
+  (let [parsed (cx/parse-str (:metadata concept))
         url-map (apply merge (map #(hash-map (:from %) (:to %)) links))
 
         existing-urls (map #(cx/string-at-path % [:URL])
@@ -59,7 +59,7 @@
   "Add or Append the the URL for elements within the passed in node-path-vector - for example
   [:OnlineResources :OnlineResource] - in echo10 granule metadata and return metadata."
   [concept links node-path-vector user-id]
-  (let [parsed (xml/parse-str (:metadata concept))
+  (let [parsed (cx/parse-str (:metadata concept))
         node-name-key (first node-path-vector)
         resources (case node-name-key
                     :OnlineResources (echo10-utils/links->online-resources links)
@@ -77,7 +77,7 @@
 (defn remove-url
   "Remove the URL from the passed in node-path-vector"
   [concept links node-path-vector user-id]
-  (let [parsed (xml/parse-str (:metadata concept))
+  (let [parsed (cx/parse-str (:metadata concept))
         updated-metadata (-> parsed
                              (echo10-utils/remove-from-tree node-path-vector links)
                              xml/indent-str)]

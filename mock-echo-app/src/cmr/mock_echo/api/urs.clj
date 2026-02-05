@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -16,7 +15,7 @@
   "Processes a request to get a user."
   [context name]
   (if (urs-db/user-exists? context name)
-    (let [{:keys [username password email affiliation studyArea country phone firstName lastName
+    (let [{:keys [username email affiliation studyArea country phone firstName lastName
                   organization userType address1 address2 address3 city state zip]}
           (urs-db/get-user context name)]
       {:status 200 :body (str
@@ -24,29 +23,29 @@
                            <user>
                             <accountCreatedDate>2003-08-24T00:00:00Z</accountCreatedDate>
                             <accountStatus>ACTIVE</accountStatus>"
-                            (if address1 (str "<address1>" address1 "</address1>"))
-                            (if address2 (str "<address2>" address2 "</address2>"))
-                            (if address3 (str "<address3>" address3 "</address3>"))
-                            (if affiliation (str "<affiliation>" affiliation "</affiliation>"))
-                            (if city (str "<city>" city "</city>"))
-                            (if country (str "<country>" country "</country>"))
+                            (when address1 (str "<address1>" address1 "</address1>"))
+                            (when address2 (str "<address2>" address2 "</address2>"))
+                            (when address3 (str "<address3>" address3 "</address3>"))
+                            (when affiliation (str "<affiliation>" affiliation "</affiliation>"))
+                            (when city (str "<city>" city "</city>"))
+                            (when country (str "<country>" country "</country>"))
                             "<emailAddress>" email "</emailAddress>"
-                            (if firstName (str "<firstName>" firstName "</firstName>"))
-                            (if lastName (str "<lastName>" lastName "</lastName>"))
-                            (if state (str "<state>" state "</state>"))
-                            (if studyArea (str "<studyArea>" studyArea "</studyArea>"))
-                            (if organization (str "<organization>" organization "</organization>"))
-                            (if phone (str "<phone>" phone "</phone>"))
+                            (when firstName (str "<firstName>" firstName "</firstName>"))
+                            (when lastName (str "<lastName>" lastName "</lastName>"))
+                            (when state (str "<state>" state "</state>"))
+                            (when studyArea (str "<studyArea>" studyArea "</studyArea>"))
+                            (when organization (str "<organization>" organization "</organization>"))
+                            (when phone (str "<phone>" phone "</phone>"))
                             "<userName>" username "</userName>"
-                            (if userType (str "<userType>" userType "</userType>"))
-                            (if zip (str "<zip>" zip "</zip>"))
+                            (when userType (str "<userType>" userType "</userType>"))
+                            (when zip (str "<zip>" zip "</zip>"))
                           "</user>")
        :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
 
 (defn get-launchpad-user
   "Processes a request to get a user using their launchpad token."
-  [context token]
+  [token]
   (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
       {:status 200 :body {:uid "user1" :lp_token_expires_in 1600}}
@@ -68,7 +67,7 @@
 
 (defn get-groups
   "Returns mock URS groups for a user"
-  [context user-id]
+  [user-id]
   (if-not (= "null" user-id)
     (case user-id
       "edl-group-user1"
@@ -105,7 +104,7 @@
 
 (defn get-groups-for-user
   "Returns mock URS groups for a user"
-  [context user-id]
+  [user-id]
   (if-not (= "null" user-id)
     (case user-id
       "edl-group-user1"
@@ -146,7 +145,7 @@
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
   [body]
-  (let [parsed (xml/parse-str body)]
+  (let [parsed (cx/parse-str body)]
     {:username (cx/string-at-path parsed [:userName])
      :password (cx/string-at-path parsed [:password])
      :email    (cx/string-at-path parsed [:emailAddress])
@@ -175,7 +174,7 @@
 (defn create-users-xml
   "Processes an XML request to create one or more users."
   [context body]
-  (let [{:keys [username password] :as user} (parse-create-user-xml body)]
+  (let [{:keys [username] :as user} (parse-create-user-xml body)]
     (urs-db/create-users context [user])
     (assoc (get-user context username) :status 201)))
 
@@ -227,7 +226,7 @@
   [_]
   (errors/throw-service-error :not-found "Mock URS grant type not yet supported."))
 
-(defn build-routes [system]
+(defn build-routes [_system]
   (routes
     (context "/urs" []
       ;;availability endpoint
@@ -247,19 +246,19 @@
           (get-user-info user-id)))
 
       (context "/api/user_groups" []
-        (GET "/search" {:keys [request-context params] :as request}
+        (GET "/search" {:keys [params] :as request}
           (assert-bearer-token request)
-          (get-groups request-context (:user_ids params)))
+          (get-groups (:user_ids params)))
 
         (context ["/groups_for_user/:user-id" :user-id #".*$"] [user-id]
-          (GET "/" {:keys [request-context params] :as request}
+          (GET "/" request
             (assert-bearer-token request)
-            (get-groups-for-user request-context user-id))))
+            (get-groups-for-user user-id))))
 
       (context "/api/nams" []
-        (POST "/edl_user_uid" {:keys [request-context params] :as request}
+        (POST "/edl_user_uid" {:keys [params] :as request}
           (assert-bearer-token request)
-          (get-launchpad-user request-context (:token params))))
+          (get-launchpad-user (:token params))))
 
       (context "/users" []
         ;; Create a bunch of users all at once

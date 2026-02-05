@@ -1,6 +1,5 @@
 (ns cmr.ingest.services.granule-bulk-update.mime-type.echo10-test
   (:require
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.test :refer [deftest testing is]]
    [cmr.common.util :as util :refer [are3]]
@@ -85,10 +84,10 @@
 
           metadata (:metadata updated-gran)
           online-resources (cx/elements-at-path
-                            (xml/parse-str metadata)
+                            (cx/parse-str metadata)
                             [:OnlineResources :OnlineResource])
           access-urls (cx/elements-at-path
-                       (xml/parse-str metadata)
+                       (cx/parse-str metadata)
                        [:OnlineAccessURLs :OnlineAccessURL])]
 
       (is (not-empty updated-gran))
@@ -111,10 +110,10 @@
 
           metadata (:metadata updated-gran)
           online-resources (cx/elements-at-path
-                            (xml/parse-str metadata)
+                            (cx/parse-str metadata)
                             [:OnlineResources :OnlineResource])
           access-urls (cx/elements-at-path
-                       (xml/parse-str metadata)
+                       (cx/parse-str metadata)
                        [:OnlineAccessURLs :OnlineAccessURL])]
 
       (testing "the specified links are updated"

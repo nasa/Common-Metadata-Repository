@@ -1,17 +1,18 @@
 (ns cmr.common.test.xml.gen
-  (:require [cmr.common.xml.gen :refer [xml]]
-            [clojure.test :refer [deftest is]]
-            clojure.data.xml))
+  (:require 
+   [clojure.test :refer [deftest is]]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.gen :refer [xml]]))
 
 (deftest test-xml-gen
-  (is (= (clojure.data.xml/parse-str
+  (is (= (cx/parse-str
           (xml [:foo
                 (list
                  (list
                   [:zort [:troz "stuff"] nil [:zing]])
                  [:empty])
                 [:bar "bat"]]))
-         (clojure.data.xml/parse-str
+         (cx/parse-str
           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
            <foo>
              <zort>
