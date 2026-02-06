@@ -2,6 +2,7 @@
   "Provides methods to insert migration requets on the appropriate channels."
   (:require
    [clojure.core.async :as async :refer [>!]]
+   [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]))
 
@@ -10,14 +11,14 @@
   the async dispatcher."
   [action & _]
   (errors/internal-error!
-   (format "Async Dispatcher does not support %s action." (name action))))
+   (msg/async-not-implemented (name action))))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
   to the metadata db without blocking."
   [this _context provider-id]
   (let [channel (:provider-db-channel this)]
-    (info "Adding provider" provider-id "to provider channel")
+    (info (msg/async-migrate-provider provider-id))
     (async/go (>! channel provider-id))))
 
 (defn migrate-collection
@@ -25,14 +26,14 @@
   to the metadata db without blocking."
   [this _context provider-id collection-id]
   (let [channel (:collection-db-channel this)]
-    (info "Adding collection"  collection-id "for provider" provider-id "to collection channel")
+    (info (msg/async-migrate-collection collection-id provider-id))
     (async/go (>! channel {:collection-id collection-id :provider-id provider-id}))))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
   [this _context provider-id start-index]
   (let [channel (:provider-index-channel this)]
-    (info "Adding provider" provider-id "to provider index channel")
+    (info (msg/async-index-provider provider-id))
     (async/go (>! channel {:provider-id provider-id
                            :start-index start-index}))))
 
@@ -40,7 +41,7 @@
   "Bulk index all the granules in a collection"
   [this _context provider-id collection-id options]
   (let [channel (:collection-index-channel this)]
-    (info "Adding collection" collection-id "to collection index channel")
+    (info (msg/async-index-collection collection-id))
     (async/go (>! channel (merge options
                                  {:provider-id provider-id
                                   :collection-id collection-id})))))
@@ -49,14 +50,14 @@
   "Bulk index all the tags, acls, and access-groups."
   [this _context start-index]
   (let [channel (:system-concept-channel this)]
-    (info "Adding bulk index request to system concepts channel.")
+    (info (msg/async-index-system-concepts))
     (async/go (>! channel {:start-index start-index}))))
 
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
   [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
-    (info "Adding bulk index request to concept-id channel.")
+    (info (msg/async-index-concepts-by-id))
     (async/go (>! channel {:provider-id provider-id
                            :concept-type concept-type
                            :request :index
@@ -66,7 +67,7 @@
   "Copy the contents of one index to another. Used during resharding."
   [this _context source-index target-index elastic-name]
   (let [channel (:migrate-index-channel this)]
-    (info (format "Migrating from index [%s] to index [%s]" source-index target-index))
+    (info (msg/async-migrate-index source-index target-index))
     (async/go (>! channel {:source-index source-index
                            :target-index target-index
                            :elastic-name elastic-name}))))
@@ -75,7 +76,7 @@
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
-    (info "Adding bulk delete reqeust to concept-id channel.")
+    (info (msg/async-delete-concepts-from-index-by-id))
     (async/go (>! channel {:provider-id provider-id
                            :concept-type concept-type
                            :request :delete
@@ -85,7 +86,7 @@
   "Initializes virtual products."
   [this _context provider-id entry-title]
   (let [channel (:virtual-product-channel this)]
-    (info "Adding message to virtual products channel.")
+    (info (msg/async-bootstrap-virtual-products provider-id entry-title))
     (async/go (>! channel {:provider-id provider-id
                            :entry-title entry-title}))))
 

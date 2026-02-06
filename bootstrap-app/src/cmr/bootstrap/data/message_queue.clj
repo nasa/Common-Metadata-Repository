@@ -1,6 +1,7 @@
 (ns cmr.bootstrap.data.message-queue
   "Broadcast of bootstrap actions via the message queue"
   (:require
+   [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.config :as config]
    [cmr.common.log :refer [info]]
    [cmr.message-queue.services.queue :as queue]))
@@ -29,7 +30,7 @@
   [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
         exchange-name (config/bootstrap-exchange-name)]
-    (info "Publishing bootstrap message: " msg)
+    (info (msg/publish-bootstrap-provider-event msg))
     (queue/publish-message queue-broker exchange-name msg)))
 
 (defn bootstrap-variables-event

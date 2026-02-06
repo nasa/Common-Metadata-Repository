@@ -190,10 +190,12 @@
         started-system (update-in this [:embedded-systems :indexer] idx-system/start)
         started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
         started-system (common-sys/start started-system component-order)]
+    ;; These handlers process the channels
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
     (when (:queue-broker this)
+      ;; This thread will process messages from the queue and not the channels
       (dispatch/subscribe-to-events {:system started-system}))
     (info "Bootstrap system started")
     started-system))
