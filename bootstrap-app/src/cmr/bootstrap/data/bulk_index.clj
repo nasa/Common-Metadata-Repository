@@ -4,6 +4,7 @@
    [clj-time.coerce :as time-coerce]
    [clojure.core.async :as async :refer [<!!]]
    [cmr.access-control.data.bulk-index :as ac-bulk-index]
+   [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (info warn error)]
@@ -138,15 +139,18 @@
     num-collections))
 
 (defn index-provider
-  "Bulk index a provider."
-  [system provider-id start-index]
-  (info "Indexing provider" provider-id)
+  "Bulk index a provider. This function can be called by multiple paths in the code and it is
+   helpfull to track which process is calling this function for logging purposes. These calls can be
+   made from the SQS code and the channel code."
+  [system provider-id start-index log-prefix]
+  (info (format "%s Indexing provider %s" log-prefix provider-id))
   (let [db (helper/get-metadata-db-db system)
         {:keys [provider-id] :as provider} (p/get-provider db provider-id)
         col-count (index-provider-collections system provider)
         gran-count (index-granules-for-provider system provider start-index)]
-    (info "Indexing of provider" provider-id "completed.")
-    (format "Indexed %d collections containing %d granules for provider %s"
+    (info (format "%s Indexing of provider %s completed." log-prefix provider-id))
+    (format "%s Indexed %d collections containing %d granules for provider %s"
+            log-prefix
             col-count
             gran-count
             provider-id)))
@@ -161,9 +165,7 @@
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
   [system concept-type provider]
-  (info (format "Indexing %ss for provider %s"
-                (name concept-type)
-                (:provider-id provider)))
+  (info (msg/index-concepts-by-provider-start (name concept-type) (:provider-id provider)))
   (let [db (helper/get-metadata-db-db system)
         params (merge {:concept-type concept-type
                        :provider-id (:provider-id provider)}
@@ -177,11 +179,10 @@
                           es-config/gran-elastic-name
                           es-config/elastic-name)
         num-concepts (bulk-index-concept-batches system concept-batches es-cluster-name)
-        msg (format "Indexing of %s %s revisions for provider %s completed."
-                    num-concepts
-                    (name concept-type)
-                    (:provider-id provider))]
-    (info msg)))
+        response (msg/index-concepts-by-provider-completed (name concept-type)
+                                                           (:provider-id provider)
+                                                           num-concepts)]
+    (info response)))
 
 (defn index-provider-concepts
   "Bulk index concepts for the given provider-id and concept-type."
@@ -193,10 +194,10 @@
 (defn index-all-concepts
   "Bulk index all CMR concepts for the concept-type."
   [system concept-type]
-  (info (format "Indexing all %ss" (name concept-type)))
+  (info (msg/index-all-concepts-start (name concept-type)))
   (doseq [provider (helper/get-providers system)]
     (index-concepts-by-provider system concept-type provider))
-  (info (format "Indexing of all %ss completed." (name concept-type))))
+  (info (msg/index-all-concepts-complete (name concept-type))))
 
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
@@ -222,14 +223,13 @@
         params (if (some #{concept-type} misc-concept-types)
                  (dissoc params :provider-id)
                  params)
-        concept-batches (db/find-concepts-in-batches
-                          db provider params (:db-batch-size system))
+        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
         es-cluster-name (if (= concept-type :granule)
                           es-config/gran-elastic-name
                           es-config/elastic-name)
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
-                                                 (index-access-control-concepts system concept-batches)
-                                                 (index-concepts system concept-batches es-cluster-name))]
+                                                  (index-access-control-concepts system concept-batches)
+                                                  (index-concepts system concept-batches es-cluster-name))]
 
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
@@ -335,22 +335,21 @@
 (defn index-provider-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time for a given provider."
   [system provider-id date-time]
-  (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
-                date-time
-                provider-id))
-  (if (= system-concept-provider provider-id)
-    (let [{:keys [num-indexed]} (index-system-misc-concepts-after-datetime system date-time)]
-      (info (format "Indexed %d system concepts." num-indexed)))
+  (try
+    (info (msg/index-provider-data-later-than-date-time date-time provider-id))
+    (if (= system-concept-provider provider-id)
+      (let [{:keys [num-indexed]} (index-system-misc-concepts-after-datetime system date-time)]
+        (info (msg/index-provider-data-later-than-date-time-pre num-indexed)))
 
-    (let [provider (helper/get-provider system provider-id)
-          provider-response-map (for [concept-type [:collection :granule]]
-                                  (fetch-and-index-new-concepts
-                                   system provider concept-type date-time))
-          provider-concept-count (reduce + (map :num-indexed provider-response-map))]
-      (info (format "Indexed %d provider concepts." provider-concept-count))))
-  (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] completed."
-                date-time
-                provider-id)))
+      (let [provider (helper/get-provider system provider-id)
+            provider-response-map (for [concept-type [:collection :granule]]
+                                    (fetch-and-index-new-concepts
+                                     system provider concept-type date-time))
+            provider-concept-count (reduce + (map :num-indexed provider-response-map))]
+        (info (msg/index-provider-data-later-then-date-post provider-concept-count))))
+    (catch Throwable e
+      (error e (msg/index-provider-data-later-than-date-time-failed date-time provider-id))))
+  (info (msg/index-provider-data-later-than-date-time-completed date-time provider-id)))
 
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time
@@ -400,7 +399,9 @@
       (async/thread (while true
                       (try ; catch any errors and log them, but don't let the thread die
                         (let [{:keys [provider-id start-index]} (<!! channel)]
-                          (index-provider system provider-id start-index))
+                          (index-provider system provider-id
+                                          start-index
+                                          msg/bulk-index-prefix-channel-read))
                         (catch Throwable e
                           (error e (.getMessage e)))))))
     (let [channel (:collection-index-channel core-async-dispatcher)]
