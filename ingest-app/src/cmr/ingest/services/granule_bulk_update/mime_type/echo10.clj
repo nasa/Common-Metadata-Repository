@@ -13,7 +13,7 @@
   "Update the the MimeType for elements within OnlineResources and OnlineAccess in echo10
    granule metadata and return granule."
   [concept links]
-  (let [parsed (xml/parse-str (:metadata concept))
+  (let [parsed (cx/parse-str (:metadata concept))
         url-map (apply merge (map #(hash-map (:URL %) (:MimeType %)) links))
 
         existing-urls (map #(cx/string-at-path % [:URL])

@@ -2,7 +2,6 @@
   "Tests to verify the xsl for ECHO10 to ISO19115"
   (:require
    [clojure.test :refer [deftest is testing]]
-   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.util :refer [are3]]
@@ -831,9 +830,9 @@
  (let [xsl (xslt/read-template (io/resource "xslt/echo10_to_iso19115.xsl"))]
   (testing "ECHO10 to ISO19115 Tranforms"
    (are3 [echo10 expected-iso path]
-     (let [iso-parsed (xml/parse-str (xslt/transform echo10 xsl))
+     (let [iso-parsed (cx/parse-str (xslt/transform echo10 xsl))
            iso-element (cx/element-at-path iso-parsed path)
-           expected-iso-parsed (xml/parse-str expected-iso)
+           expected-iso-parsed (cx/parse-str expected-iso)
            expected-iso-element (cx/element-at-path expected-iso-parsed path)]
        (def the-iso (xslt/transform echo10 xsl))
        (def the-iso-element iso-element)
@@ -862,6 +861,6 @@
 
   (testing "Hard coded maintenance note is no longer embedded."
    (let [xsl (xslt/read-template (io/resource "xslt/echo10_to_iso19115.xsl"))
-         iso-parsed (xml/parse-str (xslt/transform echo10-granule-browse xsl))]
+         iso-parsed (cx/parse-str (xslt/transform echo10-granule-browse xsl))]
     (is (= nil (cx/element-at-path iso-parsed
                 [:metadataMaintenance :MD_MaintenanceInformation :maintenanceNote])))))))

@@ -96,7 +96,7 @@
   "Takes the granule ECHO10 xml and a checksum with optionally an algorithm.
   Update the ECHO10 granule metadata with the checksum. Returns the updated metadata."
   [gran-xml checksum]
-  (let [parsed (xml/parse-str gran-xml)]
+  (let [parsed (cx/parse-str gran-xml)]
     (xml/indent-str (update-data-granule-element parsed checksum))))
 
 (defn update-checksum
