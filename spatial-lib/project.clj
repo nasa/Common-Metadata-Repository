@@ -1,6 +1,7 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/spatial-lib"
+  :java-source-paths ["src/java"]
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [net.jafama/jafama "2.3.1"]
                  [net.mikera/core.matrix "0.54.0"]
