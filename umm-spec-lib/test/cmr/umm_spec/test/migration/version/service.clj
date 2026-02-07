@@ -510,7 +510,7 @@
         {:Type "ECHO ORDERS"}))
 
 (deftest migrate-1_5_4-down-to-1_5_3
-  (is (= {:Type "OPeNDAP"
+  (is (= {:Type "SWODLR"
           :Name "Test"
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
                                   :Name "UMM-S"

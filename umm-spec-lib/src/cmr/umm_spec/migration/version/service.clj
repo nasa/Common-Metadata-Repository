@@ -641,8 +641,12 @@
 (defmethod interface/migrate-umm-version [:service "1.5.4" "1.5.3"]
   [_context umm-s & _]
   (-> umm-s
-      (update-in [:ServiceOptions :SupportedReformattings] service-options/remove-reformattings-non-valid-formats-1_5_4-to-1_5_3)
-      (update-in [:ServiceOptions :SupportedInputFormats] service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
-      (update-in [:ServiceOptions :SupportedOutputFormats] service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
-      (update :ServiceOptions util/remove-nil-keys)
+      (update :ServiceOptions
+              #(-> %
+                   (update :SupportedReformattings service-options/remove-reformattings-non-valid-formats-1_5_4-to-1_5_3)
+                   (update :SupportedInputFormats service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
+                   (update :SupportedOutputFormats service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
+                   util/remove-empty-maps))
+      (update :ServiceOptions #(when (seq %) %))
+      (update :Type (fn [type] (if (= type "OPeNDAP") "SWODLR" type)))
       (m-spec/update-version :service "1.5.3")))

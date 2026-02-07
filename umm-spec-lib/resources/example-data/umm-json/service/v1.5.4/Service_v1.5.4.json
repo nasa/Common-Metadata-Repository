@@ -2,7 +2,7 @@
     "Name": "AIRX3STD.006_to_130",
     "LongName": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006.",
     "Description": "Access the AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB) through OPeNDAP",
-    "Type": "SWODLR",
+    "Type": "OPeNDAP",
     "Version": "1.9",
     "VersionDescription": "This is a description of version 1.9.",
     "LastUpdatedDate": "2020-05-10T00:00:00Z",
@@ -59,8 +59,7 @@
             {"SupportedInputFormat": "HDF5", "SupportedOutputFormats": ["GEOTIFFFLOAT32", "GEOTIFFINT16", "COG"]},
             {"SupportedInputFormat": "WKT", "SupportedOutputFormats": ["GEOTIFFFLOAT32", "GEOTIFFINT16"]},
             {"SupportedInputFormat": "HDF4", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]},
-            {"SupportedInputFormat": "Shapefile", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]},
-            {"SupportedInputFormat": "NETCDF-4 (OPeNDAP URL)", "SupportedOutputFormats": ["NETCDF-4 (OPeNDAP URL)"]}
+            {"SupportedInputFormat": "Shapefile", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]}
         ]
     },
     "OperationMetadata": [
