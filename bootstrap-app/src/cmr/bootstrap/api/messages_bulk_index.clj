@@ -1,13 +1,11 @@
 (ns cmr.bootstrap.api.messages-bulk-index
   "Utility functions for the bootstrap API focusing on the messages returned in the bulk index
    process. This file exists because messages.clj uses api-util/synchronous? and is used in to many
-   places and causes a Cyclic load dependency which causes a Cyclic load dependency."
-  (:require
-    [cmr.system-int-test.utils.index-util :as index]
-    [clojure.core.async :as async]))
+   places and causes a Cyclic load dependency which causes a Cyclic load dependency.")
 
 (def bulk-index-prefix-general
   "Prefix for all bulk index logs."
+  ;; Note, this value is also used, but not linked, in cmr.indexer.services.index-service
   "Bulk Index: ")
 
 (def bulk-index-prefix-queue
@@ -43,7 +41,7 @@
   (str bulk-index-prefix-channel-read msg))
 
 ;; ***************************************************************************80
-;; called in bulk_index.clj
+;; called in data/bulk_index.clj
 
 (defn index-provider-data-later-than-date-time
   [date-time provider-id]
@@ -89,6 +87,22 @@
 (defn index-all-concepts-complete
   [concept-type]
   (bulk-index-queue-msg (format "Indexing of all %ss completed." concept-type)))
+
+(defn fetch-and-index-new-concepts-batches-before
+  [provider concept-type params]
+  (bulk-index-queue-msg
+   (format "About to fetch %s concepts in batches for [%s] with options %s."
+           concept-type
+           provider
+           (pr-str params))))
+
+(defn fetch-and-index-new-concepts-batches-after
+  [provider concept-type count-of-items]
+  (bulk-index-queue-msg
+   (format "Finished finding all (%d) %s concepts for provider [%s] in db for fetch and index new concepts."
+           count-of-items
+           concept-type
+           provider)))
 
 ;; ***************************************************************************80
 ;; called in bootstrap_service.clj
@@ -155,13 +169,19 @@
    (format "Adding collection %s for provider %s to collection channel" collection-id provider-id)))
 
 (defn async-index-provider
-  [provider-id]
-  (bulk-index-channel-load-msg (format "Adding provider %s to index channel" provider-id)))
+  [provider-id start-index]
+  ;; Added start index to log message, check splunk reports
+  (bulk-index-channel-load-msg (format "Adding provider %s to index channel starting at %d"
+                                       provider-id
+                                       start-index)))
 
 (defn async-index-collection
-  [collection-id]
+  [collection-id provider-id]
   (bulk-index-channel-load-msg
-   (format "Adding collection %s to collection index channel" collection-id)))
+   ;; Added provider-id to log message, check splunk reports
+   (format "Adding collection %s to collection index channel to provider %s"
+           collection-id
+           provider-id)))
 
 (defn async-index-system-concepts
   [start-index]

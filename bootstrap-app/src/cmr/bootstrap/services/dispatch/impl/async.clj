@@ -10,8 +10,7 @@
   "Throws an exception indicating that the specified function is not implemented for
   the async dispatcher."
   [action & _]
-  (errors/internal-error!
-   (msg/async-not-implemented (name action))))
+  (errors/internal-error! (msg/async-not-implemented (name action))))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -33,7 +32,7 @@
   "Bulk index all the collections and granules for a provider."
   [this _context provider-id start-index]
   (let [channel (:provider-index-channel this)]
-    (info (msg/async-index-provider provider-id))
+    (info (msg/async-index-provider provider-id start-index))
     (async/go (>! channel {:provider-id provider-id
                            :start-index start-index}))))
 
@@ -41,7 +40,7 @@
   "Bulk index all the granules in a collection"
   [this _context provider-id collection-id options]
   (let [channel (:collection-index-channel this)]
-    (info (msg/async-index-collection collection-id))
+    (info (msg/async-index-collection collection-id provider-id))
     (async/go (>! channel (merge options
                                  {:provider-id provider-id
                                   :collection-id collection-id})))))
@@ -50,14 +49,14 @@
   "Bulk index all the tags, acls, and access-groups."
   [this _context start-index]
   (let [channel (:system-concept-channel this)]
-    (info (msg/async-index-system-concepts))
+    (info (msg/async-index-system-concepts start-index))
     (async/go (>! channel {:start-index start-index}))))
 
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
   [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
-    (info (msg/async-index-concepts-by-id))
+    (info (msg/async-index-concepts-by-id provider-id concept-type concept-ids))
     (async/go (>! channel {:provider-id provider-id
                            :concept-type concept-type
                            :request :index
@@ -76,7 +75,7 @@
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this _context provider-id concept-type concept-ids]
   (let [channel (:concept-id-channel this)]
-    (info (msg/async-delete-concepts-from-index-by-id))
+    (info (msg/async-delete-concepts-from-index-by-id provider-id concept-type concept-ids))
     (async/go (>! channel {:provider-id provider-id
                            :concept-type concept-type
                            :request :delete

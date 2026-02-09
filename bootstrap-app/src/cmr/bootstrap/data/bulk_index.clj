@@ -223,7 +223,10 @@
         params (if (some #{concept-type} misc-concept-types)
                  (dissoc params :provider-id)
                  params)
+        _ (msg/fetch-and-index-new-concepts-batches-before provider concept-type params)
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
+        num_of_concepts (apply + (map count concept-batches))
+        _ (msg/fetch-and-index-new-concepts-batches-after provider concept-type num_of_concepts)
         es-cluster-name (if (= concept-type :granule)
                           es-config/gran-elastic-name
                           es-config/elastic-name)
