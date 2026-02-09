@@ -638,15 +638,21 @@
   (-> umm-s
       (m-spec/update-version :service "1.5.4")))
 
+
 (defmethod interface/migrate-umm-version [:service "1.5.4" "1.5.3"]
   [_context umm-s & _]
   (-> umm-s
+      (update :Type #(if (= % "OPeNDAP") "SWODLR" %))
       (update :ServiceOptions
               #(-> %
                    (update :SupportedReformattings service-options/remove-reformattings-non-valid-formats-1_5_4-to-1_5_3)
                    (update :SupportedInputFormats service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
                    (update :SupportedOutputFormats service-options/remove-non-valid-formats-1_5_4-to-1_5_3)
-                   util/remove-empty-maps))
+                   (as-> opts
+                     (cond-> opts
+                       (empty? (:SupportedInputFormats opts)) (dissoc :SupportedInputFormats)
+                       (empty? (:SupportedOutputFormats opts)) (dissoc :SupportedOutputFormats)
+                       (empty? (:SupportedReformattings opts)) (dissoc :SupportedReformattings)))
+                   util/remove-nil-keys))
       (update :ServiceOptions #(when (seq %) %))
-      (update :Type (fn [type] (if (= type "OPeNDAP") "SWODLR" type)))
       (m-spec/update-version :service "1.5.3")))
