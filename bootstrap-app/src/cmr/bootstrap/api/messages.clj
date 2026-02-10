@@ -1,12 +1,12 @@
 (ns cmr.bootstrap.api.messages
-   "Utility functions for the bootstrap API."
-   (:require
-    [cmr.bootstrap.api.util :as api-util]
-    [cmr.bootstrap.api.messages-bulk-index :as msg]))
+  "Utility functions for the bootstrap API."
+  (:require
+   [cmr.bootstrap.api.util :as api-util]
+   [cmr.bootstrap.api.messages-bulk-index :as msg]))
 
- (defn required-params
-   [& args]
-   (format "The parameters %s are required" (vec args)))
+(defn required-params
+  [& args]
+  (format "The parameters %s are required" (vec args)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Bulk index messages
