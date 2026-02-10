@@ -36,7 +36,7 @@
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-variables-event provider-id)))
-   (info (msg/bulk-index-queue-msg"Publishing events to index all variables completed.")))
+   (info (msg/bulk-index-queue-msg "Publishing events to index all variables completed.")))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -102,7 +102,7 @@
       context
       (message-queue/bootstrap-generics-event concept-type provider-id)))
    (info (msg/bulk-index-queue-msg
-          (str"Completed publishing events to index all generic documents of type " concept-type))))
+          (str "Completed publishing events to index all generic documents of type " concept-type))))
   ([_this context concept-type provider-id]
    (info (msg/bulk-index-queue-msg
           (format "Publishing events to index all generic documents of type %s for provider %s"

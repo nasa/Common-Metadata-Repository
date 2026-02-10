@@ -66,7 +66,7 @@
   "Copy the contents of one index to another. Used during resharding."
   [this _context source-index target-index elastic-name]
   (let [channel (:migrate-index-channel this)]
-    (info (msg/async-migrate-index source-index target-index))
+    (info (msg/async-migrate-index source-index target-index elastic-name))
     (async/go (>! channel {:source-index source-index
                            :target-index target-index
                            :elastic-name elastic-name}))))
