@@ -6,6 +6,7 @@
    [cmr.access-control.data.bulk-index :as ac-bulk-index]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.common.concepts :as cc]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (info warn error)]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
@@ -16,6 +17,10 @@
    [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.metadata-db.data.concepts :as db]
    [cmr.metadata-db.data.providers :as p]))
+
+(defconfig collection-index-channel-worker-count
+  "Number of workers for the :collection-index-channel"
+  {:default 10 :type Long})
 
 (def ^:private system-concept-provider
   "Provider name for indexing system concepts"
@@ -404,12 +409,19 @@
                         (catch Throwable e
                           (error e (.getMessage e)))))))
     (let [channel (:collection-index-channel core-async-dispatcher)]
-      (async/thread (while true
-                      (try ; catch any errors and log them, but don't let the thread die
-                        (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
-                          (index-granules-for-collection system provider-id collection-id options))
-                        (catch Throwable e
-                          (error e (.getMessage e)))))))
+      (dotimes [i (collection-index-channel-worker-count)]
+        (async/thread
+          (while true
+            (try
+              ;; Each thread waits here for next available item
+              (let [work (<!! channel)]
+                (if work ; check if channel was closed
+                  (do
+                    (let [{:keys [provider-id collection-id] :as options} work]
+                      (index-granules-for-collection system provider-id collection-id options)))
+                  (info "Channel closed, shutting down worker thread.")))
+              (catch Throwable e
+                (error e (.getMessage e))))))))
     (let [channel (:system-concept-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; catch any errors and log them, but don't let the thread die
