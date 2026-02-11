@@ -1,4 +1,4 @@
-package cmr.spatial.java;
+package cmr.spatial.shape;
 
 /**
  * Base interface for spatial shapes used by the Java implementation.

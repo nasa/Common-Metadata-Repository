@@ -23,7 +23,7 @@
    [cmr.spatial.ring-relations :as rr])
   (:import
    [cmr.spatial.serialize OrdsInfoShapes]
-   [cmr.spatial.java SpatialShape Point Mbr Polygon Ring LineString]))
+   [cmr.spatial.shape SpatialShape Point Mbr Polygon Ring LineString]))
 
 ;; Some thoughts about how to store the elasticsearch data in a way that preserves space and accuracy.
 (comment

@@ -7,7 +7,8 @@
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [primitive-math])
-  (:import cmr.spatial.arc.Arc))
+  (:import))
+>>>>>>> c62721a31 (Reorganize Java packages for better structure)
 
 (primitive-math/use-primitive-operators)
 
@@ -81,27 +82,12 @@
                               " point. Ring: " (pr-str ring) " point: " (pr-str point)))))))
 
 (defn covers-point?
-  "Determines if a ring covers the given point. The algorithm works by counting the number of times
-  an arc between the point and a known external point crosses the ring. An even count means the point
-  is external. An odd count means the point is inside the ring."
-  [ring point]
-  ;; The pre check is necessary for rings which might contain both north and south poles
-  {:pre [(> (count (:external-points ring)) 0)]}
-
-  (or (and (:contains-north-pole ring) (p/is-north-pole? point))
-      (and (:contains-south-pole ring) (p/is-south-pole? point))
-      ;; Only do real intersection if the mbr covers the point.
-      (when (mbr/geodetic-covers-point? (:mbr ring) point)
-        (if ((:point-set ring) point)
-          true ; The point is actually one of the rings points
-          ;; otherwise we'll do the real intersection algorithm
-          (let [external-point (choose-external-point ring point)
-                ;; Create the test arc
-                crossing-arc (a/arc point external-point)
-                intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)]
-            (or (odd-long? (count intersections))
-                ;; if the point itself is one of the intersections then the ring covers it
-                (intersections point)))))))
+  "Determines if a ring covers the given point."
+  [ring ^cmr.spatial.point.Point point]
+  ;; Delegate to Java implementation
+  (let [java-ring (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring)))
+        java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
+    (.coversPoint java-ring java-point)))
 
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,

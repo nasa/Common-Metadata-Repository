@@ -18,7 +18,8 @@
   (:import
    (cmr.spatial.arc Arc)
    (cmr.spatial.line_segment LineSegment)
-   (cmr.spatial.mbr Mbr)))
+   (cmr.spatial.mbr Mbr)
+   (cmr.spatial.geometry LineStringIntersections)))
 
 (primitive-math/use-primitive-operators)
 
@@ -151,44 +152,34 @@
 
 (defn covers-point?
   "Returns true if the line covers the point"
-  [^LineString line point]
-  (let [point-set (.point_set line)
-        segments (.segments line)]
-    (or (contains? point-set point)
-        (u/any-true? #(point-on-segment? % point) segments))))
+  [^LineString line ^cmr.spatial.point.Point point]
+  ;; Delegate to Java implementation
+  (let [java-line (cmr.spatial.shape.LineString. 
+                    (name (.coordinate_system line))
+                    (vec (p/points->ords (.points line))))
+        java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
+    (LineStringIntersections/coversPoint java-line java-point)))
 
 (defn intersects-br?
   "Returns true if the line intersects the br"
   [^LineString line ^Mbr br]
-  (when (m/intersects-br? (.coordinate_system line) (.mbr line) br)
-    (if (m/single-point? br)
-      (covers-point? line (p/point (.west br) (.north br)))
-
-      (let [coord-sys (.coordinate_system line)]
-        (or
-         ;; Does the br cover any points of the line?
-         (u/any-true? #(m/covers-point? coord-sys br %) (.points line))
-         ;; Does the line contain any points of the br?
-         (u/any-true? #(covers-point? line %) (m/corner-points br))
-         ;; Do any of the sides intersect?
-         (let [segments (.segments line)
-               mbr-segments (s/mbr->line-segments br)]
-           (loop [segments segments]
-             (when-let [segment (first segments)]
-               (let [intersects? (loop [mbr-segments mbr-segments]
-                                   (when-let [mbr-segment (first mbr-segments)]
-                                     (or (seq (asi/intersections segment mbr-segment))
-                                         (recur (rest mbr-segments)))))]
-                 (or intersects? (recur (rest segments))))))))))))
-
+  ;; Delegate to Java implementation
+  (let [java-line (cmr.spatial.shape.LineString. 
+                    (name (.coordinate_system line))
+                    (vec (p/points->ords (.points line))))
+        java-mbr (cmr.spatial.shape.Mbr. (.west br) (.north br) (.east br) (.south br))]
+    (LineStringIntersections/intersectsMbr java-line java-mbr)))
 (defn intersects-line-string?
-  "Returns true if the line string instersects the other line string"
+  "Returns true if the line string intersects the other line string"
   [line1 line2]
-  (u/any-true? (fn [[s1 s2]]
-                (seq (asi/intersections s1 s2)))
-          (for [segment1 (:segments line1)
-                segment2 (:segments line2)]
-            [segment1 segment2])))
+  ;; Delegate to Java implementation
+  (let [java-line1 (cmr.spatial.shape.LineString. 
+                     (name (:coordinate-system line1))
+                     (vec (p/points->ords (:points line1))))
+        java-line2 (cmr.spatial.shape.LineString. 
+                     (name (:coordinate-system line2))
+                     (vec (p/points->ords (:points line2))))]
+    (LineStringIntersections/intersectsLineString java-line1 java-line2)))
 
 (extend-protocol v/SpatialValidation
   cmr.spatial.line_string.LineString

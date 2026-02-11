@@ -1,6 +1,6 @@
 package cmr.spatial.serialize;
 
-import cmr.spatial.java.*;
+import cmr.spatial.shape.*;
 import java.util.*;
 
 /**

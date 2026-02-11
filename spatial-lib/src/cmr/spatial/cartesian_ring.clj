@@ -6,7 +6,8 @@
    [cmr.spatial.line-segment :as s]
    [cmr.spatial.derived :as d]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
-  (:import cmr.spatial.line_segment.LineSegment))
+  (:import
+   cmr.spatial.line_segment.LineSegment))
 (primitive-math/use-primitive-operators)
 
 (def external-point
@@ -49,23 +50,12 @@
            lines)))
 
 (defn covers-point?
-  "Determines if a ring covers the given point. The algorithm works by counting the number of times
-  an arc between the point and a known external point crosses the ring. An even count means the point
-  is external. An odd count means the point is inside the ring."
-  [^CartesianRing ring point]
-
-  ;; Only do real intersection if the mbr covers the point.
-  (when (mbr/cartesian-covers-point? (.mbr ring) point)
-    (or
-     ;; The point is actually one of the rings points
-     (contains? (.point_set ring) point)
-     ;; otherwise we'll do the real intersection algorithm
-     (let [;; Create the test segment
-           crossing-line (s/line-segment point external-point)
-           intersections (lines-and-line-intersections (.line_segments ring) crossing-line)]
-       (or (odd? (count intersections))
-           ;; if the point itself is one of the intersections then the ring covers it
-           (intersections point))))))
+  "Determines if a ring covers the given point."
+  [^cmr.spatial.cartesian_ring.CartesianRing ring ^cmr.spatial.point.Point point]
+  ;; Delegate to Java implementation
+  (let [java-ring (cmr.spatial.internal.ring.CartesianRing/createRing (vec (.points ring)))
+        java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
+    (.coversPoint java-ring java-point)))
 
 (defn ring
   "Creates a new ring with the given points. If the other fields of a ring are needed. The

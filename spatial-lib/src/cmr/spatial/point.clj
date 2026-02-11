@@ -12,7 +12,9 @@
    [pjstadig.assertions :as pj]
    [cmr.spatial.derived :as d]
    [cmr.spatial.validation :as v]
-   [cmr.spatial.messages :as msg]))
+   [cmr.spatial.messages :as msg])
+  (:import
+   [cmr.spatial.geometry PointIntersections]))
 
 (primitive-math/use-primitive-operators)
 
@@ -394,19 +396,11 @@
   (approx=
     ([expected n]
      (approx= expected n DELTA))
-    ([^Point p1 ^Point p2 ^double delta]
-     (let [lon1 (.lon p1)
-           lat1 (.lat p1)
-           lon2 (.lon p2)
-           lat2 (.lat p2)
-           np? #(double-approx= ^double % 90.0 delta)
-           sp? #(double-approx= ^double % -90.0 delta)
-           am? #(double-approx= ^double (abs ^double %) 180.0 delta)]
-       (and (double-approx= lat1 lat2 delta)
-            (or (double-approx= lon1 lon2 delta)
-                (and (am? lon1) (am? lon2))
-                (and (np? lat1) (np? lat2))
-                (and (sp? lat1) (sp? lat2))))))))
+    ([^cmr.spatial.point.Point p1 ^cmr.spatial.point.Point p2 ^double delta]
+     ;; Delegate to Java implementation
+     (let [java-p1 (cmr.spatial.shape.Point. (.lon p1) (.lat p1))
+           java-p2 (cmr.spatial.shape.Point. (.lon p2) (.lat p2))]
+       (PointIntersections/pointsApproxEqual java-p1 java-p2 delta)))))
 
 
 (extend-protocol d/DerivedCalculator

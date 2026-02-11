@@ -1,4 +1,4 @@
-package cmr.spatial.java;
+package cmr.spatial.shape;
 
 import java.util.*;
 

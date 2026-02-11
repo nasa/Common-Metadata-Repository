@@ -1,4 +1,4 @@
-package cmr.spatial.java;
+package cmr.spatial.shape;
 
 /**
  * Java representation of a Minimum Bounding Rectangle (MBR).
