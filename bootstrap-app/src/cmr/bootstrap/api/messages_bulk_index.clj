@@ -154,7 +154,7 @@
   (bulk-index-queue-msg (format "Publishing bootstrap message: %s" message)))
 
 ;; ***************************************************************************80
-;; async.cl
+;; async.clj
 
 (defn async-not-implemented
   [action]
