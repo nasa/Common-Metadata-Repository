@@ -7,15 +7,15 @@
 
 (def bulk-index-prefix-queue
   "Prefix for all bulk index logs when responding to the sqs queue."
-  "Bulk Index Queue: ")
+  (str msg/bulk-index-prefix-general "SQS Queue > "))
 
 (def bulk-index-prefix-channel-load
   "Prefix for all bulk index logs that take place when the channel is loading the message."
-  "Bulk Index Channel Load: ")
+  (str msg/bulk-index-prefix-general "Channel Load > "))
 
 (def bulk-index-prefix-channel-read
   "Prefix for all bulk index logs that take place after the channel has read the message."
-  "Bulk Index Channel Read: ")
+  (str msg/bulk-index-prefix-general "Channel Read > "))
 
 ;; ***************************************************************************80
 ;; helpers
