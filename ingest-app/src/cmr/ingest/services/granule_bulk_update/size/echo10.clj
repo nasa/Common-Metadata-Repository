@@ -4,7 +4,8 @@
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [clojure.zip :as zip]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml :as cx]))
 
 (def ^:private tags-after-data-granule
   "Defines the element tags that come after DataGranule in ECHO10 Granule xml schema"
@@ -133,7 +134,7 @@
   "Takes the granule ECHO10 xml, parses the input values, and returns the updated xml"
   [gran-xml size]
   (let [size-map (get-sizes size)
-        parsed (xml/parse-str gran-xml)]
+        parsed (cx/parse-str gran-xml)]
     (xml/indent-str (update-data-granule-element parsed size-map))))
 
 (defn update-size

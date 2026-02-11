@@ -3,7 +3,7 @@
   top N collections returned when searching for Z."
   (:require
    [clj-http.client :as client]
-   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
    [cmr.common.config :refer [defconfig]]
    [search-relevancy-test.core :as core]
    [search-relevancy-test.reporter :as reporter]))
@@ -41,7 +41,7 @@
   [request-url]
   (->> (client/get request-url)
        :body
-       xml/parse-str
+       cx/parse-str
        :content
        (filter #(= :references (:tag %)))
        first

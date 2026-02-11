@@ -3,7 +3,6 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.util :as util]
@@ -129,11 +128,11 @@
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
-  (fn [concept-type xml-elem]
+  (fn [concept-type _xml-elem]
     concept-type))
 
 (defmethod xml-elem->entry :collection
-  [concept-type entry-elem]
+  [_concept-type entry-elem]
   (util/remove-nil-keys
     {:id (cx/string-at-path entry-elem [:id])
      :consortiums (seq (cx/strings-at-path entry-elem [:consortium]))
@@ -176,7 +175,7 @@
              (into {} tags))}))
 
 (defmethod xml-elem->entry :granule
-  [concept-type entry-elem]
+  [_concept-type entry-elem]
   (util/remove-nil-keys
     {:id (cx/string-at-path entry-elem [:id])
      :title (cx/string-at-path entry-elem [:title])
@@ -207,7 +206,7 @@
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
-  (let [xml-struct (xml/parse-str xml)]
+  (let [xml-struct (cx/parse-str xml)]
     (util/remove-nil-keys
       {:id (cx/string-at-path xml-struct [:id])
        :title (cx/string-at-path xml-struct [:title])
@@ -296,9 +295,6 @@
         orbit-parameters (get-in collection [:spatial-coverage :orbit-parameters])
         archive-org (first (filter #(= :archive-center (:type %)) organizations))
         archive-center (when archive-org (:org-name archive-org))
-        ;; not really fool proof to get start/end datetime, just get by with the current test setting
-        {:keys [beginning-date-time ending-date-time]} (first (get-in collection
-                                                                      [:temporal :range-date-times]))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         version-id (or version-id eid/DEFAULT_VERSION)
@@ -399,7 +395,7 @@
   "Returns the atom map of the granule"
   [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time single-date-time day-night cloud-cover format-key
+                day-night cloud-cover format-key
                 orbit-calculated-spatial-domains]} granule
         coll-concept-id (:concept-id coll)
         related-urls (add-collection-links coll related-urls)

@@ -2,6 +2,7 @@
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
   (:require
+   [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.common.log :refer [warn]]
    [cmr.common.date-time-parser :as p])
@@ -182,6 +183,7 @@
     ;; Disable external general and parameter entities
     (.setFeature "http://xml.org/sax/features/external-general-entities" false)
     (.setFeature "http://xml.org/sax/features/external-parameter-entities" false)
+    (.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd" false)
     ;; Enable secure processing feature
     (.setFeature XMLConstants/FEATURE_SECURE_PROCESSING true)))
 
@@ -261,3 +263,12 @@
                      (string/replace-first data #">" ">\n")
                      data))
         (string/replace #"\s+xmlns:" "\n    xmlns:"))))
+
+(defn parse-str 
+  "This function calls clojure.data.xml/parse-str with options to not parse included DTD in XML records.
+  This protects the CMR from XML External Entity (XXE) injection attacks."
+  [xml-str]
+  (xml/parse-str xml-str
+                 :supporting-external-entities false
+                 :support-dtd false
+                 :coalescing true))

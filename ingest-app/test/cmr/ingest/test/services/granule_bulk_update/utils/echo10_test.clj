@@ -1,8 +1,9 @@
 (ns cmr.ingest.test.services.granule-bulk-update.utils.echo10-test
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
    [cmr.ingest.services.granule-bulk-update.utils.echo10 :as echo10-util]))
 
 (def echo10-metadata-place-at-end 
@@ -46,7 +47,7 @@
 </Granule>"))
 
 (deftest add-tree-at-the-end-test
-  (let [parsed (xml/parse-str echo10-metadata-place-at-end)
+  (let [parsed (cx/parse-str echo10-metadata-place-at-end)
         items (echo10-util/links->provider-browse-urls [{:URL "http://some-test-link.com"
                                                          :MimeType "application/test"
                                                          :Description "Some dummy URL."
@@ -57,7 +58,7 @@
            "</AssociatedBrowseImageUrls>\n</Granule>")))))
 
 (deftest add-tree-in-the-middle-test
-  (let [parsed (xml/parse-str echo10-metadata-place-in-the-middle)
+  (let [parsed (cx/parse-str echo10-metadata-place-in-the-middle)
         items (echo10-util/links->online-access-urls [{:URL "http://some-test-link.com"
                                                        :MimeType "application/test"
                                                        :Description "Some dummy URL."}])]
@@ -67,7 +68,7 @@
            "</OnlineAccessURLs>\n   <OnlineResources>")))))
 
 (deftest add-tree-appending-child-test
-  (let [parsed (xml/parse-str echo10-metadata-place-in-the-middle)
+  (let [parsed (cx/parse-str echo10-metadata-place-in-the-middle)
         items (echo10-util/links->online-resources [{:URL "http://some-test-link.com"
                                                      :MimeType "application/test"
                                                      :Type "SomeType"
@@ -78,7 +79,7 @@
            "<MimeType>application/test</MimeType>\n      </OnlineResource>\n   </OnlineResources>\n</Granule>")))))
 
 (deftest remove-element-from-tree-test
-  (let [parsed (xml/parse-str echo10-metadata-remove)]
+  (let [parsed (cx/parse-str echo10-metadata-remove)]
 
     (testing "Testing Nothing to remove"
       (let [items [{:URL "http://some-test-link.com"

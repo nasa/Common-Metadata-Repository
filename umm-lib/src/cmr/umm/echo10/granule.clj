@@ -180,7 +180,7 @@
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
   [xml]
-  (xml-elem->Granule (xml/parse-str xml)))
+  (xml-elem->Granule (cx/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
@@ -191,7 +191,7 @@
   ;; We could parse out the exact date strings, sort them and return the first and last.
   (when-let [single-element (util/extract-between-strings xml "<Temporal>" "</Temporal>")]
     (let [smaller-xml (str "<Granule>" single-element "</Granule>")]
-      (gt/xml-elem->Temporal (xml/parse-str smaller-xml)))))
+      (gt/xml-elem->Temporal (cx/parse-str smaller-xml)))))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
