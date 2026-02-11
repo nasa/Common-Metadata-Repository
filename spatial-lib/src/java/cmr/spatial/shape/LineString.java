@@ -19,7 +19,7 @@ public class LineString implements SpatialShape {
     }
 
     public List<Double> getOrdinates() {
-        return ordinates;
+        return Collections.unmodifiableList(ordinates);
     }
 
     @Override

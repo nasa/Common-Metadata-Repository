@@ -83,7 +83,7 @@ public class OrdsInfoShapes {
             if ("geodetic-hole".equals(type) || "cartesian-hole".equals(type)) {
                 if (!shapes.isEmpty() && shapes.get(shapes.size() - 1) instanceof Polygon) {
                     Polygon lastPolygon = (Polygon) shapes.get(shapes.size() - 1);
-                    lastPolygon.getRings().add((Ring) shape);
+                    lastPolygon.getMutableRings().add((Ring) shape);
                 }
             } else {
                 shapes.add(shape);
@@ -105,10 +105,10 @@ public class OrdsInfoShapes {
                 return new Polygon("cartesian", new ArrayList<>(Arrays.asList(new Ring("cartesian", ords))));
 
             case "geodetic-hole":
-                return new Ring("geodetic", ords);
+                return new Ring("geodetic", ords, true);
 
             case "cartesian-hole":
-                return new Ring("cartesian", ords);
+                return new Ring("cartesian", ords, true);
 
             case "br":
                 if (ords.size() != 4) {

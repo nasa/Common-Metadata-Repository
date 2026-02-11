@@ -9,10 +9,16 @@ import java.util.*;
 public class Ring implements SpatialShape {
     private final String coordinateSystem;
     private final List<Double> ordinates;
+    private final boolean isHole;
 
     public Ring(String coordinateSystem, List<Double> ordinates) {
+        this(coordinateSystem, ordinates, false);
+    }
+
+    public Ring(String coordinateSystem, List<Double> ordinates, boolean isHole) {
         this.coordinateSystem = coordinateSystem;
         this.ordinates = new ArrayList<>(ordinates);
+        this.isHole = isHole;
     }
 
     public String getCoordinateSystem() {
@@ -20,12 +26,16 @@ public class Ring implements SpatialShape {
     }
 
     public List<Double> getOrdinates() {
-        return ordinates;
+        return Collections.unmodifiableList(ordinates);
+    }
+
+    public boolean isHole() {
+        return isHole;
     }
 
     @Override
     public String getType() {
-        return coordinateSystem + "-hole";
+        return coordinateSystem + (isHole ? "-hole" : "-ring");
     }
 
     @Override

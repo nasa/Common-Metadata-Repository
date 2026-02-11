@@ -20,6 +20,15 @@ public class Polygon implements SpatialShape {
     }
 
     public List<Ring> getRings() {
+        return Collections.unmodifiableList(rings);
+    }
+
+    /**
+     * Internal method for shape deserialization only.
+     * Provides mutable access to rings list for OrdsInfoShapes to add holes during construction.
+     * Do not use in application code - use getRings() instead.
+     */
+    public List<Ring> getMutableRings() {
         return rings;
     }
 
