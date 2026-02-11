@@ -1,12 +1,9 @@
 (ns cmr.bootstrap.api.messages-bulk-index
   "Utility functions for the bootstrap API focusing on the messages returned in the bulk index
    process. This file exists because messages.clj uses api-util/synchronous? and is used in to many
-   places and causes a Cyclic load dependency which causes a Cyclic load dependency.")
-
-(def bulk-index-prefix-general
-  "Prefix for all bulk index logs."
-  ;; Note, this value is also used, but not linked, in cmr.indexer.services.index-service
-  "Bulk Index: ")
+   places and causes a Cyclic load dependency which causes a Cyclic load dependency."
+  (:require
+   [cmr.common.services.messages :as msg]))
 
 (def bulk-index-prefix-queue
   "Prefix for all bulk index logs when responding to the sqs queue."
@@ -20,10 +17,13 @@
   "Prefix for all bulk index logs that take place after the channel has read the message."
   "Bulk Index Channel Read: ")
 
+;; ***************************************************************************80
+;; helpers
+
 (defn bulk-index-msg-general
   "Message to return when indexing"
   [msg]
-  (str bulk-index-prefix-general msg))
+  (str msg/bulk-index-prefix-general msg))
 
 (defn bulk-index-queue-msg
   "Message to return when indexing all providers from the SQS queue, not from the channels."
@@ -54,7 +54,7 @@
   [num-indexed]
   (bulk-index-queue-msg (format "Indexed %d system concepts." num-indexed)))
 
-(defn index-provider-data-later-then-date-post
+(defn index-provider-data-later-than-date-post
   [provider-concept-count]
   (bulk-index-queue-msg (format "Indexed %d provider concepts." provider-concept-count)))
 
@@ -211,10 +211,11 @@
 (defn async-delete-concepts-from-index-by-id
   [provider-id concept-type concept-ids]
   ;; added concept details to log message, check splunk reports
-  (bulk-index-channel-load-msg "Adding bulk delete request to concept-id channel. %s %s %s..."
-                               provider-id
-                               concept-type
-                               (pr-str (take 10 concept-ids))))
+  (bulk-index-channel-load-msg
+   (format "Adding bulk delete request to concept-id channel. %s %s %s..."
+           provider-id
+           concept-type
+           (pr-str (take 10 concept-ids)))))
 
 (defn async-bootstrap-virtual-products
   [provider-id entry-title]

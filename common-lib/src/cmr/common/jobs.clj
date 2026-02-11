@@ -170,8 +170,8 @@
     (qs/schedule scheduler quartz-job trigger)
     true
     (catch Exception e
-      ;; This normally happens locally if your not configured to run jobs or have some other strange
-      ;; setup, that is why the bomb emoji is used in the log message.
+      ;; This normally happens locally if the developer is are not configured to run jobs or have
+      ;; some other strange deployment, that is why the bomb emoji is used in the log message.
       (warn (format "💣 - Error scheduling job [%s]: %s" job-key (.getMessage e)))
       (debug e)
       false)))

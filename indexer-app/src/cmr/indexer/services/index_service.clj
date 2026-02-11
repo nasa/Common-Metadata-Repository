@@ -12,6 +12,7 @@
    [cmr.common.date-time-parser :as date]
    [cmr.common.log :as log :refer [debug info infof report warn]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as msg]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
@@ -38,13 +39,6 @@
   ;;     instead.
   (:require
    [cmr.indexer.data.concepts.generic]))
-
-(def bulk-index-prefix-general
-  "This value is the same prefix as used in the bootstrap indexing code for grouping logs. We could
-   reference the value bulk-index-prefix-general from that app but then we would be linking the
-   internal bootstrap code to the external indexer app which is not ideal. If we change the log
-   message prefix here we should also change it in the cmr.bootstrap.api.messages-bulk-index."
-  "Bulk Index: ")
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -190,8 +184,8 @@
                    response-data {:num-indexed (+ num-indexed (count batch))
                                   :max-revision-date max-revision-date}]
                (es/bulk-index-documents context batch es-cluster-name options)
-               (infof "%s Indexer Batch For Cluster of cluster %s for provider %s: response: %s"
-                      bulk-index-prefix-general
+               (infof "%s Indexer Batch For Cluster [%s] for provider [%s]: response: << %s >>"
+                      msg/bulk-index-prefix-general
                       es-cluster-name
                       provider-id
                       response-data)

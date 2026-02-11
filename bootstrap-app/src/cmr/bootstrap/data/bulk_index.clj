@@ -140,7 +140,7 @@
 
 (defn index-provider
   "Bulk index a provider. This function can be called by multiple paths in the code and it is
-   helpfull to track which process is calling this function for logging purposes. These calls can be
+   helpful to track which process is calling this function for logging purposes. These calls can be
    made from the SQS code and the channel code."
   [system provider-id start-index log-prefix]
   (info (format "%s Indexing provider %s" log-prefix provider-id))
@@ -223,10 +223,10 @@
         params (if (some #{concept-type} misc-concept-types)
                  (dissoc params :provider-id)
                  params)
-        _ (msg/fetch-and-index-new-concepts-batches-before provider concept-type params)
+        _ (info (msg/fetch-and-index-new-concepts-batches-before provider concept-type params))
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
         num_of_concepts (apply + (map count concept-batches))
-        _ (msg/fetch-and-index-new-concepts-batches-after provider concept-type num_of_concepts)
+        _ (info (msg/fetch-and-index-new-concepts-batches-after provider concept-type num_of_concepts))
         es-cluster-name (if (= concept-type :granule)
                           es-config/gran-elastic-name
                           es-config/elastic-name)
@@ -349,7 +349,7 @@
                                     (fetch-and-index-new-concepts
                                      system provider concept-type date-time))
             provider-concept-count (reduce + (map :num-indexed provider-response-map))]
-        (info (msg/index-provider-data-later-then-date-post provider-concept-count))))
+        (info (msg/index-provider-data-later-than-date-post provider-concept-count))))
     (catch Throwable e
       (error e (msg/index-provider-data-later-than-date-time-failed date-time provider-id))))
   (info (msg/index-provider-data-later-than-date-time-completed date-time provider-id)))

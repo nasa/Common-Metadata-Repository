@@ -25,7 +25,7 @@
   to the metadata db without blocking."
   [this _context provider-id collection-id]
   (let [channel (:collection-db-channel this)]
-    (info (msg/async-migrate-collection collection-id provider-id))
+    (info (msg/async-migrate-collection provider-id collection-id))
     (async/go (>! channel {:collection-id collection-id :provider-id provider-id}))))
 
 (defn index-provider
