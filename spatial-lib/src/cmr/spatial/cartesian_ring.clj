@@ -31,7 +31,10 @@
    line-segments
 
    ;; the minimum bounding rectangle
-   mbr])
+   mbr
+
+   ;; Cached Java ring for intersection operations
+   java-ring])
 
 (record-pretty-printer/enable-record-pretty-printing CartesianRing)
 
@@ -52,8 +55,9 @@
 (defn covers-point?
   "Determines if a ring covers the given point."
   [^cmr.spatial.cartesian_ring.CartesianRing ring ^cmr.spatial.point.Point point]
-  ;; Delegate to Java implementation
-  (let [java-ring (cmr.spatial.internal.ring.CartesianRing/createRing (vec (.points ring)))
+  ;; Use cached Java ring if available, otherwise create on-the-fly
+  (let [java-ring (or (.java_ring ring)
+                      (cmr.spatial.internal.ring.CartesianRing/createRing (vec (.points ring))))
         java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
     (.coversPoint java-ring java-point)))
 
@@ -61,7 +65,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->CartesianRing (mapv p/with-cartesian-equality points) nil nil nil))
+  (->CartesianRing (mapv p/with-cartesian-equality points) nil nil nil nil))
 
 (defn ring->line-segments
   "Determines the line-segments from the points in the ring."
@@ -101,5 +105,6 @@
    (if (.line_segments ring)
      ring
      (let [^CartesianRing ring (assoc ring :point-set (set (.points ring)))
-           ^CartesianRing ring (assoc ring :line-segments (ring->line-segments ring))]
-       (assoc ring :mbr (ring->mbr ring))))))
+           ^CartesianRing ring (assoc ring :line-segments (ring->line-segments ring))
+           ^CartesianRing ring (assoc ring :mbr (ring->mbr ring))]
+       (assoc ring :java-ring (cmr.spatial.internal.ring.CartesianRing/createRing (vec (.points ring))))))))

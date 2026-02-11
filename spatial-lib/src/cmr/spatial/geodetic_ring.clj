@@ -44,7 +44,9 @@
    ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
-   external-points])
+   external-points
+   ;; Cached Java ring for intersection operations
+   java-ring])
 
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
@@ -83,8 +85,9 @@
 (defn covers-point?
   "Determines if a ring covers the given point."
   [ring ^cmr.spatial.point.Point point]
-  ;; Delegate to Java implementation
-  (let [java-ring (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring)))
+  ;; Use cached Java ring if available, otherwise create on-the-fly
+  (let [java-ring (or (:java-ring ring)
+                      (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring))))
         java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
     (.coversPoint java-ring java-point)))
 
@@ -119,7 +122,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->GeodeticRing (mapv p/with-geodetic-equality points) nil nil nil nil nil nil nil))
+  (->GeodeticRing (mapv p/with-geodetic-equality points) nil nil nil nil nil nil nil nil))
 
 (defn contains-both-poles?
   "Returns true if a ring contains both the north pole and the south pole"
@@ -220,4 +223,5 @@
             (assoc ring :arcs (ring->arcs ring))
             (ring->pole-containment ring)
             (assoc ring :mbr (ring->mbr ring))
-            (assoc ring :external-points (ring->external-points ring))))))
+            (assoc ring :external-points (ring->external-points ring))
+            (assoc ring :java-ring (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring))))))))
