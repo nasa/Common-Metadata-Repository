@@ -45,10 +45,10 @@
 
 (defn index-provider-data-later-than-date-time
   [date-time provider-id]
-  (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] started."
-          bulk-index-prefix-queue
-          date-time
-          provider-id))
+  (bulk-index-queue-msg
+   (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
+           date-time
+           provider-id)))
 
 (defn index-provider-data-later-than-date-time-sys-concepts
   [num-indexed]
@@ -60,17 +60,17 @@
 
 (defn index-provider-data-later-than-date-time-completed
   [date-time provider-id]
-  (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] completed."
-          bulk-index-prefix-queue
-          date-time
-          provider-id))
+  (bulk-index-queue-msg
+   (format "Indexing concepts with revision-date later than [%s] for provider [%s] completed."
+           date-time
+           provider-id)))
 
 (defn index-provider-data-later-than-date-time-failed
   [date-time provider-id]
-  (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] failed!"
-          bulk-index-prefix-queue
-          date-time
-          provider-id))
+  (bulk-index-queue-msg
+   (format "Indexing concepts with revision-date later than [%s] for provider [%s] failed!"
+           date-time
+           provider-id)))
 
 (defn index-concepts-by-provider-start
  [concept-type provider-id]
@@ -172,14 +172,13 @@
 (defn async-index-provider
   [provider-id start-index]
   ;; Added start index to log message, check splunk reports
-  (bulk-index-channel-load-msg (format "Adding provider %s to index channel starting at %d"
-                                       provider-id
-                                       start-index)))
+  (bulk-index-channel-load-msg
+   (format "Adding provider %s to index channel starting at %d" provider-id start-index)))
 
 (defn async-index-collection
   [collection-id provider-id]
-  (bulk-index-channel-load-msg
    ;; Added provider-id to log message, check splunk reports
+  (bulk-index-channel-load-msg
    (format "Adding collection %s to collection index channel to provider %s"
            collection-id
            provider-id)))
