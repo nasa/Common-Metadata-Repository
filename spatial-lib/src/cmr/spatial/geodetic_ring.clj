@@ -8,7 +8,6 @@
    [cmr.spatial.point :as p]
    [primitive-math])
   (:import))
->>>>>>> c62721a31 (Reorganize Java packages for better structure)
 
 (primitive-math/use-primitive-operators)
 
@@ -107,10 +106,10 @@
   (let [courses (loop [courses (transient []) arcs arcs]
                   (if (empty? arcs)
                     (persistent! courses)
-                    (let [^Arc a (first arcs)]
+                    (let [a (first arcs)]
                       (recur (-> courses
-                                 (conj! (.initial_course a))
-                                 (conj! (.ending_course a)))
+                                 (conj! (:initial-course a))
+                                 (conj! (:ending-course a)))
                              (rest arcs)))))
         ;; Add the first turn angle on again to complete the turn
         courses (conj courses (first courses))]
@@ -176,12 +175,12 @@
   (or (.mbr ring)
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
-            br (reduce (fn [br ^Arc arc]
-                         (let [mbr1 (.mbr1 arc)
+            br (reduce (fn [br arc]
+                         (let [mbr1 (:mbr1 arc)
                                br (if br
                                     (mbr/union br mbr1)
                                     mbr1)
-                               mbr2 (.mbr2 arc)]
+                               mbr2 (:mbr2 arc)]
                            (if mbr2
                              (mbr/union br mbr2)
                              br)))

@@ -362,6 +362,20 @@ public final class Arc {
             return new Mbr[] { mbr1, mbr2 };
         }
     }
+
+    /**
+     * Returns the first minimum bounding rectangle.
+     */
+    public Mbr getMbr1() {
+        return mbr1;
+    }
+
+    /**
+     * Returns the second minimum bounding rectangle, or null if arc has only one MBR.
+     */
+    public Mbr getMbr2() {
+        return mbr2;
+    }
     
     /**
      * Returns true if the arc crosses the north pole.

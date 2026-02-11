@@ -68,11 +68,11 @@
 
 (defn line-segment-arc-intersections
   "Returns a list of the points where the line segment intersects the arc."
-  [^LineSegment ls ^Arc arc]
+  [^LineSegment ls arc]
 
   (let [ls-mbr (.mbr ls)
-        arc-mbr1 (.mbr1 arc)
-        arc-mbr2 (.mbr2 arc)
+        arc-mbr1 (:mbr1 arc)
+        arc-mbr2 (:mbr2 arc)
         mbr1-intersects (m/intersects-br? :geodetic ls-mbr arc-mbr1)
         mbr2-intersects (and arc-mbr2 (m/intersects-br? :geodetic ls-mbr arc-mbr2))
         arc-points (a/arc->points arc)
@@ -147,18 +147,6 @@
   (intersects-point?
     [ls point]
     (s/point-on-segment? ls point))
-
-  ;; Java Arc type (internal implementation)
-  Arc
-  (intersections-with-arc
-    [arc1 arc2]
-    (a/intersections arc1 arc2))
-  (intersections-with-line-segment
-    [arc ls]
-    (line-segment-arc-intersections ls arc))
-  (intersects-point?
-    [arc point]
-    (a/point-on-arc? arc point))
 
   ;; Clojure Arc record type
   cmr.spatial.arc.Arc
