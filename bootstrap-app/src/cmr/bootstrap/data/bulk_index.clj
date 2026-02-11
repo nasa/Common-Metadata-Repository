@@ -342,7 +342,7 @@
     (info (msg/index-provider-data-later-than-date-time date-time provider-id))
     (if (= system-concept-provider provider-id)
       (let [{:keys [num-indexed]} (index-system-misc-concepts-after-datetime system date-time)]
-        (info (msg/index-provider-data-later-than-date-time-pre num-indexed)))
+        (info (msg/index-provider-data-later-than-date-time-sys-concepts num-indexed)))
 
       (let [provider (helper/get-provider system provider-id)
             provider-response-map (for [concept-type [:collection :granule]]

@@ -107,7 +107,7 @@
            (acl/verify-ingest-management-permission request-context :update)
            (bulk-index/index-generics request-context params (inf/singular concept-type) provider-id))))
 
-     ;; Routes for rebalancing collections and resharding indexes
+     ;; Routes for rebalancing
      (context "/rebalancing_collections/:concept-id" [concept-id]
        ;; Start rebalancing
        (POST "/start" {:keys [request-context params]}

@@ -50,7 +50,7 @@
           date-time
           provider-id))
 
-(defn index-provider-data-later-than-date-time-pre
+(defn index-provider-data-later-than-date-time-sys-concepts
   [num-indexed]
   (bulk-index-queue-msg (format "Indexed %d system concepts." num-indexed)))
 
@@ -64,6 +64,7 @@
           bulk-index-prefix-queue
           date-time
           provider-id))
+
 (defn index-provider-data-later-than-date-time-failed
   [date-time provider-id]
   (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] failed!"
