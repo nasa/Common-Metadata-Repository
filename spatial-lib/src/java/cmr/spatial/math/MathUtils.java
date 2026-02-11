@@ -93,7 +93,11 @@ public class MathUtils {
         double part1 = sinSqLat;
         double part2 = Math.cos(lat1Rad) * Math.cos(lat2Rad) * sinSqLon;
         
-        return 2.0 * Math.asin(Math.sqrt(part1 + part2));
+        // Clamp to [0, 1] to prevent NaN from floating-point error
+        double x = part1 + part2;
+        x = Math.min(1.0, Math.max(0.0, x));
+        
+        return 2.0 * Math.asin(Math.sqrt(x));
     }
 
     /**

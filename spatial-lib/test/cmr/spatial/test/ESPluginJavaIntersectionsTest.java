@@ -1,7 +1,7 @@
 package cmr.spatial.test;
 
 import cmr.spatial.geometry.*;
-import cmr.spatial.java.*;
+import cmr.spatial.shape.*;
 import cmr.spatial.relations.ShapeIntersections;
 import cmr.spatial.relations.ShapePredicate;
 import cmr.spatial.serialize.OrdsInfoShapes;

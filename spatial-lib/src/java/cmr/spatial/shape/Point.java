@@ -69,6 +69,14 @@ public class Point implements SpatialShape {
         return Math.abs(Math.abs(lon) - 180.0) < APPROXIMATION_DELTA;
     }
     
+    /**
+     * Normalizes a coordinate value to a grid aligned with APPROXIMATION_DELTA.
+     * This ensures values within epsilon of each other get normalized to the same value.
+     */
+    private static double normalize(double value) {
+        return Math.round(value / APPROXIMATION_DELTA) * APPROXIMATION_DELTA;
+    }
+    
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -92,18 +100,17 @@ public class Point implements SpatialShape {
             return Math.abs(lat - otherPoint.lat) < APPROXIMATION_DELTA;
         }
         
-        // Normal equality
-        return Math.abs(lon - otherPoint.lon) < APPROXIMATION_DELTA &&
-               Math.abs(lat - otherPoint.lat) < APPROXIMATION_DELTA;
+        // Normal equality with normalized comparison
+        double normalizedLon = normalize(lon);
+        double normalizedOtherLon = normalize(otherPoint.lon);
+        double normalizedLat = normalize(lat);
+        double normalizedOtherLat = normalize(otherPoint.lat);
+        
+        return normalizedLon == normalizedOtherLon && normalizedLat == normalizedOtherLat;
     }
     
     @Override
     public int hashCode() {
-        // Matches Clojure Point hashCode implementation for geodetic equality
-        int lonHash = Double.hashCode(lon);
-        int latHash = Double.hashCode(lat);
-        int combinedHash = PRIME * (PRIME + lonHash) + latHash;
-        
         // Geodetic special cases for consistent hashing
         if (isNorthPole()) {
             return NORTH_POLE_HASH;
@@ -113,9 +120,14 @@ public class Point implements SpatialShape {
         }
         if (Math.abs(Math.abs(lon) - 180.0) < APPROXIMATION_DELTA) {
             // Points on antimeridian hash to same value regardless of sign
+            // Use normalized latitude for consistent hashing
+            int latHash = Double.hashCode(normalize(lat));
             return INITIAL_AM_HASH + latHash;
         }
         
-        return combinedHash;
+        // Normal case: use normalized values for consistent hashing
+        int lonHash = Double.hashCode(normalize(lon));
+        int latHash = Double.hashCode(normalize(lat));
+        return PRIME * (PRIME + lonHash) + latHash;
     }
 }

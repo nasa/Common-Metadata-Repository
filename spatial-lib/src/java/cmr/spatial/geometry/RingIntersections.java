@@ -685,7 +685,7 @@ public class RingIntersections {
     private static boolean intersectsPoint(Object segment, Point point) {
         if (segment instanceof Arc) {
             Arc arc = (Arc) segment;
-            // Check if point lies on arc by checking endpoints or using pointOnArc
+            // Check if point lies on arc endpoints first
             Point west = arc.getWestPoint();
             Point east = arc.getEastPoint();
             
@@ -693,17 +693,8 @@ public class RingIntersections {
                 return true;
             }
             
-            // Check if point is on the arc's great circle and within arc bounds
-            Mbr[] arcMbrs = arc.getMbrs();
-            for (Mbr mbr : arcMbrs) {
-                if (geodeticCoversPoint(mbr, point)) {
-                    // Point is in arc's bounding box
-                    // For full accuracy, would need to check if on great circle
-                    // Simple approximation: check if distance is small
-                    return true;
-                }
-            }
-            return false;
+            // Use precise point-on-arc test instead of MBR approximation
+            return arc.pointOnArc(point);
             
         } else if (segment instanceof LineSegment) {
             LineSegment ls = (LineSegment) segment;
@@ -772,7 +763,12 @@ public class RingIntersections {
         if ("geodetic".equals(coordSystem)) {
             List<Arc> arcs = new ArrayList<>();
             for (int i = 0; i < points.size() - 1; i++) {
-                arcs.add(Arc.createArc(points.get(i), points.get(i + 1)));
+                try {
+                    arcs.add(Arc.createArc(points.get(i), points.get(i + 1)));
+                } catch (IllegalArgumentException e) {
+                    // Skip invalid arcs (duplicate or antipodal points)
+                    // This can happen with degenerate linestrings
+                }
             }
             return arcs.toArray();
         } else { // cartesian

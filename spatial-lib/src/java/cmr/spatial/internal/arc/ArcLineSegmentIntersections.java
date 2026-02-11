@@ -257,8 +257,23 @@ public class ArcLineSegmentIntersections {
         
         // Vertical line segment: treat as a vertical arc
         if (ls.isVertical()) {
-            Arc lsArc = Arc.createArc(lsPoint1, lsPoint2);
-            return arcArcIntersections(arc, lsArc);
+            try {
+                Arc lsArc = Arc.createArc(lsPoint1, lsPoint2);
+                return arcArcIntersections(arc, lsArc);
+            } catch (IllegalArgumentException e) {
+                // Handle degenerate endpoints
+                if (lsPoint1.equals(lsPoint2)) {
+                    // Line segment is a single point - check if it's on the arc
+                    if (arc.pointOnArc(lsPoint1)) {
+                        result.add(lsPoint1);
+                    }
+                    return result;
+                } else {
+                    // Antipodal points: the segment spans a full meridian
+                    // This is complex - for now, return empty (could be improved)
+                    return result;
+                }
+            }
         }
         
         // Horizontal line segment: use arc latitude segment intersection

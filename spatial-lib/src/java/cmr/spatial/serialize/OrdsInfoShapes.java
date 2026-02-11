@@ -44,6 +44,16 @@ public class OrdsInfoShapes {
      * @return List of SpatialShape objects
      */
     public static List<SpatialShape> ordsInfoToShapes(List<?> ordsInfo, List<?> ords) {
+        // Validate ordsInfo contains pairs
+        if (ordsInfo == null) {
+            throw new IllegalArgumentException("ordsInfo cannot be null");
+        }
+        if (ordsInfo.size() % 2 != 0) {
+            throw new IllegalArgumentException(
+                String.format("ordsInfo must contain pairs of (type,size), got odd length: %d. Contents: %s",
+                    ordsInfo.size(), ordsInfo));
+        }
+        
         List<SpatialShape> shapes = new ArrayList<>();
         List<Double> ordinates = convertToDoubleList(ords);
         int ordsIndex = 0;
@@ -89,10 +99,10 @@ public class OrdsInfoShapes {
     private static SpatialShape storedOrdsToShape(String type, List<Double> ords) {
         switch (type) {
             case "geodetic-polygon":
-                return new Polygon("geodetic", Arrays.asList(new Ring("geodetic", ords)));
+                return new Polygon("geodetic", new ArrayList<>(Arrays.asList(new Ring("geodetic", ords))));
 
             case "cartesian-polygon":
-                return new Polygon("cartesian", Arrays.asList(new Ring("cartesian", ords)));
+                return new Polygon("cartesian", new ArrayList<>(Arrays.asList(new Ring("cartesian", ords))));
 
             case "geodetic-hole":
                 return new Ring("geodetic", ords);

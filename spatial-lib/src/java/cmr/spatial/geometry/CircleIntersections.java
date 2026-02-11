@@ -45,6 +45,28 @@ public class CircleIntersections {
     private static final int DEFAULT_NUM_POINTS = 64;
 
     /**
+     * Validates circle parameters.
+     * 
+     * @param circle The circle to validate
+     * @param numPoints Number of points (if applicable)
+     * @throws IllegalArgumentException if parameters are invalid
+     */
+    private static void validateCircleParams(Circle circle, int numPoints) {
+        double radius = circle.getRadius();
+        
+        if (radius < MIN_RADIUS || radius > MAX_RADIUS) {
+            throw new IllegalArgumentException(
+                String.format("Circle radius must be between %f and %f meters, got: %f",
+                    MIN_RADIUS, MAX_RADIUS, radius));
+        }
+        
+        if (numPoints < 3) {
+            throw new IllegalArgumentException(
+                String.format("numPoints must be >= 3 for a valid polygon, got: %d", numPoints));
+        }
+    }
+
+    /**
      * Tests if a circle covers a point.
      * A circle covers a point if the distance from the center to the point
      * is less than or equal to the radius.
@@ -54,6 +76,7 @@ public class CircleIntersections {
      * @return true if the circle covers the point
      */
     public static boolean coversPoint(Circle circle, Point point) {
+        validateCircleParams(circle, 3); // numPoints not used here, but validate radius
         double distance = MathUtils.distance(circle.getCenter(), point);
         return distance <= circle.getRadius();
     }
@@ -83,6 +106,8 @@ public class CircleIntersections {
      * @return A geodetic polygon approximating the circle
      */
     public static Polygon circleToPolygon(Circle circle, int numPoints) {
+        validateCircleParams(circle, numPoints);
+        
         Point center = circle.getCenter();
         double radius = circle.getRadius();
         

@@ -84,8 +84,9 @@ public class PointIntersections {
 
     /**
      * Returns true if longitude is on the antimeridian (-180 or 180).
+     * Uses tolerance-based comparison to match Point.onAntimeridian() logic.
      */
     private static boolean isOnAntimeridian(double lon) {
-        return MathUtils.abs(lon) == 180.0;
+        return Math.abs(Math.abs(lon) - 180.0) < MathUtils.DELTA;
     }
 }

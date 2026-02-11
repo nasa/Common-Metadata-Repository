@@ -208,6 +208,10 @@ public class LineSegment {
      * @return List of points including endpoints and intermediate points
      */
     public List<Point> densifyLineSegment(int numPoints) {
+        if (numPoints <= 0) {
+            throw new IllegalArgumentException("numPoints must be > 0, got: " + numPoints);
+        }
+        
         List<Point> points = new ArrayList<>();
         
         // For vertical lines, just return endpoints

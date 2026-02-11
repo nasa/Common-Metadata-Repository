@@ -217,6 +217,10 @@ public class ShapeIntersections {
      */
     private static ShapePredicate createCircleIntersectsFn(Circle circle) {
         return otherShape -> {
+            if (otherShape == null) {
+                throw new IllegalArgumentException("Intersection not implemented for null shape");
+            }
+            
             if (otherShape instanceof Point) {
                 return CircleIntersections.coversPoint(circle, (Point) otherShape);
             } else if (otherShape instanceof Mbr) {

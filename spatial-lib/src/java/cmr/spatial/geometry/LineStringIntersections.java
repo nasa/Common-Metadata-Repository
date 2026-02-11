@@ -184,20 +184,64 @@ public class LineStringIntersections {
             return new Mbr(0, 0, 0, 0);
         }
         
-        double west = points.get(0).getLon();
-        double east = west;
-        double north = points.get(0).getLat();
-        double south = north;
-        
-        for (Point p : points) {
-            double lon = p.getLon();
-            double lat = p.getLat();
-            if (lon < west) west = lon;
-            if (lon > east) east = lon;
-            if (lat > north) north = lat;
-            if (lat < south) south = lat;
+        if ("geodetic".equals(coordSystem)) {
+            // For geodetic coordinates, compute per-segment arc MBRs and union them
+            Mbr result = null;
+            
+            for (int i = 0; i < points.size() - 1; i++) {
+                Point p1 = points.get(i);
+                Point p2 = points.get(i + 1);
+                
+                try {
+                    // Create arc and get its MBRs (may be 1 or 2 depending on geometry)
+                    Arc arc = Arc.createArc(p1, p2);
+                    Mbr[] arcMbrs = arc.getMbrs();
+                    
+                    for (Mbr arcMbr : arcMbrs) {
+                        if (result == null) {
+                            result = arcMbr;
+                        } else {
+                            result = unionMbrs(result, arcMbr);
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    // If arc creation fails (duplicate or antipodal points), 
+                    // fall back to treating as a single point
+                    if (result == null) {
+                        result = new Mbr(p1.getLon(), p1.getLat(), p1.getLon(), p1.getLat());
+                    }
+                }
+            }
+            
+            return result != null ? result : new Mbr(0, 0, 0, 0);
+        } else {
+            // For cartesian coordinates, use simple min/max
+            double west = points.get(0).getLon();
+            double east = west;
+            double north = points.get(0).getLat();
+            double south = north;
+            
+            for (Point p : points) {
+                double lon = p.getLon();
+                double lat = p.getLat();
+                if (lon < west) west = lon;
+                if (lon > east) east = lon;
+                if (lat > north) north = lat;
+                if (lat < south) south = lat;
+            }
+            
+            return new Mbr(west, north, east, south);
         }
-        
+    }
+    
+    /**
+     * Unions two MBRs into a single MBR that contains both.
+     */
+    private static Mbr unionMbrs(Mbr mbr1, Mbr mbr2) {
+        double west = Math.min(mbr1.getWest(), mbr2.getWest());
+        double east = Math.max(mbr1.getEast(), mbr2.getEast());
+        double north = Math.max(mbr1.getNorth(), mbr2.getNorth());
+        double south = Math.min(mbr1.getSouth(), mbr2.getSouth());
         return new Mbr(west, north, east, south);
     }
     
