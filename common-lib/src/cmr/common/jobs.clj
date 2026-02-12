@@ -173,7 +173,7 @@
       ;; This normally happens locally if the system is not configured to run jobs or have some
       ;; other strange deployment, that is why the bomb emoji is used in the log message.
       (warn (format "💣 - Error scheduling job [%s]: %s" job-key (.getMessage e)))
-      (debug e)
+      (debug e (format "Full exception for job [%s]" job-key))
       false)))
 
 (defn- schedule-job
