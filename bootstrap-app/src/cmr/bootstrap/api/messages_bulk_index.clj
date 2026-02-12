@@ -192,6 +192,89 @@
   (format "%sPublishing bootstrap message: %s" bulk-index-prefix-queue message))
 
 ;; ***************************************************************************80
+;; impl/message_queue.clj
+
+(defn index-variables-start
+  []
+  (format "%s Publishing events to index all variables." bulk-index-prefix-queue))
+
+(defn index-variables-done
+  []
+  (format "%s Publishing events to index all variables completed." bulk-index-prefix-queue))
+
+(defn index-services-start
+  []
+  (format "%s Publishing events to index all services." bulk-index-prefix-queue))
+
+(defn index-services-done
+  []
+  (format "%s Publishing events to index all services completed." bulk-index-prefix-queue))
+
+(defn index-tools-start
+  []
+  (format "%s Publishing events to index all tools." bulk-index-prefix-queue))
+
+(defn index-tools-done
+  []
+  (format "%s Publishing events to index all tools completed." bulk-index-prefix-queue))
+
+(defn index-subscriptions-start
+  []
+  (format "%s Publishing events to index all subscriptions." bulk-index-prefix-queue))
+
+(defn index-subscriptions-done
+  []
+  (format "%s Publishing events to index all subscriptions completed." bulk-index-prefix-queue))
+
+(defn index-generics-start
+  [concept-type]
+  (format "%s Publishing events to index all generic documents of type %s."
+          bulk-index-prefix-queue
+          concept-type))
+
+(defn index-generics-done
+  [concept-type]
+  (format "%s Completed publishing events to index all generic documents of type %s."
+          bulk-index-prefix-queue
+          concept-type))
+
+(defn index-generics-with-provider-start
+  [concept-type provider-id]
+  (format "%s Publishing events to index all generic documents of type %s for provider %s"
+          bulk-index-prefix-queue
+          concept-type
+          provider-id))
+
+(defn index-generics-with-provider-done
+  [concept-type provider-id]
+  (format "%s Completed publishing events to index all generic documents of type %s for provider %s"
+          bulk-index-prefix-queue
+          concept-type
+          provider-id))
+
+(defn index-data-later-than-date-time-start
+  []
+  (format "%s Publishing events to index all concepts after a given date time."
+          bulk-index-prefix-queue))
+
+(defn index-data-later-than-date-time-done
+  []
+  (format "%s Publishing events to index all concepts after a given date time completed."
+          bulk-index-prefix-queue))
+
+(defn subscribe-to-events-start
+  [subscription-number]
+  (format "%s Subscribing [%d] to bootstrap queue for message handling."
+          bulk-index-prefix-queue
+          subscription-number))
+
+(defn subscribe-to-events-done
+  [subscription-number]
+  (format "%s Subscription [%d] to bootstrap queue has finished."
+          bulk-index-prefix-queue
+          subscription-number))
+
+;; ***************************************************************************80
 ;; async.clj - puts items into the channels
 
 (defn async-not-implemented

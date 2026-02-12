@@ -30,13 +30,13 @@
   "Bulk index all the variables. If a provider is passed, only index the variables
   for that provider."
   ([_this context]
-   (info (msg/bulk-index-queue-msg "Publishing events to index all variables."))
+   (info (msg/index-variables-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-variables-event provider-id)))
-   (info (msg/bulk-index-queue-msg "Publishing events to index all variables completed.")))
+   (info (msg/index-variables-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -46,13 +46,13 @@
   "Bulk index all the services. If a provider is passed, only index the services
   for that provider."
   ([_this context]
-   (info (msg/bulk-index-queue-msg "Publishing events to index all services."))
+   (info (msg/index-services-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-services-event provider-id)))
-   (info (msg/bulk-index-queue-msg "Publishing events to index all services completed.")))
+   (info (msg/index-services-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -62,13 +62,13 @@
   "Bulk index all the tools. If a provider is passed, only index the tools
   for that provider."
   ([_this context]
-   (info (msg/bulk-index-queue-msg "Publishing events to index all tools."))
+   (info (msg/index-tools-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-tools-event provider-id)))
-   (info (msg/bulk-index-queue-msg "Publishing events to index all tools completed.")))
+   (info (msg/index-tools-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -78,13 +78,13 @@
   "Bulk index all the subscriptions. If a provider is passed, only index the subscriptions
   for that provider."
   ([_this context]
-   (info (msg/bulk-index-queue-msg "Publishing events to index all subscriptions."))
+   (info (msg/index-subscriptions-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-subscriptions-event provider-id)))
-   (info (msg/bulk-index-queue-msg "Publishing events to index all subscriptions completed.")))
+   (info (msg/index-subscriptions-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -94,30 +94,24 @@
   "Bulk index all the generic documents of a particular type. If a provider is passed, only index
    the documents for that provider."
   ([_this context concept-type]
-   (info (msg/bulk-index-queue-msg
-          (str "Publishing events to index all generic documents of type " concept-type)))
+   (info (msg/index-generics-start concept-type))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-generics-event concept-type provider-id)))
-   (info (msg/bulk-index-queue-msg
-          (str "Completed publishing events to index all generic documents of type " concept-type))))
+   (info (msg/index-all-concepts-complete concept-type)))
   ([_this context concept-type provider-id]
-   (info (msg/bulk-index-queue-msg
-          (format "Publishing events to index all generic documents of type %s for provider %s"
-                  concept-type provider-id)))
+   (info (msg/index-generics-with-provider-start concept-type provider-id))
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-generics-event concept-type provider-id))
-   (info (msg/bulk-index-queue-msg
-          (format "Completed publishing events to index all generic documents of type %s for provider %s"
-                  concept-type provider-id)))))
+   (info (msg/index-generics-with-provider-done concept-type provider-id))))
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
   [_this context provider-ids date-time]
-  (info (msg/bulk-index-queue-msg "Publishing events to index all concepts after a given date time."))
+  (info (msg/index-data-later-than-date-time-start))
   (let [provider-ids (if (seq provider-ids)
                        provider-ids
                        ;; all providers including CMR provider which is for system concepts
@@ -126,7 +120,7 @@
       (message-queue/publish-bootstrap-concepts-event
        context
        (message-queue/bootstrap-provider-event provider-id nil date-time)))
-    (info (msg/bulk-index-queue-msg "Publishing events to index all concepts after a given date time completed."))))
+    (info (msg/index-data-later-than-date-time-done))))
 
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
@@ -221,10 +215,8 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/bootstrap-queue-listener-count)]
-      (info (msg/bulk-index-queue-msg
-             (format "Subscribing [%d] to bootstrap queue for message handling." n)))
+      (info (msg/subscribe-to-events-start n))
       (queue-protocol/subscribe queue-broker
                                 (config/bootstrap-queue-name)
                                 #(handle-bootstrap-event context %))
-      (info (msg/bulk-index-queue-msg
-             (format "Subscription [%d] to bootstrap queue has finished." n))))))
+      (info (msg/subscribe-to-events-done n)))))
