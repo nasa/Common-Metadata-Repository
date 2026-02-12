@@ -246,20 +246,18 @@ public class ArcLineSegmentIntersections {
         if ((isNorthPole(arcWest) || isNorthPole(arcEast)) &&
             (isNorthPole(lsPoint1) || isNorthPole(lsPoint2))) {
             result.add(NORTH_POLE);
-            return result;
         }
         
         if ((isSouthPole(arcWest) || isSouthPole(arcEast)) &&
             (isSouthPole(lsPoint1) || isSouthPole(lsPoint2))) {
             result.add(SOUTH_POLE);
-            return result;
         }
         
         // Vertical line segment: treat as a vertical arc
         if (ls.isVertical()) {
             try {
                 Arc lsArc = Arc.createArc(lsPoint1, lsPoint2);
-                return arcArcIntersections(arc, lsArc);
+                result.addAll(arcArcIntersections(arc, lsArc));
             } catch (IllegalArgumentException e) {
                 // Handle degenerate endpoints
                 if (lsPoint1.equals(lsPoint2)) {
@@ -267,13 +265,12 @@ public class ArcLineSegmentIntersections {
                     if (arc.pointOnArc(lsPoint1)) {
                         result.add(lsPoint1);
                     }
-                    return result;
                 } else {
                     // Antipodal points: the segment spans a full meridian
                     // This is complex - for now, return empty (could be improved)
-                    return result;
                 }
             }
+            return removeDuplicatePoints(result);
         }
         
         // Horizontal line segment: use arc latitude segment intersection
@@ -284,16 +281,19 @@ public class ArcLineSegmentIntersections {
             double west = Math.min(lon1, lon2);
             double east = Math.max(lon1, lon2);
             
-            return latSegmentIntersections(arc, lat, west, east);
+            result.addAll(latSegmentIntersections(arc, lat, west, east));
+            return removeDuplicatePoints(result);
         }
         
         // Vertical arc: convert to line segments
         if (arc.isVertical()) {
-            return verticalArcLineSegmentIntersections(arc, ls);
+            result.addAll(verticalArcLineSegmentIntersections(arc, ls));
+            return removeDuplicatePoints(result);
         }
         
         // General case: densify line segment and convert to arcs
-        return lineSegmentArcIntersectionsWithDensification(ls, arc, intersectingMbrs);
+        result.addAll(lineSegmentArcIntersectionsWithDensification(ls, arc, intersectingMbrs));
+        return removeDuplicatePoints(result);
     }
     
     /**
@@ -538,6 +538,15 @@ public class ArcLineSegmentIntersections {
      * @return List of intersection points
      */
     public static List<Point> intersections(Object seg1, Object seg2) {
+        if (seg1 == null || seg2 == null) {
+            if (seg1 == null && seg2 == null) {
+                throw new IllegalArgumentException("seg1 and seg2 cannot be null");
+            } else if (seg1 == null) {
+                throw new IllegalArgumentException("seg1 cannot be null");
+            } else {
+                throw new IllegalArgumentException("seg2 cannot be null");
+            }
+        }
         if (seg1 instanceof Arc && seg2 instanceof Arc) {
             return arcArcIntersections((Arc) seg1, (Arc) seg2);
         } else if (seg1 instanceof LineSegment && seg2 instanceof LineSegment) {

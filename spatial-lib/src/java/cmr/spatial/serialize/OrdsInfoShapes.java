@@ -70,6 +70,11 @@ public class OrdsInfoShapes {
             }
 
             // Extract ordinates for this shape
+            if (ordsIndex + size > ordinates.size()) {
+                throw new IllegalArgumentException(
+                    String.format("Ords info entry at index %d (type=%s, size=%d) exceeds ordinates length %d (ordsIndex=%d).",
+                        i / 2, type, size, ordinates.size(), ordsIndex));
+            }
             List<Double> shapeOrds = new ArrayList<>();
             for (int j = 0; j < size; j++) {
                 shapeOrds.add(ordinates.get(ordsIndex + j));
@@ -84,6 +89,10 @@ public class OrdsInfoShapes {
                 if (!shapes.isEmpty() && shapes.get(shapes.size() - 1) instanceof Polygon) {
                     Polygon lastPolygon = (Polygon) shapes.get(shapes.size() - 1);
                     lastPolygon.getMutableRings().add((Ring) shape);
+                } else {
+                    throw new IllegalStateException(
+                        String.format("Orphaned hole shape without preceding polygon (type=%s, ordsInfo index=%d).",
+                            type, i / 2));
                 }
             } else {
                 shapes.add(shape);

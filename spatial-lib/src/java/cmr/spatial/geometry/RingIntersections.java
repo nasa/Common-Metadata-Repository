@@ -524,8 +524,8 @@ public class RingIntersections {
      * @return true if west==east and north==south
      */
     private static boolean isSinglePoint(Mbr mbr) {
-        return mbr.getWest() == mbr.getEast() && 
-               mbr.getNorth() == mbr.getSouth();
+        return MathUtils.doubleApprox(mbr.getWest(), mbr.getEast(), MathUtils.DELTA) &&
+               MathUtils.doubleApprox(mbr.getNorth(), mbr.getSouth(), MathUtils.DELTA);
     }
     
     /**
@@ -714,8 +714,7 @@ public class RingIntersections {
      * @return true if points are within tolerance
      */
     private static boolean pointsApproxEqual(Point p1, Point p2) {
-        return MathUtils.doubleApprox(p1.getLon(), p2.getLon(), COVERS_TOLERANCE) &&
-               MathUtils.doubleApprox(p1.getLat(), p2.getLat(), COVERS_TOLERANCE);
+        return PointIntersections.pointsApproxEqual(p1, p2, COVERS_TOLERANCE);
     }
     
     /**

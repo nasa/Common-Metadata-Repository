@@ -162,7 +162,11 @@ public class LineStringIntersections {
     private static List<Arc> pointsToArcs(List<Point> points) {
         List<Arc> arcs = new ArrayList<>();
         for (int i = 0; i < points.size() - 1; i++) {
-            arcs.add(Arc.createArc(points.get(i), points.get(i + 1)));
+            try {
+                arcs.add(Arc.createArc(points.get(i), points.get(i + 1)));
+            } catch (IllegalArgumentException e) {
+                // Skip degenerate or antipodal point pairs
+            }
         }
         return arcs;
     }
@@ -238,11 +242,79 @@ public class LineStringIntersections {
      * Unions two MBRs into a single MBR that contains both.
      */
     private static Mbr unionMbrs(Mbr mbr1, Mbr mbr2) {
-        double west = Math.min(mbr1.getWest(), mbr2.getWest());
-        double east = Math.max(mbr1.getEast(), mbr2.getEast());
+        double w1 = mbr1.getWest();
+        double e1 = mbr1.getEast();
+        double w2 = mbr2.getWest();
+        double e2 = mbr2.getEast();
+        boolean crosses1 = crossesAntimeridian(mbr1);
+        boolean crosses2 = crossesAntimeridian(mbr2);
+        double west;
+        double east;
+
+        if (crosses1 && crosses2) {
+            west = Math.min(w1, w2);
+            east = Math.max(e1, e2);
+            if (west <= east) {
+                west = -180.0;
+                east = 180.0;
+            }
+        } else if (crosses1 || crosses2) {
+            Mbr crossing = crosses1 ? mbr1 : mbr2;
+            Mbr other = crosses1 ? mbr2 : mbr1;
+            w1 = crossing.getWest();
+            e1 = crossing.getEast();
+            w2 = other.getWest();
+            e2 = other.getEast();
+
+            double westDist = w1 - w2;
+            double eastDist = e2 - e1;
+
+            if (westDist <= 0.0 || eastDist <= 0.0) {
+                west = w1;
+                east = e1;
+            } else if (eastDist < westDist) {
+                west = w1;
+                east = e2;
+            } else {
+                west = w2;
+                east = e1;
+            }
+
+            if (west <= east) {
+                west = -180.0;
+                east = 180.0;
+            }
+        } else {
+            if (w1 > w2) {
+                double tmp = w1;
+                w1 = w2;
+                w2 = tmp;
+                tmp = e1;
+                e1 = e2;
+                e2 = tmp;
+            }
+
+            west = Math.min(w1, w2);
+            east = Math.max(e1, e2);
+
+            double dist = east - west;
+            double altWest = w2;
+            double altEast = e1;
+            double altDist = (180.0 - altWest) + (altEast - -180.0);
+
+            if (altDist < dist) {
+                west = altWest;
+                east = altEast;
+            }
+        }
+
         double north = Math.max(mbr1.getNorth(), mbr2.getNorth());
         double south = Math.min(mbr1.getSouth(), mbr2.getSouth());
         return new Mbr(west, north, east, south);
+    }
+
+    private static boolean crossesAntimeridian(Mbr mbr) {
+        return mbr.getWest() > mbr.getEast();
     }
     
     private static boolean isSinglePoint(Mbr mbr) {
