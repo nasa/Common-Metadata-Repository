@@ -19,7 +19,7 @@
    [cmr.metadata-db.data.providers :as p]))
 
 (defconfig collection-index-channel-worker-count
-  "Number of workers for the :collection-index-channel"
+  "Number of workers for the :collection-index-channel. Set to 0 to disable collection indexing."
   {:default 10 :type Long})
 
 (def ^:private system-concept-provider
@@ -400,7 +400,8 @@
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
-  (let [core-async-dispatcher (:core-async-dispatcher system)]
+  (let [core-async-dispatcher (:core-async-dispatcher system)
+        _ (println "INSIDE handle-bulk-index-requests with system: " system)]
     (let [channel (:provider-index-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; catch any errors and log them, but don't let the thread die
@@ -409,19 +410,25 @@
                         (catch Throwable e
                           (error e (.getMessage e)))))))
     (let [channel (:collection-index-channel core-async-dispatcher)]
-      (dotimes [i (collection-index-channel-worker-count)]
+      (dotimes [_ (collection-index-channel-worker-count)]
         (async/thread
-          (while true
-            (try
-              ;; Each thread waits here for next available item
-              (let [work (<!! channel)]
-                (if work ; check if channel was closed
-                  (do
-                    (let [{:keys [provider-id collection-id] :as options} work]
-                      (index-granules-for-collection system provider-id collection-id options)))
-                  (info "Channel closed, shutting down worker thread.")))
-              (catch Throwable e
-                (error e (.getMessage e))))))))
+          (loop []
+            (let [continue?
+                  (try
+                    ;; Each thread waits here for next available item
+                    (if-let [work (<!! channel)]
+                      (do
+                        (let [{:keys [provider-id collection-id] :as options} work]
+                          (index-granules-for-collection system provider-id collection-id options))
+                        true)
+                      (do
+                        (info "Channel closed, shutting down worker thread.")
+                        false))
+                    (catch Throwable e
+                      (error e (.getMessage e))
+                      true))]
+              (when continue?
+                (recur)))))))
     (let [channel (:system-concept-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; catch any errors and log them, but don't let the thread die
