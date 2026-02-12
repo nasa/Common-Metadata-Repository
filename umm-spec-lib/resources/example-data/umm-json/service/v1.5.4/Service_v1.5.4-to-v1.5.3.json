@@ -59,7 +59,8 @@
             {"SupportedInputFormat": "HDF5", "SupportedOutputFormats": ["GEOTIFFFLOAT32", "GEOTIFFINT16", "COG"]},
             {"SupportedInputFormat": "WKT", "SupportedOutputFormats": ["GEOTIFFFLOAT32", "GEOTIFFINT16"]},
             {"SupportedInputFormat": "HDF4", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]},
-            {"SupportedInputFormat": "Shapefile", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]}
+            {"SupportedInputFormat": "Shapefile", "SupportedOutputFormats": ["HDF4", "NETCDF-3", "NETCDF-4", "BINARY", "ASCII", "ZARR", "GeoJSON"]},
+            {"SupportedInputFormat": "NETCDF-4 (OPeNDAP URL)", "SupportedOutputFormats": ["NETCDF-4", "NETCDF-3", "ASCII"]}
         ]
     },
     "OperationMetadata": [

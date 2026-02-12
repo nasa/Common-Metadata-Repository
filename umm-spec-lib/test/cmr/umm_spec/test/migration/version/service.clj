@@ -510,21 +510,23 @@
         {:Type "ECHO ORDERS"}))
 
 (deftest migrate-1_5_4-down-to-1_5_3
-  (is (= {:Type "SWODLR"
+  (is (= {:Type "OPeNDAP"
           :Name "Test"
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
                                   :Name "UMM-S"
                                   :Version "1.5.3"}
-          :ServiceOptions {:SupportedInputFormats ["HDF4"]
-                           :SupportedOutputFormats ["HDF4"]}}
+          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
          (vm/migrate-umm {} :service "1.5.4" "1.5.3"
                          {:Type "OPeNDAP"
                           :Name "Test"
                           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
                                                   :Name "UMM-S"
                                                   :Version "1.5.4"}
-                          :ServiceOptions {:SupportedInputFormats ["HDF4" "NETCDF-4 (OPeNDAP URL)"]
-                                           :SupportedOutputFormats ["HDF4" "NETCDF-4 (OPeNDAP URL)"]}}))))
+                          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
+                                                                    {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
+                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}))))
 
 (deftest migrate-1_5_3-up-to-1_5_4
   (is (= {:Type "OPeNDAP"
@@ -532,16 +534,25 @@
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
                                   :Name "UMM-S"
                                   :Version "1.5.4"}
-          :ServiceOptions {:SupportedInputFormats ["HDF4"]
-                           :SupportedOutputFormats ["HDF4"]}}
+          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
          (vm/migrate-umm {} :service "1.5.3" "1.5.4"
                          {:Type "OPeNDAP"
                           :Name "Test"
                           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
                                                   :Name "UMM-S"
                                                   :Version "1.5.3"}
-                          :ServiceOptions {:SupportedInputFormats ["HDF4"]
-                                           :SupportedOutputFormats ["HDF4"]}}))))
+                          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}))))
+
+(deftest migrate-1_5_4-netcdf-opendap-url
+  (is (= {:ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
+         (vm/migrate-umm {} :service "1.5.4" "1.5.3"
+                         {:ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
+                                                                    {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
+                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}))))
 
 (defn- load-service-file
   "Load a test data file for services"
