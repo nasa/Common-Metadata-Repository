@@ -21,89 +21,126 @@
 ;; helpers
 
 (defn bulk-index-msg-general
-  "Message to return when indexing"
+  "General Message to return when indexing, will format message according to this logging standard."
   [msg]
   (str msg/bulk-index-prefix-general msg))
-
-(defn bulk-index-queue-msg
-  "Message to return when indexing all providers from the SQS queue, not from the channels."
-  [msg]
-  (str bulk-index-prefix-queue msg))
-
-(defn bulk-index-channel-load-msg
-  "Message to return when indexing all providers from the core.async channels, during channel load."
-  [msg]
-  (str bulk-index-prefix-channel-load msg))
-
-(defn bulk-index-channel-read-msg
-  "Message to return when indexing all providers from the core.async channels, not from the SQS queue."
-  [msg]
-  (str bulk-index-prefix-channel-read msg))
 
 ;; ***************************************************************************80
 ;; called in data/bulk_index.clj
 
+;; ***********************************40
+;; channel read messages from handle-bulk-index-requests
+
+(defn index-granules-for-collection-start
+  [collection-id]
+  (format "%s Indexing granule data for collection [%s]." bulk-index-prefix-channel-read collection-id))
+
+(defn index-granules-for-collection-indexed
+  [num-granules provider-id collection-id]
+  (format "%s Indexed %d granule(s) for provider [%s] collection [%s]."
+          bulk-index-prefix-channel-read
+          num-granules
+          provider-id
+          collection-id))
+
+(defn index-system-concepts
+  [total]
+  (format "%s Indexed %d system concepts." bulk-index-prefix-channel-read total))
+
+(defn delete-concepts-by-id
+  [total]
+  (format "%s Deleted %d concepts." bulk-index-prefix-channel-read total))
+
+(defn index-concepts-by-id
+  [total]
+  (format "%s Indexed %d concepts." bulk-index-prefix-channel-read total))
+
+(defn migrate-index-start
+  [source-index target-index elastic-name]
+  (format "%s Migrating from index [%s] to index [%s] in es cluster [%s]"
+          bulk-index-prefix-channel-read
+          source-index
+          target-index
+          elastic-name))
+
+(defn migrate-index-error
+  [source-index target-index reason]
+  (format "%s Migration from [%s] to [%s] failed: %s"
+          bulk-index-prefix-channel-read
+          source-index
+          target-index
+          reason))
+
+;; ***********************************40
+;; queue functions
+
 (defn index-provider-data-later-than-date-time
   [date-time provider-id]
-  (bulk-index-queue-msg
-   (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
-           date-time
-           provider-id)))
+  (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] started."
+          bulk-index-prefix-queue
+          date-time
+          provider-id))
 
 (defn index-provider-data-later-than-date-time-sys-concepts
   [num-indexed]
-  (bulk-index-queue-msg (format "Indexed %d system concepts." num-indexed)))
+  (format "%s Indexed %d system concepts." bulk-index-prefix-queue num-indexed))
 
 (defn index-provider-data-later-than-date-post
   [provider-concept-count]
-  (bulk-index-queue-msg (format "Indexed %d provider concepts." provider-concept-count)))
+  (format "%s Indexed %d provider concepts." bulk-index-prefix-queue provider-concept-count))
 
 (defn index-provider-data-later-than-date-time-completed
   [date-time provider-id]
-  (bulk-index-queue-msg
-   (format "Indexing concepts with revision-date later than [%s] for provider [%s] completed."
-           date-time
-           provider-id)))
+  (format "%s Indexing concepts with revision-date later than [%s] for provider [%s] completed."
+          bulk-index-prefix-queue
+          date-time
+          provider-id))
 
 (defn index-provider-data-later-than-date-time-failed
-  [date-time provider-id]
-  (bulk-index-queue-msg
-   (format "Indexing concepts with revision-date later than [%s] for provider [%s] failed!"
-           date-time
-           provider-id)))
+  [date-time provider-id reason]
+  (format
+   "%s Indexing concepts with revision-date later than [%s] for provider [%s] completed but failed because << %s >>!"
+   bulk-index-prefix-queue
+   date-time
+   provider-id
+   reason))
 
 (defn index-concepts-by-provider-start
- [concept-type provider-id]
-  (bulk-index-queue-msg (format "Indexing %ss for provider %s" concept-type provider-id)))
+  [concept-type provider-id]
+  (format "%s Indexing %ss for provider %s" bulk-index-prefix-queue concept-type provider-id))
 
 (defn index-concepts-by-provider-completed
   [concept-type provider-id num-concepts]
-  (bulk-index-queue-msg
-   (format "Indexed %d %s(s) for provider %s." num-concepts concept-type provider-id)))
+  (format "%s Indexed %d %s(s) for provider %s."
+          bulk-index-prefix-queue
+          num-concepts
+          concept-type
+          provider-id))
 
 (defn index-all-concepts-start
   [concept-type]
-  (bulk-index-queue-msg (format "Indexing all %ss" concept-type)))
+  (format "%s Indexing all %ss" bulk-index-prefix-queue concept-type))
 
 (defn index-all-concepts-complete
   [concept-type]
-  (bulk-index-queue-msg (format "Indexing of all %ss completed." concept-type)))
+  (format "%s Indexing of all %ss completed." bulk-index-prefix-queue concept-type))
 
 (defn fetch-and-index-new-concepts-batches-before
   [provider concept-type params]
-  (bulk-index-queue-msg
-   (format "About to fetch %s concepts in batches for [%s] with options %s."
-           concept-type
-           provider
-           (pr-str params))))
+  (format "%s About to fetch %s concepts in batches for [%s] with options %s."
+          bulk-index-prefix-queue
+          concept-type
+          provider
+          (pr-str params)))
 
 (defn fetch-and-index-new-concepts-batches-after
   [provider concept-type count-of-items]
-  (bulk-index-queue-msg
-   (format "Finished finding all (%d) %s concepts for provider [%s] in db for fetch and index new concepts."
-           count-of-items
-           concept-type
-           provider)))
+  (format
+   "%s Finished finding all (%d) %s concepts for provider [%s] in db for fetch and index new concepts."
+   bulk-index-prefix-queue
+   count-of-items
+   concept-type
+   provider))
 
 ;; ***************************************************************************80
 ;; called in bootstrap_service.clj
@@ -111,114 +148,119 @@
 (defn index-all-providers-start
   []
   ;; added the word started to the log message, check splunk reports
-  (bulk-index-channel-load-msg "Indexing all providers started."))
+  (format "%s Indexing all providers started." bulk-index-prefix-queue))
 
 (defn index-all-providers-loop
   [provider-id]
-  (bulk-index-channel-load-msg
-   (format "Processing provider [%s] for bulk indexing" provider-id)))
+   (format "%s Processing provider [%s] for bulk indexing" bulk-index-prefix-queue provider-id))
 
 (defn index-all-providers-complete
   []
-  (bulk-index-channel-load-msg "Indexing of all providers scheduled/completed."))
+  (format "%s Indexing of all providers scheduled/completed." bulk-index-prefix-queue))
 
 ;; ***************************************************************************80
 ;; called in fingerprint.clj
 
 (defn fingerprint-updating
   [provider]
-    (bulk-index-queue-msg (format "Updating fingerprints for provider [%s]"  provider)))
+  (format "%s Updating fingerprints for provider [%s]." bulk-index-prefix-queue provider))
 
 (defn fingerprint-variables
   [variable-count provider]
-  (bulk-index-queue-msg
-   (format "Updated fingerprints of %d variable(s) for provider %s" variable-count provider)))
+  (format "%s Updated fingerprints of %d variable(s) for provider %s."
+          bulk-index-prefix-queue
+          variable-count
+          provider))
 
 (defn fingerprint-complete
   [provider]
-  (bulk-index-queue-msg (format "Updating fingerprints for provider %s completed." provider)))
+   (format "%s Updating fingerprints for provider %s completed." bulk-index-prefix-queue provider))
 
 (defn fingerprint-all-updating
   []
-  (bulk-index-queue-msg "Updating fingerprints for all variables."))
+  (format "%s Updating fingerprints for all variables." bulk-index-prefix-queue))
 
 (defn fingerprint-all-complete
   []
-  (bulk-index-queue-msg "Updating fingerprints for all variables completed."))
+  (format "%s Updating fingerprints for all variables completed." bulk-index-prefix-queue))
 
 ;; ***************************************************************************80
 ;; data/message_queue.clj
 
 (defn publish-bootstrap-provider-event
   [message]
-  (bulk-index-queue-msg (format "Publishing bootstrap message: %s" message)))
+  (format "%sPublishing bootstrap message: %s" bulk-index-prefix-queue message))
 
 ;; ***************************************************************************80
-;; async.clj
+;; async.clj - puts items into the channels
 
 (defn async-not-implemented
   [action]
-  (bulk-index-channel-load-msg (format "Async Dispatcher does not support %s action." action)))
+  (format "%s Async Dispatcher does not support %s action." bulk-index-prefix-channel-load action))
 
 (defn async-migrate-provider
   [provider-id]
-  (bulk-index-channel-load-msg (format "Adding provider %s to provider channel" provider-id)))
+  (format "%s Adding provider %s to provider channel." bulk-index-prefix-channel-load provider-id))
 
 (defn async-migrate-collection
   [provider-id collection-id]
-  (bulk-index-channel-load-msg
-   (format "Adding collection %s for provider %s to collection channel" collection-id provider-id)))
+  (format "%s Adding collection %s for provider %s to collection channel."
+          bulk-index-prefix-channel-load
+          collection-id
+          provider-id))
 
 (defn async-index-provider
   [provider-id start-index]
   ;; Added start index to log message, check splunk reports
-  (bulk-index-channel-load-msg
-   (format "Adding provider %s to index channel starting at %d" provider-id start-index)))
+  (format "%s Adding provider %s to index channel starting at %d."
+          bulk-index-prefix-channel-load provider-id start-index))
 
 (defn async-index-collection
   [collection-id provider-id]
-   ;; Added provider-id to log message, check splunk reports
-  (bulk-index-channel-load-msg
-   (format "Adding collection %s to collection index channel to provider %s"
-           collection-id
-           provider-id)))
+  ;; Added provider-id to log message, check splunk reports
+  (format "%s Adding collection %s to collection index channel to provider %s."
+          bulk-index-prefix-channel-load
+          collection-id
+          provider-id))
 
 (defn async-index-system-concepts
   [start-index]
-  (bulk-index-channel-load-msg
-   ;; added start index to log message, check splunk reports
-   (format "Adding bulk index request to system concepts channel with start-index %s."
-           start-index)))
+  ;; added start index to log message, check splunk reports
+  (format "%s Adding bulk index request to system concepts channel with start-index %s."
+          bulk-index-prefix-channel-load
+          start-index))
 
 (defn async-index-concepts-by-id
   [provider-id concept-type concept-ids]
-  (bulk-index-channel-load-msg
-   ;; added concept details to log message, check splunk reports
-   (format "Adding bulk index request to concept-id channel for provider %s, concept-type %s, concept-ids %s..."
-           provider-id
-           concept-type
-           (pr-str (take 10 concept-ids)))))
+  ;; added concept details to log message, check splunk reports
+  (format "%s Adding bulk index request to concept-id channel for provider %s, concept-type %s, concept-ids %s..."
+          bulk-index-prefix-channel-load
+          provider-id
+          concept-type
+          (pr-str (take 10 concept-ids))))
 
 (defn async-migrate-index
   [source-index target-index elastic-name]
-  (bulk-index-channel-load-msg
-   ;; added elastic name, check splunk reports
-   (format "Migrating from index [%s] to index [%s] in [%s]"
-           source-index
-           target-index
-           elastic-name)))
+  ;; added elastic name, check splunk reports
+  (format "%s Migrating from index [%s] to index [%s] in [%s]."
+          bulk-index-prefix-channel-load
+          source-index
+          target-index
+          elastic-name))
 
 (defn async-delete-concepts-from-index-by-id
   [provider-id concept-type concept-ids]
   ;; added concept details to log message, check splunk reports
-  (bulk-index-channel-load-msg
-   (format "Adding bulk delete request to concept-id channel. %s %s %s..."
-           provider-id
-           concept-type
-           (pr-str (take 10 concept-ids)))))
+  (format "%s Adding bulk delete request to concept-id channel. %s %s %s..."
+          bulk-index-prefix-channel-load
+          provider-id
+          concept-type
+          (pr-str (take 10 concept-ids))))
 
 (defn async-bootstrap-virtual-products
   [provider-id entry-title]
   ;; added provider id and entry title to log message, check splunk reports
-  (bulk-index-channel-load-msg
-   (format "Adding message to virtual products channel. %s %s" provider-id entry-title)))
+  (format "%s Adding message to virtual products channel. %s %s."
+          bulk-index-prefix-channel-load
+          provider-id
+          entry-title))

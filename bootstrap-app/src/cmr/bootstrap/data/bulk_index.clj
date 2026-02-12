@@ -68,7 +68,7 @@
 (defn migrate-index
   "Copy the contents of one index to another. The target index is assumed to be in the same elastic cluster as the source index."
   [system source-index target-index elastic-name]
-  (info (format "Migrating from index [%s] to index [%s] in es cluster [%s]" source-index target-index elastic-name))
+  (info (msg/migrate-index-start source-index target-index elastic-name))
   (let [indexer-context {:system (helper/get-indexer system)}
         conn (indexer-util/context->conn indexer-context elastic-name)]
     (try
@@ -77,14 +77,14 @@
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
       (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "IN_PROGRESS" elastic-name)
       (catch Throwable e
-        (error e (format "Migration from [%s] to [%s] failed: %s" source-index target-index (.getMessage e)))
+        (error e (msg/migrate-index-error source-index target-index (.getMessage e)))
         (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
         (throw e)))))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id {:keys [start-index target-index-key completion-message rebalancing-collection?]}]
-  (info "Indexing granule data for collection" collection-id)
+  (info (msg/index-granules-for-collection-start collection-id))
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
         params {:concept-type :granule
@@ -96,7 +96,7 @@
                                        concept-batches
                                        es-config/gran-elastic-name
                                        {:target-index-key target-index-key})]
-    (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
+    (info (msg/index-granules-for-collection-indexed num-granules provider-id collection-id))
     (when completion-message
       (info completion-message))
     (when rebalancing-collection?
@@ -260,7 +260,7 @@
                          (:num-indexed (if (= concept-type :tag)
                                          (index-concepts system concept-batches es-config/elastic-name)
                                          (index-access-control-concepts system concept-batches)))))]
-    (info "Indexed" total "system concepts.")
+    (info (msg/index-system-concepts total))
     total))
 
 (defn index-concepts-by-id
@@ -288,7 +288,7 @@
       (index/bulk-index
        {:system (helper/get-indexer system)} concept-batches es-config/elastic-name {:all-revisions-index? true}))
 
-    (info "Indexed " total " concepts.")
+    (info (msg/index-concepts-by-id total))
     total))
 
 (defmulti delete-concepts-by-id
@@ -319,7 +319,7 @@
                           es-config/gran-elastic-name
                           es-config/elastic-name)
         total (index/bulk-index {:system (helper/get-indexer system)} concept-batches es-cluster-name)]
-    (info "Deleted " total " concepts")
+    (info (msg/delete-concepts-by-id total))
     total))
 
 (defn- index-system-misc-concepts-after-datetime
@@ -350,9 +350,9 @@
                                      system provider concept-type date-time))
             provider-concept-count (reduce + (map :num-indexed provider-response-map))]
         (info (msg/index-provider-data-later-than-date-post provider-concept-count))))
+    (info (msg/index-provider-data-later-than-date-time-completed date-time provider-id))
     (catch Throwable e
-      (error e (msg/index-provider-data-later-than-date-time-failed date-time provider-id))))
-  (info (msg/index-provider-data-later-than-date-time-completed date-time provider-id)))
+      (error e (msg/index-provider-data-later-than-date-time-failed date-time provider-id (.getMessage e))))))
 
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time
