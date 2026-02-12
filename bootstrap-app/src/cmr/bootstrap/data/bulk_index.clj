@@ -400,8 +400,7 @@
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
-  (let [core-async-dispatcher (:core-async-dispatcher system)
-        _ (println "INSIDE handle-bulk-index-requests with system: " system)]
+  (let [core-async-dispatcher (:core-async-dispatcher system)]
     (let [channel (:provider-index-channel core-async-dispatcher)]
       (async/thread (while true
                       (try ; catch any errors and log them, but don't let the thread die
