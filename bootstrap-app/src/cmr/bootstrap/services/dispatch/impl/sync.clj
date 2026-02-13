@@ -21,7 +21,7 @@
 (defn- index-provider
   "Bulk index all the collections and granules for a provider."
   [_this context provider-id start-index]
-  (bulk-index/index-provider (:system context) provider-id start-index))
+  (bulk-index/index-provider (:system context) provider-id start-index "Sync: "))
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."

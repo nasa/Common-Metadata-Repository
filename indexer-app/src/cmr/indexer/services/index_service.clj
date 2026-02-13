@@ -10,8 +10,9 @@
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as date]
-   [cmr.common.log :as log :refer [debug info report warn]]
+   [cmr.common.log :as log :refer [debug info infof report warn]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as msg]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es-util]
@@ -178,10 +179,17 @@
   ([context concept-batches es-cluster-name options]
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
-                   batch (prepare-batch context batch options)]
+                   batch (prepare-batch context batch options)
+                   provider-id (get-in batch [0 :provider-id])
+                   response-data {:num-indexed (+ num-indexed (count batch))
+                                  :max-revision-date max-revision-date}]
                (es/bulk-index-documents context batch es-cluster-name options)
-               {:num-indexed (+ num-indexed (count batch))
-                :max-revision-date max-revision-date}))
+               (infof "%s Indexer Batch For Cluster [%s] for provider [%s]: response: << %s >>"
+                      msg/bulk-index-prefix-general
+                      es-cluster-name
+                      provider-id
+                      response-data)
+               response-data))
            {:num-indexed 0 :max-revision-date nil}
            concept-batches)))
 
