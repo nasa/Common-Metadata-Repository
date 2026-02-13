@@ -2,7 +2,6 @@
   "An in memory implementation of the metadata database."
   (:require
    [clj-time.core :as t]
-   [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
    [cmr.common.generics :as common-generic]
@@ -282,6 +281,28 @@
                         params)]
     (concepts->find-result found-concepts params)))
 
+(defn find-concepts-in-batches
+  ([db provider params batch-size]
+   (find-concepts-in-batches db provider params batch-size 0))
+  ([db provider params batch-size requested-start-index]
+   (let [{:keys [concept-type]} params
+         provider-id (:provider-id provider)
+         concepts @(:concepts-atom db)
+         filtered-concepts (concepts/search-with-params concepts (assoc params :provider-id provider-id))
+         sorted-concepts (vec (sort-by :id filtered-concepts))
+         start-index (max requested-start-index 0)]
+     (letfn [(find-batch [start-index]
+               (let [end-index (min (+ start-index batch-size) (count sorted-concepts))
+                     batch (subvec sorted-concepts start-index end-index)]
+                 (mapv #(assoc % :provider-id provider-id) batch)))
+             (lazy-find [start-index]
+               (when (< start-index (count sorted-concepts))
+                 (let [batch (find-batch start-index)]
+                   (if (empty? batch)
+                     nil
+                     (cons batch (lazy-seq (lazy-find (+ start-index batch-size))))))))]
+       (lazy-find start-index)))))
+
 (defn find-associations-by-concept-id
   "Searches the passed in concepts (which is the in-memory DB) for all associations that
   involve the passed in concept id."
@@ -314,6 +335,7 @@
 (def concept-search-behaviour
   {:find-concepts find-concepts
    :find-latest-concepts find-latest-concepts
+   :find-concepts-in-batches find-concepts-in-batches
    :find-associations find-associations
    :find-latest-associations find-latest-associations})
 
@@ -673,4 +695,24 @@
   ;; to view most recently saved concept
   (first @(:concepts-atom db))
   (get-concept-id db :order-option {:provider-id "PROV1"} "order-option-1")
-  (get-concept db :order-option {:provider-id "PROV1"} "OO1200000001-PROV1"))
+  (get-concept db :order-option {:provider-id "PROV1"} "OO1200000001-PROV1")
+
+  ;; Test for find-concepts-in-batches
+  (def test-db (create-db))
+  (def test-provider {:provider-id "TEST-PROVIDER"})
+  ;; Add some test concepts
+  (doseq [i (range 1 11)]
+    (save-concept test-db test-provider
+                  {:concept-type :collection
+                   :provider-id "TEST-PROVIDER"
+                   :native-id (str "test-collection-" i)
+                   :concept-id (str "C" i "-TEST-PROVIDER")
+                   :revision-id 1}))
+  ;; Test find-concepts-in-batches
+  (def batches (find-concepts-in-batches test-db test-provider {:concept-type :collection} 3))
+  ;; Print the results
+  (doseq [batch batches]
+    (println "Batch:")
+    (doseq [concept batch]
+      (println (select-keys concept [:concept-id :native-id])))    (println)))    (println)))
+
