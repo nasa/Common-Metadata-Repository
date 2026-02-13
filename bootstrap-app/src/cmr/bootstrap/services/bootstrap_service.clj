@@ -2,6 +2,7 @@
   "Provides methods to insert migration requets on the approriate channels."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.data.bulk-index :as bulk]
    [cmr.bootstrap.data.rebalance-util :as rebalance-util]
    [cmr.bootstrap.embedded-system-helper :as helper]
@@ -79,12 +80,12 @@
 (defn index-all-providers
   "Bulk index all the collections and granules for all providers."
   [context dispatcher]
-  (info "Indexing all providers")
+  (info (msg/index-all-providers-start))
   (doseq [provider (helper/get-providers (:system context))
           :let [provider-id (:provider-id provider)]]
-    (info (format "Processing provider [%s] for bulk indexing" provider-id))
+    (info (msg/index-all-providers-loop provider-id))
     (index-provider context dispatcher provider-id 0))
-  (info "Indexing of all providers scheduled/completed."))
+  (info (msg/index-all-providers-complete)))
 
 (defn index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
