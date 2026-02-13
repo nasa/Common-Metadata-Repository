@@ -4,7 +4,7 @@
    [clj-time.core :as t]
    [cmr.common.config :as config :refer [defconfig]]
    [cmr.common.lifecycle :as l]
-   [cmr.common.log :as log :refer (info warn error)]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [clojure.core.async :as async]
    ;; quartzite dependencies
@@ -170,7 +170,10 @@
     (qs/schedule scheduler quartz-job trigger)
     true
     (catch Exception e
-      (warn e)
+      ;; This normally happens locally if the system is not configured to run jobs or have some
+      ;; other strange deployment, that is why the bomb emoji is used in the log message.
+      (warn (format "💣 - Error scheduling job [%s]: %s" job-key (.getMessage e)))
+      (debug e (format "Full exception for job [%s]" job-key))
       false)))
 
 (defn- schedule-job

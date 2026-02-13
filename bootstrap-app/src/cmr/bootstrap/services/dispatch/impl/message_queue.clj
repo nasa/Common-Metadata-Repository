@@ -2,6 +2,7 @@
   "Functions implementing the dispatch protocol to support bootstrap operations using a message
   queue."
   (:require
+   [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.fingerprint :as fingerprint]
@@ -29,13 +30,13 @@
   "Bulk index all the variables. If a provider is passed, only index the variables
   for that provider."
   ([_this context]
-   (info "Publishing events to index all variables.")
+   (info (msg/index-variables-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-variables-event provider-id)))
-   (info "Publishing events to index all variables completed."))
+   (info (msg/index-variables-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -45,13 +46,13 @@
   "Bulk index all the services. If a provider is passed, only index the services
   for that provider."
   ([_this context]
-   (info "Publishing events to index all services.")
+   (info (msg/index-services-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-services-event provider-id)))
-   (info "Publishing events to index all services completed."))
+   (info (msg/index-services-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -61,13 +62,13 @@
   "Bulk index all the tools. If a provider is passed, only index the tools
   for that provider."
   ([_this context]
-   (info "Publishing events to index all tools.")
+   (info (msg/index-tools-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-tools-event provider-id)))
-   (info "Publishing events to index all tools completed."))
+   (info (msg/index-tools-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -77,13 +78,13 @@
   "Bulk index all the subscriptions. If a provider is passed, only index the subscriptions
   for that provider."
   ([_this context]
-   (info "Publishing events to index all subscriptions.")
+   (info (msg/index-subscriptions-start))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-subscriptions-event provider-id)))
-   (info "Publishing events to index all subscriptions completed."))
+   (info (msg/index-subscriptions-done)))
   ([_this context provider-id]
    (message-queue/publish-bootstrap-concepts-event
     context
@@ -93,24 +94,24 @@
   "Bulk index all the generic documents of a particular type. If a provider is passed, only index
    the documents for that provider."
   ([_this context concept-type]
-   (info "Publishing events to index all generic documents of type " concept-type)
+   (info (msg/index-generics-start concept-type))
    (doseq [provider (helper/get-providers (:system context))
            :let [provider-id (:provider-id provider)]]
      (message-queue/publish-bootstrap-concepts-event
       context
       (message-queue/bootstrap-generics-event concept-type provider-id)))
-   (info "Completed publishing events to index all generic documents of type " concept-type))
+   (info (msg/index-all-concepts-complete concept-type)))
   ([_this context concept-type provider-id]
-   (info "Publishing events to index all generic documents of type" concept-type "for provider " provider-id)
+   (info (msg/index-generics-with-provider-start concept-type provider-id))
    (message-queue/publish-bootstrap-concepts-event
     context
     (message-queue/bootstrap-generics-event concept-type provider-id))
-   (info "Completed publishing events to index all generic documents of type" concept-type "for provider" provider-id)))
+   (info (msg/index-generics-with-provider-done concept-type provider-id))))
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
   [_this context provider-ids date-time]
-  (info "Publishing events to index all concepts after a given date time.")
+  (info (msg/index-data-later-than-date-time-start))
   (let [provider-ids (if (seq provider-ids)
                        provider-ids
                        ;; all providers including CMR provider which is for system concepts
@@ -119,7 +120,7 @@
       (message-queue/publish-bootstrap-concepts-event
        context
        (message-queue/bootstrap-provider-event provider-id nil date-time)))
-    (info "Publishing events to index all concepts after a given date time completed.")))
+    (info (msg/index-data-later-than-date-time-done))))
 
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
@@ -171,7 +172,7 @@
 (defmethod handle-bootstrap-event :index-provider
   [context msg]
   (if-let [start-index (:start-index msg)]
-    (bulk-index/index-provider (:system context) (:provider-id msg) start-index)
+    (bulk-index/index-provider (:system context) (:provider-id msg) start-index msg/bulk-index-prefix-queue)
     (bulk-index/index-provider-data-later-than-date-time
      (:system context) (:provider-id msg) (:date-time msg))))
 
@@ -213,7 +214,9 @@
   "Subscribe to event messages on bootstrap queues."
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [_n (config/bootstrap-queue-listener-count)]
+    (dotimes [n (config/bootstrap-queue-listener-count)]
+      (info (msg/subscribe-to-events-start n))
       (queue-protocol/subscribe queue-broker
                                 (config/bootstrap-queue-name)
-                                #(handle-bootstrap-event context %)))))
+                                #(handle-bootstrap-event context %))
+      (info (msg/subscribe-to-events-done n)))))

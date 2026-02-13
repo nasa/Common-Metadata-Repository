@@ -6,6 +6,10 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]))
 
+(def bulk-index-prefix-general
+  "This value is prefix used in the general bootstrap indexing code for grouping logs."
+  "Bulk Index > ")
+
 (defn data-error
   "Utility method that uses throw-service-error to generate a response with a specific status code
    and error message."

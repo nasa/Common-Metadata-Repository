@@ -41,6 +41,7 @@
 (defn- build-routes [system]
   (routes
    (context (:relative-root-url system) []
+
      ;; for NGAP deployment health check
      (GET "/" {} {:status 200})
      (context "/bulk_migration" []
@@ -48,6 +49,8 @@
          (bulk-migration/migrate-provider request-context body params))
        (POST "/collections" {:keys [request-context body params]}
          (bulk-migration/migrate-collection request-context body params)))
+
+     ;; Bulk Indexing Routes
      (context "/bulk_index" []
        (POST "/providers" {:keys [request-context body params]}
          (acl/verify-ingest-management-permission request-context :update)
@@ -103,6 +106,8 @@
          (POST "/:provider-id" [provider-id :as {:keys [request-context params]}]
            (acl/verify-ingest-management-permission request-context :update)
            (bulk-index/index-generics request-context params (inf/singular concept-type) provider-id))))
+
+     ;; Routes for rebalancing
      (context "/rebalancing_collections/:concept-id" [concept-id]
        ;; Start rebalancing
        (POST "/start" {:keys [request-context params]}
@@ -116,6 +121,8 @@
        (POST "/finalize" {:keys [request-context]}
          (acl/verify-ingest-management-permission request-context :update)
          (rebalancing/finalize-collection request-context concept-id)))
+
+     ;; Resharding routes
      (context "/reshard/:index" [index]
        (POST "/start" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
@@ -129,9 +136,13 @@
        (POST "/rollback" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
          (resharding/rollback request-context index params)))
+
+     ;; Virtual Products Routes
      (context "/virtual_products" []
        (POST "/" {:keys [request-context params]}
          (virtual-products/bootstrap request-context params)))
+
+     ;; Fingerprinting Routes
      (context "/fingerprint" []
        (POST "/variables" {:keys [request-context body params]}
          (acl/verify-ingest-management-permission request-context :update)
@@ -139,6 +150,7 @@
        (POST "/variables/:concept-id" [concept-id :as {:keys [request-context]}]
          (acl/verify-ingest-management-permission request-context :update)
          (fingerprint/fingerprint-by-id request-context concept-id)))
+
      ;; Add routes for accessing caches
      common-routes/cache-api-routes
      (context "/caches/refresh/:cache-name" [cache-name]
@@ -203,6 +215,7 @@
                  (println "Caught exception trying to find migration files with local route external, trying last resort migration local :in-memory")
                  (drift.execute/run (cons migrate-args "migrate")))))))
        {:status 204})
+
      ;; Add routes for checking health of the application
      (common-health/health-api-routes hs/health))
    (route/not-found "Not Found")))
