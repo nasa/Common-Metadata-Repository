@@ -289,7 +289,7 @@
          provider-id (:provider-id provider)
          concepts @(:concepts-atom db)
          filtered-concepts (concepts/search-with-params concepts (assoc params :provider-id provider-id))
-         sorted-concepts (vec (sort-by :id filtered-concepts))
+         sorted-concepts (vec (sort-by :concept-id filtered-concepts))
          start-index (max requested-start-index 0)]
      (letfn [(find-batch [start-index]
                (let [end-index (min (+ start-index batch-size) (count sorted-concepts))
@@ -714,5 +714,6 @@
   (doseq [batch batches]
     (println "Batch:")
     (doseq [concept batch]
-      (println (select-keys concept [:concept-id :native-id])))    (println)))    (println)))
+      (println (select-keys concept [:concept-id :native-id])))    (println))
+ )
 

@@ -582,7 +582,9 @@
       (when (= "small-collections" target)
         (let [collection-key (keyword concept-id)
               old-separate-index (get-in old-gran-index-set [:index-set :concepts :granule collection-key])]
-          (es/delete-index es-store old-separate-index)))
+          (if old-separate-index
+            (es/delete-index es-store old-separate-index)
+            (warn (format "No separate index found for [%s] in old index-set; skipping deletion." concept-id)))))
       (catch Exception e
         (error e (format "Failed to finalize rebalancing for [%s] -> [%s]" concept-id target))
         (errors/throw-service-error :internal-error
