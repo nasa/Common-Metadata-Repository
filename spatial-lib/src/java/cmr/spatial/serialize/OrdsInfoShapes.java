@@ -39,14 +39,14 @@ public class OrdsInfoShapes {
     /**
      * Converts ords-info and ords into a list of shapes.
      *
-     * @param ordsInfo List of type/size pairs describing each shape
-     * @param ords Flat list of all ordinates
-     * @return List of SpatialShape objects
+     * @param ordsInfo List of type/size pairs describing each shape (may be null for granules without spatial data)
+     * @param ords Flat list of all ordinates (may be null)
+     * @return List of SpatialShape objects (empty list if ordsInfo is null)
      */
     public static List<SpatialShape> ordsInfoToShapes(List<?> ordsInfo, List<?> ords) {
-        // Validate ordsInfo contains pairs
+        // Handle nil case - granules without spatial data
         if (ordsInfo == null) {
-            throw new IllegalArgumentException("ordsInfo cannot be null");
+            return new ArrayList<>();
         }
         if (ordsInfo.size() % 2 != 0) {
             throw new IllegalArgumentException(
