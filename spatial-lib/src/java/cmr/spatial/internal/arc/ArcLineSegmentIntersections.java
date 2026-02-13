@@ -458,10 +458,19 @@ public class ArcLineSegmentIntersections {
     
     /**
      * Computes the intersection of two MBRs.
+     * 
+     * Uses geodetic semantics to handle the case where Arc and LineSegment MBRs
+     * touch at a pole but have disjoint longitude ranges. In geodetic coordinates,
+     * MBRs that both touch the same pole are considered to intersect at that pole.
+     * 
+     * Both input MBRs are guaranteed to be non-crossing (Arc pre-splits 
+     * antimeridian-crossing MBRs, LineSegment never crosses by design), so the
+     * simple Math.max/min computation is safe.
+     * 
      * Returns null if they don't intersect.
      */
     private static Mbr computeMbrIntersection(Mbr mbr1, Mbr mbr2) {
-        if (!MbrIntersections.mbrsIntersect("cartesian", mbr1, mbr2)) {
+        if (!MbrIntersections.mbrsIntersect("geodetic", mbr1, mbr2)) {
             return null;
         }
         
