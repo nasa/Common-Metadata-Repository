@@ -260,3 +260,38 @@
     (is (= []
            (service/remove-non-valid-formats-1_5_4-to-1_5_3
             ["NETCDF-4 (OPeNDAP URL)"])))))
+(deftest remove-reformattings-non-valid-formats-1-5-4-to-1-5-3-test
+  (testing "CMR-11048: Test 1.5.4 -> 1.5.3 migration removes NETCDF-4 (OPeNDAP URL)"
+    (are3 [supported-reformattings expected-supported-reformattings]
+          (is (= expected-supported-reformattings
+                 (service/remove-reformattings-non-valid-formats-1_5_4-to-1_5_3 supported-reformattings)))
+
+          "Testing the removal in Supported Output Formats."
+          [{:SupportedInputFormat "HDF4"
+            :SupportedOutputFormats ["NETCDF-4 (OPeNDAP URL)" "HDF4" "NETCDF-3"]}
+           {:SupportedInputFormat "Shapefile"
+            :SupportedOutputFormats ["NETCDF-4 (OPeNDAP URL)"]}]
+          [{:SupportedInputFormat "HDF4"
+            :SupportedOutputFormats ["HDF4" "NETCDF-3"]}]
+
+          "Testing the removal in Supported Input Formats."
+          [{:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
+            :SupportedOutputFormats ["HDF4"]}
+           {:SupportedInputFormat "Shapefile"
+            :SupportedOutputFormats ["NETCDF-4 (OPeNDAP URL)" "HDF4"]}]
+          [{:SupportedInputFormat "Shapefile"
+            :SupportedOutputFormats ["HDF4"]}]
+          
+           "Testing removal of pair when outputs become empty"
+           [{:SupportedInputFormat "HDF4"
+             :SupportedOutputFormats ["NETCDF-4 (OPeNDAP URL)"]}]
+           [])))
+
+(deftest remove-non-valid-formats-1-5-4-to-1-5-3-test
+  (testing "Removal of NETCDF-4 (OPeNDAP URL) from supported formats list"
+    (is (= ["HDF4" "NETCDF-3"]
+           (service/remove-non-valid-formats-1_5_4-to-1_5_3
+            ["HDF4" "NETCDF-4 (OPeNDAP URL)" "NETCDF-3"])))
+    (is (= []
+           (service/remove-non-valid-formats-1_5_4-to-1_5_3
+            ["NETCDF-4 (OPeNDAP URL)"])))))

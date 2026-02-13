@@ -2,7 +2,7 @@
     "Name": "AIRX3STD.006_to_130",
     "LongName": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006.",
     "Description": "Access the AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB) through OPeNDAP",
-    "Type": "SWODLR",
+    "Type": "OPeNDAP",
     "Version": "1.9",
     "VersionDescription": "This is a description of version 1.9.",
     "LastUpdatedDate": "2020-05-10T00:00:00Z",

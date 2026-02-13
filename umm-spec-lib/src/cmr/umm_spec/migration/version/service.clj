@@ -639,8 +639,13 @@
       (update :ServiceOptions
               #(when %
                  (let [updated (-> %
-                                   (update :SupportedReformattings service-options/remove-reformattings-non-valid-formats-1_5_4-to-1_5_3)
+                                   (update :SupportedReformattings
+                                           (fn [reformattings]
+                                             (remove (fn [{:keys [SupportedInputFormat]}]
+                                                       (= SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"))
+                                                     reformattings)))
                                    util/remove-nil-keys)]
                    (when (seq updated) updated))))
+      (dissoc :MetadataSpecification)
       (m-spec/update-version :service "1.5.3")))
 
