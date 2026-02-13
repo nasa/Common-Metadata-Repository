@@ -625,10 +625,27 @@
 
 (defmethod interface/migrate-umm-version [:service "1.5.3" "1.5.2"]
   [_context umm-s & _]
-  (let [service-type (:Type umm-s)
-        service-type (if (= service-type "SWODLR")
-                       "NOT PROVIDED"
-                       service-type)]
-    (-> umm-s
-        (assoc :Type service-type)
-        (m-spec/update-version :service "1.5.2"))))
+  (-> umm-s
+      (m-spec/update-version :service "1.5.2")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.3" "1.5.4"]
+  [_context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.5.4")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.4" "1.5.3"]
+  [_context umm-s & _]
+  (-> umm-s
+      (update :ServiceOptions
+              #(when %
+                 (let [updated (-> %
+                                   (update :SupportedReformattings
+                                           (fn [reformattings]
+                                             (remove (fn [{:keys [SupportedInputFormat]}]
+                                                       (= SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"))
+                                                     reformattings)))
+                                   util/remove-nil-keys)]
+                   (when (seq updated) updated))))
+      (dissoc :MetadataSpecification)
+      (m-spec/update-version :service "1.5.3")))
+

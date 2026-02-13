@@ -1,0 +1,30 @@
+{
+  "Name": "TestValidService",
+  "LongName": "Long Name Test Valid Service",
+  "Type": "OPeNDAP",
+  "Version": "1.0",
+  "Description": "Description of service",
+  "URL": {
+    "URLValue": "https://example.com",
+    "Description": "URL Description"
+  },
+  "ServiceKeywords": [{
+    "ServiceCategory": "DATA ANALYSIS AND VISUALIZATION",
+    "ServiceTopic": "VISUALIZATION/IMAGE PROCESSING"
+  }],
+  "ServiceOrganizations": [{
+    "Roles": ["SERVICE PROVIDER"],
+    "ShortName": "ESA/ED"
+  }],
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4",
+    "Name": "UMM-S",
+    "Version": "1.5.4"
+  },
+  "ServiceOptions": {
+    "SupportedReformattings": [{
+      "SupportedInputFormat": "NETCDF-4 (OPeNDAP URL)",
+      "SupportedOutputFormats": ["NETCDF-4 (OPeNDAP URL)"]
+    }]
+  }
+}

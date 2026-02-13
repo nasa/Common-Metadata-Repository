@@ -1,0 +1,20 @@
+{
+    "Name": "AIRX3STD.006_to_130",
+    "LongName": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006.",
+    "Type": "OPeNDAP",
+    "Version": "1.9",
+    "Description": "Access the AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB) through OPeNDAP",
+    "ServiceOptions": {
+        "SupportedReformattings": [
+            {
+                "SupportedInputFormat": "NETCDF-3",
+                "SupportedOutputFormats": ["ASCII", "GEOTIFF"]
+            }
+        ]
+    },
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3",
+        "Name": "UMM-S",
+        "Version": "1.5.3"
+    }
+}
