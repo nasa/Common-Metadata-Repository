@@ -13,7 +13,8 @@
    [cmr.common.util :as util]
    [cmr.metadata-db.services.concept-service :as cs]
    [cmr.search.models.query :as qm]
-   [cmr.search.services.parameters.legacy-parameters :as lp]))
+   [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.config :as config]))
 
 ;; Note: the suffix "-h" on parameters denotes the humanized version of a parameter
 
@@ -51,6 +52,7 @@
    :has-opendap-url :boolean
    :cloud-hosted :boolean
    :standard-product :boolean
+   :include-non-operational :include-non-operational
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
@@ -267,6 +269,15 @@
 (defmethod common-params/parameter->condition :keyword
   [_ _ _ value _]
   (cqm/text-condition :keyword (string/lower-case value)))
+
+(defmethod common-params/parameter->condition :include-non-operational
+  [_context _concept-type _param value _options]
+  ;; When include-non-operational=false, restrict results to active collections only.
+  ;; When true or unset, return all collections.
+  (let [v (when value (string/lower-case value))]
+    (if (= "false" v)
+      (cqm/boolean-condition :collection-progress-active true)
+      cqm/match-all)))
 
 (def collection-only-params
   "List of parameters that are valid in collection query models, but not in granule query models."
@@ -519,7 +530,12 @@
 
 (defmethod common-params/parse-query-level-params :collection
   [_concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
+  (let [params (if (and (config/enable-non-operational-collection-filter)
+                        (not (contains? params :collection-progress))
+                        (not (contains? params :include-non-operational)))
+                 (assoc params :include-non-operational "false")
+                 params)
+        [params query-attribs] (common-params/default-parse-query-level-params
                                 :collection params lp/param-aliases)
         query-attribs (reverse-has-granules-sort query-attribs)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])

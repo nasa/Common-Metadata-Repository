@@ -242,6 +242,7 @@
                   "LOW_LATENCY" "3 to 24 hours"
                   "EXPEDITED" "1 to 4 days"
                   nil)
+        collection-progress (:CollectionProgress collection)
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] keyword-util/nrt-aliases)
@@ -397,8 +398,10 @@
                                               (if (sequential? collection-data-type)
                                                 (map string/lower-case collection-data-type)
                                                 (string/lower-case collection-data-type)))
-            :collection-progress (:CollectionProgress collection)
-            :collection-progress-lowercase (util/safe-lowercase (:CollectionProgress collection))
+            :collection-progress collection-progress
+            :collection-progress-lowercase (util/safe-lowercase collection-progress)
+            :collection-progress-active (not (contains? #{"PLANNED" "DEPRECATED" "PREPRINT" "INREVIEW"}
+                                                         collection-progress))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
             ;; hierarchical fields
