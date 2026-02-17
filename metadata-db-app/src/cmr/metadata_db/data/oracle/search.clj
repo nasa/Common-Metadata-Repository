@@ -250,7 +250,10 @@
                  [conn db :isolation :read-committed :read-only? true]
                  (let [conditions [`(>= :id ~start-index)
                                    `(< :id ~(+ start-index batch-size))]
-                       _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                       _ (info (format (str "find-concepts-in-batches: "
+                                            "Finding batch for provider [%s] concept type [%s] "
+                                            "from id >= %s and id < %s using read-only transaction "
+                                            "with read committed isolation level.")
                                        provider-id
                                        (name concept-type)
                                        start-index
@@ -262,6 +265,14 @@
                                               (from table)
                                               (where (cons `and conditions))))
                        batch-result (su/query db stmt)]
+                   (info (format (str "find-concepts-in-batches: "
+                                      "Found %d results in batch for provider [%s] concept type "
+                                      "[%s] from id >= %s and id < %s.")
+                                 (count batch-result)
+                                 provider-id
+                                 (name concept-type)
+                                 start-index
+                                 (+ start-index batch-size)))
                    (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                          batch-result))))
              (lazy-find
