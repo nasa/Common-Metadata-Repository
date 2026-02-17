@@ -6,13 +6,8 @@
 
 (deftest service-supported-format-type-enum-test
   (testing "Validation of UMM-S with NETCDF-4 (OPeNDAP URL) format (CMR-11048)"
-    (let [valid-service-json (slurp (io/resource "example-data/umm-json/service/v1.5.4/Service_v1.5.4_NETCDF4_OPeNDAP.json"))
+    (let [valid-service-json (slurp (io/resource "example-data/umm-json/service/v1.5.4/Service_v1.5.4.json"))
           validation-errors (json-schema/validate-umm-json valid-service-json :service "1.5.4")]
-      (is (empty? validation-errors) (str "Validation errors: " (pr-str validation-errors)))))
-
-  (testing "Validation of UMM-S 1.5.4 example file"
-    (let [json (slurp (io/resource "example-data/umm-json/service/v1.5.4/Service_v1.5.4.json"))
-          validation-errors (json-schema/validate-umm-json json :service "1.5.4")]
       (is (empty? validation-errors) (str "Validation errors: " (pr-str validation-errors)))))
 
   (testing "Validation of UMM-S 1.5.3 example file"

@@ -384,3 +384,7 @@
   "Remove the non valid formats going from UMM-S version 1.5.4 to UMM-S version 1.5.3"
   [reformattings]
   (vec (keep remove-reformattings-when-input-not-valid-1_5_4-to-1_5_3 reformattings)))
+(defn remove-reformattings-non-valid-formats-1_5_4-to-1_5_3
+  "Remove the non valid formats going from UMM-S version 1.5.4 to UMM-S version 1.5.3"
+  [reformattings]
+  (vec (remove #(= "NETCDF-4 (OPeNDAP URL)" (:SupportedInputFormat %)) reformattings)))

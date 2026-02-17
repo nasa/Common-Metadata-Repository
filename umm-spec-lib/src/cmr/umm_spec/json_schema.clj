@@ -251,7 +251,30 @@
    ;; Default to the current UMM version.
    (concept-schema* concept-type (ver/current-version concept-type)))
   ([concept-type umm-version]
-   (load-schema concept-type (concept-schema-name concept-type) umm-version)))
+   (let [schema-name (concept-schema-name concept-type)
+         schema-path (umm-schema-path concept-type schema-name umm-version)
+         _ (println "Debug: Loading schema for" concept-type "version" umm-version)
+         _ (println "Debug: Schema path:" schema-path)
+         resource (umm-schema-resource concept-type schema-name umm-version)]
+     (if resource
+       (try
+         (load-schema concept-type schema-name umm-version)
+         (catch Exception e
+           (println "Error loading schema:" (.getMessage e))
+           (throw (ex-info (str "Error loading schema for " concept-type " version " umm-version)
+                           {:concept-type concept-type
+                            :umm-version umm-version
+                            :schema-name schema-name
+                            :schema-path schema-path
+                            :error (.getMessage e)}
+                           e))))
+       (do
+         (println "Schema resource not found for" concept-type "version" umm-version)
+         (throw (ex-info (str "Unable to find schema resource for " concept-type " version " umm-version)
+                         {:concept-type concept-type
+                          :umm-version umm-version
+                          :schema-name schema-name
+                          :schema-path schema-path})))))))
 
 ;;; Define a memoized version of concept-schema to cache loaded JSON schemas.
 

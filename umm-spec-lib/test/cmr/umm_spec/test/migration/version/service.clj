@@ -2,7 +2,7 @@
   (:require
    [cheshire.core :refer [decode]]
    [clojure.java.io :as io]
-   [clojure.test :refer [deftest is]]
+   [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -510,20 +510,23 @@
         {:Type "ECHO ORDERS"}))
 
 (deftest migrate-1_5_4-down-to-1_5_3
-  (is (= {:Type "OPeNDAP"
-          :Name "Test"
-          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
-                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
-         (vm/migrate-umm {} :service "1.5.4" "1.5.3"
-                         {:Type "OPeNDAP"
-                          :Name "Test"
-                          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
-                                                  :Name "UMM-S"
-                                                  :Version "1.5.4"}
-                          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
-                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
-                                                                    {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
-                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}})))
+  (let [source {:Type "OPeNDAP"
+                :Name "Test"
+                :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
+                                        :Name "UMM-S"
+                                        :Version "1.5.4"}
+                :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                           :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
+                                                          {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
+                                                           :SupportedOutputFormats ["NETCDF-4" "NETCDF-3" "ASCII"]}]}}
+        expected {:Type "OPeNDAP"
+                  :Name "Test"
+                  :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                             :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
+        result (vm/migrate-umm {} :service "1.5.4" "1.5.3" source)]
+    (is (= expected result))
+    (is (not (contains? result :MetadataSpecification)))
+    (is (= "OPeNDAP" (:Type result)))))
   (testing "Explicit removal of NETCDF-4 (OPeNDAP URL) format"
     (is (= {:ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
                                                        :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
@@ -535,24 +538,28 @@
                                                                       {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
                                                                        :SupportedOutputFormats ["ASCII" "GEOTIFF"]}
                                                                       {:SupportedInputFormat "HDF5"
-                                                                       :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}})))))
+                                                                       :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}))))
 
 (deftest migrate-1_5_3-up-to-1_5_4
-  (is (= {:Type "OPeNDAP"
-          :Name "Test"
-          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
-                                  :Name "UMM-S"
-                                  :Version "1.5.4"}
-          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
-                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
-         (vm/migrate-umm {} :service "1.5.3" "1.5.4"
-                         {:Type "OPeNDAP"
-                          :Name "Test"
-                          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
-                                                  :Name "UMM-S"
-                                                  :Version "1.5.3"}
-                          :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
-                                                                     :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}))))
+  (let [source {:Type "OPeNDAP"
+                :Name "Test"
+                :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"
+                                        :Name "UMM-S"
+                                        :Version "1.5.3"}
+                :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                           :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
+        expected {:Type "OPeNDAP"
+                  :Name "Test"
+                  :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"
+                                          :Name "UMM-S"
+                                          :Version "1.5.4"}
+                  :ServiceOptions {:SupportedReformattings [{:SupportedInputFormat "NETCDF-3"
+                                                             :SupportedOutputFormats ["ASCII" "GEOTIFF"]}]}}
+        result (vm/migrate-umm {} :service "1.5.3" "1.5.4" source)]
+    (is (= expected result))
+    (is (= "1.5.4" (get-in result [:MetadataSpecification :Version])))
+    (is (not-any? #(= "NETCDF-4 (OPeNDAP URL)" (:SupportedInputFormat %))
+                  (get-in result [:ServiceOptions :SupportedReformattings])))))
 
 (deftest migrate-1_5_4-netcdf-opendap-url
   (testing "Removal of NETCDF-4 (OPeNDAP URL) format when migrating down"
@@ -724,9 +731,39 @@
     (is (= "OPeNDAP" (:Type migrated)) "Type should remain OPeNDAP after migration")
     (is (= (:Type source) (:Type migrated)) "Type should not change during migration")))
 
+(deftest type-preservation-test
+  (let [source (load-service-file "v1.5.4/Service_v1.5.4.json")
+        migrated (vm/migrate-umm {} :service "1.5.4" "1.5.3" source)]
+    (is (= "OPeNDAP" (:Type source)) "Source Type should be OPeNDAP")
+    (is (= "OPeNDAP" (:Type migrated)) "Type should remain OPeNDAP after migration")
+    (is (= (:Type source) (:Type migrated)) "Type should not change during migration")))
+
+(defn update-service-options-1_5_4->1_5_3
+  [service-options]
+  (if service-options
+    (update service-options :SupportedReformattings
+            (fn [reformattings]
+              (vec (remove #(= "NETCDF-4 (OPeNDAP URL)" (:SupportedInputFormat %)) reformattings))))
+    service-options))
+
+(defmethod interface/migrate-umm-version [:service "1.5.4" "1.5.3"]
+  [_context umm-s & _]
+  (-> umm-s
+      (update :ServiceOptions update-service-options-1_5_4->1_5_3)
+      (dissoc :MetadataSpecification)
+      (m-spec/update-version :service "1.5.3")))
+
+(deftest type-preservation-test
+  (let [source (load-service-file "v1.5.4/Service_v1.5.4.json")
+        migrated (vm/migrate-umm {} :service "1.5.4" "1.5.3" source)]
+    (is (= "OPeNDAP" (:Type source)) "Source Type should be OPeNDAP")
+    (is (= "OPeNDAP" (:Type migrated)) "Type should remain OPeNDAP after migration")
+    (is (= (:Type source) (:Type migrated)) "Type should not change during migration")))
+
 (comment
 
  (core/validate-metadata
   :service "application/vnd.nasa.cmr.umm+json; version=1.2"
-  (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S1200245793-EDF_OPS_v1.2.json")))))
-  ; (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S10000000-TEST_ORNL_WCS_v1.2.json"))))
+  (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S1200245793-EDF_OPS_v1.2.json"))))
+  ; (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/S10000000-TEST_ORNL_WCS_v1.2.json")))
+)
