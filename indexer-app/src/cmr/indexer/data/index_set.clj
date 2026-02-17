@@ -419,6 +419,7 @@
           :collection-data-type-lowercase m/string-field-mapping
           :collection-progress            m/string-field-mapping
           :collection-progress-lowercase  m/string-field-mapping
+          :collection-progress-active     m/bool-field-mapping
 
           ;; Temporal date range
           :start-date                     m/date-field-mapping

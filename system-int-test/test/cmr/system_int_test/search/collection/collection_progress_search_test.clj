@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
@@ -46,3 +47,45 @@
 
         "invalid value returns empty"
         [] "INVALID" nil))))
+
+(deftest search-collection-progress-active-filter
+  "Tests the non-operational collection filter feature flag behavior."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:CollectionProgress "ACTIVE"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:CollectionProgress "PLANNED"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:CollectionProgress "COMPLETE"}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:CollectionProgress "DEPRECATED"}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:CollectionProgress "NOT PROVIDED"}))
+        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {:CollectionProgress "PREPRINT"}))
+        coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 7 {:CollectionProgress "INREVIEW"}))
+        coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 8 {:CollectionProgress "SUPERSEDED"}))]
+
+    (index/wait-until-indexed)
+
+    (testing "flag OFF (default) - all 8 collections returned"
+      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
+                     (search/find-refs :collection {})))
+
+    (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! true))
+
+    (testing "flag ON, no params - only active collections returned (excludes PLANNED, DEPRECATED, PREPRINT, INREVIEW)"
+      (d/refs-match? [coll1 coll3 coll5 coll8]
+                     (search/find-refs :collection {})))
+
+    (testing "flag ON + include-non-operational=true - all 8 collections returned"
+      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
+                     (search/find-refs :collection {:include-non-operational "true"})))
+
+    (testing "flag ON + include-non-operational=false - only active collections returned"
+      (d/refs-match? [coll1 coll3 coll5 coll8]
+                     (search/find-refs :collection {:include-non-operational "false"})))
+
+    (testing "flag ON + explicit collection-progress=PLANNED - PLANNED returned (no synthetic filter injected)"
+      (d/refs-match? [coll2]
+                     (search/find-refs :collection {:collection-progress "PLANNED"})))
+
+    (testing "flag ON + collection-progress=PLANNED + include-non-operational=false - empty (PLANNED is non-operational)"
+      (d/refs-match? []
+                     (search/find-refs :collection {:collection-progress "PLANNED"
+                                                    :include-non-operational "false"})))
+
+    (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! false))))

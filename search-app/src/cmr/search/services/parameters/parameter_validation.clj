@@ -703,7 +703,8 @@
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
-                                         :simplify-shapefile :cloud-hosted :standard-product])]
+                                         :simplify-shapefile :cloud-hosted :standard-product
+                                         :include-non-operational])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (string/lower-case value)))
