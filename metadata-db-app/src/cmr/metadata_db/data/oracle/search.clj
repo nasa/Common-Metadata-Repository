@@ -29,7 +29,7 @@
 
 (def concept-type->columns
   "A map of concept type to the columns for that type in the database."
- (merge 
+ (merge
   {:granule (into common-columns
                   [:provider_id :parent_collection_id :delete_time :granule_ur])
    :collection (into common-columns
@@ -79,7 +79,7 @@
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [concept-type providers params]
-  (if (or (every? :small providers) 
+  (if (or (every? :small providers)
           (single-table-with-providers-concept-type? concept-type)
           (cc/generic-concept? concept-type))
     (dissoc params :concept-type :exclude-metadata)
@@ -247,10 +247,13 @@
      (letfn [(find-batch
                [start-index]
                (j/with-db-transaction
-                 [conn db]
+                 [conn db :isolation :read-committed :read-only? true]
                  (let [conditions [`(>= :id ~start-index)
                                    `(< :id ~(+ start-index batch-size))]
-                       _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                       _ (info (format (str "find-concepts-in-batches: "
+                                            "Finding batch for provider [%s] concept type [%s] "
+                                            "from id >= %s and id < %s using read-only transaction "
+                                            "with read committed isolation level.")
                                        provider-id
                                        (name concept-type)
                                        start-index
@@ -262,6 +265,14 @@
                                               (from table)
                                               (where (cons `and conditions))))
                        batch-result (su/query db stmt)]
+                   (info (format (str "find-concepts-in-batches: "
+                                      "Found %d results in batch for provider [%s] concept type "
+                                      "[%s] from id >= %s and id < %s.")
+                                 (count batch-result)
+                                 provider-id
+                                 (name concept-type)
+                                 start-index
+                                 (+ start-index batch-size)))
                    (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                          batch-result))))
              (lazy-find
