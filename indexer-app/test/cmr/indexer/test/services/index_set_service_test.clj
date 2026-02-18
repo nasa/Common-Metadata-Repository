@@ -482,3 +482,28 @@
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "COMPLETE"}
                  (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))))
+
+(deftest test-remove-granule-index-from-index-set
+  (let [collection-concept-id "C1234-PROV1"
+        index-name "1_c1234_prov1"
+        initial-index-set {:index-set
+                           {:granule
+                            {:indexes [{:name index-name :number_of_shards 5}]}
+                            :concepts
+                            {:granule
+                             {(keyword collection-concept-id) index-name}}}}
+        expected-index-set {:index-set
+                            {:granule
+                             {:indexes []}
+                             :concepts
+                             {:granule {}}}}
+        result (#'svc/remove-granule-index-from-index-set initial-index-set collection-concept-id)]
+
+    (testing "removes granule index from indexes list"
+      (is (= [] (get-in result [:index-set :granule :indexes]))))
+
+    (testing "removes granule index from concepts map"
+      (is (= {} (get-in result [:index-set :concepts :granule]))))
+
+    (testing "returns expected index-set structure"
+      (is (= expected-index-set result)))))
