@@ -2,6 +2,7 @@
   "Functions to support updating variable fingerprint."
   (:require
     [cmr.bootstrap.embedded-system-helper :as helper]
+    [cmr.bootstrap.api.messages-bulk-index :as msg]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info)]
     [cmr.common.services.errors :as errors]
@@ -50,7 +51,7 @@
 (defn- fingerprint-by-provider
   "Update the fingerprints of variables of the given provider if necessary."
   [system provider]
-  (info "Updating fingerprints of variables for provider" (:provider-id provider))
+  (info (msg/fingerprint-updating (:provider-id provider)))
   (let [db (helper/get-metadata-db-db system)
         {:keys [provider-id]} provider
         params {:concept-type :variable
@@ -65,9 +66,8 @@
                                 (+ num (count batch)))
                               0
                               variable-batches)]
-    (info (format "Updated fingerprints of %d variable(s) for provider %s"
-                  num-variables provider-id))
-    (info (format "Updating fingerprints of variables for provider %s completed." provider-id))))
+    (info (msg/fingerprint-variables num-variables provider-id))
+    (info (msg/fingerprint-complete provider-id))))
 
 (defn- fingerprint-by-provider-id
   "Update the fingerprints of variables for the given provider id if necessary."
@@ -80,10 +80,10 @@
 (defn- fingerprint-all-variables
   "Update the fingerprints of variables of the given provider if necessary."
   [system]
-  (info "Updating fingerprints for all variables.")
+  (info (msg/fingerprint-all-updating))
   (doseq [provider (helper/get-providers system)]
     (fingerprint-by-provider system provider))
-  (info "Updating fingerprints for all variables completed."))
+  (info (msg/fingerprint-all-complete)))
 
 (defn fingerprint-variables
   "Update the fingerprints of variables specified by the given params if necessary."
