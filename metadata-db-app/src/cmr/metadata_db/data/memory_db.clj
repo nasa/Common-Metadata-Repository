@@ -298,8 +298,7 @@
              (lazy-find [start-index]
                (when (< start-index (count sorted-concepts))
                  (let [batch (find-batch start-index)]
-                   (if (empty? batch)
-                     nil
+                   (when (not (empty? batch))
                      (cons batch (lazy-seq (lazy-find (+ start-index batch-size))))))))]
        (lazy-find start-index)))))
 
