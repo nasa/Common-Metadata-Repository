@@ -22,7 +22,6 @@
   (:import
    (clojure.lang ExceptionInfo)))
 
-
 (defn add-searchable-generic-types
   "Add the list of supported generic document types to a list of fixed searchable
    concept types presumable from searchable-concept-types.
@@ -32,13 +31,13 @@
         filtered-pipeline-documents (cond
                                       (= es-config/gran-elastic-name es-cluster-name)
                                       (into {} (for [[k v] approved-pipeline-documents
-                                            :when (.startsWith (name k) "granule")]
-                                        [k v]))
+                                                     :when (.startsWith (name k) "granule")]
+                                                 [k v]))
 
                                       (= es-config/elastic-name es-cluster-name)
                                       (into {} (for [[k v] approved-pipeline-documents
-                                            :when (not (.startsWith (name k) "granule"))]
-                                        [k v]))
+                                                     :when (not (.startsWith (name k) "granule"))]
+                                                 [k v]))
 
                                       :else (throw (Exception. (es-config/invalid-elastic-cluster-name-msg es-cluster-name))))]
     (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
@@ -134,8 +133,8 @@
                                     (not (nil? generated-updated-granule-concepts)))
                              (do
                                (info "Generated updated granule concepts = " generated-updated-granule-concepts
-                                      " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
-                                      " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
+                                     " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
+                                     " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
                                (assoc-in generated-concepts [:granule] (merge generated-updated-granule-concepts requested-updated-granule-concepts)))
                              generated-concepts)]
     {:id (:id index-set)
@@ -235,10 +234,10 @@
         non-gran-index-keys-to-extract (set/difference (set (keys inner-combined-index-set)) (set gran-index-keys))
         non-gran-outer-map-index-set (select-keys inner-combined-index-set non-gran-index-keys-to-extract)
         non-gran-index-set-without-concepts (-> non-gran-outer-map-index-set
-                                         (dissoc :concepts)
-                                         (assoc :name (:name inner-combined-index-set)
-                                                :id (:id inner-combined-index-set)
-                                                :create-reason (:create-reason inner-combined-index-set)))
+                                                (dissoc :concepts)
+                                                (assoc :name (:name inner-combined-index-set)
+                                                       :id (:id inner-combined-index-set)
+                                                       :create-reason (:create-reason inner-combined-index-set)))
         non-gran-concepts-map-index-set (select-keys combined-concepts-map (set/difference (set (keys combined-concepts-map)) (set gran-index-keys)))
         non-gran-index-set (assoc non-gran-index-set-without-concepts :concepts non-gran-concepts-map-index-set)]
 
@@ -502,13 +501,19 @@
 
 (defn- remove-granule-index-from-index-set
   "Removes the separate granule index for the given collection from the index set. Validates the
-  collection index is listed in the index-set."
+  collection index is listed in the index-set.
+  Returns the updated given index-set."
   [index-set collection-concept-id]
-  (validate-granule-index-exists index-set collection-concept-id)
-  (update-in index-set [:index-set :granule :indexes]
-             (fn [indexes]
-               (remove #(= collection-concept-id (index-name->concept-id (:name %)))
-                       indexes))))
+  (let [_ (validate-granule-index-exists index-set collection-concept-id)
+        ;; remove granule index from the :granule key indexes details
+        index-set (update-in index-set [:index-set :granule :indexes]
+                             (fn [indexes]
+                               (remove #(= collection-concept-id (index-name->concept-id (:name %)))
+                                       indexes)))
+        coll-base-name (keyword (index-name->concept-id collection-concept-id))
+        ;; remove granule index from concepts list
+        index-set (update-in index-set [:index-set :concepts :granule] dissoc coll-base-name)]
+    index-set))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
@@ -524,21 +529,21 @@
              (format "Cannot rebalance [%s] while its related indexes are being resharded."
                      concept-id)))
         gran-index-set (-> gran-index-set
-                      (update-in
-                       [:index-set :granule :rebalancing-collections]
-                       add-rebalancing-collection concept-id)
-                      (update-in
-                       [:index-set :granule :rebalancing-targets]
-                       assoc concept-id target)
-                      (update-in
-                       [:index-set :granule :rebalancing-status]
-                       assoc concept-id "IN_PROGRESS")
-                      ((fn [gran-index-set]
-                         (if (= "small-collections" target)
-                           (do
-                             (validate-granule-index-exists gran-index-set concept-id)
-                             gran-index-set)
-                           (add-new-granule-index-to-index-set gran-index-set concept-id)))))]
+                           (update-in
+                            [:index-set :granule :rebalancing-collections]
+                            add-rebalancing-collection concept-id)
+                           (update-in
+                            [:index-set :granule :rebalancing-targets]
+                            assoc concept-id target)
+                           (update-in
+                            [:index-set :granule :rebalancing-status]
+                            assoc concept-id "IN_PROGRESS")
+                           ((fn [gran-index-set]
+                              (if (= "small-collections" target)
+                                (do
+                                  (validate-granule-index-exists gran-index-set concept-id)
+                                  gran-index-set)
+                                (add-new-granule-index-to-index-set gran-index-set concept-id)))))]
     ;; Update the index set. This will create the new collection indexes as needed.
     (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
     (update-index-set context es-config/gran-elastic-name gran-index-set)))
@@ -546,30 +551,44 @@
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
   [context index-set-id concept-id]
-  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
-        target (get-in gran-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
+  (let [old-gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
+        target (get-in old-gran-index-set [:index-set :granule :rebalancing-targets (keyword concept-id)])
         _ (info (format "Finalizing rebalancing granules for collection [%s] to target [%s]."
                         concept-id target))
         _ (rebalancing-collections/validate-target target concept-id)
-        gran-index-set (as-> gran-index-set index-set
-                        (update-in
-                          index-set
-                          [:index-set :granule :rebalancing-collections]
-                          remove-rebalancing-collection concept-id)
-                        (update-in
-                          index-set
-                          [:index-set :granule :rebalancing-targets]
-                          dissoc (keyword concept-id))
-                        (update-in
-                         index-set
-                         [:index-set :granule :rebalancing-status]
-                         dissoc (keyword concept-id))
-                        (if (= "small-collections" target)
-                          (remove-granule-index-from-index-set index-set concept-id)
-                          index-set))]
-    ;; Update the index set. This will create the new collection indexes as needed.
-    (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
-    (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs gran-index-set))))
+        new-gran-index-set (as-> old-gran-index-set index-set
+                             (update-in
+                              index-set
+                              [:index-set :granule :rebalancing-collections]
+                              remove-rebalancing-collection concept-id)
+                             (update-in
+                              index-set
+                              [:index-set :granule :rebalancing-targets]
+                              dissoc (keyword concept-id))
+                             (update-in
+                              index-set
+                              [:index-set :granule :rebalancing-status]
+                              dissoc (keyword concept-id))
+                             (if (= "small-collections" target)
+                               (remove-granule-index-from-index-set index-set concept-id)
+                               index-set))
+        es-store (indexer-util/context->es-store context es-config/gran-elastic-name)]
+    (try
+      ;; Update the index set. This will create the new collection indexes as needed.
+      (validate-requested-index-set context es-config/gran-elastic-name new-gran-index-set true)
+      (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs new-gran-index-set))
+
+      ;; Delete the separate index for this collection when moving back into small collections index
+      (when (= "small-collections" target)
+        (let [collection-key (keyword concept-id)
+              old-separate-index (get-in old-gran-index-set [:index-set :concepts :granule collection-key])]
+          (if old-separate-index
+            (es/delete-index es-store old-separate-index)
+            (warn (format "No separate index found for [%s] in old index-set; skipping deletion." concept-id)))))
+      (catch Exception e
+        (error e (format "Failed to finalize rebalancing for [%s] -> [%s]" concept-id target))
+        (errors/throw-service-error :internal-error
+                                    (format "Failed to finalize rebalancing for [%s]; see server logs." concept-id))))))
 
 (defn update-collection-rebalancing-status
   "Update the collection rebalancing status."
@@ -705,14 +724,14 @@
         current-target (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         _ (when-not current-target
             (errors/throw-service-error
-              :not-found
-              (format "The index [%s] is not being resharded." index)))
+             :not-found
+             (format "The index [%s] is not being resharded." index)))
         current-status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
         _ (when-not current-status
             (errors/throw-service-error
-              :internal-error
-              (format
-                "The status of resharding index [%s] is not found." index)))
+             :internal-error
+             (format
+              "The status of resharding index [%s] is not found." index)))
         updated-index-set (if-not (= current-status "COMPLETE")
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
@@ -732,13 +751,13 @@
          :reshard-index updated-target
          :reshard-status updated-status}
         (errors/throw-service-error
-          :internal-error
-          (format
-            "The status of resharding index [%s] is not found." index)))
+         :internal-error
+         (format
+          "The status of resharding index [%s] is not found." index)))
       (errors/throw-service-error
-        :not-found
-        (format
-          "The index [%s] is not being resharded." index)))))
+       :not-found
+       (format
+        "The index [%s] is not being resharded." index)))))
 
 (defn- validate-resharding-complete
   "Validate that resharding has completed successfully for the given index "
@@ -808,8 +827,8 @@
         concept-type (get-concept-type-for-index index-set index)
         _ (when-not concept-type
             (errors/throw-service-error
-              :not-found
-              (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
+             :not-found
+             (format "Index [%s] does not exist in elastic cluster [%s]." index elastic-name)))
         target-index-name (get-in index-set [:index-set concept-type :resharding-targets (keyword index)])
         es-store (indexer-util/context->es-store context elastic-name)
         prefix-id (get-in index-set [:index-set :id])
@@ -837,20 +856,19 @@
         (errors/throw-service-error :internal-error
                                     (format "Failed to rollback resharding for [%s]; see server logs." index))))))
 
-
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]
   (let [{:keys [index-name]} (config/idx-cfg-for-index-sets es-config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
-                             (indexer-util/context->es-store context es-config/gran-elastic-name)
-                             index-name
-                             "_doc")
+                            (indexer-util/context->es-store context es-config/gran-elastic-name)
+                            index-name
+                            "_doc")
         {:keys [index-name]} (config/idx-cfg-for-index-sets es-config/elastic-name)
         non-gran-index-set-ids (es/get-index-set-ids
-                                 (indexer-util/context->es-store context es-config/elastic-name)
-                                 index-name
-                                 "_doc")]
+                                (indexer-util/context->es-store context es-config/elastic-name)
+                                index-name
+                                "_doc")]
     ;; delete indices assoc with index-set
     (doseq [id gran-index-set-ids]
       (delete-index-set context (str id) es-config/gran-elastic-name))
