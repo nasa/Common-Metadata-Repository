@@ -91,6 +91,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [OPeNDAP service URL](#c-has-opendap-url)
     * [Cloud Hosted](#c-cloud-hosted)
     * [Standard Product](#c-standard-product)
+    * [Include Non-Operational](#c-include-non-operational)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -2373,6 +2374,16 @@ The `cloud_hosted` parameter can be set to "true" or "false". When true, the res
 The `standard_product` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have `StandardProduct` element being true or collections that don't have `StandardProduct` element set and have been tagged with `gov.nasa.eosdis.standardproduct`.
 
     curl "%CMR-ENDPOINT%/collections?standard_product=true"
+
+#### <a name="c-include-non-operational"></a> Include non-operational collections.
+
+The `include_non_operational` parameter controls whether collections with a non-operational `CollectionProgress` value (`PLANNED`, `DEPRECATED`, `PREPRINT`, `INREVIEW`) are included in results. When the feature flag `enable-non-operational-collection-filter` is enabled server-side, these collections are excluded by default unless opted out.
+
+* `true` — include all collections regardless of `CollectionProgress` (opt out of the filter)
+* `false` — restrict results to operational collections only (`ACTIVE`, `COMPLETE`, `NOT PROVIDED`, `SUPERSEDED`, and collections with no `CollectionProgress` set)
+* `unset` (default) — behavior is determined by the server-side feature flag
+
+      curl "%CMR-ENDPOINT%/collections?include_non_operational=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
