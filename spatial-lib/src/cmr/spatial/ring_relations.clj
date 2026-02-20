@@ -2,6 +2,7 @@
   "Contains functions on rings that are common to cartesian and geodetic rings."
   (:require
    [clojure.math.combinatorics :as combo]
+   [cmr.spatial.arc :as arc]
    [cmr.spatial.arc-line-segment-intersections :as asi]
    [cmr.spatial.cartesian-ring :as cr]
    [cmr.spatial.geodetic-ring :as gr]
@@ -202,7 +203,13 @@
                  (:segments line))))
 
 (defn self-intersections
-  "Returns the rings self intersections"
+  "Returns the ring's self intersections.
+
+   Each item returned is:
+   {:type  :proper-crossing | :vertex-touch
+    :i1    <segment index>
+    :i2    <segment index>
+    :point <Point>}"
   [ring]
   (let [lines (segments ring)
         ;; Finds the indexes of the lines in the list to test intersecting together.
@@ -218,6 +225,15 @@
                                   (combo/combinations (range (count lines)) 2))]
     (mapcat (fn [[n1 n2]]
               (let [a1 (nth lines n1)
-                    a2 (nth lines n2)]
-                (asi/intersections a1 a2)))
+                    a2 (nth lines n2)
+                    pts (asi/intersections a1 a2)]
+                (map (fn [p]
+                       (let [touch? (or (arc/endpoint-touch? a1 p)
+                                        (arc/endpoint-touch? a2 p))
+                             typ (if touch? :vertex-touch :proper-crossing)]
+                         {:type typ
+                          :i1 n1
+                          :i2 n2
+                          :point p}))
+                     pts)))
             line-test-indices)))

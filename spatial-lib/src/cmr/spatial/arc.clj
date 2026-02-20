@@ -401,6 +401,78 @@
   [arc lat lon-west lon-east]
   (seq (lat-segment-intersections arc lat lon-west lon-east)))
 
+(def ^:const ^double ARC_INTERSECTION_EPS_RAD
+  "Angular tolerance in radians"
+  1.0e-10)
+
+(def ^:const ^double ENDPOINT_EPS_T
+  "Tolerance in param-space for endpoint classification"
+  1.0e-9)
+
+(defn- clamp
+  ^double [^double x ^double lo ^double hi]
+  (cond
+    (< x lo) lo
+    (> x hi) hi
+    :else x))
+
+(defn- unit-vec
+  "Convert a Point (using cached radians) to a 3D unit vector as a double-array [x y z]."
+  ^doubles [^Point p]
+  (let [lon (double (.lon-rad p))
+        lat (double (.lat-rad p))
+        cos-lat (cos lat)]
+    (double-array
+      [(* cos-lat (cos lon))
+       (* cos-lat (sin lon))
+       (sin lat)])))
+
+(defn- dot3
+  ^double [^doubles a ^doubles b]
+  (+ (* (aget a 0) (aget b 0))
+     (* (aget a 1) (aget b 1))
+     (* (aget a 2) (aget b 2))))
+
+(defn- ang
+  "Angular distance (radians) between two points on the unit sphere."
+  ^double [^Point p1 ^Point p2]
+  (let [^doubles v1 (unit-vec p1)
+        ^doubles v2 (unit-vec p2)
+        d (clamp (dot3 v1 v2) -1.0 1.0)]
+    (acos (double d))))
+
+(defn arc-contains-point?
+  "True if candidate point lies on the finite great-circle arc between endpoints.
+   Uses angle-sum test; assumes non-antipodal endpoints."
+  ([^Arc arc ^Point p]
+   (arc-contains-point? arc p ARC_INTERSECTION_EPS_RAD))
+  ([^Arc arc ^Point p ^double eps-rad]
+   (let [a (:west-point arc)
+         b (:east-point arc)
+         ab (ang a b)
+         ap (ang a p)
+         pb (ang p b)]
+     ;; p is on the segment if ap + pb == ab (within tolerance)
+     (<= (abs (- (+ ap pb) ab)) eps-rad))))
+
+(defn arc-t
+  "Parameter t in [0,1] locating p along the arc from west-point (t=0) to east-point (t=1).
+   Only meaningful if arc-contains-point? is true."
+  ^double [^Arc arc ^Point p]
+  (let [a (:west-point arc)
+        b (:east-point arc)
+        ab (ang a b)]
+    (if (zero? ab)
+      0.0
+      (/ (ang a p) ab))))
+
+(defn endpoint-touch?
+  "True if p lies very near an endpoint in parameter space."
+  [^Arc arc ^Point p]
+  (let [t (arc-t arc p)]
+    (or (<= t ENDPOINT_EPS_T)
+        (>= t (- 1.0 ENDPOINT_EPS_T)))))
+
 (defn great-circle-equivalency-applicable?
   "Checks if special case for both arcs having the same great circle is applicable."
   [^Arc a1 ^Arc a2]
@@ -422,7 +494,10 @@
   "Special case arc intersections for both arcs having the same great circle"
   [a1 a2]
   (let [points (set (concat (arc->points a1) (arc->points a2)))]
-    (filterv #(point-within-arc-bounding-rectangles? % a1 a2) points)))
+    (->> points
+         (filterv #(point-within-arc-bounding-rectangles? % a1 a2))
+         (filterv #(and (arc-contains-point? a1 %)
+                        (arc-contains-point? a2 %))))))
 
 (defn- arc-mbrs-intersect?
   "Returns true if any of the arc mbrs intersect"
@@ -444,14 +519,19 @@
           ;; defining the great circle planes.
           intersection-vector (v/cross-product pv1 pv2)
           intersection-point1 (c/vector->point intersection-vector)
-          point1-within (point-within-arc-bounding-rectangles? intersection-point1 a1 a2)
           intersection-point2 (p/antipodal intersection-point1)
-          point2-within (point-within-arc-bounding-rectangles? intersection-point2 a1 a2)]
-      ;; Return the intersection points that are covered by bounding rectangles from both arcs
-      (cond
-        (and point1-within point2-within) [intersection-point1 intersection-point2]
-        point1-within [intersection-point1]
-        point2-within [intersection-point2]))))
+          candidates (cond-> []
+                       true (conj intersection-point1)
+                       true (conj intersection-point2))]
+      (->> candidates
+           ;; Return the intersection points that are covered by bounding rectangles from both arcs
+           ;; Keep this MBR filter first as it is computationally cheap
+           (filter #(point-within-arc-bounding-rectangles? % a1 a2))
+           ;; Enforce finite-arc containment on both arcs to avoid false positives on "near misses"
+           (filter #(and (arc-contains-point? a1 %)
+                         (arc-contains-point? a2 %)))
+           vec))))
+
 
 (defn intersections
   "Returns a list of the points where the two arcs intersect."

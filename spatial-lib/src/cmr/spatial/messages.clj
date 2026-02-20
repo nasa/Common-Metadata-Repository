@@ -78,10 +78,19 @@
   "Polygon boundary was not closed. The last point must be equal to the first point.")
 
 (defn ring-self-intersections
-  "Takes a list of points where the ring intersects itself"
+  "Takes a list of ring self-intersection records:
+   {:type :proper-crossing|:vertex-touch, :point Point, :i1 int, :i2 int}"
   [intersections]
-  (format "The polygon boundary intersected itself at the following points: %s"
-          (string/join "," (map point->human-readable intersections))))
+  (let [fmt (fn [{:keys [type point i1 i2]}]
+              (format "%s %s (segments %d,%d)"
+                      (case type
+                        :proper-crossing "crossing at"
+                        :vertex-touch "touch at"
+                        (str type " at"))
+                      (point->human-readable point)
+                      i1 i2))]
+    (format "The polygon boundary intersected itself at the following points: %s"
+            (string/join "," (map fmt intersections)))))
 
 (defn ring-contains-both-poles
   []
