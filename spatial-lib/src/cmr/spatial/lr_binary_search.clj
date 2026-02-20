@@ -264,7 +264,13 @@
          (do
            (warn "Use mbr from one of the points in the polygon because lr is not found "
                  (pr-str polygon))
-           (m/point->mbr (-> polygon :rings first :points first))))))))
+           ;; Get first point - handle both polygon and ring
+           (let [first-point (if (:rings polygon)
+                               ;; It's a polygon - get first point of first ring
+                               (-> polygon :rings first :points first)
+                               ;; It's a ring - get first point directly
+                               (-> polygon :points first))]
+             (m/point->mbr first-point))))))))
 
 (comment
  (require '[cmr.spatial.kml :as kml])

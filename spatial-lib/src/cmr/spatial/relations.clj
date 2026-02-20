@@ -17,7 +17,9 @@
    cmr.spatial.line_string.LineString
    cmr.spatial.mbr.Mbr
    cmr.spatial.point.Point
-   cmr.spatial.polygon.Polygon))
+   cmr.spatial.polygon.Polygon
+   cmr.spatial.relations.ShapeIntersections
+   cmr.spatial.relations.ShapePredicate))
 
 (defprotocol SpatialRelations
   "Defines functions for determining relations between different spatial areas."
@@ -318,3 +320,23 @@
       ;; Shape is the second argument so that the polymorphic protocol dispatch can be used
       ;; on the first argument.
       (f (d/calculate-derived other-shape) shape))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Java Interop API
+;; Provides access to Java intersection implementations for use in ES plugin
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn java-shape->intersects-fn
+  "Creates an intersection function from a Java shape (Point, Mbr, etc.).
+   Returns a Java ShapePredicate that tests if another Java shape intersects.
+   
+   This is intended for use in the ES spatial plugin where working with Java
+   shapes directly avoids the overhead of converting to/from Clojure records.
+   
+   Example:
+     (let [java-point (cmr.spatial.shape.Point. 10.0 20.0)
+           predicate (java-shape->intersects-fn java-point)
+           other-point (cmr.spatial.shape.Point. 10.0 20.0)]
+       (.intersects predicate other-point)) ;; => true"
+  [java-shape]
+  (ShapeIntersections/createIntersectsFn java-shape))

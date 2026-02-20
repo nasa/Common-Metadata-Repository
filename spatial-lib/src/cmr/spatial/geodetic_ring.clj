@@ -7,7 +7,7 @@
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [primitive-math])
-  (:import cmr.spatial.arc.Arc))
+  (:import))
 
 (primitive-math/use-primitive-operators)
 
@@ -44,7 +44,9 @@
    ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
-   external-points])
+   external-points
+   ;; Cached Java ring for intersection operations
+   java-ring])
 
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
@@ -81,27 +83,13 @@
                               " point. Ring: " (pr-str ring) " point: " (pr-str point)))))))
 
 (defn covers-point?
-  "Determines if a ring covers the given point. The algorithm works by counting the number of times
-  an arc between the point and a known external point crosses the ring. An even count means the point
-  is external. An odd count means the point is inside the ring."
-  [ring point]
-  ;; The pre check is necessary for rings which might contain both north and south poles
-  {:pre [(> (count (:external-points ring)) 0)]}
-
-  (or (and (:contains-north-pole ring) (p/is-north-pole? point))
-      (and (:contains-south-pole ring) (p/is-south-pole? point))
-      ;; Only do real intersection if the mbr covers the point.
-      (when (mbr/geodetic-covers-point? (:mbr ring) point)
-        (if ((:point-set ring) point)
-          true ; The point is actually one of the rings points
-          ;; otherwise we'll do the real intersection algorithm
-          (let [external-point (choose-external-point ring point)
-                ;; Create the test arc
-                crossing-arc (a/arc point external-point)
-                intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)]
-            (or (odd-long? (count intersections))
-                ;; if the point itself is one of the intersections then the ring covers it
-                (intersections point)))))))
+  "Determines if a ring covers the given point."
+  [ring ^cmr.spatial.point.Point point]
+  ;; Use cached Java ring if available, otherwise create on-the-fly
+  (let [java-ring (or (:java-ring ring)
+                      (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring))))
+        java-point (cmr.spatial.shape.Point. (.lon point) (.lat point))]
+    (.coversPoint java-ring java-point)))
 
 (defn- arcs->course-rotation-direction
   "Calculates the rotation direction of the arcs of a ring. Will be one of :clockwise,
@@ -121,10 +109,10 @@
   (let [courses (loop [courses (transient []) arcs arcs]
                   (if (empty? arcs)
                     (persistent! courses)
-                    (let [^Arc a (first arcs)]
+                    (let [a (first arcs)]
                       (recur (-> courses
-                                 (conj! (.initial_course a))
-                                 (conj! (.ending_course a)))
+                                 (conj! (:initial-course a))
+                                 (conj! (:ending-course a)))
                              (rest arcs)))))
         ;; Add the first turn angle on again to complete the turn
         courses (conj courses (first courses))]
@@ -134,7 +122,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->GeodeticRing (mapv p/with-geodetic-equality points) nil nil nil nil nil nil nil))
+  (->GeodeticRing (mapv p/with-geodetic-equality points) nil nil nil nil nil nil nil nil))
 
 (defn contains-both-poles?
   "Returns true if a ring contains both the north pole and the south pole"
@@ -190,12 +178,12 @@
   (or (.mbr ring)
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
-            br (reduce (fn [br ^Arc arc]
-                         (let [mbr1 (.mbr1 arc)
+            br (reduce (fn [br arc]
+                         (let [mbr1 (:mbr1 arc)
                                br (if br
                                     (mbr/union br mbr1)
                                     mbr1)
-                               mbr2 (.mbr2 arc)]
+                               mbr2 (:mbr2 arc)]
                            (if mbr2
                              (mbr/union br mbr2)
                              br)))
@@ -235,4 +223,5 @@
             (assoc ring :arcs (ring->arcs ring))
             (ring->pole-containment ring)
             (assoc ring :mbr (ring->mbr ring))
-            (assoc ring :external-points (ring->external-points ring))))))
+            (assoc ring :external-points (ring->external-points ring))
+            (assoc ring :java-ring (cmr.spatial.internal.ring.GeodeticRing/createRing (vec (:points ring))))))))

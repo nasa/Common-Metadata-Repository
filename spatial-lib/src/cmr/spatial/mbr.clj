@@ -10,7 +10,9 @@
    [cmr.spatial.validation :as sv]
    [cmr.spatial.messages :as msg]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
-  (:import cmr.spatial.point.Point))
+  (:import
+   cmr.spatial.point.Point
+   [cmr.spatial.geometry MbrIntersections]))
 
 (primitive-math/use-primitive-operators)
 
@@ -299,40 +301,23 @@
 
 (defn non-crossing-intersects-br?
   "Specialized version of intersects-br? for two mbrs that don't cross the antimeridian.
-  Returns true if the mbr intersects the other bounding rectangle."
-  [coord-sys ^Mbr m1 ^Mbr m2]
+   Returns true if the mbr intersects the other bounding rectangle."
+  [coord-sys ^cmr.spatial.mbr.Mbr m1 ^cmr.spatial.mbr.Mbr m2]
   (pj/assert (not (or (crosses-antimeridian? m1)
                       (crosses-antimeridian? m2))))
-  (let [w1 (.west m1)
-        n1 (.north m1)
-        e1 (.east m1)
-        s1 (.south m1)
-        w2 (.west m2)
-        n2 (.north m2)
-        e2 (.east m2)
-        s2 (.south m2)
-        m1-touches-north? (double-approx= n1 90.0 0.0000001)
-        m1-touches-south? (double-approx= s1 -90.0 0.0000001)
-        m2-touches-north? (double-approx= n2 90.0 0.0000001)
-        m2-touches-south? (double-approx= s2 -90.0 0.0000001)]
-    (or (and (range-intersects? w1 e1 w2 e2)
-             (range-intersects? s1 n1 s2 n2))
-        (and (= coord-sys :geodetic)
-             (or (and m1-touches-north? m2-touches-north?)
-                 (and m1-touches-south? m2-touches-south?))))))
+  ;; Delegate to Java implementation
+  (let [java-mbr1 (cmr.spatial.shape.Mbr. (.west m1) (.north m1) (.east m1) (.south m1))
+        java-mbr2 (cmr.spatial.shape.Mbr. (.west m2) (.north m2) (.east m2) (.south m2))]
+    (MbrIntersections/nonCrossingIntersects (name coord-sys) java-mbr1 java-mbr2)))
 
 (defn intersects-br?
   "Returns true if the mbr intersects the other bounding rectangle"
-  [coord-sys ^Mbr mbr ^Mbr other-br]
-  (if (and (not (crosses-antimeridian? mbr)) (not (crosses-antimeridian? other-br)))
-    ;; optimized case for mbrs that don't cross the antimeridian
-    (non-crossing-intersects-br? coord-sys mbr other-br)
-    (let [[m1-east m1-west] (split-across-antimeridian mbr)
-          [m2-east m2-west] (split-across-antimeridian other-br)]
-      (or (non-crossing-intersects-br? coord-sys m1-east m2-east)
-          (and m2-west (non-crossing-intersects-br? coord-sys m1-east m2-west))
-          (and m1-west (non-crossing-intersects-br? coord-sys m1-west m2-east))
-          (and m1-west m2-west (non-crossing-intersects-br? coord-sys m1-west m2-west))))))
+  [coord-sys ^cmr.spatial.mbr.Mbr mbr ^cmr.spatial.mbr.Mbr other-br]
+  ;; Delegate to Java implementation which handles all edge cases
+  (let [java-mbr1 (cmr.spatial.shape.Mbr. (.west mbr) (.north mbr) (.east mbr) (.south mbr))
+        java-mbr2 (cmr.spatial.shape.Mbr. (.west other-br) (.north other-br) 
+                                         (.east other-br) (.south other-br))]
+    (MbrIntersections/mbrsIntersect (name coord-sys) java-mbr1 java-mbr2)))
 
 (defn intersections
   "Returns the intersection of the two minimum bounding rectangles. This could return multiple mbrs
