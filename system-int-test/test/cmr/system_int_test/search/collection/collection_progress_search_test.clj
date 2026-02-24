@@ -65,6 +65,14 @@
       (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
                      (search/find-refs :collection {})))
 
+    (testing "flag OFF + include-non-operational=false - all 8 collections returned (param ignored when flag off)"
+      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
+                     (search/find-refs :collection {:include-non-operational "false"})))
+
+    (testing "flag OFF + include-non-operational=true - all 8 collections returned (param ignored when flag off)"
+      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
+                     (search/find-refs :collection {:include-non-operational "true"})))
+
     (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! true))
 
     (testing "flag ON, no params - only active collections returned (excludes PLANNED, DEPRECATED, PREPRINT, INREVIEW)"
