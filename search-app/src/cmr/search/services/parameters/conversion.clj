@@ -272,12 +272,15 @@
 
 (defmethod common-params/parameter->condition :include-non-operational
   [_context _concept-type _param value _options]
-  ;; When include-non-operational=false, restrict results to active collections only.
-  ;; When true or unset, return all collections.
-  (let [v (when value (string/lower-case value))]
-    (if (= "false" v)
-      (cqm/boolean-condition :collection-progress-active true)
-      cqm/match-all)))
+  ;; Only apply filtering when the feature flag is enabled.
+  ;; When include-non-operational=false AND flag is on, restrict results to active collections only.
+  ;; When true or unset or flag is off, return all collections.
+  (if (config/enable-non-operational-collection-filter)
+    (let [v (when value (string/lower-case value))]
+      (if (= "false" v)
+        (cqm/boolean-condition :collection-progress-active true)
+        cqm/match-all))
+    cqm/match-all))
 
 (def collection-only-params
   "List of parameters that are valid in collection query models, but not in granule query models."
