@@ -686,7 +686,7 @@
                            assoc (keyword index) target-index)
                           (update-in
                            [:index-set concept-type :resharding-status]
-                           assoc (keyword index) "IN_PROGRESS"))]
+                           assoc (keyword index) (get indexer-util/reshard-status-states :IN_PROGRESS)))]
 
     ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
     (es/create-copy-of-index context elastic-name index target-index num-shards)
@@ -735,16 +735,19 @@
              :internal-error
              (format
               "The status of resharding index [%s] is not found." index)))
-        ;; TODO update to compare doc count numbers between old and new index as a requirement for the status to be COMPLETE
-        updated-index-set (if-not (= current-status "COMPLETE")
+        updated-index-set (if-not (= current-status (:COMPLETE indexer-util/reshard-status-states))
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
                               (if reindexing-still-in-progress
                                 index-set
-                                (do
-                                  (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
-                                  ;; getting the most updated index-set
+                                ;; reindexing has supposedly finished, but need to check if all docs were copied over to new index
+                                (let [reshard-status (if (es-helper/doc-count-matches? conn index current-target)
+                                                       ;; docs match so can be considered complete
+                                                       (:COMPLETE indexer-util/reshard-status-states)
+                                                       (:FAILED indexer-util/reshard-status-states))]
+                                  (update-resharding-status context index-set-id index reshard-status elastic-name)
+                                  ;; returning the most updated index-set
                                   (index-set-util/get-index-set context elastic-name index-set-id))))
                             ;; or use existing index-set
                             index-set)]
@@ -767,7 +770,7 @@
   "Validate that resharding has completed successfully for the given index "
   [context index-set-id index elastic-name]
   (let [status (get-reshard-status context index-set-id index {:elastic_name elastic-name})]
-    (when-not (= (:reshard-status status) "COMPLETE")
+    (when-not (= (:reshard-status status) (:COMPLETE indexer-util/reshard-status-states))
       (errors/throw-service-error
        :bad-request
        (format "Index [%s] has not completed resharding" index)))))

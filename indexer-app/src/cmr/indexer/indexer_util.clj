@@ -6,6 +6,12 @@
    [cmr.elastic-utils.config :as es-util-config]
    [cmr.indexer.data.index-set :as idx-set]))
 
+(def reshard-status-states
+  "The enum values of the reshard status states during the reshard process."
+  {:IN_PROGRESS "IN_PROGRESS"
+   :COMPLETE "COMPLETE"
+   :FAILED "FAILED"})
+
 (defn context->es-store
   "Returns the elastic store object in the context."
   [context es-cluster-name]

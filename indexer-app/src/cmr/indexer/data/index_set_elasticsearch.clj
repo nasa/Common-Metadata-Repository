@@ -206,7 +206,9 @@
                                  {:throw-exceptions true})
             mapping-resp-body (if (and (= 200 (:status mapping-resp)) (not (empty? (:body mapping-resp))))
                                 (cheshire/parse-string (:body mapping-resp) true)
-                                (error (format "error trying to get mapping of index %s" orig-index)))
+                                (errors/throw-service-error
+                                  :internal-error
+                                  (format "error trying to get mapping of index %s" orig-index)))
             mappings (get-in mapping-resp-body [(keyword orig-index) :mappings])
 
             ;; get orig index settings
@@ -214,7 +216,9 @@
             settings-resp (client/get settings-url {:throw-exceptions true})
             settings-resp-body (if (and (= 200 (:status settings-resp)) (not (empty? (:body settings-resp))))
                                  (cheshire/parse-string (:body settings-resp) true)
-                                 (error (format "error trying to get settings of index %s" orig-index)))
+                                 (errors/throw-service-error
+                                   :internal-error
+                                   (format "error trying to get settings of index %s" orig-index)))
             settings (get-in settings-resp-body [(keyword orig-index) :settings])
             ;; update the setting's shard count and cherry pick in specific configs
             updated-settings {:number_of_shards (str shard-count)

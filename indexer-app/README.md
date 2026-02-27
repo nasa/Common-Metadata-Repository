@@ -208,6 +208,9 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
 
+Expected return status options:
+- IN_PROGRESS, COMPLETE, FAILED
+
 ```
 curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic
 ```

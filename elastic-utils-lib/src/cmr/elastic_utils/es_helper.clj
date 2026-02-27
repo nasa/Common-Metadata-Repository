@@ -8,7 +8,7 @@
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.log :refer [info]]
+   [cmr.common.log :refer [info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
@@ -160,3 +160,33 @@
       (errors/throw-service-error
         :internal-error
         (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
+
+(defn doc-count-matches?
+  "Returns boolean whether doc counts match between two indexes"
+  [conn index1 index2]
+  ;; refreshes the indexes to get the most accurate doc counts
+
+  (let [index1-refresh-url (str (rest/url-with-path conn index1 "_refresh"))
+        index1-refresh-url (rest/index-refresh-url conn index1)
+        _ (http/post index1-refresh-url
+                     (merge (.http-opts conn)
+                            {:accept :json}))
+        index1-count-url (rest/url-with-path conn index1 "_count")
+        index1-count-resp (rest/get conn index1-count-url)
+        _ (info ">>>> index1 count resp = " index1-count-resp)
+        index1-count (get-in index1-count-resp [:count])
+        _ (info ">>>> index1-count = " index1-count)
+
+        index2-refresh-url (str (rest/url-with-path conn index2 "_refresh"))
+        _ (http/post index2-refresh-url
+                     (merge (.http-opts conn)
+                            {:accept :json}))
+        index2-count-url (rest/url-with-path conn index2 "_count")
+        index2-count-resp (rest/get conn index2-count-url)
+        index2-count (get-in index2-count-resp [:count])
+        _ (info ">>>> index2-count = " index2-count)
+
+        matches (= index1-count index2-count)
+        _ (when-not matches
+            (warn (format "Index %s and Index %s did not have the same doc count." index1 index2)))]
+    matches))

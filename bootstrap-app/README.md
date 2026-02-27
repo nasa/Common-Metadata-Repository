@@ -126,6 +126,8 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
 
+Expected reshard status options:
+- IN_PROGRESS, COMPLETE, FAILED
 ```
 curl -i \
 	-H "Accept: application/json" \

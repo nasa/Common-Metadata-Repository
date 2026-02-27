@@ -80,10 +80,10 @@
       (let [result (es-helper/migrate-index conn source-index target-index)]
         (when (:error result)
           (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "IN_PROGRESS" elastic-name)
+      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:IN_PROGRESS indexer-util/reshard-status-states) elastic-name)
       (catch Throwable e
         (error e (msg/migrate-index-error source-index target-index (.getMessage e)))
-        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
+        (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:FAILED indexer-util/reshard-status-states) elastic-name)
         (throw e)))))
 
 (defn index-granules-for-collection
