@@ -2,7 +2,6 @@
   "Methods for accessing the dev system control api."
   (:require
    [clj-http.client :as client]
-   [clojure.edn :as edn]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
@@ -40,7 +39,7 @@
                                      :body (pr-str code)))]
     (assert (= 200 (:status response)) (:body response))
     (when (= 200 (:status response))
-      (edn/read-string (:body response)))))
+      (read-string (:body response)))))
 
 (defmacro eval-in-dev-sys
   "Evaluates the code given in dev system. Call this with code like you'd use with a macro. Returns

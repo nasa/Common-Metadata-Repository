@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
   (:require
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.xml.parse :as p]
    [cmr.common.xml.simple-xpath :refer [select]]
@@ -350,9 +349,9 @@
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (string/blank? unit-str)))]
       (if (= (string/lower-case unit-str) "bytes")
-        {:Size (/ (edn/read-string (string/replace num-str "," "")) 1000.0)
+        {:Size (/ (read-string (string/replace num-str "," "")) 1000.0)
          :Unit "KB"}
-        {:Size (edn/read-string (string/replace num-str "," ""))
+        {:Size (read-string (string/replace num-str "," ""))
          :Unit (if (=  "na" unit-str)
                  "NA"
                  (-> unit-str string/trim string/upper-case first (str "B")))}))))
@@ -460,4 +459,4 @@
          (re-find #"([\d\.]+)" value)
          (second value)
          (when value
-           (edn/read-string value)))))
+           (read-string value)))))

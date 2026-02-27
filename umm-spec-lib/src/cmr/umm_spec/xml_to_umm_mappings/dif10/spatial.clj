@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.spatial
   "Defines mappings from DIF 10 XML spatial elements into UMM records"
   (:require
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
@@ -83,9 +82,9 @@
                                  [(umm-c/map->HorizontalDataGenericResolutionType
                                     (util/remove-nil-keys
                                       {:YDimension (when-let [y (value-of geo-coor-sys "LatitudeResolution")]
-                                                     (edn/read-string y))
+                                                     (read-string y))
                                        :XDimension (when-let [x (value-of geo-coor-sys "LongitudeResolution")]
-                                                     (edn/read-string x))
+                                                     (read-string x))
                                        :Unit (value-of geo-coor-sys "GeographicCoordinateUnits")}))])})
         (parse-data-resolution data-res)))))
 
@@ -109,9 +108,9 @@
       {:HorizontalDatumName (value-of geodetic-model "Horizontal_DatumName")
        :EllipsoidName (value-of geodetic-model "Ellipsoid_Name")
        :SemiMajorAxis (when-let [axis (value-of geodetic-model "Semi_Major_Axis")]
-                        (edn/read-string axis))
+                        (read-string axis))
        :DenominatorOfFlatteningRatio (when-let [denom (value-of geodetic-model "Denominator_Of_Flattening_Ratio")]
-                                       (edn/read-string denom))}))))
+                                       (read-string denom))}))))
 
 (defn- parse-horizontal-spatial-domains
   "Parses the dif10 elements needed for HorizontalSpatialDomain values."

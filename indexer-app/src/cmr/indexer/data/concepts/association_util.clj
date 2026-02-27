@@ -1,8 +1,7 @@
 (ns cmr.indexer.data.concepts.association-util
-  "Contains functions to parse and convert generic associations to a map structure
+  "Contains functions to parse and convert generic associations to a map structure 
   for each generic concept type."
   (:require
-   [clojure.edn :as edn]
    [cmr.common.concepts :as cc]
    [cmr.common.util :as util]))
 
@@ -27,7 +26,7 @@
                      assoc-revision-id
                      source-revision-id)
         revision-id (if (string? revision-id)
-                      (edn/read-string revision-id)
+                      (read-string revision-id)
                       revision-id)]
     (-> association
         (dissoc :source-concept-identifier :source-revision-id

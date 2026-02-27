@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info
   "Functions for parsing UMM collection citation records out of ISO 19115-2 XML documents."
   (:require
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
@@ -22,7 +21,7 @@
                                     (re-pattern "FormatType:|FormatDescription:")))
               [_href _href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in format [:attrs :xlink/href]) ""))]
         :when block-id]
-    {:block-id (edn/read-string block-id)
+    {:block-id (read-string block-id)
      :Format format-name
      :FormatType (:FormatType specification-map)
      :FormatDescription (:FormatDescription specification-map)}))
@@ -40,15 +39,15 @@
               TotalCollectionFileSize (when (= href-type "FileDistributionInformation_TotalCollectionFileSize")
                                         (value-of transfer-option "gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))]]
     (util/remove-nil-keys
-     {:block-id (edn/read-string block-id)
+     {:block-id (read-string block-id)
       :Media (when (= href-type "FileDistributionInformation_Media")
                [(value-of transfer-option "gmd:MD_DigitalTransferOptions/gmd:offLine/gmd:MD_Medium/gmd:name/gmd:MD_MediumNameCode/@codeListValue")])
       :AverageFileSize (when AverageFileSize
-                         (edn/read-string AverageFileSize))
+                         (read-string AverageFileSize))
       :AverageFileSizeUnit (when (= href-type "FileDistributionInformation_AverageFileSize")
                              (char-string-value transfer-option "gmd:MD_DigitalTransferOptions/gmd:unitsOfDistribution"))
       :TotalCollectionFileSize (when TotalCollectionFileSize
-                                 (edn/read-string TotalCollectionFileSize))
+                                 (read-string TotalCollectionFileSize))
       :TotalCollectionFileSizeUnit (when (= href-type "FileDistributionInformation_TotalCollectionFileSize")
                                      (char-string-value transfer-option "gmd:MD_DigitalTransferOptions/gmd:unitsOfDistribution"))})))
 
@@ -59,7 +58,7 @@
   (for [distributor distributors
         :let [[_href _href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
         :when block-id]
-    {:block-id (edn/read-string block-id)
+    {:block-id (read-string block-id)
      :Fees (char-string-value distributor "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees")
      :Description (char-string-value distributor "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:orderingInstructions")}))
 
@@ -131,10 +130,10 @@
       :FormatType FormatType
       :FormatDescription FormatDescription
       :AverageFileSize (when AverageFileSize
-                         (edn/read-string AverageFileSize))
+                         (read-string AverageFileSize))
       :AverageFileSizeUnit AverageFileSizeUnit
       :TotalCollectionFileSize (when TotalCollectionFileSize
-                                 (edn/read-string TotalCollectionFileSize))
+                                 (read-string TotalCollectionFileSize))
       :TotalCollectionFileSizeUnit TotalCollectionFileSizeUnit
       :Description Description})))
 

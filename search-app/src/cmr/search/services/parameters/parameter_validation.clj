@@ -4,7 +4,6 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clj-time.core :as t]
-   [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
@@ -726,10 +725,7 @@
   (some #(when-not (and (integer? %) (< 0 %)) %)
         (map #(if (and (not (sequential? %))
                        (not (clojure.string/blank? %)))
-                (try
-                  (Long/parseLong (str %))
-                  (catch Exception _
-                    "some-string"))
+                (read-string %)
                 ;; not returning % here because of the case when the only non-integer value is nil.
                 "some-string")
              string-values)))

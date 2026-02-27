@@ -31,7 +31,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.quartz-scheduler/quartz "2.4.0"]
+                 [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]

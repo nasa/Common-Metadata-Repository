@@ -2,7 +2,6 @@
   "Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore methods for OracleStore"
   (:require
    [clj-time.coerce :as cr]
-   [clojure.edn :as edn]
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
    [cmr.common.concepts :as common-concepts]
@@ -701,7 +700,7 @@
   ;; find a full list of types (param 2) in common-lib/src/cmr/common/concepts.clj
   (let [c (get-concept db :service-association "PROV1" "SA1200000040-CMR")
         raw_meta_edn (:metadata c)
-        meta (edn/read-string raw_meta_edn)]
+        meta (read-string raw_meta_edn)]
     meta)
 
   ;; or here is a variable-association example:
@@ -709,5 +708,5 @@
         _ (println c)
         raw-meta-edn (:metadata c)
         _ (println "raw meta:\n" raw-meta-edn)
-        meta (edn/read-string raw-meta-edn)]
+        meta (read-string raw-meta-edn)]
     meta))

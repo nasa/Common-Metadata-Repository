@@ -131,6 +131,5 @@
       copy-of-body-handler
       req-log/add-body-hashes
       (shapefile/shapefile-upload default-error-format)
-      req-log/add-time-stamp
       ;;Last in line, but really first for requests
-      common-routes/wrap-disable-read-eval))
+      req-log/add-time-stamp))

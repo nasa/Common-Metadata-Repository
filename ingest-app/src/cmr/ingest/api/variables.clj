@@ -1,7 +1,6 @@
 (ns cmr.ingest.api.variables
   "Variable ingest functions in support of the ingest API."
   (:require
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -55,7 +54,7 @@
                 (api-core/set-user-id request-context headers)
                 (assoc :coll-concept-id coll-concept-id
                        :coll-revision-id (when coll-revision-id
-                                           (edn/read-string coll-revision-id)))))
+                                           (read-string coll-revision-id)))))
            ;; Log the ingest attempt
            _ (info (format "Ingesting variable %s from client %s"
                            (api-core/concept->loggable-string concept-with-user-id)

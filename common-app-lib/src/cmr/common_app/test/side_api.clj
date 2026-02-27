@@ -1,19 +1,18 @@
 (ns cmr.common-app.test.side-api
   "A namespace that creates a web server for controlling a system under test. It allows the system to be
   stopped for easy testing in CI."
-  (:require
-   [compojure.route :as route]
-   [compojure.core :refer [POST routes]]
-   [clj-http.client :as client]
-   [ring.middleware.json :as ring-json]
-   [ring.middleware.params :as params]
-   [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.keyword-params :as keyword-params]
-   [cmr.common.log :refer (debug)]
-   [cmr.common.api.errors :as errors]
-   [cmr.common.config :refer [defconfig]]
-   [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.api.web-server :as web]))
+  (:require [compojure.route :as route]
+            [compojure.core :refer [POST routes]]
+            [clj-http.client :as client]
+            [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
+            [cmr.common.log :refer (debug)]
+            [cmr.common.api.errors :as errors]
+            [cmr.common.config :refer [defconfig]]
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.common.api.web-server :as web]))
 
 (declare side-api-port set-side-api-port!)
 (defconfig side-api-port
