@@ -3,6 +3,7 @@
    configurations including checking for proper error handling."
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
@@ -77,7 +78,7 @@
                                    (assoc :provider-id "CMR"))
           expected-payload {"XYZ" "XYZ" "allow-regridding" true}
           ;; pull out data we need latter
-          metadata (read-string (:metadata variable-association))
+          metadata (edn/read-string (:metadata variable-association))
           metadata-withpayload (str (assoc metadata :data expected-payload))
           var-concept-id (:variable-concept-id metadata)
           ;; put it back together
@@ -99,7 +100,7 @@
             stored-concept (:concept stored-response)
             stored-payload (-> stored-concept
                                :metadata
-                               read-string
+                               edn/read-string
                                :data)]
         (is (= 200 (:status stored-response)) "HTTP Status is wrong, expected 200")
         (is (= expected-payload stored-payload) "Payload missmatch")))))
