@@ -237,6 +237,13 @@
           (assoc-in [:headers RESPONSE_X_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response handler) request))))
 
+(defn wrap-disable-read-eval
+  "Disables *read-eval*"
+  [handler]
+  (fn [request]
+    (binding [*read-eval* false]
+      (handler request))))
+
 (defn add-security-header-response-handler
   "Adds a number of security related response headers."
   [handler]
