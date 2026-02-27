@@ -2,6 +2,7 @@
  "Defines mappings from DIF10 XML into UMM records"
  (:require
    [camel-snake-kebab.core :as csk]
+   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
@@ -166,7 +167,7 @@
                                                      :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})
                                :TemporalResolution
                                 (if-let [value (value-of temporal "Temporal_Info/Temporal_Resolution/Value")]
-                                  {:Value (read-string value)
+                                  {:Value (edn/read-string value)
                                    :Unit (value-of temporal "Temporal_Info/Temporal_Resolution/Unit")}
                                   (when-let [unit (value-of temporal "Temporal_Info/Temporal_Resolution/Unit")]
                                     {:Unit unit}))})]
