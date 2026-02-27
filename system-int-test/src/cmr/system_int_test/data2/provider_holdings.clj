@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.data2.provider-holdings
   "Contains helper functions for converting provider holdings into the expected map of parsed results."
   (:require
-   [cmr.common.xml :as cx]
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
-   [clojure.set :as set]))
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [cmr.common.xml :as cx]))
 
 (defmulti parse-provider-holdings
   "Returns the parsed provider holdings based on the given format and result string"
@@ -58,4 +59,4 @@
            {:provider-id provider-id
             :entry-title entry-title
             :concept-id concept-id
-            :granule-count (read-string granule-count)}))))
+            :granule-count (edn/read-string granule-count)}))))
