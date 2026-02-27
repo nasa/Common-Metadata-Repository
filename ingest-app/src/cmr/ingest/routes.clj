@@ -53,6 +53,6 @@
       common-routes/pretty-print-response-handler
       params/wrap-params
       req-log/add-body-hashes
-
+      req-log/add-time-stamp
       ;; Last in line, but really first for request as they process in reverse
-      req-log/add-time-stamp))
+      common-routes/wrap-disable-read-eval))
