@@ -21,7 +21,7 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 [org.quartz-scheduler/quartz "2.3.2"]
+                 [org.quartz-scheduler/quartz "2.4.0"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
