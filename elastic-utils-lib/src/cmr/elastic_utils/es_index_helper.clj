@@ -20,7 +20,7 @@
   (esi/exists? conn index-name))
 
 (defn update-mapping
-  "Register or modify specific mapping definition"
+  "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."
   [conn index-name-or-names _type-name opts]
   (let [{:keys [mapping]} opts]
     (rest/put conn

@@ -79,7 +79,7 @@
           (info "Index" index-name "does not exist so it will be created")
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
 
-      ;; if the index is not a resharding index and alias does not exist, add it
+      ;; if the index is not a resharding index and alias does not exist, add an alias for it
       (when-not (or (esi-helper/alias-exists? conn index-name)
                     (re-matches resharding-index-pattern index-name))
         (esi/create-index-alias conn index-name (esi-helper/index-alias index-name) true))
@@ -191,6 +191,48 @@
         status (:status result)]
     (when-not (= status 200)
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
+
+(defn create-copy-of-index
+  "Creates a copy of the given index with same mapping but allows for shard count change."
+  [context es-cluster-name orig-index new-index shard-count]
+  (let [conn (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :conn])]
+    (if (esi-helper/exists? conn new-index)
+      (error (format "Attempted to create a copy of %s index with new index name %s, but %s already exists. Aborting copy attempt."
+                    orig-index new-index new-index))
+      ;;else
+      (let [;; get orig index mapping
+            mapping-url (format "%s/_mapping" (esr/index-url conn orig-index))
+            mapping-resp (client/get mapping-url
+                                 {:throw-exceptions true})
+            mapping-resp-body (if (and (= 200 (:status mapping-resp)) (not (empty? (:body mapping-resp))))
+                                (cheshire/parse-string (:body mapping-resp) true)
+                                (error (format "error trying to get mapping of index %s" orig-index)))
+            mappings (get-in mapping-resp-body [(keyword orig-index) :mappings])
+
+            ;; get orig index settings
+            settings-url (format "%s/_settings" (esr/index-url conn orig-index))
+            settings-resp (client/get settings-url {:throw-exceptions true})
+            settings-resp-body (if (and (= 200 (:status settings-resp)) (not (empty? (:body settings-resp))))
+                                 (cheshire/parse-string (:body settings-resp) true)
+                                 (error (format "error trying to get settings of index %s" orig-index)))
+            settings (get-in settings-resp-body [(keyword orig-index) :settings])
+            ;; update the setting's shard count and cherry pick in specific configs
+            updated-settings {:number_of_shards (str shard-count)
+                              :number_of_replicas (get-in settings [:index :number_of_replicas])
+                              :max_result_window (get-in settings [:index :max_result_window])
+                              :refresh_interval (get-in settings [:index :refresh_interval])}]
+
+          ;; create new index with same orig mapping but updated shard count
+          (try
+            (info "Now creating empty index: " new-index " which is copy of index:" orig-index)
+            (esi-helper/create conn new-index {:settings updated-settings
+                                               :mappings mappings})
+            (catch clojure.lang.ExceptionInfo e
+              (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
+                    error-message (:error body)]
+                (error (format "error creating %s elastic index to copy %s, elastic reported error: %s"
+                               new-index orig-index error-message))
+                (throw e))))))))
 
 (comment
   (es-helper/doc-get "index-sets" "set" "1" {"fields" "index-set-id,index-set-name,index-set-request"}))

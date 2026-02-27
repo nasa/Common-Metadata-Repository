@@ -687,7 +687,10 @@
                           (update-in
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) "IN_PROGRESS"))]
-    ;; this will create the new index with the new shard count
+
+    ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
+    (es/create-copy-of-index context elastic-name index target-index num-shards)
+    ;; Update the index-set and all the indexes with changes
     (update-index-set context elastic-name new-index-set)))
 
 (defn update-resharding-status
@@ -732,6 +735,7 @@
              :internal-error
              (format
               "The status of resharding index [%s] is not found." index)))
+        ;; TODO update to compare doc count numbers between old and new index as a requirement for the status to be COMPLETE
         updated-index-set (if-not (= current-status "COMPLETE")
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
