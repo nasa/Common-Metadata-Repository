@@ -21,13 +21,13 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.13.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.2"]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.20.0"
+                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.18.6"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.20.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.18.6"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-api-versioning "0.1.1-SNAPSHOT"]

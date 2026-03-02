@@ -79,7 +79,7 @@
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
              :dev {:dependencies [[criterium "0.4.4"]
-                                  [cheshire "5.12.0"]
+                                  [cheshire "5.13.0"]
                                   [org.clojure/tools.reader "1.3.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]

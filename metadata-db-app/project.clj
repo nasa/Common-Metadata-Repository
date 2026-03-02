@@ -2,7 +2,7 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.13.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [commons-io "2.18.0"] ;; used by migration
