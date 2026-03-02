@@ -30,6 +30,12 @@
   (when (string/blank? es-cluster-name)
     (errors/throw-service-error :bad-request "Empty elastic cluster name is not allowed.")))
 
+(defn- validate-reindex-task-id-not-blank
+  "Validates that the Elasticsearch reindex task id given is not blank."
+  [reindex-task-id]
+  (when (string/blank? reindex-task-id)
+    (errors/throw-service-error :bad-request "Empty reindex task id is not allowed.")))
+
 (defn- validate-index-exists
   "Validates that the Elasticsearch index given exists in the cluster given."
   [context index es-cluster-name]
@@ -49,18 +55,23 @@
         _ (validate-index-exists context index es-cluster-name)
         num-shards-str (:num_shards params)
         _ (validate-num-shards num-shards-str)
-        dispatcher (api-util/get-dispatcher context params :migrate-index)]
+        ;; TODO temporarily force params to be synchronous for now -- need to remove dispatcher eventually since it's not needed at all
+        params (assoc params :synchronous true)
+        dispatcher (api-util/get-dispatcher context params :migrate-index)
+        reindex-task-id (service/start-reshard-index context dispatcher index (parse-long num-shards-str) es-cluster-name)]
 
-    (service/start-reshard-index context dispatcher index (parse-long num-shards-str) es-cluster-name)
     {:status 200
-     :body {:message (msg/resharding-started index)}}))
+     :body {:message (msg/resharding-started index)
+            :task-id reindex-task-id}}))
 
 (defn get-status
   "Gets the status of resharding an index."
   [context index params]
-  (let [es-cluster-name (:elastic_name params)]
+  (let [es-cluster-name (:elastic_name params)
+        reindex-task-id (:task_id params)]
     (validate-es-cluster-name-not-blank es-cluster-name)
-    (service/reshard-status context index es-cluster-name)))
+    (validate-reindex-task-id-not-blank reindex-task-id)
+    (service/reshard-status context index es-cluster-name reindex-task-id)))
 
 (defn finalize
   "Completes resharding the index"

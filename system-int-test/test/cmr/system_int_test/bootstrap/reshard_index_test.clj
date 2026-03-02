@@ -222,7 +222,12 @@
 
       ;; check orig index is deleted from index-set and elastic
       (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:granule :indexes])))
-      (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name))))))
+      (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name)))
+
+
+      ;; TODO reshard the resharded again to make sure it works with any index name
+
+      )))
 
 (deftest reshard-rollback-test
   (let [gran-elastic-name "gran-elastic"
@@ -260,7 +265,7 @@
            resp (index/update-index-set index-set 1)]
        (is (= 200 (:status resp)))
        (is (= 200 (:status (bootstrap/rollback-reshard-index services-index {:elastic-name elastic-name}))))))
-    (testing "Rollback reshard"
+    (testing "Rollback reshard for granule"
       (let [;; create collection
             coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
             ;; create granule

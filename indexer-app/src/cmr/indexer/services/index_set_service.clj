@@ -192,9 +192,12 @@
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
+  (info ">>>>> INSIDE index-requested-index-set given index-set = " index-set)
   (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
+        _ (info ">>>> indexes-w-added-concepts = " indexes-w-added-concepts)
         index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
+        _ (info ">>>> INSIDE index-requested-index-set index-set-w-es-index-names= " index-set-w-es-index-names)
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
                                                util/string->gzip-base64)
@@ -295,7 +298,9 @@
 (defn update-index-set
   "Updates indices in the index set"
   [context es-cluster-name index-set]
+  (info ">>>> iNSIDE update-index-set")
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
+        _ (info ">>>>> indices-w-config = " indices-w-config)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
@@ -634,6 +639,11 @@
   (when (string/blank? elastic-name)
     (errors/throw-service-error :bad-request "Empty elastic name is not allowed")))
 
+(defn- validate-reindex-task-id
+  [reindex-task-id]
+  (when (string/blank? reindex-task-id)
+    (errors/throw-service-error :bad-request "Empty reindex task id is not allowed")))
+
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
@@ -688,6 +698,8 @@
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) (get indexer-util/reshard-status-states :IN_PROGRESS)))]
 
+    (info ">>>> new-index-set in start resharding = " new-index-set)
+
     ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
     (es/create-copy-of-index context elastic-name index target-index num-shards)
     ;; Update the index-set and all the indexes with changes
@@ -718,7 +730,9 @@
   "Get the resharding status for the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
+        reindex-task-id (:task_id params)
         _ (validate-elastic-name elastic-name)
+        _ (validate-reindex-task-id reindex-task-id)
         conn (indexer-util/context->conn context elastic-name)
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)
@@ -735,22 +749,26 @@
              :internal-error
              (format
               "The status of resharding index [%s] is not found." index)))
-        updated-index-set (if-not (= current-status (:COMPLETE indexer-util/reshard-status-states))
+
+        updated-index-set (if (= current-status (:COMPLETE indexer-util/reshard-status-states))
+                            ;; if complete, then just return current index-set
+                            index-set
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
-                            (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
+                            (let [full-reindex-status (es-helper/get-reindex-task-status conn index reindex-task-id)
+                                  completed (:completed full-reindex-status)
+                                  failures (:failures full-reindex-status)]
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
-                              (if reindexing-still-in-progress
+                              (if-not completed
+                                ;; if not completed, then return the index-set as it was
                                 index-set
-                                ;; reindexing has supposedly finished, but need to check if all docs were copied over to new index
-                                (let [reshard-status (if (es-helper/doc-count-matches? conn index current-target)
+                                ;; if completed, check for failures
+                                (let [reshard-status (if (empty? failures)
                                                        ;; docs match so can be considered complete
                                                        (:COMPLETE indexer-util/reshard-status-states)
                                                        (:FAILED indexer-util/reshard-status-states))]
                                   (update-resharding-status context index-set-id index reshard-status elastic-name)
                                   ;; returning the most updated index-set
-                                  (index-set-util/get-index-set context elastic-name index-set-id))))
-                            ;; or use existing index-set
-                            index-set)]
+                                  (index-set-util/get-index-set context elastic-name index-set-id)))))]
 
     (if-let [updated-target (get-in updated-index-set [:index-set concept-type :resharding-targets (keyword index)])]
       (if-let [updated-status (get-in updated-index-set [:index-set concept-type :resharding-status (keyword index)])]

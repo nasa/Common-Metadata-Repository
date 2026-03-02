@@ -34,7 +34,7 @@
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
-   :migrate-index :core-async-dispatcher
+   ;:migrate-index :core-async-dispatcher
    :fingerprint-by-id :synchronous-dispatcher
    :fingerprint-variables :message-queue-dispatcher
    :delete-concepts-from-index-by-id :core-async-dispatcher
@@ -151,11 +151,11 @@
    (if provider-id
      (dispatch/index-generics dispatcher context concept-type provider-id)
      (dispatch/index-generics dispatcher context concept-type))))
-
-(defn migrate-index
-  "Copy the contents of one index into another. Used during resharding."
-  [context dispatcher source-index target-index elastic-name]
-  (dispatch/migrate-index dispatcher context source-index target-index elastic-name))
+;
+;(defn migrate-index
+;  "Copy the contents of one index into another. Used during resharding."
+;  [context dispatcher source-index target-index elastic-name]
+;  (dispatch/migrate-index dispatcher context source-index target-index elastic-name))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
@@ -289,7 +289,9 @@
 
     ;; Copy the contents of the source index to the target index. The dispatcher will handle
     ;; how this is run.
-    (migrate-index context dispatcher index target elastic-name)))
+    ;(migrate-index context dispatcher index target elastic-name)
+    (bulk/migrate-index (:system context) index target elastic-name)
+    ))
 
 (defn finalize-reshard-index
   "Finalizes index resharding."
@@ -310,8 +312,8 @@
 
 (defn reshard-status
   "Returns the resharding status of the given index."
-  [context index elastic-name]
-  (indexer/get-reshard-status context indexer-index-set/index-set-id index elastic-name))
+  [context index elastic-name reindex-task-id]
+  (indexer/get-reshard-status context indexer-index-set/index-set-id index elastic-name reindex-task-id))
 
 (defn rollback-reshard-index
   "Rollback attempted resharding of index due to failures"

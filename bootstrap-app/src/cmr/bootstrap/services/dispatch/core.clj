@@ -67,9 +67,9 @@
     [this context provider-id concept-type concept-ids]
     "Bulk index the concepts given by the concept-ids")
 
-  (migrate-index
-    [this context source-index target-index elastic-name]
-    "Copy the contents of one index into another. Used during resharding.")
+  ;(migrate-index
+  ;  [this context source-index target-index elastic-name]
+  ;  "Copy the contents of one index into another. Used during resharding.")
 
   (delete-concepts-from-index-by-id
     [this context provider-id concept-type concept-ids]

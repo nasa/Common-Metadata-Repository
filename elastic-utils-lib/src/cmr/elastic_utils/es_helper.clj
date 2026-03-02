@@ -131,10 +131,11 @@
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
-    (rest/post-string conn url
-                      {:body (json/encode body)
-                       :content-type "application/json"})))
+        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")
+        resp (rest/post-string conn url
+                               {:body (json/encode body)
+                                :content-type "application/json"})]
+    resp))
 
 (defn- extract-descriptions-from-reindex-resp
   "Pulls out description value from the elastic reindex response."
@@ -147,6 +148,30 @@
          (keep :description)
          (map clojure.string/lower-case))))
 
+(defn get-reindex-task-status
+  "Get the reindex task status and if there were any failures if the task is considered COMPLETE."
+  [conn index reindex-task-id]
+  (try
+    (let [url (rest/url-with-path conn "_tasks" reindex-task-id)
+          resp (rest/get conn url)
+          completed (:completed resp)
+          failures (get-in resp [:response :failures])
+          description (get-in resp [:task :description])
+          index-found-in-description (string/includes? (string/lower-case description) (string/lower-case index))
+          full-status {:completed completed
+                       :failures failures}]
+
+      ;; check if this is the right task id for this index
+      (if-not index-found-in-description
+        (errors/throw-service-error :internal-error (format "Given task id %s is not tracking the given index %s because description in task [%s] did not include the index. Mismatch on task id with index error." reindex-task-id index description)))
+      full-status)
+    (catch Exception e
+      (errors/throw-service-error
+        :internal-error
+        (str "Something went wrong when calling elastic to get reindexing status for index " index " with task id " reindex-task-id ". With exception details: " e)))))
+
+
+;; TODO remove with all the tests updated that rely on this
 (defn reindexing-still-in-progress?
   "Returns boolean of whether elastic is still reindexing the given index."
   [conn index]
@@ -161,32 +186,29 @@
         :internal-error
         (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
 
-(defn doc-count-matches?
-  "Returns boolean whether doc counts match between two indexes"
-  [conn index1 index2]
-  ;; refreshes the indexes to get the most accurate doc counts
-
-  (let [index1-refresh-url (str (rest/url-with-path conn index1 "_refresh"))
-        index1-refresh-url (rest/index-refresh-url conn index1)
-        _ (http/post index1-refresh-url
-                     (merge (.http-opts conn)
-                            {:accept :json}))
-        index1-count-url (rest/url-with-path conn index1 "_count")
-        index1-count-resp (rest/get conn index1-count-url)
-        _ (info ">>>> index1 count resp = " index1-count-resp)
-        index1-count (get-in index1-count-resp [:count])
-        _ (info ">>>> index1-count = " index1-count)
-
-        index2-refresh-url (str (rest/url-with-path conn index2 "_refresh"))
-        _ (http/post index2-refresh-url
-                     (merge (.http-opts conn)
-                            {:accept :json}))
-        index2-count-url (rest/url-with-path conn index2 "_count")
-        index2-count-resp (rest/get conn index2-count-url)
-        index2-count (get-in index2-count-resp [:count])
-        _ (info ">>>> index2-count = " index2-count)
-
-        matches (= index1-count index2-count)
-        _ (when-not matches
-            (warn (format "Index %s and Index %s did not have the same doc count." index1 index2)))]
-    matches))
+;(defn doc-count-matches?
+;  "Returns boolean whether doc counts match between two indexes"
+;  [conn index1 index2]
+;  ;; refreshes the indexes to get the most accurate doc counts
+;
+;  (let [index1-refresh-url (str (rest/url-with-path conn index1 "_refresh"))
+;        index1-refresh-url (rest/index-refresh-url conn index1)
+;        _ (http/post index1-refresh-url
+;                     (merge (.http-opts conn)
+;                            {:accept :json}))
+;        index1-count-url (rest/url-with-path conn index1 "_count")
+;        index1-count-resp (rest/get conn index1-count-url)
+;        index1-count (get-in index1-count-resp [:count])
+;
+;        index2-refresh-url (str (rest/url-with-path conn index2 "_refresh"))
+;        _ (http/post index2-refresh-url
+;                     (merge (.http-opts conn)
+;                            {:accept :json}))
+;        index2-count-url (rest/url-with-path conn index2 "_count")
+;        index2-count-resp (rest/get conn index2-count-url)
+;        index2-count (get-in index2-count-resp [:count])
+;
+;        matches (= index1-count index2-count)
+;        _ (when-not matches
+;            (warn (format "Index %s and Index %s did not have the same doc count." index1 index2)))]
+;    matches))

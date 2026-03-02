@@ -62,14 +62,14 @@
                            :request :index
                            :concept-ids concept-ids}))))
 
-(defn migrate-index
-  "Copy the contents of one index to another. Used during resharding."
-  [this _context source-index target-index elastic-name]
-  (let [channel (:migrate-index-channel this)]
-    (info (msg/async-migrate-index source-index target-index elastic-name))
-    (async/go (>! channel {:source-index source-index
-                           :target-index target-index
-                           :elastic-name elastic-name}))))
+;(defn migrate-index
+;  "Copy the contents of one index to another. Used during resharding."
+;  [this _context source-index target-index elastic-name]
+;  (let [channel (:migrate-index-channel this)]
+;    (info (msg/async-migrate-index source-index target-index elastic-name))
+;    (async/go (>! channel {:source-index source-index
+;                           :target-index target-index
+;                           :elastic-name elastic-name}))))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
@@ -99,8 +99,8 @@
             provider-index-channel
    ;; Channel for processing collections to index.
             collection-index-channel
-   ;; Channel for copying one index to another during resharding
-            migrate-index-channel
+   ;;; Channel for copying one index to another during resharding
+   ;         migrate-index-channel
    ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
             system-concept-channel
    ;; channel for processing bulk index requests by concept-id
@@ -121,7 +121,7 @@
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
    :index-generics (partial not-implemented :index-generics)
-   :migrate-index migrate-index
+   ;:migrate-index migrate-index
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products
    :fingerprint-variables (partial not-implemented :fingerprint-variables)})
@@ -134,7 +134,7 @@
    :collection-db-channel (async/chan 100)
    :provider-index-channel (async/chan 10)
    :collection-index-channel (async/chan 100)
-   :migrate-index-channel (async/chan 10)
+   ;:migrate-index-channel (async/chan 10)
    :system-concept-channel (async/chan 10)
    :concept-id-channel (async/chan 10)
    :virtual-product-channel (async/chan)})
@@ -147,7 +147,7 @@
                            (:collection-db-channel channels)
                            (:provider-index-channel channels)
                            (:collection-index-channel channels)
-                           (:migrate-index-channel channels)
+                           ;(:migrate-index-channel channels)
                            (:system-concept-channel channels)
                            (:concept-id-channel channels)
                            (:virtual-product-channel channels))))
