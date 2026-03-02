@@ -24,7 +24,7 @@
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.2"]
-                 [com.fasterxml.jackson.core/jackson-core "2.20.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.20.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.fasterxml.jackson.core/jackson-databind "2.20.0"]

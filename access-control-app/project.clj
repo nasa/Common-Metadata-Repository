@@ -30,7 +30,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
   :dependencies ~(concat '[[cheshire "5.12.0"]
                            [clj-time "0.15.1"]
-                           [com.fasterxml.jackson.core/jackson-core "2.15.4"]
+                           [com.fasterxml.jackson.core/jackson-core "2.21.1"]
                            [commons-codec/commons-codec "1.11"]
                            [commons-io "2.18.0"]
                            [compojure "1.6.1"
