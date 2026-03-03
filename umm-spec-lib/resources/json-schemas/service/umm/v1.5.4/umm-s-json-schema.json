@@ -484,7 +484,7 @@
     "SupportedFormatTypeEnum": {
      "description": "This element contains a list of file formats supported by the service.",
      "type": "string",
-     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "HDF-EOS5", "NETCDF-3", "NETCDF-4", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML", "PNG24", "BMP", "ZARR", "Shapefile", "Shapefile+zip", "GeoJSON", "COG", "WKT"]
+     "enum": ["HDF4", "HDF5", "HDF-EOS", "HDF-EOS2", "HDF-EOS5", "NETCDF-3", "NETCDF-4", "NETCDF-4 (OPeNDAP URL)", "GEOTIFF", "GEOTIFFINT16", "GEOTIFFFLOAT32", "XML", "ASCII", "BINARY", "ICARTT", "PNG", "JPEG", "GIF", "TIFF", "XLSX", "JSON", "CSV", "KML", "PNG24", "BMP", "ZARR", "Shapefile", "Shapefile+zip", "GeoJSON", "COG", "WKT"]
     },
     "URLType": {
       "type": "object",
@@ -1388,7 +1388,7 @@
         "URL": {
           "description": "The web address of the metadata schema used to validate the service record.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/service/v1.5.3"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/service/v1.5.4"]
         },
         "Name": {
           "description": "The name of the metadata schema.",
@@ -1398,7 +1398,7 @@
         "Version": {
           "description": "The version of the metadata schema.",
           "type": "string",
-          "enum": ["1.5.3"]
+          "enum": ["1.5.4"]
         }
       },
       "required": ["URL", "Name", "Version"]
