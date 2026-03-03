@@ -1939,6 +1939,8 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 Supports ignore_case and pattern matching.
 
+Valid values: ACTIVE, PLANNED, COMPLETE, DEPRECATED, NOT PROVIDED, PREPRINT, INREVIEW, SUPERSEDED
+
   Find collections matching 'collection\_progress' param value
 
      curl "%CMR-ENDPOINT%/collections?collection_progress=ACTIVE"
@@ -1946,6 +1948,10 @@ Supports ignore_case and pattern matching.
   Find collections matching any of the 'collection\_progress' param values
 
      curl "%CMR-ENDPOINT%/collections?collection_progress\[\]=ACTIVE&collection_progress\[\]=PLANNED"
+
+  Find collections with provisional status
+
+     curl "%CMR-ENDPOINT%/collections?collection_progress\[\]=PREPRINT&collection_progress\[\]=INREVIEW"
 
   Find collections using pattern matching
 
