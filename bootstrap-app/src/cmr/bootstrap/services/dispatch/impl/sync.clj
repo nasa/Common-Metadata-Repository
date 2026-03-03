@@ -122,7 +122,6 @@
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
-   ;:migrate-index migrate-index
    :fingerprint-by-id fingerprint-by-id
    :fingerprint-variables fingerprint-variables
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
