@@ -165,163 +165,157 @@
      (search/clear-caches)
      (bootstrap/verify-provider-holdings expected-provider-holdings "After finalize after clear cache"))))
 
-;; TODO Collection lookup in ES is not working
-;(deftest reshard-index-with-collection-updates-test
-;  ;; When a collection is upserted during the reshard process, it should save to both indexes and the index set
-;  ;; should not update the index mapping until the reshard is finalized
-;  (testing "Creating and updating collection during reshard saves to both old and target indexes"
-;    (let [elastic-name "elastic"
-;          coll-index-set-key "collections-v2"
-;          coll-index-name "1_collections_v2"
-;          resharded-coll-index-name (str coll-index-name "_4_shards")
-;          ;; start reshard
-;          start-reshard-resp (bootstrap/start-reshard-index coll-index-name
-;                                                            {:synchronous true :num-shards 2 :elastic-name elastic-name})
-;
-;          _ (println ">>>>> start-reshard-resp for coll = " start-reshard-resp)
-;
-;          ;; check start reshard response
-;          _ (is (= 200 (:status start-reshard-resp)))
-;          _ (is (= (format "Resharding started for index %s" coll-index-name) (:message start-reshard-resp)))
-;          task-id (:task-id start-reshard-resp)
-;
-;          ;; check original index set is still mapped to original target
-;          ;orig-index-set (index/get-index-set-by-id 1)
-;          ;_ (is (= coll-index-name (get-in orig-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
-;
-;          ;; create collection
-;          coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
-;
-;          _ (index/wait-until-indexed)
-;
-;          ;; check coll is found by search with revision 1
-;          found-coll1 (search/retrieve-concept (:concept-id coll1) 1)
-;          _ (is (= 200 (:status found-coll1)))
-;
-;          ;; check coll doc is saved to old index
-;          coll-doc-in-orig-index (es-util/get-doc coll-index-name (:concept-id coll1) elastic-name)
-;          _ (println ">>>>> coll-doc-in-orig-index = " coll-doc-in-orig-index)
-;          coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
-;          _ (is (= coll-doc-in-orig-index-revision-id 1))
+(deftest reshard-index-with-collection-updates-test
+  ;; When a collection is upserted during the reshard process, it should save to both indexes and the index set
+  ;; should not update the index mapping until the reshard is finalized
+  (testing "Creating and updating collection during reshard saves to both old and target indexes"
+    (let [elastic-name "elastic"
+          coll-index-set-key "collections-v2"
+          coll-index-name "1_collections_v2"
+          resharded-coll-index-name (str coll-index-name "_2_shards")
+          ;; start reshard
+          start-reshard-resp (bootstrap/start-reshard-index coll-index-name
+                                                            {:synchronous true :num-shards 2 :elastic-name elastic-name})
 
-          ;;; check coll doc is saved in new index too
-          ;coll-doc-in-new-index (es-util/get-doc resharded-coll-index-name (:concept-id coll1) elastic-name)
-          ;coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-new-index-revision-id 1))
-          ;
-          ;;; update coll
-          ;_ (d/ingest "PROV1" (dc/collection {:abstract "change abstract"}) {:validate-keywords false})
-          ;
-          ;_ (index/wait-until-indexed)
-          ;
-          ;;; check coll is found by search with revision 2
-          ;found-coll1 (search/retrieve-concept (:concept-id coll1) 2)
-          ;_ (is (= 200 (:status found-coll1)))
-          ;
-          ;;; check coll doc is saved to old index with updated revision
-          ;coll-doc-in-orig-index (es-util/get-doc coll-index-name (:concept-id coll1) elastic-name)
-          ;coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-orig-index-revision-id 2))
-          ;
-          ;;; check coll doc is saved in new index too with updated revision
-          ;coll-doc-in-new-index (es-util/get-doc resharded-coll-index-name (:concept-id coll1) elastic-name)
-          ;coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-new-index-revision-id 2))
-          ;
-          ;;; wait until reshard is complete
-          ;_ (bootstrap/wait-for-reshard-complete coll-index-name elastic-name task-id {})
-          ;
-          ;finalize-reshard-resp (bootstrap/finalize-reshard-index coll-index-name {:synchronous true :elastic-name elastic-name})
-          ;
-          ;;; finalize reshard
-          ;_ (is (= {:status 200
-          ;          :message (format "Resharding completed for index %s" coll-index-name)}
-          ;         finalize-reshard-resp))
-          ;
-          ;;; check collection index is mapped to new target
-          ;updated-index-set (index/get-index-set-by-id 1)
-          ;_ (is (= resharded-coll-index-name (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
-          ;
-          ;;; check orig index is deleted from index-set and elastic
-          ;_ (is (not-any? #(= (:name %) coll-index-set-key) (get-in updated-index-set [:collection :indexes])))
-          ;_ (is (not (es-util/index-exists? coll-index-name elastic-name)))
+          ;; check start reshard response
+          _ (is (= 200 (:status start-reshard-resp)))
+          _ (is (= (format "Resharding started for index %s" coll-index-name) (:message start-reshard-resp)))
+          task-id (:task-id start-reshard-resp)
+
+          ;; check original index set is still mapped to original target
+          orig-index-set (index/get-index-set-by-id 1)
+          _ (is (= coll-index-name (get-in orig-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
+
+          ;; create collection
+          coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
+
+          _ (index/wait-until-indexed)
+
+          ;; check coll is found by search with revision 1
+          found-coll1 (search/retrieve-concept (:concept-id coll1) 1)
+          _ (is (= 200 (:status found-coll1)))
+
+          ;; check coll doc is saved to old index
+          coll-doc-in-orig-index (es-util/get-doc coll-index-name (:concept-id coll1) elastic-name)
+          coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
+          _ (is (= coll-doc-in-orig-index-revision-id 1))
+
+          ;; check coll doc is saved in new index too
+          coll-doc-in-new-index (es-util/get-doc resharded-coll-index-name (:concept-id coll1) elastic-name)
+          coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
+          _ (is (= coll-doc-in-new-index-revision-id 1))
+
+          ;; update coll
+          _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :abstract "change abstract"}) {:validate-keywords false})
+
+          _ (index/wait-until-indexed)
+
+          ;; check coll is found by search with revision 2
+          found-coll1 (search/retrieve-concept (:concept-id coll1) 2)
+          _ (is (= 200 (:status found-coll1)))
+
+          ;; check coll doc is saved to old index with updated revision
+          coll-doc-in-orig-index (es-util/get-doc coll-index-name (:concept-id coll1) elastic-name)
+          coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
+          _ (is (= coll-doc-in-orig-index-revision-id 2))
+
+          ;; check coll doc is saved in new index too with updated revision
+          coll-doc-in-new-index (es-util/get-doc resharded-coll-index-name (:concept-id coll1) elastic-name)
+          coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
+          _ (is (= coll-doc-in-new-index-revision-id 2))
+
+          ;; wait until reshard is complete
+          _ (bootstrap/wait-for-reshard-complete coll-index-name elastic-name task-id {})
+
+          finalize-reshard-resp (bootstrap/finalize-reshard-index coll-index-name {:synchronous true :elastic-name elastic-name})
+
+          ;; finalize reshard
+          _ (is (= {:status 200
+                    :message (format "Resharding completed for index %s" coll-index-name)}
+                   finalize-reshard-resp))
+
+          ;; check collection index is mapped to new target
+          updated-index-set (index/get-index-set-by-id 1)
+          _ (is (= resharded-coll-index-name (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
+
+          ;; check orig index is deleted from index-set and elastic
+          _ (is (not-any? #(= (:name %) coll-index-set-key) (get-in updated-index-set [:collection :indexes])))
+          _ (is (not (es-util/index-exists? coll-index-name elastic-name)))
 
 
           ;; RESHARD THE RESHARDED AGAINST TO MAKE SURE IT WORKS WITH ANY INDEX NAME
 
-          ;new-resharded-coll-index (str coll-index-name "_2_shards")
-          ;
-          ;;; start reshard
-          ;start-reshard-resp (bootstrap/start-reshard-index resharded-coll-index-name
-          ;                                                  {:synchronous true :num-shards 2 :elastic-name elastic-name})
-          ;
-          ;;; check start reshard response
-          ;_ (is (= 200 (:status start-reshard-resp)))
-          ;_ (is (= (format "Resharding started for index %s" resharded-coll-index-name) (:message start-reshard-resp)))
-          ;task-id (:task-id start-reshard-resp)
-          ;
-          ;;; check original index set is still mapped to original target
-          ;orig-index-set (index/get-index-set-by-id 1)
-          ;_ (is (= resharded-coll-index-name (get-in orig-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
-          ;
-          ;;; create collection
-          ;coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
-          ;
-          ;_ (index/wait-until-indexed)
-          ;
-          ;;; check coll is found by search with revision 1
-          ;found-coll2 (search/retrieve-concept (:concept-id coll2) 1)
-          ;_ (is (= 200 (:status found-coll2)))
-          ;
-          ;;; check granule doc is saved to old index
-          ;coll-doc-in-orig-index (es-util/get-doc resharded-coll-index-name (:concept-id coll2) elastic-name)
-          ;coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-orig-index-revision-id 1))
-          ;
-          ;;; check coll doc is saved in new index too
-          ;coll-doc-in-new-index (es-util/get-doc resharded-coll-index-name (:concept-id coll2) elastic-name)
-          ;coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-new-index-revision-id 1))
-          ;
-          ;;; update coll2
-          ;_ (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :abstract "change abstract"}) {:validate-keywords false})
-          ;
-          ;_ (index/wait-until-indexed)
-          ;
-          ;;; check coll is found by search with revision 2
-          ;found-coll2 (search/retrieve-concept (:concept-id coll2) 2)
-          ;_ (is (= 200 (:status found-coll2)))
-          ;
-          ;;; check coll doc is saved to old index with updated revision
-          ;coll-doc-in-orig-index (es-util/get-doc resharded-coll-index-name (:concept-id coll2) elastic-name)
-          ;coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-orig-index-revision-id 2))
-          ;
-          ;;; check coll doc is saved in new index too with updated revision
-          ;coll-doc-in-new-index (es-util/get-doc new-resharded-coll-index (:concept-id coll2) elastic-name)
-          ;coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
-          ;_ (is (= coll-doc-in-new-index-revision-id 2))
-          ;
-          ;;; wait until reshard is complete
-          ;_ (bootstrap/wait-for-reshard-complete resharded-coll-index-name elastic-name task-id {})
-          ;
-          ;finalize-reshard-resp (bootstrap/finalize-reshard-index resharded-coll-index-name {:synchronous true :elastic-name elastic-name})
-          ;
-          ;;; finalize reshard
-          ;_ (is (= {:status 200
-          ;          :message (format "Resharding completed for index %s" resharded-coll-index-name)}
-          ;         finalize-reshard-resp))
-          ;
-          ;;; check collection index is mapped to new target
-          ;updated-index-set (index/get-index-set-by-id 1)
-          ;_ (is (= new-resharded-coll-index (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
-          ;]
+          new-resharded-coll-index (str coll-index-name "_5_shards")
+
+          ;; start reshard
+          start-reshard-resp (bootstrap/start-reshard-index resharded-coll-index-name
+                                                            {:synchronous true :num-shards 5 :elastic-name elastic-name})
+
+          ;; check start reshard response
+          _ (is (= 200 (:status start-reshard-resp)))
+          _ (is (= (format "Resharding started for index %s" resharded-coll-index-name) (:message start-reshard-resp)))
+          task-id (:task-id start-reshard-resp)
+
+          ;; check original index set is still mapped to original target
+          orig-index-set (index/get-index-set-by-id 1)
+          _ (is (= resharded-coll-index-name (get-in orig-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
+
+          ;; create collection
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
+
+          _ (index/wait-until-indexed)
+
+          ;; check coll is found by search with revision 1
+          found-coll2 (search/retrieve-concept (:concept-id coll2) 1)
+          _ (is (= 200 (:status found-coll2)))
+
+          ;; check granule doc is saved to old index
+          coll-doc-in-orig-index (es-util/get-doc resharded-coll-index-name (:concept-id coll2) elastic-name)
+          coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
+          _ (is (= coll-doc-in-orig-index-revision-id 1))
+
+          ;; check coll doc is saved in new index too
+          coll-doc-in-new-index (es-util/get-doc new-resharded-coll-index (:concept-id coll2) elastic-name)
+          coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
+          _ (is (= coll-doc-in-new-index-revision-id 1))
+
+          ;; update coll2
+          _ (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :abstract "change abstract"}) {:validate-keywords false})
+
+          _ (index/wait-until-indexed)
+
+          ;; check coll is found by search with revision 2
+          found-coll2 (search/retrieve-concept (:concept-id coll2) 2)
+          _ (is (= 200 (:status found-coll2)))
+
+          ;; check coll doc is saved to old index with updated revision
+          coll-doc-in-orig-index (es-util/get-doc resharded-coll-index-name (:concept-id coll2) elastic-name)
+          coll-doc-in-orig-index-revision-id (get-in coll-doc-in-orig-index [:_source :revision-id])
+          _ (is (= coll-doc-in-orig-index-revision-id 2))
+
+          ;; check coll doc is saved in new index too with updated revision
+          coll-doc-in-new-index (es-util/get-doc new-resharded-coll-index (:concept-id coll2) elastic-name)
+          coll-doc-in-new-index-revision-id (get-in coll-doc-in-new-index [:_source :revision-id])
+          _ (is (= coll-doc-in-new-index-revision-id 2))
+
+          ;; wait until reshard is complete
+          _ (bootstrap/wait-for-reshard-complete resharded-coll-index-name elastic-name task-id {})
+
+          finalize-reshard-resp (bootstrap/finalize-reshard-index resharded-coll-index-name {:synchronous true :elastic-name elastic-name})
+
+          ;; finalize reshard
+          _ (is (= {:status 200
+                    :message (format "Resharding completed for index %s" resharded-coll-index-name)}
+                   finalize-reshard-resp))
+
+          ;; check collection index is mapped to new target
+          updated-index-set (index/get-index-set-by-id 1)
+          _ (is (= new-resharded-coll-index (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
+          ]
 
       ;; check orig index is deleted from index-set and elastic
-      ;(is (not-any? #(= (:name %) resharded-coll-index-name) (get-in updated-index-set [:collection :indexes])))
-      ;(is (not (es-util/index-exists? resharded-coll-index-name elastic-name)))
-
-      ;)))
+      (is (not-any? #(= (:name %) resharded-coll-index-name) (get-in updated-index-set [:collection :indexes])))
+      (is (not (es-util/index-exists? resharded-coll-index-name elastic-name))))))
 
 (deftest reshard-index-with-granule-updates-test
   ;; When a granule is upserted during the reshard process, it should save to both indexes and the index set
