@@ -8,7 +8,12 @@
                   :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time]
                  [clojail "1.0.6"]
-                 [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
+
+                 [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"
+                  :exclusions [com.mchange/c3p0 com.mchange/mchange-commons-java]]
+                 [com.mchange/c3p0 "0.12.0"]
+                 [com.mchange/mchange-commons-java "0.4.0"]
+
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.15.4"]
