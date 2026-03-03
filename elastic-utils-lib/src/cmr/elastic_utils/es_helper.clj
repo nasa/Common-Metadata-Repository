@@ -8,7 +8,7 @@
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.log :refer [info warn]]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
@@ -131,11 +131,10 @@
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
               "dest" {:index target-index}}
-        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")
-        resp (rest/post-string conn url
-                               {:body (json/encode body)
-                                :content-type "application/json"})]
-    resp))
+        url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
+    (rest/post-string conn url
+                      {:body (json/encode body)
+                       :content-type "application/json"})))
 
 (defn- extract-descriptions-from-reindex-resp
   "Pulls out description value from the elastic reindex response."
@@ -149,7 +148,8 @@
          (map clojure.string/lower-case))))
 
 (defn get-reindex-task-status
-  "Get the reindex task status and if there were any failures if the task is considered COMPLETE."
+  "Get the reindex task status and if there were any failures if the task is considered COMPLETE.
+  Returns a map that captures the complete status and if there were any failures."
   [conn index reindex-task-id]
   (try
     (let [url (rest/url-with-path conn "_tasks" reindex-task-id)
@@ -169,46 +169,3 @@
       (errors/throw-service-error
         :internal-error
         (str "Something went wrong when calling elastic to get reindexing status for index " index " with task id " reindex-task-id ". With exception details: " e)))))
-
-
-;; TODO remove with all the tests updated that rely on this
-(defn reindexing-still-in-progress?
-  "Returns boolean of whether elastic is still reindexing the given index."
-  [conn index]
-  (try
-    (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
-          resp (rest/get conn url)
-          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)]
-      ;; if the resp's descriptions still has the index in it, then it is still re-indexing
-      (boolean (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)))
-    (catch Exception e
-      (errors/throw-service-error
-        :internal-error
-        (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
-
-;(defn doc-count-matches?
-;  "Returns boolean whether doc counts match between two indexes"
-;  [conn index1 index2]
-;  ;; refreshes the indexes to get the most accurate doc counts
-;
-;  (let [index1-refresh-url (str (rest/url-with-path conn index1 "_refresh"))
-;        index1-refresh-url (rest/index-refresh-url conn index1)
-;        _ (http/post index1-refresh-url
-;                     (merge (.http-opts conn)
-;                            {:accept :json}))
-;        index1-count-url (rest/url-with-path conn index1 "_count")
-;        index1-count-resp (rest/get conn index1-count-url)
-;        index1-count (get-in index1-count-resp [:count])
-;
-;        index2-refresh-url (str (rest/url-with-path conn index2 "_refresh"))
-;        _ (http/post index2-refresh-url
-;                     (merge (.http-opts conn)
-;                            {:accept :json}))
-;        index2-count-url (rest/url-with-path conn index2 "_count")
-;        index2-count-resp (rest/get conn index2-count-url)
-;        index2-count (get-in index2-count-resp [:count])
-;
-;        matches (= index1-count index2-count)
-;        _ (when-not matches
-;            (warn (format "Index %s and Index %s did not have the same doc count." index1 index2)))]
-;    matches))

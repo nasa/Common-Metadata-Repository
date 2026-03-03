@@ -83,8 +83,7 @@
             ;; if there is no error, then return the elastic reindex task id in the resp
             reindex-task-id (:task result)]
         (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:IN_PROGRESS indexer-util/reshard-status-states) elastic-name)
-        reindex-task-id
-        )
+        reindex-task-id)
       (catch Throwable e
         (error e (msg/migrate-index-error source-index target-index (.getMessage e)))
         (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:FAILED indexer-util/reshard-status-states) elastic-name)
@@ -451,13 +450,4 @@
                             (delete-concepts-by-id system provider-id concept-type concept-ids)
                             (index-concepts-by-id system provider-id concept-type concept-ids)))
                         (catch Throwable e
-                          (error e (.getMessage e)))))))
-    ;(let [channel (:migrate-index-channel core-async-dispatcher)]
-    ;  (async/thread (while true
-    ;                  (try ; log errors but keep the thread alive)
-    ;                    (let [{:keys [source-index target-index elastic-name]} (<!! channel)]
-    ;                      (migrate-index system source-index target-index elastic-name))
-    ;                    (catch Throwable e
-    ;                      (error e (.getMessage e)))))))
-
-    ))
+                          (error e (.getMessage e)))))))))

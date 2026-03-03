@@ -32,20 +32,3 @@
       (is (empty? (extract-fn {:nodes {}}))))
     (testing "empty resp gives empty desc list"
       (is (empty? (extract-fn {}))))))
-
-(deftest test-reindexing-still-in-progress
-  (testing "when uri is invalid, then give error message and throw exception"
-      (is (thrown? Exception (es-helper/reindexing-still-in-progress? nil "test-index"))))
-  (testing "when error resp from elasticsearch, then give error message and throw exception"
-    (with-redefs [rest/url-with-path (fn [_ _] "http://url.com")
-                  rest/get (fn [_ _] (throw (ex-info "Elasticsearch failure"
-                                                          {:status 500 :cause-exception "incorrect url"})))]
-      (is (thrown? Exception (es-helper/reindexing-still-in-progress? nil "test-index")))))
-  (testing "when reindexing descriptions does not include index, then return false"
-    (with-redefs [rest/url-with-path (fn [_ _] "http://url.com")
-                  rest/get (fn [_ _] reindex-resp-example)]
-      (is (= false (es-helper/reindexing-still-in-progress? nil "index-name-not-in-resp")))))
-  (testing "when reindexing description does include index, then return true"
-    (with-redefs [rest/url-with-path (fn [_ _] "http://url.com")
-                  rest/get (fn [_ _] reindex-resp-example)]
-      (is (= true (es-helper/reindexing-still-in-progress? nil "1_c1111111111_prov"))))))

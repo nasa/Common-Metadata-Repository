@@ -55,10 +55,7 @@
         _ (validate-index-exists context index es-cluster-name)
         num-shards-str (:num_shards params)
         _ (validate-num-shards num-shards-str)
-        ;; TODO temporarily force params to be synchronous for now -- need to remove dispatcher eventually since it's not needed at all
-        params (assoc params :synchronous true)
-        dispatcher (api-util/get-dispatcher context params :migrate-index)
-        reindex-task-id (service/start-reshard-index context dispatcher index (parse-long num-shards-str) es-cluster-name)]
+        reindex-task-id (service/start-reshard-index context index (parse-long num-shards-str) es-cluster-name)]
 
     {:status 200
      :body {:message (msg/resharding-started index)

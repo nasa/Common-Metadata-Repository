@@ -207,12 +207,13 @@ curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
+- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api)
 
 Expected return status options:
 - IN_PROGRESS, COMPLETE, FAILED
 
 ```
-curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic
+curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic&task_id=abc:1234
 ```
 ### Finalize resharding an index
 

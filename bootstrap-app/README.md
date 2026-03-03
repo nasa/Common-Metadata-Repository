@@ -102,6 +102,7 @@ Starts the resharding process to create a new index with the given number of sha
 the data from the old index to the new index. Both indexes will be used for ingest until
 the resharding is finalized.
 
+REQUEST:
 You MUST give the elastic_name parameter to tell CMR which elastic cluster your index is in that is going to be resharded.
 
 Required params:
@@ -109,44 +110,54 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
 
+RESPONSE:
 ```
 curl -i \
   -X POST \
   "http://localhost:3006/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic"
 
 HTTP/1.1 200 OK
-{"message": "Resharding started for index 1_small_collections"}
+{"message": "Resharding started for index 1_small_collections",
+ "task-id": "abcde:1234"}
 ```
 
-### Get resharding Status
+### Get Resharding Status
 
 Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
+You cannot finalize a reshard without first checking the reshard status.
 
+REQUEST:
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
+- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api)
 
-Expected reshard status options:
-- IN_PROGRESS, COMPLETE, FAILED
+RESPONSE:
+
 ```
 curl -i \
 	-H "Accept: application/json" \
-	http://localhost:3006/reshard/1_c1234_prov1/status?elastic_name=gran-elastic
+	http://localhost:3006/reshard/1_c1234_prov1/status?elastic_name=gran-elastic&task_id=abc:1234
 
 HTTP/1.1 200 OK
-{"original-index":"1_c1234_prov1","reshard-index":"1_c1234_prov1_75_shards", "reshard-status": "COMPLETE"}
+{"original-index":"1_c1234_prov1","reshard-index":"1_c1234_prov1_75_shards", 
+ "reshard-status": "COMPLETE"}
 ```
+Expected reshard status options:
+- IN_PROGRESS, COMPLETE, FAILED
 
 ### Finalize Resharding
 Once the status of the reshard returns 'COMPLETE', you can move on to finalizing the reshard process.
 Finalizing an index resharding moves the ES alias to point to the new resharded index and clean up the index-set.
 
+REQUEST:
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
 
 ***IMPORTANT***: Only finalize if the reshard status is 'COMPLETE'
 
+RESPONSE:
 ```
 curl -i \
   -X POST \
@@ -159,6 +170,7 @@ HTTP/1.1 200 OK
 ### Rollback a Resharding
 Rollback the resharding of a specified index to its original state before reshard was attempted.
 
+REQUEST:
 You MUST give the elastic_name parameter to tell CMR which cluster your index is in that is going to be resharded.
 
 Required params:
@@ -167,6 +179,7 @@ Required params:
 
 Rollback will be allowed IF the reshard has not been finalized, else it will not allow
 
+RESPONSE:
 ```
 curl -i \
   -X POST \

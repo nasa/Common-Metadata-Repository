@@ -83,11 +83,6 @@
   ([_this context concept-type provider-id]
    (bulk-index/index-provider-concepts (:system context) (keyword concept-type) provider-id)))
 
-;(defn- migrate-index
-;  "Copy the contents of one index to another. Used during resharding."
-;  [_this context source-index target-index elastic-name]
-;  (bulk-index/migrate-index (:system context) source-index target-index elastic-name))
-
 (defn- delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [_this context provider-id concept-type concept-ids]

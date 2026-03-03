@@ -325,9 +325,10 @@
   [index-name options]
   (let [headers (assoc (get options :headers) transmit-config/token-header (transmit-config/echo-system-token))
         elastic-name (get options :elastic-name)
+        task-id (get options :task-id)
         response (client/request
                    {:method :get
-                    :query-params {:elastic_name elastic-name}
+                    :query-params {:elastic_name elastic-name :task_id task-id}
                     :headers headers
                     :url (url/status-reshard-index-url index-name)
                     :accept :json
@@ -556,13 +557,13 @@
     (is (= expected-counts-by-provider actual-counts-by-provider) message)))
 
 (defn wait-for-reshard-complete
-  [coll-index-name elastic-name {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
+  [coll-index-name elastic-name task-id {:keys [max-attempts sleep-ms] :or {max-attempts 50 sleep-ms 1000}}]
   (loop [attempt 1]
-    (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name})
+    (let [res (get-reshard-status coll-index-name {:elastic-name elastic-name :task-id task-id})
           status (get-in res [:reshard-status])]
       (cond
         (= status "COMPLETE")
-        (info "Success: Resharding is COMPLETE.")
+        (info (format "Success: Resharding index %s is COMPLETE." coll-index-name))
 
         (>= attempt max-attempts)
         (throw (Exception. (str "Timeout: Resharding failed to complete after " attempt " attempts.")))
