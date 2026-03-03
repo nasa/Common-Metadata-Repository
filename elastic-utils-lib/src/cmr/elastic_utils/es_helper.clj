@@ -136,17 +136,6 @@
                       {:body (json/encode body)
                        :content-type "application/json"})))
 
-(defn- extract-descriptions-from-reindex-resp
-  "Pulls out description value from the elastic reindex response."
-  [reindex-resp-json]
-  (let [nodes-map (:nodes reindex-resp-json)]
-    (->> nodes-map
-         (vals)
-         (map :tasks)
-         (mapcat vals)
-         (keep :description)
-         (map clojure.string/lower-case))))
-
 (defn get-reindex-task-status
   "Get the reindex task status and if there were any failures if the task is considered COMPLETE.
   Returns a map that captures the complete status and if there were any failures."

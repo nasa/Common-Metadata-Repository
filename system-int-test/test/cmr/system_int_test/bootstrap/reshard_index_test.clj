@@ -1,9 +1,7 @@
 (ns cmr.system-int-test.bootstrap.reshard-index-test
   "Tests the resharding API endpoint for index resharding operations."
   (:require
-   [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -310,8 +308,7 @@
 
           ;; check collection index is mapped to new target
           updated-index-set (index/get-index-set-by-id 1)
-          _ (is (= new-resharded-coll-index (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
-          ]
+          _ (is (= new-resharded-coll-index (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))]
 
       ;; check orig index is deleted from index-set and elastic
       (is (not-any? #(= (:name %) resharded-coll-index-name) (get-in updated-index-set [:collection :indexes])))

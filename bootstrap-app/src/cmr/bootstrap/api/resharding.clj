@@ -3,7 +3,6 @@
   (:require
    [clojure.string :as string]
    [cmr.bootstrap.api.messages :as msg]
-   [cmr.bootstrap.api.util :as api-util]
    [cmr.bootstrap.services.bootstrap-service :as service]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.es-index-helper :as es-helper]
