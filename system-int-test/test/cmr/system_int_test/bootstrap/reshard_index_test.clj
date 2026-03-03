@@ -68,9 +68,10 @@
                :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
               (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
      (testing "attempting to reshard an index that is already being resharded fails"
-       (is (= {:status 200
-               :message "Resharding started for index 1_small_collections"}
-              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name})))
+       (let [reshard-resp (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name})]
+         (is (= 200 (:status reshard-resp)))
+         (is (= "Resharding started for index 1_small_collections" (:message reshard-resp)))
+         (is (= false (nil? (:task-id reshard-resp)))))
        (is (= {:status 400
                :errors ["The index set already contains resharding index [1_small_collections]"]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name}))))
@@ -81,10 +82,14 @@
      (testing "get the resharding status of an index not being resharded"
        (is (= {:status 404
                :errors ["The index [1_collections_v2] is not being resharded."]}
-              (bootstrap/get-reshard-status "1_collections_v2" {:elastic-name elastic-name}))))
+              (bootstrap/get-reshard-status "1_collections_v2" {:elastic-name elastic-name :task-id "task-id"}))))
      (testing "get the resharding status of a nonexistent index"
        (is (= {:status 404
                :errors ["The index [1_nonexistent_index] does not exist."]}
+              (bootstrap/get-reshard-status "1_nonexistent_index" {:elastic-name gran-elastic-name :task-id "task-id"}))))
+     (testing "get the resharding status without task id"
+       (is (= {:status 400
+               :errors ["Empty reindex task id is not allowed."]}
               (bootstrap/get-reshard-status "1_nonexistent_index" {:elastic-name gran-elastic-name}))))
      (testing "no elastic name given to finalize"
        (is (= {:status 400
@@ -105,21 +110,23 @@
                                       (-> coll
                                           (select-keys [:provider-id :concept-id :entry-title])
                                           (assoc :granule-count 1)))
-         gran-elastic-name "gran-elastic"]
+         gran-elastic-name "gran-elastic"
+         reshard-start-resp (bootstrap/start-reshard-index "1_small_collections" {:synchronous true
+                                                                                  :num-shards 100
+                                                                                  :elastic-name gran-elastic-name})
+         task-id (:task-id reshard-start-resp)]
      (index/wait-until-indexed)
      (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
      (testing "resharding an index that does exist"
-       (is (= {:status 200
-               :message "Resharding started for index 1_small_collections"}
-              (bootstrap/start-reshard-index "1_small_collections" {:synchronous true
-                                                                    :num-shards 100
-                                                                    :elastic-name gran-elastic-name}))))
+       (is (= 200 (:status reshard-start-resp)))
+       (is (= "Resharding started for index 1_small_collections" (:message reshard-start-resp)))
+       (is (= false (nil? task-id))))
      (testing "get the resharding status"
        (is (= {:status 200
                :original-index "1_small_collections"
                :reshard-index "1_small_collections_100_shards"
                :reshard-status "COMPLETE"}
-              (bootstrap/get-reshard-status "1_small_collections" {:elastic-name gran-elastic-name}))))
+              (bootstrap/get-reshard-status "1_small_collections" {:elastic-name gran-elastic-name :task-id task-id}))))
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
@@ -127,9 +134,18 @@
      (testing "alias is moved to new index"
        (is (index/alias-exists? "1_small_collections_100_shards" "1_small_collections_alias" gran-elastic-name)))
      (testing "index can be resharded more than once"
-       (is (= {:status 200
-               :message "Resharding started for index 1_small_collections_100_shards"}
-              (bootstrap/start-reshard-index "1_small_collections_100_shards" {:synchronous true :num-shards 50 :elastic-name gran-elastic-name}))))
+       (let [reshard-start-resp (bootstrap/start-reshard-index "1_small_collections_100_shards" {:synchronous true :num-shards 50 :elastic-name gran-elastic-name})
+             task-id (:task-id reshard-start-resp)]
+         (is (= 200 (:status reshard-start-resp)))
+         (is (= "Resharding started for index 1_small_collections_100_shards" (:message reshard-start-resp)))
+         (is (= false (nil? (:task-id reshard-start-resp))))
+
+         ;; check status. Cannot finalize until status is checked.
+         (is (= {:status 200
+                 :original-index "1_small_collections_100_shards"
+                 :reshard-index "1_small_collections_50_shards"
+                 :reshard-status "COMPLETE"}
+                (bootstrap/get-reshard-status "1_small_collections_100_shards" {:elastic-name gran-elastic-name :task-id task-id})))))
      (testing "finalizing the resharding a second time"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections_100_shards"}

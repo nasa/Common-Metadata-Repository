@@ -292,7 +292,8 @@
                :granule {:small_collections "3_small_collections"
                          :C6-PROV3 "3_c6_prov3"
                          :C7-PROV4 "3_c7_prov4"}
-               :collection {:COLL2-PROV1 "3_coll2_prov1"}
+               :collection {:COLL2-PROV1 "3_coll2_prov1"
+                            :collections-v2 "3_collections_v2"}
                :service {:services "3_services"}
                :autocomplete {},
                :deleted-granule {},

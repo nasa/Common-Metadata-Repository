@@ -727,6 +727,7 @@
         _ (when-not current-target
             (errors/throw-service-error
              :not-found
+             ;; NOTE: this error msg is used in external projects, change with caution
              (format "The index [%s] is not being resharded." index)))
         current-status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
         _ (when-not current-status
@@ -766,6 +767,7 @@
           "The status of resharding index [%s] is not found." index)))
       (errors/throw-service-error
        :not-found
+       ;; NOTE: this error msg is used in external projects, change with caution
        (format
         "The index [%s] is not being resharded." index)))))
 
