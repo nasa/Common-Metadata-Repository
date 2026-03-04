@@ -932,7 +932,7 @@
         "properties": {
           "TilingIdentificationSystemName": {
             "type": "string",
-            "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
+            "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "VIIRS Rotated Sinusoidal Tiling System", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
           },
           "Coordinate1": {
             "description": "Defines the minimum and maximum values for the first dimension of a two dimensional coordinate system.",
@@ -1905,7 +1905,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -1915,7 +1915,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.18.4"]
+          "enum": ["1.18.5"]
         }
       },
       "required": ["URL", "Name", "Version"]

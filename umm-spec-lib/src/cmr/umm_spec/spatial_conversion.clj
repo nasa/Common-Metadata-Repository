@@ -17,6 +17,7 @@
    "MISR"
    "MODIS Tile EASE"
    "MODIS Tile SIN"
+   "VIIRS Rotated Sinusoidal Tiling System"
    "WELD Alaska Tile"
    "WELD CONUS Tile"
    "WRS-1"
