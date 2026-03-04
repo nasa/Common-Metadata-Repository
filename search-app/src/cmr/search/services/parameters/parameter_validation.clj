@@ -37,7 +37,7 @@
    cpv/basic-params-config
    {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                     :include-facets :hierarchical-facets :include-highlights :include-tags
-                    :all-revisions :shapefile :simplify-shapefile}
+                    :all-revisions :shapefile :simplify-shapefile :force-cartesian}
     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                       :collection-data-type :collection-progress :consortium :project :project-h :entry-id :version :provider
                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -52,7 +52,7 @@
   [_]
   (cpv/merge-params-config
    cpv/basic-params-config
-   {:single-value #{:echo-compatible :include-facets :shapefile :simplify-shapefile}
+   {:single-value #{:echo-compatible :include-facets :shapefile :simplify-shapefile :force-cartesian}
     :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                       :producer-granule-id :project :version :native-id :provider :entry-title
                       :platform :sensor :feature-id :crid-id :cycle}
@@ -243,6 +243,7 @@
    :sensor cpv/string-plus-and-exclude-collection-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :force-cartesian cpv/string-param-options
    :spatial cpv/and-or-option
    :spatial-keyword cpv/string-plus-and-options
    :temporal exclude-plus-and-or-option
