@@ -202,27 +202,21 @@
         (format "Cannot create copy of %s: destination index %s already exists."
                 orig-index new-index))
       ;;else
-      (let [;; get orig index mapping
-            mapping-url (format "%s/_mapping" (esr/index-url conn orig-index))
-            mapping-resp (client/get mapping-url
-                                 {:throw-exceptions true})
-            mapping-resp-body (if (and (= 200 (:status mapping-resp)) (not (empty? (:body mapping-resp))))
-                                (cheshire/parse-string (:body mapping-resp) true)
-                                (errors/throw-service-error
-                                  :internal-error
-                                  (format "error trying to get mapping of index %s" orig-index)))
-            mappings (get-in mapping-resp-body [(keyword orig-index) :mappings])
+      (let [mapping-resp-body (esi-helper/get-mapping conn orig-index)
+            mappings (if (not (empty? mapping-resp-body))
+                       (get-in mapping-resp-body [(keyword orig-index) :mappings])
+                       (errors/throw-service-error
+                         :internal-error
+                         (format "error trying to get mapping of index %s" orig-index)))
 
             ;; get orig index settings
-            settings-url (format "%s/_settings" (esr/index-url conn orig-index))
-            settings-resp (client/get settings-url {:throw-exceptions true})
-            settings-resp-body (if (and (= 200 (:status settings-resp)) (not (empty? (:body settings-resp))))
-                                 (cheshire/parse-string (:body settings-resp) true)
-                                 (errors/throw-service-error
-                                   :internal-error
-                                   (format "error trying to get settings of index %s" orig-index)))
-            settings (get-in settings-resp-body [(keyword orig-index) :settings])
-            ;; update the setting's shard count and cherry pick in specific configs
+            settings-resp-body (esi-helper/get-settings conn orig-index)
+            settings (if (not (empty? settings-resp-body))
+                       (get-in settings-resp-body [(keyword orig-index) :settings])
+                       (errors/throw-service-error
+                         :internal-error
+                         (format "error trying to get settings of index %s" orig-index)))
+            ;; update the setting's shard count and cherry-pick in specific configs
             updated-settings {:number_of_shards (str shard-count)
                               :number_of_replicas (get-in settings [:index :number_of_replicas])
                               :max_result_window (get-in settings [:index :max_result_window])

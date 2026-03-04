@@ -131,7 +131,7 @@ REQUEST:
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
-- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api as 'task-id'. Notice the difference in hypen vs underscore.)
+- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api as 'task-id'. Notice the difference in hyphen vs underscore.)
 
 RESPONSE:
 

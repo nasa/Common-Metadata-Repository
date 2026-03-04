@@ -146,7 +146,8 @@
           completed (:completed resp)
           failures (get-in resp [:response :failures])
           description (get-in resp [:task :description])
-          index-found-in-description (string/includes? (string/lower-case description) (string/lower-case index))
+          index-found-in-description (and description
+                                          (string/includes? (string/lower-case description) (string/lower-case index)))
           full-status {:completed completed
                        :failures failures}]
 
