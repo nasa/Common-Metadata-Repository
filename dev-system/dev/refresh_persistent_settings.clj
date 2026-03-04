@@ -1,6 +1,7 @@
 (ns refresh-persistent-settings
   "A namespace that can contain development time settings that will not be lost during a refresh."
-  (:require [clojure.tools.namespace.repl :as r]
+  (:require [clojure.edn :as edn]
+            [clojure.tools.namespace.repl :as r]
             [clojure.java.io :as io]))
 
 ;; Disable reloading of this namespace.
@@ -25,7 +26,7 @@
   (let [home (System/getProperty "user.dir")
         file-path (format "%s/local.edn" home)
         exists (.exists (io/file file-path))
-        local-settings (if exists (read-string (slurp file-path)) {})
+        local-settings (if exists (edn/read-string (slurp file-path)) {})
         settings (get local-settings which default)]
     ;; Aggressively display that settings are being set from this process
     (println (format "🚀 - Using settings %s = %s." which settings))

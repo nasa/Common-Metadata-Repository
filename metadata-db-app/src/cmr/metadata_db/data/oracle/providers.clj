@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.data.oracle.providers
   "Functions for saving, retrieving, deleting providers."
   (:require
+   [clojure.edn :as edn]
    [clojure.java.jdbc :as j]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as cutil]
@@ -20,7 +21,7 @@
                           :cmr-only (== 1 cmr_only)
                           :small (== 1 small)
                           :consortiums consortiums
-                          :metadata (if (some? metadata) (-> metadata cutil/gzip-blob->string read-string))}))
+                          :metadata (if (some? metadata) (-> metadata cutil/gzip-blob->string edn/read-string))}))
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"

@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.data :as data]
+   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
@@ -545,7 +546,7 @@
       (if (seq revision-info)
         (when coll-revision-id
           (if-let [revision (->> revision-info
-                                 (filter #(= (read-string coll-revision-id)
+                                 (filter #(= (edn/read-string coll-revision-id)
                                              (:revision-id %)))
                                  first)]
             (when (:deleted revision)
