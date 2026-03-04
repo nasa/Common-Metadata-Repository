@@ -225,8 +225,13 @@
           ;; create new index with same orig mapping but updated shard count
           (try
             (info "Now creating empty index: " new-index " which is copy of index:" orig-index)
-            (esi-helper/create conn new-index {:settings updated-settings
-                                               :mappings mappings})
+            (let [index-create-resp (esi-helper/create conn new-index {:settings updated-settings
+                                                                       :mappings mappings})
+                  success-msg (:acknowledged index-create-resp)]
+              (if-not (= true success-msg)
+                (errors/throw-service-error
+                  :internal-error
+                  (format "error returned from elastic that the index was not created."))))
             (catch clojure.lang.ExceptionInfo e
               (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                     error-message (:error body)]
