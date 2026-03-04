@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
+   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
@@ -43,7 +44,7 @@
     (util/remove-nil-keys
       (let [unit-value (value-of element "Unit")
             value (value-of element "Value")
-            value-number (when value (read-string value))]
+            value-number (when value (edn/read-string value))]
         {:Unit unit-value
          :Value value-number}))))
 

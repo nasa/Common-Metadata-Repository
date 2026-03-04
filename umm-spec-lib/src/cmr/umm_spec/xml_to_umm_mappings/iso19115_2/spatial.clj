@@ -2,6 +2,7 @@
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
    [clojure.data.xml :as xml]
+   [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]
@@ -199,9 +200,9 @@
            :EllipsoidName (when-not (empty? ellipsoid-name)
                             ellipsoid-name)
            :SemiMajorAxis (when-not (empty? semi-major-axis)
-                            (read-string semi-major-axis))
+                            (edn/read-string semi-major-axis))
            :DenominatorOfFlatteningRatio (when-not (empty? denominator-of-flattening-ratio)
-                                           (read-string denominator-of-flattening-ratio))})))))
+                                           (edn/read-string denominator-of-flattening-ratio))})))))
 
 (def local-coord-sys-string-field-re-pattern
   "Returns the pattern that matches all the related fields in description-string"
