@@ -86,6 +86,7 @@
    :facets-size :string
    :shapefile :shapefile
    :simplify-shapefile :boolean
+   :force-cartesian :boolean
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -152,7 +153,8 @@
    :cycle :int
    :passes :passes
    :shapefile :shapefile
-   :simplify-shapefile :boolean})
+   :simplify-shapefile :boolean
+   :force-cartesian :boolean})
 
 (defmethod common-params/param-mappings :tag
   [_]
