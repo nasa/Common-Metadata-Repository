@@ -142,4 +142,41 @@
           "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
-          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
+          "single_point_dc" [whole-world very-wide-cart washington-dc]))
+
+      (testing (format "Search with force-cartesian parameter using %s shapefile" fmt)
+        ;; The parameter changes how shapefile coordinates are interpreted (geodetic vs cartesian)
+        (are3 [shapefile force-cartesian expected-items]
+              (let [params (if (some? force-cartesian)
+                             [{:name "shapefile"
+                               :content (io/file (io/resource (str "shapefiles/" shapefile "." extension)))
+                               :mime-type mime-type}
+                              {:name "force-cartesian"
+                               :content (str force-cartesian)}
+                              {:name "provider"
+                               :content "PROV1"}]
+                             [{:name "shapefile"
+                               :content (io/file (io/resource (str "shapefiles/" shapefile "." extension)))
+                               :mime-type mime-type}
+                              {:name "provider"
+                               :content "PROV1"}])
+                    found (search/find-refs-with-multi-part-form-post :collection params)]
+                (d/assert-refs-match expected-items found))
+
+          "box shapefile without force-cartesian (default geodetic)"
+          "box" nil [whole-world very-wide-cart washington-dc richmond]
+
+          "box shapefile with force-cartesian=false (explicit geodetic)"
+          "box" false [whole-world very-wide-cart washington-dc richmond]
+
+          "box shapefile with force-cartesian=true (cartesian interpretation)"
+          "box" true [whole-world very-wide-cart washington-dc richmond]
+
+          "southern_africa without force-cartesian"
+          "southern_africa" nil [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+
+          "southern_africa with force-cartesian=false"
+          "southern_africa" false [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart]
+
+          "southern_africa with force-cartesian=true"
+          "southern_africa" true [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart])))))

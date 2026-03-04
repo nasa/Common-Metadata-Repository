@@ -86,6 +86,7 @@
    :facets-size :string
    :shapefile :shapefile
    :simplify-shapefile :boolean
+   :force-cartesian :boolean
 
    ;; Tag parameters
    :tag-data :tag-query
@@ -152,7 +153,8 @@
    :cycle :int
    :passes :passes
    :shapefile :shapefile
-   :simplify-shapefile :boolean})
+   :simplify-shapefile :boolean
+   :force-cartesian :boolean})
 
 (defmethod common-params/param-mappings :tag
   [_]
@@ -570,7 +572,7 @@
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
              :hierarchical-facets :include-highlights :include-tags :all-revisions :facets-size
-             :simplify-shapefile)
+             :simplify-shapefile :force-cartesian)
      (-> query-attribs
          (merge {:boosts (:boosts params)
                  :result-features (seq result-features)
@@ -594,7 +596,7 @@
                                 :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])
-        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile)
+        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile :force-cartesian)
         {:keys [page-size offset]} query-attribs
         concept-id (:concept-id regular-params)
         concept-ids (when concept-id
