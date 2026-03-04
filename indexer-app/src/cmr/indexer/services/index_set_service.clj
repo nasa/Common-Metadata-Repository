@@ -684,11 +684,16 @@
                           (update-in
                            [:index-set concept-type :resharding-status]
                            assoc (keyword index) (:IN_PROGRESS indexer-util/reshard-status-states)))]
-
-    ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
-    (es/create-copy-of-index context elastic-name index target-index num-shards)
-    ;; Update the index-set and all the indexes with changes
-    (update-index-set context elastic-name new-index-set)))
+    (try
+      ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
+      (es/create-copy-of-index context elastic-name index target-index num-shards)
+      ;; Update the index-set and all the indexes with changes
+      (update-index-set context elastic-name new-index-set)
+      (catch Exception e
+        ;; best-effort cleanup if index-set update fails after index creation
+         (when (esi-helper/exists? (indexer-util/context->conn context elastic-name) target-index)
+           (es/delete-index (indexer-util/context->es-store context elastic-name) target-index))
+        (throw e)))))
 
 (defn update-resharding-status
   "Update the resharding status for the given index"

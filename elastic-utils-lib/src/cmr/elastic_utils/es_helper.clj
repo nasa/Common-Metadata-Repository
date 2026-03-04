@@ -154,6 +154,8 @@
       (if-not index-found-in-description
         (errors/throw-service-error :internal-error (format "Given task id %s is not tracking the given index %s because description in task [%s] did not include the index. Mismatch on task id with index error." reindex-task-id index description)))
       full-status)
+    (catch clojure.lang.ExceptionInfo e
+      (throw e))
     (catch Exception e
       (errors/throw-service-error
         :internal-error

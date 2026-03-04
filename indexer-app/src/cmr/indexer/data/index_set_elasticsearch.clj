@@ -197,8 +197,10 @@
   [context es-cluster-name orig-index new-index shard-count]
   (let [conn (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :conn])]
     (if (esi-helper/exists? conn new-index)
-      (error (format "Attempted to create a copy of %s index with new index name %s, but %s already exists. Aborting copy attempt."
-                    orig-index new-index new-index))
+      (errors/throw-service-error
+        :internal-error
+        (format "Cannot create copy of %s: destination index %s already exists."
+                orig-index new-index))
       ;;else
       (let [;; get orig index mapping
             mapping-url (format "%s/_mapping" (esr/index-url conn orig-index))

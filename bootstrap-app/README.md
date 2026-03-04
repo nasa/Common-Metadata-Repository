@@ -124,13 +124,14 @@ HTTP/1.1 200 OK
 ### Get Resharding Status
 
 Retrieves the resharding status for an index, including the original index name, target index name, and current resharding status. Returns a 404 status code if the specified index is not currently undergoing resharding.
-You cannot finalize a reshard without first checking the reshard status.
+
+IMPORTANT: You cannot finalize a reshard without first checking the reshard status.
 
 REQUEST:
 Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic`
-- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api)
+- task_id = string (elastic task id associated with the reindexing task of moving original index content to the new index. This is given in the output of the /reshard/<index>/start api as 'task-id'. Notice the difference in hypen vs underscore.)
 
 RESPONSE:
 

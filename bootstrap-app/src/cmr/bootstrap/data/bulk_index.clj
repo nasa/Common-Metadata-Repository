@@ -81,7 +81,12 @@
             _ (when (:error result)
                 (throw (ex-info "Migration failed" {:source source-index :target target-index :error result})))
             ;; if there is no error, then return the elastic reindex task id in the resp
-            reindex-task-id (:task result)]
+            reindex-task-id (:task result)
+            _ (when (nil? reindex-task-id)
+                (throw (ex-info "Migration failed to return a reindex task id"
+                                {:source source-index
+                                 :target target-index
+                                 :result result})))]
         (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:IN_PROGRESS indexer-util/reshard-status-states) elastic-name)
         reindex-task-id)
       (catch Throwable e

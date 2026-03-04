@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.bootstrap.reshard-index-test
   "Tests the resharding API endpoint for index resharding operations."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -237,7 +238,7 @@
           _ (is (= resharded-coll-index-name (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))
 
           ;; check orig index is deleted from index-set and elastic
-          _ (is (not-any? #(= (:name %) coll-index-set-key) (get-in updated-index-set [:collection :indexes])))
+          _ (is (not-any? #(= (:name %) coll-index-set-key) (get-in updated-index-set [:index-set :collection :indexes])))
           _ (is (not (es-util/index-exists? coll-index-name elastic-name)))
 
 
@@ -311,7 +312,8 @@
           _ (is (= new-resharded-coll-index (get-in updated-index-set [:index-set :concepts :collection (keyword coll-index-set-key)])))]
 
       ;; check orig index is deleted from index-set and elastic
-      (is (not-any? #(= (:name %) resharded-coll-index-name) (get-in updated-index-set [:collection :indexes])))
+      (is (not-any? #(= (:name %) (string/replace-first resharded-coll-index-name #"^\d+_" ""))
+                    (get-in updated-index-set [:index-set :collection :indexes])))
       (is (not (es-util/index-exists? resharded-coll-index-name elastic-name))))))
 
 (deftest reshard-index-with-granule-updates-test
@@ -391,7 +393,7 @@
           _ (is (= resharded-small-collections-index-name (get-in updated-index-set [:index-set :concepts :granule (keyword small-collections-canonical-name)])))
 
           ;; check orig index is deleted from index-set and elastic
-          _ (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:granule :indexes])))
+          _ (is (not-any? #(= (:name %) small-collections-canonical-name) (get-in updated-index-set [:index-set :granule :indexes])))
           _ (is (not (es-util/index-exists? small-collections-index-name gran-elastic-name)))
 
 
@@ -463,7 +465,8 @@
           _ (is (= new-resharded-index-name (get-in updated-index-set [:index-set :concepts :granule (keyword small-collections-canonical-name)])))]
 
       ;; check orig index is deleted from index-set and elastic
-      (is (not-any? #(= (:name %) resharded-small-collections-index-name) (get-in updated-index-set [:granule :indexes])))
+      (is (not-any? #(= (:name %) (string/replace-first resharded-small-collections-index-name #"^\d+_" ""))
+                    (get-in updated-index-set [:index-set :granule :indexes])))
       (is (not (es-util/index-exists? resharded-small-collections-index-name gran-elastic-name))))))
 
 (deftest reshard-rollback-test

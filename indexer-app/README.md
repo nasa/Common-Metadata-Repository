@@ -126,9 +126,9 @@ By default, a comparison is run between the existing elasticsearch indexes and w
 
 ### Create index-set using json string
 
-```
-curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
-```
+
+    curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
+
 
 ### Get index-set by id
 
@@ -198,9 +198,9 @@ Required params:
 - elastic_name = string (elastic cluster name you want to reshard in)
   - Options: `gran-elastic` or `elastic` 
 
-```
-curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic
-```
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/start?num_shards=50&elastic_name=gran-elastic
+
 
 ### Get resharding status of an index
 
@@ -212,9 +212,9 @@ Required params:
 Expected return status options:
 - IN_PROGRESS, COMPLETE, FAILED
 
-```
-curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic&task_id=abc:1234
-```
+
+    curl -XGET http://localhost:3004/index-sets/1/reshard/1_small_collections/status?elastic_name=gran-elastic&task_id=abc:1234
+
 ### Finalize resharding an index
 
 Once the status of the reshard returns 'COMPLETE', you can move on to finalizing the reshard process. 
@@ -226,9 +226,9 @@ Required params:
 
 ***IMPORTANT***: Only finalize if the reshard status is 'COMPLETE'
 
-```
-curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize?elastic_name=gran-elastic
-```
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/finalize?elastic_name=gran-elastic
+
 ### Rollback resharding an index
 
 Rollback the resharding of a specified index to its original state before reshard was attempted.
@@ -241,9 +241,9 @@ Required params:
 
 Rollback will be allowed IF the reshard has not been finalized, else it will not allow
 
-```
-curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/rollback?elastic_name=gran-elastic
-```
+
+    curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/rollback?elastic_name=gran-elastic
+
 
 ### Reset for dev purposes
 
