@@ -473,18 +473,23 @@
                                       1 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
                                                                :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}}
                                       2 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                               :resharding-status {(keyword small-collections-index) "COMPLETE"}}}}))]
+                                                               :resharding-status {(keyword small-collections-index) "COMPLETE"}}}}))
+            captured-payload (atom nil)]
         (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                       idx-set-util/get-index-set get-index-set-mock-fn
                       svc/get-concept-type-for-index (fn [_index-set _index] :granule)
                       es-helper/get-reindex-task-status (fn [_conn _index _reindex-task-id] {:completed true
                                                                                              :failures []
                                                                                              :error {}})
-                      svc/update-resharding-status (fn [_context _index-set-id _index _status _elastic-name] nil)]
+                      ;; capture the actual status that was passed into this inner func to make sure status = complete
+                      svc/update-resharding-status (fn [_context _index-set-id _index status _elastic-name]
+                                                     (reset! captured-payload status))]
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "COMPLETE"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))
+                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+          (is (= "COMPLETE" @captured-payload))
+          )))
     (testing "when index exists and reindex status is not complete and reindexing has failed, then status will be updated to FAILED and index set will be updated. Correct status resp will be returned."
       (let [mock-calls (atom 0)
             get-index-set-mock-fn (fn [& _args]
@@ -493,7 +498,8 @@
                                       1 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
                                                                :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}}
                                       2 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
-                                                               :resharding-status {(keyword small-collections-index) "FAILED"}}}}))]
+                                                               :resharding-status {(keyword small-collections-index) "FAILED"}}}}))
+            captured-payload (atom nil)]
         (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                       idx-set-util/get-index-set get-index-set-mock-fn
                       svc/get-concept-type-for-index (fn [_index-set _index] :granule)
@@ -507,11 +513,42 @@
                                                                                                          :status 400
                                                                                                          }]
                                                                                              :error {}})
-                      svc/update-resharding-status (fn [_context _index-set-id _index _status _elastic-name] nil)]
+                      ;; capture the actual status that was passed into this inner func to make sure status = failed
+                      svc/update-resharding-status (fn [_context _index-set-id _index status _elastic-name]
+                                                     (reset! captured-payload status))]
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "FAILED"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params))))))))
+                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+
+          (is (= "FAILED" @captured-payload)))))
+    (testing "when index exists, reindex status is not complete, reindexing has returned internal errors, then status will be updated to FAILED and index set will be updated. Correct status resp will be returned."
+      (let [mock-calls (atom 0)
+            get-index-set-mock-fn (fn [& _args]
+                                    (swap! mock-calls inc)
+                                    (case @mock-calls
+                                      1 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                               :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}}
+                                      2 {:index-set {:granule {:resharding-targets {(keyword small-collections-index) "1_small_collections_10_shards"}
+                                                               :resharding-status {(keyword small-collections-index) "FAILED"}}}}))
+            captured-payload (atom nil)]
+        (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
+                      idx-set-util/get-index-set get-index-set-mock-fn
+                      svc/get-concept-type-for-index (fn [_index-set _index] :granule)
+                      es-helper/get-reindex-task-status (fn [_conn _index _reindex-task-id] {:completed true
+                                                                                             :failures []
+                                                                                             :error {:reason "This was an error."
+                                                                                                     :caused_by {}}})
+                      ;; capture the actual status that was passed into this inner func to make sure status = failed
+                      svc/update-resharding-status (fn [_context _index-set-id _index status _elastic-name]
+                                                     (reset! captured-payload status))]
+          (is (= {:original-index small-collections-index
+                  :reshard-index "1_small_collections_10_shards"
+                  :reshard-status "FAILED"}
+                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+
+          (is (= "FAILED" @captured-payload)))))
+    ))
 
 (deftest test-remove-granule-index-from-index-set
   (let [collection-concept-id "C1234-PROV1"

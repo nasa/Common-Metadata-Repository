@@ -138,7 +138,29 @@
 
 (defn get-reindex-task-status
   "Get the reindex task status and if there were any failures if the task is considered COMPLETE.
-  Returns a map that captures the complete status and if there were any failures."
+  Returns a map that captures the complete status and if there were any failures.
+  Example map return:
+  {
+    :complete true
+    :failures [{
+                :index: \"new_index\",
+                :type: \"_doc\",
+                :id\": \"doc_id\",
+                :cause: {
+                          :type: \"exception\",
+                          :reason: \"failure reason\"
+                          :caused_by: {
+                                        :type: \"number_format_exception\",
+                                        :reason: \"cause reason\"
+                                      }
+                         }
+                :status: 400
+                }]
+    :error {:type \"type\"
+            :reason \"reason\"
+            :caused_by {}
+            }
+    }"
   [conn index reindex-task-id]
   (try
     (let [url (rest/url-with-path conn "_tasks" reindex-task-id)
