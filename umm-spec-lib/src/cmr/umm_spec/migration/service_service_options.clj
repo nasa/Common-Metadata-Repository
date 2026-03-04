@@ -360,8 +360,12 @@
   and in the SupportedOutputFormat array."
   [reformatting]
   (-> reformatting
-       (update :SupportedInputFormat replace-format-string)
-       (update :SupportedOutputFormats #(mapv replace-format-string %))))
+      (update :SupportedInputFormat replace-format-string)
+      (update :SupportedOutputFormats 
+              #(->> %
+                    (map replace-format-string)
+                    distinct
+                    vec))))
 
 (defn downgrade-supported-formats-1_5_4-to-1_5_3
   "Replace NETCDF-4 (OPeNDAP URL) with NETCDF-4 when migrating from 1.5.4 to 1.5.3."
