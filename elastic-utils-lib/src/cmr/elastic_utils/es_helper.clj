@@ -145,11 +145,13 @@
           resp (rest/get conn url)
           completed (:completed resp)
           failures (get-in resp [:response :failures])
+          task-error (:error resp)
           description (get-in resp [:task :description])
           index-found-in-description (and description
                                           (string/includes? (string/lower-case description) (string/lower-case index)))
           full-status {:completed completed
-                       :failures failures}]
+                       :failures failures
+                       :error task-error}]
 
       ;; check if this is the right task id for this index
       (if-not index-found-in-description

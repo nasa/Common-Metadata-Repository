@@ -743,13 +743,14 @@
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
                             (let [full-reindex-status (es-helper/get-reindex-task-status conn index reindex-task-id)
                                   completed (:completed full-reindex-status)
-                                  failures (:failures full-reindex-status)]
+                                  failures (:failures full-reindex-status)
+                                  error (:error full-reindex-status)]
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
                               (if-not completed
                                 ;; if not completed, then return the index-set as it was
                                 index-set
                                 ;; if completed, check for failures
-                                (let [reshard-status (if (empty? failures)
+                                (let [reshard-status (if (and (empty? failures) (empty? error))
                                                        ;; docs match so can be considered complete
                                                        (:COMPLETE indexer-util/reshard-status-states)
                                                        (:FAILED indexer-util/reshard-status-states))]

@@ -459,9 +459,10 @@
                                                                         :resharding-status {(keyword small-collections-index) "IN_PROGRESS"}}}})
                     svc/get-concept-type-for-index (fn [_index-set _index] :granule)
                     es-helper/get-reindex-task-status (fn [_conn _index _reindex-task-id] {:completed false
-                                                                                        :failures []})]
+                                                                                           :failures []
+                                                                                           :error {}})]
         (is (= {:original-index small-collections-index
-                :reshard-index "1_small_collections_10_shards"
+                :reshard-index  "1_small_collections_10_shards"
                 :reshard-status "IN_PROGRESS"}
                (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
     (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will be updated. Correct status resp will be returned."
@@ -477,7 +478,8 @@
                       idx-set-util/get-index-set get-index-set-mock-fn
                       svc/get-concept-type-for-index (fn [_index-set _index] :granule)
                       es-helper/get-reindex-task-status (fn [_conn _index _reindex-task-id] {:completed true
-                                                                                          :failures []})
+                                                                                             :failures []
+                                                                                             :error {}})
                       svc/update-resharding-status (fn [_context _index-set-id _index _status _elastic-name] nil)]
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
@@ -496,16 +498,15 @@
                       idx-set-util/get-index-set get-index-set-mock-fn
                       svc/get-concept-type-for-index (fn [_index-set _index] :granule)
                       es-helper/get-reindex-task-status (fn [_conn _index _reindex-task-id] {:completed true
-                                                                                          :failures [{
-                                                                                                      :index "new_index",
-                                                                                                      :type "_doc",
-                                                                                                      :id "abc-123",
-                                                                                                      :cause {
-                                                                                                                :type "mapper_parsing_exception",
-                                                                                                                :reason "failed to parse field [age] of type [long] in document with id 'abc-123'"
-                                                                                                                },
-                                                                                                      :status 400
-                                                                                                      }]})
+                                                                                             :failures [{
+                                                                                                         :index "new_index",
+                                                                                                         :type "_doc",
+                                                                                                         :id "abc-123",
+                                                                                                         :cause {:type "mapper_parsing_exception",
+                                                                                                                :reason "failed to parse field [age] of type [long] in document with id 'abc-123'"},
+                                                                                                         :status 400
+                                                                                                         }]
+                                                                                             :error {}})
                       svc/update-resharding-status (fn [_context _index-set-id _index _status _elastic-name] nil)]
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
