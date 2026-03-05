@@ -623,7 +623,15 @@
 
    "Migrating up from 1.5.2 to 1.5.3"
    "1.5.2" "v1.5.2/Service_v1.5.2.json"
-   "1.5.3" "v1.5.3/Service_v1.5.2-to-v1.5.3.json"))
+   "1.5.3" "v1.5.3/Service_v1.5.2-to-v1.5.3.json"
+
+   "Migrating down from 1.5.4 to 1.5.3."
+   "1.5.4" "v1.5.4/Service_v1.5.4.json"
+   "1.5.3" "v1.5.4/Service_v1.5.4-to-v1.5.3.json"
+
+   "Migrating up from 1.5.3 to 1.5.4"
+   "1.5.3" "v1.5.3/Service_v1.5.3.json"
+   "1.5.4" "v1.5.4/Service_v1.5.3-to-v1.5.4.json"))
 
 (comment
 
