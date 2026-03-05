@@ -347,3 +347,27 @@
   "Replace the non valid formats going from UMM-S version 1.3.4 to UMM-S version 1.3.3"
   [reformattings]
   (remove nil? (map #(remove-reformattings-when-input-not-valid-1_3_4-to-1_3_3 %) reformattings)))
+
+(defn replace-format-string
+  "Helper function to replace 'NETCDF-4 (OPeNDAP URL)' with 'NETCDF-4'."
+  [format-str]
+  (if (= format-str "NETCDF-4 (OPeNDAP URL)")
+    "NETCDF-4"
+    format-str))
+
+(defn downgrade-formats-to-1-5-3
+  "Replace the value of NETCDF-4 (OPeNDAP URL) to NETCDF-4 in SupportedInputFormat
+  and in the SupportedOutputFormat array."
+  [reformatting]
+  (-> reformatting
+      (update :SupportedInputFormat replace-format-string)
+      (update :SupportedOutputFormats 
+              #(->> %
+                    (map replace-format-string)
+                    distinct
+                    vec))))
+
+(defn downgrade-supported-formats-1_5_4-to-1_5_3
+  "Replace NETCDF-4 (OPeNDAP URL) with NETCDF-4 when migrating from 1.5.4 to 1.5.3."
+  [reformattings]
+  (mapv downgrade-formats-to-1-5-3 reformattings))
