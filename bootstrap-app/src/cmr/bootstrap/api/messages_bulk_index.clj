@@ -322,15 +322,6 @@
           concept-type
           (pr-str (take 10 concept-ids))))
 
-(defn async-migrate-index
-  [source-index target-index elastic-name]
-  ;; added elastic name, check splunk reports
-  (format "%s Migrating from index [%s] to index [%s] in [%s]."
-          bulk-index-prefix-channel-load
-          source-index
-          target-index
-          elastic-name))
-
 (defn async-delete-concepts-from-index-by-id
   [provider-id concept-type concept-ids]
   ;; added concept details to log message, check splunk reports

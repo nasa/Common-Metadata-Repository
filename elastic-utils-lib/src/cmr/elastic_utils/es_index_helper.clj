@@ -20,7 +20,7 @@
   (esi/exists? conn index-name))
 
 (defn update-mapping
-  "Register or modify specific mapping definition"
+  "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."
   [conn index-name-or-names _type-name opts]
   (let [{:keys [mapping]} opts]
     (rest/put conn
@@ -94,3 +94,15 @@
     (rest/post conn template-url
                {:content-type :json
                 :body body})))
+
+(defn get-mapping
+  "Get the mapping for an index"
+  [conn index-name]
+  (let [url (rest/url-with-path conn index-name "_mapping")]
+    (rest/get conn url)))
+
+(defn get-settings
+  "Get the settings for an index"
+  [conn index-name]
+  (let [url (rest/url-with-path conn index-name "_settings")]
+    (rest/get conn url)))

@@ -125,18 +125,10 @@
                                        (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                                   [(keyword (index-set/get-canonical-key-name (:name idx))) (gen-valid-index-name prefix (:name idx))]))]))
 
-        ;; check granule concept list to see if it needs to be replaced
-        requested-updated-granule-concepts (get-in index-set [:concepts :granule])
-        generated-updated-granule-concepts (get-in generated-concepts [:granule])
+        requested-concepts (:concepts index-set)
 
-        finalized-concepts (if (and (not (= requested-updated-granule-concepts generated-updated-granule-concepts))
-                                    (not (nil? generated-updated-granule-concepts)))
-                             (do
-                               (info "Generated updated granule concepts = " generated-updated-granule-concepts
-                                     " is not equal to the requested updated granule concepts = " requested-updated-granule-concepts
-                                     " We are going to merge the two lists together and any duplicates will be overwritten to favor the requested granule concept.")
-                               (assoc-in generated-concepts [:granule] (merge generated-updated-granule-concepts requested-updated-granule-concepts)))
-                             generated-concepts)]
+        ;; merge both the generated concepts map (that has all our defaults) and the requested concepts map (that has our user requested changes) to one map. In case of conflicts, favor the requested map.
+        finalized-concepts (util/deep-merge generated-concepts requested-concepts)]
     {:id (:id index-set)
      :name (:name index-set)
      :concepts finalized-concepts}))
@@ -634,6 +626,11 @@
   (when (string/blank? elastic-name)
     (errors/throw-service-error :bad-request "Empty elastic name is not allowed")))
 
+(defn- validate-reindex-task-id
+  [reindex-task-id]
+  (when (string/blank? reindex-task-id)
+    (errors/throw-service-error :bad-request "Empty reindex task id is not allowed")))
+
 (defn start-index-resharding
   "Reshards an index to have the given number of shards"
   [context index-set-id index params]
@@ -686,8 +683,12 @@
                            assoc (keyword index) target-index)
                           (update-in
                            [:index-set concept-type :resharding-status]
-                           assoc (keyword index) "IN_PROGRESS"))]
-    ;; this will create the new index with the new shard count
+                           assoc (keyword index) (:IN_PROGRESS indexer-util/reshard-status-states)))]
+
+    ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
+    (es/create-copy-of-index context elastic-name index target-index num-shards)
+
+    ;; Update the index-set and all the indexes with changes
     (update-index-set context elastic-name new-index-set)))
 
 (defn update-resharding-status
@@ -715,7 +716,9 @@
   "Get the resharding status for the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
+        reindex-task-id (:task_id params)
         _ (validate-elastic-name elastic-name)
+        _ (validate-reindex-task-id reindex-task-id)
         conn (indexer-util/context->conn context elastic-name)
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         concept-type (get-concept-type-for-index index-set index)
@@ -725,6 +728,7 @@
         _ (when-not current-target
             (errors/throw-service-error
              :not-found
+             ;; NOTE: this error msg is used in external projects, change with caution
              (format "The index [%s] is not being resharded." index)))
         current-status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
         _ (when-not current-status
@@ -732,18 +736,27 @@
              :internal-error
              (format
               "The status of resharding index [%s] is not found." index)))
-        updated-index-set (if-not (= current-status "COMPLETE")
+
+        updated-index-set (if (= current-status (:COMPLETE indexer-util/reshard-status-states))
+                            ;; if complete, then just return current index-set
+                            index-set
                             ;; check if es /_reindex is still happening when we started the reshard asynchronously in reshard/start
-                            (let [reindexing-still-in-progress (es-helper/reindexing-still-in-progress? conn index)]
+                            (let [full-reindex-status (es-helper/get-reindex-task-status conn index reindex-task-id)
+                                  completed (:completed full-reindex-status)
+                                  failures (:failures full-reindex-status)
+                                  error (:error full-reindex-status)]
                               ;; determine if reshard status needs to be updated based on elasticsearch's async _reindex status
-                              (if reindexing-still-in-progress
+                              (if-not completed
+                                ;; if not completed, then return the index-set as it was
                                 index-set
-                                (do
-                                  (update-resharding-status context index-set-id index "COMPLETE" elastic-name)
-                                  ;; getting the most updated index-set
-                                  (index-set-util/get-index-set context elastic-name index-set-id))))
-                            ;; or use existing index-set
-                            index-set)]
+                                ;; if completed, check for failures
+                                (let [reshard-status (if (and (empty? failures) (empty? error))
+                                                       ;; docs match so can be considered complete
+                                                       (:COMPLETE indexer-util/reshard-status-states)
+                                                       (:FAILED indexer-util/reshard-status-states))]
+                                  (update-resharding-status context index-set-id index reshard-status elastic-name)
+                                  ;; returning the most updated index-set
+                                  (index-set-util/get-index-set context elastic-name index-set-id)))))]
 
     (if-let [updated-target (get-in updated-index-set [:index-set concept-type :resharding-targets (keyword index)])]
       (if-let [updated-status (get-in updated-index-set [:index-set concept-type :resharding-status (keyword index)])]
@@ -756,14 +769,19 @@
           "The status of resharding index [%s] is not found." index)))
       (errors/throw-service-error
        :not-found
+       ;; NOTE: this error msg is used in external projects, change with caution
        (format
         "The index [%s] is not being resharded." index)))))
 
 (defn- validate-resharding-complete
-  "Validate that resharding has completed successfully for the given index "
+  "Validate that resharding has completed successfully for the given index via the index set status"
   [context index-set-id index elastic-name]
-  (let [status (get-reshard-status context index-set-id index {:elastic_name elastic-name})]
-    (when-not (= (:reshard-status status) "COMPLETE")
+  (let [index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        concept-type (get-concept-type-for-index index-set index)
+        _ (when-not concept-type
+            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
+        status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
+    (when-not (= status (:COMPLETE indexer-util/reshard-status-states))
       (errors/throw-service-error
        :bad-request
        (format "Index [%s] has not completed resharding" index)))))

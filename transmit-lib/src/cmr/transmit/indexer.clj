@@ -127,12 +127,13 @@
 
 (defn get-reshard-status
   "Get the resharding status of the given index."
-  [context index-set-id index elastic-name]
+  [context index-set-id index elastic-name reindex-task-id]
   (let [conn (config/context->app-connection context :indexer)
          params (merge
                  (config/conn-params conn)
                  {:method :get
-                  :query-params {:elastic_name elastic-name}
+                  :query-params {:elastic_name elastic-name
+                                 :task_id reindex-task-id}
                   :url (get-reshard-status-url conn index-set-id index)
                   :accept :json
                   :throw-exceptions false

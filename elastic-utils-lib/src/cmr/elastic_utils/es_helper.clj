@@ -136,27 +136,52 @@
                       {:body (json/encode body)
                        :content-type "application/json"})))
 
-(defn- extract-descriptions-from-reindex-resp
-  "Pulls out description value from the elastic reindex response."
-  [reindex-resp-json]
-  (let [nodes-map (:nodes reindex-resp-json)]
-    (->> nodes-map
-         (vals)
-         (map :tasks)
-         (mapcat vals)
-         (keep :description)
-         (map clojure.string/lower-case))))
-
-(defn reindexing-still-in-progress?
-  "Returns boolean of whether elastic is still reindexing the given index."
-  [conn index]
+(defn get-reindex-task-status
+  "Get the reindex task status and if there were any failures if the task is considered COMPLETE.
+  Returns a map that captures the complete status and if there were any failures.
+  Example map return:
+  {
+    :complete true
+    :failures [{
+                :index: \"new_index\",
+                :type: \"_doc\",
+                :id\": \"doc_id\",
+                :cause: {
+                          :type: \"exception\",
+                          :reason: \"failure reason\"
+                          :caused_by: {
+                                        :type: \"number_format_exception\",
+                                        :reason: \"cause reason\"
+                                      }
+                         }
+                :status: 400
+                }]
+    :error {:type \"type\"
+            :reason \"reason\"
+            :caused_by {}
+            }
+    }"
+  [conn index reindex-task-id]
   (try
-    (let [url (str (rest/url-with-path conn "_tasks") "?actions=*reindex*&detailed=true")
+    (let [url (rest/url-with-path conn "_tasks" reindex-task-id)
           resp (rest/get conn url)
-          current-reindexing-descriptions (extract-descriptions-from-reindex-resp resp)]
-      ;; if the resp's descriptions still has the index in it, then it is still re-indexing
-      (boolean (some #(string/includes? (string/lower-case %) index) current-reindexing-descriptions)))
+          completed (:completed resp)
+          failures (get-in resp [:response :failures])
+          task-error (:error resp)
+          description (get-in resp [:task :description])
+          index-found-in-description (and description
+                                          (string/includes? (string/lower-case description) (string/lower-case index)))
+          full-status {:completed completed
+                       :failures failures
+                       :error task-error}]
+
+      ;; check if this is the right task id for this index
+      (if-not index-found-in-description
+        (errors/throw-service-error :internal-error (format "Given task id %s is not tracking the given index %s because description in task [%s] did not include the index. Mismatch on task id with index error." reindex-task-id index description)))
+      full-status)
+    (catch clojure.lang.ExceptionInfo e
+      (throw e))
     (catch Exception e
       (errors/throw-service-error
         :internal-error
-        (str "Something went wrong when calling elastic to get reindexing status for index " index ". With exception details: " e)))))
+        (str "Something went wrong when calling elastic to get reindexing status for index " index " with task id " reindex-task-id ". With exception details: " e)))))

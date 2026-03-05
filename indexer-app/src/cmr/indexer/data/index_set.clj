@@ -548,6 +548,8 @@
           :contact-email m/string-field-mapping
           :personnel m/string-field-mapping
 
+          ;; NOTE: there was once another field here called :keyword that some older documents in elastic still use.
+          ;; Keyword2 below was meant to 'replace' it.
           ;; analyzed field for keyword searches
           :keyword2 m/text-field-keyword-mapping
           :long-name-lowercase m/string-field-mapping
