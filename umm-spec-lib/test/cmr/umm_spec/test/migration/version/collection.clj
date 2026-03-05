@@ -4093,7 +4093,7 @@
         (let [result (vm/migrate-umm {} :collection "1.18.5" "1.18.4" sample-collection)]
           (is (= expected result)))
 
-        "Migrating AssociateDOI enum IsPreviousVersionOf and IsNewVersionOf back to Related Dataset"
+        "Migrating TilingIdentificationSystems down to remove Tiling system structure when the name is VIIRS Rotated Sinusoidal Tiling System"
         ;; expected
         {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE"
                                         :Coordinate1 {:MinimumValue 1.0
@@ -4115,6 +4115,22 @@
                                         :Coordinate2 {:MinimumValue 1.5
                                                       :MaximumValue 10.5}}
                                        {:TilingIdentificationSystemName "VIIRS Rotated Sinusoidal Tiling System"
+                                        :Coordinate1 {:MinimumValue "-100"
+                                                      :MaximumValue "-50"}
+                                        :Coordinate2 {:MinimumValue "50"
+                                                      :MaximumValue "100"}}]
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.5"}}
+
+        "Migrating TilingIdentificationSystems down when only 1 Tiling system structure exists"
+        ;; expected
+        {:TilingIdentificationSystems nil
+         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+                                 :Name    "UMM-C",
+                                 :Version "1.18.4"}}
+        ;; sample-collection
+        {:TilingIdentificationSystems [{:TilingIdentificationSystemName "VIIRS Rotated Sinusoidal Tiling System"
                                         :Coordinate1 {:MinimumValue "-100"
                                                       :MaximumValue "-50"}
                                         :Coordinate2 {:MinimumValue "50"

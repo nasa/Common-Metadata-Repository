@@ -849,11 +849,15 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.18.5" "1.18.4"]
   [_context collection & _]
-  ;; Migrating down version 1.18.5 to 1.18.4
-  ;; Remove TilingInformation System if it is 'VIIRS Rotated Sinusoidal Tiling System'
-  (-> collection
-      (m-spec/update-version :collection "1.18.4")
-      ;; Change AssociatedDOIs/Type to 'Related Dataset' if its enum value is IsDescribedBy
-      (update :TilingIdentificationSystems (fn [tiling-systems]
-                                               (remove #(= "VIIRS Rotated Sinusoidal Tiling System" (:TilingIdentificationSystemName %))
-                                                       tiling-systems)))))
+  (as-> collection coll
+    (m-spec/update-version coll :collection "1.18.4")
+    (update coll :TilingIdentificationSystems
+            (fn [tiling-systems]
+              (let [updated-systems (remove #(= "VIIRS Rotated Sinusoidal Tiling System"
+                                                (:TilingIdentificationSystemName %))
+                                            tiling-systems)]
+                (when (seq updated-systems)
+                  updated-systems))))
+    (if (contains? coll :TilingIdentificationSystems)
+      coll
+      (dissoc coll :TilingIdentificationSystems))))
