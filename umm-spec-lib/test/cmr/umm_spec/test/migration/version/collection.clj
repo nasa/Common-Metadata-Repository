@@ -4125,8 +4125,7 @@
 
         "Migrating TilingIdentificationSystems down when only 1 Tiling system structure exists"
         ;; expected
-        {:TilingIdentificationSystems nil
-         :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
+        {:MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.4",
                                  :Name    "UMM-C",
                                  :Version "1.18.4"}}
         ;; sample-collection

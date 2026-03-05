@@ -851,13 +851,11 @@
   [_context collection & _]
   (as-> collection coll
     (m-spec/update-version coll :collection "1.18.4")
-    (update coll :TilingIdentificationSystems
-            (fn [tiling-systems]
-              (let [updated-systems (remove #(= "VIIRS Rotated Sinusoidal Tiling System"
-                                                (:TilingIdentificationSystemName %))
-                                            tiling-systems)]
-                (when (seq updated-systems)
-                  updated-systems))))
     (if (contains? coll :TilingIdentificationSystems)
-      coll
-      (dissoc coll :TilingIdentificationSystems))))
+      (if-let [updated-systems
+               (seq (remove #(= "VIIRS Rotated Sinusoidal Tiling System"
+                                (:TilingIdentificationSystemName %))
+                            (:TilingIdentificationSystems coll)))]
+        (assoc coll :TilingIdentificationSystems updated-systems)
+        (dissoc coll :TilingIdentificationSystems))
+      coll)))
