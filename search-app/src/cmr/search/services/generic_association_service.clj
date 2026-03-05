@@ -1,6 +1,7 @@
 (ns cmr.search.services.generic-association-service
   "Provides functions for associating and dissociating generic concepts."
   (:require
+   [clojure.edn :as edn]
    [clojure.set :refer [rename-keys]]
    [cmr.common.api.context :as cmn-context]
    [cmr.common.concepts :as concepts]
@@ -125,7 +126,7 @@
   (let [associated-item-concept-id (:concept-id association)
         revision-id (:revision-id association)
         associated-item-revision-id (if (string? revision-id)
-                                      (read-string revision-id)
+                                      (edn/read-string revision-id)
                                       revision-id)
         association (sort-association association)
         {source-concept-id :source-concept-id
@@ -204,7 +205,7 @@
    Throws service error if the concept with the given concept-id and revision-id is not found."
   [context concept-type concept-id revision-id associations operation-type]
   (let [revision-id (when revision-id
-                      (read-string revision-id))
+                      (edn/read-string revision-id))
         concept {:concept-id concept-id :revision-id revision-id}
         ;;validate the user has the permission to access the concept
         ;;and the concept is not tomb-stoned.
