@@ -38,6 +38,10 @@
     [cache cache-key value]
     "Associates the value in the cache with the given key.")
 
+  (evict
+    [cache cache-key]
+    "Removes the value associated with the given key from the cache.")
+
   (cache-size
    [cache]
    "Returns the size of the cache in bytes."))
