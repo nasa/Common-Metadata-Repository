@@ -68,7 +68,7 @@
                 (index/wait-until-indexed)
                 (is (= 401 (:status resp)))
                 (is (= ["Launchpad token (partially redacted) [ABC-1ZZZZZXXXZZZZZ] has expired."] (:errors resp)))
-                (is (not= expiration-time (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))
+                (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))
 
             (testing "urs cache clears after 24 hours"
               (dev-sys-util/advance-time! (* 60 60 24))
@@ -79,3 +79,32 @@
                       "cmr"
                       transmit-config/mock-echo-system-token
                       404))))))))))
+
+(deftest transient-errors-not-cached-test
+  (testing "Transient errors (429, 504) are not cached"
+    (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token "ABC-429-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"})]
+      (is (= 429 (:status resp)))
+      (is (some #(re-find #"Rate limit exceeded" %) (:errors resp))))
+
+    (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token))))
+
+  (testing "Gateway timeout errors (504) are not cached"
+    (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token "ABC-504-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"})]
+      (is (= 504 (:status resp)))
+      (is (some #(re-find #"Gateway timeout" %) (:errors resp))))
+
+    (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))
+
+(deftest non-transient-errors-are-cached-test
+  (testing "Non-transient errors are cached for 5 minutes"
+    (let [token "ABC-INV-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+          token-key (hash token)]
+      (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token token})]
+        (is (= 401 (:status resp))))
+
+      (is (seq (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))
+
+      (dev-sys-util/advance-time! 301)
+
+      (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token token})]
+        (is (= 401 (:status resp)))))))
