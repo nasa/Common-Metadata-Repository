@@ -61,6 +61,34 @@
         ;; bar is not present
         (is (nil? (c/get-value cache :bar)))))))
 
+(deftest evict-test
+  (testing "evict removes a key from cache"
+    (let [cache (mem-cache/create-in-memory-cache)
+          lookup-called (atom false)
+          lookup-fn (fn [] (reset! lookup-called true) "new-value")]
+      (c/set-value cache :foo "initial-value")
+      (is (= "initial-value" (c/get-value cache :foo)))
+      (is (pos? (c/cache-size cache)))
+
+      (c/evict cache :foo)
+
+      (is (zero? (c/cache-size cache)))
+      (is (= "new-value" (c/get-value cache :foo lookup-fn)))
+      (is @lookup-called "Lookup function should have been called after evict")))
+
+  (testing "evict only removes specified key"
+    (let [cache (mem-cache/create-in-memory-cache)]
+      (c/set-value cache :foo "foo-value")
+      (c/set-value cache :bar "bar-value")
+      (let [size-before (c/cache-size cache)]
+        (is (pos? size-before))
+
+        (c/evict cache :foo)
+
+        (is (< (c/cache-size cache) size-before) "Cache size should decrease after eviction")
+        (is (pos? (c/cache-size cache)) "Cache should not be empty, bar still present")
+        (is (= "bar-value" (c/get-value cache :bar)) "Other keys should remain")))))
+
 (def ^:private umm-json (slurp (io/file (io/resource "test-data/in_memory_cache.json"))))
 
 (deftest cache-size-test

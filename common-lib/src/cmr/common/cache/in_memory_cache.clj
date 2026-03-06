@@ -114,6 +114,10 @@
     [_this key value]
     (swap! cache-atom assoc key value))
 
+  (evict
+    [_this key]
+    (swap! cache-atom cc/evict key))
+
   (cache-size
    [_]
    (reduce + 0 (map size-in-bytes (vals @cache-atom)))))
