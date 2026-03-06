@@ -92,12 +92,56 @@
                                                           :method :post :raw? true
                                                           :http-options {:form-params {:token token}}})]
     (when-not (= 200 status)
-      (errors/throw-service-error
-       :unauthorized
-       (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]. EDL error message: [%s]"
-               (common-util/scrub-token token)
-               status
-               (pr-str body))))
+      (case (int status)
+        408 (errors/throw-service-error
+             :request-timeout
+             (format "Request timeout while validating Launchpad token. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        429 (errors/throw-service-error
+             :too-many-requests
+             (format "Launchpad rate limit exceeded. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        500 (errors/throw-service-error
+             :internal-server-error
+             (format "EDL or Launchpad internal server error. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        502 (errors/throw-service-error
+             :bad-gateway
+             (format "EDL cannot reach Launchpad (bad gateway). Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        503 (errors/throw-service-error
+             :service-unavailable
+             (format "EDL or Launchpad service unavailable. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        504 (errors/throw-service-error
+             :gateway-timeout
+             (format "Launchpad service temporarily unavailable (gateway timeout). Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
+                     (common-util/scrub-token token)
+                     (pr-str body)))
+
+        401 (errors/throw-service-error
+             :unauthorized
+             (if (and (map? body) (:error body))
+               (:error body)
+               (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS."
+                       (common-util/scrub-token token))))
+
+        (errors/throw-service-error
+         :unauthorized
+         (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]. EDL error message: [%s]"
+                 (common-util/scrub-token token)
+                 status
+                 (pr-str body)))))
     ;; The throw above will prevent the next line of code from executing if status is not 200.
     ;; The block below is protected if Earthdata Login (EDL) goes down for any reason and the body
     ;; is not what is expected; CMR-10086.

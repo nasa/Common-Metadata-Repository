@@ -14,11 +14,14 @@
   {:bad-request 400
    :unauthorized 401
    :not-found 404
+   :request-timeout 408
    :conflict 409
    :payload-too-large 413
    :invalid-content-type 415
    :invalid-data 422
    :too-many-requests 429
+   :internal-server-error 500
+   :bad-gateway 502
    :service-unavailable 503
    :gateway-timeout 504})
 
