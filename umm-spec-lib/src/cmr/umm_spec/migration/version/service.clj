@@ -632,3 +632,15 @@
     (-> umm-s
         (assoc :Type service-type)
         (m-spec/update-version :service "1.5.2"))))
+
+(defmethod interface/migrate-umm-version [:service "1.5.3" "1.5.4"]
+  [_context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.5.4")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.4" "1.5.3"]
+  [_context umm-s & _]
+  (-> umm-s
+      (update-in [:ServiceOptions :SupportedReformattings]
+                  service-options/downgrade-supported-formats-1_5_4-to-1_5_3)
+      (m-spec/update-version :service "1.5.3")))

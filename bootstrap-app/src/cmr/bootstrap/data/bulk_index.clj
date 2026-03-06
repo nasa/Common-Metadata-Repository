@@ -77,13 +77,21 @@
   (let [indexer-context {:system (helper/get-indexer system)}
         conn (indexer-util/context->conn indexer-context elastic-name)]
     (try
-      (let [result (es-helper/migrate-index conn source-index target-index)]
-        (when (:error result)
-          (throw (ex-info "Migration failed" {:source source-index :target target-index :error result}))))
-      (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index "IN_PROGRESS" elastic-name)
+      (let [result (es-helper/migrate-index conn source-index target-index)
+            _ (when (:error result)
+                (throw (ex-info "Migration failed" {:source source-index :target target-index :error result})))
+            ;; if there is no error, then return the elastic reindex task id in the resp
+            reindex-task-id (:task result)
+            _ (when (nil? reindex-task-id)
+                (throw (ex-info "Migration failed to return a reindex task id"
+                                {:source source-index
+                                 :target target-index
+                                 :result result})))]
+        (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:IN_PROGRESS indexer-util/reshard-status-states) elastic-name)
+        reindex-task-id)
       (catch Throwable e
         (error e (msg/migrate-index-error source-index target-index (.getMessage e)))
-        (index-set-service/update-resharding-status indexer-context  index-set/index-set-id  source-index  "FAILED" elastic-name)
+        (index-set-service/update-resharding-status indexer-context index-set/index-set-id source-index (:FAILED indexer-util/reshard-status-states) elastic-name)
         (throw e)))))
 
 (defn index-granules-for-collection
@@ -446,12 +454,5 @@
                           (if (= request :delete)
                             (delete-concepts-by-id system provider-id concept-type concept-ids)
                             (index-concepts-by-id system provider-id concept-type concept-ids)))
-                        (catch Throwable e
-                          (error e (.getMessage e)))))))
-    (let [channel (:migrate-index-channel core-async-dispatcher)]
-      (async/thread (while true
-                      (try ; log errors but keep the thread alive)
-                        (let [{:keys [source-index target-index elastic-name]} (<!! channel)]
-                          (migrate-index system source-index target-index elastic-name))
                         (catch Throwable e
                           (error e (.getMessage e)))))))))

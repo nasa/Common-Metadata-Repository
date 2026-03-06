@@ -156,7 +156,6 @@
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
    :index-concepts-by-id (partial not-implemented :index-concepts-by-id)
-   :migrate-index (partial not-implemented :migrate-index)
    :delete-concepts-from-index-by-id (partial not-implemented :delete-concepts-from-index-by-id)
    :bootstrap-virtual-products (partial not-implemented :bootstrap-virtual-products)
    :fingerprint-variables fingerprint-variables})

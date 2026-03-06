@@ -224,3 +224,28 @@
           :SupportedOutputFormats ["HDF4","NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON", "Shapefile"]}
          {:SupportedInputFormat "Shapefile"
           :SupportedOutputFormats ["HDF4","NETCDF-3","NETCDF-4","BINARY", "ZARR", "GeoJSON", "Shapefile"]}]))
+
+(deftest downgrade-supported-formats-1_5_4-to-1_5_3-test
+  (are3 [supported-reformattings expected-supported-reformattings]
+         (is (= expected-supported-reformattings
+                (service/downgrade-supported-formats-1_5_4-to-1_5_3 supported-reformattings)))
+
+         "Testing the replacement in Supported Input Formats."
+         [{:SupportedInputFormat "NETCDF-4"
+           :SupportedOutputFormats ["Shapefile+zip"]}
+          {:SupportedInputFormat "NETCDF-4 (OPeNDAP URL)"
+           :SupportedOutputFormats ["BINARY"]}]
+         [{:SupportedInputFormat "NETCDF-4"
+           :SupportedOutputFormats ["Shapefile+zip"]}
+          {:SupportedInputFormat "NETCDF-4"
+           :SupportedOutputFormats ["BINARY"]}]
+
+         "Testing the replacement in Supported Output Formats."
+         [{:SupportedInputFormat "HDF4"
+           :SupportedOutputFormats ["NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON"]}
+          {:SupportedInputFormat "Shapefile+zip"
+           :SupportedOutputFormats ["NETCDF-3","NETCDF-4 (OPeNDAP URL)","BINARY", "ZARR", "GeoJSON", "Shapefile+zip"]}]
+         [{:SupportedInputFormat "HDF4"
+           :SupportedOutputFormats ["NETCDF-3","NETCDF-4","BINARY","ASCII", "ZARR", "GeoJSON"]}
+          {:SupportedInputFormat "Shapefile+zip"
+           :SupportedOutputFormats ["NETCDF-3","NETCDF-4","BINARY", "ZARR", "GeoJSON", "Shapefile+zip"]}]))
