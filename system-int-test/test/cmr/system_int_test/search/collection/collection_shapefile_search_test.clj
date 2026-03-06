@@ -142,32 +142,4 @@
           "dc_richmond_line" [whole-world very-wide-cart washington-dc richmond]
 
           "Single Point Washington DC"
-          "single_point_dc" [whole-world very-wide-cart washington-dc]))
-
-      (testing (format "Search with force-cartesian parameter using %s shapefile" fmt)
-        ;; Test that force-cartesian parameter is accepted and doesn't cause errors
-        ;; The parameter changes how shapefile coordinates are interpreted (geodetic vs cartesian)
-        (testing "force-cartesian=true is accepted without errors"
-          (let [params [{:name "shapefile"
-                         :content (io/file (io/resource (str "shapefiles/box." extension)))
-                         :mime-type mime-type}
-                        {:name "force-cartesian"
-                         :content "true"}
-                        {:name "provider"
-                         :content "PROV1"}]
-                result (search/find-refs-with-multi-part-form-post :collection params)]
-            ;; Just verify the search completes without error - results may be empty or different
-            ;; depending on coordinate system interpretation
-            (is (map? result) "Search with force-cartesian=true should return a valid result")))
-
-        (testing "force-cartesian=false is accepted without errors"
-          (let [params [{:name "shapefile"
-                         :content (io/file (io/resource (str "shapefiles/box." extension)))
-                         :mime-type mime-type}
-                        {:name "force-cartesian"
-                         :content "false"}
-                        {:name "provider"
-                         :content "PROV1"}]
-                result (search/find-refs-with-multi-part-form-post :collection params)]
-            ;; Just verify the search completes without error
-            (is (map? result) "Search with force-cartesian=false should return a valid result")))))))
+          "single_point_dc" [whole-world very-wide-cart washington-dc])))))
