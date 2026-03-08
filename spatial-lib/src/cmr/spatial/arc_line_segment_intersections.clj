@@ -7,8 +7,7 @@
    [cmr.common.util :as u]
    [cmr.spatial.line-segment :as s]
    [primitive-math])
-  (:import cmr.spatial.arc.Arc
-           cmr.spatial.line_segment.LineSegment
+  (:import cmr.spatial.line_segment.LineSegment
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
@@ -69,11 +68,11 @@
 
 (defn line-segment-arc-intersections
   "Returns a list of the points where the line segment intersects the arc."
-  [^LineSegment ls ^Arc arc]
+  [^LineSegment ls arc]
 
   (let [ls-mbr (.mbr ls)
-        arc-mbr1 (.mbr1 arc)
-        arc-mbr2 (.mbr2 arc)
+        arc-mbr1 (:mbr1 arc)
+        arc-mbr2 (:mbr2 arc)
         mbr1-intersects (m/intersects-br? :geodetic ls-mbr arc-mbr1)
         mbr2-intersects (and arc-mbr2 (m/intersects-br? :geodetic ls-mbr arc-mbr2))
         arc-points (a/arc->points arc)
@@ -132,7 +131,7 @@
   "Determines if line 1 and 2 intersect. A line can be an arc or a line segment."
   [line1 line2]
 
-  (if (= (type line2) Arc)
+  (if (= (type line2) cmr.spatial.arc.Arc)
     (intersections-with-arc line1 line2)
     (intersections-with-line-segment line1 line2)))
 
@@ -149,7 +148,8 @@
     [ls point]
     (s/point-on-segment? ls point))
 
-  Arc
+  ;; Clojure Arc record type
+  cmr.spatial.arc.Arc
   (intersections-with-arc
     [arc1 arc2]
     (a/intersections arc1 arc2))

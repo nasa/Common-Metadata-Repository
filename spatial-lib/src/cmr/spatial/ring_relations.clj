@@ -14,7 +14,8 @@
    cmr.spatial.cartesian_ring.CartesianRing
    cmr.spatial.geodetic_ring.GeodeticRing
    cmr.spatial.point.Point
-   cmr.spatial.mbr.Mbr))
+   cmr.spatial.mbr.Mbr
+   [cmr.spatial.geometry RingIntersections]))
 (primitive-math/use-primitive-operators)
 
 (defn ring
@@ -85,23 +86,31 @@
     [_]
     :geodetic))
 
+(defn- ->java-ring
+  "Converts a Clojure ring (GeodeticRing or CartesianRing) to its Java equivalent.
+  Returns Java rings unchanged."
+  [ring]
+  (cond
+    ;; Already Java rings - return unchanged
+    (instance? cmr.spatial.internal.ring.GeodeticRing ring) ring
+    (instance? cmr.spatial.internal.ring.CartesianRing ring) ring
+    ;; Clojure rings - convert to Java
+    (instance? GeodeticRing ring) (cmr.spatial.internal.ring.GeodeticRing/createRing (:points ring))
+    (instance? CartesianRing ring) (cmr.spatial.internal.ring.CartesianRing/createRing (:points ring))
+    :else (throw (IllegalArgumentException. (str "Unsupported ring type: " (class ring))))))
+
+(defn- ->java-mbr
+  "Converts a Clojure MBR to a Java MBR. Returns Java MBRs unchanged."
+  [mbr]
+  (if (instance? cmr.spatial.shape.Mbr mbr)
+    mbr
+    (cmr.spatial.shape.Mbr. (:west mbr) (:north mbr) (:east mbr) (:south mbr))))
+
 (defn intersects-ring?
   "Returns true if the rings intersect each other."
   [r1 r2]
-  (or
-    ;; Do any of the line-segments intersect?
-    ;; Performance enhancement: this should use the multiple arc intersection algorithm to avoid O(N^2) intersections
-    (some (fn [[line1 line2]]
-            (seq (asi/intersections line1 line2)))
-          (for [ls1 (segments r1)
-                ls2 (segments r2)]
-            [ls1 ls2]))
-
-    ;; Is ring 2 inside ring 1? Only one point check is required
-    (covers-point? r1 (first (:points r2)))
-
-    ;; Is ring 1 inside ring 2? Only one point check is required
-    (covers-point? r2 (first (:points r1)))))
+  ;; Delegate to Java implementation
+  (RingIntersections/intersectsRing (->java-ring r1) (->java-ring r2)))
 
 (defn covers-ring?
   "Returns true if the ring covers the other ring."
@@ -162,21 +171,8 @@
 (defn intersects-br?
   "Returns true if the ring intersects the br"
   [ring ^Mbr br]
-  (when (m/intersects-br? (coordinate-system ring) (:mbr ring) br)
-    (if (m/single-point? br)
-      (covers-point? ring (p/point (.west br) (.north br)))
-
-      (or
-       ;; Does the br cover any points of the ring?
-       (if (= :geodetic (coordinate-system ring))
-         (some #(m/geodetic-covers-point? br %) (:points ring))
-         (some #(m/cartesian-covers-point? br %) (:points ring)))
-
-       ;; Does the ring completely contain the br? We only need to check one point of the br
-       (covers-point? ring (p/point (.west br) (.north br)))
-
-       ;; Do any of the sides intersect?
-       (lines-intersects-br-sides? (segments ring) br)))))
+  ;; Delegate to Java implementation
+  (RingIntersections/intersectsBr (->java-ring ring) (->java-mbr br)))
 
 (defn intersects-line-string?
   "Returns true if the ring intersects the line"

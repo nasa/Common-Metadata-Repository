@@ -8,7 +8,7 @@
    [cmr.spatial.validation :as v]
    [primitive-math])
   #_{:clj-kondo/ignore [:unused-import]}
-  (:import cmr.spatial.arc.Arc))
+  (:import cmr.spatial.internal.arc.Arc))
 (primitive-math/use-primitive-operators)
 
 (defn- ring-closed-validation
