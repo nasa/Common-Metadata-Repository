@@ -258,16 +258,7 @@
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
         (info "Existing gran index set:" (pr-str existing-gran-index-set))
-        (info "New gran index set:" (pr-str expected-gran-index-set))))
-
-    ;; this is during our transition
-    (when (nil? existing-gran-index-set)
-      (info "Creating gran index set for first time, using the old index-sets value if available.")
-      (let [old-index-set (index-set-es/get-old-index-set context es-config/gran-elastic-name idx-set/index-set-id)]
-        ;; put that value into the new index sets
-        (when-not (nil? old-index-set)
-          (info "old index-sets was found. Creating gran index-sets index with old index-sets value.")
-          (index-set-svc/put-index-set context old-index-set))))))
+        (info "New gran index set:" (pr-str expected-gran-index-set))))))
 
 (defn delete-granule-index
   "Delete an elastic index by name"
@@ -444,9 +435,6 @@
   [context es-indexes es-type es-doc concept-id revision-id elastic-version options]
   (doseq [es-index es-indexes]
     (let [conn (get-es-cluster-conn context es-index)
-          ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-          _ (when (es-config/split-cluster-log-toggle)
-              (info "CMR-10600 Saving doc for concept " concept-id " under index " es-index " in es cluster " conn))
           {:keys [ignore-conflict? all-revisions-index?]} options
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           result (try-elastic-operation
@@ -465,9 +453,6 @@
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
   (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id elastic-id)]
-    ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-    (when (es-config/split-cluster-log-toggle)
-      (info "CMR-10600 Get document of index " es-index " from ES cluster " es-cluster-name))
     (es-helper/doc-get (indexer-util/context->conn context es-cluster-name) es-index es-type elastic-id)))
 
 (defn delete-document
@@ -478,9 +463,6 @@
    (doseq [es-index es-indexes]
      ;; Cannot use elasticsearch for deletion as we require special headers on delete
      (let [es-cluster-name (es-index/get-es-cluster-name-from-concept-id concept-id)
-           ;; Temporarily putting in this log to check which indexes are going to which cluster during ES cluster split
-           _ (when (es-config/split-cluster-log-toggle)
-               (info "CMR-10600 Deleting concept " concept-id " with index " es-index " in ES cluster " es-cluster-name))
            {:keys [admin-token]} (context->es-config context es-cluster-name)
            {:keys [uri http-opts]} (indexer-util/context->conn context es-cluster-name)
            {:keys [ignore-conflict? all-revisions-index?]} options
