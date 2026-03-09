@@ -16,21 +16,15 @@
 (defn create-granule-counts-cache-client
   "Creates and returns a new cache for storing granule counts."
   []
-  (log/info "Attempting to create granule counts cache client")
-  (let [cache (redis-cache/create-redis-cache {:keys-to-track [granule-counts-cache-key]
+  (redis-cache/create-redis-cache {:keys-to-track [granule-counts-cache-key]
                                    :read-connection (redis-config/redis-read-conn-opts)
-                                   :primary-connection (redis-config/redis-conn-opts)})]
-    (log/info "Granule counts cache client created successfully")
-    cache))
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
-  [context provider-ids]
-  (let [condition (if (seq provider-ids)
-                    (qm/string-conditions :provider-id provider-ids true)
-                    qm/match-all)
-        query (qm/query {:concept-type :granule
-                         :condition condition
+  [context]
+  (let [query (qm/query {:concept-type :granule
+                         :condition qm/match-all
                          :page-size 0
                          :aggregations {:by-provider
                                         {:terms {:field (q2e/query-field->elastic-field
@@ -46,7 +40,7 @@
     ;; It's possible that there are more providers with granules than we expected.
     ;; :sum_other_doc_count will be greater than 0 in that case.
     (when (> extra-provider-count 0)
-      (e/internal-error! "There were [%s] more providers with granules than we ever expected to see."))
+      (e/internal-error! (format "There were [%s] more providers with granules than we ever expected to see." extra-provider-count)))
 
     (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
                    :let [extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])]
@@ -70,20 +64,14 @@
 (defn refresh-granule-counts-cache
   "Refreshes the granule counts cache with the latest data. This is called from a lambda
    triggered by an event bridge schedule."
-  ([context] 
-   (log/info "Starting refresh-granule-counts-cache")
-  (log/debug "Context keys:" (keys context))
-   (refresh-granule-counts-cache context #(get-collection-granule-counts context nil)))
+  ([context]
+   (refresh-granule-counts-cache context #(get-collection-granule-counts context)))
   ([context func]
+   (log/info "Starting refresh-granule-counts-cache")
    (let [granule-counts (func)
          cache (cache/context->cache context granule-counts-cache-key)]
-     (log/info "Attempting to refresh granule counts cache with" (count granule-counts))
-     (if cache
-       (do
-         (log/debug "Cache found, attempting to set value")
-         (cache/set-value cache granule-counts-cache-key granule-counts)
-         (log/info (format "Successfully refreshed granule counts cache with %d entries" (count granule-counts))))
-       (log/error "Granule counts cache not found in context - refresh skipped")))))
+     (cache/set-value cache granule-counts-cache-key granule-counts)
+     (log/info "Finished refresh-granule-counts-cache"))))
 
 (defn get-granule-counts
   "Retrieves the cached granule counts, or fetches them if not cached."
@@ -92,6 +80,12 @@
   ([context provider-ids]
    (get-granule-counts context provider-ids get-collection-granule-counts))
   ([context provider-ids get-collection-granule-counts-fn]
-   (cache/get-value (cache/context->cache context granule-counts-cache-key)
-                    granule-counts-cache-key
-                    #(get-collection-granule-counts-fn context provider-ids))))
+   (let [cache (cache/context->cache context granule-counts-cache-key)
+         counts (cache/get-value cache
+                                 granule-counts-cache-key
+                                 #(get-collection-granule-counts-fn context))]
+     (if (seq provider-ids)
+       (into {} (filter (fn [[k _]]
+                          (some #(= (concepts/concept-id->provider-id k) %) provider-ids))
+                        counts))
+       counts))))
