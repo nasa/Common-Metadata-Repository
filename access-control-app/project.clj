@@ -28,6 +28,8 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
+  :parent-project {:path "../project.clj"
+                 :inherit [:managed-dependencies]}
   :dependencies ~(concat '[[cheshire "5.12.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.15.4"]
@@ -38,15 +40,16 @@
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            [org.clojure/clojure "1.11.2"]
                            [org.clojure/tools.reader "1.3.2"]
-                           [org.eclipse.jetty/jetty-http "12.0.21"]
-                           [org.eclipse.jetty/jetty-util "12.0.21"]
-                           [ring/ring-core "1.14.2"]
-                           [ring/ring-jetty-adapter "1.14.2"]
+                           [org.eclipse.jetty/jetty-http]
+                           [org.eclipse.jetty/jetty-util]
+                           [ring/ring-core]
+                           [ring/ring-jetty-adapter]
                            [ring/ring-codec "1.3.0"]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
   :plugins [[lein-modules "0.3.11"]
             [lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
@@ -62,7 +65,7 @@
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-codec "1.3.0"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [ring/ring-jetty-adapter]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]

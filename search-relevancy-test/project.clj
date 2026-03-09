@@ -3,6 +3,9 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  ;; This product will NOT use the parent project because it needs to be able to depend on all the
+  ;; other projects. Instead, it will use the project-dependencies list below to pull in the other
+  ;; projects as dependencies.
   :dependencies [[camel-snake-kebab "0.4.0"]
                  [cheshire "5.12.0"]
                  [clj-http "2.3.0"]
@@ -52,7 +55,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.14.2"]]}}
+                                     [ring/ring-jetty-adapter "1.15.3"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

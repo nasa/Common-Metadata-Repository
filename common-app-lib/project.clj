@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[cheshire "5.12.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"
@@ -13,12 +15,13 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [org.eclipse.jetty/jetty-util]
+                 [ring/ring-core ]
+                 [ring/ring-jetty-adapter]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -27,8 +30,8 @@
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [ring/ring-codec "1.3.0"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
-                                  [ring/ring-core "1.14.2"]
+                                  [ring/ring-jetty-adapter]
+                                  [ring/ring-core]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

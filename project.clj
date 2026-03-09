@@ -21,10 +21,21 @@
                           [cheshire "5.12.0"] ;; latest is 6.1.0
                           [clj-http "3.11.0"] ;; latest is 3.13.1
                           [clj-time "0.15.1"] ;; latest is 0.15.2
-                          [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
+                          [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.testcontainers/testcontainers "2.0.2" ;; latest
-                           :exclusions [[org.apache.commons/commons-compress]]]]
+                           :exclusions [[org.apache.commons/commons-compress]]]
+                          [ring/ring-core "1.15.3"];; latest is 1.15.2 was 1.14.2
+                          [ring/ring-jetty-adapter "1.15.3"
+                           :exclusions [org.eclipse.jetty/jetty-server]] ;; latest is 1.15.3
+
+                          ;; These libraries are all versioned together
+                          [org.eclipse.jetty/jetty-http "12.1.6"]
+                          [org.eclipse.jetty/jetty-util "12.1.6"]
+                          [org.eclipse.jetty/jetty-io "12.1.6"]
+                          [org.eclipse.jetty/jetty-server "12.1.6"]
+                          [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                          [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"
                                         "indexer-app"

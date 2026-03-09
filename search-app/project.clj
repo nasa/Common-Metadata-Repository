@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[cheshire "5.12.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
@@ -28,11 +30,22 @@
                  [org.geotools/gt-geojsondatastore "27-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
                  [org.mozilla/rhino "1.7.12"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
+
                  [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-core]
+
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
+                 [org.eclipse.jetty/jetty-io]
+                 [org.eclipse.jetty/jetty-server]
+                 [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]
+                 [ring/ring-jetty-adapter
+                  :exclusions [org.eclipse.jetty/jetty-http
+                               org.eclipse.jetty/jetty-io
+                               org.eclipse.jetty/jetty-util
+                               org.eclipse.jetty/jetty-server
+                               org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
@@ -43,7 +56,8 @@
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
                  ["geo-snapshot" "https://repo.osgeo.org/repository/snapshot"]]
-  :plugins [[lein-exec "0.3.7"]]
+  :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]]
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
@@ -52,12 +66,27 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
+             ;:test {:dependencies [[org.eclipse.jetty/jetty-server]]
+             ;       :exclusions  [org.eclipse.jetty/jetty-server]}
              :dev {:dependencies [[criterium "0.4.4"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
+
+                                  [org.eclipse.jetty/jetty-http]
+                                  [org.eclipse.jetty/jetty-util]
+                                  [org.eclipse.jetty/jetty-io]
+                                  [org.eclipse.jetty/jetty-unixdomain-server]
+                                  [org.eclipse.jetty/jetty-server]
+                                  [ring/ring-jetty-adapter
+                                   :exclusions [org.eclipse.jetty/jetty-http
+                                                org.eclipse.jetty/jetty-io
+                                                org.eclipse.jetty/jetty-util
+                                                org.eclipse.jetty/jetty-unixdomain-server
+                                                org.eclipse.jetty/jetty-server
+                                                org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
@@ -71,8 +100,13 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
+             ;:test {:plugins [[lein-shell "0.5.0"]]
+             ;       :dependencies [[org.eclips.jetty/jetty-server "12.1.7"]
+             ;                      [ring/ring-jetty-adapter :exclusions [org.eclipse.jetty/jetty-server]]
+             ;                      [org.eclipse.jetty/jetty-server "12.1.7"]
+             ;                      [org.eclipse.jetty.websocket/websocket-jetty-server "11.0.26"]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

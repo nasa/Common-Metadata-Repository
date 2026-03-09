@@ -3,6 +3,9 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  ;; This product will NOT use the parent project because it needs to be able to depend on all the
+  ;; other projects. Instead, it will use the project-dependencies list below to pull in the other
+  ;; projects as dependencies.
   :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
@@ -35,15 +38,59 @@
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [org.eclipse.jetty/jetty-io "12.0.21"]]
+                 [ring/ring-core "1.15.3"]
+                 ;[ring/ring-jetty-adapter "1.15.3"]
+
+                 ;; Patch Jetty inside the ring adapter
+                 [org.eclipse.jetty/jetty-http "12.1.6"]
+                 [org.eclipse.jetty/jetty-io "12.1.6"]
+                 [org.eclipse.jetty/jetty-util "12.1.6"]
+                 [org.eclipse.jetty/jetty-server "12.1.6"]
+                 [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                 ; AI suggested nonsense below:
+                 ;[org.eclipse.jetty/jetty-security "12.1.6"]
+                 ;[org.eclipse.jetty/jetty-session "12.1.6"]
+                 ;[org.eclipse.jetty/jetty-xml "12.1.6"]
+
+                 ;[org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.6"]
+                 ;[org.eclipse.jetty.ee9/jetty-ee9-nested "12.1.6"]
+                 ;[org.eclipse.jetty.ee9/jetty-ee9-security "12.1.6"]
+                 ;[org.eclipse.jetty.ee9/jetty-ee9-webapp "12.1.6"]
+                 ;[org.eclipse.jetty.ee/jetty-ee-webapp "12.1.6"]
+
+                 ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
+                 ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api "12.1.6"]
+                 ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common "12.1.6"]
+                 ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet "12.1.6"]
+                 ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
+                 ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
+
+                 [ring/ring-jetty-adapter "1.15.3"
+                  :exclusions [org.eclipse.jetty/jetty-http
+                               org.eclipse.jetty/jetty-io
+                               org.eclipse.jetty/jetty-util
+                               org.eclipse.jetty/jetty-server
+                               org.eclipse.jetty/jetty-unixdomain-server
+                               ; 🚩 AI suggested nonsense below:
+                               ;org.eclipse.jetty/jetty-security
+                               ;org.eclipse.jetty/jetty-session
+                               ;org.eclipse.jetty/jetty-xml
+                               ;org.eclipse.jetty.ee9/jetty-ee9-servlet
+                               ;org.eclipse.jetty.ee9/jetty-ee9-nested
+                               ;org.eclipse.jetty.ee9/jetty-ee9-security
+                               ;org.eclipse.jetty.ee9/jetty-ee9-webapp
+                               ;org.eclipse.jetty.ee/jetty-ee-webapp
+                               org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
+                               ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api
+                               ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common
+                               ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet
+                               ;org.eclipse.jetty.websocket/jetty-websocket-core-common
+                               ;org.eclipse.jetty.websocket/jetty-websocket-core-server
+                               ]]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
-                       "-Dclojure.compiler.direct-linking=true"]
+                       "-Dclojure.compiler.direct-linking=true"] 
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
@@ -52,7 +99,54 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  ;[ring/ring-jetty-adapter "1.15.3"]
+
+                                  ;; Patch Jetty inside the ring adapter
+                                  [org.eclipse.jetty/jetty-http "12.1.6"]
+                                  [org.eclipse.jetty/jetty-io "12.1.6"]
+                                  [org.eclipse.jetty/jetty-util "12.1.6"]
+                                  [org.eclipse.jetty/jetty-server "12.1.6"]
+                                  [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                                  ; 🚩 AI suggested nonsense below:
+                                  ;[org.eclipse.jetty/jetty-security "12.1.6"]
+                                  ;[org.eclipse.jetty/jetty-session "12.1.6"]
+                                  ;[org.eclipse.jetty/jetty-xml "12.1.6"]
+
+                                  ;[org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9/jetty-ee9-nested "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9/jetty-ee9-security "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9/jetty-ee9-webapp "12.1.6"]
+                                  ;[org.eclipse.jetty.ee/jetty-ee-webapp "12.1.6"]
+
+                                  [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common "12.1.6"]
+                                  ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet "12.1.6"]
+                                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
+                                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
+                                  [ring/ring-jetty-adapter "1.15.3"
+                                   :exclusions [org.eclipse.jetty/jetty-http
+                                                org.eclipse.jetty/jetty-io
+                                                org.eclipse.jetty/jetty-util
+                                                org.eclipse.jetty/jetty-server
+                                                org.eclipse.jetty/jetty-unixdomain-server
+                                                ;org.eclipse.jetty/jetty-security
+                                                ;org.eclipse.jetty/jetty-session
+                                                ;org.eclipse.jetty/jetty-xml
+                                                ;org.eclipse.jetty.ee9/jetty-ee9-servlet
+                                                ;org.eclipse.jetty.ee9/jetty-ee9-nested
+                                                ;org.eclipse.jetty.ee9/jetty-ee9-security
+                                                ;org.eclipse.jetty.ee9/jetty-ee9-webapp
+                                                ;org.eclipse.jetty.ee/jetty-ee-webapp
+                                                org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
+                                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api
+                                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common
+                                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet
+                                                ;org.eclipse.jetty.websocket/jetty-websocket-core-common
+                                                ;org.eclipse.jetty.websocket/jetty-websocket-core-server
+                                                ]]
+
+                                  [pjstadig/humane-test-output "0.9.0"]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
@@ -72,7 +166,24 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.14.2"]
+             :kaocha {:dependencies [;[ring/ring-jetty-adapter "1.15.3"]
+
+                                     ;; Patch Jetty inside the ring adapter
+                                     [org.eclipse.jetty/jetty-http "12.1.6"]
+                                     [org.eclipse.jetty/jetty-io "12.1.6"]
+                                     [org.eclipse.jetty/jetty-util "12.1.6"]
+                                     [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                                     [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
+                                     [org.eclipse.jetty/jetty-server "12.1.6"]
+                                     [ring/ring-jetty-adapter "1.15.3"
+                                      :exclusions [org.eclipse.jetty/jetty-http
+                                                   org.eclipse.jetty/jetty-io
+                                                   org.eclipse.jetty/jetty-util
+                                                   org.eclipse.jetty/jetty-server
+                                                   org.eclipse.jetty/jetty-unixdomain-server
+                                                   org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+
+
                                      [lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
