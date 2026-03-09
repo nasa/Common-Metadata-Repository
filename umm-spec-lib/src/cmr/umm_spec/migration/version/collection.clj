@@ -841,3 +841,21 @@
                        (util/update-in-each [:AssociatedDOIs] migrate-associated-doi-type-down-to-1-18-3))
                    coll))))
 
+(defmethod interface/migrate-umm-version [:collection "1.18.4" "1.18.5"]
+  [_context collection & _]
+  ;; Migrating up version 1.18.4 to 1.18.5
+  (-> collection
+      (m-spec/update-version :collection "1.18.5")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.5" "1.18.4"]
+  [_context collection & _]
+  (as-> collection coll
+    (m-spec/update-version coll :collection "1.18.4")
+    (if (contains? coll :TilingIdentificationSystems)
+      (if-let [updated-systems
+               (seq (remove #(= "VIIRS Rotated Sinusoidal Tiling System"
+                                (:TilingIdentificationSystemName %))
+                            (:TilingIdentificationSystems coll)))]
+        (assoc coll :TilingIdentificationSystems updated-systems)
+        (dissoc coll :TilingIdentificationSystems))
+      coll)))
