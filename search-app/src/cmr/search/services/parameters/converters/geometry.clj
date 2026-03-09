@@ -43,11 +43,15 @@
 (defn force-ccw-orientation
   "Forces a LineString to be in counter-clockwise orientation"
   [^LineString line-string winding]
-  (let [coords (.getCoordinates line-string)]
-    (if (and 
-          (> (count coords) 3)
-          (= winding :cw))
-      (.reverse line-string)
+  (let [coords (.getCoordinates line-string)
+        reversed? (and (> (count coords) 3) (= winding :cw))]
+    (debug (format "=== FORCE-CCW-ORIENTATION === Num coords: %d, Winding param: %s, Will reverse: %s"
+                     (count coords) winding reversed?))
+    (debug (format "=== ORIGINAL COORDS === %s" (vec coords)))
+    (if reversed?
+      (let [reversed (.reverse line-string)]
+        (debug (format "=== REVERSED COORDS === %s" (vec (.getCoordinates reversed))))
+        reversed)
       line-string)))
 
 (defn polygon->shape

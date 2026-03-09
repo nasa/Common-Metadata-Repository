@@ -46,10 +46,17 @@
 
 (defn winding-opts
   "Get the opts for a call to `normalize-polygon-winding` based on file type.
-  Optionally merges in force-cartesian option if provided in context."
+  Optionally merges in force-cartesian option if provided in context.
+
+  Note: For GeoJSON, we only normalize hole winding. Boundary winding is not normalized
+  because GeoJSON coordinates come from GeoTools already validated. For small local polygons
+  (the typical cartesian use case), geodetic CCW and cartesian CCW have the same orientation,
+  so no boundary reversal is needed."
   ([mime-type]
    (winding-opts mime-type nil))
   ([mime-type context]
+   (debug (format "=== WINDING-OPTS === mime-type: %s, force-cartesian in context: %s"
+                    mime-type (:force-cartesian context)))
    (let [base-opts (case mime-type
                      "application/shapefile+zip" {:boundary-winding :cw}
                      "application/vnd.google-earth.kml+xml" {}
@@ -57,6 +64,7 @@
          final-opts (if (:force-cartesian context)
                       (assoc base-opts :force-cartesian true)
                       base-opts)]
+     (debug (format "=== WINDING-OPTS RESULT === %s" final-opts))
      final-opts)))
 
 (defn unzip-file
