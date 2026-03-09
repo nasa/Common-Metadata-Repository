@@ -65,10 +65,10 @@
   "Refreshes the granule counts cache with the latest data. This is called from a lambda
    triggered by an event bridge schedule."
   ([context]
-   (refresh-granule-counts-cache context #(get-collection-granule-counts context)))
+   (refresh-granule-counts-cache context get-collection-granule-counts))
   ([context func]
    (log/info "Starting refresh-granule-counts-cache")
-   (let [granule-counts (func)
+   (let [granule-counts (func context)
          cache (cache/context->cache context granule-counts-cache-key)]
      (cache/set-value cache granule-counts-cache-key granule-counts)
      (log/info "Finished refresh-granule-counts-cache"))))

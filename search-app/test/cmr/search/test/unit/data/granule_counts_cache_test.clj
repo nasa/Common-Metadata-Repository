@@ -18,7 +18,7 @@
 
 (defn mock-get-collection-granule-counts
   "This is a test mock function to mock getting granule counts from elastic search."
-  [_context _provider-ids]
+  [_context]
   collection-granule-counts-mock-data)
 
 (deftest next-cache-test
@@ -45,7 +45,7 @@
   (testing "Refreshing granule counts cache"
     (let [cache-key granule-counts-cache/granule-counts-cache-key
           test-context {:system {:caches {cache-key (granule-counts-cache/create-granule-counts-cache-client)}}}]
-      (granule-counts-cache/refresh-granule-counts-cache test-context #(mock-get-collection-granule-counts test-context nil))
+      (granule-counts-cache/refresh-granule-counts-cache test-context mock-get-collection-granule-counts)
       (let [cache (get-in test-context [:system :caches cache-key])
             cached-value (cache/get-value cache cache-key)]
         (is (= collection-granule-counts-mock-data cached-value)
