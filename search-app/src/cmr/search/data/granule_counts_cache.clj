@@ -38,30 +38,34 @@
                                                  :size 10000}
                                          :aggs {:by-collection-id
                                                 {:terms {:field (q2e/query-field->elastic-field
-                                                                  :collection-concept-seq-id-long
-                                                                  :granule)
+                                                                 :collection-concept-seq-id-long
+                                                                 :granule)
                                                          :size 10000}}}}}})
         results (common-esi/execute-query context query)
         extra-provider-count (get-in results [:aggregations :by-provider :sum_other_doc_count])]
+    ;; It's possible that there are more providers with granules than we expected.
+    ;; :sum_other_doc_count will be greater than 0 in that case.
     (when (> extra-provider-count 0)
-      (e/internal-error! (str "There were [" extra-provider-count "] more providers with granules than we ever expected to see.")))
+      (e/internal-error! "There were [%s] more providers with granules than we ever expected to see."))
 
     (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
+                   :let [extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])]
+                   coll-bucket (get-in provider-bucket [:by-collection-id :buckets])
                    :let [provider-id (:key provider-bucket)
-                         extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])
-                         _ (when (> extra-collection-count 0)
-                             (e/internal-error!
-                              (format "Provider %s has more collections ([%s]) with granules than we support"
-                                      provider-id
-                                      extra-collection-count)))
-                         coll-buckets (get-in provider-bucket [:by-collection-id :buckets])]
-                   coll-bucket coll-buckets
-                   :let [coll-seq-id (:key coll-bucket)
+                         coll-seq-id (:key coll-bucket)
                          num-granules (:doc_count coll-bucket)]]
-               [(concepts/build-concept-id {:sequence-number coll-seq-id
-                                            :provider-id provider-id
-                                            :concept-type :collection})
-                num-granules]))))
+               (do
+                 ;; It's possible that there are more collections in the provider than we expected.
+                 ;; :sum_other_doc_count will be greater than 0 in that case.
+                 (when (> extra-collection-count 0)
+                   (e/internal-error!
+                    (format "Provider %s has more collections ([%s]) with granules than we support"
+                            provider-id extra-collection-count)))
+
+                 [(concepts/build-concept-id {:sequence-number coll-seq-id
+                                              :provider-id provider-id
+                                              :concept-type :collection})
+                  num-granules])))))
 
 (defn refresh-granule-counts-cache
   "Refreshes the granule counts cache with the latest data. This is called from a lambda
