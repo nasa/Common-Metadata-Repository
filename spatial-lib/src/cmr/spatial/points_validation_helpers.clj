@@ -20,7 +20,7 @@
    (points->pairs points identity))
   ([points xform]
    (let [modified-points (map xform points)]
-     (conj (for [idx (range (dec (count points)))]
+     (conj (for [^long idx (range (dec (count points)))]
              (vector (nth modified-points idx)
                      (nth modified-points (inc idx))))))))
 
