@@ -55,7 +55,7 @@
                                          :error-type error-type
                                          :expiration-time (t/plus (time-keeper/now) (t/minutes (transmit-config/invalid-token-timeout)))})))))]
     (if-let [cache (cache/context->cache context launchpad-user-cache-key)]
-      (let [cache-key (keyword (DigestUtils/sha256Hex token))
+      (let [cache-key (DigestUtils/sha256Hex token)
             token-info (cache/get-value cache cache-key get-launchpad-user-fn)]
         (if (t/before? (:expiration-time token-info) (time-keeper/now))
           ;; Cache entry expired (after 5 min for errors, or token lifetime for valid tokens)

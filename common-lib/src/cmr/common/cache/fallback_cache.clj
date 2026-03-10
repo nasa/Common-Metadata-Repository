@@ -77,6 +77,11 @@
     (cache/set-value backup-cache key value)
     (cache/set-value primary-cache key value))
 
+  (evict
+    [_this key]
+    (cache/evict primary-cache key)
+    (cache/evict backup-cache key))
+
   (cache-size
    [_]
    (+ (cache/cache-size primary-cache)

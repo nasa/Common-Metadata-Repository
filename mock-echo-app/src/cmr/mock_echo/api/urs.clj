@@ -66,11 +66,12 @@
       (let [expires-in 1600
             validation-info (get @launchpad-token-validations token)]
         (if validation-info
-          (let [elapsed-seconds (t/in-seconds (t/interval (:first-validated-at validation-info) (time-keeper/now)))]
-            (if (>= elapsed-seconds expires-in)
+          (let [stored-expires-in (:expires-in validation-info)
+                elapsed-seconds (t/in-seconds (t/interval (:first-validated-at validation-info) (time-keeper/now)))]
+            (if (>= elapsed-seconds stored-expires-in)
               {:status 401 :body {:error (format "Launchpad token (partially redacted) [%s] has expired."
                                                   (common-util/scrub-token token))}}
-              {:status 200 :body {:uid "user1" :lp_token_expires_in (- expires-in elapsed-seconds)}}))
+              {:status 200 :body {:uid "user1" :lp_token_expires_in (- stored-expires-in elapsed-seconds)}}))
           (do
             (swap! launchpad-token-validations assoc token {:first-validated-at (time-keeper/now) :expires-in expires-in})
             {:status 200 :body {:uid "user1" :lp_token_expires_in expires-in}})))
