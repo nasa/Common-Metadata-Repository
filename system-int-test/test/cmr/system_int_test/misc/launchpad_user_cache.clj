@@ -23,7 +23,7 @@
 (deftest launchpad-user-cache-test
   (testing "launchpad cache initial value"
     (let [launchpad-token (echo-util/login-with-launchpad-token (system/context) "user1")
-          token-key (DigestUtils/sha256Hex launchpad-token)]
+          token-key (keyword (DigestUtils/sha256Hex launchpad-token))]
       (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))
       (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
@@ -35,7 +35,7 @@
         (is (= (:uid (cache-util/get-cache-value
                       (url/ingest-read-caches-url)
                       "launchpad-user"
-                      token-key
+                      (name token-key)
                       transmit-config/mock-echo-system-token
                       200))
                "user1"))
@@ -52,7 +52,7 @@
           (let [expiration-time (:expiration-time (cache-util/get-cache-value
                                                    (url/ingest-read-caches-url)
                                                    "launchpad-user"
-                                                   token-key
+                                                   (name token-key)
                                                    transmit-config/mock-echo-system-token
                                                    200))]
             (ingest/ingest-concept concept {:token launchpad-token})
@@ -61,7 +61,7 @@
             (is (= expiration-time (:expiration-time (cache-util/get-cache-value
                                                       (url/ingest-read-caches-url)
                                                       "launchpad-user"
-                                                      token-key
+                                                      (name token-key)
                                                       transmit-config/mock-echo-system-token
                                                       200))))
             (testing "token cache value expires"
@@ -100,7 +100,7 @@
 (deftest non-transient-errors-are-cached-test
   (testing "Non-transient errors are cached for 5 minutes"
     (let [token "ABC-INV-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-          token-key (DigestUtils/sha256Hex token)]
+          token-key (keyword (DigestUtils/sha256Hex token))]
       (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token token})]
         (is (= 401 (:status resp))))
 
@@ -109,7 +109,7 @@
       (let [cached-value (cache-util/get-cache-value
                           (url/ingest-read-caches-url)
                           "launchpad-user"
-                          token-key
+                          (name token-key)
                           transmit-config/mock-echo-system-token
                           200)]
         (is (false? (:valid cached-value)))
