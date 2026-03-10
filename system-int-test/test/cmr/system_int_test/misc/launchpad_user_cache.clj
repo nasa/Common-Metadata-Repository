@@ -12,7 +12,9 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config])
+  (:import
+   (org.apache.commons.codec.digest DigestUtils)))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -21,7 +23,7 @@
 (deftest launchpad-user-cache-test
   (testing "launchpad cache initial value"
     (let [launchpad-token (echo-util/login-with-launchpad-token (system/context) "user1")
-          token-key (hash launchpad-token)]
+          token-key (keyword (DigestUtils/sha256Hex launchpad-token))]
       (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))
       (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
@@ -33,7 +35,7 @@
         (is (= (:uid (cache-util/get-cache-value
                       (url/ingest-read-caches-url)
                       "launchpad-user"
-                      token-key
+                      (name token-key)
                       transmit-config/mock-echo-system-token
                       200))
                "user1"))
@@ -50,7 +52,7 @@
           (let [expiration-time (:expiration-time (cache-util/get-cache-value
                                                    (url/ingest-read-caches-url)
                                                    "launchpad-user"
-                                                   token-key
+                                                   (name token-key)
                                                    transmit-config/mock-echo-system-token
                                                    200))]
             (ingest/ingest-concept concept {:token launchpad-token})
@@ -59,7 +61,7 @@
             (is (= expiration-time (:expiration-time (cache-util/get-cache-value
                                                       (url/ingest-read-caches-url)
                                                       "launchpad-user"
-                                                      token-key
+                                                      (name token-key)
                                                       transmit-config/mock-echo-system-token
                                                       200))))
             (testing "token cache value expires"
@@ -84,27 +86,42 @@
   (testing "Transient errors (429, 504) are not cached"
     (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token "ABC-429-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"})]
       (is (= 429 (:status resp)))
-      (is (some #(re-find #"Rate limit exceeded" %) (:errors resp))))
+      (is (some #(re-find #"Launchpad rate limit exceeded" %) (:errors resp))))
 
     (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token))))
 
   (testing "Gateway timeout errors (504) are not cached"
     (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token "ABC-504-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"})]
       (is (= 504 (:status resp)))
-      (is (some #(re-find #"Gateway timeout" %) (:errors resp))))
+      (is (some #(re-find #"\(gateway timeout\)" %) (:errors resp))))
 
     (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))
 
 (deftest non-transient-errors-are-cached-test
   (testing "Non-transient errors are cached for 5 minutes"
     (let [token "ABC-INV-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-          token-key (hash token)]
+          token-key (keyword (DigestUtils/sha256Hex token))]
       (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token token})]
         (is (= 401 (:status resp))))
 
+      ;; Verify the error is cached
       (is (seq (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))
+      (let [cached-value (cache-util/get-cache-value
+                          (url/ingest-read-caches-url)
+                          "launchpad-user"
+                          (name token-key)
+                          transmit-config/mock-echo-system-token
+                          200)]
+        (is (false? (:valid cached-value)))
+        (is (:error-message cached-value))
+        (is (:expiration-time cached-value)))
 
+      ;; Advance past the 5 minute cache expiration
       (dev-sys-util/advance-time! 301)
 
+      ;; After expiration, revalidation fails and cache is evicted (not re-cached)
       (let [resp (ingest/ingest-concept (data-umm-c/collection-concept {}) {:token token})]
-        (is (= 401 (:status resp)))))))
+        (is (= 401 (:status resp))))
+
+      ;; Verify the cache is now empty after failed revalidation
+      (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token))))))

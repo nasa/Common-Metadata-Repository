@@ -9,7 +9,9 @@
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.urs :as urs]))
+   [cmr.transmit.urs :as urs])
+  (:import
+   (org.apache.commons.codec.digest DigestUtils)))
 
 (def launchpad-user-cache-key
   "The cache key for a launchpad token cache."
@@ -53,7 +55,7 @@
                                          :error-type error-type
                                          :expiration-time (t/plus (time-keeper/now) (t/minutes (transmit-config/invalid-token-timeout)))})))))]
     (if-let [cache (cache/context->cache context launchpad-user-cache-key)]
-      (let [cache-key (keyword (str (hash token)))
+      (let [cache-key (keyword (DigestUtils/sha256Hex token))
             token-info (cache/get-value cache cache-key get-launchpad-user-fn)]
         (if (t/before? (:expiration-time token-info) (time-keeper/now))
           ;; Cache entry expired (after 5 min for errors, or token lifetime for valid tokens)
@@ -65,13 +67,11 @@
                 (do
                   (cache/set-value cache cache-key fresh-result)
                   fresh-result)
-                (do
-                  (cache/set-value cache cache-key fresh-result)
-                  (errors/throw-service-error
-                   (or (:error-type fresh-result) :unauthorized)
-                   (or (:error-message fresh-result)
-                       (format "Invalid Launchpad token (partially redacted) [%s]"
-                               (common-util/scrub-token token))))))))
+                (errors/throw-service-error
+                 (or (:error-type fresh-result) :unauthorized)
+                 (or (:error-message fresh-result)
+                     (format "Invalid Launchpad token (partially redacted) [%s]"
+                             (common-util/scrub-token token)))))))
           ;; Cache entry still valid - return cached result or throw cached error
           (if (:valid token-info)
             token-info
