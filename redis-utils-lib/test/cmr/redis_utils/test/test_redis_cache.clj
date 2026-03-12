@@ -47,6 +47,31 @@
       (is (= -1
              (wcar* s-key true (redis-config/redis-conn-opts) (carmine/ttl s-key)))))))
 
+(deftest test-redis-cache-evict
+  (testing "Evict removes key from Redis cache"
+    (let [rcache (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                                  :primary-connection (redis-config/redis-conn-opts)})
+          lookup-called (atom false)
+          lookup-fn (fn [] (reset! lookup-called true) "new-value")]
+      (cache/set-value rcache "test-key" "initial-value")
+      (is (= "initial-value" (cache/get-value rcache "test-key")))
+
+      (cache/evict rcache "test-key")
+
+      (is (= "new-value" (cache/get-value rcache "test-key" lookup-fn)))
+      (is @lookup-called "Lookup function should have been called after evict")))
+
+  (testing "Evict only removes specified key"
+    (let [rcache (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                                  :primary-connection (redis-config/redis-conn-opts)})]
+      (cache/set-value rcache "foo" "foo-value")
+      (cache/set-value rcache "bar" "bar-value")
+
+      (cache/evict rcache "foo")
+
+      (is (nil? (cache/get-value rcache "foo")))
+      (is (= "bar-value" (cache/get-value rcache "bar"))))))
+
 (deftest test-get-keys
   (wcar* "get-keys-pattern#-test1" false (redis-config/redis-conn-opts) (carmine/set "get-keys-pattern#-test1" "test1"))
   (wcar* "get-keys-pattern#-test2" false (redis-config/redis-conn-opts) (carmine/set "get-keys-pattern#-test2" "test2"))
