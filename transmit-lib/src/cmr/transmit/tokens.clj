@@ -110,6 +110,9 @@
     ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
     400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))
 
+    ;; Too Many Requests - Rate Limited
+    429 (errors/throw-service-errors :too-many-requests ["Rate limit exceeded, please try your request again later."])
+
     ;; Service Temporarily Unavailable
     503 (errors/throw-service-errors :service-unavailable ["Service temporarily unavailable, please try your request again later."])
 

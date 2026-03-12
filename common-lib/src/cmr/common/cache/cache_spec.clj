@@ -95,12 +95,37 @@
     (is (= 2 (cache/get-value cache :foo always-fail)))
     (is (= 2 @counter))))
 
+(defn- evict-test
+  "Checks that evicting a key removes it from the cache"
+  [cache]
+  (let [lookup-called (atom false)
+        lookup-fn #(do (reset! lookup-called true) "new-value")]
+    ;; Set a value
+    (cache/set-value cache :foo "initial-value")
+    (is (= "initial-value" (cache/get-value cache :foo)))
+
+    ;; Evict the key
+    (cache/evict cache :foo)
+
+    ;; Value should be gone, lookup function should be called
+    (is (= "new-value" (cache/get-value cache :foo lookup-fn)))
+    (is @lookup-called "Lookup function should have been called after evict"))
+
+  ;; Test that evict only removes the specified key
+  (cache/reset cache)
+  (cache/set-value cache :foo "foo-value")
+  (cache/set-value cache :bar "bar-value")
+  (cache/evict cache :foo)
+  (is (nil? (cache/get-value cache :foo)))
+  (is (= "bar-value" (cache/get-value cache :bar))))
+
 (def ^:private cache-test-fns
   "Defines the minimum set of test functions that check a cache implementation"
   [#'value-type-support
    #'key-type-support
    #'get-value-with-lookup-fn-test
-   #'clear-cache-test])
+   #'clear-cache-test
+   #'evict-test])
 
 (defn- get-cache-test-fns
   "Returns the functions to test for verifying the cache. Not all caches will delete all values

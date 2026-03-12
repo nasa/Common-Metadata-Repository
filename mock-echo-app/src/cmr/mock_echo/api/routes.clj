@@ -1,12 +1,8 @@
 (ns cmr.mock-echo.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
-   [cheshire.core :as json]
-   [clojure.set :as set]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as svc-errors]
    [cmr.mock-echo.api.acls :as acls-api]
    [cmr.mock-echo.api.providers :as providers-api]
    [cmr.mock-echo.api.tokens :as token-api]
@@ -25,7 +21,8 @@
   (token-db/reset context)
   (provider-db/reset context)
   (acl-db/reset context)
-  (urs-db/reset context))
+  (urs-db/reset context)
+  (urs-api/reset-launchpad-tokens!))
 
 (defn- build-routes [system]
   (routes
