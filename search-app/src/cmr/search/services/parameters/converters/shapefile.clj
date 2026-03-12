@@ -46,23 +46,21 @@
 
 (defn winding-opts
   "Get the opts for a call to `normalize-polygon-winding` based on file type.
-  Optionally merges in force-cartesian option if provided in context.
+  Optionally merges in force-cartesian option if provided in options.
 
   Note: For GeoJSON, we only normalize hole winding. Boundary winding is not normalized
   because GeoJSON coordinates come from GeoTools already validated. For small local polygons
   (the typical cartesian use case), geodetic CCW and cartesian CCW have the same orientation,
   so no boundary reversal is needed."
-  ([mime-type]
-   (winding-opts mime-type nil))
-  ([mime-type context]
-   (let [base-opts (case mime-type
-                     "application/shapefile+zip" {:boundary-winding :cw}
-                     "application/vnd.google-earth.kml+xml" {}
-                     "application/geo+json" {:hole-winding :cw})
-         final-opts (if (:force-cartesian context)
-                      (assoc base-opts :force-cartesian true)
-                      base-opts)]
-     final-opts)))
+  [mime-type options]
+  (let [base-opts (case mime-type
+                   "application/shapefile+zip" {:boundary-winding :cw}
+                   "application/vnd.google-earth.kml+xml" {}
+                   "application/geo+json" {:hole-winding :cw})
+        final-opts (if (:force-cartesian options)
+                    (assoc base-opts :force-cartesian true)
+                    base-opts)]
+    final-opts))
 
 (defn unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
@@ -195,24 +193,22 @@
 
 (defn features->conditions
   "Converts a list of features into a vector of SpatialConditions.
-  The context map can contain force-cartesian setting which will be merged into the options."
-  ([features mime-type]
-   (features->conditions features mime-type nil))
-  ([features mime-type context]
-   (validate-features features)
-   (let [iterator (.iterator features)
-         options (winding-opts mime-type context)]
-     ;; Loop overall all the Features in the list, building up a vector of conditions
-     (loop [conditions []]
-       (if (.hasNext iterator)
-         (let [feature (.next iterator)
-               [feature-conditions _] (feature->conditions feature options)]
-           (if (> (count feature-conditions) 0)
-             ;; if any conditions were created for the feature add them to the current conditions
-             (recur (conj conditions (gc/or-conds feature-conditions)))
-             (recur conditions)))
-         ;; no more Features in list - return conditions created
-         conditions)))))
+  The options map can contain force-cartesian setting which will be merged into the winding options."
+  [features mime-type options]
+  (validate-features features)
+  (let [iterator (.iterator features)
+        winding-options (winding-opts mime-type options)]
+    ;; Loop overall all the Features in the list, building up a vector of conditions
+    (loop [conditions []]
+      (if (.hasNext iterator)
+        (let [feature (.next iterator)
+              [feature-conditions _] (feature->conditions feature winding-options)]
+          (if (> (count feature-conditions) 0)
+            ;; if any conditions were created for the feature add them to the current conditions
+            (recur (conj conditions (gc/or-conds feature-conditions)))
+            (recur conditions)))
+        ;; no more Features in list - return conditions created
+        conditions))))
 
 (defn error-if
   "Throw a service error with the given message if `f` applied to `item` is true.
@@ -226,106 +222,98 @@
 
 (defn esri-shapefile->condition-vec
   "Converts a shapefile to a vector of SpatialConditions"
-  ([shapefile-info]
-   (esri-shapefile->condition-vec shapefile-info nil))
-  ([shapefile-info context]
-   (try
-     (let [file (:tempfile shapefile-info)
-           ^File temp-dir (unzip-file file)
-           shp-file (error-if
-                     (find-shp-file temp-dir)
-                     nil?
-                     "Incomplete shapefile: missing .shp file"
-                     temp-dir)
-           data-store (FileDataStoreFinder/getDataStore shp-file)
-           feature-source (.getFeatureSource data-store)
-           features (.getFeatures feature-source)
-           iterator (.features features)
-           feature-list (ArrayList.)]
-       (try
-         (while (.hasNext iterator)
-           (let [feature (.next iterator)]
-             (.add feature-list feature)))
-         (features->conditions feature-list mt/shapefile context)
-         (finally
-           (.close iterator)
-           (-> data-store .getFeatureReader .close)
-           (.delete temp-dir))))
-     (catch Exception e
-       (let [{:keys [type errors]} (ex-data e)]
-         (if (and type errors)
-           (throw e) ;; This was a more specific service error so just re-throw it
-           (errors/throw-service-error :bad-request "Failed to parse shapefile")))))))
+  [shapefile-info options]
+  (try
+    (let [file (:tempfile shapefile-info)
+          ^File temp-dir (unzip-file file)
+          shp-file (error-if
+                    (find-shp-file temp-dir)
+                    nil?
+                    "Incomplete shapefile: missing .shp file"
+                    temp-dir)
+          data-store (FileDataStoreFinder/getDataStore shp-file)
+          feature-source (.getFeatureSource data-store)
+          features (.getFeatures feature-source)
+          iterator (.features features)
+          feature-list (ArrayList.)]
+      (try
+        (while (.hasNext iterator)
+          (let [feature (.next iterator)]
+            (.add feature-list feature)))
+        (features->conditions feature-list mt/shapefile options)
+        (finally
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete temp-dir))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn geojson->conditions-vec
   "Converts a geojson file to a vector of SpatialConditions"
-  ([shapefile-info]
-   (geojson->conditions-vec shapefile-info nil))
-  ([shapefile-info context]
-   (try
-     (let [file (:tempfile shapefile-info)
-           _ (geojson/sanitize-geojson file)
-           url (URLs/fileToUrl file)
-           data-store (GeoJSONDataStore. url)
-           feature-source (.getFeatureSource data-store)
-           features (.getFeatures feature-source)
-           ;; Fail fast
-           _ (when (or (nil? features)
-                       (nil? (.getSchema features))
-                       (.isEmpty features))
-               (errors/throw-service-error :bad-request "Shapefile has no features"))
-           iterator (.features features)
-           feature-list (ArrayList.)]
-       (try
-         (while (.hasNext iterator)
-           (let [feature (.next iterator)]
-             (.add feature-list feature)))
-         (features->conditions feature-list mt/geojson context)
-         (finally
-           (.close iterator)
-           (-> data-store .getFeatureReader .close)
-           (.delete file))))
-     (catch Exception e
-       (let [{:keys [type errors]} (ex-data e)]
-         (if (and type errors)
-           (throw e) ;; This was a more specific service error so just re-throw it
-           (errors/throw-service-error :bad-request "Failed to parse shapefile")))))))
+  [shapefile-info options]
+  (try
+    (let [file (:tempfile shapefile-info)
+          _ (geojson/sanitize-geojson file)
+          url (URLs/fileToUrl file)
+          data-store (GeoJSONDataStore. url)
+          feature-source (.getFeatureSource data-store)
+          features (.getFeatures feature-source)
+          ;; Fail fast
+          _ (when (or (nil? features)
+                      (nil? (.getSchema features))
+                      (.isEmpty features))
+              (errors/throw-service-error :bad-request "Shapefile has no features"))
+          iterator (.features features)
+          feature-list (ArrayList.)]
+      (try
+        (while (.hasNext iterator)
+          (let [feature (.next iterator)]
+            (.add feature-list feature)))
+        (features->conditions feature-list mt/geojson options)
+        (finally
+          (.close iterator)
+          (-> data-store .getFeatureReader .close)
+          (.delete file))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn kml->conditions-vec
   "Converts a kml file to a vector of SpatialConditions"
-  ([shapefile-info]
-   (kml->conditions-vec shapefile-info nil))
-  ([shapefile-info context]
-   (try
-     (let [file (:tempfile shapefile-info)
-           input-stream (FileInputStream. file)
-           parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)
-           feature-list (ArrayList.)]
-       (try
-         (util/while-let [feature (.parse parser)]
-                         (when (> (feature-point-count feature) 0)
-                           (.add feature-list feature)))
-         (features->conditions feature-list mt/kml context)
-         (finally
-           (.delete file))))
-     (catch Exception e
-       (let [{:keys [type errors]} (ex-data e)]
-         (if (and type errors)
-           (throw e) ;; This was a more specific service error so just re-throw it
-           (errors/throw-service-error :bad-request "Failed to parse shapefile")))))))
+  [shapefile-info options]
+  (try
+    (let [file (:tempfile shapefile-info)
+          input-stream (FileInputStream. file)
+          parser (PullParser. (KMLConfiguration.) input-stream SimpleFeature)
+          feature-list (ArrayList.)]
+      (try
+        (util/while-let [feature (.parse parser)]
+                        (when (> (feature-point-count feature) 0)
+                          (.add feature-list feature)))
+        (features->conditions feature-list mt/kml options)
+        (finally
+          (.delete file))))
+    (catch Exception e
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (throw e) ;; This was a more specific service error so just re-throw it
+          (errors/throw-service-error :bad-request "Failed to parse shapefile"))))))
 
 (defn in-memory->conditions-vec
   "Converts a group of features produced by simplification to a vector of SpatialConditions"
-  ([shapefile-info]
-   (in-memory->conditions-vec shapefile-info nil))
-  ([shapefile-info context]
-   (let [^ArrayList features (:tempfile shapefile-info)
-         mime-type (:content-type shapefile-info)]
-     (features->conditions features mime-type context))))
+  [shapefile-info options]
+  (let [^ArrayList features (:tempfile shapefile-info)
+        mime-type (:content-type shapefile-info)]
+    (features->conditions features mime-type options)))
 
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format.
-  Optionally accepts a context map containing force-cartesian setting."
+  Optionally accepts an options map containing force-cartesian setting."
   (fn [shapefile-info & _]
     (debug (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
     (if (:in-memory shapefile-info)
@@ -334,42 +322,34 @@
 
 ;; ESRI shapefiles
 (defmethod shapefile->conditions mt/shapefile
-  ([shapefile-info]
-   (shapefile->conditions shapefile-info nil))
-  ([shapefile-info context]
-   (let [conditions-vec (esri-shapefile->condition-vec shapefile-info context)]
-     (gc/or-conds (flatten conditions-vec)))))
+  [shapefile-info options]
+  (let [conditions-vec (esri-shapefile->condition-vec shapefile-info options)]
+    (gc/or-conds (flatten conditions-vec))))
 
 ;; GeoJSON
 (defmethod shapefile->conditions mt/geojson
-  ([shapefile-info]
-   (shapefile->conditions shapefile-info nil))
-  ([shapefile-info context]
-   (let [conditions-vec (geojson->conditions-vec shapefile-info context)]
-     (gc/or-conds (flatten conditions-vec)))))
+  [shapefile-info options]
+  (let [conditions-vec (geojson->conditions-vec shapefile-info options)]
+    (gc/or-conds (flatten conditions-vec))))
 
 ;; KML
 (defmethod shapefile->conditions mt/kml
-  ([shapefile-info]
-   (shapefile->conditions shapefile-info nil))
-  ([shapefile-info context]
-   (let [conditions-vec (kml->conditions-vec shapefile-info context)]
-     (gc/or-conds (flatten conditions-vec)))))
+  [shapefile-info options]
+  (let [conditions-vec (kml->conditions-vec shapefile-info options)]
+    (gc/or-conds (flatten conditions-vec))))
 
 ;; Simplfied and stored in memory
 (defmethod shapefile->conditions :in-memory
-  ([shapefile-info]
-   (shapefile->conditions shapefile-info nil))
-  ([shapefile-info context]
-   (let [conditions-vec (in-memory->conditions-vec shapefile-info context)]
-     (gc/or-conds (flatten conditions-vec)))))
+  [shapefile-info options]
+  (let [conditions-vec (in-memory->conditions-vec shapefile-info options)]
+    (gc/or-conds (flatten conditions-vec))))
 
 (defmethod p/parameter->condition :shapefile
   [context _concept-type _param value _options]
   (if (enable-shapefile-parameter-flag)
     (let [;; Params are added to context as keywords after sanitization
           force-cartesian-value (get-in context [:params :force-cartesian])
-          force-cartesian (or (= "true" force-cartesian-value) (= true force-cartesian-value))
-          shapefile-context (when force-cartesian {:force-cartesian true})]
-      (shapefile->conditions value shapefile-context))
+          force-cartesian (= "true" (util/safe-lowercase force-cartesian-value))
+          options (when force-cartesian {:force-cartesian true})]
+      (shapefile->conditions value options))
     (errors/throw-service-error :bad-request "Searching by shapefile is not enabled")))

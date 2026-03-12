@@ -109,10 +109,10 @@
 
 (defmethod geometry->condition "LineString"
   [geometry options]
-  (let [shape (line->shape geometry)]
+  (let [shape (line->shape geometry options)]
     (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "LinearRing"
   [geometry options]
-  (let [shape (line->shape geometry)]
+  (let [shape (line->shape geometry options)]
     (qm/->SpatialCondition shape)))

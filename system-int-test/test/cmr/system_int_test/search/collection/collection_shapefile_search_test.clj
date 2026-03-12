@@ -146,6 +146,7 @@
 
       (testing (format "Search with force-cartesian parameter using %s shapefile" fmt)
         ;; The parameter changes how shapefile coordinates are interpreted (geodetic vs cartesian)
+        ;; We expect the results for these test files to be the same vs the default geodetic
         (are3 [shapefile force-cartesian expected-items]
               (let [params (if (some? force-cartesian)
                              [{:name "shapefile"
@@ -180,3 +181,41 @@
 
           "southern_africa with force-cartesian=true"
           "southern_africa" true [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart])))))
+
+(deftest collection-shapefile-force-cartesian-validation-test
+  "Test that cartesian-only shapefiles require force-cartesian=true to pass validation"
+  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))]
+    (testing "scotland_cartesian.json is only valid when processed as cartesian"
+      (testing "with force-cartesian=true should pass validation"
+        (let [params [{:name "shapefile"
+                       :content (io/file (io/resource "shapefiles/scotland_cartesian.json"))
+                       :mime-type mt/geojson}
+                      {:name "force-cartesian"
+                       :content "true"}
+                      {:name "provider"
+                       :content "PROV1"}]
+              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+          (is (nil? status)
+              "Should pass validation with force-cartesian=true")))
+
+      (testing "without force-cartesian should fail validation"
+        (let [params [{:name "shapefile"
+                       :content (io/file (io/resource "shapefiles/scotland_cartesian.json"))
+                       :mime-type mt/geojson}
+                      {:name "provider"
+                       :content "PROV1"}]
+              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+          (is (= 400 status)
+              "Should fail validation without force-cartesian")))
+
+      (testing "with force-cartesian=false should fail validation"
+        (let [params [{:name "shapefile"
+                       :content (io/file (io/resource "shapefiles/scotland_cartesian.json"))
+                       :mime-type mt/geojson}
+                      {:name "force-cartesian"
+                       :content "false"}
+                      {:name "provider"
+                       :content "PROV1"}]
+              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+          (is (= 400 status)
+              "Should fail validation with force-cartesian=false"))))))
