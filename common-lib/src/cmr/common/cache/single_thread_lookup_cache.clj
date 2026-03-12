@@ -130,6 +130,11 @@
     (when (cache/simple-cache? delegate-cache)
       (cache/set-value delegate-cache cache-key value)))
 
+   (evict
+    [_this cache-key]
+    (when (cache/simple-cache? delegate-cache)
+      (cache/evict delegate-cache cache-key)))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    life/Lifecycle
    (start

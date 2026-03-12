@@ -2,14 +2,27 @@
   "Defines routes for mocking URS"
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as t]
    [clojure.data.codec.base64 :as b64]
    [clojure.string :as string]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.common.util :as common-util]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.data.urs-db :as urs-db]
    [cmr.transmit.config :as transmit-config]
    [compojure.core :refer :all]))
+
+(def launchpad-token-validations
+  "Tracks when launchpad tokens were first validated to simulate absolute token expiration.
+  Map of {token -> {:first-validated-at timestamp :expires-in seconds}}"
+  (atom {}))
+
+(defn reset-launchpad-tokens!
+  "Resets the launchpad token validation tracking. Called by test fixtures."
+  []
+  (reset! launchpad-token-validations {}))
 
 (defn get-user
   "Processes a request to get a user."
@@ -44,11 +57,34 @@
     {:status 404 :body "Not found.\n"}))
 
 (defn get-launchpad-user
-  "Processes a request to get a user using their launchpad token."
+  "Processes a request to get a user using their launchpad token.
+  Supports specific test tokens that return different status codes for testing error handling.
+  Simulates real EDL behavior where tokens have absolute expiration times."
   [token]
   (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-      {:status 200 :body {:uid "user1" :lp_token_expires_in 1600}}
+      (let [expires-in 1600
+            validation-info (get @launchpad-token-validations token)]
+        (if validation-info
+          (let [stored-expires-in (:expires-in validation-info)
+                elapsed-seconds (t/in-seconds (t/interval (:first-validated-at validation-info) (time-keeper/now)))]
+            (if (>= elapsed-seconds stored-expires-in)
+              {:status 401 :body {:error (format "Launchpad token (partially redacted) [%s] has expired."
+                                                  (common-util/scrub-token token))}}
+              {:status 200 :body {:uid "user1" :lp_token_expires_in (- stored-expires-in elapsed-seconds)}}))
+          (do
+            (swap! launchpad-token-validations assoc token {:first-validated-at (time-keeper/now) :expires-in expires-in})
+            {:status 200 :body {:uid "user1" :lp_token_expires_in expires-in}})))
+
+      "ABC-429-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+      {:status 429 :body {:error "Rate limit exceeded"}}
+
+      "ABC-504-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+      {:status 504 :body {:error "Gateway timeout"}}
+
+      "ABC-INV-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+      {:status 401 :body {:error "Invalid token"}}
+
       {:status 400 :body {:error "Launchpad SSO authentication failed"}}))
 
 (defn get-user-info

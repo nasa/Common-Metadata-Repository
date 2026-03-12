@@ -119,6 +119,11 @@
     (c/set-value memory-cache key value)
     (c/set-value hash-cache (key->hash-cache-key key) (hash value)))
 
+  (evict
+    [_this key]
+    (c/evict memory-cache key)
+    (c/evict hash-cache (key->hash-cache-key key)))
+
   (cache-size
    [_]
    (+ (c/cache-size memory-cache)

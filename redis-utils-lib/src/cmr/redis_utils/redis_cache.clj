@@ -85,6 +85,11 @@
       (wcar* s-key false primary-connection (carmine/set s-key {:value value})
              (when ttl (carmine/expire s-key ttl)))))
 
+  (evict
+    [_this key]
+    (let [s-key (serialize key)]
+      (wcar* key false primary-connection (carmine/del s-key))))
+
   (cache-size
     [_]
     (reduce #(+ %1 (if-let [size (wcar* (serialize %2) true read-connection (carmine/memory-usage (serialize %2)))]
