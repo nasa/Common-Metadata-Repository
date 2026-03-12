@@ -55,7 +55,7 @@
   (testing "empty file"
     (try
       (let [shp-file (io/file (io/resource "shapefiles/empty.zip"))]
-        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file}))
+        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file} {}))
       (catch Exception e
         (is (= "Shapefile has no features"
                (.getMessage e))))))
@@ -63,7 +63,7 @@
   (testing "corrupt zip file"
     (try
       (let [shp-file (io/file (io/resource "shapefiles/corrupt_file.zip"))]
-        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file}))
+        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file} {}))
       (catch Exception e
         (is (= "Error while uncompressing zip file: invalid END header (bad central directory offset)"
                (.getMessage e))))))
@@ -71,7 +71,7 @@
   (testing "missing zip file"
     (try
       (let [shp-file (io/file (io/resource "shapefiles/missing_shapefile_shp.zip"))]
-        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file}))
+        (shapefile/esri-shapefile->condition-vec {:tempfile shp-file} {}))
       (catch Exception e
         (is (= "Incomplete shapefile: missing .shp file"
                (.getMessage e)))))))

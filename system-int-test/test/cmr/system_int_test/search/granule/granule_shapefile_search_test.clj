@@ -259,6 +259,7 @@
 
       (testing (format "Search with force-cartesian parameter using %s shapefile" fmt)
         ;; The parameter changes how shapefile coordinates are interpreted (geodetic vs cartesian)
+        ;; We expect the results for these test files to be the same vs the default geodetic
         (are3 [shapefile force-cartesian expected-items]
               (let [params (if (some? force-cartesian)
                              [{:name "shapefile"
