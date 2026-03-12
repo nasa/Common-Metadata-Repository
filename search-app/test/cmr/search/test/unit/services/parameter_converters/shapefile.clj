@@ -13,6 +13,7 @@
     (java.nio.file.attribute FileAttribute)
     (java.net URL)
     (java.util HashMap)
+    (java.util.zip ZipEntry ZipOutputStream ZipInputStream)
     (java.util.zip ZipFile ZipInputStream)
     (org.apache.commons.io FilenameUtils)
     (org.geotools.data DataStoreFinder FileDataStoreFinder Query)
@@ -108,3 +109,33 @@
 
         "UTM ZONE 11N"
         "EPSG:2955" false [-121.48866759617566 2.8851809782082726E-4]))))
+
+(defn create-single-entry-zip [filename entry-name content]
+  (let [file-obj (io/file filename)]
+    (with-open [zos (ZipOutputStream. (io/output-stream file-obj))]
+      (let [entry (ZipEntry. entry-name)]
+        (.putNextEntry zos entry)
+        (.write zos (.getBytes content "UTF-8"))
+        (.closeEntry zos)))
+    file-obj))
+
+(deftest unzip-file-test
+  (testing "invalid file path in the source throws error"
+    (let [invalid-zip (create-single-entry-zip "invalid.zip" "../somewhere_else.txt" "something")]
+      (try
+        (is (thrown-with-msg? Exception #"Given zip content is not allowed" (shapefile/unzip-file invalid-zip)))
+        (finally
+          (io/delete-file invalid-zip true)))))
+  (testing "invalid file path within the tar dir throws error"
+    (let [invalid-zip (create-single-entry-zip "wrong-dir.zip" "/BLAH/somewhere_else.txt" "something")]
+      (try
+        (is (thrown-with-msg? Exception #"Error while uncompressing zip file.*No such file or directory" (shapefile/unzip-file invalid-zip)))
+        (finally
+          (io/delete-file invalid-zip true)))))
+  (testing "valid zip file returns file obj"
+    (let [valid-zip (create-single-entry-zip "valid.zip" "somewhere_else.txt" "something")
+          result (shapefile/unzip-file valid-zip)]
+      (try
+        (is (some? result))
+        (finally
+          (io/delete-file valid-zip true))))))
