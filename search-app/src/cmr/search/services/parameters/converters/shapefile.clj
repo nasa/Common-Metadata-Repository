@@ -52,6 +52,12 @@
     "application/vnd.google-earth.kml+xml" {}
     "application/geo+json" {:hole-winding :cw}))
 
+(defn validate-entry-dir
+  [target-dir entry]
+  (let [canonical (.getCanonicalPath (File. (.toString target-dir) (str entry)))]
+    (when-not (.startsWith canonical (.getCanonicalPath (.toFile target-dir)))
+      (throw (Exception. "Given zip content is not allowed")))))
+
 (defn unzip-file
   "Unzip a file (of type File) into a temporary directory and return the directory path as a File"
   [source]
@@ -62,6 +68,7 @@
               target-file #(File. (.toString target-dir) (str %))]
           (doseq [entry entries :when (not (.isDirectory ^java.util.zip.ZipEntry entry))
                   :let [f (target-file entry)]]
+            (validate-entry-dir target-dir entry)
             (debug (format "Zip file entry: [%s]" (.getName entry)))
             (io/copy (.getInputStream zip entry) f))))
       (.toFile target-dir)
