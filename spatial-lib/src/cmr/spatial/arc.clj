@@ -467,5 +467,5 @@
 
 
 (extend-protocol d/DerivedCalculator
-  cmr.spatial.arc.Arc
+  cmr.spatial.internal.arc.Arc
   (calculate-derived ^Arc [^Arc a] a))
