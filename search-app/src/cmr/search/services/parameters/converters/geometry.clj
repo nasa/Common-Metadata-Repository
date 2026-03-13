@@ -34,23 +34,27 @@
 
 (defn line-string-ring->ring
   "Convert a JTS LineString to a spatial lib ring"
-  [^LineString line-string]
-  (rr/ords->ring :geodetic (coords->ords (.getCoordinates line-string))))
+  ([^LineString line-string]
+   (line-string-ring->ring line-string {}))
+  ([^LineString line-string options]
+   (let [coord-sys (if (:force-cartesian options) :cartesian :geodetic)]
+     (rr/ords->ring coord-sys (coords->ords (.getCoordinates line-string))))))
 
 (defn force-ccw-orientation
   "Forces a LineString to be in counter-clockwise orientation"
   [^LineString line-string winding]
   (let [coords (.getCoordinates line-string)]
-    (if (and 
-          (> (count coords) 3)
-          (= winding :cw))
+    (if (and
+         (> (count coords) 3)
+         (= winding :cw))
       (.reverse line-string)
       line-string)))
 
 (defn polygon->shape
   "Convert a JTS Polygon to a spatial lib shape that can be used in a Spatial query.
   The `options` map can be used to provide information about winding. Accepted keys
-  are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `:ccw`."
+  are `:boundary-winding` and `:hole-winding`. Accepted values are `:cw` and `:ccw`.
+  The `:force-cartesian` key can be used to force cartesian coordinate system."
   [^Polygon polygon options]
   (let [boundary-ring (.getExteriorRing polygon)
         _ (debug (format "BOUNDARY RING BEFORE FORCE-CCW: %s" boundary-ring))
@@ -61,10 +65,12 @@
                          (for [i (range num-interior-rings)]
                            (force-ccw-orientation (.getInteriorRingN polygon i) (:hole-winding options)))
                          [])
-        all-rings (concat [boundary-ring] interior-rings)]
+        all-rings (concat [boundary-ring] interior-rings)
+        coord-sys (if (:force-cartesian options) :cartesian :geodetic)]
     (debug (format "NUM INTERIOR RINGS: [%d]" num-interior-rings))
     (debug (format "RINGS: [%s]" (vec all-rings)))
-    (poly/polygon :geodetic (map line-string-ring->ring all-rings))))
+    (debug (format "COORDINATE SYSTEM: %s" coord-sys))
+    (poly/polygon coord-sys (map #(line-string-ring->ring % options) all-rings))))
 
 (defn point->shape
   "Convert a JTS Point to a spatial lib shape that can be used in a Spatial query"
@@ -73,16 +79,19 @@
 
 (defn line->shape
   "Convert a LineString or LinearRing to a spatial lib shape that can be used in a Spatial query"
-  [^LineString line]
-  (let [ordinates (coords->ords (.getCoordinates line))]
-    (l/ords->line-string :geodetic ordinates)))
+  ([^LineString line]
+   (line->shape line {}))
+  ([^LineString line options]
+   (let [ordinates (coords->ords (.getCoordinates line))
+         coord-sys (if (:force-cartesian options) :cartesian :geodetic)]
+     (l/ords->line-string coord-sys ordinates))))
 
 (defmulti geometry->condition
   "Convert a Geometry object to a query condition.
   The `options` map can be used to provided additional information."
-  (fn [^Geometry geometry options] 
+  (fn [^Geometry geometry options]
     (.getGeometryType geometry)))
-    
+
 (defmethod geometry->condition "MultiPolygon"
   [geometry options]
   (let [shape (polygon->shape geometry options)]
@@ -100,10 +109,10 @@
 
 (defmethod geometry->condition "LineString"
   [geometry options]
-  (let [shape (line->shape geometry)]
+  (let [shape (line->shape geometry options)]
     (qm/->SpatialCondition shape)))
 
 (defmethod geometry->condition "LinearRing"
   [geometry options]
-  (let [shape (line->shape geometry)]
+  (let [shape (line->shape geometry options)]
     (qm/->SpatialCondition shape)))
