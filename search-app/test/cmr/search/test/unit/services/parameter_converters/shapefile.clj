@@ -126,7 +126,7 @@
         (is (thrown-with-msg? Exception #"Given zip content is not allowed" (shapefile/unzip-file invalid-zip)))
         (finally
           (io/delete-file invalid-zip true)))))
-  (testing "invalid file path within the tar dir throws error"
+  (testing "invalid file path within the target dir throws error"
     (let [invalid-zip (create-single-entry-zip "wrong-dir.zip" "/BLAH/somewhere_else.txt" "something")]
       (try
         (is (thrown-with-msg? Exception #"Error while uncompressing zip file.*No such file or directory" (shapefile/unzip-file invalid-zip)))
@@ -138,4 +138,6 @@
       (try
         (is (some? result))
         (finally
+          (when result
+            (run! io/delete-file (reverse (file-seq result))))
           (io/delete-file valid-zip true))))))
