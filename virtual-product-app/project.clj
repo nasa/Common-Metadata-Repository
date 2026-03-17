@@ -19,7 +19,7 @@
                  [org.eclipse.jetty/jetty-util "12.1.6"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.3"]
-                 [info.sunng/ring-jetty9-adapter "0.33.5"]
+                 [info.sunng/ring-jetty9-adapter "0.39.2"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -32,7 +32,7 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [info.sunng/ring-jetty9-adapter "0.33.5"]]
+                                  [info.sunng/ring-jetty9-adapter "0.39.2"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)

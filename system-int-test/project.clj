@@ -64,7 +64,7 @@
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
 
-                 [info.sunng/ring-jetty9-adapter "0.33.5"] 
+                 [info.sunng/ring-jetty9-adapter "0.39.2"]
 
                  ;[ring/ring-jetty-adapter "1.15.3"
                  ; :exclusions [org.eclipse.jetty/jetty-http
@@ -101,7 +101,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [info.sunng/ring-jetty9-adapter "0.33.5"]
+                                  [info.sunng/ring-jetty9-adapter "0.39.2"]
 
                                   ;; Patch Jetty inside the ring adapter
                                   [org.eclipse.jetty/jetty-http "12.1.6"]
@@ -177,7 +177,7 @@
                                      [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
                                      [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
                                      [org.eclipse.jetty/jetty-server "12.1.6"]
-                                     [info.sunng/ring-jetty9-adapter "0.33.5"]
+                                     [info.sunng/ring-jetty9-adapter "0.39.2"]
                                      ;[ring/ring-jetty-adapter "1.15.3"
                                      ; :exclusions [org.eclipse.jetty/jetty-http
                                      ;              org.eclipse.jetty/jetty-io

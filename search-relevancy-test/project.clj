@@ -55,7 +55,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [info.sunng/ring-jetty9-adapter "0.33.5"]]}}
+                                     [info.sunng/ring-jetty9-adapter "0.39.2"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
