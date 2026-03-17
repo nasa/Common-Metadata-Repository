@@ -26,8 +26,12 @@
                           [org.testcontainers/testcontainers "2.0.2" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]
                           [ring/ring-core "1.14.2"];; latest is 1.15.2 was 1.14.2
-                          [ring/ring-jetty-adapter "1.14.2" ;;"1.15.3"
-                           :exclusions [org.eclipse.jetty/jetty-server]] ;; latest is 1.15.3
+                          ;[ring/ring-jetty-adapter "1.14.2" ;;"1.15.3"
+                          ; :exclusions [org.eclipse.jetty/jetty-server]] ;; latest is 1.15.3
+
+
+                          [info.sunng/ring-jetty9-adapter "0.33.5"
+                           :exclusions [org.eclipse.jetty/jetty-server]]
 
                           ;; These libraries are all versioned together, was 12.0.21
                           [org.eclipse.jetty/jetty-http "12.0.33"]

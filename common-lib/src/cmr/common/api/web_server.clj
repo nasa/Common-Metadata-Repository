@@ -6,7 +6,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [info error]]
    [cmr.common.mime-types :as mt]
-   [ring.adapter.jetty :as jetty])
+   [ring.adapter.jetty9 :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory)

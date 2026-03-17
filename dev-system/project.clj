@@ -53,7 +53,7 @@
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.3.0"]
-                           [ring/ring-jetty-adapter]]
+                           [info.sunng/ring-jetty9-adapter]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-parent "0.3.9"]

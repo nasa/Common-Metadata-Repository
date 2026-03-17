@@ -39,12 +39,13 @@
                  [org.eclipse.jetty/jetty-io]
                  [org.eclipse.jetty/jetty-server]
                  [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]
-                 [ring/ring-jetty-adapter
-                  :exclusions [org.eclipse.jetty/jetty-http
-                               org.eclipse.jetty/jetty-io
-                               org.eclipse.jetty/jetty-util
-                               org.eclipse.jetty/jetty-server
-                               org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+                 [info.sunng/ring-jetty9-adapter
+                  ;:exclusions [org.eclipse.jetty/jetty-http
+                  ;             org.eclipse.jetty/jetty-io
+                  ;             org.eclipse.jetty/jetty-util
+                  ;             org.eclipse.jetty/jetty-server
+                  ;             org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]
+                  ]
 
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
@@ -79,13 +80,14 @@
                                   [org.eclipse.jetty/jetty-io]
                                   [org.eclipse.jetty/jetty-unixdomain-server]
                                   [org.eclipse.jetty/jetty-server]
-                                  [ring/ring-jetty-adapter
-                                   :exclusions [org.eclipse.jetty/jetty-http
-                                                org.eclipse.jetty/jetty-io
-                                                org.eclipse.jetty/jetty-util
-                                                org.eclipse.jetty/jetty-unixdomain-server
-                                                org.eclipse.jetty/jetty-server
-                                                org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+                                  [info.sunng/ring-jetty9-adapter
+                                   ;:exclusions [org.eclipse.jetty/jetty-http
+                                   ;             org.eclipse.jetty/jetty-io
+                                   ;             org.eclipse.jetty/jetty-util
+                                   ;             org.eclipse.jetty/jetty-unixdomain-server
+                                   ;             org.eclipse.jetty/jetty-server
+                                   ;t             org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]
+                                   ]
 
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
@@ -102,11 +104,6 @@
              ;; static profile).
              :static {:dependencies [[org.eclipse.jetty/jetty-http]
                                      [org.eclipse.jetty/jetty-util]]}
-             ;:test {:plugins [[lein-shell "0.5.0"]]
-             ;       :dependencies [[org.eclips.jetty/jetty-server "12.1.7"]
-             ;                      [ring/ring-jetty-adapter :exclusions [org.eclipse.jetty/jetty-server]]
-             ;                      [org.eclipse.jetty/jetty-server "12.1.7"]
-             ;                      [org.eclipse.jetty.websocket/websocket-jetty-server "11.0.26"]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

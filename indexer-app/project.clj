@@ -21,7 +21,7 @@
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core]
-                 [ring/ring-jetty-adapter]
+                 [info.sunng/ring-jetty9-adapter]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
@@ -34,7 +34,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter]]
+                                  [info.sunng/ring-jetty9-adapter]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.indexer.runner

@@ -39,7 +39,6 @@
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.3"]
-                 ;[ring/ring-jetty-adapter "1.15.3"]
 
                  ;; Patch Jetty inside the ring adapter
                  [org.eclipse.jetty/jetty-http "12.1.6"]
@@ -65,12 +64,14 @@
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
 
-                 [ring/ring-jetty-adapter "1.15.3"
-                  :exclusions [org.eclipse.jetty/jetty-http
-                               org.eclipse.jetty/jetty-io
-                               org.eclipse.jetty/jetty-util
-                               org.eclipse.jetty/jetty-server
-                               org.eclipse.jetty/jetty-unixdomain-server
+                 [info.sunng/ring-jetty9-adapter "0.33.5"] 
+
+                 ;[ring/ring-jetty-adapter "1.15.3"
+                 ; :exclusions [org.eclipse.jetty/jetty-http
+                 ;              org.eclipse.jetty/jetty-io
+                 ;              org.eclipse.jetty/jetty-util
+                 ;              org.eclipse.jetty/jetty-server
+                 ;              org.eclipse.jetty/jetty-unixdomain-server
                                ; 🚩 AI suggested nonsense below:
                                ;org.eclipse.jetty/jetty-security
                                ;org.eclipse.jetty/jetty-session
@@ -80,13 +81,14 @@
                                ;org.eclipse.jetty.ee9/jetty-ee9-security
                                ;org.eclipse.jetty.ee9/jetty-ee9-webapp
                                ;org.eclipse.jetty.ee/jetty-ee-webapp
-                               org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
+                 ;              org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api
                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common
                                ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet
                                ;org.eclipse.jetty.websocket/jetty-websocket-core-common
                                ;org.eclipse.jetty.websocket/jetty-websocket-core-server
-                               ]]]
+                               ;]]
+                                ]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
@@ -99,7 +101,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  ;[ring/ring-jetty-adapter "1.15.3"]
+                                  [info.sunng/ring-jetty9-adapter "0.33.5"]
 
                                   ;; Patch Jetty inside the ring adapter
                                   [org.eclipse.jetty/jetty-http "12.1.6"]
@@ -124,12 +126,12 @@
                                   ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet "12.1.6"]
                                   ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
                                   ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
-                                  [ring/ring-jetty-adapter "1.15.3"
-                                   :exclusions [org.eclipse.jetty/jetty-http
-                                                org.eclipse.jetty/jetty-io
-                                                org.eclipse.jetty/jetty-util
-                                                org.eclipse.jetty/jetty-server
-                                                org.eclipse.jetty/jetty-unixdomain-server
+                                  ;[ring/ring-jetty-adapter "1.15.3"
+                                  ; :exclusions [org.eclipse.jetty/jetty-http
+                                  ;              org.eclipse.jetty/jetty-io
+                                  ;              org.eclipse.jetty/jetty-util
+                                  ;              org.eclipse.jetty/jetty-server
+                                  ;              org.eclipse.jetty/jetty-unixdomain-server
                                                 ;org.eclipse.jetty/jetty-security
                                                 ;org.eclipse.jetty/jetty-session
                                                 ;org.eclipse.jetty/jetty-xml
@@ -138,13 +140,13 @@
                                                 ;org.eclipse.jetty.ee9/jetty-ee9-security
                                                 ;org.eclipse.jetty.ee9/jetty-ee9-webapp
                                                 ;org.eclipse.jetty.ee/jetty-ee-webapp
-                                                org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
+                                  ;              org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server
                                                 ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api
                                                 ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common
                                                 ;org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet
                                                 ;org.eclipse.jetty.websocket/jetty-websocket-core-common
                                                 ;org.eclipse.jetty.websocket/jetty-websocket-core-server
-                                                ]]
+                                  ;              ]]
 
                                   [pjstadig/humane-test-output "0.9.0"]]
                    :injections [(require 'pjstadig.humane-test-output)
@@ -175,13 +177,14 @@
                                      [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
                                      [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
                                      [org.eclipse.jetty/jetty-server "12.1.6"]
-                                     [ring/ring-jetty-adapter "1.15.3"
-                                      :exclusions [org.eclipse.jetty/jetty-http
-                                                   org.eclipse.jetty/jetty-io
-                                                   org.eclipse.jetty/jetty-util
-                                                   org.eclipse.jetty/jetty-server
-                                                   org.eclipse.jetty/jetty-unixdomain-server
-                                                   org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
+                                     [info.sunng/ring-jetty9-adapter "0.33.5"]
+                                     ;[ring/ring-jetty-adapter "1.15.3"
+                                     ; :exclusions [org.eclipse.jetty/jetty-http
+                                     ;              org.eclipse.jetty/jetty-io
+                                     ;              org.eclipse.jetty/jetty-util
+                                     ;              org.eclipse.jetty/jetty-server
+                                     ;              org.eclipse.jetty/jetty-unixdomain-server
+                                     ;              org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server]]
 
 
                                      [lambdaisland/kaocha "1.0.732"]

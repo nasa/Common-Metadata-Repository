@@ -55,7 +55,7 @@
                  [org.ow2.asm/asm "7.0"]
                  [potemkin "0.4.5"]
                  [ring/ring-core]
-                 [ring/ring-jetty-adapter]
+                 [info.sunng/ring-jetty9-adapter]
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
@@ -74,7 +74,7 @@
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-core]
-                                  [ring/ring-jetty-adapter]
+                                  [info.sunng/ring-jetty9-adapter]
                                   [clj-http]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,

@@ -29,7 +29,7 @@
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core]
-                 [ring/ring-jetty-adapter] ;; used by migration
+                 [info.sunng/ring-jetty9-adapter] ;; used by migration
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
@@ -45,7 +45,7 @@
              :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter]
+                                  [info.sunng/ring-jetty9-adapter]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                                   [pjstadig/humane-test-output "0.9.0"]
