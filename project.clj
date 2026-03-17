@@ -25,7 +25,7 @@
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.testcontainers/testcontainers "2.0.2" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]
-                          [ring/ring-core "1.15.3"];; latest is 1.15.2 was 1.14.2
+                          [ring/ring-core "1.14.2"];; latest is 1.15.2 was 1.14.2
                           [ring/ring-jetty-adapter "1.14.2" ;;"1.15.3"
                            :exclusions [org.eclipse.jetty/jetty-server]] ;; latest is 1.15.3
 
