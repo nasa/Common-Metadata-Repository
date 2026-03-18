@@ -1,3 +1,5 @@
+(def version-jetty-adapter "0.39.2")
+
 (defproject nasa-cmr/cmr-search-relevancy-test "0.1.0-SNAPSHOT"
   :description "Tests for measuring CMR search relevancy"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
@@ -55,7 +57,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [info.sunng/ring-jetty9-adapter "0.39.2"]]}}
+                                     [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

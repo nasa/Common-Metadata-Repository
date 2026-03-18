@@ -1,3 +1,5 @@
+(def version-jetty-adapter "0.39.2")
+(def version-jetty "12.1.7")
 (defproject nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"
   :description "Adds virtual products to the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/virtual-product-app"
@@ -15,11 +17,11 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.eclipse.jetty/jetty-http "12.1.6"]
-                 [org.eclipse.jetty/jetty-util "12.1.6"]
+                 [org.eclipse.jetty/jetty-http ~version-jetty]
+                 [org.eclipse.jetty/jetty-util ~version-jetty]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.3"]
-                 [info.sunng/ring-jetty9-adapter "0.39.2"]
+                 [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -32,7 +34,7 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [info.sunng/ring-jetty9-adapter "0.39.2"]]
+                                  [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
                    :injections [(require 'pjstadig.humane-test-output)

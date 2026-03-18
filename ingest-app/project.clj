@@ -67,8 +67,8 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this

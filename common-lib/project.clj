@@ -88,8 +88,8 @@
                                         ; "-Dcom.sun.management.jmxremote.authenticate=false"
                                         ; "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]}
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
              ;; all projects at the same time, use the same command but from the top-

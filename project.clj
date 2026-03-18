@@ -12,6 +12,8 @@
 ;; 'CMR_ELASTIC_PORT=9206 lein modules do clean, install, test-out' will set the elastic port to use
 ;; as an environment variable, run clean in all project subdirectories, install in all project
 ;; subdirectories, and then test-out in all project subdirectories.
+(def version-jetty-adapter "0.39.2") ;; several projects do this exact block, match them
+(def version-jetty "12.1.7") ;; serveral projects do this exact block, match them
 (defproject nasa-cmr/cmr "0.1.0-SNAPSHOT"
   :description "Top level project to support all CMR libraries and applications."
   :plugins [[lein-modules "0.3.11"]
@@ -30,16 +32,16 @@
                           ; :exclusions [org.eclipse.jetty/jetty-server]] ;; latest is 1.15.3
 
 
-                          [info.sunng/ring-jetty9-adapter "0.39.2"
+                          [info.sunng/ring-jetty9-adapter ~version-jetty-adapter
                            :exclusions [org.eclipse.jetty/jetty-server]]
 
                           ;; These libraries are all versioned together, was 12.0.21
-                          [org.eclipse.jetty/jetty-http "12.0.33"]
-                          [org.eclipse.jetty/jetty-util "12.0.33"]
-                          [org.eclipse.jetty/jetty-io "12.0.33"]
-                          [org.eclipse.jetty/jetty-server "12.0.33"]
-                          [org.eclipse.jetty/jetty-unixdomain-server "12.0.33"]
-                          [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.0.33"]]
+                          [org.eclipse.jetty/jetty-http ~version-jetty]
+                          [org.eclipse.jetty/jetty-util ~version-jetty]
+                          [org.eclipse.jetty/jetty-io ~version-jetty]
+                          [org.eclipse.jetty/jetty-server ~version-jetty]
+                          [org.eclipse.jetty/jetty-unixdomain-server ~version-jetty]
+                          [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server ~version-jetty]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"
                                         "indexer-app"

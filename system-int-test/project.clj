@@ -1,3 +1,6 @@
+(def version-jetty-adapter "0.39.2")
+(def version-jetty "12.1.7")
+
 (defproject nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"
   :description "This project provides end to end integration testing for CMR components."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
@@ -41,11 +44,11 @@
                  [ring/ring-core "1.15.3"]
 
                  ;; Patch Jetty inside the ring adapter
-                 [org.eclipse.jetty/jetty-http "12.1.6"]
-                 [org.eclipse.jetty/jetty-io "12.1.6"]
-                 [org.eclipse.jetty/jetty-util "12.1.6"]
-                 [org.eclipse.jetty/jetty-server "12.1.6"]
-                 [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                 [org.eclipse.jetty/jetty-http ~version-jetty]
+                 [org.eclipse.jetty/jetty-io ~version-jetty]
+                 [org.eclipse.jetty/jetty-util ~version-jetty]
+                 [org.eclipse.jetty/jetty-server ~version-jetty]
+                 [org.eclipse.jetty/jetty-unixdomain-server ~version-jetty]
                  ; AI suggested nonsense below:
                  ;[org.eclipse.jetty/jetty-security "12.1.6"]
                  ;[org.eclipse.jetty/jetty-session "12.1.6"]
@@ -64,7 +67,7 @@
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.6"]
                  ;[org.eclipse.jetty.websocket/jetty-websocket-core-server "12.1.6"]
 
-                 [info.sunng/ring-jetty9-adapter "0.39.2"]
+                 [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]
 
                  ;[ring/ring-jetty-adapter "1.15.3"
                  ; :exclusions [org.eclipse.jetty/jetty-http
@@ -88,11 +91,11 @@
                                ;org.eclipse.jetty.websocket/jetty-websocket-core-common
                                ;org.eclipse.jetty.websocket/jetty-websocket-core-server
                                ;]]
-                                ]
+                 ]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
-                       "-Dclojure.compiler.direct-linking=true"] 
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
@@ -101,14 +104,14 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [info.sunng/ring-jetty9-adapter "0.39.2"]
+                                  [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]
 
                                   ;; Patch Jetty inside the ring adapter
-                                  [org.eclipse.jetty/jetty-http "12.1.6"]
-                                  [org.eclipse.jetty/jetty-io "12.1.6"]
-                                  [org.eclipse.jetty/jetty-util "12.1.6"]
-                                  [org.eclipse.jetty/jetty-server "12.1.6"]
-                                  [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
+                                  [org.eclipse.jetty/jetty-http ~version-jetty]
+                                  [org.eclipse.jetty/jetty-io ~version-jetty]
+                                  [org.eclipse.jetty/jetty-util ~version-jetty]
+                                  [org.eclipse.jetty/jetty-server ~version-jetty]
+                                  [org.eclipse.jetty/jetty-unixdomain-server ~version-jetty]
                                   ; 🚩 AI suggested nonsense below:
                                   ;[org.eclipse.jetty/jetty-security "12.1.6"]
                                   ;[org.eclipse.jetty/jetty-session "12.1.6"]
@@ -120,7 +123,7 @@
                                   ;[org.eclipse.jetty.ee9/jetty-ee9-webapp "12.1.6"]
                                   ;[org.eclipse.jetty.ee/jetty-ee-webapp "12.1.6"]
 
-                                  [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
+                                  [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server ~version-jetty]
                                   ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-api "12.1.6"]
                                   ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-common "12.1.6"]
                                   ;[org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-servlet "12.1.6"]
@@ -171,13 +174,13 @@
              :kaocha {:dependencies [;[ring/ring-jetty-adapter "1.15.3"]
 
                                      ;; Patch Jetty inside the ring adapter
-                                     [org.eclipse.jetty/jetty-http "12.1.6"]
-                                     [org.eclipse.jetty/jetty-io "12.1.6"]
-                                     [org.eclipse.jetty/jetty-util "12.1.6"]
-                                     [org.eclipse.jetty/jetty-unixdomain-server "12.1.6"]
-                                     [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server "12.1.6"]
-                                     [org.eclipse.jetty/jetty-server "12.1.6"]
-                                     [info.sunng/ring-jetty9-adapter "0.39.2"]
+                                     [org.eclipse.jetty/jetty-http ~version-jetty]
+                                     [org.eclipse.jetty/jetty-io ~version-jetty]
+                                     [org.eclipse.jetty/jetty-util ~version-jetty]
+                                     [org.eclipse.jetty/jetty-unixdomain-server ~version-jetty]
+                                     [org.eclipse.jetty.ee9.websocket/jetty-ee9-websocket-jetty-server ~version-jetty]
+                                     [org.eclipse.jetty/jetty-server ~version-jetty]
+                                     [info.sunng/ring-jetty9-adapter ~version-jetty-adapter]
                                      ;[ring/ring-jetty-adapter "1.15.3"
                                      ; :exclusions [org.eclipse.jetty/jetty-http
                                      ;              org.eclipse.jetty/jetty-io
