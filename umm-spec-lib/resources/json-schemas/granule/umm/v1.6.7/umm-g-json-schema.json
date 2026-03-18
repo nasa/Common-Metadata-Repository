@@ -1291,7 +1291,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/granule/v1.6.7"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -1301,7 +1301,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.6.6"]
+          "enum": ["1.6.7"]
         }
       },
       "required": ["URL", "Name", "Version"]
