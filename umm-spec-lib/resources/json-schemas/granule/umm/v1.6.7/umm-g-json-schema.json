@@ -1274,7 +1274,7 @@
                "text/xml", "application/pdf", "application/x-hdf", "application/x-hdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
                "image/vnd.collada+xml", "text/html", "text/plain", "application/zip", "application/gzip", "application/tar",
-               "application/tar+gzip", "application/tar+zip", "application/vnd.opendap.dap4.dmrpp+xml", "Not provided"]
+               "application/tar+gzip", "application/tar+zip", "application/vnd.opendap.dap4.dmrpp+xml", "application/yaml", "Not provided"]
     },
     "DataFormatType": {
       "description": "The format that granule data confirms to. While the value is listed as open to any text, CMR requires that it confirm to one of the values on the GranuleDataFormat values in the Keyword Management System: https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/GranuleDataFormat",

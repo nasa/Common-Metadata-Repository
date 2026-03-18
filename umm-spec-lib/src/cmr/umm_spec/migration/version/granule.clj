@@ -152,6 +152,27 @@
     (if (> (count pge-version) 10)
       (assoc pge-version-class :PGEVersion (subs pge-version 0 10)) 
       pge-version-class)))
+
+(defn downgrade-mimetype-to-1-6-6
+  "This function takes a map and downgrades the application/yaml mime-type
+   to version 1.6.6 If the metadata contains :Files then it is a nested map and so call
+   this function again to iterate over its maps.
+   An updated map is returned."
+  [archive-and-dist-info-file]
+  (-> archive-and-dist-info-file
+      (update :MimeType #(if (= "application/yaml" %)
+                           "Not provided"
+                           %))
+      (update :Files (fn [files]
+                       (seq (map #(downgrade-mimetype-to-1-6-6 %) files))))
+      (util/remove-nil-keys)))
+
+(defn downgrade-mimetypes-to-1-6-6
+  "This function takes a list of maps that contain the field called MimeType and it
+   iterates through them to downgrade application/yaml mime-type to version 1.6.6. A list of updated
+   maps is returned."
+  [list-of-maps]
+  (seq (map #(downgrade-mimetype-to-1-6-6 %) list-of-maps)))
       
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
@@ -302,3 +323,16 @@
   [_context g & _]
   (-> g
       (m-spec/update-version :granule "1.6.6")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.7" "1.6.6"]
+  ;; Remove the new subtype in each RelatedUrl.
+  [_context g & _]
+  (-> g
+      (update-in [:DataGranule :ArchiveAndDistributionInformation] downgrade-mimetypes-to-1-6-6)
+      (update :RelatedUrls downgrade-mimetypes-to-1-6-6)
+      (m-spec/update-version :granule "1.6.6")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.6" "1.6.7"]
+  [_context g & _]
+  (-> g
+      (m-spec/update-version :granule "1.6.7")))
