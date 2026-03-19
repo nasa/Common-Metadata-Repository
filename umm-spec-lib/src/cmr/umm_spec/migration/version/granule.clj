@@ -325,7 +325,7 @@
       (m-spec/update-version :granule "1.6.6")))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.7" "1.6.6"]
-  ;; Remove the new subtype in each RelatedUrl.
+  ;; Downgrade the mime type if its using application/yaml to Not provided.
   [_context g & _]
   (-> g
       (update-in [:DataGranule :ArchiveAndDistributionInformation] downgrade-mimetypes-to-1-6-6)
