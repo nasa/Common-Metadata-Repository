@@ -13,7 +13,7 @@
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions
-                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4" "1.6.5" "1.6.6"]}}
+                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4" "1.6.5" "1.6.6" "1.6.7"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
@@ -21,7 +21,8 @@
     (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))
     (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"] ["1.6.3" "1.6.4"]] (#'vm/version-steps :granule "1.6.1" "1.6.4")))
     (is (= [["1.6.4" "1.6.5"]] (#'vm/version-steps :granule "1.6.4" "1.6.5")))
-    (is (= [["1.6.5" "1.6.6"]] (#'vm/version-steps :granule "1.6.5" "1.6.6")))))
+    (is (= [["1.6.5" "1.6.6"]] (#'vm/version-steps :granule "1.6.5" "1.6.6")))
+    (is (= [["1.6.6" "1.6.7"]] (#'vm/version-steps :granule "1.6.6" "1.6.7")))))
 
 (declare all-migrations-produce-valid-umm-spec umm-record dest-version)
 (defspec all-migrations-produce-valid-umm-spec 100
@@ -829,3 +830,51 @@
              :Format "NETCDF-4"       ;; this has always been a valid format
              :MimeType "application/x-netcdf"}]
            (:RelatedUrls converted)))))
+
+(def granule-1-6-7
+  {:MetadataSpecification
+   {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.7"
+    :Name "UMM-G"
+    :Version "1.6.7"}
+   :DataGranule {:ArchiveAndDistributionInformation [{:MimeType "application/yaml"} {:MimeType "application/json"}]}
+   :PGEVersionClass {:PGEName "A PGE Name"
+                     :PGEVersion "12345678901234567890123456789012345678901234567890"}
+   :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                  :Type "GET SERVICE"
+                  :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                  :MimeType "application/json"
+                  :Format "JSON"}
+                 {:URL "s3://amazon.something.com/get-data"
+                  :Type "GET DATA"
+                  :Subtype "BROWSE IMAGE SOURCE"
+                  :Format "YAML"
+                  :MimeType "application/yaml"}]})
+
+(deftest migrate-1-6-6-up-to-1-6-7
+  (let [converted (vm/migrate-umm {} :granule "1.6.6" "1.6.7" granule-1-6-6)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.7"
+            :Name "UMM-G"
+            :Version "1.6.7"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.7")))
+
+(deftest migrate-1-6-7-down-to-1-6-6
+  (let [converted (vm/migrate-umm {} :granule "1.6.7" "1.6.6" granule-1-6-7)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6"
+            :Name "UMM-G"
+            :Version "1.6.6"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.6")
+    (is (= [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+             :Type "GET SERVICE"
+             :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+             :MimeType "application/json"
+             :Format "JSON"}
+            {:URL "s3://amazon.something.com/get-data"
+             :Type "GET DATA"
+             :Subtype "BROWSE IMAGE SOURCE",
+             :Format "YAML"       ;; this has always been a valid format
+             :MimeType "Not provided"}]
+           (:RelatedUrls converted)))
+    (is (= (get-in converted [:DataGranule :ArchiveAndDistributionInformation])
+           [{:MimeType "Not provided"} {:MimeType "application/json"}]))))
