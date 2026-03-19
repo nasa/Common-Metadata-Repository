@@ -1,4 +1,4 @@
-(def version-jetty-adapter "0.39.2")
+(def version-jetty-adapter "0.32.3")
 
 (defproject nasa-cmr/cmr-search-relevancy-test "0.1.0-SNAPSHOT"
   :description "Tests for measuring CMR search relevancy"

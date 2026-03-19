@@ -1,5 +1,5 @@
-(def version-jetty-adapter "0.39.2")
-(def version-jetty "12.1.7")
+(def version-jetty-adapter "0.32.3")
+(def version-jetty "12.0.32")
 (defproject nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"
   :description "Adds virtual products to the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/virtual-product-app"

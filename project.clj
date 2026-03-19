@@ -12,8 +12,8 @@
 ;; 'CMR_ELASTIC_PORT=9206 lein modules do clean, install, test-out' will set the elastic port to use
 ;; as an environment variable, run clean in all project subdirectories, install in all project
 ;; subdirectories, and then test-out in all project subdirectories.
-(def version-jetty-adapter "0.39.2") ;; several projects do this exact block, match them
-(def version-jetty "12.1.7") ;; serveral projects do this exact block, match them
+(def version-jetty-adapter "0.32.3") ;; several projects do this exact block, match them
+(def version-jetty "12.0.32") ;; serveral projects do this exact block, match them
 (defproject nasa-cmr/cmr "0.1.0-SNAPSHOT"
   :description "Top level project to support all CMR libraries and applications."
   :plugins [[lein-modules "0.3.11"]
