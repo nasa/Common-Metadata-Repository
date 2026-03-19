@@ -176,6 +176,10 @@
 (defn- do-send-with-retry
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
+  (def context context)
+  (def index-info index-info)
+  (def query query)
+  (def max-retries max-retries)
   (try
     (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
