@@ -29,7 +29,8 @@
    [cmr.elastic-utils.search.es-params-converter :as common-params]
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.search.api.core :refer [log-search-result-metadata]]
-   [cmr.search.data.elastic-search-index :as idx]
+   ;[cmr.search.data.elastic-search-index :as idx]
+   [cmr.search.data.granule-counts-cache :as granule-counts-cache]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
    [cmr.search.services.aql.conversion :as a]
@@ -393,7 +394,7 @@
         ;; get all collections limited by the list of providers in json format
         collections (get-collections-by-providers context provider-ids true)
         ;; get a mapping of collection to granule count
-        collection-granule-count (idx/get-collection-granule-counts context provider-ids)
+        collection-granule-count (granule-counts-cache/get-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings
         provider-holdings (map
                            #(assoc % :granule-count (get
