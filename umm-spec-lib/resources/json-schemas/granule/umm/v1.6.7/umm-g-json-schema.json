@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6",
+  "$id": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.7",
   "title": "UMM-G",
   "type": "object",
   "additionalProperties": false,
