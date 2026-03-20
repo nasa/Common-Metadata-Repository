@@ -187,6 +187,7 @@
    :sensor cpv/string-plus-and-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :force-cartesian cpv/string-param-options
    :spatial cpv/and-or-option
    :spatial-keyword cpv/string-plus-and-options
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
