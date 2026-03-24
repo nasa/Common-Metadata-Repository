@@ -5,7 +5,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire]
+  :dependencies [[cheshire
+                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]

@@ -5,7 +5,8 @@
                    :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.0"]
                  [cheshire
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+                  :exclusions [com.fasterxml.jackson.core/jackson-core
+                               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time]
                  [clojail "1.0.6"]
 
@@ -17,7 +18,7 @@
 
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.4"]
+                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.gfredericks/test.chuck "0.2.9"]
