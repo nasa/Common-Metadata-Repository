@@ -175,17 +175,23 @@
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
   ([context concept-type params]
-   (common-params/parse-parameter-query
-    context
-    concept-type
-    (create-and-validate-concepts-query-parameters
-     context concept-type params)))
+   (let [validated-params (create-and-validate-concepts-query-parameters
+                           context concept-type params)
+         ;; Add params to context so they're available in parameter converters
+         context-with-params (assoc context :params validated-params)]
+     (common-params/parse-parameter-query
+      context-with-params
+      concept-type
+      validated-params)))
   ([context concept-type params tag-data]
-   (common-params/parse-parameter-query
-    context
-    concept-type
-    (create-and-validate-concepts-query-parameters
-     context concept-type params tag-data))))
+   (let [validated-params (create-and-validate-concepts-query-parameters
+                           context concept-type params tag-data)
+         ;; Add params to context so they're available in parameter converters
+         context-with-params (assoc context :params validated-params)]
+     (common-params/parse-parameter-query
+      context-with-params
+      concept-type
+      validated-params))))
 
 (defn generate-query-conditions-for-parameters
   "Given the query params, generate the conditions for elastic search. Returns

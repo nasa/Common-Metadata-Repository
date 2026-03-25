@@ -38,7 +38,7 @@
    cpv/basic-params-config
    {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                     :include-facets :hierarchical-facets :include-highlights :include-tags
-                    :all-revisions :shapefile :simplify-shapefile}
+                    :all-revisions :shapefile :simplify-shapefile :force-cartesian}
     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                       :collection-data-type :collection-progress :consortium :project :project-h :entry-id :version :provider
                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
@@ -53,7 +53,7 @@
   [_]
   (cpv/merge-params-config
    cpv/basic-params-config
-   {:single-value #{:echo-compatible :include-facets :shapefile :simplify-shapefile}
+   {:single-value #{:echo-compatible :include-facets :shapefile :simplify-shapefile :force-cartesian}
     :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
                       :producer-granule-id :project :version :native-id :provider :entry-title
                       :platform :sensor :feature-id :crid-id :cycle}
@@ -187,6 +187,7 @@
    :sensor cpv/string-plus-and-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :force-cartesian cpv/string-param-options
    :spatial cpv/and-or-option
    :spatial-keyword cpv/string-plus-and-options
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
@@ -244,6 +245,7 @@
    :sensor cpv/string-plus-and-exclude-collection-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
+   :force-cartesian cpv/string-param-options
    :spatial cpv/and-or-option
    :spatial-keyword cpv/string-plus-and-options
    :temporal exclude-plus-and-or-option
@@ -432,12 +434,12 @@
     (let [gen-name (name generic-type)
           gen-ver (generics/current-generic-version generic-type)
           indexes (-> "schemas/%s/v%s/config.json"
-                        (format gen-name gen-ver)
-                        (io/resource)
-                        (slurp)
-                        (json/parse-string true)
-                        (:Indexes)
-                        (e-gen/only-elastic-preferences))
+                      (format gen-name gen-ver)
+                      (io/resource)
+                      (slurp)
+                      (json/parse-string true)
+                      (:Indexes)
+                      (e-gen/only-elastic-preferences))
           names (->> indexes
                      (map :Name)
                      (map csk/->kebab-case-keyword))]
@@ -705,13 +707,13 @@
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
                                          :simplify-shapefile :cloud-hosted :standard-product
-                                         :include-non-operational])]
+                                         :include-non-operational :force-cartesian])]
     (mapcat
-      (fn [[param value]]
-        (when-not (contains? #{"true" "false" "unset"} (when value (string/lower-case value)))
-          [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
-                   (csk/->snake_case_string param) value)]))
-      bool-params)))
+     (fn [[param value]]
+       (when-not (contains? #{"true" "false" "unset"} (when value (string/lower-case value)))
+         [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
+                  (csk/->snake_case_string param) value)]))
+     bool-params)))
 
 (defn- collection-include-facets-validation
   "Validates that the include_facets parameter has a value of true, false or v2."

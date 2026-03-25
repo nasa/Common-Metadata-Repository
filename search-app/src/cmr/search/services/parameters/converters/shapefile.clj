@@ -45,12 +45,22 @@
   {:default 5000 :type Long})
 
 (defn winding-opts
-  "Get the opts for a call to `normalize-polygon-winding` based on file type"
-  [mime-type]
-  (case mime-type
-    "application/shapefile+zip" {:boundary-winding :cw}
-    "application/vnd.google-earth.kml+xml" {}
-    "application/geo+json" {:hole-winding :cw}))
+  "Get the opts for a call to `normalize-polygon-winding` based on file type.
+  Optionally merges in force-cartesian option if provided in options.
+
+  Note: For GeoJSON, we only normalize hole winding. Boundary winding is not normalized
+  because GeoJSON coordinates come from GeoTools already validated. For small local polygons
+  (the typical cartesian use case), geodetic CCW and cartesian CCW have the same orientation,
+  so no boundary reversal is needed."
+  [mime-type options]
+  (let [base-opts (case mime-type
+                   "application/shapefile+zip" {:boundary-winding :cw}
+                   "application/vnd.google-earth.kml+xml" {}
+                   "application/geo+json" {:hole-winding :cw})
+        final-opts (if (:force-cartesian options)
+                    (assoc base-opts :force-cartesian true)
+                    base-opts)]
+    final-opts))
 
 (defn validate-entry-dir
   [target-dir entry]
@@ -148,8 +158,8 @@
     (cond
       (= point-count 0) "Shapefile has no points"
       (> point-count (max-shapefile-points))
-          (format "Number of points in shapefile exceeds the limit of %d"
-            (max-shapefile-points))
+      (format "Number of points in shapefile exceeds the limit of %d"
+              (max-shapefile-points))
       :else nil)))
 
 (defn- validate-feature-count
@@ -159,9 +169,9 @@
     (cond
       (= feature-count 0) "Shapefile has no features"
       (> feature-count (max-shapefile-features))
-        (format "Shapefile feature count [%d] exceeds the %d feature limit"
-          feature-count
-          (max-shapefile-features))
+      (format "Shapefile feature count [%d] exceeds the %d feature limit"
+              feature-count
+              (max-shapefile-features))
       :else nil)))
 
 (defn validate-features
@@ -172,8 +182,9 @@
 
 (defn feature->conditions
   "Process the contents of a Feature to return query conditions along with number of points in
-  the processed Feature. The `context` map can be used to pass along additional info."
-  [feature context]
+  the processed Feature. The `options` map can be used to pass along additional info including
+  winding options and force-cartesian setting."
+  [feature options]
   (let [crs (when (.getDefaultGeometryProperty feature)
               (-> feature .getDefaultGeometryProperty .getDescriptor .getCoordinateReferenceSystem))
         properties (.getProperties feature)
@@ -183,20 +194,22 @@
         geometries (map #(-> % .getValue (transform-to-epsg-4326 crs)) geometry-props)
         _ (debug (format "Transformed [%d] geometries" (count geometries)))
         point-count (apply + (map geometry-point-count geometries))
-        conditions (mapcat (fn [g] (geometry->conditions g context)) geometries)]
+        conditions (mapcat (fn [g] (geometry->conditions g options)) geometries)]
     (debug (format "CONDITIONS: %s" conditions))
     [conditions point-count]))
 
 (defn features->conditions
-  "Converts a list of features into a vector of SpatialConditions"
-  [features mime-type]
+  "Converts a list of features into a vector of SpatialConditions.
+  The options map can contain force-cartesian setting which will be merged into the winding options."
+  [features mime-type options]
   (validate-features features)
-  (let [iterator (.iterator features)]
-  ;; Loop overall all the Features in the list, building up a vector of conditions
+  (let [iterator (.iterator features)
+        winding-options (winding-opts mime-type options)]
+    ;; Loop overall all the Features in the list, building up a vector of conditions
     (loop [conditions []]
       (if (.hasNext iterator)
         (let [feature (.next iterator)
-              [feature-conditions _] (feature->conditions feature (winding-opts mime-type))]
+              [feature-conditions _] (feature->conditions feature winding-options)]
           (if (> (count feature-conditions) 0)
             ;; if any conditions were created for the feature add them to the current conditions
             (recur (conj conditions (gc/or-conds feature-conditions)))
@@ -216,7 +229,7 @@
 
 (defn esri-shapefile->condition-vec
   "Converts a shapefile to a vector of SpatialConditions"
-  [shapefile-info]
+  [shapefile-info options]
   (try
     (let [file (:tempfile shapefile-info)
           ^File temp-dir (unzip-file file)
@@ -234,7 +247,7 @@
         (while (.hasNext iterator)
           (let [feature (.next iterator)]
             (.add feature-list feature)))
-        (features->conditions feature-list mt/shapefile)
+        (features->conditions feature-list mt/shapefile options)
         (finally
           (.close iterator)
           (-> data-store .getFeatureReader .close)
@@ -247,7 +260,7 @@
 
 (defn geojson->conditions-vec
   "Converts a geojson file to a vector of SpatialConditions"
-  [shapefile-info]
+  [shapefile-info options]
   (try
     (let [file (:tempfile shapefile-info)
           _ (geojson/sanitize-geojson file)
@@ -266,7 +279,7 @@
         (while (.hasNext iterator)
           (let [feature (.next iterator)]
             (.add feature-list feature)))
-        (features->conditions feature-list mt/geojson)
+        (features->conditions feature-list mt/geojson options)
         (finally
           (.close iterator)
           (-> data-store .getFeatureReader .close)
@@ -279,7 +292,7 @@
 
 (defn kml->conditions-vec
   "Converts a kml file to a vector of SpatialConditions"
-  [shapefile-info]
+  [shapefile-info options]
   (try
     (let [file (:tempfile shapefile-info)
           input-stream (FileInputStream. file)
@@ -287,9 +300,9 @@
           feature-list (ArrayList.)]
       (try
         (util/while-let [feature (.parse parser)]
-          (when (> (feature-point-count feature) 0)
-            (.add feature-list feature)))
-        (features->conditions feature-list mt/kml)
+                        (when (> (feature-point-count feature) 0)
+                          (.add feature-list feature)))
+        (features->conditions feature-list mt/kml options)
         (finally
           (.delete file))))
     (catch Exception e
@@ -300,14 +313,15 @@
 
 (defn in-memory->conditions-vec
   "Converts a group of features produced by simplification to a vector of SpatialConditions"
-  [shapefile-info]
+  [shapefile-info options]
   (let [^ArrayList features (:tempfile shapefile-info)
         mime-type (:content-type shapefile-info)]
-    (features->conditions features mime-type)))
+    (features->conditions features mime-type options)))
 
 (defmulti shapefile->conditions
-  "Converts a shapefile to query conditions based on shapefile format"
-  (fn [shapefile-info]
+  "Converts a shapefile to query conditions based on shapefile format.
+  Optionally accepts an options map containing force-cartesian setting."
+  (fn [shapefile-info & _]
     (debug (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
     (if (:in-memory shapefile-info)
       :in-memory
@@ -315,30 +329,34 @@
 
 ;; ESRI shapefiles
 (defmethod shapefile->conditions mt/shapefile
-  [shapefile-info]
-  (let [conditions-vec (esri-shapefile->condition-vec shapefile-info)]
+  [shapefile-info options]
+  (let [conditions-vec (esri-shapefile->condition-vec shapefile-info options)]
     (gc/or-conds (flatten conditions-vec))))
 
 ;; GeoJSON
 (defmethod shapefile->conditions mt/geojson
-  [shapefile-info]
-  (let [conditions-vec (geojson->conditions-vec shapefile-info)]
+  [shapefile-info options]
+  (let [conditions-vec (geojson->conditions-vec shapefile-info options)]
     (gc/or-conds (flatten conditions-vec))))
 
 ;; KML
 (defmethod shapefile->conditions mt/kml
-  [shapefile-info]
-  (let [conditions-vec (kml->conditions-vec shapefile-info)]
+  [shapefile-info options]
+  (let [conditions-vec (kml->conditions-vec shapefile-info options)]
     (gc/or-conds (flatten conditions-vec))))
 
 ;; Simplfied and stored in memory
 (defmethod shapefile->conditions :in-memory
-  [shapefile-info]
-  (let [conditions-vec (in-memory->conditions-vec shapefile-info)]
+  [shapefile-info options]
+  (let [conditions-vec (in-memory->conditions-vec shapefile-info options)]
     (gc/or-conds (flatten conditions-vec))))
 
 (defmethod p/parameter->condition :shapefile
-  [_context _concept-type _param value _options]
+  [context _concept-type _param value _options]
   (if (enable-shapefile-parameter-flag)
-    (shapefile->conditions value)
+    (let [;; Params are added to context as keywords after sanitization
+          force-cartesian-value (get-in context [:params :force-cartesian])
+          force-cartesian (= "true" (util/safe-lowercase force-cartesian-value))
+          options (when force-cartesian {:force-cartesian true})]
+      (shapefile->conditions value options))
     (errors/throw-service-error :bad-request "Searching by shapefile is not enabled")))
