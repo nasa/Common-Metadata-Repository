@@ -57,43 +57,109 @@
         coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:CollectionProgress "NOT PROVIDED"}))
         coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {:CollectionProgress "PREPRINT"}))
         coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 7 {:CollectionProgress "INREVIEW"}))
-        coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 8 {:CollectionProgress "SUPERSEDED"}))]
+        coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 8 {:CollectionProgress "SUPERSEDED"}))
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
+        active-colls [coll1 coll3 coll5 coll8]]
 
     (index/wait-until-indexed)
 
-    (testing "flag OFF (default) - all 8 collections returned"
-      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
-                     (search/find-refs :collection {})))
+    (testing "flag OFF - param ignored, all collections returned"
+      (util/are3 [items search]
+        (d/refs-match? items (search/find-refs :collection search))
 
-    (testing "flag OFF + include-non-operational=false - all 8 collections returned (param ignored when flag off)"
-      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
-                     (search/find-refs :collection {:include-non-operational "false"})))
+        "no params"
+        all-colls {}
 
-    (testing "flag OFF + include-non-operational=true - all 8 collections returned (param ignored when flag off)"
-      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
-                     (search/find-refs :collection {:include-non-operational "true"})))
+        "include-non-operational=false"
+        all-colls {:include-non-operational "false"}
+
+        "include-non-operational=true"
+        all-colls {:include-non-operational "true"}))
 
     (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! true))
 
-    (testing "flag ON, no params - only active collections returned (excludes PLANNED, DEPRECATED, PREPRINT, INREVIEW)"
-      (d/refs-match? [coll1 coll3 coll5 coll8]
-                     (search/find-refs :collection {})))
+    (testing "flag ON - filter applies unless overridden"
+      (util/are3 [items search]
+        (d/refs-match? items (search/find-refs :collection search))
 
-    (testing "flag ON + include-non-operational=true - all 8 collections returned"
-      (d/refs-match? [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8]
-                     (search/find-refs :collection {:include-non-operational "true"})))
+        "no params - only operational collections (excludes PLANNED, DEPRECATED, PREPRINT, INREVIEW)"
+        active-colls {}
 
-    (testing "flag ON + include-non-operational=false - only active collections returned"
-      (d/refs-match? [coll1 coll3 coll5 coll8]
-                     (search/find-refs :collection {:include-non-operational "false"})))
+        "include-non-operational=false - only operational collections"
+        active-colls {:include-non-operational "false"}
 
-    (testing "flag ON + explicit collection-progress=PLANNED - PLANNED returned (no synthetic filter injected)"
-      (d/refs-match? [coll2]
-                     (search/find-refs :collection {:collection-progress "PLANNED"})))
+        "include-non-operational=true - all collections"
+        all-colls {:include-non-operational "true"}
 
-    (testing "flag ON + collection-progress=PLANNED + include-non-operational=false - empty (PLANNED is non-operational)"
-      (d/refs-match? []
-                     (search/find-refs :collection {:collection-progress "PLANNED"
-                                                    :include-non-operational "false"})))
+        "explicit collection-progress=PLANNED - PLANNED returned (filter not applied)"
+        [coll2] {:collection-progress "PLANNED"}
+
+        "collection-progress=PLANNED + include-non-operational=false - empty (explicit filter wins)"
+        [] {:collection-progress "PLANNED" :include-non-operational "false"}))
+
+    (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! false))))
+
+(deftest search-collection-progress-identifier-bypass
+  "Tests that collection identifiers bypass the non-operational collection filter (CMR-11240)."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ShortName "S1"
+                                                                                :Version "V1"
+                                                                                :EntryTitle "ET1"
+                                                                                :CollectionProgress "ACTIVE"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ShortName "S2"
+                                                                                :Version "V2"
+                                                                                :EntryTitle "ET2"
+                                                                                :CollectionProgress "PLANNED"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ShortName "S3"
+                                                                                :Version "V3"
+                                                                                :EntryTitle "ET3"
+                                                                                :CollectionProgress "DEPRECATED"}))]
+
+    (index/wait-until-indexed)
+
+    (testing "flag OFF - all collections returned regardless of identifiers"
+      (util/are3 [items search]
+        (d/refs-match? items (search/find-refs :collection search))
+
+        "no params"
+        [coll1 coll2 coll3] {}
+
+        "concept-id"
+        [coll2] {:concept-id (:concept-id coll2)}
+
+        "short-name + version"
+        [coll2] {:short-name "S2" :version "V2"}))
+
+    (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! true))
+
+    (testing "flag ON - identifiers bypass filter, non-identifiers do not"
+      (util/are3 [items search]
+        (d/refs-match? items (search/find-refs :collection search))
+
+        "no params - only ACTIVE returned"
+        [coll1] {}
+
+        "concept-id bypasses filter"
+        [coll2] {:concept-id (:concept-id coll2)}
+
+        "multiple concept-ids bypass filter"
+        [coll1 coll2 coll3] {:concept-id [(:concept-id coll1) (:concept-id coll2) (:concept-id coll3)]}
+
+        "entry-id bypasses filter"
+        [coll2] {:entry-id "S2_V2"}
+
+        "entry-title bypasses filter"
+        [coll3] {:entry-title "ET3"}
+
+        "short-name + version together bypass filter"
+        [coll2] {:short-name "S2" :version "V2"}
+
+        "native-id bypasses filter"
+        [coll3] {:native-id "ET3"}
+
+        "short-name alone does NOT bypass filter - only ACTIVE returned"
+        [coll1] {:short-name "S1"}
+
+        "version alone does NOT bypass filter - only ACTIVE returned"
+        [coll1] {:version "V1"}))
 
     (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! false))))
