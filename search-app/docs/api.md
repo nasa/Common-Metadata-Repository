@@ -1955,13 +1955,21 @@ Valid values: ACTIVE, PLANNED, COMPLETE, DEPRECATED, NOT PROVIDED, PREPRINT, INR
 
      curl "%CMR-ENDPOINT%/collections?collection_progress\[\]=PREPRINT&collection_progress\[\]=INREVIEW"
 
-  Include non-operational collections in search results
-
-     curl "%CMR-ENDPOINT%/collections?include-non-operational=true"
-
   Find collections using pattern matching
 
      curl "%CMR-ENDPOINT%/collections?collection_progress=*RE*&options\[collection_progress\]\[pattern\]=true"
+
+**Controlling non-operational collection filtering with `include_non_operational`:**
+
+The `include_non_operational` parameter controls whether non-operational collections are included when the filter is enabled. Valid values: `true`, `false`
+
+  Include non-operational collections in search results
+
+     curl "%CMR-ENDPOINT%/collections?include_non_operational=true"
+
+  Explicitly exclude non-operational collections even when searching by identifier
+
+     curl "%CMR-ENDPOINT%/collections?concept_id=C1200000000-PROV1&include_non_operational=false"
 
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 

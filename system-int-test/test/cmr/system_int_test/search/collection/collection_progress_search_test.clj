@@ -160,6 +160,12 @@
         [coll1] {:short-name "S1"}
 
         "version alone does NOT bypass filter - only ACTIVE returned"
-        [coll1] {:version "V1"}))
+        [coll1] {:version "V1"}
+
+        "concept-id + explicit include-non-operational=false - explicit param takes precedence"
+        [] {:concept-id (:concept-id coll2) :include-non-operational "false"}
+
+        "concept-id + explicit include-non-operational=true - explicit param takes precedence"
+        [coll2] {:concept-id (:concept-id coll2) :include-non-operational "true"}))
 
     (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! false))))
