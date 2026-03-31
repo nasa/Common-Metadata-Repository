@@ -58,10 +58,10 @@
   [elastic-name]
   (cond
     (= elastic-name es-config/gran-elastic-name)
-    (format "http://localhost:%s" (es-config/gran-elastic-port))
+    (format "http://%s:%s" (es-config/gran-elastic-host) (es-config/gran-elastic-port))
 
     (= elastic-name es-config/elastic-name)
-    (format "http://localhost:%s" (es-config/elastic-port))
+    (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port))
 
     :else
     (throw (Exception. (str "Given wrong elastic-name: " elastic-name " to create elastic root url.")))))

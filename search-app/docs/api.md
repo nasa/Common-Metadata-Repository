@@ -1941,7 +1941,7 @@ Supports ignore_case and pattern matching.
 
 Valid values: ACTIVE, PLANNED, COMPLETE, DEPRECATED, NOT PROVIDED, PREPRINT, INREVIEW, SUPERSEDED
 
-**NOTE:** When the non-operational collection filter is enabled (feature flag), collections with PLANNED, DEPRECATED, PREPRINT, and INREVIEW status are excluded from default search results. Use `include-non-operational=true` to include them. This is an experimental feature and may not be enabled in all environments.
+**NOTE:** When the non-operational collection filter is enabled (feature flag), collections with PLANNED, DEPRECATED, PREPRINT, and INREVIEW status are excluded from default search results. Use `include-non-operational=true` to include them. The default filter is automatically bypassed when searching by collection identifiers (`concept_id`, `entry_id`, `entry_title`, `short_name` with `version`, or `native_id`), allowing you to find specific collections regardless of their progress status. However, if you explicitly set `include-non-operational=false` (or `true`), that explicit setting takes precedence even when using identifier parameters.
 
   Find collections matching 'collection\_progress' param value
 
@@ -1955,13 +1955,21 @@ Valid values: ACTIVE, PLANNED, COMPLETE, DEPRECATED, NOT PROVIDED, PREPRINT, INR
 
      curl "%CMR-ENDPOINT%/collections?collection_progress\[\]=PREPRINT&collection_progress\[\]=INREVIEW"
 
-  Include non-operational collections in search results
-
-     curl "%CMR-ENDPOINT%/collections?include-non-operational=true"
-
   Find collections using pattern matching
 
      curl "%CMR-ENDPOINT%/collections?collection_progress=*RE*&options\[collection_progress\]\[pattern\]=true"
+
+**Controlling non-operational collection filtering with `include_non_operational`:**
+
+The `include_non_operational` parameter controls whether non-operational collections are included when the filter is enabled. Valid values: `true`, `false`
+
+  Include non-operational collections in search results
+
+     curl "%CMR-ENDPOINT%/collections?include_non_operational=true"
+
+  Explicitly exclude non-operational collections even when searching by identifier
+
+     curl "%CMR-ENDPOINT%/collections?concept_id=C1200000000-PROV1&include_non_operational=false"
 
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 

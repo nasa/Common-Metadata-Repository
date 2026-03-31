@@ -535,9 +535,19 @@
 
 (defmethod common-params/parse-query-level-params :collection
   [_concept-type params]
-  (let [params (if (and (config/enable-non-operational-collection-filter)
+  (let [;; Check if any collection identifier parameter is present that uniquely identifies collections
+        ;; When searching for specific collections by identifier, we should not apply the default
+        ;; progress filter
+        has-identifier? (or (contains? params :concept-id)
+                            (contains? params :entry-id)
+                            (contains? params :entry-title)
+                            (and (contains? params :short-name)
+                                 (contains? params :version))
+                            (contains? params :native-id))
+        params (if (and (config/enable-non-operational-collection-filter)
                         (not (contains? params :collection-progress))
-                        (not (contains? params :include-non-operational)))
+                        (not (contains? params :include-non-operational))
+                        (not has-identifier?))
                  (assoc params :include-non-operational "false")
                  params)
         [params query-attribs] (common-params/default-parse-query-level-params
