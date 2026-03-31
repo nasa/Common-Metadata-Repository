@@ -183,6 +183,7 @@
            (into {} (for [hit (get-in results [:hits :hits])]
                       [(:_id hit) (get-in hit [:_source :permitted-group-ids])]))))
 
+
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
@@ -226,3 +227,7 @@
                                               :provider-id provider-id
                                               :concept-type :collection})
                   num-granules])))))
+
+(defmethod q2e/wildcard-field? :granule
+  [_ field]
+  (contains? #{:granule-ur-wildcard :producer-gran-id-wildcard} field))

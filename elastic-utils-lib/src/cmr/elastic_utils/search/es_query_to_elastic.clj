@@ -138,12 +138,23 @@
   ;; No field mappings specified by default
   {})
 
+(defmulti wildcard-field?
+  "Returns true if the field is a wildcard field."
+  (fn [concept-type _field]
+    concept-type))
+
+(defmethod wildcard-field? :default
+  [_ _]
+  false)
+
 (defn field->lowercase-field
   "Maps a field name to the name of the lowercase field to use within elastic.
   If a mapping is not present it defaults the lowercase field as <field>-lowercase"
   [concept-type field]
-  (get (field->lowercase-field-mappings concept-type) (keyword field)
-       (str (name field) "-lowercase")))
+  (if (wildcard-field? concept-type field)
+    (name field)
+    (get (field->lowercase-field-mappings concept-type) (keyword field)
+         (str (name field) "-lowercase"))))
 
 (defn- range-condition->elastic
   "Convert a range condition to an elastic search condition. Execution
@@ -206,13 +217,17 @@
   cmr.common.services.search.query_model.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
-    (let [field (if case-sensitive?
-                  (query-field->elastic-field field concept-type)
-                  (field->lowercase-field concept-type field))
+    (let [field-name (if case-sensitive?
+                       (query-field->elastic-field field concept-type)
+                       (field->lowercase-field concept-type field))
           value (if case-sensitive? value (string/lower-case value))]
-      (if pattern?
-        {:wildcard {field value}}
-        {:term {field value}})))
+      (if (and pattern? (wildcard-field? concept-type field))
+        {:query_string {:query (escape-query-string value)
+                        :default_field field-name
+                        :default_operator :and}}
+        (if pattern?
+          {:wildcard {field-name value}}
+          {:term {field-name value}}))))
 
   cmr.common.services.search.query_model.StringsCondition
   (condition->elastic

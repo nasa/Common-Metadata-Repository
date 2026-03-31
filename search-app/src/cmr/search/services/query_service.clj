@@ -216,6 +216,7 @@
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
                                       meta-context concept-type params tag-data))
+        _ (info (str "Executing query model:\n" (pr-str query)))
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        meta-context concept-type query))

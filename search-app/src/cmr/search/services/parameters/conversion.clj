@@ -126,7 +126,7 @@
    :equator-crossing-date :equator-crossing-date
    :equator-crossing-longitude :equator-crossing-longitude
    :exclude :exclude
-   :granule-ur :string
+   :granule-ur :granule-ur-wildcard-type
    :instrument :inheritance
    :line :line
    :native-id :string
@@ -135,7 +135,7 @@
    :point :point
    :polygon :polygon
    :circle :circle
-   :producer-granule-id :string
+   :producer-granule-id :producer-granule-id-wildcard-type
    :production-date :multi-date-range
    :project :string
    :feature-id :string
@@ -431,10 +431,26 @@
       (gc/or-conds
        (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :readable-granule-name options)
-          pattern (common-params/pattern-field? concept-type :readable-granule-name options)]
+          pattern (common-params/pattern-field? concept-type :readable-granule-name options)
+          granule-ur-field (if pattern :granule-ur-wildcard :granule-ur)
+          producer-gran-id-field (if pattern :producer-granule-id-wildcard :producer-granule-id)]
       (gc/or-conds
-       [(cqm/string-condition :granule-ur value case-sensitive pattern)
-        (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
+       [(cqm/string-condition granule-ur-field value case-sensitive pattern)
+        (cqm/string-condition producer-gran-id-field value case-sensitive pattern)]))))
+
+(defmethod common-params/parameter->condition :granule-ur-wildcard-type
+  [context concept-type param value options]
+  (let [case-sensitive (common-params/case-sensitive-field? concept-type :granule-ur options)
+        pattern (common-params/pattern-field? concept-type :granule-ur options)
+        field (if pattern :granule-ur-wildcard :granule-ur)]
+    (cqm/string-condition field value case-sensitive pattern)))
+
+(defmethod common-params/parameter->condition :producer-granule-id-wildcard-type
+  [context concept-type param value options]
+  (let [case-sensitive (common-params/case-sensitive-field? concept-type :producer-granule-id options)
+        pattern (common-params/pattern-field? concept-type :producer-granule-id options)
+        field (if pattern :producer-granule-id-wildcard :producer-granule-id)]
+    (cqm/string-condition field value case-sensitive pattern)))
 
 (defmethod common-params/parameter->condition :has-granules
   [_ _ _ value _]
@@ -629,6 +645,22 @@
                                   concept-type-key params)]
       [(dissoc params :all-revisions)
        (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})])))
+
+(defmethod common-params/parameter->condition :granule-ur
+  [context concept-type param value options]
+  (let [case-sensitive (common-params/case-sensitive-field? concept-type :granule-ur options)
+        pattern (common-params/pattern-field? concept-type :granule-ur options)]
+    (if pattern
+      (cqm/string-condition :granule-ur-wildcard value case-sensitive pattern)
+      (cqm/string-condition :granule-ur value case-sensitive pattern))))
+
+(defmethod common-params/parameter->condition :producer-granule-id
+  [context concept-type param value options]
+  (let [case-sensitive (common-params/case-sensitive-field? concept-type :producer-granule-id options)
+        pattern (common-params/pattern-field? concept-type :producer-granule-id options)]
+    (if pattern
+      (cqm/string-condition :producer-granule-id-wildcard value case-sensitive pattern)
+      (cqm/string-condition :producer-granule-id value case-sensitive pattern))))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

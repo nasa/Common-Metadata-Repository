@@ -74,6 +74,10 @@
 (def bool-field-mapping
   {:type "boolean"})
 
+(def wildcard-field-mapping
+  "Used for wildcard search fields"
+  {:type "wildcard"})
+
 (defn stored
   "modifies a mapping to indicate that it should be stored"
   [field-mapping]

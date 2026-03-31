@@ -114,6 +114,11 @@
          (ocsd-map->vector %))
        (ocsd/ocsds->elastic-docs umm-granule)))
 
+(defn ->wildcard
+  [value]
+  (when value
+    (string/join " " (flatten (string/split value #"[\s_\.\/$\/]")))))
+
 (defn- granule->elastic-doc
   "Returns elastic json that can be used to insert the given granule concept in elasticsearch."
   [context concept umm-granule]
@@ -196,6 +201,8 @@
             :granule-ur-lowercase (string/lower-case granule-ur)
             :producer-gran-id producer-gran-id
             :producer-gran-id-lowercase (when producer-gran-id (string/lower-case producer-gran-id))
+            :granule-ur-wildcard (->wildcard granule-ur)
+            :producer-gran-id-wildcard (->wildcard producer-gran-id)
             :day-night day-night
             :day-night-doc-values day-night
             :day-night-lowercase (when day-night (string/lower-case day-night))
