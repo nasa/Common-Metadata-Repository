@@ -1941,7 +1941,7 @@ Supports ignore_case and pattern matching.
 
 Valid values: ACTIVE, PLANNED, COMPLETE, DEPRECATED, NOT PROVIDED, PREPRINT, INREVIEW, SUPERSEDED
 
-**NOTE:** When the non-operational collection filter is enabled (feature flag), collections with PLANNED, DEPRECATED, PREPRINT, and INREVIEW status are excluded from default search results. Use `include-non-operational=true` to include them. The default filter is automatically bypassed when searching by collection identifiers (`concept_id`, `entry_id`, `entry_title`, `short_name` with `version`, or `native_id`), allowing you to find specific collections regardless of their progress status. However, if you explicitly set `include-non-operational=false` (or `true`), that explicit setting takes precedence even when using identifier parameters.
+**NOTE:** When the non-operational collection filter is enabled (feature flag), collections with PLANNED, DEPRECATED, PREPRINT, and INREVIEW status are excluded from default search results. Use `include-non-operational=true` to include them. The default filter is automatically bypassed when searching by collection identifiers (`concept_id`, `entry_id`, `entry_title`, `short_name` with `version`, `native_id`, or `doi`), allowing you to find specific collections regardless of their progress status. However, if you explicitly set `include-non-operational=false` (or `true`), that explicit setting takes precedence even when using identifier parameters.
 
   Find collections matching 'collection\_progress' param value
 
