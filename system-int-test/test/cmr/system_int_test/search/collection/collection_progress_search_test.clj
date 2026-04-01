@@ -108,6 +108,7 @@
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ShortName "S2"
                                                                                 :Version "V2"
                                                                                 :EntryTitle "ET2"
+                                                                                :DOI {:DOI "10.5678/TestDOI2"}
                                                                                 :CollectionProgress "PLANNED"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ShortName "S3"
                                                                                 :Version "V3"
@@ -156,6 +157,9 @@
         "native-id bypasses filter"
         [coll3] {:native-id "ET3"}
 
+        "doi bypasses filter"
+        [coll2] {:doi "10.5678/TestDOI2"}
+
         "short-name alone does NOT bypass filter - only ACTIVE returned"
         [coll1] {:short-name "S1"}
 
@@ -166,6 +170,9 @@
         [] {:concept-id (:concept-id coll2) :include-non-operational "false"}
 
         "concept-id + explicit include-non-operational=true - explicit param takes precedence"
-        [coll2] {:concept-id (:concept-id coll2) :include-non-operational "true"}))
+        [coll2] {:concept-id (:concept-id coll2) :include-non-operational "true"}
+
+        "doi + explicit include-non-operational=false - explicit param takes precedence"
+        [] {:doi "10.5678/TestDOI2" :include-non-operational "false"}))
 
     (side/eval-form `(cmr.search.config/set-enable-non-operational-collection-filter! false))))
