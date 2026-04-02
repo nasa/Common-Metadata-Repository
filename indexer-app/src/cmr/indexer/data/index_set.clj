@@ -676,9 +676,11 @@
 
     :granule-ur m/string-field-mapping
     :granule-ur-lowercase (m/doc-values m/string-field-mapping)
+    :granule-ur-wildcard m/wildcard-field-mapping
 
     :producer-gran-id m/string-field-mapping
     :producer-gran-id-lowercase (m/doc-values m/string-field-mapping)
+    :producer-granule-id-wildcard m/wildcard-field-mapping
 
     :day-night m/string-field-mapping
     :day-night-doc-values (m/doc-values m/string-field-mapping)
@@ -696,6 +698,7 @@
     ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
     ;; to use a sort script which is (most likely) much slower.
     :readable-granule-name-sort (m/doc-values m/string-field-mapping)
+    :readable-granule-name-wildcard m/wildcard-field-mapping
 
     :platform-sn  m/string-field-mapping
     :platform-sn-lowercase m/string-field-mapping
