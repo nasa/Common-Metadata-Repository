@@ -778,37 +778,6 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date"
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=%2Bstart_date"
 
-### <a name="document-scoring"></a> Document Scoring
-
-Collection search results are scored when any of the following parameters are searched:
-
-* keyword
-* platform
-* instrument
-* sensor
-* two_d_coordinate_system_name
-* science_keywords
-* project
-* processing_level_id
-* data_center
-* archive_center
-
-Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
-
-The terms are separated between keywords found in the keywords field and additional terms found in the fields listed above.
-
-The filters are case insensitive, support wild-cards * and ?, and are given below:
-
-1. All keyword terms are contained in the long-name field OR one of the keyword terms exactly matches the short-name field OR one of the additional terms is contained in the short-name or long-name - weight 1.4
-2. The keyword term field is a single string that exactly matches the entry-id field OR one of the additional terms is contained in the entry-id - weight 1.4
-3. All keyword terms are contained in the Project/long-name field OR one of the keyword terms exactly matches the Project/short-name field OR one of the additional terms is contained in the Project/short-name or Project/long-name - weight 1.3
-4. All keyword terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field OR one of the additional terms is contained in the Platform/short-name or Platform/long-name - weight 1.3
-5. All keyword terms are contained in the Platform/Instrument/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/short-name field OR one of the additional terms is contained in the Platform/Instrument/short-name or Platform/Instrument/long-name - weight 1.2
-6. All keyword terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/Sensor/short-name field OR one of the additional terms is contained in the Platform/Instrument/Sensor/short-name or Platform/Instrument/Sensor/long-name - weight 1.2
-7. The keyword term field is a single string that exactly matches the science-keyword field OR an additional term is contained in the science-keyword field - weight 1.2
-8. The keyword term field is a single string that exactly matches the spatial-keyword field OR an additional term is contained in the spatial-keyword field - weight 1.1
-9. The keyword term field is a single string that exactly matches the temporal-keyword field OR an additional term is contained in the temporal-keyword field - weight 1.1
-
 #### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
 
 In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
@@ -844,6 +813,69 @@ __Sample response__
         </references>
     </results>
 ```
+
+### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
+
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services, tools and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
+
+By concept id
+
+    curl -i  "%CMR-ENDPOINT%/concepts/:concept-id"
+
+By concept id and revision id
+
+    curl -i "%CMR-ENDPOINT%/concepts/:concept-id/:revision-id"
+
+Plain examples, with and without revision ids:
+
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/C100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2"
+
+File extension examples:
+
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json_v1_9"
+
+MIME-type examples:
+
+    curl -i -H 'Accept: application/xml' \
+        "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H 'Accept: application/metadata+xml' \
+        "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H "Accept: application/vnd.nasa.cmr.umm+json;version=1.9" \
+        "%CMR-ENDPOINT%/concepts/V100000-PROV1"
+
+Note that attempting to retrieve a revision that is a tombstone is an error and will return a 400 status code.
+
+The following extensions and MIME types are supported by the `/concepts/` resource for collection and granule concept types:
+
+  * `html`      "text/html" (Collections only)
+  * `json`      "application/json"
+  * `xml`       "application/xml" (same as .native)
+  * `native`    "application/metadata+xml"
+  * `echo10`    "application/echo10+xml"
+  * `iso`       "application/iso19115+xml"
+  * `iso19115`  "application/iso19115+xml"
+  * `dif`       "application/dif+xml"
+  * `dif10`     "application/dif10+xml"
+  * `atom`      "application/atom+xml"
+  * `umm_json`  "application/vnd.nasa.cmr.umm+json"
+  * `stac`      "application/json; profile=stac-catalogue"
+
+`atom` and `json` formats are only supported for retrieval of the latest collection/granule revisions (i.e. without specifying a particular revision).
+
+`stac` format is only supported for retrieval of the latest granule revisions (i.e. without specifying a particular revision).
+
+The following extensions and MIME types are supported by the `/concepts/` resource for the variable, service, tool  and subscription concept types:
+
+  * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
 ### <a name="deleted-collections"></a> Find collections that have been deleted after a given date
 
@@ -886,3 +918,1084 @@ CMR-Hits: 3
     </references>
 </results>
 ```
+
+### <a name="retrieve-provider-holdings"></a> Retrieve Provider Holdings
+
+Provider holdings can be retrieved as XML or JSON. It will show all CMR providers, collections and granule counts regardless of the user's ACL access.
+
+All provider holdings
+
+    curl "%CMR-ENDPOINT%/provider_holdings.xml"
+
+Provider holdings for a list of providers
+
+    curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
+
+### <a name="tagging"></a> Tagging
+
+Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
+
+Tags have the following fields:
+
+* tag_key (REQUIRED): free text specifying the key of the tag. Tag key cannot contain `/` character. Tag key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag key is 1030 characters.
+* description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
+* originator_id (REQUIRED): the Earthdata Login ID of the person who created the tag.
+
+#### <a name="tag-access-control"></a> Tag Access Control
+
+Access to tags is granted through the TAG_GROUP system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission. Associating and dissociating collections with a tag is considered an update.
+
+#### <a name="creating-a-tag"></a> Creating a Tag
+
+Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid EDL bearer token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags -d \
+'{
+  "tag_key": "org.ceos.wgiss.cwic.quality",
+  "description": "This is a sample tag."
+ }'
+
+HTTP/1.1 201 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept_id":"T1200000000-CMR","revision_id":1}
+```
+
+#### <a name="retrieving-a-tag"></a> Retrieving a Tag
+
+A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag.
+
+```
+curl -i %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 216
+Content-Type: application/json;charset=ISO-8859-1
+
+{
+  "originator_id" : "mock-admin",
+  "tag_key": "org.ceos.wgiss.cwic.quality",
+  "description" : "This is a sample tag for indicating some data is high quality."
+}
+```
+
+#### <a name="updating-a-tag"></a> Updating a Tag
+
+Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. The same rules apply when updating a tag as when creating it but in addition tag key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
+'{
+  "tag_key": "org.ceos.wgiss.cwic.quality",
+  "description": "This is a sample tag for indicating some data is high quality."
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept_id":"T1200000000-CMR","revision_id":2}
+```
+
+#### <a name="deleting-a-tag"></a> Deleting a Tag
+
+Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+
+```
+curl -XDELETE -i  -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept_id":"T1200000000-CMR","revision_id":3}
+```
+
+
+#### <a name="tag-association"></a> Tag Association
+
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions.
+Tag association by query only supports tagging the latest revision of collections.
+Tag association by collections supports tagging any specified collection revisions.
+
+Expected Response Status:
+<ul>
+<li>200 OK -- if all associations succeeded</li>
+<li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+<li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
+
+Expected Response Body:
+
+The response body will consist of a list of tool association objects
+Each association object will have:
+<ul>
+    <li>A `tagged_item` field</li>
+    <ul>
+        <li>The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association.</li>
+    </ul>
+    <li>Either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. </li>
+</ul>
+
+- IMPORTANT: The tag and the collections must exist before they can be associated together.
+
+
+Here is am example of a tag association request and its response:
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
+'[{"concept_id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
+  {"concept_id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  }
+]
+```
+
+On occasions when tag association cannot be processed at all due to invalid input, tag association request will return failure status code 400 with the appropriate error message.
+
+#### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
+
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag.
+All collections found will be _added_ to the current set of associated collections with a tag.
+Tag associations are maintained throughout the life of a collection.
+If a collection is deleted and re-added it will maintain its tags.
+
+Expected Response Status:
+- If query delivers no match, it will still return 200 OK with no associations made
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000000-PROV1"
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000001-PROV1"
+    }
+  }
+]
+```
+
+#### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
+
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
+User can also provide arbitrary JSON data which is optional during tag association.
+The max length of JSON data used for tag association is 32KB.
+All referenced collections will be _added_ to the current set of associated collections with a tag.
+Tag associations are maintained throughout the life of a collection.
+If a collection is deleted and re-added it will maintain its tags.
+If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa.
+Tags cannot be associated on tombstoned collection revisions.
+
+Expected Response Status:
+<ul>
+    <li>200 OK -- if all associations succeeded</li>
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+'[{"concept_id": "C1200000005-PROV1", "revision_id": 2, "data": "APPROVED"},
+  {"concept_id": "C1200000006-PROV1", "revision_id": 1, "data": "IN_REVIEW"},
+  {"concept_id": "C1200000007-PROV1", "revision_id": 1, "data": "REVIEW_DISPUTED"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1",
+      "revision_id":2
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1",
+      "revision_id":1
+    }
+  }
+]
+```
+
+#### <a name="tag-dissociation"></a> Tag Dissociation
+
+A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests.
+Tag dissociation by query only supports tag dissociation of the latest revision of collections.
+Tag dissociation by collections supports tag dissociation from any specified collection revisions.
+The tag dissociation response looks the same as tag association response.
+
+Expected Response Status:
+<ul>
+    <li>200 OK -- if all dissociations succeeded</li>
+    <li>207 MULTI-STATUS -- if some dissociations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all dissociations failed due to user error</li>
+</ul>
+
+Expected Response Body:
+
+The response body will consist of a list of tool association objects
+Each association object will have:
+<ul>
+    <li>A `tagged_item` field</li>
+    <ul>
+        <li>The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation.</li>
+    </ul>
+    <li>Either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. </li>
+</ul>
+
+Here is a sample tag dissociation request and its response:
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 207 MULTI-STATUS
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "status": 200,
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "status": 200,
+    "warnings":[
+      "Tag [edsc.in_modaps] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "status": 400,
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+#### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
+
+Tags can be dissociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+
+Expected Response Status:
+- If query delivers no match, it will still return 200 OK with no associations made
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000007-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000000-PROV1"
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000001-PROV1"
+    }
+  }
+]
+```
+
+#### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
+
+Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to
+`%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
+
+Expected Response Status:
+<ul>
+    <li>200 OK -- if all associations succeeded</li>
+    <li>207 MULTI-STATUS -- if some associations succeeded and some failed due to user error</li>
+    <li>400 BAD REQUEST -- if all associations failed due to user error</li>
+</ul>
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+'[{"concept_id": "C1200000005-PROV1", "revision_id": 1},
+  {"concept_id": "C1200000006-PROV1", "revision_id": 2}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "warnings":[
+      "Tag [gov.nasa.gcmd.review_status] is not associated with the specific collection concept revision concept id [C1200000005-PROV1] and revision id [1]."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1",
+      "revision_id":1
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1",
+      "revision_id":2
+    }
+  }
+]
+```
+
+#### <a name="searching-for-tags"></a> Searching for Tags
+
+Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
+
+Tag search results are paged. See [Paging Details](#paging-details) for more information on how to page through tag search results.
+
+##### Tag Search Parameters
+
+The following parameters are supported when searching for tags.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### Tag Matching Parameters
+
+These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `tag_key[]=key1&tag_key[]=key2`.
+
+* tag_key
+  * options: pattern
+* originator_id
+  * options: pattern
+
+##### Tag Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+* hits - How many total tags were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of tags with the following fields
+  * concept_id
+  * revision_id
+  * tag_key
+  * description
+  * originator_id - The id of the user that created the tag.
+
+##### Tag Search Example
+
+```
+curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&tag_key=org\\.ceos\\.*&options[tag_key][pattern]=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 292
+
+{
+  "items" : [ {
+    "concept_id" : "T1200000000-CMR",
+    "revision_id" : 1,
+    "tag_key" : "org.ceos.wgiss.cwic",
+    "description" : "This is a sample tag.",
+    "originator_id" : "mock-admin"
+  } ],
+  "took" : 5,
+  "hits" : 1
+}
+```
+
+### <a name="document-scoring"></a> Document Scoring
+
+Collection search results are scored when any of the following parameters are searched:
+
+* keyword
+* platform
+* instrument
+* sensor
+* two_d_coordinate_system_name
+* science_keywords
+* project
+* processing_level_id
+* data_center
+* archive_center
+
+Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
+
+The terms are separated between keywords found in the keywords field and additional terms found in the fields listed above.
+
+The filters are case insensitive, support wild-cards * and ?, and are given below:
+
+1. All keyword terms are contained in the long-name field OR one of the keyword terms exactly matches the short-name field OR one of the additional terms is contained in the short-name or long-name - weight 1.4
+2. The keyword term field is a single string that exactly matches the entry-id field OR one of the additional terms is contained in the entry-id - weight 1.4
+3. All keyword terms are contained in the Project/long-name field OR one of the keyword terms exactly matches the Project/short-name field OR one of the additional terms is contained in the Project/short-name or Project/long-name - weight 1.3
+4. All keyword terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field OR one of the additional terms is contained in the Platform/short-name or Platform/long-name - weight 1.3
+5. All keyword terms are contained in the Platform/Instrument/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/short-name field OR one of the additional terms is contained in the Platform/Instrument/short-name or Platform/Instrument/long-name - weight 1.2
+6. All keyword terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/Sensor/short-name field OR one of the additional terms is contained in the Platform/Instrument/Sensor/short-name or Platform/Instrument/Sensor/long-name - weight 1.2
+7. The keyword term field is a single string that exactly matches the science-keyword field OR an additional term is contained in the science-keyword field - weight 1.2
+8. The keyword term field is a single string that exactly matches the spatial-keyword field OR an additional term is contained in the spatial-keyword field - weight 1.1
+9. The keyword term field is a single string that exactly matches the temporal-keyword field OR an additional term is contained in the temporal-keyword field - weight 1.1
+
+### <a name="facets"></a> Facets
+
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection or granule search results and are enabled with the `include_facets` parameter. There are three different types of facet responses. There are flat facets (collection only), hierarchical facets (collection only), and version 2 facets.
+
+Flat and hierarchical facets are supported on all collection search response formats except for the opendata response format. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in XML or JSON format.
+
+Several fields including science keywords, data centers, platforms, instruments, and location keywords can be represented as either flat or hierarchical fields. By default facets are returned in a flat format showing counts for each nested field separately. In order to retrieve hierarchical facets pass in the parameter `hierarchical_facets=true`.
+
+Note that any counts included in hierarchical facets should be considered approximate within a small margin of an error rather than an exact count. If an exact count is required following the link provided to apply that facet will perform a search that returns an exact hits count.
+
+#### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
+
+Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets and latency facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
+
+##### Specifying facet fields
+
+Hierarchical Facet requests include any or all parts of the hierarchical structure using the `&parameter[set][subfield]=value` notation where:
+
+* **set**: Field group number denoting related hierarchical subfields where all subfields for one facet use the same number. Values start with 0.
+* **subfield**: Field name in the hierarchical facet as defined by KMS. ie: Platforms uses Basis, Category, Sub_Category, Short_Name
+* **value**: facet value. ie Platform Basis has a `Air-based Platforms` value.
+
+Example: `science_keywords_h[0][topic]=Oceans`
+
+Example curl calls:
+
+    %CMR-ENDPOINT%/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
+
+##### Responses
+
+With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
+
+The response will contain a field, "facets" containing the root node of the facets tree structure. Every node in the tree structure contains the following minimal structure:
+
+```
+var treeNode = {
+  "title": "Example",         // A human-readable representation of the node
+  "type": "group|filter|..."  // The type of node represented
+}
+```
+
+Currently, the filter response type defines two node types: "group" and "filter". More may be added in the future, and clients must be built to ignore unknown node types.
+
+##### Group Nodes
+
+Group nodes act as containers for similar data. Depending on context, this data may, for instance, be all facet parameters (the root facet node), top-level facets, or children of existing facets. Group nodes further have a
+
+```
+var groupNode = { // Inherits treeNode fields
+  "applied": true,            // true if the filter represented by this node (see Filter Nodes) or any of its descendants has been applied to the current query
+  "has_children": true,       // true if the tree node has child nodes, false otherwise
+  "children": [               // List of child nodes, provided at the discretion of the CMR (see below)
+  ]
+}
+```
+
+##### Children
+
+In order to avoid sending unnecessary information, the CMR may in the future opt to not return children for group nodes that have facets, returning only the first few levels of the facet tree. It will, however, allow clients to appropriately display incomplete information and query the full tree as necessary.
+
+##### Relevance
+
+By default, clients should assume that the CMR may limit facet results to only include the most relevant child nodes in facet responses. For instance, if there are hundreds of science keywords at a particular depth, the CMR may choose to only return those that have a substantial number of results. When filtering children, the CMR makes no guarantees about the specific quantities or values of facets returned, only that applied filters attempt to surface the choices that typical users are most likely to find beneficial.
+
+##### Filter Nodes
+
+Filter nodes are group nodes that supply a single query condition indicated by a string (the node title). They further have a field, "applied," which indicates if the query value has already been applied to the current query.
+
+```
+var filterNode = { // Inherits groupNode fields
+  "count": 1234,                                                          // Count of results matching the filter
+  "links": {
+    "apply": "%CMR-ENDPOINT%/collections?instrument[]=MODIS", // A URL containing the filter node applied to the current query. Returned only if the node is not applied.
+    "remove": "%CMR-ENDPOINT%/collections"                    // A URL containing the filter node removed from the current query. Returned only if the node is applied.
+  },
+}
+```
+Note that while two potential queries are listed in "links", in practice only one would be returned based on whether the node is currently applied.
+
+##### Collection Example
+The following example is a sample response for a query using the query parameters API which has the "instruments=ASTER" filter applied as well as a page size of 10 applied by the client. The example is hand-constructed for example purposes only. Real-world queries would typically be more complex, counts would be different, and the facet tree would be much larger.
+
+```
+{
+  "facets": {
+    "title": "Browse Collections",
+    "type": "group",
+    "applied": true, // NOTE: true because the tree does have a descendant node that has been applied
+    "has_children": true,
+    "children": [
+      {
+        "title": "Instruments",
+        "type": "group",
+        "applied": true,
+        "has_children": true,
+        "children": [
+          {
+            "title": "MODIS",
+            "type": "filter",
+            "applied": false,
+            "count": 200,
+            "links": { "apply": "https://example.com/search/collections?page_size=10&instruments[]=ASTER&instruments[]=MODIS" },
+            "has_children": false
+          },
+          {
+            "title": "ASTER",
+            "type": "filter",
+            "applied": true,
+            "count": 2000,
+            "links": { "remove": "https://example.com/search/collections?page_size=10" }, // NOTE: Differing response for an applied filter
+            "has_children": false
+          }
+        ]
+      },
+      {
+        "title": "Keywords",
+        "type": "group",
+        "applied": false,
+        "has_children": true,
+        "children": [
+          {
+            "title": "EARTH SCIENCE",
+            "type": "filter",
+            "applied": false,
+            "count": 1500,
+            "links": { "apply": "https://example.com/search/collections?page_size=10&instruments[]=ASTER&science_keywords[0][category_keyword]=EARTH%20SCIENCE" },
+            "has_children": true,
+            "children": [ // NOTE: This is an example of how the CMR may handle children at different levels of a hierarchy.
+              {           //       For usability reasons, this should only be done if absolutely necessary, preferring to just collapse the hierarchy when possible
+                "title": "Topics",
+                "type": "group",
+                "applied": false,
+                "has_children": true,
+                "children": [
+                  {
+                    "title": "OCEANS",
+                    "type": "filter",
+                    "applied": false,
+                    "count": 500,
+                    "links": { "apply": "https://example.com/search/collections?page_size=10&instruments[]=ASTER&science_keywords[0][category_keyword]=EARTH%20SCIENCE&science_keywords[0][topic]=OCEANS" },
+                    "has_children": true // NOTE: The node has children, but the CMR has opted not to return them
+                  }
+                ]
+              },
+              {
+                "title": "Variables",
+                "type": "group",
+                "applied": false,
+                "has_children": true,
+                "children": [
+                  {
+                    "title": "WOLVES",
+                    "type": "filter",
+                    "applied": false,
+                    "count": 2,
+                    "links": { "apply": "https://example.com/search/collections?page_size=10&instruments[]=ASTER&science_keywords[0][detailed_variable]=WOLVES" },
+                    "has_children": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+##### Granule Example
+```
+"facets" : {
+      "title" : "Browse Granules",
+      "has_children" : true,
+      "children" : [ {
+        "title" : "Temporal",
+        "has_children" : true,
+        "children" : [ {
+          "title" : "Year",
+          "has_children" : true,
+          "children" : [ {
+            "title" : "2004",
+            "count" : 50
+          }, {
+            "title" : "2003",
+            "count" : 2
+          } ]
+        } ]
+      } ]
+    }
+```
+
+#### <a name="facets-in-xml-responses"></a> Collection Facets in XML Responses
+
+Facets in XML search response formats will be formatted like the following examples. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+
+##### <a name="flat-xml-facets"></a> Flat XML Facets
+
+```
+<facets>
+  <facet field="data_center">
+    <value count="28989">LARC</value>
+    <value count="19965">GSFC</value>
+  </facet>
+  <facet field="archive_center">
+    <value count="28989">LARC</value>
+    <value count="19965">GSFC</value>
+  </facet>
+  <facet field="project">
+    <value count="245">MANTIS</value>
+    <value count="132">THUNDER</value>
+    <value count="13">Mysterio</value>
+  </facet>
+  <facet field="platform">
+    <value count="76">ASTER</value>
+  </facet>
+  <facet field="instrument">
+    <value count="2">MODIS</value>
+  </facet>
+  <facet field="sensor">...</facet>
+  <facet field="two_d_coordinate_system_name">...</facet>
+  <facet field="processing_level_id">...</facet>
+  <facet field="category">...</facet>
+  <facet field="topic">...</facet>
+  <facet field="term">...</facet>
+  <facet field="variable_level_1">...</facet>
+  <facet field="variable_level_2">...</facet>
+  <facet field="variable_level_3">...</facet>
+  <facet field="detailed_variable">...</facet>
+</facets>
+```
+
+##### <a name="hierarchical-xml-facets"></a> Hierarchical XML Facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure. Fields which are returned hierarchically include platforms, instruments, data centers, archive centers, and science keywords.
+
+```
+<facets>
+  <facet field="project"/>
+  ...
+  <facet field="science_keywords">
+    <facet field="category">
+      <value-count-maps>
+        <value-count-map>
+          <value count="31550">EARTH SCIENCE</value>
+          <facet field="topic">
+            <value-count-maps>
+              <value-count-map>
+                <value count="8166">ATMOSPHERE</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="785">AEROSOLS</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+              <value-count-map>
+                <value count="10269">OCEANS</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="293">AQUATIC SCIENCES</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+            </value-count-maps>
+          </facet>
+        </value-count-map>
+      </value-count-maps>
+    </facet>
+  </facet>
+</facets>
+```
+
+#### <a name="facets-in-json-responses"></a> Collection Facets in JSON Responses
+
+Facets in JSON search response formats will be formatted like the following examples.
+
+##### <a name="flat-json-facets"></a> Flat JSON facets
+
+```
+{
+  "feed": {
+    "entry": [...],
+    "facets": [{
+      "field": "data_center",
+      "value-counts": [
+        ["LARC", 28989],
+        ["GSFC", 19965]
+      ]
+    }, {
+      "field": "archive_center",
+      "value-counts": [
+        ["LARC", 28989],
+        ["GSFC", 19965]
+      ]
+    }, {
+      "field": "project",
+      "value-counts": [
+        ["MANTIS", 245],
+        ["THUNDER", 132],
+        ["Mysterio", 13]
+      ]
+    }, {
+      "field": "platform",
+      "value-counts": [["ASTER", 76]]
+    }, {
+      "field": "instrument",
+      "value-counts": [["MODIS", 2]]
+    }, {
+      "field": "sensor",
+      "value-counts": [...]
+    }, {
+      "field": "two_d_coordinate_system_name",
+      "value-counts": [...]
+    }, {
+      "field": "processing_level_id",
+      "value-counts": [...]
+    }, {
+      "field": "category",
+      "value-counts": [...]
+    }, {
+      "field": "topic",
+      "value-counts": [...]
+    }, {
+      "field": "term",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_1",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_2",
+      "value-counts": [...]
+    }, {
+      "field": "variable_level_3",
+      "value-counts": [...]
+    }, {
+      "field": "detailed_variable",
+      "value-counts": [...]
+    }]
+  }
+}
+```
+
+##### <a name="hierarchical-json-facets"></a> Hierarchical JSON facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+
+```
+    "facets" : [ {
+      "field" : "project",
+      "value-counts" : [ ]
+    ...
+    }, {
+      "field" : "science_keywords",
+      "subfields" : [ "category" ],
+      "category" : [ {
+        "value" : "EARTH SCIENCE",
+        "count" : 31550,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "ATMOSPHERE",
+          "count" : 8166,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AEROSOLS",
+            "count" : 785 } ]
+          }, {
+          "value" : "OCEANS",
+          "count" : 10269,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AQUATIC SCIENCES",
+            "count" : 293
+          } ]
+        } ]
+      } ]
+    } ]
+```
+
+### <a name="autocomplete-facets"></a> Facet Autocompletion
+
+Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
+
+    curl "%CMR-ENDPOINT%/autocomplete?q=<term>[&type\[\]=<type1>[&type\[\]=<type2>]"
+
+Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
+
+#### Autocompletion of Science Keywords
+In the case of science keywords, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * topic
+ * term
+ * variable-level-1
+ * variable-level-2
+ * variable-level-3
+ * detailed-variable
+
+There may be gaps within the structure where no associated value exists.
+
+Example With variable-level-1 as the base term
+```
+{ :score 2.329206,
+  :type "science_keywords",
+  :value "Solar Irradiance",
+  :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"
+}
+```
+
+Example with detailed-variable as the base term, note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "science_keywords",
+  :value "Coronal Mass Ejection",
+  :fields "Sun-Earth Interactions:Solar Activity::::Coronal Mass Ejection
+}
+```
+
+#### Autocompletion of Platforms
+In the case of platforms, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
+
+ * basis
+ * category
+ * sub-category
+ * short-name
+
+There may be gaps within the structure where no associated value exists.
+
+Example With short-name as the base term
+```
+{ :score 2.329206,
+  :type "platforms",
+  :value "AEROS-1",
+  :fields "Space-based Platforms:Earth Observation Satellites:Aeros:AEROS-1"
+}
+```
+
+Example with short-name as the base term, but the sub-category is missing. Note the extra colons preserving the structure
+```
+{ :score 1.234588,
+  :type "platforms",
+  :value "Terra",
+  :fields "Space-based Platforms:Earth Observation Satellites::Terra
+}
+```
+
+#### Autocomplete Parameters
+  * `q` The string on which to search. The term is case insensitive.
+  * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
+
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice"
+
+__Example Result__
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 15
+
+{
+  "feed": {
+    "entry": [
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "fields": "ICE AUGERS",
+        "value": "ICE AUGERS"
+      },
+      {
+        "score": 9.115073,
+        "type": "instrument",
+        "fields": "ICECUBE",
+        "value": "ICECUBE"
+      },
+      {
+        "score": 9.021176,
+        "type": "platforms",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2",
+        "value": "ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "science_keywords",
+        "fields": "Atmosphere:Sun-Earth Interactions:Cloud Cover:Ice Reflectivity",
+        "value": "Ice Reflectivity"
+      }
+    ]
+  }
+}
+```
+
+__Example Query__
+
+     curl "%CMR-ENDPOINT%/autocomplete?q=ice&type[]=platform&type[]=project"
+
+__Example Result with Type Filter__
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 3
+
+{
+  "feed": {
+    "entry": [
+      {
+        "score": 9.013778,
+        "type": "platforms",
+        "value": "ICESat-2",
+        "fields": "Space-based Platforms:Earth Observation Satellites:Ice, Cloud and Land Elevation Satellite (ICESat):ICESat-2"
+      },
+      {
+        "score": 8.921176,
+        "type": "platforms",
+        "value": "Sea Ice Mass Balance Station",
+        "fields": "Water-based Platforms:Fixed Platforms:Surface:Sea Ice Mass Balance Station"
+      },
+      {
+        "score": 8.921176,
+        "type": "project",
+        "value": "ICEYE"
+      }
+    ]
+  }
+}
+```
+
+### <a name="humanizers"></a> Humanizers
+
+Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of faceted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer API.
+
+#### <a name="updating-humanizers"></a> Updating Humanizers
+
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid EDL bearer token or Launchpad token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/humanizers -d \
+'[{"type": "trim_whitespace", "field": "platform", "order": -100},
+  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":2}
+```
+
+#### <a name="retrieving-humanizers"></a> Retrieving Humanizers
+
+The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
+
+```
+curl -i %CMR-ENDPOINT%/humanizers?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 224
+Content-Type: application/json; charset=UTF-8
+
+[ {
+  "type" : "trim_whitespace",
+  "field" : "platform",
+  "order" : -100
+}, {
+  "type" : "alias",
+  "field" : "platform",
+  "source_value" : "AM-1",
+  "replacement_value" : "Terra",
+  "reportable" : true,
+  "order" : 0
+} ]
+```
+
+#### <a name="facets-humanizers-report"></a> Humanizers Report
+
+The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
+
+    curl "%CMR-ENDPOINT%/humanizers/report"
+
+Note that this report is currently generated every 24 hours with the expectation that this more than satisfies weekly usage needs.
+
+An administrator with system object INGEST\_MANAGEMENT\_ACL update permission can force the report to be regenerated by passing in a query parameter `regenerate=true`.
