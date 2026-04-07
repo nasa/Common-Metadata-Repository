@@ -1,0 +1,52 @@
+{
+    "title": "Example Title",
+    "sections": [{
+        "sectionTitle": "Example Title",
+        "sectionNameProp": "example-name-prop",
+        "subsections": {
+            "subsectionTitle": "Example Title",
+            "subsectionNameProp": "example-name-prop",
+            "keywords": ["Keyword Example"],
+            "links": ["www.linkexample.com"],
+            "crossRefs": ["#crossRefExample"],
+            "tables": [{
+                "tableTitle": "Example Title",
+                "crossRef": "#crossRefExample"
+            }],
+            "notes": {
+                "keywords": ["Keyword Example"],
+                "links": ["www.linkexample.com"],
+                "crossRefs": ["#crossRefExample"]
+            },
+            "examples": [{
+                "exTitle": "Example Title",
+                "crossRef": "#crossRefExample"
+            }],
+            "important": [{
+                "importantTitle": "Example Title",
+                "crossRef": "#crossRefExample"
+            }]
+        },
+        "keywords": ["Keywords Example"],
+        "links": ["www.linkexample.com"],
+        "crossRefs": ["#crossRefExample"],
+        "tables": [{
+            "tableTitle": "Example Title",
+            "crossRef": "#crossRefExample"
+        }],
+        "notes": {
+            "keywords": ["Keyword Example"],
+            "links": ["www.linkexample.com"],
+            "crossRefs": ["#crossRefExample"]
+        },
+        "examples": [{
+            "exTitle": "Example Title",
+            "crossRef": "#crossRefExample"
+        }],
+        "important": [{
+            "importantTitle": "Example Title",
+            "crossRef": "#crossRefExample"
+        }]
+    }]
+
+}
