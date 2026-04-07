@@ -21,8 +21,12 @@ profiles.clj
 *.ruby-version
 .cljfmt.edn
 dev-system/local.edn
-*pycache*
 .portal
+*pycache*
+*.pyc
+*.egg-info/
+venv/
+.venv/
 
 ###############################
 ### Test Files
