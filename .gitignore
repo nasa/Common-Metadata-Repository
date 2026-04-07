@@ -22,6 +22,10 @@ profiles.clj
 .cljfmt.edn
 dev-system/local.edn
 *pycache*
+*.pyc
+*.egg-info/
+venv/
+.venv/
 
 ###############################
 ### Test Files
