@@ -3,13 +3,13 @@ title: Searching
 description: Provides information on general methods of searching with the CMR API, as well as the formats that will be used for search results.
 ---
 
-### <a name="search-with-post"></a> Search with POST
+## <a name="search-with-post"></a> Search with POST
 
 Search collections or granules with query parameters encoded form in POST request body.
 
     curl -i -XPOST %CMR-ENDPOINT%/collections -d "dataset_id[]=Example%20DatasetId&dataset_id[]=Dataset2"
 
-### <a name="search-with-json-query"></a> Search with JSON Query
+## <a name="search-with-json-query"></a> Search with JSON Query
 
 Search for collections or granules with JSON in a POST request body. The JSON must conform to the schema
 that is defined in `%CMR-ENDPOINT%/site/CollectionJSONQueryLanguage.json` or `%CMR-ENDPOINT%/site/GranuleJSONQueryLanguage.json`
@@ -29,7 +29,7 @@ for collections and granules respectively. Only collection and granule search ar
                                 { "bounding_box": [-45,15,0,25],
                                   "short_name": "Short_name 1"}]}}'
 
-### <a name="search-with-aql"></a> Search with AQL
+## <a name="search-with-aql"></a> Search with AQL
 
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
 that is defined in `%CMR-ENDPOINT%/site/IIMSAQLQueryLanguage.xsd`.
@@ -38,7 +38,7 @@ that is defined in `%CMR-ENDPOINT%/site/IIMSAQLQueryLanguage.xsd`.
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 
-### <a name="temporal-range-searches"></a> Temporal Range searches
+## <a name="temporal-range-searches"></a> Temporal Range searches
 
 A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma separated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
 
@@ -54,7 +54,7 @@ A couple of parameters used in search expect a date range as input. For example,
 
 __Note__: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
 
-### <a name="search-for-tiles"></a> Search for Tiles
+## <a name="search-for-tiles"></a> Search for Tiles
 
 Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same format as in granule and collection spatial searches (See under "Find granules by Spatial").
 
@@ -79,7 +79,7 @@ Find all the tiles which a line intersects.
 
 The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the JSON format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
 
-### <a name="retrieve-controlled-keywords"></a> Retrieve Controlled Keywords
+## <a name="retrieve-controlled-keywords"></a> Retrieve Controlled Keywords
 
 The keyword endpoint is used to retrieve the full list of keywords for each of the controlled vocabulary fields. The controlled vocabulary is cached within CMR, but the actual source is the GCMD Keyword Management System (KMS). Users of this endpoint are interested in knowing what the CMR considers as the current controlled vocabulary, since it is the cached CMR values that will eventually be enforced on CMR ingest.
 
@@ -171,9 +171,9 @@ Note: Search parameter filtering are not supported - requests are rejected when 
 }
 ```
 
-### <a name="supported-result-formats"></a> Supported Result Formats
+## <a name="supported-result-formats"></a> Supported Result Formats
 
-#### <a name="html"></a> HTML
+### <a name="html"></a> HTML
 
 The HTML response format is intended to be used only in a web browser to view a single collection record. The collection html representation can be viewed by putting the following in the web browser address bar.
 
@@ -186,7 +186,7 @@ For private collection, an EDL bearer token or a Launchpad token can be used to 
 %CMR-ENDPOINT%/concepts/<concept-id>?token=EDL-xxxxxx
 ```
 
-#### <a name="atom"></a> Atom XML
+### <a name="atom"></a> Atom XML
 
 See the [Atom specification](http://tools.ietf.org/html/rfc4287) for a full description of Atom.
 
@@ -301,7 +301,7 @@ __Example__
 </feed>
 ```
 
-#### <a name="csv"></a> CSV
+### <a name="csv"></a> CSV
 
 The comma separated value (CSV) format is supported for collections and granules.
 Version and Processing Level are strings. When importing into the spreadsheet, please specify text as their column types. This will prevent version "004" to be displayed as "4" in the spreadsheet.
@@ -321,7 +321,7 @@ Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URL
 SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,,,
 ```
 
-#### Metadata Responses (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
+### Metadata Responses (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
 
 All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` XML element containing the following fields as sub-elements:
 
@@ -339,7 +339,7 @@ The results are returned as a sequence of `<result>` XML elements, the contents 
 | format      | the mime-type for the returned metadata       |
 | revision-id | the CMR revision number of the stored concept |
 
-#### <a name="dif-9"></a> DIF 9
+### <a name="dif-9"></a> DIF 9
 
 __NOTE:__ The DIF 9 format is being __deprecated__ in favor of DIF 10. While it is still supported, we strongly discourage its use for new metadata.
 
@@ -386,7 +386,7 @@ __Example__
 </results>
 ```
 
-#### <a name="dif-10"></a> DIF 10
+### <a name="dif-10"></a> DIF 10
 
 See the [specification](https://cdn.earthdata.nasa.gov/dif/10.x/) for details.
 
@@ -454,7 +454,7 @@ __Example__
 </results>
 ```
 
-#### <a name="echo-10"></a> ECHO 10
+### <a name="echo-10"></a> ECHO 10
 
 See the [specification](https://cdn.earthdata.nasa.gov/echo/schemas/10.0/) for details.
 
@@ -492,7 +492,7 @@ __Example__
 </results>
 ```
 
-#### <a name="iso-mends"></a> ISO-MENDS (ISO-19115-2)
+### <a name="iso-mends"></a> ISO-MENDS (ISO-19115-2)
 
 See the [specification](https://cdn.earthdata.nasa.gov/iso/)
 
@@ -591,7 +591,7 @@ __Example__
 </results>
 ```
 
-#### <a name="iso-smap"></a> ISO-SMAP
+### <a name="iso-smap"></a> ISO-SMAP
 
 See the [specification](https://cdn.earthdata.nasa.gov/iso/)
 
@@ -677,7 +677,7 @@ __Example__
 </results>
 ```
 
-#### <a name="json"></a> ATOM JSON
+### <a name="json"></a> ATOM JSON
 
 The JSON response contains all the fields in the *ATOM* response, plus the the following fields:
 
@@ -770,7 +770,7 @@ __Example__
 }
 ```
 
-#### <a name="umm-json"></a> UMM JSON
+### <a name="umm-json"></a> UMM JSON
 
 The UMM JSON response, unlike ATOM JSON, contains "meta-metadata" of the collection and the UMM fields. The UMM JSON format is applicable to collection, granule, variable, service and tool searches. The UMM-JSON response is helpful if you wish to get the native-id of a concept after ingesting it. The version of the UMM returned will be the version requested or the latest version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
@@ -903,7 +903,7 @@ __Example__
 
 A collection containing "\_errors" is not valid UMM and cannot be ingested into the CMR.
 
-#### <a name="kml"></a> KML
+### <a name="kml"></a> KML
 
 KML is the [XML language](http://www.opengeospatial.org/standards/kml) used by the Google Earth application and is used by the CMR to return spatial data associated with a collection or granule.
 
@@ -959,7 +959,7 @@ __Example__
 </kml>
 ```
 
-#### <a name="open-data"></a> Open Data
+### <a name="open-data"></a> Open Data
 
 The Open Data format was developed as part of [Project Open Data](https://project-open-data.cio.gov) in an attempt to make data more accessible. See the Open Data [schema](https://project-open-data.cio.gov/v1.1/schema/) for details.
 
@@ -997,7 +997,7 @@ __Example__
 }
 ```
 
-#### <a name="stac"></a> STAC
+### <a name="stac"></a> STAC
 
 The STAC (SpatioTemporal Asset Catalog) result format is a specification for describing geospatial data with JSON and GeoJSON. The related STAC-API specification defines an API for searching and browsing STAC catalogs. See the [STAC Specification](https://stacspec.org/) for details.
 
@@ -1190,7 +1190,7 @@ __Granule Retrieval in STAC Format Response Example via POST__
   }
 }
 ```
-#### <a name="xml-reference"></a> XML
+### <a name="xml-reference"></a> XML
 
 The XML response format is used for returning references to search results. It consists of the following fields:
 

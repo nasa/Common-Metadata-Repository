@@ -3,13 +3,11 @@ title: Additional Topics
 description: Provides information for additional useful CMR API capabilities.
 ---
 
-%GENERIC-DOCS%
-
-### <a name="community-usage-metrics"></a> Community Usage Metrics
+## <a name="community-usage-metrics"></a> Community Usage Metrics
 
 Community usage metrics are metrics showing how many times a particular version of a collection has been accessed. Storing these metrics offers improved relevancy based on collection popularity. The metrics are obtained from the ESDIS Metrics System (EMS) and ingested into the system through this API.
 
-#### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
+### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
 Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid EDL bearer token or Launchpad token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
@@ -27,7 +25,7 @@ Content-Length: 48
 {"concept_id":"H1200000000-CMR","revision_id":2}
 ```
 
-#### <a name="retrieving-community-usage-metrics"></a> Retrieving Community Usage Metrics
+### <a name="retrieving-community-usage-metrics"></a> Retrieving Community Usage Metrics
 
 The community usage metrics can be retrieved by sending a GET request to `%CMR-ENDPOINT%/community-usage-metrics`. The metrics are returned in JSON format.
 
@@ -49,28 +47,28 @@ Content-Type: application/json; charset=UTF-8
 } ]
 ```
 
-### <a name="administrative-tasks"></a> Administrative Tasks
+## <a name="administrative-tasks"></a> Administrative Tasks
 
 These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update
 permission.
 
-#### <a name="clear-the-cache"></a> Clear the cache
+### <a name="clear-the-cache"></a> Clear the cache
 
     curl -i -XPOST %CMR-ENDPOINT%/clear-cache
 
-#### <a name="clear-scroll"></a> Clear scroll session
+### <a name="clear-scroll"></a> Clear scroll session
 
     curl -i -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/clear-scroll -d '{ "scroll_id" : "xxxx"}'
 
 It returns HTTP status code 204 when successful.
 
-#### <a name="reset-the-application-to-the-initial-state"></a> Reset the application to the initial state
+### <a name="reset-the-application-to-the-initial-state"></a> Reset the application to the initial state
 
 Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
 
     curl -i -XPOST %CMR-ENDPOINT%/reset
 
-#### <a name="querying-caches"></a> Querying caches
+### <a name="querying-caches"></a> Querying caches
 
 Endpoints are provided for querying the contents of the various caches used by the application.
 The following curl will return the list of caches:
@@ -85,7 +83,7 @@ This curl will return the value for a specific key in the named cache:
 
     curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
 
-#### <a name="check-application-health"></a> Check application health
+### <a name="check-application-health"></a> Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their health in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
 
@@ -157,15 +155,15 @@ Example un-healthy response body:
 }
 ```
 
-### <a name="associate-any-concepts"></a> Associate any concepts
+## <a name="associate-any-concepts"></a> Associate any concepts
 
 A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update.
 
-#### <a name="associate-any-concepts"></a> Concept to concept association important notes
+### <a name="associate-any-concepts"></a> Concept to concept association important notes
 
 A concept can only be associated with another concept either with or without revisions, not both. A concept cannot be associated to itself, even with different revisions.
 
-#### <a name="concept-associations"></a> Concept associations
+### <a name="concept-associations"></a> Concept associations
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
 When the revision id is not present, the latest revision is assumed.
@@ -214,7 +212,7 @@ Note: when two concepts are associated, their concept ids are sorted first. The 
     }
 ]
 ```
-#### <a name="associations-in-search-result"></a> Associations in the search result
+### <a name="associations-in-search-result"></a> Associations in the search result
 
 Latest revisions of associations can be queried by searching for one of the associated concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a service (S1200000010-PROV1) has been associated to a variable with association details(V1200000012-PROV1), as well as a tool (TL1200000014-PROV1) without any association details.
 
@@ -262,7 +260,7 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
 }
 ```
 
-#### <a name="concept-dissociations"></a> Concept dissociations
+### <a name="concept-dissociations"></a> Concept dissociations
 
 A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids.
 
@@ -305,13 +303,13 @@ curl -XDELETE \
 } ]
 ```
 
-### <a name="cmr-graphql"></a> CMR-Graphql
+## <a name="cmr-graphql"></a> CMR-Graphql
 The CMR has a GraphQL API which can be queried with requests to [%GRAPHQL-ENDPOINT%](%GRAPHQL-ENDPOINT%). The GraphQL API provides an alternative query language for the CMR REST API. The [cmr-graphql](https://github.com/nasa/cmr-graphql) API can retrieve individually requested fields from resources. For example a request with a list of specified fields from a collection would return the values for those fields but, not any other fields on the usual collections response from CMR. The [cmr-graphql](https://github.com/nasa/cmr-graphql) can retrieve data from multiple resources from a single client request so in a single request, data from multiple resources such as the CMR REST API or the [cmr-graphDb](https://github.com/nasa/Common-Metadata-Repository/tree/master/graph-db) instance within a single client request.
 
-### <a name="apollo-studio"></a> Navigating Apollo Studio
+## <a name="apollo-studio"></a> Navigating Apollo Studio
 Navigating to [%GRAPHQL-ENDPOINT%](%GRAPHQL-ENDPOINT%) on the browser providers an interface through the Apollo Studio services on which the CMR API can be queried. The User interface providers autocomplete, concept schema definitions, and request/response handling using the GraphQL language.
 
-### <a name="cmr-graphql-programmatic-requests"></a> Programmatic requests to CMR-Graphql
+## <a name="cmr-graphql-programmatic-requests"></a> Programmatic requests to CMR-Graphql
 
 The [cmr-graphql](https://github.com/nasa/cmr-graphql) API can handle POST requests from external clients (In the GraphQL query language all requests must be POST requests). A 'Content-Type' with the value 'application/json' must be specified in the header of the request. The body must be valid JSON and should contain the request information you are looking for. The examples below use the `curl` tool. Integration with [cmr-graphql](https://github.com/nasa/cmr-graphql) will vary in implementation by individual programming languages and frameworks which may implement their own libraries or wrappers for GraphQL requests. The Apollo Studio providers, under the more info button (ellipsis button), a `Copy Operation to cURL` which can be used to copy an equivalent `curl` to the query in the interface.
 
@@ -424,7 +422,7 @@ __Response__
 }
 ```
 
-### <a name="cmr-graphql-addtional-information"></a> Additional Information
+## <a name="cmr-graphql-addtional-information"></a> Additional Information
 The [cmr-graphql](https://github.com/nasa/cmr-graphql) is maintained separately from the CMR REST API, it is expected that new fields added to CMR concepts will lag behind changes to the CMR REST API. Though these should be periodically updated to match the latest changes in the CMR API, requested changes can be made by adding an issue to the [cmr-graphql](https://github.com/nasa/cmr-graphql) repository on
 ``` https://github.com/nasa/cmr-graphql/issues```.
 

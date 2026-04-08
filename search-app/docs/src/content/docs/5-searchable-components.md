@@ -3,26 +3,26 @@ title: Searchable Components
 description: Provides information on additional types that are searchable by the CMR API.
 ---
 
-### <a name="service"></a> Service
+## <a name="service"></a> Service
 
 A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).
 
-#### <a name="searching-for-services"></a> Searching for Services
+### <a name="searching-for-services"></a> Searching for Services
 
 Services can be searched for by sending a request to `%CMR-ENDPOINT%/services`. XML reference, JSON, and UMM JSON response formats are supported for services search.
 
 Service search results are paged. See [Paging Details](#paging-details) for more information on how to page through service search results.
 
-##### <a name="service-search-params"></a> Service Search Parameters
+#### <a name="service-search-params"></a> Service Search Parameters
 
 The following parameters are supported when searching for services.
 
-##### Standard Parameters
+#### Standard Parameters
 * page_size
 * page_num
 * pretty
 
-##### Service Matching Parameters
+#### Service Matching Parameters
 
 These parameters will match fields within a service. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
@@ -51,9 +51,9 @@ The following fields are indexed for keyword (free text) search:
 * URL (description, URL value)
 * Ancillary keywords
 
-##### <a name="service-search-response"></a> Service Search Response
+#### <a name="service-search-response"></a> Service Search Response
 
-##### XML Reference
+#### XML Reference
 The XML reference response format is used for returning references to search results. It consists of the following fields:
 
 |   Field    |                    Description                     |
@@ -94,7 +94,7 @@ Content-Length: 393
     </references>
 </results>
 ```
-##### JSON
+#### JSON
 The JSON response includes the following fields.
 
 * hits - How many total variables were found.
@@ -162,7 +162,7 @@ Content-Length: 944
   } ]
 }
 ```
-##### UMM JSON
+#### UMM JSON
 The UMM JSON response contains meta-metadata of the service and the UMM fields.
 
 __Example__
@@ -235,7 +235,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-service"></a> Retrieving All Revisions of a Service
+#### <a name="retrieving-all-revisions-of-a-service"></a> Retrieving All Revisions of a Service
 
 In addition to retrieving the latest revision for a service parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
@@ -271,13 +271,13 @@ __Sample response__
     </results>
 ```
 
-##### <a name="sorting-service-results"></a> Sorting Service Results
+#### <a name="sorting-service-results"></a> Sorting Service Results
 
 By default, service results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-###### Valid Service Sort Keys
+##### Valid Service Sort Keys
   * `name`
   * `long_name`
   * `provider`
@@ -288,11 +288,11 @@ Examples of sorting by provider id in descending (reverse alphabetical) and asce
     curl "%CMR-ENDPOINT%/services?sort_key\[\]=-provider"
     curl "%CMR-ENDPOINT%/services?sort_key\[\]=%2Bprovider"
 
-#### <a name="service-access-control"></a> Service Access Control
+### <a name="service-access-control"></a> Service Access Control
 
 Access to service and service association is granted through the provider via the INGEST_MANAGEMENT_ACL. Associating and dissociating collections with a service is considered an update.
 
-#### <a name="service-association"></a> Service Association
+### <a name="service-association"></a> Service Association
 
 A service identified by its concept id can be associated with collections through a list of collection concept revisions and an optional data payload in JSON format.
 The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create.
@@ -351,7 +351,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="service-dissociation"></a> Service Dissociation
+### <a name="service-dissociation"></a> Service Dissociation
 
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
 
@@ -416,26 +416,26 @@ Content-Length: 168
 ]
 ```
 
-### <a name="variable"></a> Variable
+## <a name="variable"></a> Variable
 
 Variables are measurement variables belonging to collections/granules that are processable by services. Variable metadata is stored in the JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable) schema.
 
-#### <a name="searching-for-variables"></a> Searching for Variables
+### <a name="searching-for-variables"></a> Searching for Variables
 
 Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`. XML reference, JSON and UMM JSON response formats are supported for variables search.
 
 Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
 
-##### <a name="variable-search-params"></a> Variable Search Parameters
+#### <a name="variable-search-params"></a> Variable Search Parameters
 
 The following parameters are supported when searching for variables.
 
-##### Standard Parameters
+#### Standard Parameters
 * page_size
 * page_num
 * pretty
 
-##### Variable Matching Parameters
+#### Variable Matching Parameters
 
 These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
@@ -473,9 +473,9 @@ The following fields are indexed for keyword (free text) search:
 * Variable concept id
 * InstanceInformation Format
 
-##### <a name="variable-search-response"></a> Variable Search Response
+#### <a name="variable-search-response"></a> Variable Search Response
 
-##### XML Reference
+#### XML Reference
 The XML reference response format is used for returning references to search results. It consists of the following fields:
 
 |   Field    |                    Description                     |
@@ -520,7 +520,7 @@ Content-Length: 393
     </references>
 </results>
 ```
-##### JSON
+#### JSON
 The JSON response includes the following fields.
 
 * hits - How many total variables were found.
@@ -625,7 +625,7 @@ Content-Length: 512
 }
 ```
 
-##### UMM JSON
+#### UMM JSON
 The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated to the variable or other concepts generically associated to the variable.
 
 __Example__
@@ -688,7 +688,7 @@ Content-Length: 1177
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
+#### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
 
 In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
@@ -724,13 +724,13 @@ __Sample response__
   </results>
 ```
 
-##### <a name="sorting-variable-results"></a> Sorting Variable Results
+#### <a name="sorting-variable-results"></a> Sorting Variable Results
 
 By default, variable results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-###### Valid Variable Sort Keys
+##### Valid Variable Sort Keys
   * `name`
   * `long_name`
   * `provider`
@@ -741,31 +741,31 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
     curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
     curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
 
-#### <a name="variable-access-control"></a> Variable Access Control
+### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the provider via the INGEST_MANAGEMENT_ACL. Users can only create, update, or delete a variable if they are granted the appropriate permission. Associating and dissociating collections with a variable is considered an update.
 
-### <a name="tool"></a> Tool
+## <a name="tool"></a> Tool
 
 UMM-T provides metadata to support the User Interface/User Experience (UI/UX)-driven approach to Tools. Specifically, when a user wants to know the tools available for a specific collection and makes selections via the Earthdata Search UI, options are presented showing what operating systems or languages are supported.
 The UMM-T model in MMT enables the population of the tool options, either web user interface or downloadable tool options are surfaced in the UI to support these selections. Each UMM-T record contains metadata for tools and other information such as contact groups or contact persons, tool keywords, and supported inputs and outputs.
 
-#### <a name="searching-for-tools"></a> Searching for Tools
+### <a name="searching-for-tools"></a> Searching for Tools
 
 Tools can be searched for by sending a request to `%CMR-ENDPOINT%/tools`. XML reference, JSON, and UMM JSON response formats are supported for tools search.
 
 Tool search results are paged. See [Paging Details](#paging-details) for more information on how to page through tool search results.
 
-##### <a name="tool-search-params"></a> Tool Search Parameters
+#### <a name="tool-search-params"></a> Tool Search Parameters
 
 The following parameters are supported when searching for tools.
 
-##### Standard Parameters
+#### Standard Parameters
 * page_size
 * page_num
 * pretty
 
-##### Tool Matching Parameters
+#### Tool Matching Parameters
 
 These parameters will match fields within a tool. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
@@ -792,9 +792,9 @@ The following fields are indexed for keyword (free text) search:
 * URL
 * Ancillary keywords
 
-##### <a name="tool-search-response"></a> Tool Search Response
+#### <a name="tool-search-response"></a> Tool Search Response
 
-##### XML Reference
+#### XML Reference
 The XML reference response format is used for returning references to search results. It consists of the following fields:
 
 |   Field    |                    Description                     |
@@ -835,7 +835,7 @@ Content-Length: 393
     </references>
 </results>
 ```
-##### JSON
+#### JSON
 The JSON response includes the following fields.
 
 * hits - How many total variables were found.
@@ -877,7 +877,7 @@ Content-Length: 944
   } ]
 }
 ```
-##### UMM JSON
+#### UMM JSON
 The UMM JSON response contains meta-metadata of the tool and the UMM fields.
 
 __Example__
@@ -928,7 +928,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-tool"></a> Retrieving All Revisions of a Tool
+#### <a name="retrieving-all-revisions-of-a-tool"></a> Retrieving All Revisions of a Tool
 
 In addition to retrieving the latest revision for a tool parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
@@ -964,13 +964,13 @@ __Sample response__
     </results>
 ```
 
-##### <a name="sorting-tool-results"></a> Sorting Tool Results
+#### <a name="sorting-tool-results"></a> Sorting Tool Results
 
 By default, tool results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-###### Valid Tool Sort Keys
+##### Valid Tool Sort Keys
   * `name`
   * `long_name`
   * `provider`
@@ -1028,11 +1028,11 @@ __Sample response__
     </references>
 </results>
 ```
-#### <a name="tool-access-control"></a> Tool Access Control
+### <a name="tool-access-control"></a> Tool Access Control
 
 Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
-#### <a name="tool-association"></a> Tool Association
+### <a name="tool-association"></a> Tool Association
 
 A tool identified by its concept id can be associated with collections through a list of collection concept revisions.
 
@@ -1105,7 +1105,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="tool-dissociation"></a> Tool Dissociation
+### <a name="tool-dissociation"></a> Tool Dissociation
 
 A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
 
@@ -1169,7 +1169,7 @@ Content-Length: 168
 ]
 ```
 
-### <a name="subscription"></a> Subscription
+## <a name="subscription"></a> Subscription
 
 A subscription allows a user to be notified when specific collections/granules are created, updated, or deleted. The collections/granules specified can be filtered by query conditions.
 
@@ -1187,22 +1187,22 @@ There are two kinds of subscriptions: Batch Notification and Near-Real-Time Noti
     <li>Near-Real-Time (NRT) Notification subscriptions are processed on ingest and are only for granules. When a user subscribes, notifications are sent out via the provided notification endpoint, such as an AWS SQS messaging queue.
 </ul>
 
-#### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
+### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
 Subscriptions can be searched for by sending a request to `%CMR-ENDPOINT%/subscriptions`. XML reference, JSON, and UMM JSON response formats are supported for subscriptions search.
 
 Subscription search results are paged. See [Paging Details](#paging-details) for more information on how to page through subscription search results.
 
-##### <a name="subscription-search-params"></a> Subscription Search Parameters
+#### <a name="subscription-search-params"></a> Subscription Search Parameters
 
 The following parameters are supported when searching for subscriptions.
 
-##### Standard Parameters
+#### Standard Parameters
 * page_size
 * page_num
 * pretty
 
-##### Subscription Matching Parameters
+#### Subscription Matching Parameters
 
 These parameters will match fields within a subscription. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
@@ -1217,9 +1217,9 @@ These parameters will match fields within a subscription. They are case insensit
   * subscriber_id
   * collection_concept_id
   * type
-##### <a name="subscription-search-response"></a> Subscription Search Response
+#### <a name="subscription-search-response"></a> Subscription Search Response
 
-##### XML Reference
+#### XML Reference
 The XML reference response format is used for returning references to search results. It consists of the following fields:
 
 |   Field    |                    Description                     |
@@ -1260,7 +1260,7 @@ Content-Length: 393
     </references>
 </results>
 ```
-##### JSON
+#### JSON
 The JSON response includes the following fields.
 
 * hits - How many total variables were found.
@@ -1307,7 +1307,7 @@ Content-Length: 944
   } ]
 }
 ```
-##### UMM JSON
+#### UMM JSON
 The UMM JSON response contains meta-metadata of the subscription and the UMM fields.
 
 __Example__
@@ -1344,7 +1344,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-subscription"></a> Retrieving All Revisions of a Subscription
+#### <a name="retrieving-all-revisions-of-a-subscription"></a> Retrieving All Revisions of a Subscription
 
 In addition to retrieving the latest revision for a subscription parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
@@ -1380,13 +1380,13 @@ __Sample response__
     </results>
 ```
 
-##### <a name="sorting-subscription-results"></a> Sorting Subscription Results
+#### <a name="sorting-subscription-results"></a> Sorting Subscription Results
 
 By default, subscription results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-###### Valid Subscription Sort Keys
+##### Valid Subscription Sort Keys
   * `name`
   * `provider`
   * `collection_concept_id`
@@ -1443,6 +1443,6 @@ __Sample response__
     </references>
 </results>
 ```
-#### <a name="subscription-access-control"></a> Subscription Access Control
+### <a name="subscription-access-control"></a> Subscription Access Control
 
 Search permission for subscription is granted through the provider via the SUBSCRIPTION_MANAGEMENT ACL. In order to be able to search for a subscription for a given provider, read permission has to be granted to the user through SUBSCRIPTION_MANAGEMENT ACL for the provider.

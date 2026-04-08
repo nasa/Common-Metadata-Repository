@@ -3,15 +3,15 @@ title: Collections
 description: Provides information on how to use the CMR API with collections.
 ---
 
-### <a name="collection-search-by-parameters"></a> Collection Search Examples
+## <a name="collection-search-by-parameters"></a> Collection Search Examples
 
-#### <a name="find-all-collections"></a> Find all collections
+### <a name="find-all-collections"></a> Find all collections
 
     curl "%CMR-ENDPOINT%/collections"
 
 Collection search results are paged. See [Paging Details](#paging-details) for more information on how to page through collection search results.
 
-#### <a name="c-concept-id"></a> Find collections by concept id
+### <a name="c-concept-id"></a> Find collections by concept id
 
 A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <provider-id>`
 
@@ -23,25 +23,25 @@ Example: `C123456-LPDAAC_ECS`
 
     curl "%CMR-ENDPOINT%/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
-#### <a name="c-doi-value"></a> Find collections by doi value
+### <a name="c-doi-value"></a> Find collections by doi value
 
   Find a collection matching a collection doi value. Note more than one doi value may be supplied.
 
     curl "%CMR-ENDPOINT%/collections?doi\[\]=doiValue"
 
-#### <a name="c-echo-collection-id"></a> Find collections by echo collection id
+### <a name="c-echo-collection-id"></a> Find collections by echo collection id
 
   Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.
 
      curl "%CMR-ENDPOINT%/collections?echo_collection_id\[\]=C1000000001-CMR_PROV2"
 
-#### <a name="c-provider-short-name"></a> Find collections by provider short name
+### <a name="c-provider-short-name"></a> Find collections by provider short name
 
 This searches for collections whose provider matches the given provider short names. This supports `ignore_case` option, but not the `pattern` option.
 
     curl "%CMR-ENDPOINT%/collections?provider_short_name\[\]=SHORT_5&options\[provider_short_name\]\[ignore_case\]=true"
 
-#### <a name="c-entry-title"></a> Find collections by entry title
+### <a name="c-entry-title"></a> Find collections by entry title
 
 Find collections matching 'entry_title' param value such as DatasetId%204
 
@@ -63,13 +63,13 @@ with a entry title pattern
 
     curl "%CMR-ENDPOINT%/collections?entry_title\[\]=DatasetId*&options\[entry_title\]\[pattern\]=true"
 
-#### <a name="c-entry-id"></a> Find collections by entry id
+### <a name="c-entry-id"></a> Find collections by entry id
 
 Find collections matching 'entry_id' param value such as SHORT_V5
 
     curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
 
-#### <a name="c-archive-center"></a> Find collections by archive center
+### <a name="c-archive-center"></a> Find collections by archive center
 
 This supports `pattern` and `ignore_case`.
 
@@ -82,7 +82,7 @@ Find collections matching any of the 'archive_center' param values
 
      curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=LARC"
 
-#### <a name="c-data-center"></a> Find collections by data center
+### <a name="c-data-center"></a> Find collections by data center
 
 This supports `pattern`, `and`, and `ignore_case`.
 
@@ -95,7 +95,7 @@ Find collections matching any of the 'data_center' param values
 
      curl "%CMR-ENDPOINT%/collections?data_center\[\]=Larc&data_center\[\]=LARC"
 
-#### <a name="c-temporal"></a> Find collections with temporal
+### <a name="c-temporal"></a> Find collections with temporal
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
@@ -109,7 +109,7 @@ The collection's temporal range or the temporal range of the granules in the col
 
 If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score. If a keyword search is used in conjunction with usage-score sort key, the usage-score will be used instead of relevancy score.
 
-#### <a name="c-project"></a> Find collections by project
+### <a name="c-project"></a> Find collections by project
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
 
@@ -127,7 +127,7 @@ Find collections that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/collections?project\[\]=ESI&project\[\]=EVI&project\[\]=EPI&options\[project\]\[and\]=true"
 
-#### <a name="c-consortium"></a> Find collections by consortium
+### <a name="c-consortium"></a> Find collections by consortium
 
 This supports `pattern`, `ignore_case` and option `and`.
 
@@ -143,13 +143,13 @@ Find collections that match all of the 'consortium' param values
 
      curl "%CMR-ENDPOINT%/collections?consortium\[\]=CWIC&consortium\[\]=FEDEO&consortium\[\]=CEOS&options\[consortium\]\[and\]=true"
 
-#### <a name="c-updated-since"></a> Find collections by updated_since
+### <a name="c-updated-since"></a> Find collections by updated_since
 
   Find collections which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
-#### <a name="c-created-at"></a> Find collections by created_at
+### <a name="c-created-at"></a> Find collections by created_at
 
  This supports option `and`.
 
@@ -157,7 +157,7 @@ Find collections that match all of the 'consortium' param values
 
     curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
-#### <a name="c-with-new-granules"></a> Find collections with new granules
+### <a name="c-with-new-granules"></a> Find collections with new granules
 
   This supports option `and`.
 
@@ -165,7 +165,7 @@ Find collections that match all of the 'consortium' param values
 
     curl "%CMR-ENDPOINT%/collections?has_granules_created_at\[\]=2015-01-01T10:00:00Z,"
 
-#### <a name="c-with-revised-granules"></a> Find collections with granules revised inside of a given range
+### <a name="c-with-revised-granules"></a> Find collections with granules revised inside of a given range
 
   This supports option `and`.
 
@@ -173,7 +173,7 @@ Find collections that match all of the 'consortium' param values
 
     curl "%CMR-ENDPOINT%/collections?has_granules_revised_at\[\]=2015-01-01T10:00:00Z,"
 
-#### <a name="c-revision-date"></a> Find collections by revision_date
+### <a name="c-revision-date"></a> Find collections by revision_date
 
   This supports option `and`.
 
@@ -181,7 +181,7 @@ Find collections that match all of the 'consortium' param values
 
     curl "%CMR-ENDPOINT%/collections?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
 
-#### <a name="c-processing-level-id"></a> Find collections by processing\_level\_id
+### <a name="c-processing-level-id"></a> Find collections by processing\_level\_id
 
 This supports `pattern` and `ignore_case`.
 
@@ -195,7 +195,7 @@ Find collections matching any of the 'processing\_level\_id' param values
 
 The alias 'processing_level' also works for searching by processing level id.
 
-#### <a name="c-platform"></a> Find collections by platform
+### <a name="c-platform"></a> Find collections by platform
 
 This supports `pattern`, `ignore_case` and option `and`.
 
@@ -207,7 +207,7 @@ Find collections matching any of the 'platform' param values
 
      curl "%CMR-ENDPOINT%/collections?platform\[\]=1B&platform\[\]=2B"
 
-#### <a name="c-instrument"></a> Find collections by instrument
+### <a name="c-instrument"></a> Find collections by instrument
 
 This supports `pattern`, `ignore_case` and option `and`.
 
@@ -219,7 +219,7 @@ Find collections matching any of the 'instrument' param values
 
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B&instrument\[\]=2B"
 
-#### <a name="c-sensor"></a> Find collections by sensor.
+### <a name="c-sensor"></a> Find collections by sensor.
 
 Sensor search is deprecated and should be replaced with instrument. Sensors are now child instruments on an instrument.
 
@@ -233,7 +233,7 @@ Find collections matching any of the 'sensor' param values
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B&sensor\[\]=2B"
 
-#### <a name="c-spatial-keyword"></a> Find collections by spatial\_keyword
+### <a name="c-spatial-keyword"></a> Find collections by spatial\_keyword
 
 This supports `pattern`, `ignore_case` and option `and`.
 
@@ -245,7 +245,7 @@ Find collections matching any of the 'spatial_keyword' param values
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
-#### <a name="c-science-keywords"></a> Find collections by science_keywords
+### <a name="c-science-keywords"></a> Find collections by science_keywords
 
 This supports option _or_. Subfields of science_keywords search parameter include: category, topic, term, variable-level-1, variable-level-2, variable-level-3 and detailed-variable.
 
@@ -257,7 +257,7 @@ Find collections matching multiple 'science_keywords' param values, default is :
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
-#### <a name="c-twod-coordinate-system"></a> Find collections by two\_d\_coordinate\_system\_name
+### <a name="c-twod-coordinate-system"></a> Find collections by two\_d\_coordinate\_system\_name
 
 This supports searching by name of the two-dimensional tiling system for the collection. These are the valid values for two_d_coordinate_system aka TilingIdentificationSystem: `CALIPSO`, `MISR`, `MODIS Tile EASE`, `MODIS Tile SIN`, `WELD Alaska Tile`, `WELD CONUS Tile`, `WRS-1`, `WRS-2` and `Military Grid Reference System`.
 
@@ -271,7 +271,7 @@ This search parameter supports pattern. two\_d\_coordinate\_system\[name\] param
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=CALIPSO&two_d_coordinate_system_name\[\]=MISR"
 
-#### <a name="c-collection-data-type"></a> Find collections by collection\_data\_type
+### <a name="c-collection-data-type"></a> Find collections by collection\_data\_type
 
 Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_real\_time", "nrt", "NRT", "near real time", "near-real time", "near-real-time", "near real-time".
 
@@ -283,7 +283,7 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
      curl "%CMR-ENDPOINT%/collections?collection_data_type\[\]=NEAR_REAL_TIME&collection_data_type\[\]=OTHER"
 
-#### <a name="c-collection-progress"></a> Find collections by collection\_progress
+### <a name="c-collection-progress"></a> Find collections by collection\_progress
 
 Supports ignore_case and pattern matching.
 
@@ -319,37 +319,37 @@ The `include_non_operational` parameter controls whether non-operational collect
 
      curl "%CMR-ENDPOINT%/collections?concept_id=C1200000000-PROV1&include_non_operational=false"
 
-#### <a name="c-granule-data-format"></a> Find collections by format of data in granules
+### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 
    Find collections matching 'granule_data_format' param value
 
     curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
 
-#### <a name="c-online-only"></a> Find collections by online_only
+### <a name="c-online-only"></a> Find collections by online_only
 
 Find collections matching 'online_only' param value, online_only is a legacy parameter and is an alias of downloadable.
 
     curl "%CMR-ENDPOINT%/collections?online_only=true"
 
-#### <a name="c-downloadable"></a> Find collections by downloadable
+### <a name="c-downloadable"></a> Find collections by downloadable
 
 A collection is downloadable when it contains at least one RelatedURL that is a DistributionURL of type GETDATA.
 
     curl "%CMR-ENDPOINT%/collections?downloadable=true"
 
-#### <a name="c-browse-only"></a> Find collections by browse_only
+### <a name="c-browse-only"></a> Find collections by browse_only
 
 `browse_only` is a legacy alias of `browsable`. They return the same search results.
 
     curl "%CMR-ENDPOINT%/collections?browse_only=true"
 
-#### <a name="c-browsable"></a> Find collections by browsable
+### <a name="c-browsable"></a> Find collections by browsable
 
 A collection is browsable when it contains at least one RelatedURL with a VisualizationURL URLContentType.
 
     curl "%CMR-ENDPOINT%/collections?browsable=true"
 
-#### <a name="c-keyword"></a> Find collections by keyword (free text) search
+### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
 Keyword searches are case insensitive and support wild cards ? and *, in which '\*' matches zero or more characters and '?' matches any single character. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
@@ -409,7 +409,7 @@ The following fields are indexed for keyword and keyword phrase search:
 * TwoD coordinate system names
 * Author
 
-#### <a name="c-provider"></a> Find collections by provider
+### <a name="c-provider"></a> Find collections by provider
 
 This parameter supports `pattern` and `ignore_case`.
 
@@ -421,7 +421,7 @@ Find collections matching any of the 'provider' param values
 
     curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=LARC"
 
-#### <a name="c-native-id"></a> Find collections by native_id
+### <a name="c-native-id"></a> Find collections by native_id
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -433,7 +433,7 @@ Find collections matching any of the 'native_id' param values
 
     curl "%CMR-ENDPOINT%/collections?native_id[]=nativeid1&native_id[]=nativeid2"
 
-#### <a name="c-short-name"></a> Find collections by short name
+### <a name="c-short-name"></a> Find collections by short name
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -445,7 +445,7 @@ Find collections matching 'short\_name' param value with a pattern
 
     curl "%CMR-ENDPOINT%/collections?short_name=D*&options[short_name][pattern]=true"
 
-#### <a name="c-version"></a> Find collections by version
+### <a name="c-version"></a> Find collections by version
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -457,7 +457,7 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
     curl "%CMR-ENDPOINT%/collections?short_name=dem_100m&version=1&version=2"
 
-#### <a name="c-tag-parameters"></a> Find collections by tag parameters
+### <a name="c-tag-parameters"></a> Find collections by tag parameters
 
 Collections can be found by searching for associated tags. The following tag parameters are supported.
 
@@ -482,7 +482,7 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 
     curl "%CMR-ENDPOINT%/collections?tag_data[org.ceos.wgiss.cwic.quality]=foo"
 
-#### <a name="c-variable-parameters"></a> Find collections by variable parameters
+### <a name="c-variable-parameters"></a> Find collections by variable parameters
 
 Collections can be found by searching for associated variables. The following variable parameters are supported.
 
@@ -505,7 +505,7 @@ Find collections matching variable concept id.
 
     curl "%CMR-ENDPOINT%/collections?variable_concept_id\[\]=V100000-PROV1"
 
-#### <a name="c-variables"></a> Find collections by hierarchical variables
+### <a name="c-variables"></a> Find collections by hierarchical variables
 
 This supports option _or_.
 
@@ -517,7 +517,7 @@ Find collections matching multiple 'variables-h' param values, default is :and
 
      curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[measurement\]=M1&variables-h\[0\]\[variable\]=Var1&variables-h\[1\]\[measurement\]=M2"
 
-#### <a name="c-service-parameters"></a> Find collections by service parameters
+### <a name="c-service-parameters"></a> Find collections by service parameters
 
 Collections can be found by searching for associated services. The following service parameters are supported.
 
@@ -540,7 +540,7 @@ Find collections matching service concept id.
 
     curl "%CMR-ENDPOINT%/collections?service_concept_id\[\]=S100000-PROV1&service_concept_id\[\]=S12345-PROV1"
 
-#### <a name="c-tool-parameters"></a> Find collections by tool parameters
+### <a name="c-tool-parameters"></a> Find collections by tool parameters
 
 Collections can be found by searching for associated tools. The following tool parameters are supported.
 
@@ -563,9 +563,9 @@ Find collections matching tool concept id.
 
     curl "%CMR-ENDPOINT%/collections?tool_concept_id\[\]=TL100000-PROV1&tool_concept_id\[\]=TL12345-PROV1"
 
-#### <a name="c-spatial"></a> Find collections by Spatial
+### <a name="c-spatial"></a> Find collections by Spatial
 
-##### <a name="c-polygon"></a> Polygon
+#### <a name="c-polygon"></a> Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
 
@@ -583,7 +583,7 @@ or "polygon[]", for single or multiple polygon search. It supports the and/or op
 
 Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
-##### <a name="c-bounding-box"></a> Bounding Box
+#### <a name="c-bounding-box"></a> Bounding Box
 
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.
 This parameter supports the and/or option as shown below.
@@ -592,7 +592,7 @@ This parameter supports the and/or option as shown below.
 
     curl "%CMR-ENDPOINT%/collections?bounding_box[]=-10,-5,10,5&bounding_box[]=-11,-6,11,6&options[bounding_box][or]=true"
 
-##### <a name="c-point"></a> Point
+#### <a name="c-point"></a> Point
 
 Search using a point involves using a pair of values representing the point coordinates as parameters. The first value is the longitude and second value is the latitude. This parameter supports the and/or option as shown below.
 
@@ -600,7 +600,7 @@ Search using a point involves using a pair of values representing the point coor
 
     curl "%CMR-ENDPOINT%/collections?point=100,20&point=80,20&options[point][or]=true"
 
-##### <a name="c-line"></a> Line
+#### <a name="c-line"></a> Line
 
 Lines are provided as a list of comma separated values representing coordinates of points along the line. The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on. This parameter supports the and/or option as shown below.
 
@@ -608,7 +608,7 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line[]=-0.37,-14.07,4.75,1.27,25.13,-15.51&line[]=-1.37,-15.07,5.75,2.27,26.13,-16.51&options[line][or]=true"
 
-##### <a name="c-circle"></a> Circle
+#### <a name="c-circle"></a> Circle
 
 Circle defines a circle area on the earth with a center point and a radius. The center parameters must be 3 comma-separated numbers: longitude of the center point, latitude of the center point, radius of the circle in meters. The circle center cannot be on North or South pole. The radius of the circle must be between 10 and 6,000,000.
 This parameter supports the and/or option as shown below.
@@ -619,7 +619,7 @@ This parameter supports the and/or option as shown below.
 
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are ANDed in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
-#### <a name="c-shapefile"></a> Find collections by shapefile
+### <a name="c-shapefile"></a> Find collections by shapefile
 
 A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is ORed together, not ANDed. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
 
@@ -653,7 +653,7 @@ Internally a WGS 84 Coordinate Reference System (CRS) is used. The system will a
 
 **NOTE:** This is an experimental feature and may not be enabled in all environments.
 
-#### <a name="c-shapefile-simplification"></a> Simplifying shapefiles during collection search
+### <a name="c-shapefile-simplification"></a> Simplifying shapefiles during collection search
 Shapefiles are limited to 5000 points by default. A user using a shapefile with more points than the CMR supported limit can use the `simplify-shapefile` parameter to request that the CMR try to simplify (reduce the number of points) the shapefile so that it is under the limit.
 
 Example:
@@ -664,7 +664,7 @@ Note that the simplification process attempts to preserve topology, i.e., the re
 
 The simplification may fail if the process cannot reduce the number of points in the file to below the limit. Also the simplification only reduces the number of points in the file, so a shapefile will still fail if the file size is too large or there are too many features.
 
-#### <a name="c-additional-attribute"></a> Find collections by additional attribute
+### <a name="c-additional-attribute"></a> Find collections by additional attribute
 
 Find an additional attribute with name "PERCENTAGE" only
 
@@ -698,7 +698,7 @@ Multiple attributes can be provided. The default is for collections to match all
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
 
-#### <a name="c-author"></a> Find collections by author
+### <a name="c-author"></a> Find collections by author
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -706,13 +706,13 @@ Find collections matching the given 'author' values
 
     curl "%CMR-ENDPOINT%/collections?author=*JPL*&options[author][pattern]=true"
 
-#### <a name="c-has-granules"></a> Find collections with or without granules
+### <a name="c-has-granules"></a> Find collections with or without granules
 
 When `has_granules` is set to "true" or "false", results will be restricted to collections with or without granules, respectively.
 
     curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
-#### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
+### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
 
 The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium. When false, will return any collections without granules.
 
@@ -720,29 +720,29 @@ The `has_granules_or_cwic` parameter can be set to "true" or "false". When true,
 
 **Note:** this parameter will soon be retired in favor of a replacement parameter found below, `have_granules_or_opensearch`.
 
-#### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
+### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
 
 The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS. When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
-#### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
+### <a name="c-has-opendap-url"></a> Find collections with or without an OPeNDAP service RelatedURL.
 
     curl "%CMR-ENDPOINT%/collections?has_opendap_url=true"
 
-#### <a name="c-cloud-hosted"></a> Find collections with data that is hosted in the cloud.
+### <a name="c-cloud-hosted"></a> Find collections with data that is hosted in the cloud.
 
 The `cloud_hosted` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdatacloud.s3`.
 
     curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
 
-#### <a name="c-standard-product"></a> Find collections that are standard products.
+### <a name="c-standard-product"></a> Find collections that are standard products.
 
 The `standard_product` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have `StandardProduct` element being true or collections that don't have `StandardProduct` element set and have been tagged with `gov.nasa.eosdis.standardproduct`.
 
     curl "%CMR-ENDPOINT%/collections?standard_product=true"
 
-#### <a name="sorting-collection-results"></a> Sorting Collection Results
+### <a name="sorting-collection-results"></a> Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
 
@@ -758,7 +758,7 @@ If a temporal range search is performed, the search results will be sorted by te
 
 One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 
-##### Valid Collection Sort Keys
+#### Valid Collection Sort Keys
 
   * `entry_title`
   * `dataset_id` - alias for entry_title
@@ -783,7 +783,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date"
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=%2Bstart_date"
 
-#### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
+### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
 
 In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
@@ -819,7 +819,7 @@ __Sample response__
     </results>
 ```
 
-### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
+## <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
 This allows retrieving the metadata for a single concept. This is only supported for collections, granules, variables, services, tools and subscriptions. If no format is specified the native format of the metadata (and the native version, if it exists) will be returned.
 
@@ -882,7 +882,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
 
   * `umm_json`  "application/vnd.nasa.cmr.umm+json"
 
-### <a name="deleted-collections"></a> Find collections that have been deleted after a given date
+## <a name="deleted-collections"></a> Find collections that have been deleted after a given date
 
 To support metadata harvesting, a harvesting client can search CMR for collections that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular collection search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted. e.g.
 
@@ -924,7 +924,7 @@ CMR-Hits: 3
 </results>
 ```
 
-### <a name="retrieve-provider-holdings"></a> Retrieve Provider Holdings
+## <a name="retrieve-provider-holdings"></a> Retrieve Provider Holdings
 
 Provider holdings can be retrieved as XML or JSON. It will show all CMR providers, collections and granule counts regardless of the user's ACL access.
 
@@ -936,7 +936,7 @@ Provider holdings for a list of providers
 
     curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
-### <a name="tagging"></a> Tagging
+## <a name="tagging"></a> Tagging
 
 Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
 
@@ -946,11 +946,11 @@ Tags have the following fields:
 * description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
 * originator_id (REQUIRED): the Earthdata Login ID of the person who created the tag.
 
-#### <a name="tag-access-control"></a> Tag Access Control
+### <a name="tag-access-control"></a> Tag Access Control
 
 Access to tags is granted through the TAG_GROUP system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission. Associating and dissociating collections with a tag is considered an update.
 
-#### <a name="creating-a-tag"></a> Creating a Tag
+### <a name="creating-a-tag"></a> Creating a Tag
 
 Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid EDL bearer token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
@@ -968,7 +968,7 @@ Content-Length: 48
 {"concept_id":"T1200000000-CMR","revision_id":1}
 ```
 
-#### <a name="retrieving-a-tag"></a> Retrieving a Tag
+### <a name="retrieving-a-tag"></a> Retrieving a Tag
 
 A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag.
 
@@ -986,7 +986,7 @@ Content-Type: application/json;charset=ISO-8859-1
 }
 ```
 
-#### <a name="updating-a-tag"></a> Updating a Tag
+### <a name="updating-a-tag"></a> Updating a Tag
 
 Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. The same rules apply when updating a tag as when creating it but in addition tag key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
@@ -1004,7 +1004,7 @@ Content-Length: 48
 {"concept_id":"T1200000000-CMR","revision_id":2}
 ```
 
-#### <a name="deleting-a-tag"></a> Deleting a Tag
+### <a name="deleting-a-tag"></a> Deleting a Tag
 
 Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
@@ -1019,7 +1019,7 @@ Content-Length: 48
 ```
 
 
-#### <a name="tag-association"></a> Tag Association
+### <a name="tag-association"></a> Tag Association
 
 A tag can be associated with collections through either a JSON query or a list of collection concept revisions.
 Tag association by query only supports tagging the latest revision of collections.
@@ -1082,7 +1082,7 @@ Content-Length: 168
 
 On occasions when tag association cannot be processed at all due to invalid input, tag association request will return failure status code 400 with the appropriate error message.
 
-#### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
+### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
 Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag.
 All collections found will be _added_ to the current set of associated collections with a tag.
@@ -1124,7 +1124,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
+### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
 Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
 User can also provide arbitrary JSON data which is optional during tag association.
@@ -1176,7 +1176,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="tag-dissociation"></a> Tag Dissociation
+### <a name="tag-dissociation"></a> Tag Dissociation
 
 A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests.
 Tag dissociation by query only supports tag dissociation of the latest revision of collections.
@@ -1246,7 +1246,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
+### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
 
 Tags can be dissociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
@@ -1285,7 +1285,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
+### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
 
 Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to
 `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag.
@@ -1329,23 +1329,23 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="searching-for-tags"></a> Searching for Tags
+### <a name="searching-for-tags"></a> Searching for Tags
 
 Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
 
 Tag search results are paged. See [Paging Details](#paging-details) for more information on how to page through tag search results.
 
-##### Tag Search Parameters
+#### Tag Search Parameters
 
 The following parameters are supported when searching for tags.
 
-##### Standard Parameters:
+#### Standard Parameters:
 
 * page_size
 * page_num
 * pretty
 
-##### Tag Matching Parameters
+#### Tag Matching Parameters
 
 These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `tag_key[]=key1&tag_key[]=key2`.
 
@@ -1354,7 +1354,7 @@ These parameters will match fields within a tag. They are case insensitive by de
 * originator_id
   * options: pattern
 
-##### Tag Search Response
+#### Tag Search Response
 
 The response is always returned in JSON and includes the following parts.
 
@@ -1367,7 +1367,7 @@ The response is always returned in JSON and includes the following parts.
   * description
   * originator_id - The id of the user that created the tag.
 
-##### Tag Search Example
+#### Tag Search Example
 
 ```
 curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&tag_key=org\\.ceos\\.*&options[tag_key][pattern]=true"
@@ -1389,7 +1389,7 @@ Content-Length: 292
 }
 ```
 
-### <a name="document-scoring"></a> Document Scoring
+## <a name="document-scoring"></a> Document Scoring
 
 Collection search results are scored when any of the following parameters are searched:
 
@@ -1420,7 +1420,7 @@ The filters are case insensitive, support wild-cards * and ?, and are given belo
 8. The keyword term field is a single string that exactly matches the spatial-keyword field OR an additional term is contained in the spatial-keyword field - weight 1.1
 9. The keyword term field is a single string that exactly matches the temporal-keyword field OR an additional term is contained in the temporal-keyword field - weight 1.1
 
-### <a name="facets"></a> Facets
+## <a name="facets"></a> Facets
 
 Facets are counts of unique values from fields in items matching search results. Facets are supported with collection or granule search results and are enabled with the `include_facets` parameter. There are three different types of facet responses. There are flat facets (collection only), hierarchical facets (collection only), and version 2 facets.
 
@@ -1430,11 +1430,11 @@ Several fields including science keywords, data centers, platforms, instruments,
 
 Note that any counts included in hierarchical facets should be considered approximate within a small margin of an error rather than an exact count. If an exact count is required following the link provided to apply that facet will perform a search that returns an exact hits count.
 
-#### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
+### <a name="facets-v2-response-format"></a> Version 2 Facets Response Format
 
 Version 2 facets are enabled by setting the `include_facets=v2` parameter in either collection or granule search requests in the JSON format. In order to request faceting on granule searches, the search must be limited in scope to a single collection (e.g. by specifying a single concept ID in the collection_concept_id parameter). The max number of values in each v2 facet can be set by using facets_size parameter (i.e. facets_size[platforms]=10, facets_size[instrument]=20. Default size is 50.). facets_size is only supported for collection v2 facet search. The same fields apply in the v2 facets as for the flat facets with the addition of horizontal range facets and latency facets. When calling the CMR with a query the V2 facets are returned. These facets include the apply field described in more detail a few paragraphs below that includes the search parameter and values that need to be sent back to the CMR.
 
-##### Specifying facet fields
+#### Specifying facet fields
 
 Hierarchical Facet requests include any or all parts of the hierarchical structure using the `&parameter[set][subfield]=value` notation where:
 
@@ -1448,7 +1448,7 @@ Example curl calls:
 
     %CMR-ENDPOINT%/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
 
-##### Responses
+#### Responses
 
 With version 2 facets the CMR makes no guarantee of which facets will be present, whether the facets returned are hierarchical or flat in nature, how many values will be returned for each field, or that the same facets will be returned from release to release. The rules for processing v2 facets are as follows.
 
@@ -1463,7 +1463,7 @@ var treeNode = {
 
 Currently, the filter response type defines two node types: "group" and "filter". More may be added in the future, and clients must be built to ignore unknown node types.
 
-##### Group Nodes
+#### Group Nodes
 
 Group nodes act as containers for similar data. Depending on context, this data may, for instance, be all facet parameters (the root facet node), top-level facets, or children of existing facets. Group nodes further have a
 
@@ -1476,15 +1476,15 @@ var groupNode = { // Inherits treeNode fields
 }
 ```
 
-##### Children
+#### Children
 
 In order to avoid sending unnecessary information, the CMR may in the future opt to not return children for group nodes that have facets, returning only the first few levels of the facet tree. It will, however, allow clients to appropriately display incomplete information and query the full tree as necessary.
 
-##### Relevance
+#### Relevance
 
 By default, clients should assume that the CMR may limit facet results to only include the most relevant child nodes in facet responses. For instance, if there are hundreds of science keywords at a particular depth, the CMR may choose to only return those that have a substantial number of results. When filtering children, the CMR makes no guarantees about the specific quantities or values of facets returned, only that applied filters attempt to surface the choices that typical users are most likely to find beneficial.
 
-##### Filter Nodes
+#### Filter Nodes
 
 Filter nodes are group nodes that supply a single query condition indicated by a string (the node title). They further have a field, "applied," which indicates if the query value has already been applied to the current query.
 
@@ -1499,7 +1499,7 @@ var filterNode = { // Inherits groupNode fields
 ```
 Note that while two potential queries are listed in "links", in practice only one would be returned based on whether the node is currently applied.
 
-##### Collection Example
+#### Collection Example
 The following example is a sample response for a query using the query parameters API which has the "instruments=ASTER" filter applied as well as a page size of 10 applied by the client. The example is hand-constructed for example purposes only. Real-world queries would typically be more complex, counts would be different, and the facet tree would be much larger.
 
 ```
@@ -1589,7 +1589,7 @@ The following example is a sample response for a query using the query parameter
 }
 ```
 
-##### Granule Example
+#### Granule Example
 ```
 "facets" : {
       "title" : "Browse Granules",
@@ -1612,11 +1612,11 @@ The following example is a sample response for a query using the query parameter
     }
 ```
 
-#### <a name="facets-in-xml-responses"></a> Collection Facets in XML Responses
+### <a name="facets-in-xml-responses"></a> Collection Facets in XML Responses
 
 Facets in XML search response formats will be formatted like the following examples. The exception is ATOM XML which is the same except the tags are in the echo namespace.
 
-##### <a name="flat-xml-facets"></a> Flat XML Facets
+#### <a name="flat-xml-facets"></a> Flat XML Facets
 
 ```
 <facets>
@@ -1652,7 +1652,7 @@ Facets in XML search response formats will be formatted like the following examp
 </facets>
 ```
 
-##### <a name="hierarchical-xml-facets"></a> Hierarchical XML Facets
+#### <a name="hierarchical-xml-facets"></a> Hierarchical XML Facets
 
 Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure. Fields which are returned hierarchically include platforms, instruments, data centers, archive centers, and science keywords.
 
@@ -1696,11 +1696,11 @@ Fields that are not hierarchical are returned in the same format as the flat res
 </facets>
 ```
 
-#### <a name="facets-in-json-responses"></a> Collection Facets in JSON Responses
+### <a name="facets-in-json-responses"></a> Collection Facets in JSON Responses
 
 Facets in JSON search response formats will be formatted like the following examples.
 
-##### <a name="flat-json-facets"></a> Flat JSON facets
+#### <a name="flat-json-facets"></a> Flat JSON facets
 
 ```
 {
@@ -1766,7 +1766,7 @@ Facets in JSON search response formats will be formatted like the following exam
 }
 ```
 
-##### <a name="hierarchical-json-facets"></a> Hierarchical JSON facets
+#### <a name="hierarchical-json-facets"></a> Hierarchical JSON facets
 
 Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
 
@@ -1802,7 +1802,7 @@ Fields that are not hierarchical are returned in the same format as the flat res
     } ]
 ```
 
-### <a name="autocomplete-facets"></a> Facet Autocompletion
+## <a name="autocomplete-facets"></a> Facet Autocompletion
 
 Auto-completion assistance for building queries. This functionality may be used to help build queries. The facet autocomplete functionality does not search for collections directly. Instead it will return suggestions of facets to help narrow a search by providing a list of available facets to construct a CMR collections search.
 
@@ -1810,7 +1810,7 @@ Auto-completion assistance for building queries. This functionality may be used 
 
 Collection facet autocompletion results are paged. See [Paging Details](#paging-details) for more information on how to page through autocomplete search results.
 
-#### Autocompletion of Science Keywords
+### Autocompletion of Science Keywords
 In the case of science keywords, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
 
  * topic
@@ -1840,7 +1840,7 @@ Example with detailed-variable as the base term, note the extra colons preservin
 }
 ```
 
-#### Autocompletion of Platforms
+### Autocompletion of Platforms
 In the case of platforms, the `fields` property may be used to determine the hierarchy of the term. The structure of the `fields` field is a colon (`:`) separated list in the following sequence:
 
  * basis
@@ -1868,7 +1868,7 @@ Example with short-name as the base term, but the sub-category is missing. Note 
 }
 ```
 
-#### Autocomplete Parameters
+### Autocomplete Parameters
   * `q` The string on which to search. The term is case insensitive.
   * `type[]` Optional list of types to include in the search. This may be any number of valid facet types.
 
@@ -1950,11 +1950,11 @@ CMR-Hits: 3
 }
 ```
 
-### <a name="humanizers"></a> Humanizers
+## <a name="humanizers"></a> Humanizers
 
 Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of faceted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer API.
 
-#### <a name="updating-humanizers"></a> Updating Humanizers
+### <a name="updating-humanizers"></a> Updating Humanizers
 
 Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid EDL bearer token or Launchpad token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
 
@@ -1970,7 +1970,7 @@ Content-Length: 48
 {"concept_id":"H1200000000-CMR","revision_id":2}
 ```
 
-#### <a name="retrieving-humanizers"></a> Retrieving Humanizers
+### <a name="retrieving-humanizers"></a> Retrieving Humanizers
 
 The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
 
@@ -1995,7 +1995,7 @@ Content-Type: application/json; charset=UTF-8
 } ]
 ```
 
-#### <a name="facets-humanizers-report"></a> Humanizers Report
+### <a name="facets-humanizers-report"></a> Humanizers Report
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The report format is: provider, concept id, product short name, product version, original field value, humanized field value.
 

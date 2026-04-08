@@ -3,17 +3,17 @@ title: Requests
 description: Provides foundational request information for the CMR API.
 ---
 
-### <a name="general-request-details"></a> General Request Details
+## <a name="general-request-details"></a> General Request Details
 
-#### <a name="maximum-url-length"></a> Maximum URL Length
+### <a name="maximum-url-length"></a> Maximum URL Length
 
 The Maximum URL Length supported by CMR is indirectly controlled by the Request Header Size setting in Jetty which is set to 1MB. This translates to roughly 500k characters, however it is recommended that any GET request be limited to 6,000 characters, and in a web browser the recommended length is no longer than 2000 characters. Clients using the Search API with query parameters should be careful not to exceed this limit or they will get an HTTP response of 413 FULL HEAD. If a client expects that the query url could be extra long so that it exceeds 6k characters, they should use the POST API for searching.
 
-#### <a name="cors-header-support"></a> CORS Header support
+### <a name="cors-header-support"></a> CORS Header support
 
 The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id (**deprecated**) and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id (**deprecated**), CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
 
-#### <a name="query-parameters"></a> Query Parameters
+### <a name="query-parameters"></a> Query Parameters
 
  * `page_size` - Number of results per page - default is 10, max is 2000.
  * `page_num` - The page number to return. (**deprecated**)
@@ -24,7 +24,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `token` - Specifies a user token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#headers) is the prefered way to supply a token. This parameter may be deprecated in the future.
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
-#### <a name="paging-details"></a> Paging Details
+### <a name="paging-details"></a> Paging Details
 
 __NOTE:__ Deep paging is being deprecated in favor of [Search After](#search-after). Please switch your scroll based queries to [Search After](#search-after) which is more efficient and easier to use.
 
@@ -38,7 +38,7 @@ __Note__: In the event which an ingest or delete occurs between paging requests,
 
 You can not page past the 1 millionth item. Please contact the CMR Team at cmr-support@nasa.gov if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10,000th item.
 
-#### <a name="search-after"></a> Search After
+### <a name="search-after"></a> Search After
 
 __NOTE__: This is currently the prefered way to request large sets of records.
 
@@ -79,7 +79,7 @@ curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concep
 ```
 There will be only 8 granules in the result set. We can deem the search has reached the end because the number of results returned is less than the page_size, but if we search again with the new `CMR-Search-After` header value returned, we will get an empty result set and there won't be a `CMR-Search-After` header in the response.
 
-#### <a name="scrolling-details"></a> Scrolling Details
+### <a name="scrolling-details"></a> Scrolling Details
 
 __IMPORTANT:__ Scrolling is deprecated and will be disabled in the future. When disabled, requests using CMR-Scroll-Id or scroll parameter will return HTTP 400 errors with instructions to migrate to [Search After](#search-after). Please migrate your applications to use the Search After pattern instead, which is more efficient and easier to use.
 
@@ -93,7 +93,7 @@ When all the results have been returned subsequent calls using the same `CMR-Scr
 
 Important note: Clients using scrolling (especially via programmatic API or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
 
-#### <a name="parameter-options"></a> Parameter Options
+### <a name="parameter-options"></a> Parameter Options
 
 The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
 
@@ -106,7 +106,7 @@ where parameter is the URL parameter whose behavior is to be affected, value is 
  * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multi-valued; these are documented here.
  * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, the collection/granule will match when any of the grouped search condition is matched. The default is false.
 
-##### <a name="collection-result-features"></a> Collection Result Feature Parameters
+#### <a name="collection-result-features"></a> Collection Result Feature Parameters
 
 These are query parameters that control what extra data is included with collection search results. They do not impact which collections are matched but can add additional data to the search results like facets, granule counts, and tags.
 
@@ -124,9 +124,9 @@ These are query parameters that control what extra data is included with collect
   _The `include_highlights` feature is only supported for the JSON response format and only applies to keyword searches._
 
 
-#### <a name="headers"></a> HTTP Headers
+### <a name="headers"></a> HTTP Headers
 
-##### Request Headers
+#### Request Headers
 `Accept` - specifies the MimeType to return search results in. Default is "application/xml".
 
     `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
@@ -147,7 +147,7 @@ These are query parameters that control what extra data is included with collect
 
 `CMR-Request-Id` - This header serves the same purpose as `X-Request-Id` header. It is kept to support legacy systems.
 
-##### The response headers
+#### The response headers
 
 * `CMR-Hits` and `CMR-Took` indicate the number of result hits and the time to build and execute the query, respectively.
 * `CMR-Request-Id` and `X-Request-Id` return the same value - the value passed in through `CMR-Request-Id` request header or `X-Request-Id` request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
@@ -156,7 +156,7 @@ These are query parameters that control what extra data is included with collect
 * `content-md5` returns the MD5 hash of the content.
 * `content-sha1` returns the SHA1 hash value for the content.
 
-#### <a name="extensions"></a> Extensions
+### <a name="extensions"></a> Extensions
 
 Besides MimeTypes, client can also use extensions to specify the format for search results. Default is xml.
 
@@ -189,13 +189,13 @@ Here is a list of supported extensions and their corresponding MimeTypes:
 
   __NOTE__: As of version "%CMR-RELEASE-VERSION%", the latest UMM Collection version is `%COLLECTION-UMM-VERSION%`.
 
-#### <a name="request-timeouts"></a> Request Timeouts
+### <a name="request-timeouts"></a> Request Timeouts
 
 The CMR operating environment imposes a hard limit of 180 seconds on any request, after which a 504 error is
 returned. To avoid this, the CMR has an internal query timeout of 170 seconds - any query taking longer will time
 out and a subset of the total hit results will be returned instead of an error. The response for queries that time
 out will include the `CMR-Time-Out` header set to `true`.
 
-#### <a name="request-moderation"></a> Moderating Client Request Traffic
+### <a name="request-moderation"></a> Moderating Client Request Traffic
 
 In order to provide robust availability and performance for all clients of the service, CMR Search deploys a set of rate throttling rules for request traffic. These rules are defined to target specific request signatures, throttling the allowed rate of these searches in an effort to prevent overall degradation of system performance and availability. If a client request should exceed one of these rate throttling rules, the request will be rejected and a `429` error status returned to the client along with a `retry-after` header value. The suggested practice for any CMR Search client is to honor the `retry-after` header value and delay accordingly before re-issuing the failed request and continuing with its CMR Search processing.
