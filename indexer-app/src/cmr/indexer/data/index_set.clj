@@ -461,6 +461,8 @@
           :sensor-sn                      m/string-field-mapping
           :sensor-sn-lowercase            m/string-field-mapping
           :project-sn                     m/string-field-mapping
+          :project-uuid                   m/string-field-mapping
+          :project-uuid-lowercase         m/string-field-mapping
           :project-sn-lowercase           m/string-field-mapping
           :project-sn-lowercase-humanized m/string-field-mapping
           :project-sn-humanized           prioritized-humanizer-mapping

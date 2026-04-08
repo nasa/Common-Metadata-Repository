@@ -82,7 +82,7 @@
     (some #(when (= (:provider-id %) provider-id) %) providers)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
+;; Job for refreshing the provider. Only one node needs to refresh the cache.
 (def-stateful-job RefreshProviderCacheJob
   [_ system]
   (refresh-provider-cache {:system system}))

@@ -26,6 +26,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.project-keyword :as project]
    [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
@@ -115,7 +116,7 @@
   (if predicate
     (assoc-in collection keys nil)
     collection))
-
+;; Do we need the uuid values for the processing levels here?
 (defn- sanitize-processing-level-ids
   "Sanitize Processing Level Ids if and only if the values are default"
   [collection]
@@ -213,6 +214,8 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
+  (tap> collection)
+  (println "the collection-record" collection)
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format tag-associations
                 variable-associations service-associations tool-associations generic-associations]} concept
@@ -281,10 +284,17 @@
         sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        project-short-names (->> (map :ShortName (:Projects collection))
-                                 (map string/trim))
-        project-long-names (->> (keep :LongName (:Projects collection))
-                                (map string/trim))
+        ;; Use KMS lookup to build full nested project docs, then derive names/uuids from those
+        projects-nested (map #(project/project-short-name->elastic-doc context %)
+                             (->> (map :ShortName (:Projects collection))
+                                  (map string/trim)))
+        project-short-names (map :short-name projects-nested)
+        project-long-names (->> projects-nested
+                                (keep :long-name)
+                                distinct
+                                (map string/trim)
+                                (remove string/blank?))
+        project-uuids (keep :uuid projects-nested)
         ;; Pull author info from both creator and other citation details
         authors (->> (concat
                       (keep :Creator (:CollectionCitations collection))
@@ -436,6 +446,8 @@
             :consortiums-lowercase (map util/safe-lowercase consortiums)
             :project-sn project-short-names
             :project-sn-lowercase  (map string/lower-case project-short-names)
+            :project-uuid project-uuids
+            :project-uuid-lowercase (map string/lower-case project-uuids)
             :two-d-coord-name two-d-coord-names
             :two-d-coord-name-lowercase  (map string/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords

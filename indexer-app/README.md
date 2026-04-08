@@ -126,9 +126,7 @@ By default, a comparison is run between the existing elasticsearch indexes and w
 
 ### Create index-set using json string
 
-
     curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"norms\":\"false\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
-
 
 ### Get index-set by id
 
@@ -142,7 +140,8 @@ By default, a comparison is run between the existing elasticsearch indexes and w
 
     curl -XDELETE "http://localhost:3004/index-sets/3"
 
-## Rebalance a collection
+### Rebalance a collection
+
 There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index.
 Once a collection gets to a certain size, we can manually 'rebalance' that collection by moving the collection's granule docs into a separate granule index.
 This process is specific to the following steps:
@@ -155,7 +154,7 @@ IMPORTANT: This process is required to do ONE collection at a time. Do not attem
 
 ### Mark a collection as rebalancing
 
-Collection is added to the list of collections being rebalanced. 
+Collection is added to the list of collections being rebalanced.
 
 Required params:
 - target = string 

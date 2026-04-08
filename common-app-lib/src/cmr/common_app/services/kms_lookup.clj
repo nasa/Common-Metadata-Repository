@@ -47,7 +47,7 @@
   :kms-location-index)
 
 (def kms-measurement-cache-key
-  "The key used to store the data generated from KMS into a measurment index cache
+  "The key used to store the data generated from KMS into a measurement index cache
   in the system hash cache map for fast lookups."
   :kms-measurement-index)
 
@@ -148,7 +148,7 @@
 
 (def keywords-to-lookup-by-short-name
   "Set of KMS keywords that we need to be able to lookup by short name."
-  #{:providers :platforms :instruments})
+  #{:providers :platforms :instruments :projects})
 
 (defn generate-lookup-by-short-name-map
   "Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
@@ -163,6 +163,7 @@
                  [keyword-scheme maps-by-short-name]))
              (select-keys gcmd-keywords-map keywords-to-lookup-by-short-name))))
 
+;; TODO we could maybe remove this issue if we were to index keywords in the metadata itself
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
   Common key is :uuid which is a field in the location-keyword map. "
@@ -412,3 +413,11 @@
       (if (string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)
         (throw e)))))
+
+
+
+(comment
+  (lookup-by-short-name c1 :instruments "HARP2")
+  
+  :rcf)
+
