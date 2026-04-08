@@ -1,3 +1,8 @@
+---
+title: Searching
+description: Provides information on general methods of searching with the CMR API, as well as the formats that will be used for search results.
+---
+
 ### <a name="search-with-post"></a> Search with POST
 
 Search collections or granules with query parameters encoded form in POST request body.
