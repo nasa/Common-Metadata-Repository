@@ -1,3 +1,8 @@
+---
+title: Table of Contents
+description: Table of contents for the CMR API documentation.
+---
+
 ## API Documentation
 
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.

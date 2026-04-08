@@ -1,3 +1,8 @@
+---
+title: Requests
+description: Provides foundational request information for the CMR API.
+---
+
 ### <a name="general-request-details"></a> General Request Details
 
 #### <a name="maximum-url-length"></a> Maximum URL Length

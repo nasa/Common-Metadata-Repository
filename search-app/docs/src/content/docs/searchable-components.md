@@ -1,3 +1,8 @@
+---
+title: Searchable Components
+description: Provides information on additional types that are searchable by the CMR API.
+---
+
 ### <a name="service"></a> Service
 
 A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).

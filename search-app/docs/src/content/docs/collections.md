@@ -1,3 +1,8 @@
+---
+title: Collections
+description: Provides information on how to use the CMR API with collections.
+---
+
 ### <a name="collection-search-by-parameters"></a> Collection Search Examples
 
 #### <a name="find-all-collections"></a> Find all collections

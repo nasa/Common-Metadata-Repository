@@ -1,3 +1,8 @@
+---
+title: Additional Topics
+description: Provides information for additional useful CMR API capabilities.
+---
+
 %GENERIC-DOCS%
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
