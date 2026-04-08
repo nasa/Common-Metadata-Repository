@@ -4,7 +4,7 @@
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "2.3.0"]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]

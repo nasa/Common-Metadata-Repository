@@ -4,7 +4,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [commons-io "2.18.0"] ;; used by migration

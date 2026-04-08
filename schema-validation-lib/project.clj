@@ -5,7 +5,7 @@
             [lein-shell "0.5.0"]]
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
                  [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]

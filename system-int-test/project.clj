@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.6"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
