@@ -13,7 +13,7 @@
                  [commons-io "2.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 ;[org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure]
 
                  ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
