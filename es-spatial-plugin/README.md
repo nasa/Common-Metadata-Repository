@@ -69,13 +69,27 @@ Then I decided on a set of jar files that I knew I needed and went into my perso
 libraries into my zip8.15 directory. My maven repository is located in my home directory under a directory called .m2
 
 The set of jar files that I ended up with are:
-clojure-utils-0.6.1.jar			core.matrix-0.54.0.jar			jackson-dataformat-cbor-2.13.3.jar
-math.combinatorics-0.1.4.jar		randomz-0.3.0.jar			assertions-0.2.0.jar
-cmr-common-lib-0.1.1-SNAPSHOT.jar	edn-java-0.4.4.jar			jackson-dataformat-smile-2.13.3.jar
-mathz-0.3.0.jar				spec.alpha-0.3.218.jar			cheshire-5.12.0.jar
-cmr-es-spatial-plugin-0.1.0-SNAPSHOT.jar jafama-2.3.1.jar			plugin-descriptor.properties
-vectorz-0.44.0.jar			clojure-1.11.2.jar			cmr-spatial-lib-0.1.0-SNAPSHOT.jar
-jackson-core-2.13.3.jar			joda-time-2.8.1.jar			primitive-math-0.1.4.jar
+clojure-utils-0.6.1.jar
+core.matrix-0.54.0.jar
+jackson-dataformat-cbor-2.13.3.jar
+math.combinatorics-0.1.4.jar
+randomz-0.3.0.jar
+assertions-0.2.0.jar
+cmr-common-lib-0.1.1-SNAPSHOT.jar
+edn-java-0.4.4.jar
+jackson-dataformat-smile-2.13.3.jar
+mathz-0.3.0.jar
+spec.alpha-0.3.218.jar
+cheshire-5.12.0.jar
+cmr-es-spatial-plugin-0.1.0-SNAPSHOT.jar
+jafama-2.3.1.jar
+plugin-descriptor.properties
+vectorz-0.44.0.jar
+clojure-1.11.2.jar
+cmr-spatial-lib-0.1.0-SNAPSHOT.jar
+jackson-core-2.13.3.jar
+joda-time-2.8.1.jar
+primitive-math-0.1.4.jar
 vectorz-clj-0.28.0.jar
  
 The way that I figured out the above jars is the following:
@@ -121,10 +135,10 @@ networks:
 9) Note that you don't need the kibana section - as it just creates more junk in the logs to have to look at, so it is commented out.
    I included here so that others may see how to bring up both if they need it sometime in the future.
 
-10) Open up another termial window to the same directory.  In this new termainal and in the same directory where docker-compose.yml exists run the command: 
+10) Open up another terminal window to the same directory.  In this new terminal and in the same directory where docker-compose.yml exists run the command: 
    docker compose up
 
-   This will load up the elastic search 8.15.5 image from the web and store it in your docker image. Then will will start up elastic search 8.15.5.
+   This will load up the elastic search 8.15.5 image from the web and store it in your docker image. Then will start up elastic search 8.15.5.
    It will also create a new directory called esdata in your directory. This is where elastic search will store its data so that the data is retained
    after elastic search is stopped and restarted. This window will also print the elastic search logs. 
 

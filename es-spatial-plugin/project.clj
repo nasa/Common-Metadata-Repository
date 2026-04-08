@@ -23,7 +23,7 @@
 (def es-deps-target-path
   "es-deps")
 
-(def elastic-version "7.17.25")
+(def elastic-version "8.15.5")
 
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
@@ -35,14 +35,16 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                        :exclusions [
+                                                     ;[com.fasterxml.jackson.core/jackson-core]
+                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                        :exclusions [
+                                                     ;[com.fasterxml.jackson.core/jackson-core]
+                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch ~elastic-version]
                                        [org.clojure/tools.reader "1.3.2"]
