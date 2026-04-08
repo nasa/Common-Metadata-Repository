@@ -8,7 +8,7 @@ services:
       - redis-network
   elasticsearch:
     container_name: cmr-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.5
     ports: 
       - 9210:9200
       - 9300:9300
@@ -30,7 +30,7 @@ services:
     container_name: cmr-kibana
     depends_on: 
       - elasticsearch
-    image: docker.elastic.co/kibana/kibana:7.17.14
+    image: docker.elastic.co/kibana/kibana:8.15.5
     ports:
       - 5601:5601
     networks:
