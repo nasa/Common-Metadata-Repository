@@ -39,7 +39,7 @@ This plugin is meant to be generated separately and installed to your external e
 Here are the instructions on how to create the zip and install on your remote ES:
 
 - Step 1: Generate the ZIP File
-  - Check your java version, we are using Java 17 to build this plugin. 
+  - Check your java version, we are using Java 17 to build this plugin.
     - The java version you build the plugin with should match java.version in the es-spatial-plugin/resources/plugin/plugin-descriptor.properties file
   - Open your terminal, navigate to the spatial plugin directory, and run the packaging alias:
     - `cd es-spatial-plugin`
@@ -107,7 +107,7 @@ services:
           - elasticsearch
   kibana:
     container_name: cmr-gran-kibana
-    depends_on: 
+    depends_on:
       - elasticsearch
     image: docker.elastic.co/kibana/kibana:8.19.14
     ports:
@@ -146,7 +146,7 @@ services:
           - elasticsearch
   kibana:
     container_name: cmr-kibana
-    depends_on: 
+    depends_on:
       - elasticsearch
     image: docker.elastic.co/kibana/kibana:8.19.14
     ports:
