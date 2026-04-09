@@ -32,7 +32,7 @@
   timer to keep the cache fresh. The providers data coming from the database or if they are passed in looks like:
   '({:provider-id \"PROV1\" :short-name \"PROV1\" :cmr-only false :small false :consortiums \"EOSDIS GEOSS\"}
     {:provider-id \"PROV2\" :short-name \"PROV2\" :cmr-only false :small false :consortiums \"EOSDIS GEOSS\"})
-   The provider map going into the set-values funtion looks like the following:
+   The provider map going into the set-values function looks like the following:
    {\"PROV1\" {:provider-id \"PROV1\" :short-name \"PROV1\" :cmr-only false :small false :consortiums \"EOSDIS GEOSS\"}
     \"PROV2\" {:provider-id \"PROV2\" :short-name \"PROV2\" :cmr-only false :small false :consortiums \"EOSDIS GEOSS\"}}"
   ([context]

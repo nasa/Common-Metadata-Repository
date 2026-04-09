@@ -19,10 +19,12 @@
   (let [full-project
         (merge default-project-keyword-values
                (kms-lookup/lookup-by-short-name context :projects short-name))
-        {:keys [short-name long-name uuid]
+        {:keys [bucket short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-project]
-    {:short-name short-name
+    {:bucket bucket
+     :bucket-lowercase (when bucket (string/lower-case bucket))
+     :short-name short-name
      :short-name-lowercase (string/lower-case short-name)
      :long-name long-name
      :long-name-lowercase (string/lower-case long-name)

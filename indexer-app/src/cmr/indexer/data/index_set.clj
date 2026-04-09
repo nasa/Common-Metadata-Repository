@@ -230,6 +230,18 @@
    :uuid m/string-field-mapping
    :uuid-lowercase m/string-field-mapping})
 
+(declare project-hierarchical-mapping)
+(defnestedmapping project-hierarchical-mapping
+  "Defines hierarchical mappings for projects."
+  {:bucket m/string-field-mapping
+   :bucket-lowercase m/string-field-mapping
+   :short-name m/string-field-mapping
+   :short-name-lowercase m/string-field-mapping
+   :long-name m/string-field-mapping
+   :long-name-lowercase m/string-field-mapping
+   :uuid m/string-field-mapping
+   :uuid-lowercase m/string-field-mapping})
+
 (declare instrument-hierarchical-mapping)
 (defnestedmapping instrument-hierarchical-mapping
   "Defines hierarchical mappings for instruments."
@@ -497,6 +509,7 @@
           :platforms2-humanized platform2-hierarchical-mapping
 
           :instruments instrument-hierarchical-mapping
+          :projects project-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
           :location-keywords location-keywords-hierarchical-mapping
           ;; Contains all four types of data centers combined - archive,

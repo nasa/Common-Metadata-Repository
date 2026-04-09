@@ -418,6 +418,7 @@
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
             :instruments instruments-nested
+            :projects projects-nested
             :archive-centers archive-centers
             :data-centers data-centers
             :temporals temporal-extents

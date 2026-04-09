@@ -66,7 +66,7 @@
    :platforms :nested-condition ;; used for v2 facet apply
    :instrument :nested-condition
    :sensor :string
-   :project :string
+   :project :nested-condition
    :archive-center :nested-condition
    :data-center :nested-condition
    :spatial-keyword :string
