@@ -75,12 +75,21 @@
        ;; modifier below is to limit local embedded elastic container memory, so it will not exit from OOM.
        (.withCreateContainerCmdModifier cmd-consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
+       ;; version 8.15 auto enables TLS/SSL for the HTTP layer, we will disable this for local dev env
+       (.withEnv "xpack.security.enabled" "false")
+       (.withEnv "xpack.security.http.ssl.enabled" "false")
        (.withEnv "node.name" "embedded-elastic")
+       ;;; Disables the automatic generation of passwords and tokens
+       ;(.withEnv "xpack.security.autoconfiguration.enabled" "false")
+       ;;; Prevents the node from waiting for an enrollment token to join a cluster
+       ;(.withEnv "xpack.security.enrollment.enabled" "false")
+       ;;; Ensures the node treats itself as a standalone cluster immediately
+       ;(.withEnv "discovery.type" "single-node")
        (.withNetwork network)
        (.withNetworkAliases (into-array String ["elasticsearch"]))
        (.withFixedExposedPort (int http-port) 9200)
        (.waitingFor
-        (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
+        (Wait/forLogMessage ".*\"message\":\"started.*" 1))
        (.withStartupTimeout (Duration/ofSeconds 240)))
      {:elasticsearch container
       :kibana kibana})))
@@ -94,21 +103,25 @@
 
   (start
     [this _system]
-    (debug "Starting elastic server on port" http-port)
+    (println "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
+        (println "starting node")
         (.start node)
+        (println "node started")
         (when kibana
-          (debug "Starting kibana server on port" (:kibana-port opts))
+          (println "Starting kibana server on port" (:kibana-port opts))
           (.start kibana))
+        (println "kibana started")
         (assoc this :containers containers)
+        (println "associated containers finished")
         (catch Exception e
-          (error "Container(s) failed to start.")
-          (debug "Dumping elasticsearch logs:\n" (.getLogs node))
+          (error "Container(s) failed to start with exception: " e)
+          (println "Dumping elasticsearch logs:\n" (.getLogs node))
           (when kibana
-            (debug "Dumping kibana logs:\n" (.getLogs kibana)))
+            (println "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this _system]

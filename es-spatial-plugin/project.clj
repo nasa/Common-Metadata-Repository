@@ -31,7 +31,6 @@
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :plugins [[lein-shell "0.5.0"]]
-  :uberjar-exclusions [#"(?i)^org/apache/commons/io/.*"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
@@ -86,6 +85,7 @@
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
+                       :uberjar-exclusions [#"(?i)^org/apache/commons/io/.*"]
                        :jar-name ~es-deps-jar-name
                        :aot []}
              :es-plugin {:aot [cmr.elasticsearch.plugins.spatial.script.core
