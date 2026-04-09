@@ -306,6 +306,20 @@
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
+(defmethod q2e/field->wildcard-field-mappings :granule
+  [_]
+  {:granule-ur "granule-ur-wildcard"
+   :readable-granule-name "readable-granule-name-wildcard"
+   :producer-gran-id "producer-granule-id-wildcard"
+   :producer-granule-id "producer-granule-id-wildcard"})
+
+(defmethod q2e/field->lowercase-wildcard-field-mappings :granule
+  [_]
+  {:granule-ur "granule-ur-lowercase-wildcard"
+   :readable-granule-name "readable-granule-name-lowercase-wildcard"
+   :producer-gran-id "producer-granule-id-lowercase-wildcard"
+   :producer-granule-id "producer-granule-id-lowercase-wildcard"})
+
 (defn- keywords-in-query
   "Returns a list of keywords if the query contains a keyword condition or nil if not.
   Used to set sort and use function score for keyword queries."

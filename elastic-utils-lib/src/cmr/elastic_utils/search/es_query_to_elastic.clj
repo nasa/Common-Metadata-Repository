@@ -145,6 +145,40 @@
   (get (field->lowercase-field-mappings concept-type) (keyword field)
        (str (name field) "-lowercase")))
 
+(defmulti field->wildcard-field-mappings
+  "Mapping of query model field names to Elasticsearch wildcard field names."
+  (fn [concept-type]
+    concept-type))
+
+(defmethod field->wildcard-field-mappings :default
+  [_]
+  ;; No wildcard field mappings specified by default
+  {})
+
+(defn field->wildcard-field
+  "Maps a field name to the name of the wildcard field to use within elastic.
+  If a mapping is not present it defaults to the regular elastic field."
+  [concept-type field]
+  (get (field->wildcard-field-mappings concept-type) (keyword field)
+       (query-field->elastic-field field concept-type)))
+
+(defmulti field->lowercase-wildcard-field-mappings
+  "Mapping of query model field names to Elasticsearch lowercase wildcard field names."
+  (fn [concept-type]
+    concept-type))
+
+(defmethod field->lowercase-wildcard-field-mappings :default
+  [_]
+  ;; No lowercase wildcard field mappings specified by default
+  {})
+
+(defn field->lowercase-wildcard-field
+  "Maps a field name to the name of the lowercase wildcard field to use within elastic.
+  If a mapping is not present it defaults to the lowercase field for the field."
+  [concept-type field]
+  (get (field->lowercase-wildcard-field-mappings concept-type) (keyword field)
+       (field->lowercase-field concept-type field)))
+
 (defn- range-condition->elastic
   "Convert a range condition to an elastic search condition. Execution
   should either by 'fielddata' or 'index'."
@@ -206,9 +240,11 @@
   cmr.common.services.search.query_model.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
-    (let [field (if case-sensitive?
-                  (query-field->elastic-field field concept-type)
-                  (field->lowercase-field concept-type field))
+    (let [field (cond
+                  (and pattern? case-sensitive?) (field->wildcard-field concept-type field)
+                  pattern? (field->lowercase-wildcard-field concept-type field)
+                  case-sensitive? (query-field->elastic-field field concept-type)
+                  :else (field->lowercase-field concept-type field))
           value (if case-sensitive? value (string/lower-case value))]
       (if pattern?
         {:wildcard {field value}}
