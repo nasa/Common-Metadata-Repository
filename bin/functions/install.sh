@@ -68,7 +68,7 @@ function install_local_spatial_plugin () {
   mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
 
   printf "\nBuilding ES spatial plugin and dependencies...\n"
-  (cd $CMR_DIR/es-spatial-plugin && lein install-es-deps)
+  (cd $CMR_DIR/es-spatial-plugin && lein package-es-plugin)
 
   # Copy the 'deps' standalone JAR as the primary plugin JAR
   # This JAR already contains the plugin classes due to AOT compilation
