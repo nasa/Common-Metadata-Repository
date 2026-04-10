@@ -13,10 +13,10 @@
 
 (defn -getScriptEngine
   "Spatial script engine."
-  [_this ^Settings _settings ^Collection _contexts]
+  [_this ^org.elasticsearch.common.settings.Settings _settings ^java.util.Collection _contexts]
   (new SpatialScriptEngine))
 
 (defn -getContexts
   "Return script contexts."
   [_this]
-  (Collections/emptyList))
+  (java.util.Collections/emptyList))

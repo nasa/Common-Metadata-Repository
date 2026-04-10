@@ -79,8 +79,8 @@
        (.withEnv "xpack.security.enabled" "false")
        (.withEnv "xpack.security.http.ssl.enabled" "false")
        (.withEnv "node.name" "embedded-elastic")
-       ;;; Disables the automatic generation of passwords and tokens
-       ;(.withEnv "xpack.security.autoconfiguration.enabled" "false")
+       ;; Disables the automatic generation of passwords and tokens
+       (.withEnv "xpack.security.autoconfiguration.enabled" "false")
        ;;; Prevents the node from waiting for an enrollment token to join a cluster
        ;(.withEnv "xpack.security.enrollment.enabled" "false")
        ;;; Ensures the node treats itself as a standalone cluster immediately
