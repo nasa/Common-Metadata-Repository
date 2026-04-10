@@ -6,6 +6,8 @@
    (java.util Map)
    (org.apache.logging.log4j LogManager)
    (org.apache.lucene.index LeafReaderContext)
+   (org.elasticsearch.script DocReader
+                                    LeafReaderContextSupplier)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup
                                     LeafStoredFieldsLookup
@@ -17,10 +19,10 @@
    :constructors {[java.lang.Object
                    java.util.Map
                    org.elasticsearch.search.lookup.SearchLookup
-                   org.apache.lucene.index.LeafReaderContext]
+                   org.elasticsearch.script.DocReader]
                   [java.util.Map
                    org.elasticsearch.search.lookup.SearchLookup
-                   org.apache.lucene.index.LeafReaderContext]}
+                   org.elasticsearch.script.DocReader]}
    :methods [[getFields [] org.elasticsearch.search.lookup.LeafStoredFieldsLookup]
              [getDoc [] org.elasticsearch.search.lookup.LeafDocLookup]]
    :init init
@@ -76,9 +78,11 @@
   [^SpatialScript this doc-id]
   (-> this .data :search-lookup (.setDocument doc-id)))
 
-(defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^LeafReaderContext context]
-  [[params lookup context] {:intersects-fn intersects-fn
-                             :search-lookup (.getLeafSearchLookup lookup context)}])
+(defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^DocReader doc-reader]
+  (let [context (when (instance? LeafReaderContextSupplier doc-reader)
+                  (.getLeafReaderContext ^LeafReaderContextSupplier doc-reader))]
+    [[params lookup doc-reader] {:intersects-fn intersects-fn
+                                 :search-lookup (.getLeafSearchLookup lookup context)}]))
 
 (defn -execute [^SpatialScript this]
   (doc-intersects? (.getFields this)
