@@ -21,7 +21,8 @@
                   [java.util.Map
                    org.elasticsearch.search.lookup.SearchLookup
                    org.apache.lucene.index.LeafReaderContext]}
-   :methods [[getFields [] org.elasticsearch.search.lookup.LeafStoredFieldsLookup]]
+   :methods [[getFields [] org.elasticsearch.search.lookup.LeafStoredFieldsLookup]
+             [getDoc [] org.elasticsearch.search.lookup.LeafDocLookup]]
    :init init
    :state data))
 
@@ -31,7 +32,7 @@
 
 (defn- get-from-fields
   [^LeafStoredFieldsLookup lookup key]
-  (when (and lookup key (.containsKey lookup key))
+  (when (and lookup key)
     (when-let [^FieldLookup field-lookup (.get lookup key)]
       (seq (.getValues field-lookup)))))
 
@@ -64,11 +65,11 @@
 
 (defn ^LeafStoredFieldsLookup -getFields
   [^SpatialScript this]
-  (-> this .data :search-lookup .fields))
+  (-> this .data :search-lookup (.fields)))
 
-(defn ^Map -getDoc
+(defn ^LeafDocLookup -getDoc
   [^SpatialScript this]
-  (-> this .data :search-lookup .doc))
+  (-> this .data :search-lookup (.doc)))
 
 ;; Need to override setDocument for more control over lookup
 (defn -setDocument
