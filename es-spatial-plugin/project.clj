@@ -64,13 +64,9 @@
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
-                                                    [com.fasterxml.jackson.core/jackson-core]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
                                                     [commons-codec]
                                                     [commons-logging]
-                                                    [joda-time]
                                                     [org.ow2.asm/asm]
                                                     [org.ow2.asm/asm-all]
                                                     ;; Both lz4 libraries are linked together. yawk
@@ -87,7 +83,11 @@
                        :uberjar-name ~es-deps-uberjar-name
                        :uberjar-exclusions [#"(?i)^org/apache/commons/io/.*"]
                        :jar-name ~es-deps-jar-name
-                       :aot []}
+                       :aot [cmr.elasticsearch.plugins.spatial.script.core
+                             cmr.elasticsearch.plugins.spatial.factory.lfactory
+                             cmr.elasticsearch.plugins.spatial.factory.core
+                             cmr.elasticsearch.plugins.spatial.engine.core
+                             cmr.elasticsearch.plugins.spatial.plugin]}
              :es-plugin {:aot [cmr.elasticsearch.plugins.spatial.script.core
                                cmr.elasticsearch.plugins.spatial.factory.lfactory
                                cmr.elasticsearch.plugins.spatial.factory.core

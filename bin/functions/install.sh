@@ -63,24 +63,21 @@ function install_jars_docs () {
 }
 
 function install_local_spatial_plugin () {
-  # Install deps
-  mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/es_libs/
-
-  printf "\naction install-es-deps\n"
-  (cd $CMR_DIR/es-spatial-plugin && \
-  lein install-es-deps && \
-  cp es-deps/cmr-es-spatial-plugin-deps-0.1.0-SNAPSHOT-standalone.jar $CMR_DIR/dev-system/resources/elasticsearch/es_libs/)
-
-  # Install plugin
+  # Clean and create plugin directory
   rm -rf $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
   mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
 
-  printf "\naction package-es-plugin\n"
-  (cd $CMR_DIR/es-spatial-plugin && \
-  lein package-es-plugin && \
-  cp target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ && \
-  cd $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ &&
-  unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
+  printf "\nBuilding ES spatial plugin and dependencies...\n"
+  (cd $CMR_DIR/es-spatial-plugin && lein install-es-deps)
+
+  # Copy the 'deps' standalone JAR as the primary plugin JAR
+  # This JAR already contains the plugin classes due to AOT compilation
+  cp $CMR_DIR/es-spatial-plugin/es-deps/cmr-es-spatial-plugin-deps-0.1.0-SNAPSHOT-standalone.jar \
+     $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/cmr-es-spatial-plugin.jar
+
+  # Copy the plugin descriptor
+  cp $CMR_DIR/es-spatial-plugin/resources/plugin/plugin-descriptor.properties \
+     $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/
 }
 
 function install_orbits_gems () {
