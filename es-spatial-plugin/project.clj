@@ -122,13 +122,13 @@
                                  "with-profile" "es-plugin,provided" "clean,"
                                  "with-profile" "es-plugin,provided" "uberjar,"]
             "package-es-plugin" ["do"
-                                 "install-es-plugin"
+                                 "install-es-deps"
                                  ["shell" "echo" "pack-es-deps"]
                                  "shell"
                                  "zip"
                                  "-j"
                                  ~plugin-zip-name
-                                 ~uberjar-name
+                                 ~(str es-deps-target-path "/" es-deps-uberjar-name)
                                  "resources/plugin/plugin-descriptor.properties"]
             "build-all" ["do"
                          ["shell" "echo" "build-all"]
