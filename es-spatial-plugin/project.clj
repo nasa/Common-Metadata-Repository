@@ -23,7 +23,7 @@
 (def es-deps-target-path
   "es-deps")
 
-(def elastic-version "8.15.5")
+(def elastic-version "8.19.14")
 
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."

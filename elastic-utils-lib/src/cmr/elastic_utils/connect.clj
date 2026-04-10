@@ -35,7 +35,9 @@
                                    :timeout 120})
                       :retry-handler retry-handler
                       :socket-timeout ELASTIC_CONNECTION_TIMOUT
-                      :conn-timeout ELASTIC_CONNECTION_TIMOUT}]
+                      :conn-timeout ELASTIC_CONNECTION_TIMOUT
+                      :headers {"Accept" "application/vnd.elasticsearch+json; compatible-with=8"
+                                "Content-Type" "application/vnd.elasticsearch+json; compatible-with=8"}}]
 
     (info (format "Connecting to single ES on %s %d using retry-handler %s"
                   host port retry-handler))
