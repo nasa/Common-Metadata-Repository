@@ -6,7 +6,7 @@
     [cmr.indexer.data.concepts.collection.distributed-format-util :as util]))
 
 (deftest replace-comma-space-and-with-comma-space-test
-  "Test the replacement of ', and' with ', ' both with correct and not correct data."
+  ;; Test the replacement of ', and' with ', ' both with correct and not correct data.
 
   (are3 [expected-result test-string]
     (is (= expected-result

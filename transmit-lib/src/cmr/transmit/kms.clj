@@ -9,7 +9,7 @@
   enforces uniqueness we will track any duplicate short names so thaqt we can make GCMD aware and
   they fix the entries.
 
-  We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
+  We utilize the clojure.data.csv library to handle parsing the CSV files. Example KMS keyword files
   can be found in dev-system/resources/kms_examples."
 
   ;; NOTE: while investigating the 'lazy load' KMS cache code :spatial-keywords-old was discovered

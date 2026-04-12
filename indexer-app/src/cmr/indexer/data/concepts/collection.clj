@@ -214,8 +214,6 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (tap> collection)
-  (println "the collection-record" collection)
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format tag-associations
                 variable-associations service-associations tool-associations generic-associations]} concept
