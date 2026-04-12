@@ -2,7 +2,6 @@
   "Integration test for CMR collection search by campaign terms"
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
@@ -65,38 +64,35 @@
     (is (d/refs-match? [coll3 coll4 coll5 coll6]
                        (search/find-refs :collection {:campaign "E*", "options[campaign][pattern]" "true"}))))))
 
-;; (deftest search-by-campaign-aql
-;;   (testing "search campaign by AQL."
-;;   (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
-;;     (are [items campaigns options]
-;;          (let [condition (merge {:CampaignShortName campaigns} options)]
-;;            (d/refs-match? items
-;;                           (search/find-refs-with-aql :collection [condition])))
-;;       [coll3 coll4 coll6] "ESI" {}
-;;     ;;   [coll5 coll6] "EVI" {}
-;;     ;;   [coll5 coll6] "EPI" {}
-;;     ;;   [coll4] "Esi" {}
-;;     ;;   [] "BLAH" {}
+(deftest search-by-campaign-aql
+  (testing "search campaign by AQL."
+  (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
+    (are [items campaigns options]
+         (let [condition (merge {:CampaignShortName campaigns} options)]
+           (d/refs-match? items
+                          (search/find-refs-with-aql :collection [condition])))
+      [coll3 coll4 coll6] "ESI" {}
+      [coll5 coll6] "EVI" {}
+      [coll5 coll6] "EPI" {}
+      [coll4] "Esi" {}
+      [] "BLAH" {}
 
-;;     ;;   ;; Multiple values
-;;     ;;   [coll3 coll4 coll5 coll6] ["ESI" "EVI"] {}
+      ;; Multiple values
+      [coll3 coll4 coll5 coll6] ["ESI" "EVI"] {}
 
-;;     ;;   ;; Wildcards
-;;     ;;   [coll3 coll4 coll5 coll6] "E%" {:pattern true}
-;;     ;;   [] "E%" {:pattern false}
-;;     ;;   [] "E%" {}
-;;     ;;   [coll3 coll4 coll5 coll6] "%I" {:pattern true}
-;;     ;;   [coll5 coll6] "EP_" {:pattern true}
-;;     ;;   [coll3 coll4 coll5 coll6] "E_%" {:pattern true}
-;;     ;;   [] "%Q%" {:pattern true}
+      ;; Wildcards
+      [coll3 coll4 coll5 coll6] "E%" {:pattern true}
+      [] "E%" {:pattern false}
+      [] "E%" {}
+      [coll3 coll4 coll5 coll6] "%I" {:pattern true}
+      [coll5 coll6] "EP_" {:pattern true}
+      [coll3 coll4 coll5 coll6] "E_%" {:pattern true}
+      [] "%Q%" {:pattern true}
 
-;;     ;;   ;; Ignore case
-;;     ;;   [] "epi" {}
-;;     ;;   [coll5 coll6] "epi" {:ignore-case true}
-;;     ;;   [] "epi" {:ignore-case false}
-;;       )
-;;       )
-;;       ))
+      ;; Ignore case
+      [] "epi" {}
+      [coll5 coll6] "epi" {:ignore-case true}
+      [] "epi" {:ignore-case false}))))
       
 (deftest search-by-campaign-json
   (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
