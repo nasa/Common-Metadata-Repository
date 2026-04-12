@@ -116,7 +116,7 @@
   (if predicate
     (assoc-in collection keys nil)
     collection))
-;; Do we need the uuid values for the processing levels here?
+
 (defn- sanitize-processing-level-ids
   "Sanitize Processing Level Ids if and only if the values are default"
   [collection]

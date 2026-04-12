@@ -30,11 +30,3 @@
      :long-name-lowercase (string/lower-case long-name)
      :uuid uuid
      :uuid-lowercase (when uuid (string/lower-case uuid))}))
-
-
-(comment 
-(kms-lookup/lookup-by-short-name c1 :instruments "HARP2")
-
-
-  :rcf)
-

@@ -413,11 +413,3 @@
       (if (string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)
         (throw e)))))
-
-
-
-(comment
-  (lookup-by-short-name c1 :instruments "HARP2")
-  
-  :rcf)
-
