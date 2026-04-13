@@ -18,6 +18,9 @@
 (def string-field-mapping
   {:type "keyword"})
 
+(def wildcard-field-mapping
+  {:type "wildcard"})
+
 (def search-as-you-type-field-mapping
   {:type "search_as_you_type"})
 

@@ -4,6 +4,7 @@
  :end-coordinate-1 {:type "double"}
  :mbr-crosses-antimeridian {:type "boolean"}
  :granule-ur {:type "keyword"}
+ :granule-ur-wildcard {:type "wildcard"}
  :revision-id {:type "integer"}
  :orbit-end-clat-doc-values {:type "double", :doc_values true}
  :end-direction {:type "keyword"}
@@ -55,6 +56,8 @@
  :production-date {:type "date", :doc_values true}
  :entry-title-lowercase {:type "keyword"}
  :producer-gran-id-lowercase {:type "keyword", :doc_values true}
+ :producer-granule-id-wildcard {:type "wildcard"}
+ :producer-granule-id-lowercase-wildcard {:type "wildcard"}
  :orbit-asc-crossing-lon {:type "double"}
  :mbr-south {:type "float"}
  :feature-id {:type "keyword"}
@@ -82,6 +85,7 @@
  :size {:type "double"}
  :orbit-end-clat {:type "double"}
  :granule-ur-lowercase {:type "keyword", :doc_values true}
+ :granule-ur-lowercase-wildcard {:type "wildcard"}
  :project-refs {:type "keyword"}
  :mbr-east-doc-values {:type "float", :doc_values true}
  :lr-east-doc-values {:type "float", :doc_values true}
