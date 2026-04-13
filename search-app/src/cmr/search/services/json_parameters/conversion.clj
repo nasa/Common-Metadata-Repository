@@ -219,7 +219,8 @@
   (validate-nested-condition condition-name value)
   (let [elastic-field-name (-> condition-name
                                (inf/plural)
-                               (q2e/query-field->elastic-field concept-type))]
+                               (q2e/query-field->elastic-field concept-type)
+                               (keyword))]
     (nf/parse-nested-condition elastic-field-name
                                value
                                (case-sensitive-field? concept-type condition-name value)

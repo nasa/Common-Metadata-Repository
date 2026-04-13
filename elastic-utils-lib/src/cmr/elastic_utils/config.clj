@@ -103,6 +103,14 @@
   {:type Boolean
    :default false})
 
+(defconfig enable-wildcard-field-searches
+  "When true, pattern searches (wildcards) will use dedicated Elasticsearch
+   wildcard-type fields for improved performance. When false, pattern searches
+   will use the standard keyword fields. This should be enabled only after all
+   indices have been reindexed to populate the wildcard fields."
+  {:default false
+   :type Boolean})
+
 (defn gran-elastic-config
   "Returns the elastic config as a map"
   []

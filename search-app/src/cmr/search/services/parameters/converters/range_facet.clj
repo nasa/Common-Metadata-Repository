@@ -107,7 +107,7 @@
   "Convert the passed in range facet parameter string to a nested elastic search query."
   [concept-type param param-str]
   (validate-range-facet-str param-str)
-  (let [parent-field (q2e/query-field->elastic-field param concept-type)
+  (let [parent-field (keyword (q2e/query-field->elastic-field param concept-type))
         value-field (keyword (str (name parent-field) ".value"))
         values (parse-range param-str)
         min-value (get values 0)
