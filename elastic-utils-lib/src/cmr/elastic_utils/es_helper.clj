@@ -8,27 +8,50 @@
    [clojurewerkz.elastisch.rest.document :as doc]
    [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.log :refer [info]]
+   [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as t-config]))
 
 (defn search
-  "Performs a search query across one or more indexes and one or more mapping types"
+  "Performs a search query across one or more indexes"
   [conn index _mapping-type opts]
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))
-        body (apply dissoc (concat [opts] qk))]
-    (rest/post conn (rest/search-url conn (join-names index))
-               {:content-type :json
-                :body body
-                :query-params qp})))
+        body (apply dissoc opts qk)
+        url (format "%s/%s/_search" (:uri conn) (join-names index))]
+    (let [response (http/post url
+                              (merge (.http-opts conn)
+                                     {:content-type :json
+                                      :body (json/generate-string body)
+                                      :query-params qp
+                                      :accept :json
+                                      :throw-exceptions false}))
+          status (:status response)
+          parsed-body (rest/parse-safely (:body response))]
+      (if (some #{status} [200 201])
+        parsed-body
+        (errors/internal-error! (str "Search failed with status " status " and body " (:body response)))))))
 
 (defn count-query
-  "Performs a count query over one or more indexes and types"
-  [conn index mapping-type query]
-  (doc/count conn index mapping-type query))
+  "Performs a count query over one or more indexes"
+  [conn index _mapping-type query]
+  (let [url (format "%s/%s/_count" (:uri conn) (join-names index))
+        body (if (get query :query)
+               query
+               {:query query})]
+    (let [response (http/post url
+                              (merge (.http-opts conn)
+                                     {:content-type :json
+                                      :body (json/generate-string body)
+                                      :accept :json
+                                      :throw-exceptions false}))
+          status (:status response)
+          parsed-body (rest/parse-safely (:body response))]
+      (if (some #{status} [200 201])
+        parsed-body
+        (errors/internal-error! (str "Count failed with status " status " and body " (:body response)))))))
 
 (defn scroll
   "Performs a scroll query, fetching the next page of results from a query given a scroll id"
@@ -94,28 +117,17 @@
   (rest/delete conn
                (rest/url-with-path conn index)))
 
-(defn ^:private bulk-with-url
-  "Construct the bulk URL and form body to specification provided by:
-  https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-  and perform post."
-  ([conn url operations]
-   (bulk-with-url conn url operations nil))
-  ([conn url operations opts]
-   (let [bulk-json (map json/encode operations)
-         bulk-json (-> bulk-json
-                       (interleave (repeat "\n"))
-                       (string/join))]
-     (rest/post-string conn url
-                       {:body bulk-json
-                        :content-type "application/x-ndjson"
-                        :query-params opts}))))
-
 (defn bulk
   "Performs a bulk operation"
   ([conn operations] (bulk conn operations nil))
   ([conn operations params]
    (when (not-empty operations)
-     (bulk-with-url conn (rest/bulk-url conn) operations params))))
+     (rest/post-string conn (rest/bulk-url conn)
+                       {:body (-> (map json/encode operations)
+                                  (interleave (repeat "\n"))
+                                  (string/join))
+                        :content-type "application/x-ndjson"
+                        :query-params params}))))
 
 (defn clear-scroll
   "Performs a clear scroll call for the given scroll id"
