@@ -18,7 +18,7 @@ schemes_to_import="mimetype dataformat idnnode instruments isotopiccategory \
   locations measurementname platforms projects providers rucontenttype \
   sciencekeywords temporalresolutionrange"
 
-output_dir="dev-system/resources/kms_examples"
+output_dir="."
 
 env='prod'               # sit|uat|prod|<blank> are all possible values
 version=''           # DRAFT|<blank> are all possible values

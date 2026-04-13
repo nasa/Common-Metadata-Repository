@@ -23,7 +23,6 @@ profiles.clj
 dev-system/local.edn
 *pycache*
 .portal
-.clj-kondo
 
 ###############################
 ### Test Files
