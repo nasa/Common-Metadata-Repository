@@ -1,10 +1,12 @@
 (ns cmr.elastic-utils.es-index-helper
   "Defines helper functions for invoking ES index"
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
+   [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as config])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
@@ -22,24 +24,37 @@
 (defn update-mapping
   "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."
   [conn index-name-or-names _type-name opts]
-  (let [{:keys [mapping]} opts]
-    (rest/put conn
-              (rest/index-mapping-url conn (join-names index-name-or-names))
-              {:content-type :json
-               :body mapping
-               :query-params (dissoc opts :mapping)
-               :throw-exceptions true})))
+  (let [{:keys [mapping]} opts
+        url (format "%s/%s/_mapping" (:uri conn) (join-names index-name-or-names))]
+    (let [response (client/put url
+                               (merge (.http-opts conn)
+                                      {:content-type :json
+                                       :body (json/generate-string mapping)
+                                       :query-params (dissoc opts :mapping)
+                                       :accept :json
+                                       :throw-exceptions false}))
+          status (:status response)]
+      (if (some #{status} [200 201])
+        (rest/parse-safely (:body response))
+        (errors/internal-error! (str "Update mapping failed with status " status " and body " (:body response)))))))
 
 (defn create
   "Create an index"
   [conn index-name opts]
-  (let [{:keys [settings mappings]} opts]
-    (rest/put conn
-              (rest/index-url conn index-name)
-              {:content-type :json
-               :body (cond-> {:settings (or settings {})}
-                       mappings (assoc :mappings mappings))
-               :throw-exceptions true})))
+  (let [{:keys [settings mappings]} opts
+        url (format "%s/%s" (:uri conn) index-name)
+        body (cond-> {:settings (or settings {})}
+               mappings (assoc :mappings mappings))]
+    (let [response (client/put url
+                               (merge (.http-opts conn)
+                                      {:content-type :json
+                                       :body (json/generate-string body)
+                                       :accept :json
+                                       :throw-exceptions false}))
+          status (:status response)]
+      (if (some #{status} [200 201])
+        (rest/parse-safely (:body response))
+        (errors/internal-error! (str "Create index failed with status " status " and body " (:body response)))))))
 
 (defn refresh
   "Refresh an index"
