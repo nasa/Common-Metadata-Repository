@@ -228,8 +228,8 @@
           ;; Reindex the collections that were modified
           (->> updated-collections
                (meta-db/get-latest-concepts context)
-               ;; wrap it in a vector to make a batch to bulk index
-               vector
+               ;; wrap each concept in its own batch for bulk-index
+               (map vector)
                (index-service/bulk-index context es-config/elastic-name)))))
 
       ;; There's no existing value so a full refresh is required.
