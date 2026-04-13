@@ -163,7 +163,6 @@
                  [keyword-scheme maps-by-short-name]))
              (select-keys gcmd-keywords-map keywords-to-lookup-by-short-name))))
 
-;; TODO we could maybe remove this issue if we were to index keywords in the metadata itself
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
   Common key is :uuid which is a field in the location-keyword map. "

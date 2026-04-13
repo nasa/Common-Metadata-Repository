@@ -24,7 +24,6 @@ dev-system/local.edn
 *pycache*
 .portal
 .clj-kondo
-dev-system/resources/kms_examples/
 
 ###############################
 ### Test Files
