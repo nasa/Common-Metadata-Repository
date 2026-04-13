@@ -15,7 +15,6 @@
   that short-name from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
   use a dummy value to indicate the field was not present."
   [context short-name]
-  (def c1 context)
   (let [full-project
         (merge default-project-keyword-values
                (kms-lookup/lookup-by-short-name context :projects short-name))
