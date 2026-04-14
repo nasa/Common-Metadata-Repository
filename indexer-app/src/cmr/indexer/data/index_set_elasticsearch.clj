@@ -74,12 +74,18 @@
     (try
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
-        (doseq [[type-name type-mapping] mapping]
-          (let [response (esi-helper/update-mapping
-                          conn index-name (name type-name) {:mapping type-mapping})]
-            (when-not (= {:acknowledged true} response)
-              (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                           (pr-str response))))))
+        (let [;; Mappings in CMR can be {:collection {...}} or just {...}
+              ;; ES 8.x requires them to be typeless and wrapped in "properties"
+              mappings-to-update (if (some mapping [:collection :granule :tag :variable :service :tool :subscription :suggestion :deleted-granule])
+                                   (vals mapping)
+                                   [mapping])]
+          (doseq [m mappings-to-update]
+            (let [formatted-mapping (if (:properties m) m {:properties m})
+                  response (esi-helper/update-mapping
+                            conn index-name "_doc" {:mapping formatted-mapping})]
+              (when-not (= {:acknowledged true} response)
+                (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                             (pr-str response)))))))
         ;; The index does not exist. Create it.
         (do
           (info "Index" index-name "does not exist so it will be created")

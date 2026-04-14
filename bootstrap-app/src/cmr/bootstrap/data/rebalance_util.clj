@@ -57,8 +57,7 @@
   (let [indexer-context {:system (helper/get-indexer (:system context))}
         index-names (index-set/fetch-concept-type-index-names
                      indexer-context index-set/index-set-id)
-        small-coll-index (get-in index-names [:index-names :granule :small_collections])
-        granule-mapping-type-name (-> index-set/granule-mapping keys first name)]
+        small-coll-index (get-in index-names [:index-names :granule :small_collections])]
     (es-helper/delete-by-query
-     (indexer-util/context->conn indexer-context es-config/gran-elastic-name) small-coll-index granule-mapping-type-name
+     (indexer-util/context->conn indexer-context es-config/gran-elastic-name) small-coll-index "_doc"
      (es-query-for-collection-concept-id concept-id))))

@@ -312,7 +312,7 @@
   [system _ _ concept-ids]
   (let [query {:terms {:concept-id concept-ids}}
         indexer-context {:system (helper/get-indexer system)}]
-    (es-helper/delete-by-query (indexer-util/context->conn indexer-context es-config/gran-elastic-name) "_all" "granule" query)))
+    (es-helper/delete-by-query (indexer-util/context->conn indexer-context es-config/gran-elastic-name) "*" "_doc" query)))
 
 (defmethod delete-concepts-by-id :default
   [system provider-id concept-type concept-ids]
