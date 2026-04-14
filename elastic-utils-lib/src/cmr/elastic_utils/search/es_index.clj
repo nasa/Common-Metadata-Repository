@@ -229,17 +229,16 @@
            "The search shapefile points are too close together and have too much precision. Please
             reduce precision or simplify your shapefile."))
 
-        (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
-                       (re-find #"\"type\":\"parsing_exception\"" body))
-                   (re-find #"search_after" body))
-          (let [err-msg (-> (json/parse-string body true)
-                            (get-in [:error :root_cause])
-                            str)]
-            (errors/throw-service-error
-             :bad-request
-             (format
-              "The search failed with error: %s. Please double check your search_after header."
-              err-msg))))
+        (let [status (:status (ex-data e))]
+          (when (some #{status} [400 422])
+            (let [err-msg (or (get-in (json/parse-string body true) [:error :root_cause])
+                              (get-in (json/parse-string body true) [:error :reason])
+                              body)]
+              (errors/throw-service-error
+               :bad-request
+               (format
+                "The search failed with error: %s. Please double check your search_after header."
+                (str err-msg))))))
 
         (throw (ex-info "An unhandled exception occurred" {} e)))
       ;; for other errors, rethrow the exception

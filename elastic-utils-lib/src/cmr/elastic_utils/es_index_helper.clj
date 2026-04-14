@@ -36,7 +36,8 @@
           status (:status response)]
       (if (some #{status} [200 201])
         (rest/parse-safely (:body response))
-        (errors/internal-error! (str "Update mapping failed with status " status " and body " (:body response)))))))
+        (throw (ex-info (str "Update mapping failed with status " status)
+                        {:status status :body (:body response)}))))))
 
 (defn create
   "Create an index"
@@ -49,12 +50,14 @@
                                (merge (.http-opts conn)
                                       {:content-type :json
                                        :body (json/generate-string body)
+                                       :query-params (dissoc opts :mappings :settings)
                                        :accept :json
                                        :throw-exceptions false}))
           status (:status response)]
       (if (some #{status} [200 201])
         (rest/parse-safely (:body response))
-        (errors/internal-error! (str "Create index failed with status " status " and body " (:body response)))))))
+        (throw (ex-info (str "Create index failed with status " status)
+                        {:status status :body (:body response)}))))))
 
 (defn refresh
   "Refresh an index"

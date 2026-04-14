@@ -9,10 +9,12 @@
 (defn doc-present?
   "If doc is present return true, otherwise return false"
   [index-name doc-id elastic-name]
-  (let [response (client/get
-                   (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root elastic-name) index-name doc-id)
+  (let [response (client/post
+                   (format "%s/%s/_search" (url/elastic-root elastic-name) index-name)
                    {:throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
+                    :connection-manager (s/conn-mgr)
+                    :body (json/encode {:query {:term {:_id doc-id}}})
+                    :content-type :json})
         body (json/decode (:body response) true)]
     (and (= 1 (get-in body [:hits :total :value]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))

@@ -56,13 +56,18 @@
   [context-msg e]
   (let [status (get-in (ex-data e) [:status])
         body (cheshire/decode (get-in (ex-data e) [:body]) true)
-        error (format "context: %s, error: %s" context-msg (:error body))]
+        ;; Elasticsearch 8.x error structure is usually {:error {:reason "..." :type "..."}}
+        ;; Legacy elastisch was sometimes {:error "..."}
+        error-reason (or (get-in body [:error :reason])
+                         (:error body)
+                         "Unknown error")
+        full-error-msg (format "context: %s, error: %s" context-msg error-reason)]
     (condp = status
-      400 (errors/throw-service-error :bad-request error e)
-      404 (errors/throw-service-error :not-found error e)
-      409 (errors/throw-service-error :conflict error e)
-      422 (errors/throw-service-error :invalid-data error e)
-      (errors/internal-error! error e))))
+      400 (errors/throw-service-error :bad-request full-error-msg e)
+      404 (errors/throw-service-error :not-found full-error-msg e)
+      409 (errors/throw-service-error :conflict full-error-msg e)
+      422 (errors/throw-service-error :invalid-data full-error-msg e)
+      (errors/internal-error! full-error-msg e))))
 
 (defn index-delete-failure-msg
   [es-response]

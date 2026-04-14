@@ -72,4 +72,4 @@
   (testing "index confing wrong mapping types"
     (let [{:keys [status errors]} (util/create-index-set util/index-set-w-invalid-idx-prop)]
       (is (= 400 status))
-      (is (re-find #"Root mapping definition has unsupported parameters" (first errors))))))
+      (is (re-find #"The mapper type \[XXX\] declared on field \[concept-id\] does not exist" (first errors))))))
