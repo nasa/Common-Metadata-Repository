@@ -266,8 +266,10 @@
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
         _ (validate-scroll-deprecation headers params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
-        _ (validate-search-after-value search-after)
-        ctx (assoc ctx :search-after (json/decode search-after))]
+        _ (when (some? search-after)
+            (validate-search-after-value search-after))
+        ctx (cond-> ctx
+              (some? search-after) (assoc :search-after (json/decode search-after)))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)

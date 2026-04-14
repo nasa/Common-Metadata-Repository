@@ -28,11 +28,11 @@
                                       :query-params qp
                                       :accept :json
                                       :throw-exceptions false}))
-          status (:status response)
-          parsed-body (rest/parse-safely (:body response))]
+          status (:status response)]
       (if (some #{status} [200 201])
-        parsed-body
-        (errors/internal-error! (str "Search failed with status " status " and body " (:body response)))))))
+        (rest/parse-safely (:body response))
+        (throw (ex-info (str "Search failed with status " status)
+                        {:status status :body (:body response)}))))))
 
 (defn count-query
   "Performs a count query over one or more indexes"
@@ -47,11 +47,11 @@
                                       :body (json/generate-string body)
                                       :accept :json
                                       :throw-exceptions false}))
-          status (:status response)
-          parsed-body (rest/parse-safely (:body response))]
+          status (:status response)]
       (if (some #{status} [200 201])
-        parsed-body
-        (errors/internal-error! (str "Count failed with status " status " and body " (:body response)))))))
+        (rest/parse-safely (:body response))
+        (throw (ex-info (str "Count failed with status " status)
+                        {:status status :body (:body response)}))))))
 
 (defn scroll
   "Performs a scroll query, fetching the next page of results from a query given a scroll id"
@@ -102,14 +102,20 @@
    (let [admin-token (es-config/elastic-admin-token)
          delete-url (rest/delete-by-query-url
                      conn
-                     (join-names index))]
-     (http/post delete-url
-                (merge http-opts
-                       {:headers {"Authorization" admin-token
-                                  "Confirm-delete-action" "true"
-                                  :client-id t-config/cmr-client-id}
-                        :content-type :json
-                        :body (json/generate-string {:query query})})))))
+                     (join-names index))
+         response (http/post delete-url
+                             (merge http-opts
+                                    {:headers {"Authorization" admin-token
+                                               "Confirm-delete-action" "true"
+                                               :client-id t-config/cmr-client-id}
+                                     :content-type :json
+                                     :body (json/generate-string {:query query})
+                                     :throw-exceptions false}))
+         status (:status response)]
+     (if (some #{status} [200 201])
+       (rest/parse-safely (:body response))
+       (throw (ex-info (str "Delete by query failed with status " status)
+                       {:status status :body (:body response)}))))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
