@@ -28,6 +28,10 @@
   (doto (FixedHostPortGenericContainer. kibana-official-docker-image)
     (.withFixedExposedPort (int http-port) 5601)
     (.withNetwork network)
+    (.withEnv "XPACK_SECURITY_ENABLED" "false")
+    (.withEnv "XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY" "something_at_least_32_characters_long_123")
+    (.withEnv "XPACK_REPORTING_ENCRYPTIONKEY" "something_at_least_32_characters_long_456")
+    (.withEnv "XPACK_SECURITY_ENCRYPTIONKEY" "something_at_least_32_characters_long_789")
     (.withStartupTimeout (Duration/ofSeconds 240))))
 
 (defn- container-cmd
@@ -78,6 +82,7 @@
        ;; version 8.15 auto enables TLS/SSL for the HTTP layer, we will disable this for local dev env
        (.withEnv "xpack.security.enabled" "false")
        (.withEnv "xpack.security.http.ssl.enabled" "false")
+       (.withEnv "indices.id_field_data.enabled" "true")
        (.withEnv "node.name" "embedded-elastic")
        ;; Disables the automatic generation of passwords and tokens
        (.withEnv "xpack.security.autoconfiguration.enabled" "false")
