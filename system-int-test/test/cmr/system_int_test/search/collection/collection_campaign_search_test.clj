@@ -121,3 +121,17 @@
         [coll5 coll6] {:project {:short_name "epi"}}
         [coll5 coll6] {:project {:short_name "epi" :ignore_case true}}
         [] {:project {:short_name "epi" :ignore_case false}}))))
+        
+(deftest search-by-campaign-project-shortname-json
+  (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
+    (testing "Search by project/campaign using JSON query maintaining legacy string search searches by shortname."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+        [coll3 coll4 coll6]          {:project "ESI"}
+        [coll5 coll6]                {:project "EVI"}
+        [coll5 coll6]                {:project "EPI"}
+        []                           {:project "BLAH"}
+
+        ;; Multiple values
+        [coll3 coll4 coll5 coll6]    {:or [{:project "ESI"} {:project "EVI"}]}))))

@@ -288,6 +288,7 @@
                                   (map string/trim)))
         project-short-names (map :short-name projects-nested)
         project-long-names (->> projects-nested
+                                (concat (map util/map-keys->kebab-case (:Projects collection)))
                                 (keep :long-name)
                                 distinct
                                 (map string/trim)
