@@ -16,11 +16,11 @@
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch:8.15.5")
+  "docker.elastic.co/elasticsearch/elasticsearch:8.19.14")
 
 (def ^:private kibana-official-docker-image
   "Official kibana docker image."
-  "docker.elastic.co/kibana/kibana:8.15.5")
+  "docker.elastic.co/kibana/kibana:8.19.14")
 
 (defn- build-kibana
   "Build kibana in an embedded docker."
@@ -81,10 +81,6 @@
        (.withEnv "node.name" "embedded-elastic")
        ;; Disables the automatic generation of passwords and tokens
        (.withEnv "xpack.security.autoconfiguration.enabled" "false")
-       ;;; Prevents the node from waiting for an enrollment token to join a cluster
-       ;(.withEnv "xpack.security.enrollment.enabled" "false")
-       ;;; Ensures the node treats itself as a standalone cluster immediately
-       ;(.withEnv "discovery.type" "single-node")
        (.withNetwork network)
        (.withNetworkAliases (into-array String ["elasticsearch"]))
        (.withFixedExposedPort (int http-port) 9200)
@@ -103,25 +99,21 @@
 
   (start
     [this _system]
-    (println "Starting elastic server on port" http-port)
+    (debug "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (try
-        (println "starting node")
         (.start node)
-        (println "node started")
         (when kibana
-          (println "Starting kibana server on port" (:kibana-port opts))
+          (debug "Starting kibana server on port" (:kibana-port opts))
           (.start kibana))
-        (println "kibana started")
         (assoc this :containers containers)
-        (println "associated containers finished")
         (catch Exception e
-          (error "Container(s) failed to start with exception: " e)
-          (println "Dumping elasticsearch logs:\n" (.getLogs node))
+          (error "Container(s) failed to start.")
+          (debug "Dumping elasticsearch logs:\n" (.getLogs node))
           (when kibana
-            (println "Dumping kibana logs:\n" (.getLogs kibana)))
+            (debug "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
     [this _system]

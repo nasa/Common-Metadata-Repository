@@ -177,84 +177,81 @@
             (is (= ["The search failed with error: [{:type \"illegal_argument_exception\", :reason \"search_after has 2 value(s) but sort has 3.\"}]. Please double check your search_after header."]
                    errors))))
 
-        ;(testing "Subsequent searches gets the next page of results"
-        ;  (let [result (search/find-refs :granule
-        ;                                 params
-        ;                                 {:headers {routes/SEARCH_AFTER_HEADER search-after}})
-        ;        search-after-1 (:search-after result)]
-        ;    (is (= (count all-grans) hits))
-        ;    (is (not= search-after search-after-1))
-        ;    (is (data2-core/refs-match? [gran3 gran4] result))
-        ;
-        ;    (testing "Remaining results returned on last search"
-        ;      (let [result (search/find-refs :granule
-        ;                                     params
-        ;                                     {:headers {routes/SEARCH_AFTER_HEADER search-after-1}})
-        ;            search-after-2 (:search-after result)]
-        ;        (is (= (count all-grans) (:hits result)))
-        ;        (is (not= search-after search-after-1 search-after-2))
-        ;        (is (data2-core/refs-match? [gran5] result))
-        ;
-        ;        (testing "Searches beyond total hits return empty list"
-        ;          (let [result (search/find-refs :granule
-        ;                                         params
-        ;                                         {:headers {routes/SEARCH_AFTER_HEADER search-after-2}})
-        ;                search-after-3 (:search-after result)]
-        ;            (is (= (count all-grans) (:hits result)))
-        ;            (is (nil? search-after-3))
-        ;            (is (data2-core/refs-match? [] result))))))))
-        ))
+        (testing "Subsequent searches gets the next page of results"
+          (let [result (search/find-refs :granule
+                                         params
+                                         {:headers {routes/SEARCH_AFTER_HEADER search-after}})
+                search-after-1 (:search-after result)]
+            (is (= (count all-grans) hits))
+            (is (not= search-after search-after-1))
+            (is (data2-core/refs-match? [gran3 gran4] result))
 
-    ;(testing "invalid parameters"
-    ;  (are3 [query expected-status err-msg]
-    ;        (let [{:keys [status errors]} (search/find-refs :granule
-    ;                                                        query
-    ;                                                        {:allow-failure? true
-    ;                                                         :headers {routes/SEARCH_AFTER_HEADER "[0]"}})]
-    ;          (is (= expected-status status))
-    ;          (is (= [err-msg] errors)))
-    ;
-    ;        "Search After queries cannot be all-granule queries"
-    ;        {}
-    ;        400
-    ;        (str "The CMR does not allow querying across granules in all collections when using search-after."
-    ;             " You should limit your query using conditions that identify one or more collections "
-    ;             "such as provider, concept_id, short_name, or entry_title.")
-    ;
-    ;        "page_num is not allowed with search-after"
-    ;        {:provider "PROV1" :page-num 2}
-    ;        400
-    ;        "page_num is not allowed with search-after"
-    ;
-    ;        "offset is not allowed with search-after"
-    ;        {:provider "PROV1" :offset 2}
-    ;        400
-    ;        "offset is not allowed with search-after"
-    ;
-    ;        "scroll is not allowed with search-after"
-    ;        {:scroll true}
-    ;        400
-    ;        "scroll is not allowed with search-after"))
+            (testing "Remaining results returned on last search"
+              (let [result (search/find-refs :granule
+                                             params
+                                             {:headers {routes/SEARCH_AFTER_HEADER search-after-1}})
+                    search-after-2 (:search-after result)]
+                (is (= (count all-grans) (:hits result)))
+                (is (not= search-after search-after-1 search-after-2))
+                (is (data2-core/refs-match? [gran5] result))
 
-    ;(testing "invalid search-after header value"
-    ;  (are3 [value err-msg]
-    ;        (let [{:keys [status errors]} (search/find-refs :granule
-    ;                                                        {:provider "PROV1"}
-    ;                                                        {:allow-failure? true
-    ;                                                         :headers {routes/SEARCH_AFTER_HEADER value}})]
-    ;          (is (= 400 status))
-    ;          (is (= [err-msg] errors)))
-    ;
-    ;        "invaid search-after value, string"
-    ;        12345
-    ;        "search-after header value is invalid, must be in the form of a JSON array."
-    ;
-    ;        "invaid search-after value, string with quotes"
-    ;        "\"abc \""
-    ;        "The search failed with error: [{:type \"parsing_exception\", :reason \"Unknown key for a VALUE_STRING in [search_after].\", :line 1, :col 17}]. Please double check your search_after header."
-    ;
-    ;        "invaid search-after value, missing comma"
-    ;        "[0 \"abc\"]"
-    ;        "search-after header value is invalid, must be in the form of a JSON array."))
+                (testing "Searches beyond total hits return empty list"
+                  (let [result (search/find-refs :granule
+                                                 params
+                                                 {:headers {routes/SEARCH_AFTER_HEADER search-after-2}})
+                        search-after-3 (:search-after result)]
+                    (is (= (count all-grans) (:hits result)))
+                    (is (nil? search-after-3))
+                    (is (data2-core/refs-match? [] result))))))))))
 
-    ))
+    (testing "invalid parameters"
+      (are3 [query expected-status err-msg]
+            (let [{:keys [status errors]} (search/find-refs :granule
+                                                            query
+                                                            {:allow-failure? true
+                                                             :headers {routes/SEARCH_AFTER_HEADER "[0]"}})]
+              (is (= expected-status status))
+              (is (= [err-msg] errors)))
+
+            "Search After queries cannot be all-granule queries"
+            {}
+            400
+            (str "The CMR does not allow querying across granules in all collections when using search-after."
+                 " You should limit your query using conditions that identify one or more collections "
+                 "such as provider, concept_id, short_name, or entry_title.")
+
+            "page_num is not allowed with search-after"
+            {:provider "PROV1" :page-num 2}
+            400
+            "page_num is not allowed with search-after"
+
+            "offset is not allowed with search-after"
+            {:provider "PROV1" :offset 2}
+            400
+            "offset is not allowed with search-after"
+
+            "scroll is not allowed with search-after"
+            {:scroll true}
+            400
+            "scroll is not allowed with search-after"))
+
+    (testing "invalid search-after header value"
+      (are3 [value err-msg]
+            (let [{:keys [status errors]} (search/find-refs :granule
+                                                            {:provider "PROV1"}
+                                                            {:allow-failure? true
+                                                             :headers {routes/SEARCH_AFTER_HEADER value}})]
+              (is (= 400 status))
+              (is (= [err-msg] errors)))
+
+            "invaid search-after value, string"
+            12345
+            "search-after header value is invalid, must be in the form of a JSON array."
+
+            "invaid search-after value, string with quotes"
+            "\"abc \""
+            "The search failed with error: [{:type \"parsing_exception\", :reason \"Unknown key for a VALUE_STRING in [search_after].\", :line 1, :col 17}]. Please double check your search_after header."
+
+            "invaid search-after value, missing comma"
+            "[0 \"abc\"]"
+            "search-after header value is invalid, must be in the form of a JSON array."))))

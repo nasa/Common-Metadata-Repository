@@ -71,8 +71,7 @@
       (mdb-util/cleanup-old-revisions)
       (index/wait-until-indexed)
       (is (not (check-index-for-deleted-granule (:concept-id granule))))
-      (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365))))
-  )
+      (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365)))))
 
 (deftest deleted-granules-test-search
   (let [collection-prov1 (d/ingest-umm-spec-collection

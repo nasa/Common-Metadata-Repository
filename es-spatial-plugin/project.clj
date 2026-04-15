@@ -35,17 +35,9 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
-                                        :exclusions [
-                                                     ;[com.fasterxml.jackson.core/jackson-core]
-                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
-                                        :exclusions [
-                                                     ;[com.fasterxml.jackson.core/jackson-core]
-                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     ;[com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch ~elastic-version]
                                        [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
