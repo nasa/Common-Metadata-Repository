@@ -102,18 +102,18 @@
             "v %CMR-RELEASE-VERSION%")))
       (is (string/includes?
            (:body response)
-           "site/docs/search/api"))
+           "../../../../docs/dist/index"))
       (is (string/includes?
            (:body response)
            "site/docs/search/site")))))
 
 (deftest search-url-reorg-redirects
-  (let [response (site (request :get (str base-url "/site/docs/search/api")))]
+  (let [response (site (request :get (str base-url "../../../../docs/dist/index")))]
     (testing "clean docs URL for api docs performs redirect"
       (is (= 307 (:status response)))
       (is (string/includes?
             (get-in response [:headers "Location"])
-            "site/docs/search/api.html"))))
+            "../../../../docs/dist/index.html"))))
   (let [response (site (request :get (str base-url "/site/docs/search/site")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= 307 (:status response)))
