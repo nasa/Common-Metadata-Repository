@@ -10,7 +10,7 @@ services:
     container_name: cmr-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
     ports: 
-      - 9210:9200
+      - 9211:9200
       - 9300:9300
     environment:
       - discovery.type=single-node
@@ -18,10 +18,34 @@ services:
       - indices.id_field_data.enabled=true
       - indices.breaker.total.use_real_memory=false
       - node.name=embedded-elastic
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/plugin-security.policy
     networks:
       elasticsearch-network:
         aliases:
           - elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9211/_cat/health?v&pretty"]
+      interval: 30s
+      timeout: 3m
+      retries: 6
+      start_period: 40s
+  gran-elasticsearch:
+    container_name: cmr-gran-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    ports: 
+      - 9210:9200
+      - 9301:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - indices.id_field_data.enabled=true
+      - indices.breaker.total.use_real_memory=false
+      - node.name=gran-embedded-elastic
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/plugin-security.policy
+    networks:
+      elasticsearch-network:
+        aliases:
+          - gran-elasticsearch
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
       interval: 30s
@@ -34,7 +58,26 @@ services:
       - elasticsearch
     image: docker.elastic.co/kibana/kibana:8.19.14
     ports:
+      - 5602:5601
+    environment:
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=something_at_least_32_characters_long_123
+      - XPACK_REPORTING_ENCRYPTIONKEY=something_at_least_32_characters_long_456
+      - XPACK_SECURITY_ENCRYPTIONKEY=something_at_least_32_characters_long_789
+    networks:
+      - elasticsearch-network
+  gran-kibana:
+    container_name: cmr-gran-kibana
+    depends_on: 
+      - gran-elasticsearch
+    image: docker.elastic.co/kibana/kibana:8.19.14
+    ports:
       - 5601:5601
+    environment:
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=something_at_least_32_characters_long_123
+      - XPACK_REPORTING_ENCRYPTIONKEY=something_at_least_32_characters_long_456
+      - XPACK_SECURITY_ENCRYPTIONKEY=something_at_least_32_characters_long_789
     networks:
       - elasticsearch-network
 
