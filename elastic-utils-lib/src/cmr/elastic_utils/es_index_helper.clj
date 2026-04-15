@@ -6,7 +6,6 @@
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.common.services.errors :as errors]
    [cmr.transmit.config :as config])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))

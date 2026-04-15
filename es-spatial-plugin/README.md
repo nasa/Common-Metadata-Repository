@@ -206,7 +206,7 @@ that jar file into my zip directory, zipped up my file. Then I had to delete my 
 Then I had to follow the above instructions to bring everything back up and try again.  I kept up this process, until I got search results back without
 crashing elastic search.
 
-## ES Spatial Lib with Elastic 8.19.15 changes and Java 17
+## ES Spatial Lib with Elastic 8.19.14 changes and Java 17
 
 Due to changes in 8.x requirements for plugins, we updated the es-spatial-lib plugin in the following ways to be able to work with 8.x
 
