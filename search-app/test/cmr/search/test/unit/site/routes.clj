@@ -67,7 +67,7 @@
 (deftest search-api-documentation-page
   (let [response (site
                    (request
-                     :get (str base-url "/site/docs/search/api.html")))]
+                     :get (str base-url "/docs/dist/index.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
       (is (= 200 (:status response)))
       (is (string/includes?
@@ -102,7 +102,7 @@
             "v %CMR-RELEASE-VERSION%")))
       (is (string/includes?
            (:body response)
-           "../../../../docs/dist/index"))
+           "/docs/dist/index"))
       (is (string/includes?
            (:body response)
            "site/docs/search/site")))))
@@ -113,7 +113,7 @@
       (is (= 307 (:status response)))
       (is (string/includes?
             (get-in response [:headers "Location"])
-            "../../../../../docs/dist/index.html"))))
+            "docs/dist/index.html"))))
   (let [response (site (request :get (str base-url "/site/docs/search/site")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= 307 (:status response)))
@@ -125,7 +125,7 @@
       (is (= 301 (:status response)))
       (is (string/includes?
             (get-in response [:headers "Location"])
-            "../../docs/dist/index.html"))))
+            "docs/dist/index.html"))))
   (let [response (site (request :get (str base-url "/site/search_site_docs.html")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= 301 (:status response)))
