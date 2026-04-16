@@ -179,8 +179,7 @@
 				"project": {
 					"description": "Search against any of the subfields in the project hierarchy",
 					"oneOf": [{
-						"type": "string",
-						"$ref": "#/definitions/StringCondition"
+						"type": "string"
 					}, {
 						"type": "object",
 						"additionalProperties": false,
