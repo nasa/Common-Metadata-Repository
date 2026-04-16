@@ -8,7 +8,10 @@ services:
       - redis-network
   elasticsearch:
     container_name: cmr-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    build:
+      context: .
+      dockerfile: resources/elasticsearch/Dockerfile.elasticsearch
+    image: cmr-elasticsearch:8.19.14
     ports: 
       - 9211:9200
       - 9300:9300
@@ -18,20 +21,23 @@ services:
       - indices.id_field_data.enabled=true
       - indices.breaker.total.use_real_memory=false
       - node.name=embedded-elastic
-      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/plugin-security.policy
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/embedded-security.policy
     networks:
       elasticsearch-network:
         aliases:
           - elasticsearch
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9211/_cat/health?v&pretty"]
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cat/health?v&pretty"]
       interval: 30s
       timeout: 3m
       retries: 6
       start_period: 40s
   gran-elasticsearch:
     container_name: cmr-gran-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+    build:
+      context: .
+      dockerfile: resources/elasticsearch/Dockerfile.elasticsearch
+    image: cmr-elasticsearch:8.19.14
     ports: 
       - 9210:9200
       - 9301:9300
@@ -41,13 +47,13 @@ services:
       - indices.id_field_data.enabled=true
       - indices.breaker.total.use_real_memory=false
       - node.name=gran-embedded-elastic
-      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/plugin-security.policy
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g -Djava.security.policy=/usr/share/elasticsearch/config/embedded-security.policy
     networks:
       elasticsearch-network:
         aliases:
           - gran-elasticsearch
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cat/health?v&pretty"]
       interval: 30s
       timeout: 3m
       retries: 6
