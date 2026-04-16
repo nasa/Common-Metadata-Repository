@@ -45,7 +45,7 @@
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-                error-message (get-in body [:error :reason])]
+                error-message (or (get-in body [:error :reason]) (:error body))]
             (error (format "error creating %s elastic index, elastic reported error: %s"
                            index-name error-message))
             (throw e)))))))
@@ -62,7 +62,7 @@
       (esi/create-index-alias conn index-name alias true)
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error-message (get-in body [:error :reason])]
+              error-message (or (get-in body [:error :reason]) (:error body))]
           (error (format "error creating %s elastic index alias, elastic reported error: %s"
                          alias error-message))
           (throw e))))))
@@ -98,7 +98,7 @@
 
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error-message (get-in body [:error :reason])]
+              error-message (or (get-in body [:error :reason]) (:error body))]
           (error (format "error updating %s elastic index, elastic reported error: %s"
                          index-name error-message))
           (throw e))))))
@@ -230,7 +230,7 @@
                 (format "error returned from elastic that the index was not created."))))
           (catch clojure.lang.ExceptionInfo e
             (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-                  error-message (get-in body [:error :reason])]
+                  error-message (or (get-in body [:error :reason]) (:error body))]
               (error (format "error creating %s elastic index to copy %s, elastic reported error: %s"
                              new-index orig-index error-message))
               (throw e))))))))

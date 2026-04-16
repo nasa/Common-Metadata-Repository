@@ -65,7 +65,7 @@ Here are the instructions on how to create the zip and install on your remote ES
     - Go into your working dir from terminal
       - `cd zip-elastic-8.19`
     - Copy the built plugin ZIP from the plugin project output
-      - `cp Common-Metadata-Repository/es-spatial-plugin/target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip .`
+      - `cp <path-to-CMR-repo>/es-spatial-plugin/target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip .`
     - Copy the zip to each container
       - `docker cp cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip zip-elastic-819-elasticsearch-1:/tmp/`
     - Copy the security policy to each container
