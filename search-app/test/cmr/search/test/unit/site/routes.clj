@@ -108,12 +108,12 @@
            "site/docs/search/site")))))
 
 (deftest search-url-reorg-redirects
-  (let [response (site (request :get (str base-url "/../../../../docs/dist/index")))]
+  (let [response (site (request :get (str base-url "/site/docs/search/api")))]
     (testing "clean docs URL for api docs performs redirect"
       (is (= 307 (:status response)))
       (is (string/includes?
             (get-in response [:headers "Location"])
-            "../../../../docs/dist/index.html"))))
+            "../../../../../docs/dist/index.html"))))
   (let [response (site (request :get (str base-url "/site/docs/search/site")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= 307 (:status response)))
