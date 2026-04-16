@@ -64,6 +64,8 @@ Here are the instructions on how to create the zip and install on your remote ES
   - To install this into your external clusters (e.g., your zip-elastic-819-elasticsearch-1 container), run:
     - Go into your working dir from terminal
       - `cd zip-elastic-8.19`
+    - Copy the built plugin ZIP from the plugin project output
+      - `cp Common-Metadata-Repository/es-spatial-plugin/target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip .`
     - Copy the zip to each container
       - `docker cp cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip zip-elastic-819-elasticsearch-1:/tmp/`
     - Copy the security policy to each container
@@ -82,7 +84,7 @@ Here are the instructions on how to create the zip and install on your remote ES
   - Search for that record using a spatial extent search ( a spatial extent search will invoke the spatial plugin.)  You should get your search
     response back without crashing elastic search.
 
-#### docker-compose.yml for ES 8.19.14 for GRAN CLUSTER for local runs
+### docker-compose.yml for ES 8.19.14 for GRAN CLUSTER for local runs
 
 ```
 services:
@@ -121,7 +123,7 @@ networks:
  elasticsearch-network: {}
 ```
 
-#### docker-compose.yml for ES 8.19.14 for NON-GRAN CLUSTER for local runs
+### docker-compose.yml for ES 8.19.14 for NON-GRAN CLUSTER for local runs
 
 ```
 services:
