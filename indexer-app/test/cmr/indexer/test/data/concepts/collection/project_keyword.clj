@@ -30,8 +30,7 @@
 (deftest project-short-name->elastic-doc-test
   (let [context create-context]
     (testing "Project found in KMS"
-      (is (= {:bucket nil,
-              :bucket-lowercase nil,
+      (is (= {
               :long-name "KMS-LONG",
               :long-name-lowercase "kms-long",
               :short-name "KMS-SHORT",
@@ -41,8 +40,7 @@
              (project-keyword/project-short-name->elastic-doc context "KMS-SHORT"))))
 
     (testing "Project not found in KMS"
-      (is (= {:bucket nil,
-              :bucket-lowercase nil,
+      (is (= {
               :long-name "Not Provided",
               :long-name-lowercase "not provided",
               :short-name "NOT-IN-KMS",

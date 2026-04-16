@@ -186,10 +186,6 @@
 						"additionalProperties": false,
 						"minProperties": 1,
 						"properties": {
-							"bucket": {
-								"description": "Bucket level classification.",
-								"type": "string"
-							},
 							"short_name": {
 								"description": "Abbreviated name of the project.",
 								"type": "string"

@@ -216,6 +216,7 @@
 
 (defmethod parse-json-condition :nested-condition
   [concept-type condition-name value]
+  ;; Allow reverse compatibility with previous API to search for projects with string value
   (let [value (if (and (= condition-name :project) (string? value))
                 {:short-name value}
                 value)]

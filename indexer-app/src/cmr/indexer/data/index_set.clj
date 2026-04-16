@@ -233,8 +233,7 @@
 (declare project-hierarchical-mapping)
 (defnestedmapping project-hierarchical-mapping
   "Defines hierarchical mappings for projects."
-  {:bucket m/string-field-mapping
-   :bucket-lowercase m/string-field-mapping
+  {
    :short-name m/string-field-mapping
    :short-name-lowercase m/string-field-mapping
    :long-name m/string-field-mapping
