@@ -125,7 +125,7 @@
       (is (= 301 (:status response)))
       (is (string/includes?
             (get-in response [:headers "Location"])
-            "site/docs/search/api.html"))))
+            "../../docs/dist/index.html"))))
   (let [response (site (request :get (str base-url "/site/search_site_docs.html")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= 301 (:status response)))
