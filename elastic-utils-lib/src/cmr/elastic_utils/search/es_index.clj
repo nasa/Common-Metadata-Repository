@@ -231,14 +231,18 @@
 
         (let [status (:status (ex-data e))]
           (when (some #{status} [400 422])
-            (let [err-msg (or (get-in (json/parse-string body true) [:error :root_cause])
-                              (get-in (json/parse-string body true) [:error :reason])
-                              body)]
-              (errors/throw-service-error
-               :bad-request
-               (format
-                "The search failed with error: %s. Please double check your search_after header."
-                (str err-msg))))))
+            (let [body-map (json/parse-string body true)
+                  err-reason (or (get-in body-map [:error :root_cause])
+                                 (get-in body-map [:error :reason])
+                                 body)
+                  ;; Only add the hint if search-after was involved
+                  is-search-after? (or (:search-after query)
+                                       (re-find #"search_after" body)
+                                       (re-find #"search-after" body))
+                  full-msg (if is-search-after?
+                             (format "The search failed with error: %s. Please double check your search_after header." (str err-reason))
+                             (format "Elasticsearch reported a bad request error: %s" (str err-reason)))]
+              (errors/throw-service-error :bad-request full-msg))))
 
         (throw (ex-info "An unhandled exception occurred" {} e)))
       ;; for other errors, rethrow the exception

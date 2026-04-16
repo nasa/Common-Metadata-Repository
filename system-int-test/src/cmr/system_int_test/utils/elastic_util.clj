@@ -15,6 +15,12 @@
                     :connection-manager (s/conn-mgr)
                     :body (json/encode {:query {:term {:_id doc-id}}})
                     :content-type :json})
+        _ (when-not (= 200 (:status response))
+            (throw (ex-info "Elasticsearch document presence check failed"
+                            {:status (:status response)
+                             :body (:body response)
+                             :index-name index-name
+                             :doc-id doc-id})))
         body (json/decode (:body response) true)]
     (and (= 1 (get-in body [:hits :total :value]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
