@@ -25,7 +25,7 @@
   "Generate CMR Search API docs."
   []
   (static/generate
-   "resources/public/site/docs/search/index.html"
+   "resources/public/site/docs/search/dist/index.html"
    "templates/search-docs-static.html"
    (merge (data/base-page {:cmr-application :search
                            :execution-context :cli})
