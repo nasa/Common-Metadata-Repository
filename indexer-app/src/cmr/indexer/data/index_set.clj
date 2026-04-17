@@ -676,9 +676,13 @@
 
     :granule-ur m/string-field-mapping
     :granule-ur-lowercase (m/doc-values m/string-field-mapping)
+    :granule-ur-wildcard m/wildcard-field-mapping
+    :granule-ur-lowercase-wildcard m/wildcard-field-mapping
 
     :producer-gran-id m/string-field-mapping
     :producer-gran-id-lowercase (m/doc-values m/string-field-mapping)
+    :producer-granule-id-wildcard m/wildcard-field-mapping
+    :producer-granule-id-lowercase-wildcard m/wildcard-field-mapping
 
     :day-night m/string-field-mapping
     :day-night-doc-values (m/doc-values m/string-field-mapping)
