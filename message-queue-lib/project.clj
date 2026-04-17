@@ -15,8 +15,9 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "2.3.0"] ;;behind other cmr projects
                  [clj-time]
-                 [io.netty/netty-handler "4.1.125.Final"]
-                 [io.netty/netty-codec-http "4.1.125.Final"]
+                 [io.netty/netty-handler "4.1.132.Final"]
+                 [io.netty/netty-codec-http "4.1.132.Final"]
+                 [io.netty/netty-codec-http2 "4.1.132.Final"]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
