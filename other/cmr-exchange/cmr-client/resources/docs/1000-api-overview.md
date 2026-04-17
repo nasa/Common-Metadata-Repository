@@ -46,5 +46,5 @@ For more information on the clients, see the [Guides][guides].
 
 [ac-api-docs]: https://cmr.earthdata.nasa.gov/access-control/site/docs/access-control/api.html
 [ingest-api-docs]: https://cmr.earthdata.nasa.gov/ingest/site/docs/ingest/api.html
-[search-api-docs]: https://cmr.earthdata.nasa.gov/search/docs/dist/index.html
+[search-api-docs]: https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html
 [guides]: https://cmr-exchange.github.io/cmr-client/current/3000-guides.html

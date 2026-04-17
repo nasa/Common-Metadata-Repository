@@ -72,7 +72,7 @@
              {ctx :request-context}
              (redirect
               (str (config/application-public-root-url ctx)
-                   "../docs/dist/index.html")
+                   "site/docs/search/index.html")
               301))
         (GET "/site/search_site_docs.html"
              {ctx :request-context}
@@ -89,7 +89,7 @@
                {ctx :request-context}
                (redirect
                 (str (config/application-public-root-url ctx)
-                     "../docs/dist/index.html")
+                     "site/docs/search/index.html")
                 307))
           (GET "/site"
                {ctx :request-context}
