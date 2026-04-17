@@ -29,7 +29,7 @@
                  [org.geotools/gt-shapefile "29.1"]
                  [org.geotools/gt-geojsondatastore "27-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
-                 [org.mozilla/rhino "1.7.12"]
+                 [org.mozilla/rhino "1.7.15.1"]
                  [org.eclipse.jetty/jetty-http "12.0.21"]
                  [org.eclipse.jetty/jetty-util "12.0.21"]
                  [ring/ring-codec "1.3.0"]
