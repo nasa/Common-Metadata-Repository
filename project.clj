@@ -24,6 +24,10 @@
                           [com.fasterxml.jackson.core/jackson-annotations "2.21"]
                           [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                           [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
+                          [org.eclipse.jetty/jetty-http "12.0.33"]
+                          [org.eclipse.jetty/jetty-io "12.0.33"]
+                          [org.eclipse.jetty/jetty-util "12.0.33"]
+                          [org.eclipse.jetty/jetty-server "12.0.33"]
                           [org.clojure/clojure "1.11.2"] ;; lattest is 1.11.4 or 1.12.2
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.testcontainers/testcontainers "2.0.2" ;; latest

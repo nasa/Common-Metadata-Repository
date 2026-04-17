@@ -30,8 +30,8 @@
                  [org.geotools/gt-geojsondatastore "27-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
                  [org.mozilla/rhino "1.7.12"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
@@ -73,8 +73,8 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

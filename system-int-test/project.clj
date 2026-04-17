@@ -39,9 +39,9 @@
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [org.eclipse.jetty/jetty-io "12.0.21"]]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
+                 [org.eclipse.jetty/jetty-io]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"

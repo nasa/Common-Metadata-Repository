@@ -15,7 +15,7 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-util]
                  [ring/ring-core "1.14.2"]
                  [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-json "0.5.1"]
