@@ -1,7 +1,10 @@
 (defproject nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"
   :description "Provides json schema validation code"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
-  :plugins [[lein-exec "0.3.7"]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :plugins [[lein-parent "0.3.9"]
+            [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]

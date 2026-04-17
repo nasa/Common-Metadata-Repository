@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/spatial-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [net.jafama/jafama "2.3.1"]
                  [net.mikera/core.matrix "0.54.0"]
@@ -14,7 +16,8 @@
   ;; the parent context of the larger CMR uberjar will not work as in that case another function
   ;; needs to be defined as the primary entry point.
   ;; :main cmr.spatial.runner
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster

@@ -8,10 +8,13 @@
 
 (defproject nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"
   :description "Contains Ruby code that allows performing orbit calculations for spatial search."
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.jruby/jruby-complete ~jruby-version]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]

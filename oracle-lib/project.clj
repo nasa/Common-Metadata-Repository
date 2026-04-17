@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/oracle-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   ;; Dynamically include extra repositories in the project definition if configured.
   :dependencies [[com.oracle.database.jdbc/ojdbc8 "19.14.0.0"]
                  [com.oracle.database.ha/ons "19.14.0.0"]
@@ -9,7 +11,8 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [sqlingvo "0.7.15"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]

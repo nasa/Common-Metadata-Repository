@@ -1,6 +1,8 @@
 (defproject nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "2.3.0"]
@@ -31,7 +33,8 @@
                  [ring/ring-jetty-adapter "1.14.2"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
+  :plugins [[lein-parent "0.3.9"]
+            [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
