@@ -37,11 +37,11 @@
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [org.eclipse.jetty/jetty-io "12.0.21"]]
+                 [ring/ring-core "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"]
+                 [org.eclipse.jetty/jetty-http "12.1.8"]
+                 [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.eclipse.jetty/jetty-io "12.1.8"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
@@ -54,7 +54,7 @@
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  [ring/ring-jetty-adapter "1.15.4"]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
@@ -74,7 +74,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.14.2"]
+             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.15.4"]
                                      [lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}

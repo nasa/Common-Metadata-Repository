@@ -51,7 +51,7 @@
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.3.0"]
-                           [ring/ring-jetty-adapter "1.14.2"]]
+                           [ring/ring-jetty-adapter "1.15.4"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
