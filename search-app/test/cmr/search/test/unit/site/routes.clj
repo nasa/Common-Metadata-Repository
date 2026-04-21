@@ -85,7 +85,7 @@
            "Site Routes &amp; Web Resources Documentation")))))
 
 (deftest search-all-documentation-page
-  (let [response (site (request :get (str base-url "/site/docs/search/dist")))]
+  (let [response (site (request :get (str base-url "/site/docs/search")))]
     (testing "all docs links appear here"
       (is (= 200 (:status response)))
       (is (string/includes?
