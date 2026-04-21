@@ -282,18 +282,10 @@
         sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        ;; Use KMS lookup to build full nested project docs, then derive names/uuids from those
-        projects-nested (map #(project/project-short-name->elastic-doc context %)
-                             (->> (map :ShortName (:Projects collection))
-                                  (map string/trim)))
-        project-short-names (map :short-name projects-nested)
-        project-long-names (->> projects-nested
-                                (concat (map util/map-keys->kebab-case (:Projects collection)))
-                                (keep :long-name)
-                                distinct
-                                (map string/trim)
-                                (remove string/blank?))
-        project-uuids (keep :uuid projects-nested)
+        project-short-names (->> (map :ShortName (:Projects collection))
+                                 (map string/trim))
+        project-long-names (->> (keep :LongName (:Projects collection))
+                                (map string/trim))
         ;; Pull author info from both creator and other citation details
         authors (->> (concat
                       (keep :Creator (:CollectionCitations collection))
@@ -410,14 +402,13 @@
             :collection-progress collection-progress
             :collection-progress-lowercase (util/safe-lowercase collection-progress)
             :collection-progress-active (not (contains? #{"PLANNED" "DEPRECATED" "PREPRINT" "INREVIEW"}
-                                                         collection-progress))
+                                                        collection-progress))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
             ;; hierarchical fields
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
             :instruments instruments-nested
-            :projects projects-nested
             :archive-centers archive-centers
             :data-centers data-centers
             :temporals temporal-extents
@@ -446,8 +437,6 @@
             :consortiums-lowercase (map util/safe-lowercase consortiums)
             :project-sn project-short-names
             :project-sn-lowercase  (map string/lower-case project-short-names)
-            :project-uuid project-uuids
-            :project-uuid-lowercase (map string/lower-case project-uuids)
             :two-d-coord-name two-d-coord-names
             :two-d-coord-name-lowercase  (map string/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
@@ -479,7 +468,10 @@
             :keyword2 (k/create-keywords-field concept-id collection
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
-                                                :entry-id entry-id})
+                                                :entry-id entry-id
+                                                :kms-uuids (keep :uuid (map #(project/project-short-name->elastic-doc context %)
+                                                                            project-short-names))
+                                                })
             :platform-ln-lowercase (map string/lower-case platform-long-names)
             :instrument-ln-lowercase (map string/lower-case instrument-long-names)
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)

@@ -21,6 +21,7 @@ schemes_to_import="mimetype dataformat idnnode instruments isotopiccategory \
 output_dir="."
 
 env='prod'               # sit|uat|prod|<blank> are all possible values
+# TODO currently KMS does not support reading old versions
 version=''           # DRAFT|<blank> are all possible values
 additional_flags=''  # use this to pass the cache clear param or other flags
 stream_mode='off'
