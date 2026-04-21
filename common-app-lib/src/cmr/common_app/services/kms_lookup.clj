@@ -36,6 +36,11 @@
   in the system hash cache map for fast lookups."
   :kms-short-name-index)
 
+(def kms-projects-cache-key
+  "The key used to store the data generated from KMS into a locations index cache
+  in the system hash cache map for fast lookups."
+  :kms-project-index)
+
 (def kms-umm-c-cache-key
   "The key used to store the data generated from KMS into a umm-c index cache
   in the system hash cache map for fast lookups."
@@ -55,10 +60,19 @@
   "Time To Live value for KMS caches. nil means never expire."
   nil)
 
+;; TODO we will breakup this cache into composite ones and only index
+;; what is needed into the value
 (defn create-kms-short-name-cache
   "Creates an instance of the cache."
   []
   (rhcache/create-redis-hash-cache {:keys-to-track [kms-short-name-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+(defn create-kms-project-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-projects-cache-key]
                                     :read-connection (redis-config/redis-read-conn-opts)
                                     :primary-connection (redis-config/redis-conn-opts)
                                     :ttl kms-cache-ttl}))
@@ -155,6 +169,8 @@
    for that entry. GCMD ensures that no two leaf fields can be the same when compared in a case
    insensitive manner."
   [gcmd-keywords-map]
+  (def gkm gcmd-keywords-map)
+  (tap> gkm)
   (into {}
         (map (fn [[keyword-scheme keyword-maps]]
                (let [maps-by-short-name (into {}
@@ -166,7 +182,7 @@
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
   Common key is :uuid which is a field in the location-keyword map. "
-   ;; Choose Black Sea here because it's more associated with Eastern Europe than Western Asia.
+  ;; Choose Black Sea here because it's more associated with Eastern Europe than Western Asia.
   {"BLACK SEA" {:category "CONTINENT" :type "EUROPE" :subregion-1 "EASTERN EUROPE"
                 :subregion-2 "BLACK SEA" :uuid "afbc0a01-742e-49da-939e-3eaa3cf431b0"}
    ;; Choose a more specific SPACE element because the general SPACE is too broad and top-level.
@@ -187,6 +203,16 @@
                                   location (vals (dissoc location-keyword-map :uuid))]
                               [(string/upper-case location) location-keyword-map]))]
     (merge location-keywords duplicate-keywords)))
+
+
+
+(defn generate-lookup-by-project-name-map
+  "Create a map with the project short name in all lower case as keys to the UUID for that project."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:projects gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
 
 (defn generate-lookup-by-measurement-name
   "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."
@@ -209,10 +235,13 @@
   "Creates the KMS index structure to be used for fast lookups and stores these values in
    redis. Calling this function will CHANGE an external resource."
   [context kms-keywords-map]
+  (def km kms-keywords-map)
   (let [short-name-lookup-map (generate-lookup-by-short-name-map kms-keywords-map)
+        project-uuid-lookup-map (generate-lookup-by-project-name-map kms-keywords-map)
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
         location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
         measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)
+        project-cache (hash-cache/context->cache context kms-projects-cache-key)
         short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
@@ -226,6 +255,9 @@
     (when-not (empty? short-name-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)))
+    (when-not (empty? project-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values project-cache kms-projects-cache-key project-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-projects-cache-key tm)))
     (when-not (empty? umm-c-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)))
@@ -236,6 +268,22 @@
       (let [[tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)))
     kms-keywords-map))
+
+(defn lookup-project-by-short-name
+  "Takes a kms-index and a short name and returns the UUID for
+  that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (tap> short-name)
+      (let [project-cache (hash-cache/context->cache context kms-projects-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value project-cache kms-projects-cache-key (util/safe-lowercase short-name)))
+            _ (rl-util/log-redis-read-complete "lookup-project-by-short-name" kms-projects-cache-key tm)]
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-project-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
 
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for

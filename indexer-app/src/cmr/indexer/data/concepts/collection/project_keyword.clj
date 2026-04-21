@@ -7,6 +7,6 @@
   "Converts a project short-name into an elastic document with the uuid
   for that short-name from the GCMD KMS keywords."
   [context short-name]
-  (let [{:keys [uuid]} (kms-lookup/lookup-by-short-name context :projects short-name)]
+  (let [uuid (kms-lookup/lookup-project-by-short-name context short-name)]
     (when uuid
       {:uuid uuid})))
