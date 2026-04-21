@@ -102,7 +102,7 @@
             "v %CMR-RELEASE-VERSION%")))
       (is (string/includes?
            (:body response)
-           "site/docs/search/api"))
+           "site/docs/search/dist/index"))
       (is (string/includes?
            (:body response)
            "site/docs/search/site")))))
