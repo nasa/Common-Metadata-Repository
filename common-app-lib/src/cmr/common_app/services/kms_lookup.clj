@@ -162,15 +162,13 @@
 
 (def keywords-to-lookup-by-short-name
   "Set of KMS keywords that we need to be able to lookup by short name."
-  #{:providers :platforms :instruments :projects})
+  #{:providers :platforms :instruments })
 
 (defn generate-lookup-by-short-name-map
   "Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
    for that entry. GCMD ensures that no two leaf fields can be the same when compared in a case
    insensitive manner."
   [gcmd-keywords-map]
-  (def gkm gcmd-keywords-map)
-  (tap> gkm)
   (into {}
         (map (fn [[keyword-scheme keyword-maps]]
                (let [maps-by-short-name (into {}
@@ -275,7 +273,6 @@
   [context short-name]
   (try
     (when-not (:ignore-kms-keywords context)
-      (tap> short-name)
       (let [project-cache (hash-cache/context->cache context kms-projects-cache-key)
             [tm uuid] (util/time-execution (hash-cache/get-value project-cache kms-projects-cache-key (util/safe-lowercase short-name)))
             _ (rl-util/log-redis-read-complete "lookup-project-by-short-name" kms-projects-cache-key tm)]

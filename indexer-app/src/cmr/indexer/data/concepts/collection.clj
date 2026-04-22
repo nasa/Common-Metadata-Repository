@@ -401,8 +401,7 @@
                                                 (string/lower-case collection-data-type)))
             :collection-progress collection-progress
             :collection-progress-lowercase (util/safe-lowercase collection-progress)
-            :collection-progress-active (not (contains? #{"PLANNED" "DEPRECATED" "PREPRINT" "INREVIEW"}
-                                                        collection-progress))
+            :collection-progress-active (not (contains? #{"PLANNED" "DEPRECATED" "PREPRINT" "INREVIEW"} collection-progress))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
             ;; hierarchical fields

@@ -5,7 +5,6 @@
    [cmr.common.concepts :as concepts]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]))
 
-;; TODO this might be an issue because some uuids might not get indexed if they are like > 64 of them
 (def ^:private max-keyword-word-count
   "Maximum keyword count that should be put into a keyword value."
   64)
@@ -32,7 +31,6 @@
   4. All the keyword fields, split into individual words, same as the original keyword search case.
   The new way of indexing support both quoted and unquoted keyword searches."
   [concept-id collection other-fields]
-  (tap> other-fields)
   (let [{:keys [platform-long-names instrument-long-names entry-id kms-uuids]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         schema-keys [:Abstract
