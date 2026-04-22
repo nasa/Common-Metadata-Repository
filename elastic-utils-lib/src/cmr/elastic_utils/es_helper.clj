@@ -96,26 +96,23 @@
   "Performs a delete-by-query operation over one or more indexes and types.
   Multiple indexes and types can be specified by passing in a seq of strings,
   otherwise specifying a string suffices."
-  ([conn index mapping-type query]
-   (delete-by-query conn index mapping-type query nil))
-  ([conn index _mapping-type query http-opts]
-   (let [admin-token (es-config/elastic-admin-token)
-         delete-url (rest/delete-by-query-url
-                     conn
-                     (join-names index))
-         response (http/post delete-url
-                             (merge http-opts
-                                    {:headers {"Authorization" admin-token
-                                               "Confirm-delete-action" "true"
-                                               :client-id t-config/cmr-client-id}
-                                     :content-type :json
-                                     :body (json/generate-string {:query query})
-                                     :throw-exceptions false}))
-         status (:status response)]
-     (if (some #{status} [200 201])
-       (rest/parse-safely (:body response))
-       (throw (ex-info (str "Delete by query failed with status " status)
-                       {:status status :body (:body response)}))))))
+  [conn index _mapping-type query]
+    (let [admin-token (es-config/elastic-admin-token)
+          delete-url (rest/delete-by-query-url
+                       conn
+                       (join-names index))
+          response (http/post delete-url
+                              {:headers {"Authorization" admin-token
+                                         "Confirm-delete-action" "true"
+                                         :client-id t-config/cmr-client-id}
+                               :content-type :json
+                               :body (json/generate-string {:query query})
+                               :throw-exceptions false})
+          status (:status response)]
+      (if (#{200 201} status)
+        (rest/parse-safely (:body response))
+        (throw (ex-info (str "Delete by query failed with status " status)
+                        {:status status :body (:body response)})))))
 
 (defn delete-index
   "Deletes an index from the elastic store"

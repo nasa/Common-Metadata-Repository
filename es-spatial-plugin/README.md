@@ -61,18 +61,19 @@ Here are the instructions on how to create the zip and install on your remote ES
     - You should see your clusters start in the docker desktop. Take note of their names. In this example, their names are zip-elastic-819-elasticsearch-1 and zip-gran-elastic-819-elasticsearch-1
 
 - Step 4: Install in External Elasticsearch
-  - To install this into your external clusters (e.g., your zip-elastic-819-elasticsearch-1 container), run:
+  - To install this into your external clusters (e.g., your zip-elastic-819-elasticsearch-1 container), run the following sequence of steps in each cluster.
+  - My cluster containers were called zip-elastic-819-elasticsearch-1 and zip-gran-elastic-819-elasticsearch-1. Substitute these names in the commands below.
     - Go into your working dir from terminal
       - `cd zip-elastic-8.19`
     - Copy the built plugin ZIP from the plugin project output
       - `cp <path-to-CMR-repo>/es-spatial-plugin/target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip .`
-    - Copy the zip to each container
+    - Copy the zip to the container
       - `docker cp cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip zip-elastic-819-elasticsearch-1:/tmp/`
-    - Copy the security policy to each container
+    - Copy the security policy to the container
       - `docker cp plugin-security.policy zip-elastic-819-elasticsearch-1:/usr/share/elasticsearch/config/plugin-security.policy`
-    - Run the elasticsearch-plugin install command in each container
+    - Run the elasticsearch-plugin install command in the container
       - `docker exec -it zip-elastic-819-elasticsearch-1 bin/elasticsearch-plugin install file:///tmp/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip`
-    - Restart both containers to load the plugin
+    - Restart the container to load the plugin
       - `docker restart zip-elastic-819-elasticsearch-1`
 
 - Step 5: Test with CMR

@@ -237,6 +237,7 @@
                                  body)
                   ;; Only add the hint if search-after was involved
                   is-search-after? (or (:search-after query)
+                                       (:search_after query)
                                        (re-find #"search_after" body)
                                        (re-find #"search-after" body))
                   full-msg (if is-search-after?

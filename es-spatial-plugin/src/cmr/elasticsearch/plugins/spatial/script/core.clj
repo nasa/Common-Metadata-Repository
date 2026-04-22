@@ -5,9 +5,8 @@
   (:import
    (java.util Map)
    (org.apache.logging.log4j LogManager)
-   (org.apache.lucene.index LeafReaderContext)
    (org.elasticsearch.script DocReader
-                                    LeafReaderContextSupplier)
+                             LeafReaderContextSupplier)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup
                                     LeafStoredFieldsLookup

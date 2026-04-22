@@ -24,19 +24,19 @@
   "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."
   [conn index-name-or-names _type-name opts]
   (let [{:keys [mapping]} opts
-        url (format "%s/%s/_mapping" (:uri conn) (join-names index-name-or-names))]
-    (let [response (client/put url
-                               (merge (.http-opts conn)
-                                      {:content-type :json
-                                       :body (json/generate-string mapping)
-                                       :query-params (dissoc opts :mapping)
-                                       :accept :json
-                                       :throw-exceptions false}))
-          status (:status response)]
-      (if (some #{status} [200 201])
-        (rest/parse-safely (:body response))
-        (throw (ex-info (str "Update mapping failed with status " status)
-                        {:status status :body (:body response)}))))))
+        url (format "%s/%s/_mapping" (:uri conn) (join-names index-name-or-names))
+        response (client/put url
+                             (merge (.http-opts conn)
+                                    {:content-type :json
+                                     :body (json/generate-string mapping)
+                                     :query-params (dissoc opts :mapping)
+                                     :accept :json
+                                     :throw-exceptions false}))
+        status (:status response)]
+    (if (some #{status} [200 201])
+      (rest/parse-safely (:body response))
+      (throw (ex-info (str "Update mapping failed with status " status)
+                      {:status status :body (:body response)})))))
 
 (defn create
   "Create an index"
@@ -106,8 +106,8 @@
         template (merge {:settings settings}
                         (when mappings {:mappings mappings})
                         (when aliases {:aliases aliases}))
-        body (merge {:index_patterns index-patterns
-                     :template template})]
+        body {:index_patterns index-patterns
+              :template template}]
     (rest/post conn template-url
                {:content-type :json
                 :body body})))
