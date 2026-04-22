@@ -177,38 +177,8 @@
 					"$ref": "#/definitions/StringCondition"
 				},
 				"project": {
-					"description": "Search against any of the subfields in the project hierarchy",
-					"oneOf": [{
-						"type": "string"
-					}, {
-						"type": "object",
-						"additionalProperties": false,
-						"minProperties": 1,
-						"properties": {
-							"short_name": {
-								"description": "Abbreviated name of the project.",
-								"type": "string"
-							},
-							"long_name": {
-								"description": "Full name of the project.",
-								"type": "string"
-							},
-							"uuid": {
-								"description": "Unique identifier for the project within the GCMD Keyword Management System.",
-								"type": "string"
-							},
-							"ignore_case": {
-								"$ref": "#/definitions/IgnoreCaseOption"
-							},
-							"pattern": {
-								"$ref": "#/definitions/PatternOption"
-							},
-							"any": {
-								"description": "Search against any of the project subfields for the provided value.",
-								"type": "string"
-							}
-						}
-					}]
+					"description": "UMM project short name",
+					"$ref": "#/definitions/StringCondition"
 				},
 				"data_center": {
 					"description": "Search for data centers of any type (archive, distribution, processing, and originating are all searched.)",

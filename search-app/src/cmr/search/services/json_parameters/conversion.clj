@@ -66,7 +66,7 @@
    :platforms :nested-condition ;; used for v2 facet apply
    :instrument :nested-condition
    :sensor :string
-   :project :nested-condition
+   :project :string
    :archive-center :nested-condition
    :data-center :nested-condition
    :spatial-keyword :string
@@ -216,18 +216,14 @@
 
 (defmethod parse-json-condition :nested-condition
   [concept-type condition-name value]
-  ;; Allow reverse compatibility with previous API to search for projects with string value
-  (let [value (if (and (= condition-name :project) (string? value))
-                {:short-name value}
-                value)]
-    (validate-nested-condition condition-name value)
-    (let [elastic-field-name (-> condition-name
-                                 (inf/plural)
-                                 (q2e/query-field->elastic-field concept-type))]
-      (nf/parse-nested-condition elastic-field-name
-                                 value
-                                 (case-sensitive-field? concept-type condition-name value)
-                                 (:pattern value)))))
+  (validate-nested-condition condition-name value)
+  (let [elastic-field-name (-> condition-name
+                               (inf/plural)
+                               (q2e/query-field->elastic-field concept-type))]
+    (nf/parse-nested-condition elastic-field-name
+                               value
+                               (case-sensitive-field? concept-type condition-name value)
+                               (:pattern value))))
 
 (defmethod parse-json-condition :bounding-box
   [concept-type _ value]
