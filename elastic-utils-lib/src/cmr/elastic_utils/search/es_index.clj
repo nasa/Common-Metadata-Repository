@@ -231,8 +231,11 @@
 
         (let [status (:status (ex-data e))]
           (when (some #{status} [400 422])
-            (let [body-map (json/parse-string body true)
-                  err-reason (or (get-in body-map [:error :root_cause])
+            (let [body-map (try
+                             (json/parse-string body true)
+                             (catch Exception _
+                               nil))
+                  err-reason (or (some-> body-map :error :root_cause first :reason)
                                  (get-in body-map [:error :reason])
                                  body)
                   ;; Only add the hint if search-after was involved
