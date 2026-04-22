@@ -162,7 +162,7 @@
 
 (def keywords-to-lookup-by-short-name
   "Set of KMS keywords that we need to be able to lookup by short name."
-  #{:providers :platforms :instruments })
+  #{:providers :platforms :instruments})
 
 (defn generate-lookup-by-short-name-map
   "Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
