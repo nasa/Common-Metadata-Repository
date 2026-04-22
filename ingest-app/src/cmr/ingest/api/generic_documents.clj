@@ -126,7 +126,7 @@
              request-context :update :provider-object provider-id)
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))
-        raw-document (slurp (:body request))
+        raw-document (slurp (:body request) :encoding "UTF-8")
         content-type (get headers "content-type")
         ;; get the version in content-type and verify it.
         version-ct (when (and content-type
@@ -375,7 +375,7 @@
      :bad-request
      (format "To publish a draft [%s] with a body, a json Content-Type header needs to be provided." concept-id))
     (try
-      (json/parse-string (string/trim (slurp body)))
+      (json/parse-string (string/trim (slurp body :encoding "UTF-8")))
       (catch Exception e
         (errors/throw-service-error
          :bad-request

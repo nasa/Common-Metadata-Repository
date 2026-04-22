@@ -159,10 +159,10 @@
 (def translation-routes
   (context "/translate" []
     (POST "/collection" {:keys [body headers request-context params]}
-      (translate request-context :collection headers (slurp body)
+      (translate request-context :collection headers (slurp body :encoding "UTF-8")
                  (= "true" (:skip_umm_validation params))))
     (POST "/granule" {:keys [body headers request-context params]}
-      (translate request-context :granule headers (slurp body)
+      (translate request-context :granule headers (slurp body :encoding "UTF-8")
                  (= "true" (:skip_umm_validation params))))))
 
 (def random-metadata-routes

@@ -81,7 +81,7 @@
 (defn read-body
   [headers body-input]
   (if (= mt/json (mt/content-type-mime-type headers))
-    (json/decode (slurp body-input) true)
+    (json/decode (slurp body-input :encoding "UTF-8") true)
     (srvc-errors/throw-service-error
       :invalid-content-type "Creating or updating a provider requires a JSON content type.")))
 
