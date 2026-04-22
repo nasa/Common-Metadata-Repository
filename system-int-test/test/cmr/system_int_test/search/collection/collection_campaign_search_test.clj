@@ -94,44 +94,30 @@
       [coll5 coll6] "epi" {:ignore-case true}
       [] "epi" {:ignore-case false}))))
       
-;; (deftest search-by-campaign-json
-;;   (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
-;;     (testing "Search by project/campaign using JSON query."
-;;       (are [items search]
-;;            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+(deftest search-by-campaign-json
+  (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
+    (testing "Search by project/campaign using JSON query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-;;         [coll3 coll4 coll6] {:project {:short_name "ESI"}}
-;;         [coll5 coll6] {:project {:short_name "EVI"}}
-;;         [coll5 coll6] {:project {:short_name "EPI"}}
-;;         [] {:project "BLAH"}
+        [coll3 coll4 coll6] {:project "ESI"}
+        [coll5 coll6] {:project "EVI"}
+        [coll5 coll6] {:project "EPI"}
+        [] {:project "BLAH"}
 
-;;         ;; Multiple values
-;;         [coll3 coll4 coll5 coll6] {:or [{:project {:short_name "ESI"}} {:project {:short_name "EVI"}}]}
+        ;; Multiple values
+        [coll3 coll4 coll5 coll6] {:or [{:project "ESI"} {:project "EVI"}]}
 
-;;         ;; Wildcards
-;;         [coll3 coll4 coll5 coll6] {:project {:short_name "E*" :pattern true}}
-;;         [] {:project {:short_name "E*" :pattern false}}
-;;         [] {:project {:short_name "E*"}}
-;;         [coll3 coll4 coll5 coll6] {:project {:short_name "*I" :pattern true}}
-;;         [coll5 coll6] {:project {:short_name "EP?" :pattern true}}
-;;         [coll3 coll4 coll5 coll6] {:project {:short_name "E?*" :pattern true}}
-;;         [] {:project {:short_name "*Q*" :pattern true}}
+        ;; Wildcards
+        [coll3 coll4 coll5 coll6] {:project {:value "E*" :pattern true}}
+        [] {:project {:value "E*" :pattern false}}
+        [] {:project {:value "E*"}}
+        [coll3 coll4 coll5 coll6] {:project {:value "*I" :pattern true}}
+        [coll5 coll6] {:project {:value "EP?" :pattern true}}
+        [coll3 coll4 coll5 coll6] {:project {:value "E?*" :pattern true}}
+        [] {:project {:value "*Q*" :pattern true}}
 
-;;         ;; Ignore case
-;;         [coll5 coll6] {:project {:short_name "epi"}}
-;;         [coll5 coll6] {:project {:short_name "epi" :ignore_case true}}
-;;         [] {:project {:short_name "epi" :ignore_case false}}))))
-        
-;; (deftest search-by-campaign-project-shortname-json
-;;   (let [{:keys [coll3 coll4 coll5 coll6]} @test-collections]
-;;     (testing "Search by project/campaign using JSON query maintaining legacy string search searches by shortname."
-;;       (are [items search]
-;;            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
-
-;;         [coll3 coll4 coll6]          {:project "ESI"}
-;;         [coll5 coll6]                {:project "EVI"}
-;;         [coll5 coll6]                {:project "EPI"}
-;;         []                           {:project "BLAH"}
-
-;;         ;; Multiple values
-;;         [coll3 coll4 coll5 coll6]    {:or [{:project "ESI"} {:project "EVI"}]}))))
+        ;; Ignore case
+        [coll5 coll6] {:project {:value "epi"}}
+        [coll5 coll6] {:project {:value "epi" :ignore_case true}}
+        [] {:project {:value "epi" :ignore_case false}}))))
