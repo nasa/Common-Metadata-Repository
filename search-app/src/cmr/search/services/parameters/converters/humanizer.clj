@@ -10,7 +10,7 @@
   (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :or)
-        parent-field (keyword (q2e/query-field->elastic-field param concept-type))
+        parent-field (q2e/query-field->elastic-field param concept-type)
         value-field (keyword (str (name parent-field) ".value"))]
     (if (sequential? value)
       (qm/->ConditionGroup
