@@ -271,8 +271,8 @@
   (try
     (when-not (:ignore-kms-keywords context)
       (let [project-cache (hash-cache/context->cache context kms-projects-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value project-cache kms-projects-cache-key (util/safe-lowercase short-name)))
-            _ (rl-util/log-redis-read-complete "lookup-project-by-short-name" kms-projects-cache-key tm)]
+            [tm uuid] (util/time-execution (hash-cache/get-value project-cache kms-projects-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-project-by-short-name" kms-projects-cache-key tm)
         uuid))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
