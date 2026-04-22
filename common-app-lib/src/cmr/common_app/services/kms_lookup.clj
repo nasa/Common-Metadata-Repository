@@ -202,8 +202,6 @@
                               [(string/upper-case location) location-keyword-map]))]
     (merge location-keywords duplicate-keywords)))
 
-
-
 (defn generate-lookup-by-project-name-map
   "Create a map with the project short name in all lower case as keys to the UUID for that project."
   [gcmd-keywords-map]
@@ -233,7 +231,6 @@
   "Creates the KMS index structure to be used for fast lookups and stores these values in
    redis. Calling this function will CHANGE an external resource."
   [context kms-keywords-map]
-  (def km kms-keywords-map)
   (let [short-name-lookup-map (generate-lookup-by-short-name-map kms-keywords-map)
         project-uuid-lookup-map (generate-lookup-by-project-name-map kms-keywords-map)
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)

@@ -50,6 +50,7 @@
                      :LocationKeywords
                      :CollectionPlatforms
                      :ProcessingLevel
+                     :Projects
                      :RelatedUrls
                      :ScienceKeywords
                      :ShortName
