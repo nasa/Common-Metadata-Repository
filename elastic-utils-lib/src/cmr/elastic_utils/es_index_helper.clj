@@ -63,7 +63,6 @@
   [conn index-name]
   (-> (rest/index-refresh-url conn (join-names index-name))
       (client/post (merge (.http-opts conn)
-                          nil
                           {:accept :json
                            :content-type :json
                            :headers {:client-id config/cmr-client-id}}))
