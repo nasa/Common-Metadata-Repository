@@ -235,7 +235,7 @@
                              (json/parse-string body true)
                              (catch Exception _
                                nil))
-                  err-reason (or (some-> body-map :error :root_cause first :reason)
+                  err-reason (or (some-> body-map :error :root_cause)
                                  (get-in body-map [:error :reason])
                                  body)
                   ;; Only add the hint if search-after was involved
