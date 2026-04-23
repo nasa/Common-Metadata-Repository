@@ -4,6 +4,9 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
+  build: {
+    format: 'file'
+  },
   outDir: '/app/dist',
   integrations: [starlight({
     title: 'CMR API Documentation'
