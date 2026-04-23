@@ -68,7 +68,7 @@
              (q2e/condition->elastic
               (qm/string-condition :granule-ur "Gran*" false true)
               :granule)))
-      (is (= {:wildcard {"granule-ur" "Gran*"}}
+      (is (= {:wildcard {:granule-ur "Gran*"}}
              (q2e/condition->elastic
               (qm/string-condition :granule-ur "Gran*" true true)
               :granule)))))
