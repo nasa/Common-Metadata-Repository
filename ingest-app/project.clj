@@ -50,7 +50,8 @@
             [lein-exec "0.3.7"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
-                       "-Dclojure.compiler.direct-linking=true"]
+                       "-Dclojure.compiler.direct-linking=true"
+                       "-Dfile.encoding=UTF-8"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
