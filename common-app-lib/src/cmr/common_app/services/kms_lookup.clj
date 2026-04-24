@@ -37,7 +37,7 @@
   :kms-short-name-index)
 
 (def kms-projects-cache-key
-  "The key used to store the data generated from KMS into a locations index cache
+  "The key used to store the data generated from KMS into a project index cache
   in the system hash cache map for fast lookups."
   :kms-project-index)
 
