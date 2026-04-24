@@ -388,7 +388,9 @@
          params {:method method
                  :url (url/ingest-url provider-id concept-type native-id)
                  :body  metadata
-                 :content-type format
+                 :content-type (if (string? format)
+                                 (str format "; charset=utf-8")
+                                 format)
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (sys/conn-mgr)}
