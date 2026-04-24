@@ -63,7 +63,8 @@
                             (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
-             "-Dorg.jruby.embed.localcontext.scope=singlethread"]
+             "-Dorg.jruby.embed.localcontext.scope=singlethread"
+             "-Dfile.encoding=UTF-8"]
   ;; Uncomment to enable logging in jetty.
                                         ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
                                         ; "-Dorg.eclipse.jetty.LEVEL=INFO"
