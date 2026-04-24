@@ -62,7 +62,6 @@
                                    :num-shards 2
                                    :elastic-name "gran-elastic"})
           task-id (:task-id start-reshard-response)
-          resharded-doc (es-util/get-doc resharded-index-name concept-id "gran-elastic")
           _ (bootstrap/wait-for-reshard-complete
              small-collections-index-name
              "gran-elastic"
@@ -72,18 +71,19 @@
                                      small-collections-index-name
                                      {:synchronous true
                                       :elastic-name "gran-elastic"})
+          resharded-doc (es-util/get-doc resharded-index-name concept-id "gran-elastic")
           json-response (search/find-concepts-json :granule {:granule-ur granule-ur})
           umm-json-response (search/find-concepts-umm-json :granule {:granule-ur granule-ur})
           umm-json-items (get-in umm-json-response [:results :items])]
       (is (= 200 (:status start-reshard-response)) (pr-str start-reshard-response))
       (is (= 2 (get-in original-doc [:_source :revision-id])) (pr-str original-doc))
       (is (= 2 (:_version original-doc)) (pr-str original-doc))
-      (is (= 2 (get-in resharded-doc [:_source :revision-id])) (pr-str resharded-doc))
       (is (= (:_version original-doc) (:_version resharded-doc))
           (pr-str {:original-es-version (:_version original-doc)
                    :resharded-es-version (:_version resharded-doc)
                    :resharded-source-revision (get-in resharded-doc [:_source :revision-id])}))
       (is (= 200 (:status finalize-reshard-response)) (pr-str finalize-reshard-response))
+      (is (= 2 (get-in resharded-doc [:_source :revision-id])) (pr-str resharded-doc))
 
       ;; The reshard path should preserve the elastic version so granule DB-backed
       ;; formats continue to look up the latest revision after finalize.
