@@ -6,7 +6,7 @@
     [cmr.indexer.data.concepts.collection.resolution :as res]))
 
 (deftest get-non-range-data-resolution-test
-  "Test the extraction of non range data resolutions."
+  (testing "Test the extraction of non range data resolutions.")
 
   (are3 [expected test]
     (is (= expected
@@ -39,7 +39,7 @@
       :Unit "Meters"}]))
 
 (deftest get-range-data-resolution-test
-  "Test the extraction of range data resolutions."
+  (testing "Test the extraction of range data resolutions.")
 
   (are3 [expected test]
     (is (= expected
@@ -78,7 +78,7 @@
       :Unit "Kilometers"}]))
 
 (deftest get-horizontal-data-resolutions-test
-  "Test the extraction and conversion of horizontal data resolutions."
+  (testing "Test the extraction and conversion of horizontal data resolutions.")
 
   (are3 [expected test]
     (is (= expected

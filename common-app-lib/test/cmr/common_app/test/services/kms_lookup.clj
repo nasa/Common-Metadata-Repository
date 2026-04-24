@@ -54,6 +54,7 @@
 (def create-context
   "Creates a testing concept with the KMS caches."
   {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                     kms-lookup/kms-projects-cache-key (kms-lookup/create-kms-project-uuid-cache)
                      kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
                      kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                      kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
@@ -218,6 +219,28 @@
 
    "Lookup returns nil for no match in another keyword scheme"
    :platforms "INST1" nil))
+
+(deftest lookup-project-by-short-name-test
+  (testing "UUID is returned by project short-name lookup"
+    (is (= "proj1-uuid"
+           (kms-lookup/lookup-project-by-short-name create-context "PROJ1"))))
+  ;; Test different project short names
+  (are3
+   [short-name expected-uuid]
+   (is (= expected-uuid
+          (kms-lookup/lookup-project-by-short-name create-context short-name)))
+
+   "Lookup Project"
+   "PROJ1" "proj1-uuid"
+
+   "Lookups are case insensitive"
+   "pRoJ1" "proj1-uuid"
+
+   "Lookup another project"
+   "PROJ2" "proj2-uuid"
+
+   "Lookup returns nil for no match"
+   "UNKNOWN" nil))
 
 (deftest lookup-by-measurement-name-valid-test
   (are3
