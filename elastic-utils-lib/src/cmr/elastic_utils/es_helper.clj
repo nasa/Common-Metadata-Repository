@@ -142,7 +142,8 @@
   "Copies the contents of one index into another. Used for resharding."
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
-              "dest" {:index target-index}}
+              "dest" {:index target-index
+                      :version_type "external_gte"}}
         url (str (rest/url-with-path conn "_reindex") "?wait_for_completion=false")]
     (rest/post-string conn url
                       {:body (json/encode body)

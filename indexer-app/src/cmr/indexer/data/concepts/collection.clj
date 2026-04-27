@@ -26,6 +26,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
+   [cmr.indexer.data.concepts.collection.project-keyword :as project]
    [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
@@ -401,7 +402,7 @@
             :collection-progress collection-progress
             :collection-progress-lowercase (util/safe-lowercase collection-progress)
             :collection-progress-active (not (contains? #{"PLANNED" "DEPRECATED" "PREPRINT" "INREVIEW"}
-                                                         collection-progress))
+                                                        collection-progress))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map string/lower-case platform-short-names)
             ;; hierarchical fields
@@ -467,7 +468,10 @@
             :keyword2 (k/create-keywords-field concept-id collection
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
-                                                :entry-id entry-id})
+                                                :entry-id entry-id
+                                                :kms-uuids (keep :uuid (map #(project/project-short-name->elastic-doc context %)
+                                                                            project-short-names))
+                                                })
             :platform-ln-lowercase (map string/lower-case platform-long-names)
             :instrument-ln-lowercase (map string/lower-case instrument-long-names)
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)
