@@ -26,7 +26,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
-   [cmr.indexer.data.concepts.collection.project-keyword :as project]
+   [cmr.indexer.data.concepts.collection.kms-util :as kms-util]
    [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
@@ -469,9 +469,11 @@
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
                                                 :entry-id entry-id
-                                                :kms-uuids (keep :uuid (map #(project/project-short-name->elastic-doc context %)
-                                                                            project-short-names))
-                                                })
+                                                :kms-uuids (let [project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
+                                                                 processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))]
+                                                             (if processing-level-uuid
+                                                               (conj project-uuids processing-level-uuid)
+                                                               project-uuids))})
             :platform-ln-lowercase (map string/lower-case platform-long-names)
             :instrument-ln-lowercase (map string/lower-case instrument-long-names)
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)

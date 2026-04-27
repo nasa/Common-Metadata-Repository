@@ -68,6 +68,7 @@
    kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
    kl/kms-location-cache-key (kl/create-kms-location-cache)
    kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
+   kl/kms-processing-level-cache-key (kl/create-kms-processing-level-uuid-cache)
    kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
    provider-cache/cache-key (provider-cache/create-cache)
    common-health/health-cache-key (common-health/create-health-cache)

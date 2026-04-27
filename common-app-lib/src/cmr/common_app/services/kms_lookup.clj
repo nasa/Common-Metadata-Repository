@@ -56,6 +56,11 @@
   in the system hash cache map for fast lookups."
   :kms-measurement-index)
 
+(def kms-processing-level-cache-key
+  "The key used to store the data generated from KMS into a processing level index cache
+  in the system hash cache map for fast lookups."
+  :kms-processing-level-index)
+
 (def kms-cache-ttl
   "Time To Live value for KMS caches. nil means never expire."
   nil)
@@ -97,6 +102,14 @@
   "Creates an instance of the cache."
   []
   (rhcache/create-redis-hash-cache {:keys-to-track [kms-measurement-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-processing-level-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-processing-level-cache-key]
                                     :read-connection (redis-config/redis-read-conn-opts)
                                     :primary-connection (redis-config/redis-conn-opts)
                                     :ttl kms-cache-ttl}))
@@ -210,6 +223,14 @@
               :when (:uuid entry)]
           [(string/lower-case (:short-name entry)) (:uuid entry)])))
 
+(defn generate-lookup-by-processing-level-map
+  "Create a map with the processing level in all lower case as keys to the UUID for that processing level."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:processing-levels gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:processing-level entry)) (:uuid entry)])))
+
 (defn generate-lookup-by-measurement-name
   "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."
   [gcmd-keywords-map]
@@ -233,19 +254,22 @@
   [context kms-keywords-map]
   (let [short-name-lookup-map (generate-lookup-by-short-name-map kms-keywords-map)
         project-uuid-lookup-map (generate-lookup-by-project-name-map kms-keywords-map)
+        processing-level-uuid-lookup-map (generate-lookup-by-processing-level-map kms-keywords-map)
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
         location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
         measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)
         project-cache (hash-cache/context->cache context kms-projects-cache-key)
+        processing-level-cache (hash-cache/context->cache context kms-processing-level-cache-key)
         short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
         measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-        _ (rl-util/log-refresh-start (format "%s %s %s %s"
+        _ (rl-util/log-refresh-start (format "%s %s %s %s %s"
                                              kms-short-name-cache-key
                                              kms-umm-c-cache-key
                                              kms-location-cache-key
-                                             kms-measurement-cache-key))]
+                                             kms-measurement-cache-key
+                                             kms-processing-level-cache-key))]
     ;; Only update caches that exist
     (when-not (empty? short-name-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))]
@@ -253,6 +277,9 @@
     (when-not (empty? project-uuid-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values project-cache kms-projects-cache-key project-uuid-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-projects-cache-key tm)))
+    (when-not (empty? processing-level-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values processing-level-cache kms-processing-level-cache-key processing-level-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-processing-level-cache-key tm)))
     (when-not (empty? umm-c-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)))
@@ -277,6 +304,21 @@
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-project-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-processing-level-by-id
+  "Takes a kms-index and a processing level ID and returns the UUID for
+  that processing level. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context processing-level-id]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [processing-level-cache (hash-cache/context->cache context kms-processing-level-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value processing-level-cache kms-processing-level-cache-key (util/safe-lowercase processing-level-id)))]
+        (rl-util/log-redis-read-complete "lookup-processing-level-by-id" kms-processing-level-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-processing-level-by-id found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-by-short-name
