@@ -223,7 +223,7 @@
     This function has the side effect of emptying the request body.
     Don't try to read the body again after calling this function."
   [body]
-  (string/trim (slurp body :encoding "UTF-8")))
+  (string/trim (slurp (java.io.InputStreamReader. body "UTF-8"))))
 
 (defn read-multiple-body!
   "Returns the body content string by slurping the request body. This function
