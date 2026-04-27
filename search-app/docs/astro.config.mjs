@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  outDir: '/app/dist',
+  outDir: '/app/search-app/docs',
   integrations: [starlight({
     title: 'CMR API Documentation'
   })]
