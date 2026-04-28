@@ -31,7 +31,7 @@
   4. All the keyword fields, split into individual words, same as the original keyword search case.
   The new way of indexing support both quoted and unquoted keyword searches."
   [concept-id collection other-fields]
-  (let [{:keys [platform-long-names instrument-long-names entry-id]} other-fields
+  (let [{:keys [platform-long-names instrument-long-names entry-id kms-uuids]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         schema-keys [:Abstract
                      :AncillaryKeywords
@@ -62,6 +62,7 @@
         keywords (->> (concat
                        instrument-long-names
                        platform-long-names
+                       kms-uuids
                        [concept-id]
                        [entry-id]
                        [provider-id]

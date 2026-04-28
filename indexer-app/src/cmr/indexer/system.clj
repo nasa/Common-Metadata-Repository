@@ -72,6 +72,7 @@
                       kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
                       hf/humanizer-cache-key (hf/create-cache-client)
