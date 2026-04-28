@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
@@ -405,8 +404,8 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context es-config/elastic-name))
-  (esri/refresh (context->conn context es-config/gran-elastic-name)))
+  (esi-helper/refresh (context->conn context es-config/elastic-name) nil)
+  (esi-helper/refresh (context->conn context es-config/gran-elastic-name) nil))
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic

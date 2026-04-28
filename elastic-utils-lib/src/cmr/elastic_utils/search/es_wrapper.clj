@@ -1,10 +1,7 @@
 (ns cmr.elastic-utils.search.es-wrapper
-  "Wraps common elastic functions for use outside of elastic-utils so that other
-   namespaces do not need to import anything from clojurewerkz."
-  (:require
-   [clojurewerkz.elastisch.query :as query]))
+  "Wraps common elastic functions for use outside of elastic-utils.")
 
 (defn match-all
-  "See clojurewerkz for details"
-  ([] (query/match-all))
-  ([opts] (query/match-all opts)))
+  "Returns a match-all query"
+  ([] {:match_all {}})
+  ([opts] {:match_all opts}))

@@ -2,7 +2,6 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
-   [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -149,7 +148,7 @@
   [{:keys [conn config]} index-name]
   (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
-          response (client/delete (esr/index-url conn index-name)
+          response (client/delete (str (:uri conn) "/" index-name)
                                   {:headers {"Authorization" admin-token
                                              "Confirm-delete-action" "true"
                                              :client-id t-config/cmr-client-id}
