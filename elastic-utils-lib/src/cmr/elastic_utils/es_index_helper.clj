@@ -119,11 +119,15 @@
   "Get index aliases"
   [conn index-name]
   (let [url (url-with-path conn index-name "_alias")
-        resp (decode-response
-              (client/get url (merge (:http-opts conn)
-                                     {:accept :json})))
-        aliases (keys (get-in resp [(keyword index-name) :aliases]))]
-    (mapv name aliases)))
+        response (client/get url (merge (:http-opts conn)
+                                        {:accept :json
+                                         :throw-exceptions false}))
+        status (:status response)]
+    (if (= 404 status)
+      []
+      (let [resp (decode-response response)
+            aliases (keys (get-in resp [(keyword index-name) :aliases]))]
+        (mapv name aliases)))))
 
 (defn alias-exists?
   "Return true if the given index has the default alias in the form of <index-name>_alias"
@@ -152,7 +156,8 @@
   (let [url (url-with-path conn index-name "_mapping")]
     (decode-response
      (client/get url (merge (:http-opts conn)
-                            {:accept :json})))))
+                            {:accept :json
+                             :throw-exceptions false})))))
 
 (defn get-settings
   "Get the settings for an index"
@@ -160,4 +165,5 @@
   (let [url (url-with-path conn index-name "_settings")]
     (decode-response
      (client/get url (merge (:http-opts conn)
-                            {:accept :json})))))
+                            {:accept :json
+                             :throw-exceptions false})))))

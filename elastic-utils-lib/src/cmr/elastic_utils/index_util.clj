@@ -1,6 +1,7 @@
 (ns cmr.elastic-utils.index-util
   "Defines different types and functions for defining mappings"
   (:require
+   [cheshire.core :as json]
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
@@ -191,9 +192,10 @@
   `(try
      ~@body
      (catch clojure.lang.ExceptionInfo e#
-       (errors/internal-error!
-        (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
-        e#))))
+       (let [body# (get-in (ex-data e#) [:body])
+             status# (:status (ex-data e#))
+             parsed-body# (if (string? body#) (json/decode body# true) body#)]
+         {:error parsed-body# :status status#}))))
 
 (defn reset
   "Development time helper function to delete an index and recreate it to empty all data."

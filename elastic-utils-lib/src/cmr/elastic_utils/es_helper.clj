@@ -119,7 +119,8 @@
                        {:content-type :json
                         :body (if (string? document) document (json/generate-string document))
                         :query-params opts
-                        :accept :json}))))))
+                        :accept :json
+                        :throw-exceptions false}))))))
 
 (defn delete
   "Deletes document from the index."
@@ -180,7 +181,8 @@
                                      (str "\n"))
                            :content-type "application/x-ndjson"
                            :query-params params
-                           :accept :json})))))))
+                           :accept :json
+                           :throw-exceptions false})))))))
 
 (defn clear-scroll
   "Performs a clear scroll call for the given scroll id"
