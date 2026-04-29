@@ -1,6 +1,6 @@
 ## Site Routes &amp; Web Resources Documentation
 
-See also the [API Documentation](index.html).
+See also the [API Documentation](dist/index.html).
 
 ### Table of Contents
 
