@@ -41,6 +41,7 @@
                                        "kms-umm-c-index"
                                        "health"
                                        "kms-short-name-index"
+                                       "kms-processing-level-index"
                                        "kms-project-index"
                                        "kms"
                                        "token-imp"

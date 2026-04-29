@@ -64,8 +64,8 @@
   for that granule data format from the GCMD KMS keywords."
   [context granule-data-format]
   (def c1 context)
-  (tap> "foobar")
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :granule-data-format {:short-name granule-data-format}))]
+  (tap> granule-data-format)
+  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :granule-data-format granule-data-format))]
     ;; (tap> uuid)
     (when uuid
       {:uuid uuid})))
@@ -80,6 +80,6 @@
 
 (comment
   (println c1)
-  ;; (kms-lookup/lookup-by-umm-c-keyword c1 :granule-data-format {:short-name granule-data-format})
+  (kms-lookup/lookup-by-umm-c-keyword c1 :granule-data-format {:short-name granule-data-format})
   :rcf)
 
