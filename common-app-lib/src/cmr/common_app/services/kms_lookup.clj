@@ -65,7 +65,6 @@
   "Time To Live value for KMS caches. nil means never expire."
   nil)
 
-;; TODO we will breakup this cache into composite ones and only index
 ;; what is needed into the value
 (defn create-kms-short-name-cache
   "Creates an instance of the cache."
@@ -158,7 +157,7 @@
 
 (defn- generate-lookup-by-umm-c-map
   "Takes a GCMD keywords map and stores them in a way for faster lookup when trying to find
-  a location keyword that matches a UMM-C collection with a location keyword in KMS. For each KMS
+  a umm-c keyword that matches a UMM-C collection with a umm-c keyword in KMS. For each KMS
   keyword there are a set of fields which are used to match against the same fields in UMM-C. We
   store the GCMD keywords in a map with a hash of the map as the key to that map for fast lookup."
   [gcmd-keywords-map]
