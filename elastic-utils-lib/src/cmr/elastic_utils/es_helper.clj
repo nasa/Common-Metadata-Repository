@@ -191,7 +191,8 @@
                   (merge (:http-opts conn)
                          {:content-type :json
                           :body (json/generate-string {:scroll_id scroll-id})
-                          :accept :json})))))
+                          :accept :json
+                          :throw-exceptions false})))))
 
 (defn migrate-index
   "Copies the contents of one index into another. Used for resharding."
