@@ -64,7 +64,7 @@
   for that granule data format from the GCMD KMS keywords."
   [context granule-data-format]
   (def c1 context)
-  (tap> granule-data-format)
+  ;; (tap> granule-data-format)
   (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :granule-data-format granule-data-format))]
     ;; (tap> uuid)
     (when uuid

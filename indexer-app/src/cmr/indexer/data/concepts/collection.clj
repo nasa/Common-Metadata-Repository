@@ -469,18 +469,19 @@
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
                                                 :entry-id entry-id
-                                                :kms-uuids (let [project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
-                                                                 temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
+                                                :kms-uuids (let [concept-uuids (keep :uuid (map #(kms-util/concept->elastic-doc context %) (:DirectoryNames collection)))
+                                                                 granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
+                                                                 iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
                                                                  location-uuids (keep :uuid (map #(clk/location-keyword->elastic-doc context %) (:LocationKeywords collection)))
                                                                  measurement-uuids (keep :uuid (map #(kms-util/measurement-name->elastic-doc context %) (:MeasurementName collection)))
-                                                                 concept-uuids (keep :uuid (map #(kms-util/concept->elastic-doc context %) (:DirectoryNames collection)))
-                                                                 iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
-                                                                 related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
-                                                                 granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
-                                                                 mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (concat (keep :GetData related-urls) (keep :GetService related-urls)))))
+                                                                 mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (keep :GetData related-urls))))
                                                                  processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))
-                                                                 uuids (concat project-uuids temporal-uuids location-uuids measurement-uuids concept-uuids iso-topic-uuids related-url-uuids granule-data-format-uuids mime-type-uuids)]
-                                                             (if processing-level-uuid
+                                                                 project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
+                                                                 related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
+                                                                 temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
+                                                                 uuids (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids measurement-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids)]
+                                                             ;; Uniquely this can only be a single value
+                                                             (if processing-level-uuid 
                                                                (conj uuids processing-level-uuid)
                                                                uuids))})
             :platform-ln-lowercase (map string/lower-case platform-long-names)
