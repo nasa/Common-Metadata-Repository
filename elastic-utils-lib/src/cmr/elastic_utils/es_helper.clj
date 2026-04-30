@@ -6,38 +6,8 @@
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.es-util :as es-util]
    [cmr.transmit.config :as t-config]))
-
-(defn- parse-safely
-  "Parses the json body from the response safely"
-  [body]
-  (when body
-    (if (string? body)
-      (json/decode body true)
-      body)))
-
-(defn- decode-response
-  "Decodes the response body from the given response"
-  [response]
-  (-> response
-      :body
-      parse-safely))
-
-(defn- join-names
-  "Joins names together with a comma"
-  [names]
-  (if (sequential? names)
-    (string/join "," names)
-    names))
-
-(defn- url-with-path
-  "Returns the url with the given path"
-  [conn & path-parts]
-  (let [path (->> path-parts
-                  (map join-names)
-                  (filter identity)
-                  (string/join "/"))]
-    (str (:uri conn) "/" path)))
 
 (defn search
   "Performs a search query across one or more indexes"
@@ -46,7 +16,7 @@
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))
         body (apply dissoc opts qk)
-        url (url-with-path conn index "_search")]
+        url (es-util/url-with-path conn index "_search")]
     (let [response (http/post url
                               (merge (:http-opts conn)
                                      {:content-type :json
@@ -56,14 +26,14 @@
                                       :throw-exceptions false}))
           status (:status response)]
       (if (some #{status} [200 201])
-        (decode-response response)
+        (es-util/decode-response response)
         (throw (ex-info (str "Search failed with status " status)
                         {:status status :body (:body response)}))))))
 
 (defn count-query
   "Performs a count query over one or more indexes"
   [conn index _mapping-type query]
-  (let [url (url-with-path conn index "_count")
+  (let [url (es-util/url-with-path conn index "_count")
         body (if (get query :query)
                query
                {:query query})]
@@ -75,17 +45,17 @@
                                       :throw-exceptions false}))
           status (:status response)]
       (if (some #{status} [200 201])
-        (decode-response response)
+        (es-util/decode-response response)
         (throw (ex-info (str "Count failed with status " status)
                         {:status status :body (:body response)}))))))
 
 (defn scroll
   "Performs a scroll query, fetching the next page of results from a query given a scroll id"
   [conn scroll-id opts]
-  (let [url (url-with-path conn "_search" "scroll")
+  (let [url (es-util/url-with-path conn "_search" "scroll")
         body (merge {:scroll_id scroll-id}
                     (select-keys opts [:scroll]))]
-    (decode-response
+    (es-util/decode-response
      (http/post url
                 (merge (:http-opts conn)
                        {:content-type :json
@@ -97,7 +67,7 @@
   ([conn index mapping-type id]
    (doc-get conn index mapping-type id nil))
   ([conn index _mapping-type id opts]
-   (let [url (url-with-path conn index "_doc" id)
+   (let [url (es-util/url-with-path conn index "_doc" id)
          response (http/get url
                             (merge (:http-opts conn)
                                    {:query-params opts
@@ -105,15 +75,15 @@
                                     :throw-exceptions false}))
          status (:status response)]
      (when-not (= 404 status)
-       (decode-response response)))))
+       (es-util/decode-response response)))))
 
 (defn put
   "Creates or updates a document in the search index, using the provided document id"
   ([conn index mapping-type id document]
    (put conn index mapping-type id document nil))
   ([conn index _mapping-type id document opts]
-   (let [url (url-with-path conn index "_doc" id)]
-     (decode-response
+   (let [url (es-util/url-with-path conn index "_doc" id)]
+     (es-util/decode-response
       (http/put url
                 (merge (:http-opts conn)
                        {:content-type :json
@@ -127,8 +97,8 @@
   ([conn index mapping-type id]
    (delete conn index mapping-type id nil))
   ([conn index _mapping-type id opts]
-   (let [url (url-with-path conn index "_doc" id)]
-     (decode-response
+   (let [url (es-util/url-with-path conn index "_doc" id)]
+     (es-util/decode-response
       (http/delete url
                    (merge (:http-opts conn)
                           {:content-type :json
@@ -142,7 +112,7 @@
   otherwise specifying a string suffices."
   [conn index _mapping-type query]
   (let [admin-token (es-config/elastic-admin-token)
-        url (url-with-path conn index "_delete_by_query")
+        url (es-util/url-with-path conn index "_delete_by_query")
         response (http/post url
                             (merge (:http-opts conn)
                                    {:headers {"Authorization" admin-token
@@ -153,15 +123,15 @@
                                     :throw-exceptions false}))
         status (:status response)]
     (if (#{200 201} status)
-      (decode-response response)
+      (es-util/decode-response response)
       (throw (ex-info (str "Delete by query failed with status " status)
                       {:status status :body (:body response)})))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
   [conn index]
-  (let [url (url-with-path conn index)]
-    (decode-response
+  (let [url (es-util/url-with-path conn index)]
+    (es-util/decode-response
      (http/delete url
                   (merge (:http-opts conn)
                          {:accept :json})))))
@@ -171,8 +141,8 @@
   ([conn operations] (bulk conn operations nil))
   ([conn operations params]
    (when (not-empty operations)
-     (let [url (url-with-path conn "_bulk")]
-       (decode-response
+     (let [url (es-util/url-with-path conn "_bulk")]
+       (es-util/decode-response
         (http/post url
                    (merge (:http-opts conn)
                           {:body (-> (map json/encode operations)
@@ -187,8 +157,8 @@
 (defn clear-scroll
   "Performs a clear scroll call for the given scroll id"
   [conn scroll-id]
-  (let [url (url-with-path conn "_search" "scroll")]
-    (decode-response
+  (let [url (es-util/url-with-path conn "_search" "scroll")]
+    (es-util/decode-response
      (http/delete url
                   (merge (:http-opts conn)
                          {:content-type :json
@@ -202,8 +172,8 @@
   (let [body {"source" {:index source-index}
               "dest" {:index target-index
                       :version_type "external_gte"}}
-        url (str (url-with-path conn "_reindex") "?wait_for_completion=false")]
-    (decode-response
+        url (str (es-util/url-with-path conn "_reindex") "?wait_for_completion=false")]
+    (es-util/decode-response
      (http/post url
                 (merge (:http-opts conn)
                        {:body (json/encode body)
@@ -215,8 +185,8 @@
   Returns a map that captures the complete status and if there were any failures."
   [conn index reindex-task-id]
   (try
-    (let [url (url-with-path conn "_tasks" reindex-task-id)
-          resp (decode-response
+    (let [url (es-util/url-with-path conn "_tasks" reindex-task-id)
+          resp (es-util/decode-response
                 (http/get url
                           (merge (:http-opts conn)
                                  {:accept :json})))
