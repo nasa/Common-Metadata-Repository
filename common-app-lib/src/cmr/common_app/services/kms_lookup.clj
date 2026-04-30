@@ -61,6 +61,61 @@
   in the system hash cache map for fast lookups."
   :kms-processing-level-index)
 
+(def kms-science-keywords-cache-key
+  "The key used to store the data generated from KMS into a science keywords index cache
+  in the system hash cache map for fast lookups."
+  :kms-science-keywords-index)
+
+(def kms-platforms-cache-key
+  "The key used to store the data generated from KMS into a platforms index cache
+  in the system hash cache map for fast lookups."
+  :kms-platforms-index)
+
+(def kms-instruments-cache-key
+  "The key used to store the data generated from KMS into an instruments index cache
+  in the system hash cache map for fast lookups."
+  :kms-instruments-index)
+
+(def kms-providers-cache-key
+  "The key used to store the data generated from KMS into a providers index cache
+  in the system hash cache map for fast lookups."
+  :kms-providers-index)
+
+(def kms-spatial-keywords-cache-key
+  "The key used to store the data generated from KMS into a spatial keywords index cache
+  in the system hash cache map for fast lookups."
+  :kms-spatial-keywords-index)
+
+(def kms-concepts-cache-key
+  "The key used to store the data generated from KMS into a concepts index cache
+  in the system hash cache map for fast lookups."
+  :kms-concepts-index)
+
+(def kms-iso-topic-categories-cache-key
+  "The key used to store the data generated from KMS into an iso topic categories index cache
+  in the system hash cache map for fast lookups."
+  :kms-iso-topic-categories-index)
+
+(def kms-granule-data-format-cache-key
+  "The key used to store the data generated from KMS into a granule data format index cache
+  in the system hash cache map for fast lookups."
+  :kms-granule-data-format-index)
+
+(def kms-mime-type-cache-key
+  "The key used to store the data generated from KMS into a mime type index cache
+  in the system hash cache map for fast lookups."
+  :kms-mime-type-index)
+
+(def kms-related-urls-cache-key
+  "The key used to store the data generated from KMS into a related urls index cache
+  in the system hash cache map for fast lookups."
+  :kms-related-urls-index)
+
+(def kms-temporal-keywords-cache-key
+  "The key used to store the data generated from KMS into a temporal keywords index cache
+  in the system hash cache map for fast lookups."
+  :kms-temporal-keywords-index)
+
 (def kms-cache-ttl
   "Time To Live value for KMS caches. nil means never expire."
   nil)
@@ -109,6 +164,94 @@
   "Creates an instance of the cache."
   []
   (rhcache/create-redis-hash-cache {:keys-to-track [kms-processing-level-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-science-keywords-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-science-keywords-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-platforms-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-platforms-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-instruments-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-instruments-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-providers-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-providers-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-spatial-keywords-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-spatial-keywords-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-concepts-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-concepts-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-iso-topic-categories-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-iso-topic-categories-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-granule-data-format-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-granule-data-format-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-mime-type-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-mime-type-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-related-urls-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-related-urls-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)
+                                    :ttl kms-cache-ttl}))
+
+(defn create-kms-temporal-keywords-uuid-cache
+  "Creates an instance of the cache."
+  []
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-temporal-keywords-cache-key]
                                     :read-connection (redis-config/redis-read-conn-opts)
                                     :primary-connection (redis-config/redis-conn-opts)
                                     :ttl kms-cache-ttl}))
@@ -230,6 +373,96 @@
               :when (:uuid entry)]
           [(string/lower-case (:processing-level entry)) (:uuid entry)])))
 
+(defn generate-lookup-by-platforms-name-map
+  "Create a map with the platform short name in all lower case as keys to the UUID for that platform."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:platforms gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-instruments-name-map
+  "Create a map with the instrument short name in all lower case as keys to the UUID for that instrument."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:instruments gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-providers-name-map
+  "Create a map with the provider short name in all lower case as keys to the UUID for that provider."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:providers gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-concepts-name-map
+  "Create a map with the concept short name in all lower case as keys to the UUID for that concept."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:concepts gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-granule-data-format-name-map
+  "Create a map with the granule data format short name in all lower case as keys to the UUID for that granule data format."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:granule-data-format gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:short-name entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-iso-topic-categories-name-map
+  "Create a map with the iso topic category in all lower case as keys to the UUID for that iso topic category."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:iso-topic-categories gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:iso-topic-category entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-mime-type-name-map
+  "Create a map with the mime type in all lower case as keys to the UUID for that mime type."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:mime-type gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:mime-type entry)) (:uuid entry)])))
+
+(defn generate-lookup-by-temporal-keywords-name-map
+  "Create a map with the temporal keyword in all lower case as keys to the UUID for that temporal keyword."
+  [gcmd-keywords-map]
+  (into {}
+        (for [entry (:temporal-keywords gcmd-keywords-map)
+              :when (:uuid entry)]
+          [(string/lower-case (:temporal-resolution-range entry)) (:uuid entry)])))
+
+(defn- generate-lookup-by-comparison-map
+  "Takes a GCMD keywords map, a keyword scheme, and a list of fields to compare.
+  Returns a map from comparison map -> UUID for the specified keyword scheme."
+  [gcmd-keywords-map keyword-scheme]
+  (let [keyword-maps (keyword-scheme gcmd-keywords-map)
+        fields (get kms-scheme->fields-for-umm-c-lookup keyword-scheme)]
+    (into {}
+          (for [entry keyword-maps
+                :when (:uuid entry)]
+            [(normalize-for-lookup entry fields) (:uuid entry)]))))
+
+(defn generate-lookup-by-science-keywords-map
+  "Create a map with the science keyword comparison map as keys to the UUID for that science keyword."
+  [gcmd-keywords-map]
+  (generate-lookup-by-comparison-map gcmd-keywords-map :science-keywords))
+
+(defn generate-lookup-by-spatial-keywords-map
+  "Create a map with the spatial keyword comparison map as keys to the UUID for that spatial keyword."
+  [gcmd-keywords-map]
+  (generate-lookup-by-comparison-map gcmd-keywords-map :spatial-keywords))
+
+(defn generate-lookup-by-related-urls-map
+  "Create a map with the related url comparison map as keys to the UUID for that related url."
+  [gcmd-keywords-map]
+  (generate-lookup-by-comparison-map gcmd-keywords-map :related-urls))
+
 (defn generate-lookup-by-measurement-name
   "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."
   [gcmd-keywords-map]
@@ -257,18 +490,51 @@
         umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
         location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
         measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)
+        science-keywords-uuid-lookup-map (generate-lookup-by-science-keywords-map kms-keywords-map)
+        platforms-uuid-lookup-map (generate-lookup-by-platforms-name-map kms-keywords-map)
+        instruments-uuid-lookup-map (generate-lookup-by-instruments-name-map kms-keywords-map)
+        providers-uuid-lookup-map (generate-lookup-by-providers-name-map kms-keywords-map)
+        spatial-keywords-uuid-lookup-map (generate-lookup-by-spatial-keywords-map kms-keywords-map)
+        concepts-uuid-lookup-map (generate-lookup-by-concepts-name-map kms-keywords-map)
+        iso-topic-categories-uuid-lookup-map (generate-lookup-by-iso-topic-categories-name-map kms-keywords-map)
+        granule-data-format-uuid-lookup-map (generate-lookup-by-granule-data-format-name-map kms-keywords-map)
+        mime-type-uuid-lookup-map (generate-lookup-by-mime-type-name-map kms-keywords-map)
+        related-urls-uuid-lookup-map (generate-lookup-by-related-urls-map kms-keywords-map)
+        temporal-keywords-uuid-lookup-map (generate-lookup-by-temporal-keywords-name-map kms-keywords-map)
         project-cache (hash-cache/context->cache context kms-projects-cache-key)
         processing-level-cache (hash-cache/context->cache context kms-processing-level-cache-key)
         short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
         measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-        _ (rl-util/log-refresh-start (format "%s %s %s %s %s"
+        science-keywords-cache (hash-cache/context->cache context kms-science-keywords-cache-key)
+        platforms-cache (hash-cache/context->cache context kms-platforms-cache-key)
+        instruments-cache (hash-cache/context->cache context kms-instruments-cache-key)
+        providers-cache (hash-cache/context->cache context kms-providers-cache-key)
+        spatial-keywords-cache (hash-cache/context->cache context kms-spatial-keywords-cache-key)
+        concepts-cache (hash-cache/context->cache context kms-concepts-cache-key)
+        iso-topic-categories-cache (hash-cache/context->cache context kms-iso-topic-categories-cache-key)
+        granule-data-format-cache (hash-cache/context->cache context kms-granule-data-format-cache-key)
+        mime-type-cache (hash-cache/context->cache context kms-mime-type-cache-key)
+        related-urls-cache (hash-cache/context->cache context kms-related-urls-cache-key)
+        temporal-keywords-cache (hash-cache/context->cache context kms-temporal-keywords-cache-key)
+        _ (rl-util/log-refresh-start (format "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s"
                                              kms-short-name-cache-key
                                              kms-umm-c-cache-key
                                              kms-location-cache-key
                                              kms-measurement-cache-key
-                                             kms-processing-level-cache-key))]
+                                             kms-processing-level-cache-key
+                                             kms-science-keywords-cache-key
+                                             kms-platforms-cache-key
+                                             kms-instruments-cache-key
+                                             kms-providers-cache-key
+                                             kms-spatial-keywords-cache-key
+                                             kms-concepts-cache-key
+                                             kms-iso-topic-categories-cache-key
+                                             kms-granule-data-format-cache-key
+                                             kms-mime-type-cache-key
+                                             kms-related-urls-cache-key
+                                             kms-temporal-keywords-cache-key))]
     ;; Only update caches that exist
     (when-not (empty? short-name-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))]
@@ -288,6 +554,39 @@
     (when-not (empty? measurement-lookup-map)
       (let [[tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))]
         (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)))
+    (when-not (empty? science-keywords-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values science-keywords-cache kms-science-keywords-cache-key science-keywords-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-science-keywords-cache-key tm)))
+    (when-not (empty? platforms-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values platforms-cache kms-platforms-cache-key platforms-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-platforms-cache-key tm)))
+    (when-not (empty? instruments-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values instruments-cache kms-instruments-cache-key instruments-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-instruments-cache-key tm)))
+    (when-not (empty? providers-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values providers-cache kms-providers-cache-key providers-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-providers-cache-key tm)))
+    (when-not (empty? spatial-keywords-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values spatial-keywords-cache kms-spatial-keywords-cache-key spatial-keywords-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-spatial-keywords-cache-key tm)))
+    (when-not (empty? concepts-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values concepts-cache kms-concepts-cache-key concepts-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-concepts-cache-key tm)))
+    (when-not (empty? iso-topic-categories-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values iso-topic-categories-cache kms-iso-topic-categories-cache-key iso-topic-categories-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-iso-topic-categories-cache-key tm)))
+    (when-not (empty? granule-data-format-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values granule-data-format-cache kms-granule-data-format-cache-key granule-data-format-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-granule-data-format-cache-key tm)))
+    (when-not (empty? mime-type-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values mime-type-cache kms-mime-type-cache-key mime-type-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-mime-type-cache-key tm)))
+    (when-not (empty? related-urls-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values related-urls-cache kms-related-urls-cache-key related-urls-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-related-urls-cache-key tm)))
+    (when-not (empty? temporal-keywords-uuid-lookup-map)
+      (let [[tm _] (util/time-execution (hash-cache/set-values temporal-keywords-cache kms-temporal-keywords-cache-key temporal-keywords-uuid-lookup-map))]
+        (rl-util/log-redis-write-complete "create-kms-index" kms-temporal-keywords-cache-key tm)))
     kms-keywords-map))
 
 (defn lookup-project-by-short-name
@@ -303,6 +602,178 @@
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (error "lookup-project-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+
+(defn lookup-science-keyword-by-map
+  "Takes a context and a UMM-C keyword map and returns the UUID for
+  that science keyword. Returns nil if a keyword is not found."
+  [context umm-c-keyword]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :science-keywords))
+            cache (hash-cache/context->cache context kms-science-keywords-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-science-keywords-cache-key comparison-map))]
+        (rl-util/log-redis-read-complete "lookup-science-keyword-by-map" kms-science-keywords-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-science-keyword-by-map found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-spatial-keyword-by-map
+  "Takes a context and a UMM-C keyword map and returns the UUID for
+  that spatial keyword. Returns nil if a keyword is not found."
+  [context umm-c-keyword]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :spatial-keywords))
+            cache (hash-cache/context->cache context kms-spatial-keywords-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-spatial-keywords-cache-key comparison-map))]
+        (rl-util/log-redis-read-complete "lookup-spatial-keyword-by-map" kms-spatial-keywords-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-spatial-keyword-by-map found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-related-url-by-map
+  "Takes a context and a UMM-C keyword map and returns the UUID for
+  that related url. Returns nil if a keyword is not found."
+  [context umm-c-keyword]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :related-urls))
+            cache (hash-cache/context->cache context kms-related-urls-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-related-urls-cache-key comparison-map))]
+        (rl-util/log-redis-read-complete "lookup-related-url-by-map" kms-related-urls-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-related-url-by-map found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-platform-by-short-name
+  "Takes a context and a short name and returns the UUID for
+  that platform. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-platforms-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-platforms-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-platform-by-short-name" kms-platforms-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-platform-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-instrument-by-short-name
+  "Takes a context and a short name and returns the UUID for
+  that instrument. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-instruments-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-instruments-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-instrument-by-short-name" kms-instruments-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-instrument-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-provider-by-short-name
+  "Takes a context and a short name and returns the UUID for
+  that provider. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-providers-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-providers-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-provider-by-short-name" kms-providers-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-provider-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-concept-by-short-name
+  "Takes a context and a short name and returns the UUID for
+  that concept. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-concepts-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-concepts-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-concept-by-short-name" kms-concepts-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-concept-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-granule-data-format-by-short-name
+  "Takes a context and a short name and returns the UUID for
+  that granule data format. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-granule-data-format-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-granule-data-format-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-granule-data-format-by-short-name" kms-granule-data-format-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-granule-data-format-by-short-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-iso-topic-category-by-name
+  "Takes a context and a name and returns the UUID for
+  that iso topic category. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-iso-topic-categories-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-iso-topic-categories-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-iso-topic-category-by-name" kms-iso-topic-categories-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-iso-topic-category-by-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-mime-type-by-name
+  "Takes a context and a name and returns the UUID for
+  that mime type. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-mime-type-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-mime-type-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-mime-type-by-name" kms-mime-type-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-mime-type-by-name found redis carmine exception. Will return nil result." e)
+        (throw e)))))
+
+(defn lookup-temporal-keyword-by-name
+  "Takes a context and a name and returns the UUID for
+  that temporal keyword. Returns nil if a keyword is not found. Comparison is made case insensitively."
+  [context short-name]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context kms-temporal-keywords-cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-temporal-keywords-cache-key (util/safe-lowercase short-name)))]
+        (rl-util/log-redis-read-complete "lookup-temporal-keyword-by-name" kms-temporal-keywords-cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "lookup-temporal-keyword-by-name found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-processing-level-by-id

@@ -27,14 +27,6 @@
     (when uuid
       {:uuid uuid})))
 
-(defn measurement-name->elastic-doc
-  "Converts a measurement name into an elastic document with the uuid
-  for that measurement name from the GCMD KMS keywords."
-  [context measurement-name]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :measurement-name measurement-name))]
-    (when uuid
-      {:uuid uuid})))
-
 (defn concept->elastic-doc
   "Converts a concept into an elastic document with the uuid
   for that concept from the GCMD KMS keywords."
