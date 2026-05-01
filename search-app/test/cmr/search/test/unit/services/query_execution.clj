@@ -37,7 +37,7 @@
   (-> (pc/parse-parameter-query test-context concept-type params)
       (#'qe/query->execution-strategy)))
 
-;; Integration test that specific set of input parameters will result in query with the specified
+;; Unit test that specific set of input parameters will result in query with the specified
 ;; execution strategy
 (deftest parameters-to-query-execution-strategy
   ;; stub get-collection-concept-ids to always return ["C1-PROV1"]

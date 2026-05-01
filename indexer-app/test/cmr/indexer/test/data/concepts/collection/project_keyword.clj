@@ -1,4 +1,4 @@
-(ns cmr.indexer.test.data.concepts.collection.kms-util
+(ns cmr.indexer.test.data.concepts.collection.project-keyword
   "This namespace conducts unit tests on the kms-util namespace."
   (:require
    [clojure.string :as string]
@@ -17,14 +17,14 @@
    :granule-data-format [{:short-name "GDF-1" :uuid "uuid-gdf-1"}]
    :mime-type [{:mime-type "MIME-1" :uuid "uuid-mime-1"}]})
 
-(defn- mock-cache
+(defn- dummy-cache
   [mock-fn]
   (reify hc/CmrHashCache
     (get-map [_ _] nil)
     (key-exists [_ _] true)
     (get-keys [_ _] [])
     (get-value [_ _ field] (mock-fn field))
-    (get-values [_ _ _] nil)
+    (get-values [_ _ fields] nil)
     (reset [_] nil)
     (reset [_ _] nil)
     (set-value [_ _ _ _] nil)
@@ -36,19 +36,19 @@
   {:system
    {:caches
     {:kms-project-index
-     (mock-cache
+     (dummy-cache
       (fn [field]
         (let [projects (:projects sample-map)
               project (first (filter #(= field (string/lower-case (:short-name %))) projects))]
           (:uuid project))))
      :kms-processing-level-index
-     (mock-cache
+     (dummy-cache
       (fn [field]
         (let [items (:processing-levels sample-map)
               item (first (filter #(= field (string/lower-case (:processing-level-id %))) items))]
           (:uuid item))))
      :kms-umm-c-index
-     (mock-cache
+     (dummy-cache
       (fn [keyword-scheme]
         (case keyword-scheme
           :temporal-keywords
@@ -118,11 +118,11 @@
   (testing "Related url not found in KMS"
     (is (nil?
          (kms-util/related-url->elastic-doc test-context {:url-content-type "Type" :type "NOT-IN-KMS"})))))
-;; TODO fix this one
+
 (deftest granule-data-format->elastic-doc-test
-  ;; (testing "Granule data format found in KMS"
-  ;;   (is (= {:uuid "uuid-gdf-1"}
-  ;;          (kms-util/granule-data-format->elastic-doc test-context {:short-name "GDF-1"}))))
+  (testing "Granule data format found in KMS"
+    (is (= {:uuid "uuid-gdf-1"}
+           (kms-util/granule-data-format->elastic-doc test-context {:short-name "GDF-1"}))))
 
   (testing "Granule data format not found in KMS"
     (is (nil?
