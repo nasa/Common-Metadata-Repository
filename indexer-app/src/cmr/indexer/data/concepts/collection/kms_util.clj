@@ -70,6 +70,30 @@
     (when uuid
       {:uuid uuid})))
 
+(defn science-keyword->elastic-doc
+  "Converts a science keyword into an elastic document with the uuid
+  for that science keyword from the GCMD KMS keywords."
+  [context science-keyword]
+  (let [uuid (kms-lookup/lookup-science-keyword-by-map context science-keyword)]
+    (when uuid
+      {:uuid uuid})))
+
+(defn platform->elastic-doc
+  "Converts a platform into an elastic document with the uuid
+  for that platform from the GCMD KMS keywords."
+  [context platform]
+  (let [uuid (kms-lookup/lookup-platform-by-short-name context platform)]
+    (when uuid
+      {:uuid uuid})))
+
+(defn instrument->elastic-doc
+  "Converts an instrument into an elastic document with the uuid
+  for that instrument from the GCMD KMS keywords."
+  [context instrument]
+  (let [uuid (kms-lookup/lookup-instrument-by-short-name context instrument)]
+    (when uuid
+      {:uuid uuid})))
+
 (comment
   (println c1)
   (kms-lookup/lookup-by-umm-c-keyword c1 :granule-data-format {:short-name granule-data-format})
