@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clj-http.client :as http]
    [clojure.string :as string]
-   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-util :as es-util]
    [cmr.transmit.config :as t-config]))
@@ -145,7 +144,7 @@
        (es-util/decode-response
         (http/post url
                    (merge (:http-opts conn)
-                          {:body (-> (map json/encode operations)
+                          {:body (-> (map json/generate-string operations)
                                      (interleave (repeat "\n"))
                                      (string/join)
                                      (str "\n"))
@@ -176,7 +175,7 @@
     (es-util/decode-response
      (http/post url
                 (merge (:http-opts conn)
-                       {:body (json/encode body)
+                       {:body (json/generate-string body)
                         :content-type "application/json"
                         :accept :json})))))
 

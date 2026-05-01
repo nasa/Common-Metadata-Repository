@@ -56,12 +56,12 @@
   [query-str]
   (fix-double-escapes
    (string/replace query-str
-                query-string-reserved-characters-regex
-                "\\\\$1")))
+                   query-string-reserved-characters-regex
+                   "\\\\$1")))
 
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
-  (condition->elastic
+
     [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
 

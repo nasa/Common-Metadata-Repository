@@ -97,9 +97,8 @@
   (map #(q2e/query-field->elastic-field (keyword %) concept-type) fields))
 
 (defn- query->execution-params
-  "Returns the Elasticsearch execution parameters extracted from the query. These are the
-  actual ES parameters as expected by the elastisch library. The :scroll-id parameter is special
-  and is stripped out before calling elastisch to determine whether a normal search call or a
+  "Returns the Elasticsearch execution parameters extracted from the query. The :scroll-id
+  parameter is special and is stripped out to determine whether a normal search call or a
   scroll call should be made."
   [query]
   (let [{:keys [page-size
