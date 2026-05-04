@@ -46,17 +46,17 @@
                  [org.clojure/tools.reader "1.3.2"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
-                 [org.eclipse.jetty/jetty-io "12.0.21"]
-                 [org.eclipse.jetty/jetty-server "12.0.21"]
+                 [org.eclipse.jetty/jetty-http "12.1.8"]
+                 [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.eclipse.jetty/jetty-io "12.1.8"]
+                 [org.eclipse.jetty/jetty-server "12.1.8"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
                  [potemkin "0.4.5"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-core "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"]
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
@@ -66,7 +66,8 @@
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"
-                       "-Dclojure.compiler.direct-linking=true"]
+                       "-Dclojure.compiler.direct-linking=true"
+                       "-Dfile.encoding=UTF-8"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
@@ -74,8 +75,8 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
-                                  [ring/ring-core "1.14.2"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [ring/ring-core "1.15.4"]
+                                  [ring/ring-jetty-adapter "1.15.4"]
                                   [clj-http]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
@@ -89,8 +90,8 @@
                                         ; "-Dcom.sun.management.jmxremote.authenticate=false"
                                         ; "-Dcom.sun.management.jmxremote.port=1098"]
                    :source-paths ["src" "dev" "test"]}
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.1.8"]
+                                     [org.eclipse.jetty/jetty-util "12.1.8"]]}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
              ;; all projects at the same time, use the same command but from the top-
