@@ -10,6 +10,7 @@ export default defineConfig({
   base: '/site/docs/search/dist/',
   outDir: '/app/search-app/resources/public/site/docs/search/dist',
   integrations: [starlight({
-    title: 'CMR API Documentation'
+    title: 'CMR API Documentation',
+    pagefind: false
   })]
 });
