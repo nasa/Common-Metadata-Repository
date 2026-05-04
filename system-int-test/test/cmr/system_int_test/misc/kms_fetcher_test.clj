@@ -8,9 +8,8 @@
    [cmr.transmit.kms :as trans-kms]))
 
 (deftest validate-getting-kms-keywords-test
-  ;; TODO I can pull off application caches or this. This seemed better
   (let [sys (transmit-config/system-with-connections
-             {:caches (:caches (bootstrap-system/create-system))}
+             {:caches bootstrap-system/application-caches}
              [:kms])
         context {:system sys}
         kms-cache (cache/context->cache context kf/kms-cache-key)
