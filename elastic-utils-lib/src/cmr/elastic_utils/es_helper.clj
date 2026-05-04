@@ -54,13 +54,18 @@
   [conn scroll-id opts]
   (let [url (es-util/url-with-path conn "_search" "scroll")
         body (merge {:scroll_id scroll-id}
-                    (select-keys opts [:scroll]))]
-    (es-util/decode-response
-     (http/post url
-                (merge (:http-opts conn)
-                       {:content-type :json
-                        :body (json/generate-string body)
-                        :accept :json})))))
+                    (select-keys opts [:scroll]))
+        response (http/post url
+                            (merge (:http-opts conn)
+                                   {:content-type :json
+                                    :body (json/generate-string body)
+                                    :accept :json
+                                    :throw-exceptions false}))
+        status (:status response)]
+    (if (some #{status} [200 201])
+      (es-util/decode-response response)
+      (throw (ex-info (str "Scroll failed with status " status)
+                      {:status status :body (:body response)})))))
 
 (defn doc-get
   "Fetches and returns a document by id or `nil` if it does not exist."
@@ -74,8 +79,11 @@
                                     :accept :json
                                     :throw-exceptions false}))
          status (:status response)]
-     (when-not (= 404 status)
-       (es-util/decode-response response)))))
+     (cond
+       (= 404 status) nil
+       (< status 300) (es-util/decode-response response)
+       :else (throw (ex-info (str "Getting elastoc document failed with status " status)
+                             {:status status :body (:body response)}))))))
 
 (defn put
   "Creates or updates a document in the search index, using the provided document id"

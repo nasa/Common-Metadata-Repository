@@ -66,8 +66,9 @@
                                             :accept :json}))]
        (json/decode (:body response) true))
      (catch Exception e
-       (format "Unable to get elasticsearch cluster health, caught exception: %s"
-               (.getMessage e))))))
+       (errors/internal-error!
+         (format "Unable to get elasticsearch cluster health, caught exception: %s"
+                 (.getMessage e)))))))
 
 (defn wait-for-healthy-elastic
   "Waits for the elasticsearch cluster health to reach yellow. Pass in a elasticsearch store that
