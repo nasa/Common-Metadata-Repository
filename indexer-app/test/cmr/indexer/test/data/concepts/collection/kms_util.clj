@@ -4,8 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [cmr.common.hash-cache :as hc]
-   [cmr.indexer.data.concepts.collection.kms-util :as kms-util]
-   [cmr.common-app.services.kms-lookup :as kms-lookup]))
+   [cmr.indexer.data.concepts.collection.kms-util :as kms-util]))
 
 (def sample-map
   {:projects [{:short-name "KMS-SHORT" :long-name "KMS-LONG" :uuid "kms-uuid-123"}]
@@ -47,22 +46,49 @@
         (let [items (:processing-levels sample-map)
               item (first (filter #(= field (string/lower-case (:processing-level-id %))) items))]
           (:uuid item))))
+     :kms-temporal-keywords-index
+     (mock-cache
+      (fn [field]
+        (let [items (:temporal-resolution-range sample-map)
+              item (first (filter #(= field (string/lower-case (:temporal-resolution-range %))) items))]
+          (:uuid item))))
+     :kms-concepts-index
+     (mock-cache
+      (fn [field]
+        (let [items (:concepts sample-map)
+              item (first (filter #(= field (string/lower-case (:short-name %))) items))]
+          (:uuid item))))
+     :kms-iso-topic-categories-index
+     (mock-cache
+      (fn [field]
+        (let [items (:iso-topic-categories sample-map)
+              item (first (filter #(= field (string/lower-case (:iso-topic-category %))) items))]
+          (:uuid item))))
+     :kms-related-urls-index
+     (mock-cache
+      (fn [field]
+        (let [items (:related-urls sample-map)
+              ;; field is a map for related urls
+              item (first (filter #(= field {:url-content-type (string/lower-case (:url-content-type %))
+                                             :type (string/lower-case (:type %))
+                                             :subtype (string/lower-case (:subtype %))}) items))]
+          (:uuid item))))
+     :kms-granule-data-format-index
+     (mock-cache
+      (fn [field]
+        (let [items (:granule-data-format sample-map)
+              item (first (filter #(= field (string/lower-case (:short-name %))) items))]
+          (:uuid item))))
+     :kms-mime-type-index
+     (mock-cache
+      (fn [field]
+        (let [items (:mime-type sample-map)
+              item (first (filter #(= field (string/lower-case (:mime-type %))) items))]
+          (:uuid item))))
      :kms-umm-c-index
      (mock-cache
       (fn [keyword-scheme]
         (case keyword-scheme
-          :temporal-keywords
-          {{:temporal-resolution-range "tr-1"} {:uuid "uuid-tr-1"}}
-          :concepts
-          {{:short-name "c-1"} {:uuid "uuid-c-1"}}
-          :iso-topic-categories
-          {{:iso-topic-category "iso-1"} {:uuid "uuid-iso-1"}}
-          :related-urls
-          {{:url-content-type "type" :type "type1" :subtype "subtype1"} {:uuid "uuid-ru-1"}}
-          :granule-data-format
-          {{:short-name "gdf-1"} {:uuid "uuid-gdf-1"}}
-          :mime-type
-          {{:mime-type "mime-1"} {:uuid "uuid-mime-1"}}
           nil)))}}})
 
 (deftest project-short-name->elastic-doc-test
@@ -118,11 +144,11 @@
   (testing "Related url not found in KMS"
     (is (nil?
          (kms-util/related-url->elastic-doc test-context {:url-content-type "Type" :type "NOT-IN-KMS"})))))
-;; TODO fix this one
+
 (deftest granule-data-format->elastic-doc-test
-  ;; (testing "Granule data format found in KMS"
-  ;;   (is (= {:uuid "uuid-gdf-1"}
-  ;;          (kms-util/granule-data-format->elastic-doc test-context {:short-name "GDF-1"}))))
+  (testing "Granule data format found in KMS"
+    (is (= {:uuid "uuid-gdf-1"}
+           (kms-util/granule-data-format->elastic-doc test-context {:short-name "GDF-1"}))))
 
   (testing "Granule data format not found in KMS"
     (is (nil?

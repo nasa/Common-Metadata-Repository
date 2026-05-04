@@ -23,7 +23,7 @@
   "Converts a temporal keyword into an elastic document with the uuid
   for that temporal keyword from the GCMD KMS keywords."
   [context temporal-keyword]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :temporal-keywords {:temporal-resolution-range temporal-keyword}))]
+  (let [uuid (kms-lookup/lookup-temporal-keyword-by-name context temporal-keyword)]
     (when uuid
       {:uuid uuid})))
 
@@ -31,7 +31,11 @@
   "Converts a concept into an elastic document with the uuid
   for that concept from the GCMD KMS keywords."
   [context concept]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :concepts concept))]
+  (let [short-name (if (string? concept)
+                     concept
+                     (or (:short-name concept)
+                         (:ShortName concept)))
+        uuid (kms-lookup/lookup-concept-by-short-name context short-name)]
     (when uuid
       {:uuid uuid})))
 
@@ -39,7 +43,7 @@
   "Converts an iso topic category into an elastic document with the uuid
   for that iso topic category from the GCMD KMS keywords."
   [context iso-topic-category]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :iso-topic-categories {:iso-topic-category iso-topic-category}))]
+  (let [uuid (kms-lookup/lookup-iso-topic-category-by-name context iso-topic-category)]
     (when uuid
       {:uuid uuid})))
 
@@ -47,7 +51,7 @@
   "Converts a related url into an elastic document with the uuid
   for that related url from the GCMD KMS keywords."
   [context related-url]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :related-urls related-url))]
+  (let [uuid (kms-lookup/lookup-related-url-by-map context related-url)]
     (when uuid
       {:uuid uuid})))
 
@@ -55,10 +59,12 @@
   "Converts a granule data format into an elastic document with the uuid
   for that granule data format from the GCMD KMS keywords."
   [context granule-data-format]
-  (def c1 context)
-  (tap> granule-data-format)
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :granule-data-format granule-data-format))]
-    ;; (tap> uuid)
+  (let [uuid (kms-lookup/lookup-granule-data-format-by-short-name
+              context
+              (if (string? granule-data-format)
+                granule-data-format
+                (or (:short-name granule-data-format)
+                    (:format granule-data-format))))]
     (when uuid
       {:uuid uuid})))
 
@@ -66,7 +72,7 @@
   "Converts a mime type into an elastic document with the uuid
   for that mime type from the GCMD KMS keywords."
   [context mime-type]
-  (let [uuid (:uuid (kms-lookup/lookup-by-umm-c-keyword context :mime-type {:mime-type mime-type}))]
+  (let [uuid (kms-lookup/lookup-mime-type-by-name context mime-type)]
     (when uuid
       {:uuid uuid})))
 
@@ -93,9 +99,4 @@
   (let [uuid (kms-lookup/lookup-instrument-by-short-name context instrument)]
     (when uuid
       {:uuid uuid})))
-
-(comment
-  (println c1)
-  (kms-lookup/lookup-by-umm-c-keyword c1 :granule-data-format {:short-name granule-data-format})
-  :rcf)
 
