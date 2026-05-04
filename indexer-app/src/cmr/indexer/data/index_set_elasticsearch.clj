@@ -8,6 +8,7 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.es-util :as es-util]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
@@ -148,7 +149,7 @@
   [{:keys [conn config]} index-name]
   (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
-          response (client/delete (str (:uri conn) "/" index-name)
+          response (client/delete (es-util/url-with-path conn index-name)
                                   {:headers {"Authorization" admin-token
                                              "Confirm-delete-action" "true"
                                              :client-id t-config/cmr-client-id}

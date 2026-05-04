@@ -142,13 +142,15 @@
   ([conn operations params]
    (when (seq operations)
      (let [url (es-util/url-with-path conn "_bulk")]
+       ;; Elasticsearch _bulk API uses a format called NDJSON (Newline Delimited JSON)
+       ;; https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-bulk
        (es-util/decode-response
         (http/post url
                    (merge (:http-opts conn)
-                          {:body (-> (map json/encode operations)
-                                     (interleave (repeat "\n"))
-                                     (string/join)
-                                     (str "\n"))
+                          {:body (-> (map json/encode operations) ;; convert each operation map to JSON str
+                                     (interleave (repeat "\n")) ;; put newline between every JSON str
+                                     (string/join) ;; Combine all JSON strs into one large str
+                                     (str "\n")) ;; Append the mandatory final newline
                            :content-type "application/x-ndjson"
                            :query-params params
                            :accept :json

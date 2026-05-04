@@ -404,6 +404,7 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
+  ;; Refresh all indexes in both elastic clusters
   (esi-helper/refresh (context->conn context es-config/elastic-name) nil)
   (esi-helper/refresh (context->conn context es-config/gran-elastic-name) nil))
 
