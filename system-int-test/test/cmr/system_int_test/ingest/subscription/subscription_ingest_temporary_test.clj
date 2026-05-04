@@ -906,7 +906,7 @@
     (testing "without native-id provided with unicode in the name"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"
-                              :Name "unicode-test Großartiger Scott!"
+                              :Name "unicode-test Gro\u00dfartiger Scott!"
                               :Query "instrument=POSEIDON-2B"
                               :CollectionConceptId (:concept-id coll)})
                             :native-id)
@@ -916,7 +916,7 @@
                                                  :method :post})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
-        (is (string/starts-with? native-id "unicode_test_großartiger"))
+        (is (string/starts-with? native-id "unicode_test_gro\u00dfartiger"))
         (is (= 1 revision-id))
 
         (index/wait-until-indexed)
