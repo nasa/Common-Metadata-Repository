@@ -140,7 +140,7 @@
   "Performs a bulk operation"
   ([conn operations] (bulk conn operations nil))
   ([conn operations params]
-   (when (not-empty operations)
+   (when (seq operations)
      (let [url (es-util/url-with-path conn "_bulk")]
        (es-util/decode-response
         (http/post url

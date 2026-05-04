@@ -15,9 +15,7 @@
 (defn decode-response
   "Decodes the response body from the given response"
   [response]
-  (-> response
-      :body
-      parse-safely))
+  (parse-safely (:body response)))
 
 (defn join-names
   "Joins names together with a comma"

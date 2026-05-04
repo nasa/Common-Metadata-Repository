@@ -42,7 +42,7 @@
   [f]
   (let [root (url/elastic-root es-config/elastic-name)
         url (str root "/1_autocomplete/_doc")
-        documents (map #(client/post url {:body (json/generate-string %)
+        documents (mapv #(client/post url {:body (json/generate-string %)
                                           :content-type :json
                                           :accept :json}) test-values)]
     (doseq [doc documents] (debug "ingested " doc))
