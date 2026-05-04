@@ -47,6 +47,7 @@
 
                                        ;; Elastic library
                                        [org.apache.logging.log4j/log4j-api "2.25.4"]
+                                       [org.apache.logging.log4j/log4j-core "2.25.4"]
                                        [org.elasticsearch/elasticsearch-lz4 ~elastic-version
                                         :exclusions [org.lz4/lz4-java]]
                                        [org.elasticsearch/elasticsearch ~elastic-version
