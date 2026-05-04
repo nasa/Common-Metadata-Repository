@@ -99,7 +99,7 @@
   (testing "Project not found in KMS"
     (is (nil?
          (kms-util/project-short-name->elastic-doc test-context "NOT-IN-KMS")))))
-         
+
 (deftest processing-level-id->elastic-doc-test
   (testing "Processing level found in KMS"
     (is (= {:uuid "uuid-pl-1"}
