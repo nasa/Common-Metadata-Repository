@@ -589,207 +589,114 @@
         (rl-util/log-redis-write-complete "create-kms-index" kms-temporal-keywords-cache-key tm)))
     kms-keywords-map))
 
+
+(defn- lookup-by-field
+  "Generic lookup function for KMS caches that use a lowercased string as the key."
+  [context cache-key field function-name-str]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (hash-cache/context->cache context cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache cache-key (util/safe-lowercase field)))]
+        (rl-util/log-redis-read-complete function-name-str cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error (str function-name-str " found redis carmine exception. Will return nil result.") e)
+        (throw e)))))
+
+(defn- lookup-by-comparison-map
+  "Generic lookup function for KMS caches that use a comparison map as the key."
+  [context cache-key keyword-scheme umm-c-keyword function-name-str]
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
+            cache (hash-cache/context->cache context cache-key)
+            [tm uuid] (util/time-execution (hash-cache/get-value cache cache-key comparison-map))]
+        (rl-util/log-redis-read-complete function-name-str cache-key tm)
+        uuid))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error (str function-name-str " found redis carmine exception. Will return nil result.") e)
+        (throw e)))))
+
 (defn lookup-project-by-short-name
   "Takes a kms-index and a short name and returns the UUID for
   that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [project-cache (hash-cache/context->cache context kms-projects-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value project-cache kms-projects-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-project-by-short-name" kms-projects-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-project-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
-
+  (lookup-by-field context kms-projects-cache-key short-name "lookup-project-by-short-name"))
 
 (defn lookup-science-keyword-by-map
   "Takes a context and a UMM-C keyword map and returns the UUID for
   that science keyword. Returns nil if a keyword is not found."
   [context umm-c-keyword]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :science-keywords))
-            cache (hash-cache/context->cache context kms-science-keywords-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-science-keywords-cache-key comparison-map))]
-        (rl-util/log-redis-read-complete "lookup-science-keyword-by-map" kms-science-keywords-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-science-keyword-by-map found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-comparison-map context kms-science-keywords-cache-key :science-keywords umm-c-keyword "lookup-science-keyword-by-map"))
 
 (defn lookup-spatial-keyword-by-map
   "Takes a context and a UMM-C keyword map and returns the UUID for
   that spatial keyword. Returns nil if a keyword is not found."
   [context umm-c-keyword]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :spatial-keywords))
-            cache (hash-cache/context->cache context kms-spatial-keywords-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-spatial-keywords-cache-key comparison-map))]
-        (rl-util/log-redis-read-complete "lookup-spatial-keyword-by-map" kms-spatial-keywords-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-spatial-keyword-by-map found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-comparison-map context kms-spatial-keywords-cache-key :spatial-keywords umm-c-keyword "lookup-spatial-keyword-by-map"))
 
 (defn lookup-related-url-by-map
   "Takes a context and a UMM-C keyword map and returns the UUID for
   that related url. Returns nil if a keyword is not found."
   [context umm-c-keyword]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-            comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup :related-urls))
-            cache (hash-cache/context->cache context kms-related-urls-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-related-urls-cache-key comparison-map))]
-        (rl-util/log-redis-read-complete "lookup-related-url-by-map" kms-related-urls-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-related-url-by-map found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-comparison-map context kms-related-urls-cache-key :related-urls umm-c-keyword "lookup-related-url-by-map"))
 
 (defn lookup-platform-by-short-name
   "Takes a context and a short name and returns the UUID for
   that platform. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-platforms-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-platforms-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-platform-by-short-name" kms-platforms-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-platform-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-platforms-cache-key short-name "lookup-platform-by-short-name"))
 
 (defn lookup-instrument-by-short-name
   "Takes a context and a short name and returns the UUID for
   that instrument. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-instruments-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-instruments-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-instrument-by-short-name" kms-instruments-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-instrument-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-instruments-cache-key short-name "lookup-instrument-by-short-name"))
 
 (defn lookup-provider-by-short-name
   "Takes a context and a short name and returns the UUID for
   that provider. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-providers-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-providers-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-provider-by-short-name" kms-providers-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-provider-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-providers-cache-key short-name "lookup-provider-by-short-name"))
 
 (defn lookup-concept-by-short-name
   "Takes a context and a short name and returns the UUID for
   that concept. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-concepts-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-concepts-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-concept-by-short-name" kms-concepts-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-concept-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-concepts-cache-key short-name "lookup-concept-by-short-name"))
 
 (defn lookup-granule-data-format-by-short-name
   "Takes a context and a short name and returns the UUID for
   that granule data format. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-granule-data-format-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-granule-data-format-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-granule-data-format-by-short-name" kms-granule-data-format-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-granule-data-format-by-short-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-granule-data-format-cache-key short-name "lookup-granule-data-format-by-short-name"))
 
 (defn lookup-iso-topic-category-by-name
   "Takes a context and a name and returns the UUID for
   that iso topic category. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-iso-topic-categories-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-iso-topic-categories-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-iso-topic-category-by-name" kms-iso-topic-categories-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-iso-topic-category-by-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-iso-topic-categories-cache-key short-name "lookup-iso-topic-category-by-name"))
 
 (defn lookup-mime-type-by-name
   "Takes a context and a name and returns the UUID for
   that mime type. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-mime-type-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-mime-type-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-mime-type-by-name" kms-mime-type-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-mime-type-by-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-mime-type-cache-key short-name "lookup-mime-type-by-name"))
 
 (defn lookup-temporal-keyword-by-name
   "Takes a context and a name and returns the UUID for
   that temporal keyword. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context short-name]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [cache (hash-cache/context->cache context kms-temporal-keywords-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value cache kms-temporal-keywords-cache-key (util/safe-lowercase short-name)))]
-        (rl-util/log-redis-read-complete "lookup-temporal-keyword-by-name" kms-temporal-keywords-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-temporal-keyword-by-name found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-temporal-keywords-cache-key short-name "lookup-temporal-keyword-by-name"))
 
 (defn lookup-processing-level-by-id
   "Takes a kms-index and a processing level ID and returns the UUID for
   that processing level. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context processing-level-id]
-  (try
-    (when-not (:ignore-kms-keywords context)
-      (let [processing-level-cache (hash-cache/context->cache context kms-processing-level-cache-key)
-            [tm uuid] (util/time-execution (hash-cache/get-value processing-level-cache kms-processing-level-cache-key (util/safe-lowercase processing-level-id)))]
-        (rl-util/log-redis-read-complete "lookup-processing-level-by-id" kms-processing-level-cache-key tm)
-        uuid))
-    (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (error "lookup-processing-level-by-id found redis carmine exception. Will return nil result." e)
-        (throw e)))))
+  (lookup-by-field context kms-processing-level-cache-key processing-level-id "lookup-processing-level-by-id"))
 
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for

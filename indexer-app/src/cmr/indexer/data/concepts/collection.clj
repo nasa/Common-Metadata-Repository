@@ -473,6 +473,7 @@
                                                                  granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
                                                                  iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
                                                                  location-uuids (keep :uuid (map #(clk/location-keyword->elastic-doc context %) (:LocationKeywords collection)))
+                                                                 ;; The mimetypes being validated are from the `GETDATA` field
                                                                  mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (keep :GetData related-urls))))
                                                                  processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))
                                                                  project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
