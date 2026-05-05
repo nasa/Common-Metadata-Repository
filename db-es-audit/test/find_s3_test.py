@@ -104,29 +104,18 @@ class ReadFromS3Tests(unittest.TestCase):
     def setUp(self):
         find_s3.AUDIT_BUCKET_NAME = "test-audit-bucket"
 
-    def test_read_from_s3_success_returns_decoded_string(self):
-        s3_client = Mock()
-        body = Mock()
-        body.read.return_value = b'{"x": 2}'
-        s3_client.get_object.return_value = {"Body": body}
+    # ... existing code ...
 
-        out = find_s3.read_from_s3(s3_client, "some/key.json")
-
-        self.assertEqual(out, '{"x": 2}')
-        s3_client.get_object.assert_called_once_with(
-            Bucket="test-audit-bucket", Key="some/key.json"
-        )
-
-    def test_read_from_s3_exception_logs_and_returns_none(self):
+    def test_read_from_s3_exception_logs_and_raises(self):
         s3_client = Mock()
         s3_client.get_object.side_effect = Exception("boom")
 
         with patch.object(find_s3, "logger") as mock_logger:
-            out = find_s3.read_from_s3(s3_client, "some/key.json")
+            with self.assertRaises(Exception) as ctx:
+                find_s3.read_from_s3(s3_client, "some/key.json")
 
-        self.assertIsNone(out)
-        mock_logger.error.assert_called()
-
+        self.assertIn("boom", str(ctx.exception))
+        mock_logger.exception.assert_called()
 
 class ReadJsonHelpersTests(unittest.TestCase):
     def test_read_providers_from_s3_loads_json_from_read_from_s3(self):

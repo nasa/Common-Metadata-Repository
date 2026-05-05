@@ -114,7 +114,10 @@ def read_from_s3(s3_client, object_key):
         return object_content
 
     except Exception as e:
-        logger.error(f"Error reading object {object_key} from bucket {AUDIT_BUCKET_NAME}: {e}")
+        logger.exception("Failed to read object %s from bucket %s", object_key, AUDIT_BUCKET_NAME)
+        # re-raise the original exception
+        raise
+
 
 def read_providers_from_s3(s3_client):
     """
