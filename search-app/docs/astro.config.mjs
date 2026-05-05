@@ -11,6 +11,14 @@ export default defineConfig({
   outDir: '/app/search-app/resources/public/site/docs/search/dist',
   integrations: [starlight({
     title: 'CMR API Documentation',
-    pagefind: false
+    pagefind: false,
+    sidebar: [
+      { label: 'General Request Information', link: '/1-general-request-information/' },
+      {
+        label: 'Searching For Concepts',
+        autogenerate: { directory: 'searching-for-concepts' }
+      },
+      { label: 'Additional Topics', link: '/13-additional-topics/' }
+    ]
   })]
 });

@@ -1,5 +1,5 @@
 ---
-title: Requests
+title: General Request Information
 description: Provides foundational request information for the CMR API.
 ---
 
