@@ -70,9 +70,10 @@ def db_batch_read(mismatch):
         raise Exception(f"DB table name {table_name} is not valid!")
 
     collection_id = mismatch['concept_id']
-    date_object = datetime.strptime(mismatch['timestamp'], "%Y-%m-%dT%H:%M:%S")
-    lwt_string = date_object.replace(tzinfo=timezone.utc).isoformat() 
 
+    # The revision_date is in UTC.
+    lwt_string = mismatch['timestamp']
+    
     search_query = f"""
         SELECT concept_id, 
                MAX(revision_id) AS revision_id, 

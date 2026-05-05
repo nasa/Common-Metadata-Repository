@@ -117,23 +117,6 @@ class GetCollectionsPerProviderTests(unittest.TestCase):
             call(s3, {"P2": ["D1"]}, "P2"),
         ])
 
-    def test_get_collections_per_provider_logs_error_and_continues_on_oracle_error(self):
-        db = Mock()
-        s3 = Mock()
-        curr = self._cursor_cm(Mock())
-        db.cursor.return_value = curr
-
-        err_type = find_granule_counts.oracledb.Error
-        curr.execute.side_effect = [err_type("bad table"), None]
-        curr.fetchall.side_effect = [[("OK1",)]]
-
-        with patch.object(find_granule_counts, "logger") as log_mock, \
-             patch.object(find_granule_counts.find_s3, "save_to_s3") as save_to_s3:
-            find_granule_counts.get_collections_per_provider(db, s3, ["P1", "P2"])
-
-        log_mock.error.assert_called()
-        save_to_s3.assert_called_once_with(s3, {"P2": ["OK1"]}, "P2")
-
 
 class GetProvidersWithCollectionsTests(unittest.TestCase):
     def test_get_providers_with_collections_wires_db_s3_and_calls_helpers(self):

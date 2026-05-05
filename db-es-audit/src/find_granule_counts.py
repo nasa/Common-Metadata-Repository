@@ -90,11 +90,8 @@ def get_collections_per_provider(db_connection, s3_client, providers):
         Nothing; the data is saved to S3 for processing by another program
 
     Exceptions:
-        logs error and exits on issue connecting to DB
+       logs error and raises oracle exception
     """
-
-    # For each provider get a list of collections and get the granule counts for each collection
-    #result = {}
 
     with db_connection.cursor() as curr:
         for provider in providers:
@@ -112,19 +109,13 @@ def get_collections_per_provider(db_connection, s3_client, providers):
             try:
                 curr.execute(query)
                 concept_ids = [row[0] for row in curr.fetchall()]
-                #result[provider] = concept_ids
 
                 # Write results to s3
                 find_s3.save_to_s3(s3_client, {provider: concept_ids}, provider)
-                #file_path = os.path.join(output_dir, f"{provider}_collections.json")
-                #with open(file_path, 'w') as f:
-                #    json.dump({provider: concept_ids}, f, indent=2)
-                
-                #print(f"Wrote collections for {provider} to {file_path}")
+
             except oracledb.Error as e:
-                logger.error(f"Error querying {table_name}: {e}")
-                #result[provider] = []  # Empty list for providers with errors
-    #return result
+                logger.exception(f"Error querying {table_name}")
+                raise
 
 def get_providers_with_collections():
     """
@@ -152,7 +143,6 @@ def get_providers_with_collections():
     
     # Get a list of providers through the CMR database by checking to see if the _GRANULES tables contain granules
     providers = get_providers(db_connection, s3_client)
-    #print(f"providers: {providers}")
 
     # Then get all of the collection concept ids per each provider that has granules
     collections = get_collections_per_provider(db_connection, s3_client, providers)
@@ -185,21 +175,21 @@ def get_db_granule_count(db_connection, latest_working_time, provider, collectio
         table_name = f"{provider}_GRANULES"
 
         logger.debug(f"Getting granule counts for {collection_concept_id} before {latest_working_time}")
-        lwt = latest_working_time.replace(tzinfo=timezone.utc)
-        lwt_string = lwt.isoformat() 
 
         query = f"""
             SELECT COUNT(*)
             FROM (SELECT concept_id
                   FROM METADATA_DB.{table_name}
                   WHERE PARENT_COLLECTION_ID = :concept_id
-                  AND REVISION_DATE <= TO_TIMESTAMP_TZ('{lwt_string}', 'YYYY-MM-DD"T"HH24:MI:SS TZH:TZM')
+                  AND REVISION_DATE <= :latest_working_time
                   GROUP BY concept_id
                   HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0)
         """
 
         try:
-            curr.execute(query, concept_id=collection_concept_id)
+            curr.execute(query,
+                         concept_id=collection_concept_id,
+                         latest_working_time=latest_working_time)
             count = curr.fetchone()[0]
             return count
         except oracledb.Error as e:
@@ -317,7 +307,8 @@ def compare_granule_counts(db_connection, latest_working_time, f, provider, coll
         if db_granule_count > 0:
             # Now we need to query ES and compare the counts
             index = find_index(indices, collection_concept_id)
-            es_gran_count = get_es_granule_count(index, collection_concept_id, latest_working_time.strftime("%Y-%m-%dT%H:%M:%S"))
+            #es_gran_count = get_es_granule_count(index, collection_concept_id, latest_working_time.strftime("%Y-%m-%dT%H:%M:%S"))
+            es_gran_count = get_es_granule_count(index, collection_concept_id, latest_working_time.isoformat().replace("+00:00", "Z"))
 
             if db_granule_count == es_gran_count:
                 logger.info(f"DB granule count and ES granule counts match for {collection_concept_id}")
@@ -379,7 +370,8 @@ def find_granule_counts_mismatch(provider):
     
     collections = find_s3.read_collections_from_provider(s3_client, provider)
 
-    latest_working_time = (datetime.now() - timedelta(hours=1)).replace(microsecond=0)
+    # The revision_date is stored as UTC.
+    latest_working_time = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(microsecond=0)
     logger.info(f"Latest Working Time: {latest_working_time}")
 
     for provider, collection_concept_ids in collections.items():
@@ -613,4 +605,3 @@ if __name__ == "__main__":
     num_workers = 2
     with multiprocessing.Pool(processes=num_workers) as pool:
         pool.map(process_granule_mismatch, providers, chunksize=1)
-
