@@ -7,7 +7,6 @@
    [clj-time.coerce :as tc]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojurewerkz.elastisch.query :as esq]
    [cmr.elastic-utils.datetime-helper :as datetime-helper]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -107,7 +106,7 @@
   (-> (es-helper/search (indexer-util/context->conn context es-config/gran-elastic-name)
                         "1_small_collections_alias,1_c*_alias" ;; Searching all granule indexes
                         ["granule"] ;; With the granule type.
-                        {:query (esq/match-all)
+                        {:query {:match_all {}}
                          :size 0
                          :aggs collection-aggregations})
       parse-aggregations))
@@ -122,7 +121,7 @@
     (-> (es-helper/search (indexer-util/context->conn context es-config/gran-elastic-name)
                           "1_small_collections_alias,1_c*_alias" ;; Searching all granule indexes
                           ["granule"] ;; With the granule type.
-                          {:query {:bool {:must (esq/match-all)
+                          {:query {:bool {:must {:match_all {}}
                                           :filter {:range {:revision-date-doc-values
                                                            {:gte revision-date-str}}}}}
                            :size 0

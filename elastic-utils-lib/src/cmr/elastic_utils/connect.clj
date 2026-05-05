@@ -1,14 +1,16 @@
 (ns cmr.elastic-utils.connect
   "Provide functions to invoke elasticsearch"
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-http.conn-mgr :as conn-mgr]
-   [clojurewerkz.elastisch.rest :as esr]
-   [clojurewerkz.elastisch.rest.admin :as admin]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh]
    [cmr.common.util :as util]))
+
+(defrecord Connection [uri http-opts])
 
 (def ELASTIC_CONNECTION_TIMOUT
   "The number of milliseconds to wait before timing out a connection attempt to elasticsearch.
@@ -41,7 +43,7 @@
 
     (info (format "Connecting to single ES on %s %d using retry-handler %s"
                   host port retry-handler))
-    (esr/connect (str "http://" host ":" port) http-options)))
+    (->Connection (str "http://" host ":" port) http-options)))
 
 (defn try-connect
   [config]
@@ -51,23 +53,30 @@
       (errors/internal-error!
         (format "Unable to connect to elasticsearch at: %s. with %s" config e)))))
 
+(defn- get-elastic-health
+  "Returns the elastic health by calling elasticsearch cluster health api"
+  ([conn]
+   (get-elastic-health conn {:wait_for_status "yellow"
+                             :timeout (str (hh/health-check-timeout-seconds) "s")}))
+  ([conn params]
+   (try
+     (let [url (str (:uri conn) "/_cluster/health")
+           response (client/get url (merge (:http-opts conn)
+                                           {:query-params params
+                                            :accept :json}))]
+       (json/decode (:body response) true))
+     (catch Exception e
+       (errors/internal-error!
+         (format "Unable to get elasticsearch cluster health, caught exception: %s"
+                 (.getMessage e)))))))
+
 (defn wait-for-healthy-elastic
   "Waits for the elasticsearch cluster health to reach yellow. Pass in a elasticsearch store that
   has a :conn key with the elastisch connection"
   [elastic-store]
-  (when (:timed_out (admin/cluster-health
-                     (:conn elastic-store) {:wait_for_status "yellow" :timeout "3s"}))
+  (when (:timed_out (get-elastic-health (:conn elastic-store)
+                                        {:wait_for_status "yellow" :timeout "3s"}))
     (errors/internal-error! "Timed out waiting for elasticsearch to reach a healthy state")))
-
-(defn- get-elastic-health
-  "Returns the elastic health by calling elasticsearch cluster health api"
-  [conn]
-  (try
-    (admin/cluster-health conn {:wait_for_status "yellow"
-                                :timeout (str (hh/health-check-timeout-seconds) "s")})
-    (catch Exception e
-      (format "Unable to get elasticsearch cluster health, caught exception: %s"
-              (.getMessage e)))))
 
 (defn health-fn
   "Returns the health state of elasticsearch."

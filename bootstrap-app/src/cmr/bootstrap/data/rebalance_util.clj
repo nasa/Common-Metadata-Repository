@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.data.rebalance-util
   "Utilities for helping with rebalancing a collection."
   (:require
-   [clojurewerkz.elastisch.query :as q]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.config :as es-config]
@@ -15,8 +14,8 @@
 (defn es-query-for-collection-concept-id
   "Returns an elasticsearch query to find granules in the collection."
   [concept-id]
-  {:bool {:must (q/match-all)
-          :filter (q/term :collection-concept-id concept-id)}})
+  {:bool {:must {:match_all {}}
+          :filter {:term {:collection-concept-id concept-id}}}})
 
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
