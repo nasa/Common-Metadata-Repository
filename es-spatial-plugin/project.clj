@@ -44,7 +44,19 @@
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
-                                       [org.elasticsearch/elasticsearch ~elastic-version]
+
+                                       ;; Elastic library
+                                       [org.apache.logging.log4j/log4j-api "2.25.4"]
+                                       [org.apache.logging.log4j/log4j-core "2.25.4"]
+                                       [org.elasticsearch/elasticsearch-lz4 ~elastic-version
+                                        :exclusions [org.lz4/lz4-java]]
+                                       [org.elasticsearch/elasticsearch ~elastic-version
+                                        :exclusions [net.jpountz.lz4/lz4
+                                                     org.apache.logging.log4j/log4j-api
+                                                     org.apache.logging.log4j/log4j-core
+                                                     org.lz4/lz4-java]]
+                                       [at.yawk.lz4/lz4-java "1.10.1"]
+
                                        [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
