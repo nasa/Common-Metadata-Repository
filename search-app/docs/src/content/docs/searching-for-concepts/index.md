@@ -1,6 +1,9 @@
 ---
-title: Searching
+title: Searching For Concepts
 description: Provides information on general methods of searching with the CMR API, as well as the formats that will be used for search results.
+sidebar:
+  label: Searching For Concepts
+  order: 1
 ---
 
 ## <a name="search-with-post"></a> Search with POST
