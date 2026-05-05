@@ -29,6 +29,17 @@
         diff-result (first (select result "/DIF/DirectDistributionInformation"))]
     (is (= diff-result nil))))
 
+;; Testing the dif10 platform translation from umm-c to dif10.
+(deftest dif10-platform-test
+  (let [result (dif10/umm-c-to-dif10-xml
+                {:Platforms [{:ShortName "ISS"
+                              :LongName "International Space Station"
+                              :Type "Space Stations/Crewed Spacecraft"}]})
+        platform (first (select result "/DIF/Platform"))]
+    (is (= "ISS" (value-of platform "Short_Name")))
+    (is (= "International Space Station" (value-of platform "Long_Name")))
+    (is (= "Space Stations/Crewed Spacecraft" (value-of platform "Type")))))
+
 ;; Testing the dif10 metadata dates translation from umm-c to dif10
 (deftest dif10-metadata-dates-test
   (let [result1 (dif10/umm-c-to-dif10-xml 
