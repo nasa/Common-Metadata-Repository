@@ -13,7 +13,8 @@
                  [commons-io "2.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-api]
+                 [org.apache.logging.log4j/log4j-core]
                  [org.clojure/clojure]
 
                  ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
@@ -22,6 +23,8 @@
                   :exclusions [org.lz4/lz4-java]]
                  [org.elasticsearch/elasticsearch ~elastic-version
                   :exclusions [net.jpountz.lz4/lz4
+                               org.apache.logging.log4j/log4j-api
+                               org.apache.logging.log4j/log4j-core
                                org.lz4/lz4-java]] ;; force use of at.yawk.lz4 below
                  [com.taoensso/carmine "3.0.1" :exclusions [com.taoensso/nippy]]
                  [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
