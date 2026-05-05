@@ -1,0 +1,20 @@
+# Use a lightweight official Python image
+FROM python:3.13-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Copy your Python script into the container
+COPY src/find_logger.py .
+COPY src/find_db.py .
+COPY src/find_s3.py .
+COPY src/find_granules.py .
+
+RUN chmod +x find_granules.py
+
+# Define the command to run the script when the container starts
+CMD ["python", "find_granules.py"]
