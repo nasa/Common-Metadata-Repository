@@ -483,7 +483,7 @@
                                                                  science-keyword-uuids (keep :uuid (map #(kms-util/science-keyword->elastic-doc context %) (:ScienceKeywords collection)))
                                                                  platform-uuids (keep :uuid (map #(kms-util/platform->elastic-doc context %) platform-short-names))
                                                                  instrument-uuids (keep :uuid (map #(kms-util/instrument->elastic-doc context %) instrument-short-names))
-                                                                 uuids (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids)]
+                                                                 uuids (distinct (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids))]
                                                              ;; Uniquely this can only be a single value
                                                              (if processing-level-uuid 
                                                                (conj uuids processing-level-uuid)
