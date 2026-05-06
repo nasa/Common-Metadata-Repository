@@ -479,13 +479,12 @@
                                                                  project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
                                                                  related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
                                                                  temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
-                                                                 ;; TODO these three differ in that we could pull them off the objects above but, then it would differ from the others
                                                                  science-keyword-uuids (keep :uuid (map #(kms-util/science-keyword->elastic-doc context %) (:ScienceKeywords collection)))
                                                                  platform-uuids (keep :uuid (map #(kms-util/platform->elastic-doc context %) platform-short-names))
                                                                  instrument-uuids (keep :uuid (map #(kms-util/instrument->elastic-doc context %) instrument-short-names))
                                                                  uuids (distinct (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids))]
                                                              ;; Uniquely this can only be a single value
-                                                             (if processing-level-uuid 
+                                                             (if processing-level-uuid
                                                                (conj uuids processing-level-uuid)
                                                                uuids))})
             :platform-ln-lowercase (map string/lower-case platform-long-names)
