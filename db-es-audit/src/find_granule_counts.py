@@ -563,8 +563,12 @@ def process_granule_mismatch(provider):
             ]
         }
     )
-
-    logger.info(f"Started Task ARN: {response['tasks'][0]['taskArn']} to find missing granules for {provider}")
+    failures = response.get("failures", [])
+    tasks = response.get("tasks", [])
+    if failures or not tasks:
+        raise RuntimeError(f"Failed to start find-granules task for {provider}: {failures}")
+    
+    logger.info(f"Started Task ARN: {tasks[0]['taskArn']} to find missing granules for {provider}")
 
 
 if __name__ == "__main__":
