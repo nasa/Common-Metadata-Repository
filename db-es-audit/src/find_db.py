@@ -20,9 +20,7 @@ def connect_to_db():
     Exceptions:
         Logs error and exits on issue connecting to DB
     """
-    # 1. Use passed config if provided (Method for Program A)
-    # 2. Else use global CONFIG if it has data (Method for Program B)
-    # 3. Else fallback to os.environ
+    # Use global CONFIG if it has data or fallback to os.environ
     settings = CONFIG or os.environ
 
     db_username = settings.get("DB_USERNAME")
