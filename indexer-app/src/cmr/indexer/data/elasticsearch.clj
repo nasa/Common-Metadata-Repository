@@ -1,5 +1,6 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
    [cmr.common.concepts :as cs]
@@ -320,9 +321,15 @@
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
-        (let [err-msg (get-in (ex-data e) [:body])
-              msg (str "Call to Elasticsearch caught exception " err-msg)]
-          (errors/internal-error! msg))))))
+        (let [body (get-in (ex-data e) [:body])
+              status (:status (ex-data e))
+              parsed-body (if (string? body)
+                            (try
+                              (json/decode body true)
+                              (catch Exception _
+                                body))
+                            body)]
+          {:error parsed-body :status status})))))
 
 (defn- context->es-config
   "Returns the elastic config in the context"

@@ -4,8 +4,8 @@
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
    [clojure.test :refer :all]
-   [clojurewerkz.elastisch.rest :as esr]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.connect :as es]
    [cmr.transmit.config :as transmit-config]))
 
 (defn indexer-root-url
@@ -572,7 +572,7 @@
 
 (defn reset-fixture [f]
   (reset)
-  (reset! gran-elastic-connection (esr/connect (gran-elastic-root)))
-  (reset! elastic-connection (esr/connect (elastic-root)))
+  (reset! gran-elastic-connection (es/try-connect {:host (es-config/gran-elastic-host) :port (es-config/gran-elastic-port)}))
+  (reset! elastic-connection (es/try-connect {:host (es-config/elastic-host) :port (es-config/elastic-port)}))
   (f)
   (reset))
