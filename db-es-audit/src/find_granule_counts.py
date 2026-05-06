@@ -200,8 +200,8 @@ def get_db_granule_count(db_connection, latest_working_time, provider, collectio
             count = curr.fetchone()[0]
             return count
         except oracledb.Error as e:
-            logger.error(f"Error querying {table_name} for concept_id {collection_concept_id}: {e}")
-            return 0
+            logger.exception("Error querying %s for concept_id %s", table_name, collection_concept_id)
+            raise
 
 def get_es_indices():
     """
@@ -216,7 +216,7 @@ def get_es_indices():
     Exceptions:
         If a timeout or a code 4XX or 5XX occurs an exception is thrown.
     """
-    es_indices_response = requests.get(f"{CONFIG.get("GRAN_ELASTIC_URL")}/_cat/aliases?h=alias&format=json", 
+    es_indices_response = requests.get(f"{CONFIG.get('GRAN_ELASTIC_URL')}/_cat/aliases?h=alias&format=json", 
                                        timeout=REQUEST_TIMEOUT_SECONDS)
     es_indices_response.raise_for_status()
 
@@ -275,7 +275,7 @@ def get_es_granule_count(index, collection_concept_id, time):
                         "size":0,
                         "track_total_hits": True}
 
-    elastic_response = requests.get(f"{CONFIG.get("GRAN_ELASTIC_URL")}/{index}/_search",
+    elastic_response = requests.get(f"{CONFIG.get('GRAN_ELASTIC_URL')}/{index}/_search",
                                     data=json.dumps(elastic_base_query),
                                     headers=headers,
                                     timeout=REQUEST_TIMEOUT_SECONDS)
@@ -355,7 +355,7 @@ def missing_efs_file_name(provider):
     """
     Returns the file name to store the collection granule count information on an EFS device temporarily.
     """
-    return f"{CONFIG.get("EFS_PATH")}{missing_file_name(provider)}"
+    return f"{CONFIG.get('EFS_PATH')}{missing_file_name(provider)}"
 
 def find_granule_counts_mismatch(provider):
     """
@@ -378,7 +378,7 @@ def find_granule_counts_mismatch(provider):
         # Initialize the S3 client
         s3_client = boto3.client('s3')
 
-        os.makedirs(f"{CONFIG.get("EFS_PATH")}{provider}", exist_ok=True)
+        os.makedirs(f"{CONFIG.get('EFS_PATH')}{provider}", exist_ok=True)
     
         collections = find_s3.read_collections_from_provider(s3_client, provider)
 
