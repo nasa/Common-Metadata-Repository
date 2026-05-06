@@ -2,7 +2,7 @@
 
 Python application to compare and fix any granule discrepancies between the database and elastic search.
 
-There are 2 main programs find_graule_counts.py and find_granules.py. Find_granule_counts.py is the starting point and the basic flow is:
+There are 2 main programs find_granule_counts.py and find_granules.py. Find_granule_counts.py is the starting point and the basic flow is:
 
  1) Get the list of providers that have collections by querying the database to see which ones contain granules
  
@@ -10,7 +10,7 @@ There are 2 main programs find_graule_counts.py and find_granules.py. Find_granu
 
  3) For a provider get the granule counts for each collection. If the collection has granules, get the elastic search granule count. If the granule counts do not match, then record and save that information. this step is done in a limited parallel fashion by provider.  
 
- 4) Once all of the granule count information has been saved, the find_graule_counts program launches the find_granules program in a limited parallel fashion by provider. Both the database and elastic search is checked to find missing granules. When a missing granule has been found, elastic search is corrected. Not all granules are checked however, once the number of offending granules has been fixed, the program terminates.
+ 4) Once all of the granule count information has been saved, the find_granule_counts program launches the find_granules program in a limited parallel fashion by provider. Both the database and elastic search is checked to find missing granules. When a missing granule has been found, elastic search is corrected. Not all granules are checked however, once the number of offending granules has been fixed, the program terminates.
 
 
 ## Infrastructure
@@ -51,7 +51,7 @@ The underlying AWS infrastructure is in terraform using the db_es_audit module. 
 
 ## Building and Deploying
 
-Two docker image exist, one for each main program (find_graule_counts.py, find_granules.py). To build and deploy the find_granule_counts.py do the following:
+Two docker image exist, one for each main program (find_granule_counts.py, find_granules.py). To build and deploy the find_granule_counts.py do the following:
 
  1) log in your docker with AWS ECR:
  aws ecr get-login-password --region "us-east-1" | docker login --username AWS --password-stdin <account number>.dkr.ecr.us-east-1.amazonaws.com
@@ -71,7 +71,7 @@ To build and deploy the find_granules.py do the following:
 aws ecr get-login-password --region "us-east-1" | docker login --username AWS --password-stdin <account number>.dkr.ecr.us-east-1.amazonaws.com
 
  2) Locally build:
- docker build -f Dockerfile_find_granules -t cmr-db-es-audit-find-granules.
+ docker build -f Dockerfile_find_granules -t cmr-db-es-audit-find-granules .
 
  3) Tag the image:
  docker tag cmr-db-es-audit-find-granules:latest <account number>.dkr.ecr.us-east-1.amazonaws.com/cmr-db-es-audit-find-granules-sit:latest

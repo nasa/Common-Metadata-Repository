@@ -85,7 +85,7 @@ def db_batch_read(mismatch):
                     break
                 yield batch
     except oracledb.Error as e:
-            raise Exception(f"Failed to execute query: {search_query}\nerror: {e}")
+        raise Exception(f"Failed to execute query: {search_query}\nerror: {e}") from e
     finally:
         db_connection.close()
 
@@ -124,10 +124,9 @@ def has_granule_been_deleted(db_connection, provider, concept_id):
             result = curr.fetchone()[0]
 
     except oracledb.Error as e:
-            logger.error(f"In has_granule_been_deleted Exception occured. {e}")
-            raise Exception(f"Failed to execute query: {search_query}\nerror: {e}")
-    finally:
-        return result
+        logger.error(f"In has_granule_been_deleted Exception occured. {e}")
+        raise Exception(f"Failed to execute query: {search_query}\nerror: {e}") from e
+    return result
 
 def execute_es_query(index, query):
     """
@@ -144,7 +143,7 @@ def execute_es_query(index, query):
         Raises exceptions if the elastic search query failed.
     """
     headers = {"Content-Type": "application/json"}
-    elastic_response = requests.post(f"{CONFIG.get("GRAN_ELASTIC_URL")}/{index}/_search",
+    elastic_response = requests.post(f"{CONFIG.get('GRAN_ELASTIC_URL')}/{index}/_search",
                                      json=query,
                                      headers=headers,
                                      timeout=REQUEST_TIMEOUT_SECONDS)
@@ -203,7 +202,7 @@ def get_collection_entry_title(mismatch):
              "query": {"bool": {"must": [{"match": {"concept-id": collection_concept_id}}]}}}
     
     headers = {"Content-Type": "application/json"}
-    elastic_response = requests.post(f"{CONFIG.get("ELASTIC_URL")}/{index}/_search",
+    elastic_response = requests.post(f"{CONFIG.get('ELASTIC_URL')}/{index}/_search",
                                      json=query,
                                      headers=headers,
                                      timeout=REQUEST_TIMEOUT_SECONDS)
@@ -236,7 +235,7 @@ def publish_message_to_sqs(message_body):
     message_body_str = json.dumps(message_body, separators=(',', ':'))
 
     # Send message to SQS queue
-    response = SQS.send_message(QueueUrl=CONFIG.get("SQS_QUEUE_URL"),MessageBody=message_body_str)
+    response = SQS.send_message(QueueUrl=CONFIG.get('SQS_QUEUE_URL'),MessageBody=message_body_str)
     logger.info(f"Message {message_body_str} sent. Message ID: {response['MessageId']}")
 
 def process_db_batches(mismatch):
@@ -280,7 +279,7 @@ def process_db_batches(mismatch):
     missing_items_count = 0
 
     # .6 seconds is roughly average time to get 500 records from the database using batching
-    estimated_duration = mismatch['db_count'] / CONFIG.get("BATCH_SIZE") * 0.6
+    estimated_duration = mismatch['db_count'] / CONFIG.get('BATCH_SIZE') * 0.6
     logger.info(f"To process {mismatch['db_count']} records for {mismatch['concept_id']}, it will take about {estimated_duration} seconds to complete processing.")
 
     entry_title = get_collection_entry_title(mismatch)
@@ -306,7 +305,7 @@ def process_db_batches(mismatch):
             if granule_hits < len(db_batch):
                 # Figure out from the results which concepts do not exist
                 # Extract _source values into an array
-                query = elastic_search_query(db_batch, CONFIG.get("BATCH_SIZE"))
+                query = elastic_search_query(db_batch, CONFIG.get('BATCH_SIZE'))
                 results = execute_es_query(mismatch['index'], query)
 
                 source_array = [hit['_source'] for hit in results['hits']['hits']]
@@ -342,9 +341,13 @@ def process_db_batches(mismatch):
                 else:
                     print("All items in db_batch are present in hits.")
         except StopIteration:
+            break
+        except Exception:
+            raise
+        finally:
             missing_report.flush()
             missing_report.close()
-            break
+            has_granules_db_conn.close()
 
 def report_file_name(mismatch):
     """
@@ -356,7 +359,7 @@ def report_efs_file_name(mismatch):
     """
     The temporary file path and name of the missing granule report that lives on EFS.
     """
-    return f"{CONFIG.get("EFS_PATH")}{report_file_name(mismatch)}"
+    return f"{CONFIG.get('EFS_PATH')}{report_file_name(mismatch)}"
 
 def prepare_report_file(mismatch):
     """
@@ -371,7 +374,7 @@ def prepare_report_file(mismatch):
     Exceptions:
         None
     """
-    os.makedirs(f"{CONFIG.get("EFS_PATH")}{mismatch['provider']}", exist_ok=True)
+    os.makedirs(f"{CONFIG.get('EFS_PATH')}{mismatch['provider']}", exist_ok=True)
     report = open(report_efs_file_name(mismatch), "w", encoding="UTF-8")
     report.write("Collection Concept ID,Granule Concept ID,Granule Revision,Revision Date\n")
     report.flush()
