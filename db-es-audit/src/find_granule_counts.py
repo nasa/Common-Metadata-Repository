@@ -144,16 +144,17 @@ def get_providers_with_collections():
     # Connect to the database
     db_connection = connect_to_db()
 
-    # Initialize the S3 client
-    s3_client = boto3.client('s3')
+    try:
+        # Initialize the S3 client
+        s3_client = boto3.client('s3')
     
-    # Get a list of providers through the CMR database by checking to see if the _GRANULES tables contain granules
-    providers = get_providers(db_connection, s3_client)
+        # Get a list of providers through the CMR database by checking to see if the _GRANULES tables contain granules
+        providers = get_providers(db_connection, s3_client)
 
-    # Then get all of the collection concept ids per each provider that has granules
-    collections = get_collections_per_provider(db_connection, s3_client, providers)
-
-    db_connection.close()
+        # Then get all of the collection concept ids per each provider that has granules
+        get_collections_per_provider(db_connection, s3_client, providers)
+    finally:
+        db_connection.close()
 
     logger.info("Finished getting all collections per providers that have granules for auditing.")
 
