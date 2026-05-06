@@ -1,6 +1,9 @@
 ---
 title: Subscription
 description: Provides information on the definition and use of subscriptions.
+sidebar:
+  label: Subscription
+  order: 7
 ---
 
 ## <a name="subscription"></a> Subscription

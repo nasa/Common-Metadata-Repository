@@ -1,6 +1,9 @@
 ---
 title: Collections
 description: Provides information on how to use the CMR API with collections.
+sidebar:
+  label: Collections
+  order: 2
 ---
 
 ## <a name="collection-search-by-parameters"></a> Collection Search Examples

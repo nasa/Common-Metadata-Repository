@@ -1,6 +1,9 @@
 ---
 title: Granules
 description: Provides information on how to use the CMR API with granules.
+sidebar:
+  label: Granules
+  order: 3
 ---
 
 ## <a name="granule-search-by-parameters"></a> Granule Search By Parameters

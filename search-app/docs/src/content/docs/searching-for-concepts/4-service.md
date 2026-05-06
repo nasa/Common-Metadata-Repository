@@ -1,6 +1,9 @@
 ---
 title: Service
 description: Provides information on the definition and use of services.
+sidebar:
+  label: Service
+  order: 4
 ---
 
 ## <a name="service"></a> Service

@@ -1,6 +1,9 @@
 ---
 title: Variable
 description: Provides information on the definition and use of variables.
+sidebar:
+  label: Variable
+  order: 5
 ---
 
 ## <a name="variable"></a> Variable

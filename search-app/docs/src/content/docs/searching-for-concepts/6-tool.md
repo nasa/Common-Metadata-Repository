@@ -1,6 +1,9 @@
 ---
 title: Tool
 description: Provides information on the definition and use of a tool.
+sidebar:
+  label: Tool
+  order: 6
 ---
 
 ## <a name="tool"></a> Tool

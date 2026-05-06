@@ -1,6 +1,9 @@
 ---
 title: Visualization
 description: Provides information on different kinds of visualization platforms.
+sidebar:
+  label: Visualization
+  order: 11
 ---
 
 ### <a name="visualization"></a> Visualization v1.1.0
