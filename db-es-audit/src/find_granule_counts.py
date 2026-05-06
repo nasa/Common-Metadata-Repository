@@ -21,10 +21,6 @@ except KeyError:
     print("Error: ENVIRONMENT environment variable is not set.")
     sys.exit(1)
 
-#GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
-#GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
-#GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
-#EFS_PATH = os.getenv("EFS_PATH")
 REQUEST_TIMEOUT_SECONDS = 30
 
 logger = logging.getLogger("find_granule_counts")
@@ -560,15 +556,6 @@ def process_granule_mismatch(provider):
                     'environment': [
                         {'name': 'PROVIDER', 'value': provider},
                         {'name': 'ENVIRONMENT', 'value': os.getenv("ENVIRONMENT")}
-                        #{'name': 'AUDIT_S3_BUCKET_NAME', 'value': os.getenv("AUDIT_S3_BUCKET_NAME")},
-                        #{'name': 'DB_USERNAME', 'value': os.getenv("DB_USERNAME")},
-                        #{'name': 'DB_PASSWORD', 'value': os.getenv("DB_PASSWORD")},
-                        #{'name': 'DB_URL', 'value': os.getenv("DB_URL")},
-                        #{'name': 'GRAN_ELASTIC_HOST', 'value': os.getenv("GRAN_ELASTIC_HOST")},
-                        #{'name': 'ELASTIC_HOST', 'value': os.getenv("ELASTIC_HOST")},
-                        #{'name': 'EFS_PATH', 'value': os.getenv("EFS_PATH")},
-                        #{'name': 'SQS_QUEUE_URL', 'value': os.getenv("SQS_QUEUE_URL")},
-                        #{'name': 'BATCH_SIZE', 'value': os.getenv("BATCH_SIZE")}
                     ]
                 }
             ]

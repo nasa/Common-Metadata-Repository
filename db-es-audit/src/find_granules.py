@@ -4,9 +4,7 @@ import re
 import sys
 
 import boto3
-from botocore.exceptions import ClientError
 import oracledb
-from datetime import datetime, timezone
 import requests
 import logging
 
@@ -25,25 +23,11 @@ except KeyError:
     sys.exit(1)
 
 REQUEST_TIMEOUT_SECONDS = 30
-
-#ELASTIC_PORT = os.getenv("ELASTIC_PORT", "9200")
-#ELASTIC_HOST = os.getenv("ELASTIC_HOST")
-#ELASTIC_URL = f"http://{ELASTIC_HOST}:{ELASTIC_PORT}"
-#GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
-#GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
-#GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
-#QUEUE_URL = os.getenv("SQS_QUEUE_URL")
+DB_TABLE_REGEX = r"[0-9a-zA-Z_]+_GRANULES"
+logger = logging.getLogger("find_granules")
 
 # Create an SQS client
 SQS = boto3.client('sqs', region_name='us-east-1')
-
-#EFS_PATH = os.getenv("EFS_PATH")
-
-DB_TABLE_REGEX = r"[0-9a-zA-Z_]+_GRANULES"
-
-#BATCH_SIZE = int(os.getenv("BATCH_SIZE", "1000"))
-
-logger = logging.getLogger("find_granules")
 
 def db_batch_read(mismatch):
     """
