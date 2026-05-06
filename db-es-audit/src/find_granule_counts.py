@@ -43,8 +43,9 @@ def get_providers(db_connection, s3_client):
         Logs error and exits on issue connecting to or querying the DB
     """
         
-    search_query = f"""
-    select table_name from all_tables where table_name like '%_GRANULES'
+    search_query = """
+    select table_name from all_tables
+    where owner = 'METADATA_DB' AND table_name like '%\_GRANULES' ESCAPE '\\'
     """
     granule_table_list = []
     result = []
