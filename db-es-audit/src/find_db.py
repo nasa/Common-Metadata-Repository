@@ -3,8 +3,9 @@ import os
 import sys
 
 import oracledb
+from parameters import CONFIG
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("find_db")
 
 def connect_to_db():
     """
@@ -19,9 +20,14 @@ def connect_to_db():
     Exceptions:
         Logs error and exits on issue connecting to DB
     """
-    db_username = os.getenv("DB_USERNAME")
-    db_password = os.getenv("DB_PASSWORD")
-    db_dsn = os.getenv("DB_URL")
+    # 1. Use passed config if provided (Method for Program A)
+    # 2. Else use global CONFIG if it has data (Method for Program B)
+    # 3. Else fallback to os.environ
+    settings = CONFIG or os.environ
+
+    db_username = settings.get("DB_USERNAME")
+    db_password = settings.get("DB_PASSWORD")
+    db_dsn = settings.get("DB_URL")
 
     try:
         db_connection = oracledb.connect(user=db_username, password=db_password, dsn=db_dsn)

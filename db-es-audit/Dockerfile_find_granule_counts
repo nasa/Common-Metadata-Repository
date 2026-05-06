@@ -12,6 +12,7 @@ RUN pip install -r requirements.txt
 COPY src/find_logger.py .
 COPY src/find_db.py .
 COPY src/find_s3.py .
+COPY src/parameters.py .
 COPY src/find_granule_counts.py .
 
 RUN chmod +x find_granule_counts.py

@@ -11,32 +11,37 @@ import requests
 import logging
 
 import find_s3
+from parameters import CONFIG, load_ssm_params
 from find_logger import setup_logging
 from find_db import connect_to_db
 
-ELASTIC_PORT = os.getenv("ELASTIC_PORT", "9200")
-ELASTIC_HOST = os.getenv("ELASTIC_HOST")
-ELASTIC_URL = f"http://{ELASTIC_HOST}:{ELASTIC_PORT}"
-GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
-GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
-GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
-QUEUE_URL = os.getenv("SQS_QUEUE_URL")
+PROVIDER = None
+ENVIRONMENT = None
+try:
+    PROVIDER = os.environ['PROVIDER']
+    ENVIRONMENT = os.environ['ENVIRONMENT']
+except KeyError:
+    print("Error: PROVIDER or ENVIRONMENT environment variable is not set.")
+    sys.exit(1)
+
+REQUEST_TIMEOUT_SECONDS = 30
+
+#ELASTIC_PORT = os.getenv("ELASTIC_PORT", "9200")
+#ELASTIC_HOST = os.getenv("ELASTIC_HOST")
+#ELASTIC_URL = f"http://{ELASTIC_HOST}:{ELASTIC_PORT}"
+#GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
+#GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
+#GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
+#QUEUE_URL = os.getenv("SQS_QUEUE_URL")
 
 # Create an SQS client
 SQS = boto3.client('sqs', region_name='us-east-1')
 
-EFS_PATH = os.getenv("EFS_PATH")
+#EFS_PATH = os.getenv("EFS_PATH")
 
 DB_TABLE_REGEX = r"[0-9a-zA-Z_]+_GRANULES"
 
-BATCH_SIZE = int(os.getenv("BATCH_SIZE", "1000"))
-
-PROVIDER = None
-try:
-    PROVIDER = os.environ['PROVIDER']
-except KeyError:
-    print("Error: PROVIDER environment variable is not set.")
-    sys.exit(1)
+#BATCH_SIZE = int(os.getenv("BATCH_SIZE", "1000"))
 
 logger = logging.getLogger("find_granules")
 
@@ -91,7 +96,7 @@ def db_batch_read(mismatch):
         with db_connection.cursor() as curr:
             curr.execute(search_query)
             while True:
-                batch = curr.fetchmany(BATCH_SIZE)
+                batch = curr.fetchmany(CONFIG.get('BATCH_SIZE'))
                 if not batch:
                     break
                 yield batch
@@ -155,9 +160,10 @@ def execute_es_query(index, query):
         Raises exceptions if the elastic search query failed.
     """
     headers = {"Content-Type": "application/json"}
-    elastic_response = requests.post(f"{GRAN_ELASTIC_URL}/{index}/_search",
+    elastic_response = requests.post(f"{CONFIG.get("GRAN_ELASTIC_URL")}/{index}/_search",
                                      json=query,
-                                     headers=headers)
+                                     headers=headers,
+                                     timeout=REQUEST_TIMEOUT_SECONDS)
     if elastic_response.status_code >= 300:
         logger.error(f"ERROR: request to elastic failed with error: {elastic_response.text}")
         sys.exit(1)
@@ -213,9 +219,10 @@ def get_collection_entry_title(mismatch):
              "query": {"bool": {"must": [{"match": {"concept-id": collection_concept_id}}]}}}
     
     headers = {"Content-Type": "application/json"}
-    elastic_response = requests.post(f"{ELASTIC_URL}/{index}/_search",
+    elastic_response = requests.post(f"{CONFIG.get("ELASTIC_URL")}/{index}/_search",
                                      json=query,
-                                     headers=headers)
+                                     headers=headers,
+                                     timeout=REQUEST_TIMEOUT_SECONDS)
     if elastic_response.status_code >= 300:
         logger.error(f"ERROR: request to elastic failed with error: {elastic_response.text}")
         sys.exit(1)
@@ -245,7 +252,7 @@ def publish_message_to_sqs(message_body):
     message_body_str = json.dumps(message_body, separators=(',', ':'))
 
     # Send message to SQS queue
-    response = SQS.send_message(QueueUrl=QUEUE_URL,MessageBody=message_body_str)
+    response = SQS.send_message(QueueUrl=CONFIG.get("SQS_QUEUE_URL"),MessageBody=message_body_str)
     logger.info(f"Message {message_body_str} sent. Message ID: {response['MessageId']}")
 
 def process_db_batches(mismatch):
@@ -289,13 +296,14 @@ def process_db_batches(mismatch):
     missing_items_count = 0
 
     # .6 seconds is roughly average time to get 500 records from the database using batching
-    estimated_duration = mismatch['db_count'] / BATCH_SIZE * 0.6
+    estimated_duration = mismatch['db_count'] / CONFIG.get("BATCH_SIZE") * 0.6
     logger.info(f"To process {mismatch['db_count']} records for {mismatch['concept_id']}, it will take about {estimated_duration} seconds to complete processing.")
 
     entry_title = get_collection_entry_title(mismatch)
     missing_report = open(report_efs_file_name(mismatch), "a", encoding="UTF-8")
 
-    while True:
+    # Continue until the StopIteration exception is raised
+    while difference > 0:
         try:
             count += 1
 
@@ -314,7 +322,7 @@ def process_db_batches(mismatch):
             if granule_hits < len(db_batch):
                 # Figure out from the results which concepts do not exist
                 # Extract _source values into an array
-                query = elastic_search_query(db_batch, BATCH_SIZE)
+                query = elastic_search_query(db_batch, CONFIG.get("BATCH_SIZE"))
                 results = execute_es_query(mismatch['index'], query)
 
                 source_array = [hit['_source'] for hit in results['hits']['hits']]
@@ -364,7 +372,7 @@ def report_efs_file_name(mismatch):
     """
     The temporary file path and name of the missing granule report that lives on EFS.
     """
-    return f"{EFS_PATH}{report_file_name(mismatch)}"
+    return f"{CONFIG.get("EFS_PATH")}{report_file_name(mismatch)}"
 
 def prepare_report_file(mismatch):
     """
@@ -379,7 +387,7 @@ def prepare_report_file(mismatch):
     Exceptions:
         None
     """
-    os.makedirs(f"{EFS_PATH}{mismatch['provider']}", exist_ok=True)
+    os.makedirs(f"{CONFIG.get("EFS_PATH")}{mismatch['provider']}", exist_ok=True)
     report = open(report_efs_file_name(mismatch), "w", encoding="UTF-8")
     report.write("Collection Concept ID,Granule Concept ID,Granule Revision,Revision Date\n")
     report.flush()
@@ -438,6 +446,7 @@ def process_mismatches(first_time_open_report):
 if __name__ == "__main__":
 
     setup_logging(PROVIDER)
+    load_ssm_params(ENVIRONMENT)
 
     first_time_open_report = True
     process_mismatches(first_time_open_report)

@@ -41,6 +41,7 @@ The underlying AWS infrastructure is in terraform using the db_es_audit module. 
  * ELASTIC_HOST: The full AWS collection elastic search load balancer name.
  * SQS_QUEUE_URL: The indexer queue URL.
  * BATCH_SIZE: The number of records that are compared between the database and elastic search per request to each service. The bigger the number the faster the processing, but also more memory is used.
+ * ENVIRONMENT: The lowercase environment name
 
  The following environment variables are created by terraform and should not be created manually.
 

@@ -5,8 +5,9 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
+from parameters import CONFIG
+
 logger = logging.getLogger("find_s3")
-AUDIT_BUCKET_NAME = os.getenv("AUDIT_S3_BUCKET_NAME")
 
 def upload_file_to_s3(file_name, object_name=None):
     """
@@ -24,7 +25,7 @@ def upload_file_to_s3(file_name, object_name=None):
         FileNotFoundError: Error when the file cannot be found.
     """
 
-    logger.debug(f"save to S3: file_name: {file_name}, bucket: {AUDIT_BUCKET_NAME}, object_name {object_name}")
+    logger.debug(f"save to S3: file_name: {file_name}, bucket: {CONFIG.get("AUDIT_S3_BUCKET_NAME")}, object_name {object_name}")
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = os.path.basename(file_name)
@@ -33,12 +34,12 @@ def upload_file_to_s3(file_name, object_name=None):
     s3_client = boto3.client('s3')
     try:
         # Boto3's upload_file handles large files by splitting them into smaller chunks and uploading each in parallel
-        s3_client.upload_file(file_name, AUDIT_BUCKET_NAME, object_name)
-        logger.debug(f"Successfully uploaded {file_name} to s3://{AUDIT_BUCKET_NAME}/{object_name}")
+        s3_client.upload_file(file_name, CONFIG.get("AUDIT_S3_BUCKET_NAME"), object_name)
+        logger.debug(f"Successfully uploaded {file_name} to s3://{CONFIG.get("AUDIT_S3_BUCKET_NAME")}/{object_name}")
         return True
     except ClientError as e:
         logger.error(e)
-        logger.error(f"Failed to upload {file_name} to s3://{AUDIT_BUCKET_NAME}/{object_name}")
+        logger.error(f"Failed to upload {file_name} to s3://{CONFIG.get("AUDIT_S3_BUCKET_NAME")}/{object_name}")
         return False
     except FileNotFoundError:
         logger.error(f"The file {file_name} was not found when trying to upload to S3.")
@@ -62,7 +63,7 @@ def save_to_s3(s3_client, data, provider):
 
     # Convert dict to JSON string and upload
     s3_client.put_object(
-        Bucket=f"{AUDIT_BUCKET_NAME}",
+        Bucket=f"{CONFIG.get("AUDIT_S3_BUCKET_NAME")}",
         Key=f"{provider}/{provider}_collections.json",
         Body=json.dumps(data).encode('utf-8'),
         ContentType='application/json'
@@ -85,7 +86,7 @@ def save_providers_to_s3(s3_client, data):
 
     # Convert dict to JSON string and upload
     s3_client.put_object(
-        Bucket=f"{AUDIT_BUCKET_NAME}",
+        Bucket=f"{CONFIG.get("AUDIT_S3_BUCKET_NAME")}",
         Key="providers.json",
         Body=json.dumps(data).encode('utf-8'),
         ContentType='application/json'
@@ -107,14 +108,14 @@ def read_from_s3(s3_client, object_key):
     """
 
     try:
-        response = s3_client.get_object(Bucket=AUDIT_BUCKET_NAME, Key=object_key)
+        response = s3_client.get_object(Bucket=CONFIG.get("AUDIT_S3_BUCKET_NAME"), Key=object_key)
 
         # Read the content
         object_content = response['Body'].read().decode('utf-8')
         return object_content
 
     except Exception as e:
-        logger.exception("Failed to read object %s from bucket %s", object_key, AUDIT_BUCKET_NAME)
+        logger.exception("Failed to read object %s from bucket %s", object_key, CONFIG.get("AUDIT_S3_BUCKET_NAME"))
         # re-raise the original exception
         raise
 

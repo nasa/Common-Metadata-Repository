@@ -12,11 +12,20 @@ import requests
 import find_s3
 from find_logger import setup_logging
 from find_db import connect_to_db
+from parameters import CONFIG, load_ssm_params
 
-GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
-GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
-GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
-EFS_PATH = os.getenv("EFS_PATH")
+ENVIRONMENT = None
+try:
+    ENVIRONMENT = os.environ['ENVIRONMENT']
+except KeyError:
+    print("Error: ENVIRONMENT environment variable is not set.")
+    sys.exit(1)
+
+#GRAN_ELASTIC_PORT = os.getenv("GRAN_ELASTIC_PORT", "9200")
+#GRAN_ELASTIC_HOST = os.getenv("GRAN_ELASTIC_HOST")
+#GRAN_ELASTIC_URL = f"http://{GRAN_ELASTIC_HOST}:{GRAN_ELASTIC_PORT}"
+#EFS_PATH = os.getenv("EFS_PATH")
+REQUEST_TIMEOUT_SECONDS = 30
 
 logger = logging.getLogger("find_granule_counts")
 
@@ -55,7 +64,7 @@ def get_providers(db_connection, s3_client):
     # Get a list of providers where granules exist.
     with db_connection.cursor() as curr:
         for table in granule_table_list:
-            logger.info(f"Checking for granules in METADATA_DB.{table}")
+            logger.debug(f"Checking for granules in METADATA_DB.{table}")
             try:
                 search_query = f"""
                 SELECT CASE 
@@ -207,9 +216,12 @@ def get_es_indices():
         The list of granule indexes.
 
     Exceptions:
-        None
+        If a timeout or a code 4XX or 5XX occurs an exception is thrown.
     """
-    es_indices_response = requests.get(f"{GRAN_ELASTIC_URL}/_cat/aliases?h=alias&format=json")
+    es_indices_response = requests.get(f"{CONFIG.get("GRAN_ELASTIC_URL")}/_cat/aliases?h=alias&format=json", 
+                                       timeout=REQUEST_TIMEOUT_SECONDS)
+    es_indices_response.raise_for_status()
+
     es_indices_list = [item['alias'] for item in es_indices_response.json()] 
     return es_indices_list
 
@@ -256,7 +268,8 @@ def get_es_granule_count(index, collection_concept_id, time):
         matching the time parameter for the collection.
 
     Exceptions:
-        None
+       None, but if a search response is not successful a log message is provided 
+       and the program will quit.
     """
     headers = {"Content-Type": "application/json"}
     elastic_base_query = {"query": {"bool": {"must": [{"range": {"revision-date": {"lte": time}}},
@@ -264,15 +277,16 @@ def get_es_granule_count(index, collection_concept_id, time):
                         "size":0,
                         "track_total_hits": True}
 
-    elastic_response = requests.get(f"{GRAN_ELASTIC_URL}/{index}/_search",
-                                                data=json.dumps(elastic_base_query),
-                                                headers=headers)
+    elastic_response = requests.get(f"{CONFIG.get("GRAN_ELASTIC_URL")}/{index}/_search",
+                                    data=json.dumps(elastic_base_query),
+                                    headers=headers,
+                                    timeout=REQUEST_TIMEOUT_SECONDS)
     if elastic_response.status_code >= 300:
         logger.error(f"ERROR: request to elastic failed with error: {elastic_response.text}")
         sys.exit(1)
 
     granule_hits = elastic_response.json()["hits"]["total"]["value"]
-    logger.debug("granule hits\n", granule_hits)
+    logger.debug("granule hits %s", granule_hits)
     return granule_hits
 
 def compare_granule_counts(db_connection, latest_working_time, f, provider, collection_concept_ids):
@@ -343,7 +357,7 @@ def missing_efs_file_name(provider):
     """
     Returns the file name to store the collection granule count information on an EFS device temporarily.
     """
-    return f"{EFS_PATH}{missing_file_name(provider)}"
+    return f"{CONFIG.get("EFS_PATH")}{missing_file_name(provider)}"
 
 def find_granule_counts_mismatch(provider):
     """
@@ -362,26 +376,28 @@ def find_granule_counts_mismatch(provider):
     """
     # Connect to the database
     db_connection = connect_to_db()
+    try:
+        # Initialize the S3 client
+        s3_client = boto3.client('s3')
 
-    # Initialize the S3 client
-    s3_client = boto3.client('s3')
-
-    os.makedirs(f"{EFS_PATH}{provider}", exist_ok=True)
+        os.makedirs(f"{CONFIG.get("EFS_PATH")}{provider}", exist_ok=True)
     
-    collections = find_s3.read_collections_from_provider(s3_client, provider)
+        collections = find_s3.read_collections_from_provider(s3_client, provider)
 
-    # The revision_date is stored as UTC.
-    latest_working_time = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(microsecond=0)
-    logger.info(f"Latest Working Time: {latest_working_time}")
+        # The revision_date is stored as UTC.
+        latest_working_time = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(microsecond=0)
+        logger.debug(f"Latest Working Time: {latest_working_time}")
 
-    for provider, collection_concept_ids in collections.items():
-        with open(missing_efs_file_name(provider), 'w', encoding="UTF-8") as f:
-            f.write('[')
-            # Compare granule counts between the database and elastic search
-            compare_granule_counts(db_connection, latest_working_time, f, provider, collection_concept_ids)
-            f.write(']')
+        for provider, collection_concept_ids in collections.items():
+            with open(missing_efs_file_name(provider), 'w', encoding="UTF-8") as f:
+                f.write('[')
+                # Compare granule counts between the database and elastic search
+                compare_granule_counts(db_connection, latest_working_time, f, provider, collection_concept_ids)
+                f.write(']')
 
-    find_s3.upload_file_to_s3(missing_efs_file_name(provider), missing_file_name(provider))
+        find_s3.upload_file_to_s3(missing_efs_file_name(provider), missing_file_name(provider))
+    finally:
+        db_connection.close()
 
 def get_current_fargate_network_config():
     """
@@ -399,6 +415,8 @@ def get_current_fargate_network_config():
         fargate environment.
         Raises exception when either the subnets or security groups
         are not found.
+        When the status of requesting task data is either 4XX or 5XX
+        an exception is raised.
     """
     # Fetch the metadata URI provided by AWS inside Fargate
     metadata_url = os.environ.get('ECS_CONTAINER_METADATA_URI_V4')
@@ -406,7 +424,7 @@ def get_current_fargate_network_config():
         raise Exception("Not running inside a Fargate environment!")
         
     # Get the task metadata
-    task_data = requests.get(f"{metadata_url}/task").json()
+    task_data = requests.get(f"{metadata_url}/task", timeout=REQUEST_TIMEOUT_SECONDS).json()
     task_arn = task_data.get('TaskARN')
     cluster_arn = task_data.get('Cluster')
 
@@ -479,6 +497,8 @@ def get_current_cluster_name():
     Exceptions:
         Raises exception when the program is not running inside a
         fargate environment.
+        When the status of requesting task data is either 4XX or 5XX
+        an exception is raised.
     """
     # Fetch the metadata URI provided by AWS
     metadata_url = os.environ.get('ECS_CONTAINER_METADATA_URI_V4')
@@ -486,7 +506,7 @@ def get_current_cluster_name():
         raise Exception("Not running inside a Fargate environment!")
         
     # Get the task metadata
-    response = requests.get(f"{metadata_url}/task")
+    response = requests.get(f"{metadata_url}/task", timeout=REQUEST_TIMEOUT_SECONDS)
     task_data = response.json()
     
     # Pull the Cluster ARN or name
@@ -539,15 +559,16 @@ def process_granule_mismatch(provider):
                     'name': f"cmr-db-es-audit-find-granules-{environment}",
                     'environment': [
                         {'name': 'PROVIDER', 'value': provider},
-                        {'name': 'AUDIT_S3_BUCKET_NAME', 'value': os.getenv("AUDIT_S3_BUCKET_NAME")},
-                        {'name': 'DB_USERNAME', 'value': os.getenv("DB_USERNAME")},
-                        {'name': 'DB_PASSWORD', 'value': os.getenv("DB_PASSWORD")},
-                        {'name': 'DB_URL', 'value': os.getenv("DB_URL")},
-                        {'name': 'GRAN_ELASTIC_HOST', 'value': os.getenv("GRAN_ELASTIC_HOST")},
-                        {'name': 'ELASTIC_HOST', 'value': os.getenv("ELASTIC_HOST")},
-                        {'name': 'EFS_PATH', 'value': os.getenv("EFS_PATH")},
-                        {'name': 'SQS_QUEUE_URL', 'value': os.getenv("SQS_QUEUE_URL")},
-                        {'name': 'BATCH_SIZE', 'value': os.getenv("BATCH_SIZE")}
+                        {'name': 'ENVIRONMENT', 'value': os.getenv("ENVIRONMENT")}
+                        #{'name': 'AUDIT_S3_BUCKET_NAME', 'value': os.getenv("AUDIT_S3_BUCKET_NAME")},
+                        #{'name': 'DB_USERNAME', 'value': os.getenv("DB_USERNAME")},
+                        #{'name': 'DB_PASSWORD', 'value': os.getenv("DB_PASSWORD")},
+                        #{'name': 'DB_URL', 'value': os.getenv("DB_URL")},
+                        #{'name': 'GRAN_ELASTIC_HOST', 'value': os.getenv("GRAN_ELASTIC_HOST")},
+                        #{'name': 'ELASTIC_HOST', 'value': os.getenv("ELASTIC_HOST")},
+                        #{'name': 'EFS_PATH', 'value': os.getenv("EFS_PATH")},
+                        #{'name': 'SQS_QUEUE_URL', 'value': os.getenv("SQS_QUEUE_URL")},
+                        #{'name': 'BATCH_SIZE', 'value': os.getenv("BATCH_SIZE")}
                     ]
                 }
             ]
@@ -560,6 +581,7 @@ def process_granule_mismatch(provider):
 if __name__ == "__main__":
 
     setup_logging()
+    load_ssm_params(ENVIRONMENT)
     logger.info("Starting to find granule counts to see if there are any discrepencies between the database and elastic search")
 
     # Save to S3 a set of maps per provider that includes the provider name and a list of all
