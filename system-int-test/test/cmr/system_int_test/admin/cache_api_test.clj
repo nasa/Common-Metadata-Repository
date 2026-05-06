@@ -32,10 +32,10 @@
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
         _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
         _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))
-        indexer-caches (map name (keys (:caches (indexer-system/create-system))))
-        ingest-caches (map name (keys (:caches (ingest-system/create-system))))
-        search-caches (map name (keys (:caches (search-system/create-system))))
-        access-control-caches (map name (keys (:caches (access-control-system/create-system))))]
+        indexer-caches (map name (keys indexer-system/application-caches))
+        ingest-caches (map name (keys ingest-system/application-caches))
+        search-caches (map name (keys search-system/application-caches))
+        access-control-caches (map name (keys access-control-system/application-caches))]
 
     (testing "list caches"
       (are [url caches]
@@ -144,29 +144,29 @@
 
     (testing "normal user cannot retrieve cache values"
       (are [url]
-            (let [response (client/request {:url url
-                                            :method :get
-                                            :query-params {:token normal-user-token}
-                                            :connection-manager (s/conn-mgr)
-                                            :throw-exceptions false})
-                  errors (:errors (json/decode (:body response) true))]
-              (is (= 401 (:status response)))
-              (is (= ["You do not have permission to perform that action."] errors)))
-         (str (url/indexer-read-caches-url) "/acls/acls")
-         (str (url/mdb-read-caches-url) "/acls/acls")
-         (str (url/access-control-read-caches-url) "/acls/acls")
-         (str (url/ingest-read-caches-url) "/acls/acls")
-         (str (url/search-read-caches-url) "/acls/acls"))
-       (s/only-with-real-database
-        (testing "normal user cannot retrieve cache values for bootstrap"
-          (let [response (client/request {:url (url/bootstrap-read-caches-url)
-                                          :method :get
-                                          :query-params {:token normal-user-token}
-                                          :connection-manager (s/conn-mgr)
-                                          :throw-exceptions false})
-                errors (:errors (json/decode (:body response) true))]
-            (is (= 401 (:status response)))
-            (is (= ["You do not have permission to perform that action."] errors))))))
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (s/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
+        (str (url/indexer-read-caches-url) "/acls/acls")
+        (str (url/mdb-read-caches-url) "/acls/acls")
+        (str (url/access-control-read-caches-url) "/acls/acls")
+        (str (url/ingest-read-caches-url) "/acls/acls")
+        (str (url/search-read-caches-url) "/acls/acls"))
+      (s/only-with-real-database
+       (testing "normal user cannot retrieve cache values for bootstrap"
+         (let [response (client/request {:url (url/bootstrap-read-caches-url)
+                                         :method :get
+                                         :query-params {:token normal-user-token}
+                                         :connection-manager (s/conn-mgr)
+                                         :throw-exceptions false})
+               errors (:errors (json/decode (:body response) true))]
+           (is (= 401 (:status response)))
+           (is (= ["You do not have permission to perform that action."] errors))))))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)

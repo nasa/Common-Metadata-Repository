@@ -52,6 +52,37 @@
   "App logging level"
   {:default "info"})
 
+(def application-caches
+  "These are all the caches contain in this microservice."
+  {af/acl-cache-key (af/create-consistent-acl-cache
+                     [:catalog-item :system-object :provider-object])
+   index-set/index-set-cache-key (consistent-cache/create-consistent-cache
+                                  {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
+                                   :keys-to-track index-set-mappings-redis-keys})
+   acl/token-imp-cache-key (acl/create-token-imp-cache)
+   kf/kms-cache-key (kf/create-kms-cache)
+   kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+   kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+   kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
+   kl/kms-processing-level-cache-key (kl/create-kms-processing-level-uuid-cache)
+   kl/kms-location-cache-key (kl/create-kms-location-cache)
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+   kl/kms-science-keywords-cache-key (kl/create-kms-science-keywords-uuid-cache)
+   kl/kms-platforms-cache-key (kl/create-kms-platforms-uuid-cache)
+   kl/kms-instruments-cache-key (kl/create-kms-instruments-uuid-cache)
+   kl/kms-providers-cache-key (kl/create-kms-providers-uuid-cache)
+   kl/kms-spatial-keywords-cache-key (kl/create-kms-spatial-keywords-uuid-cache)
+   kl/kms-concepts-cache-key (kl/create-kms-concepts-uuid-cache)
+   kl/kms-iso-topic-categories-cache-key (kl/create-kms-iso-topic-categories-uuid-cache)
+   kl/kms-granule-data-format-cache-key (kl/create-kms-granule-data-format-uuid-cache)
+   kl/kms-mime-type-cache-key (kl/create-kms-mime-type-uuid-cache)
+   kl/kms-related-urls-cache-key (kl/create-kms-related-urls-uuid-cache)
+   kl/kms-temporal-keywords-cache-key (kl/create-kms-temporal-keywords-uuid-cache)
+   cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
+   hf/humanizer-cache-key (hf/create-cache-client)
+   metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
+   common-health/health-cache-key (common-health/create-health-cache)})
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -62,34 +93,7 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key (af/create-consistent-acl-cache
-                                        [:catalog-item :system-object :provider-object])
-                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache
-                                                     {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
-                                                      :keys-to-track index-set-mappings-redis-keys})
-                      acl/token-imp-cache-key (acl/create-token-imp-cache)
-                      kf/kms-cache-key (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                                             kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
-                      kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
-                      kl/kms-processing-level-cache-key (kl/create-kms-processing-level-uuid-cache)
-                      kl/kms-location-cache-key (kl/create-kms-location-cache)
-                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
-                      kl/kms-science-keywords-cache-key (kl/create-kms-science-keywords-uuid-cache)
-                      kl/kms-platforms-cache-key (kl/create-kms-platforms-uuid-cache)
-                      kl/kms-instruments-cache-key (kl/create-kms-instruments-uuid-cache)
-                      kl/kms-providers-cache-key (kl/create-kms-providers-uuid-cache)
-                      kl/kms-spatial-keywords-cache-key (kl/create-kms-spatial-keywords-uuid-cache)
-                      kl/kms-concepts-cache-key (kl/create-kms-concepts-uuid-cache)
-                      kl/kms-iso-topic-categories-cache-key (kl/create-kms-iso-topic-categories-uuid-cache)
-                      kl/kms-granule-data-format-cache-key (kl/create-kms-granule-data-format-uuid-cache)
-                      kl/kms-mime-type-cache-key (kl/create-kms-mime-type-uuid-cache)
-                      kl/kms-related-urls-cache-key (kl/create-kms-related-urls-uuid-cache)
-                      kl/kms-temporal-keywords-cache-key (kl/create-kms-temporal-keywords-uuid-cache)
-                      cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
-                      hf/humanizer-cache-key (hf/create-cache-client)
-                      metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}
+             :caches application-caches
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
