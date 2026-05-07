@@ -161,6 +161,8 @@
     [(assoc context
             :query-collection-ids collection-ids
             :query-concept-type (:concept-type query)
+            :s-2-lvl (:s-2-lvl query)
+            :s-2-intersects (:s-2-intersects query)
             :orbit-params orbit-params)
      processed-query]))
 

@@ -7,16 +7,18 @@
    [cmr.common.services.search.query-model :as qm]
    [cmr.orbits.orbits-runtime :as orbits]
    [cmr.search.services.query-helper-service :as query-helper]
+   [cmr.spatial.s2geometry.cells :as s2-cells]
    [cmr.spatial.derived :as d]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.relations :as sr]
    [cmr.spatial.serialize :as srl]))
 
 (defn- shape->script-cond
-  [shape]
+  [shape s2-intersects]
   (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
                           (update-in [:ords-info] #(string/join "," %))
-                          (update-in [:ords] #(string/join "," %)))]
+                          (update-in [:ords] #(string/join "," %))
+                          (assoc :use-s2 (if s2-intersects "true" "false")))]
     (qm/map->ScriptCondition {:source "spatial"
                               :lang "cmr_spatial"
                               :params ords-info-map})))
@@ -187,18 +189,65 @@
 
              (keys crossings-map))))))
 
+(defn prefix-expansions
+  "Given a collection of cell ids, return a collection of all the possible prefix expansions for those cell ids down to the given min-gram."
+  ([cells] (prefix-expansions cells 3))
+  ([cells min-gram]
+   (distinct
+    (mapcat (fn [cell]
+              (for [len (range (count cell) (dec min-gram) -1)]
+                (subs cell 0 len)))
+            cells))))
+
+
+;; Query with a given cell level
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
-    (let [shape (d/calculate-derived shape)
+    (let [cell-level (:s-2-lvl context)
+          s2-intersects (or (:s-2-intersects context) false)
+          shape (d/calculate-derived shape)
           orbital-cond (when (= :granule (:query-concept-type context))
                          (orbital-condition context shape))
-          mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
-          lr-cond (br->cond "lr" (srl/shape->lr shape))
-          spatial-script (shape->script-cond shape)
-        ; check the MBR first before doing the more expensive check
-          spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
+          spatial-script (shape->script-cond shape s2-intersects)
+          spatial-cond (if cell-level
+                         (if (= cell-level 0)
+                             (let [s2-cells (s2-cells/shape->fancy-cell-ids shape 5)
+                                   expanded-cells (prefix-expansions s2-cells)
+                                   interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-range")) expanded-cells)
+                                   exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-range")) expanded-cells)
+                                   ;interior-cond-terms (qm/match (keyword (str "s2-cell-interiors-range")) (string/join " " s2-cells))
+                                   ;exterior-match-terms (qm/match (keyword (str "s2-cell-exteriors-range")) (string/join " " s2-cells))
+                                   exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                               (gc/or-conds [interior-cond-terms exterior-cond]))
+                             (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
+                                   cell-tokens (:cell-tokens s2-cells)
+                                   interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
+                                   exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-lvl-" cell-level)) cell-tokens)
+                                   exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                               (gc/or-conds [interior-cond-terms exterior-cond])))
+                         (let [mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
+                               lr-cond (br->cond "lr" (srl/shape->lr shape))]
+                           (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))
+          ]
       (if orbital-cond
         (gc/or-conds [spatial-cond orbital-cond])
         spatial-cond))))
+
+;; Original MBR and LR conditions with the script condition
+#_(extend-protocol c2s/ComplexQueryToSimple
+    cmr.search.models.query.SpatialCondition
+    (c2s/reduce-query-condition
+      [{:keys [shape]} context]
+      (let [shape (d/calculate-derived shape)
+            orbital-cond (when (= :granule (:query-concept-type context))
+                           (orbital-condition context shape))
+            mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
+            lr-cond (br->cond "lr" (srl/shape->lr shape))
+            spatial-script (shape->script-cond shape)
+        ; check the MBR first before doing the more expensive check
+            spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
+        (if orbital-cond
+          (gc/or-conds [spatial-cond orbital-cond])
+          spatial-cond))))

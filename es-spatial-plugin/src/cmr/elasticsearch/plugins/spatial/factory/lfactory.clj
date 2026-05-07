@@ -1,5 +1,7 @@
 (ns cmr.elasticsearch.plugins.spatial.factory.lfactory
   (:import
+   (cmr.spatial.mbr Mbr)
+   (cmr.spatial.polygon Polygon)
    (cmr.elasticsearch.plugins SpatialScript)
    (java.util Map)
    (org.apache.logging.log4j LogManager)
@@ -9,6 +11,7 @@
   (:require
    [clojure.string :as string]
    [cmr.spatial.relations :as relations]
+   [cmr.spatial.s2geometry.cells :as s2-cells]
    [cmr.spatial.serialize :as srl])
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialScriptLeafFactory
@@ -23,7 +26,7 @@
 
 (def parameters
   "The parameters to the Spatial script"
-  [:ords :ords-info])
+  [:ords :ords-info :use-s2])
 
 (defn- extract-params
   "Extracts the parameters from the params map given in the script."
@@ -63,6 +66,34 @@
         (.error (LogManager/getLogger "cmr_spatial_lfactory") (format "Unable to create intersects function for shapes [%s]" (pr-str shape)) e)
         (throw (ex-info "An exception occurred creating intersects-fn" {:shape shape :params params} e))))))
 
+(defmulti get-s2-shape class)
+
+(defmethod get-s2-shape :default
+  [shape]
+  (throw (ex-info (format "get-s2-shape Unsupported shape type [%s]" (class shape)) {:shape shape})))
+
+(defmethod get-s2-shape Polygon
+  [shape]
+  (s2-cells/shape->s2polygon shape))
+
+(defmethod get-s2-shape Mbr
+  [shape]
+  (s2-cells/shape->s2latlngrect shape))
+
+(defn get-query-shape
+  "This function will take the ords and ords-info parameters and convert them into a s2polygon."
+  [script-params use-s2]
+  ;; if use-s2 is false return nothing
+  (when (= use-s2 "true")
+    (let [params (extract-params script-params)
+          shape (params->spatial-shape params)]
+      (assert-required-parameters params)
+      (try
+        (get-s2-shape shape)
+        (catch Exception e
+          (.error (LogManager/getLogger "cmr_spatial_lfactory") (format "Unable to create query polygon for shapes [%s]" (pr-str shape)) e)
+          (throw (ex-info "An exception occurred creating query polygon" {:shape shape :params params} e)))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    End factory helper functions                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,7 +106,9 @@
 
 (defn- -init [^Map params ^SearchLookup lookup]
   [[] {:params params
-       :lookup lookup}])
+       :lookup lookup
+       :use-s2 (get params "use-s2" "false")
+       :query-shape (get-query-shape params (get params "use-s2" "false"))}])
 
 (defn -newInstance [^SpatialScriptLeafFactory this ^DocReader doc-reader]
   (let [^Map params (-> this .data :params)]
@@ -83,7 +116,9 @@
      ^Object (get-intersects-fn params)
      ^Map params
      ^SearchLookup (-> this .data :lookup)
-     ^DocReader doc-reader)))
+     ^DocReader doc-reader
+     ^Object (-> this .data :query-shape)
+     ^String (-> this .data :use-s2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    End leaf factory functions                             ;;
