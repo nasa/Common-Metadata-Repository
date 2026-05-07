@@ -2,8 +2,10 @@
   "Defines protocols and functions to map from a query model to elastic search query
    NOTE: this originally lived at cmr.common-app.services.search.query-to-elastic"
   (:require
+   [cheshire.core :as json]
    [clojure.string :as string]
    [clojurewerkz.elastisch.query :as query]
+   [cmr.common.log :as log :refer [trace]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.config :as config]
@@ -73,9 +75,12 @@
 (defmethod query->elastic :default
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
-        core-query (condition->elastic condition concept-type)]
-    {:query {:bool {:must (query/match-all)
-                    :filter core-query}}}))
+        core-query (condition->elastic condition concept-type)
+        es-query {:query {:bool {:must (query/match-all)
+                                 :filter core-query}}}
+        _ (trace "Full elastic query for concept type [" concept-type "]: " (json/generate-string es-query {:pretty true}))
+        ]
+    es-query))
 
 (defmethod query->elastic :autocomplete
   [query]
@@ -334,8 +339,13 @@
 
   cmr.common.services.search.query_model.MatchCondition
   (condition->elastic
-    [{:keys [field value]} _]
-    {:match {field value}})
+   [{:keys [field value]} _]
+   {:match {field value}})
+
+  cmr.common.services.search.query_model.TermsCondition
+  (condition->elastic
+   [{:keys [field values]} _]
+   {:terms {field values}})
 
   cmr.common.services.search.query_model.MatchBoolPrefixCondition
   (condition->elastic

@@ -143,6 +143,8 @@
    :provider :collection-query
    :readable-granule-name :readable-granule-name
    :revision-date :multi-date-range
+   :s-2-lvl :int
+   :s-2-intersects :boolean
    :sensor :inheritance
    :short-name :collection-query
    :temporal :temporal
@@ -605,9 +607,14 @@
   [_concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                 :granule params lp/param-aliases)
+        s-2-lvl-param (:s-2-lvl params)
+        s-2-intersects (= "true" (:s-2-intersects params))
+        s-2-lvl (when s-2-lvl-param
+                  (Integer. (if (sequential? s-2-lvl-param)
+                              (first s-2-lvl-param) s-2-lvl-param)))
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])
-        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile :force-cartesian)
+        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile :force-cartesian :s-2-lvl :s-2-intersects)
         {:keys [page-size offset]} query-attribs
         concept-id (:concept-id regular-params)
         concept-ids (when concept-id
@@ -629,6 +636,8 @@
     [regular-params
      (merge query-attribs
             {:echo-compatible? (= "true" (:echo-compatible params))
+             :s-2-lvl s-2-lvl
+             :s-2-intersects s-2-intersects
              :simplify-shapefile? (= "true" (:simplify-shapefile params))
              :result-features result-features
              :gran-specific-items-query? gran-specific-items-query?})]))

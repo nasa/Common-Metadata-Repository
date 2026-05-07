@@ -217,8 +217,15 @@
            [;; The field being searched
             field
 
-    ;; The value of the field
+            ;; The value of the field
             value])
+
+(defrecord TermsCondition
+           [;; The field being searched
+            field
+
+            ;; The values of the field
+            values])
 
 (defrecord MatchBoolPrefixCondition
            [;; The field
@@ -367,6 +374,11 @@
   "Match condition with field and value"
   [field value]
   (->MatchCondition field value))
+
+(defn terms
+  "Terms condition with field and values"
+  [field values]
+  (->TermsCondition field values))
 
 (defn match-bool-prefix
   "Match a boolean prefix"
