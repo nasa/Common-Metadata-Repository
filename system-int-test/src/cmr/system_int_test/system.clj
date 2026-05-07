@@ -42,8 +42,20 @@
    kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
    kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
    kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
+   kl/kms-processing-level-cache-key (kl/create-kms-processing-level-uuid-cache)
    kl/kms-location-cache-key (kl/create-kms-location-cache)
-   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)})
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+   kl/kms-science-keywords-cache-key (kl/create-kms-science-keywords-uuid-cache)
+   kl/kms-platforms-cache-key (kl/create-kms-platforms-uuid-cache)
+   kl/kms-instruments-cache-key (kl/create-kms-instruments-uuid-cache)
+   kl/kms-providers-cache-key (kl/create-kms-providers-uuid-cache)
+   kl/kms-spatial-keywords-cache-key (kl/create-kms-spatial-keywords-uuid-cache)
+   kl/kms-concepts-cache-key (kl/create-kms-concepts-uuid-cache)
+   kl/kms-iso-topic-categories-cache-key (kl/create-kms-iso-topic-categories-uuid-cache)
+   kl/kms-granule-data-format-cache-key (kl/create-kms-granule-data-format-uuid-cache)
+   kl/kms-mime-type-cache-key (kl/create-kms-mime-type-uuid-cache)
+   kl/kms-related-urls-cache-key (kl/create-kms-related-urls-uuid-cache)
+   kl/kms-temporal-keywords-cache-key (kl/create-kms-temporal-keywords-uuid-cache)})
 
 (defn create-system
   "Returns a new instance of the whole application."

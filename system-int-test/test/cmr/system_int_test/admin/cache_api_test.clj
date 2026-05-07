@@ -4,9 +4,13 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.test :refer [are deftest is testing use-fixtures]]
+   [cmr.access-control.system :as access-control-system]
    [cmr.common.config :as common-config]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.ingest.system :as ingest-system]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.system :as search-system]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -27,84 +31,21 @@
         normal-user-token (e/login (s/context) "user")
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
         _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
-        _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))]
+        _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))
+        indexer-caches (map name (keys indexer-system/application-caches))
+        ingest-caches (map name (keys ingest-system/application-caches))
+        search-caches (map name (keys search-system/application-caches))
+        access-control-caches (map name (keys access-control-system/application-caches))]
 
     (testing "list caches"
       (are [url caches]
            (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
-        ;; XXX It would be better if we used the respective vars here instead
-        ;; of string values. That way we can change cache names if needed
-        ;; without updating tests.
-        (url/indexer-read-caches-url) ["kms-measurement-index"
-                                       "collection-granule-aggregation-cache"
-                                       "usage-metrics-cache"
-                                       "kms-umm-c-index"
-                                       "health"
-                                       "kms-short-name-index"
-                                       "kms-project-index"
-                                       "kms"
-                                       "token-imp"
-                                       "kms-location-index"
-                                       "acls"
-                                       "indexer-index-set-cache"
-                                       "humanizer-cache"]
+        (url/indexer-read-caches-url) indexer-caches
         (url/mdb-read-caches-url) ["health"
                                    "token-imp"]
-        (url/ingest-read-caches-url) ["token-user-ids"
-                                      "launchpad-user"
-                                      "kms-measurement-index"
-                                      "kms-umm-c-index"
-                                      "token-sid"
-                                      "health"
-                                      "token-pc"
-                                      "kms-short-name-index"
-                                      "token-user-id"
-                                      "kms"
-                                      "write-enabled"
-                                      "token-imp"
-                                      "humanizer-alias-cache-by-field"
-                                      "token-smp"
-                                      "kms-location-index"
-                                      "xsl-transformer-templates"
-                                      "providers"
-                                      "urs"
-                                      "acls"
-                                      "schema-validation-functions"
-                                      "subscription-cache"]
-        (url/access-control-read-caches-url) ["acls"
-                                              "health"
-                                              "provider-cache"
-                                              "launchpad-user"
-                                              "urs"
-                                              "write-enabled"
-                                              "collection-field-constraints"]
-        (url/search-read-caches-url) ["acls"
-                                      "has-granules-map"
-                                      "has-granules-or-cwic-map"
-                                      "has-granules-or-opensearch-map"
-                                      "health"
-                                      "humanizer-range-facet-cache"
-                                      "humanizer-report-cache"
-                                      "index-names"
-                                      "launchpad-user"
-                                      "urs"
-                                      "kms"
-                                      "kms-measurement-index"
-                                      "kms-umm-c-index"
-                                      "kms-short-name-index"
-                                      "kms-location-index"
-                                      "collection-metadata-cache"
-                                      "collections-for-gran-acls-by-concept-id"
-                                      "provider-cache"
-                                      "scroll-id-cache"
-                                      "first-page-cache"
-                                      "token-imp"
-                                      "token-sid"
-                                      "token-user-id"
-                                      "write-enabled"
-                                      "xsl-transformer-templates"
-                                      "token-pc"
-                                      "granule-counts-cache"])
+        (url/ingest-read-caches-url) ingest-caches
+        (url/access-control-read-caches-url) access-control-caches
+        (url/search-read-caches-url) search-caches)
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
          (testing "list caches for bootstrap"
@@ -203,29 +144,29 @@
 
     (testing "normal user cannot retrieve cache values"
       (are [url]
-            (let [response (client/request {:url url
-                                            :method :get
-                                            :query-params {:token normal-user-token}
-                                            :connection-manager (s/conn-mgr)
-                                            :throw-exceptions false})
-                  errors (:errors (json/decode (:body response) true))]
-              (is (= 401 (:status response)))
-              (is (= ["You do not have permission to perform that action."] errors)))
-         (str (url/indexer-read-caches-url) "/acls/acls")
-         (str (url/mdb-read-caches-url) "/acls/acls")
-         (str (url/access-control-read-caches-url) "/acls/acls")
-         (str (url/ingest-read-caches-url) "/acls/acls")
-         (str (url/search-read-caches-url) "/acls/acls"))
-       (s/only-with-real-database
-        (testing "normal user cannot retrieve cache values for bootstrap"
-          (let [response (client/request {:url (url/bootstrap-read-caches-url)
-                                          :method :get
-                                          :query-params {:token normal-user-token}
-                                          :connection-manager (s/conn-mgr)
-                                          :throw-exceptions false})
-                errors (:errors (json/decode (:body response) true))]
-            (is (= 401 (:status response)))
-            (is (= ["You do not have permission to perform that action."] errors))))))
+           (let [response (client/request {:url url
+                                           :method :get
+                                           :query-params {:token normal-user-token}
+                                           :connection-manager (s/conn-mgr)
+                                           :throw-exceptions false})
+                 errors (:errors (json/decode (:body response) true))]
+             (is (= 401 (:status response)))
+             (is (= ["You do not have permission to perform that action."] errors)))
+        (str (url/indexer-read-caches-url) "/acls/acls")
+        (str (url/mdb-read-caches-url) "/acls/acls")
+        (str (url/access-control-read-caches-url) "/acls/acls")
+        (str (url/ingest-read-caches-url) "/acls/acls")
+        (str (url/search-read-caches-url) "/acls/acls"))
+      (s/only-with-real-database
+       (testing "normal user cannot retrieve cache values for bootstrap"
+         (let [response (client/request {:url (url/bootstrap-read-caches-url)
+                                         :method :get
+                                         :query-params {:token normal-user-token}
+                                         :connection-manager (s/conn-mgr)
+                                         :throw-exceptions false})
+               errors (:errors (json/decode (:body response) true))]
+           (is (= 401 (:status response)))
+           (is (= ["You do not have permission to perform that action."] errors))))))
 
     (testing "retrieval of value for non-existent key results in a 404"
       (let [response (client/request {:url (str (url/indexer-read-caches-url)
