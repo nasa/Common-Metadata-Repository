@@ -1,12 +1,14 @@
 (ns cmr.indexer.data.concepts.spatial
   "Contains functions to convert spatial geometry into indexed attributes."
   (:require
+   [clojure.string :as string]
    [camel-snake-kebab.core :as csk]
    [cmr.spatial.derived :as d]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.serialize :as srl]
+   [cmr.spatial.s2geometry.cells :as s2-cells]
    [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.spatial-conversion :as sc]
    [cmr.umm.umm-spatial :as umm-s])
@@ -71,6 +73,20 @@
                     (mapv (partial umm-s/set-coordinate-system coordinate-system))
                     (mapv #(get special-cases % %))
                     (mapv d/calculate-derived))
+        s2-cells-lvl-3 (map #(s2-cells/get-s2-cell-tokens % 3) shapes)
+        s2-cells-lvl-4 (map #(s2-cells/get-s2-cell-tokens % 4) shapes)
+        s2-cells-lvl-5 (map #(s2-cells/get-s2-cell-tokens % 5) shapes)
+        s2-cells-range (map #(s2-cells/get-s2-cell-ids-range % 2 5) shapes)
+
+        s2-cell-map {:s2-cell-interiors-lvl-3 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-3)))
+                     :s2-cell-exteriors-lvl-3 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-3)))
+                     :s2-cell-interiors-lvl-4 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-4)))
+                     :s2-cell-exteriors-lvl-4 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-4)))
+                     :s2-cell-interiors-lvl-5 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-5)))
+                     :s2-cell-exteriors-lvl-5 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-5)))
+                     :s2-cell-interiors-range (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-range)))
+                     :s2-cell-exteriors-range (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-range)))}
+
         ords-info-map (srl/shapes->ords-info-map shapes)
         lrs (seq (remove nil? (mapv srl/shape->lr shapes)))
         ;; union mbrs to get one covering the whole area
@@ -83,8 +99,9 @@
                   first))
         lr-info-map (when lr
                       (mbr->elastic-attribs
-                        "lr"  (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))]  
+                       "lr" (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))]
     (merge ords-info-map
+           s2-cell-map
            ;; The bounding rectangles are converted from double to float for storage in Elasticsearch
            ;; This takes up less space in the fielddata cache when using a numeric range filter with
            ;; fielddata execution mode. During conversion from double to float any loss in precision
@@ -95,7 +112,7 @@
            ;; This is all a little excessive as the accurracy loss from double to float should be in
            ;; the area of 24 centimeters.
            (mbr->elastic-attribs
-             "mbr" (mbr/round-to-float-map mbr true) (mbr/crosses-antimeridian? mbr))
+            "mbr" (mbr/round-to-float-map mbr true) (mbr/crosses-antimeridian? mbr))
            lr-info-map)))
 
 (defn get-collection-coordinate-system
@@ -121,7 +138,7 @@
   "Converts the orbit parameters of the given collection to the elastic documents"
   [collection]
   (when-let [orbit-params (get-in collection [:SpatialExtent :OrbitParameters])]
-    {:swath-width (version-collection/get-swath-width collection) 
+    {:swath-width (version-collection/get-swath-width collection)
      :period (:OrbitPeriod orbit-params)
      :inclination-angle (:InclinationAngle orbit-params)
      :number-of-orbits (:NumberOfOrbits orbit-params)
@@ -131,10 +148,12 @@
   "Converts the spatial area of the given collection to the elastic documents"
   [coordinate-system collection]
   (when-let [shapes (seq (get-collection-geometry-shapes collection))]
-    (shapes->elastic-doc shapes coordinate-system)))
+    (let [doc (shapes->elastic-doc shapes coordinate-system)]
+      doc)))
 
 (defn granule-spatial->elastic-docs
   "Converts the spatial area of the given granule to the elastic documents"
   [coordinate-system granule]
   (when-let [geometries (get-in granule [:spatial-coverage :geometries])]
-    (shapes->elastic-doc geometries coordinate-system)))
+    (let [doc (shapes->elastic-doc geometries coordinate-system)]
+      doc)))

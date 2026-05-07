@@ -98,17 +98,27 @@
   "Number of max results can be returned in an Elasticsearch query."
   1000000)
 
+(def ngram-analyzer-analysis
+  {:filter {:query_edge_ngram_filter {:type "edge_ngram"
+                                                 :min_gram 3
+                                                 :max_gram 20}}
+   :analyzer {:ngram_analyzer {:type "custom"
+                               :tokenizer "whitespace"
+                               :filter ["lowercase" "query_edge_ngram_filter"]}}})
+
 (def collection-setting-v1 {:index
                             {:number_of_shards (elastic-collection-index-num-shards)
                              :number_of_replicas 1,
                              :max_result_window MAX_RESULT_WINDOW,
-                             :refresh_interval "1s"}})
+                             :refresh_interval "1s"
+                             :analysis ngram-analyzer-analysis}})
 
 (def collection-setting-v2 {:index
                             {:number_of_shards (elastic-collection-v2-index-num-shards),
                              :number_of_replicas 1,
                              :max_result_window MAX_RESULT_WINDOW,
-                             :refresh_interval "1s"}})
+                             :refresh_interval "1s"
+                             :analysis ngram-analyzer-analysis}})
 
 (def tag-setting {:index
                   {:number_of_shards (elastic-tag-index-num-shards)
@@ -360,6 +370,18 @@
    :lr-south-doc-values (m/doc-values m/float-field-mapping)
 
    :lr-crosses-antimeridian m/bool-field-mapping
+
+   :s2-cell-interiors-lvl-3 (m/stored m/text-field-mapping)
+   :s2-cell-exteriors-lvl-3 (m/stored m/text-field-mapping)
+
+   :s2-cell-interiors-lvl-4 (m/stored m/text-field-mapping)
+   :s2-cell-exteriors-lvl-4 (m/stored m/text-field-mapping)
+
+   :s2-cell-interiors-lvl-5 (m/stored m/text-field-mapping)
+   :s2-cell-exteriors-lvl-5 (m/stored m/text-field-mapping)
+
+   :s2-cell-interiors-range (m/stored m/ngram-text-field-mapping)
+   :s2-cell-exteriors-range (m/stored m/ngram-text-field-mapping)
 
    ;; ords-info contains tuples of shapes stored in ords
    ;; Each tuple contains the shape type and the number of ordinates
@@ -919,13 +941,15 @@
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
            :max_result_window MAX_RESULT_WINDOW,
-           :refresh_interval "1s"}})
+           :refresh_interval "1s"
+           :analysis ngram-analyzer-analysis}})
 
 (def granule-settings-for-small-collections-index
   {:index {:number_of_shards (elastic-small-collections-index-num-shards),
            :number_of_replicas 1,
            :max_result_window MAX_RESULT_WINDOW,
-           :refresh_interval "1s"}})
+           :refresh_interval "1s"
+           :analysis ngram-analyzer-analysis}})
 
 (defn get-canonical-key-name
   "Returns a canonical index name by:
