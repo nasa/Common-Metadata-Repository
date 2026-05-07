@@ -26,7 +26,7 @@
    [cmr.indexer.data.concepts.collection.location-keyword :as clk]
    [cmr.indexer.data.concepts.collection.opendata :as opendata]
    [cmr.indexer.data.concepts.collection.platform :as platform]
-   [cmr.indexer.data.concepts.collection.project-keyword :as project]
+   [cmr.indexer.data.concepts.collection.kms-util :as kms-util]
    [cmr.indexer.data.concepts.collection.resolution :as resolution]
    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
@@ -469,9 +469,24 @@
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
                                                 :entry-id entry-id
-                                                :kms-uuids (keep :uuid (map #(project/project-short-name->elastic-doc context %)
-                                                                            project-short-names))
-                                                })
+                                                :kms-uuids (let [concept-uuids (keep :uuid (map #(kms-util/concept->elastic-doc context %) (:DirectoryNames collection)))
+                                                                 granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
+                                                                 iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
+                                                                 location-uuids (keep :uuid (map #(clk/location-keyword->elastic-doc context %) (:LocationKeywords collection)))
+                                                                 ;; The mimetypes being validated are from the `GETDATA` field
+                                                                 mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (keep :GetData related-urls))))
+                                                                 processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))
+                                                                 project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
+                                                                 related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
+                                                                 temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
+                                                                 science-keyword-uuids (keep :uuid (map #(kms-util/science-keyword->elastic-doc context %) (:ScienceKeywords collection)))
+                                                                 platform-uuids (keep :uuid (map #(kms-util/platform->elastic-doc context %) platform-short-names))
+                                                                 instrument-uuids (keep :uuid (map #(kms-util/instrument->elastic-doc context %) instrument-short-names))
+                                                                 uuids (distinct (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids))]
+                                                             ;; Uniquely this can only be a single value
+                                                             (if processing-level-uuid
+                                                               (conj uuids processing-level-uuid)
+                                                               uuids))})
             :platform-ln-lowercase (map string/lower-case platform-long-names)
             :instrument-ln-lowercase (map string/lower-case instrument-long-names)
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)

@@ -1,5 +1,6 @@
 (ns cmr.redis-utils.embedded-redis-server
-  "Used to run a Redis server inside a docker container."
+  "Used to run a Redis server inside a docker container.
+   This configuration is used for running unit tests and for local development"
   (:require
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug error]])
