@@ -7,8 +7,8 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  base: '/site/docs/search/dist/',
-  outDir: '/app/search-app/resources/public/site/docs/search/dist',
+  //base: '/site/docs/search/dist/',
+  outDir: '../resources/public/site/docs/search/dist',
   integrations: [starlight({
     title: 'CMR API Documentation',
     pagefind: false,
@@ -16,9 +16,9 @@ export default defineConfig({
       { label: 'General Request Information', link: '/1-general-request-information/' },
       {
         label: 'Searching For Concepts',
-        autogenerate: { directory: 'searching-for-concepts' }
+        autogenerate: { directory: '2-searching-for-concepts' }
       },
-      { label: 'Additional Topics', link: '/13-additional-topics/' }
+      { label: 'Additional Topics', link: '/3-additional-topics/' }
     ]
   })]
 });
