@@ -6,6 +6,10 @@
   "The java aws sdk version to use."
   "2.33.4") ;; latest as of 2025-09-05
 
+(def netty-version
+  "The netty version to use."
+  "4.1.133.Final") ;; latest as of 2025-09-05
+
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
@@ -15,9 +19,9 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "2.3.0"] ;;behind other cmr projects
                  [clj-time]
-                 [io.netty/netty-handler "4.1.132.Final"]
-                 [io.netty/netty-codec-http "4.1.132.Final"]
-                 [io.netty/netty-codec-http2 "4.1.132.Final"]
+                 [io.netty/netty-handler ~netty-version]
+                 [io.netty/netty-codec-http ~netty-version]
+                 [io.netty/netty-codec-http2 ~netty-version]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
