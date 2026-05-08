@@ -7,8 +7,8 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  //base: '/site/docs/search/dist/',
-  outDir: '../resources/public/site/docs/search/dist',
+  base: '/site/docs/search/dist/',
+  outDir: '/app/search-app/resources/public/site/docs/search/dist',
   integrations: [starlight({
     title: 'CMR API Documentation',
     pagefind: false,
