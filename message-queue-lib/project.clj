@@ -22,6 +22,7 @@
                  [io.netty/netty-handler ~netty-version]
                  [io.netty/netty-codec-http ~netty-version]
                  [io.netty/netty-codec-http2 ~netty-version]
+                 [io.netty/netty-codec ~netty-version]
                  [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
