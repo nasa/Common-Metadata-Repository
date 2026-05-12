@@ -16,4 +16,3 @@ RUN mkdir -p \$HOME/.lein \
   && cd \$HOME/.lein \
   && curl --silent --location --remote-name \
   https://maven.earthdata.nasa.gov/repository/cmr/profiles.clj
-
