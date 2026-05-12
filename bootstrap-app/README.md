@@ -252,6 +252,9 @@ Operator can use the `start_index` parameter to index concepts with sequence num
 
 ### Bulk index concepts newer than a given date-time
 
+The `/after_date_time` endpoint is retained for compatibility. New callers should use
+`/between_date_time`, which bounds the request and splits large ranges into smaller indexing chunks.
+
 For all providers and all system concepts:
 
     curl -i \
@@ -267,6 +270,26 @@ For a given list of providers (use provider `CMR` to index all system concepts):
     	"http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
 Similar to the bulk index a provider endpoint, this reindexing of concepts newer than a given date-time will not reindex the concepts in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections and the concept specific bootstrap bulk indexing endpoint for variables, services, tools and subscriptions.
+
+### Bulk index concepts between two date-times
+
+For all providers and all system concepts:
+
+    curl -i \
+    	-X POST \
+    	"http://localhost:3006/bulk_index/between_date_time?start_date_time=2015-02-02T10:00:00Z&end_date_time=2015-02-02T12:00:00Z"
+
+For a given list of providers (use provider `CMR` to index all system concepts):
+
+    curl -i \
+    	-X POST \
+    	-H "Content-Type: application/json" \
+    	-d '{"provider_ids": ["PROV1", "PROV2", "CMR"]}' \
+    	"http://localhost:3006/bulk_index/between_date_time?start_date_time=2015-02-02T10:00:00Z&end_date_time=2015-02-02T12:00:00Z"
+
+The `start_date_time` parameter is required. Callers can provide either `end_date_time` or `hours`.
+If neither is provided, bootstrap uses the end of the start date's day. Internally, bootstrap enforces
+smaller chunks across the requested time range before publishing indexing work.
 
 ### Bulk index all system concepts (tags/acls/access-groups)
 
