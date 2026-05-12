@@ -45,6 +45,37 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn bulk-index-between-date-time
+  "Call the bootstrap app to bulk index concepts with revision dates between the given datetimes."
+  ([start-date-time end-date-time]
+   (bulk-index-between-date-time
+    start-date-time end-date-time {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([start-date-time end-date-time headers]
+   (let [response (client/request
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-between-date-time-url start-date-time end-date-time)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response))))
+  ([start-date-time end-date-time headers provider-ids]
+   (let [response (client/request
+                   {:method :post
+                    :headers headers
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-between-date-time-url start-date-time end-date-time)
+                    :body (json/generate-string {:provider_ids provider-ids})
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
+
 (defn bulk-index-concepts
   "Call the bootstrap app to bulk index concepts by id."
   ([provider-id concept-type concept-ids]
