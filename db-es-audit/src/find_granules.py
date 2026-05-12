@@ -12,6 +12,7 @@ import find_s3
 from parameters import CONFIG, load_ssm_params
 from find_logger import setup_logging
 from find_db import connect_to_db
+from es import es_health_check
 
 PROVIDER = None
 ENVIRONMENT = None
@@ -74,7 +75,7 @@ def db_batch_read(mismatch):
         HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
         ORDER BY concept_id DESC
     """
-    ### need to create a new index (PARENT_COLLECTION_ID, REVISION_DATE, CONCEPT_ID, REVISION_ID, DELETED) on the granule tables.
+    ### TODO: need to create a new index (PARENT_COLLECTION_ID, REVISION_DATE, CONCEPT_ID, REVISION_ID, DELETED) on the granule tables.
 
     try:
         with db_connection.cursor() as curr:
@@ -142,6 +143,7 @@ def execute_es_query(index, query):
     Exceptions:
         Raises exceptions if the elastic search query failed.
     """
+    es_health_check()
     headers = {"Content-Type": "application/json"}
     elastic_response = requests.post(f"{CONFIG.get('GRAN_ELASTIC_URL')}/{index}/_search",
                                      json=query,
@@ -196,6 +198,7 @@ def get_collection_entry_title(mismatch):
     Exceptions:
         None; But logs elastic search query and exists the program.
     """
+    es_health_check()
     collection_concept_id = mismatch['concept_id']
     index = "1_collections_v2_alias"
     query = {"_source": ["entry-title"],

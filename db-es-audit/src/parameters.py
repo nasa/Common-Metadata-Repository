@@ -25,30 +25,26 @@ def load_ssm_params(environment):
         and the program terminated.
     """
     ssm = boto3.client("ssm")
+    logger.info(f"Checking the environment: {environment}")
     path_prefix = f"/{environment}/audit/"
 
-    response = ssm.get_parameters_by_path(
+    paginator = ssm.get_paginator('get_parameters_by_path')
+    page_iterator = paginator.paginate(
         Path=path_prefix,
         WithDecryption=True,
         Recursive=True
     )
+
     new_values = {}
-    for param in response['Parameters']:
-        # Extract the simple name from the full path
-        key = param['Name'].split('/')[-1]
-        new_values[key] = param['Value']
+    for page in page_iterator:
+        for param in page['Parameters']:
+            # Extract the simple name from the full path
+            key = param['Name'].split('/')[-1]
+            new_values[key] = param['Value']
 
-    elastic_port = new_values.get('ELASTIC_PORT')
-    if not elastic_port:
-        elastic_port = 9200
-
-    gran_elastic_port = new_values.get('GRAN_ELASTIC_PORT')
-    if not gran_elastic_port:
-        gran_elastic_port = 9200
-
-    batch_size = new_values.get('BATCH_SIZE')
-    if not batch_size:
-        batch_size = "1000"
+    elastic_port = new_values.get('ELASTIC_PORT', 9200)
+    gran_elastic_port = new_values.get('GRAN_ELASTIC_PORT', 9200)
+    batch_size = new_values.get('BATCH_SIZE', 1000)
 
     new_values["ELASTIC_URL"] = f"http://{new_values.get("ELASTIC_HOST")}:{elastic_port}"
     new_values["GRAN_ELASTIC_URL"] = f"http://{new_values.get("GRAN_ELASTIC_HOST")}:{gran_elastic_port}"

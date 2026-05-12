@@ -41,6 +41,8 @@ The underlying AWS infrastructure is in terraform using the db_es_audit module. 
  * ELASTIC_HOST: The full AWS collection elastic search load balancer name.
  * SQS_QUEUE_URL: The indexer queue URL.
  * BATCH_SIZE: The number of records that are compared between the database and elastic search per request to each service. The bigger the number the faster the processing, but also more memory is used.
+ * MISMATCH_NUM_WORKERS: The number of workers (separate processes) that check the number of granules in the database and elastic search for every collection per provider. 1 separate process per provider.
+ * FIND_GRANULE_NUM_WORKERS: The number of parallel workers (separate processes) based per provider that checks all of the collections granules where the granule counts between the database and elastic search do not match. 
  * ENVIRONMENT: The lowercase environment name
 
  The following environment variables are created by terraform and should not be created manually.

@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import multiprocessing
+import math
 
 import boto3
 import oracledb
@@ -13,6 +14,7 @@ import find_s3
 from find_logger import setup_logging
 from find_db import connect_to_db
 from parameters import CONFIG, load_ssm_params
+from es import es_health_check
 
 ENVIRONMENT = None
 try:
@@ -45,7 +47,7 @@ def get_providers(db_connection, s3_client):
         
     search_query = """
     select table_name from all_tables
-    where owner = 'METADATA_DB' AND table_name like '%\_GRANULES' ESCAPE '\\'
+    where owner = 'METADATA_DB' AND table_name like '%+_GRANULES' ESCAPE '+'
     """
     granule_table_list = []
     result = []
@@ -216,6 +218,7 @@ def get_es_indices():
     Exceptions:
         If a timeout or a code 4XX or 5XX occurs an exception is thrown.
     """
+    es_health_check()
     es_indices_response = requests.get(f"{CONFIG.get('GRAN_ELASTIC_URL')}/_cat/aliases?h=alias&format=json", 
                                        timeout=REQUEST_TIMEOUT_SECONDS)
     es_indices_response.raise_for_status()
@@ -269,6 +272,7 @@ def get_es_granule_count(index, collection_concept_id, time):
        None, but if a search response is not successful a log message is provided 
        and the program will quit.
     """
+    es_health_check()
     headers = {"Content-Type": "application/json"}
     elastic_base_query = {"query": {"bool": {"must": [{"range": {"revision-date": {"lte": time}}},
                                                       {"match": {"collection-concept-id": collection_concept_id}}]}},
@@ -313,13 +317,12 @@ def compare_granule_counts(db_connection, latest_working_time, f, provider, coll
     first = True
 
     for collection_concept_id in collection_concept_ids:
-        # Query the
+        # Query the database to get the granule counts
         db_granule_count = get_db_granule_count(db_connection, latest_working_time, provider, collection_concept_id)
 
         if db_granule_count > 0:
             # Now we need to query ES and compare the counts
             index = find_index(indices, collection_concept_id)
-            #es_gran_count = get_es_granule_count(index, collection_concept_id, latest_working_time.strftime("%Y-%m-%dT%H:%M:%S"))
             es_gran_count = get_es_granule_count(index, collection_concept_id, latest_working_time.isoformat().replace("+00:00", "Z"))
 
             if db_granule_count == es_gran_count:
@@ -565,11 +568,32 @@ def process_granule_mismatch(provider):
     )
     failures = response.get("failures", [])
     tasks = response.get("tasks", [])
+
     if failures or not tasks:
         raise RuntimeError(f"Failed to start find-granules task for {provider}: {failures}")
     
-    logger.info(f"Started Task ARN: {tasks[0]['taskArn']} to find missing granules for {provider}")
+    task_arn = tasks[0]['taskArn']
+    logger.info(f"Started Task ARN: {task_arn} to find missing granules for {provider}")
 
+    # Use a Waiter to pause the thread until it stops
+    waiter = ecs_client.get_waiter('tasks_stopped')
+    
+    # The time to wait in seconds between polling to see if the task
+    # has completed.
+    time_to_wait_per_pole_in_seconds = 60
+    
+    # The number of times to retry the polling to see if the task is done
+    # is calculated to equal 4 days. That should be enough time for each 
+    # task to finish.
+    num_times_to_retry = math.ceil((4*24*60*60)/time_to_wait_per_pole_in_seconds)
+    
+    waiter.wait(
+        cluster=cluster_name,
+        tasks=[task_arn],
+        WaiterConfig={'Delay': time_to_wait_per_pole_in_seconds,
+                      'MaxAttempts': num_times_to_retry}
+    )
+    logger.info(f"Task ARN: {task_arn} for {provider} has completed.")
 
 if __name__ == "__main__":
 
@@ -595,8 +619,7 @@ if __name__ == "__main__":
     # 2.a. Get the granule counts in the DB
     # 2.b. Get the granule counts in ES
     # 2.c. Compare them if count > 0 then write data to a file
-    cpu_count = os.cpu_count()
-    num_workers = cpu_count * 4
+    num_workers = int(CONFIG.get('MISMATCH_NUM_WORKERS'))
 
     with multiprocessing.Pool(processes=num_workers) as pool:
         pool.map(find_granule_counts_mismatch, providers, chunksize=1)
@@ -616,7 +639,6 @@ if __name__ == "__main__":
     logger.info("Start working on granule issues.")
 
     # The next task is more CPU intensive to the database and therefore the number of workers is smaller.
-    # num_workers = cpu_count
-    num_workers = 2
+    num_workers = int(CONFIG.get('FIND_GRANULE_NUM_WORKERS'))
     with multiprocessing.Pool(processes=num_workers) as pool:
         pool.map(process_granule_mismatch, providers, chunksize=1)
