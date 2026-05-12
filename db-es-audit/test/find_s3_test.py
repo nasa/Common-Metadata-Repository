@@ -1,136 +1,135 @@
+import io
 import json
 import os
-import unittest
-import importlib.util
 import sys
-from pathlib import Path
-from unittest.mock import Mock, patch
+import unittest
+from unittest import mock
 
-from botocore.exceptions import ClientError
+# Make top-level ./src importable
+TOP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(TOP_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
-
-def _load_find_s3_module():
-    db_es_audit_root = Path(__file__).resolve().parents[1]
-    src_dir = db_es_audit_root / "src"
-    if str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-
-    module_path = src_dir / "find_s3.py"
-    spec = importlib.util.spec_from_file_location("find_s3", module_path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)  # type: ignore[attr-defined]
-    return module
-
-find_s3 = _load_find_s3_module()
+import find_s3  # noqa: E402
 
 
-class UploadFileToS3Tests(unittest.TestCase):
+class FindS3Tests(unittest.TestCase):
     def setUp(self):
-        find_s3.AUDIT_BUCKET_NAME = "test-audit-bucket"
-
-    def test_upload_file_to_s3_success_object_name_defaulted_to_basename(self):
-        mock_s3 = Mock()
-        with patch.object(find_s3.boto3, "client", return_value=mock_s3):
-            ok = find_s3.upload_file_to_s3("/mnt/efs/data.txt", object_name=None)
-
-        self.assertTrue(ok)
-        mock_s3.upload_file.assert_called_once_with(
-            "/mnt/efs/data.txt", "test-audit-bucket", "data.txt"
+        self.config_patcher = mock.patch.object(
+            find_s3,
+            "CONFIG",
+            {"AUDIT_S3_BUCKET_NAME": "my-audit-bucket"},
         )
+        self.config_patcher.start()
 
-    def test_upload_file_to_s3_success_object_name_provided(self):
-        mock_s3 = Mock()
-        with patch.object(find_s3.boto3, "client", return_value=mock_s3):
-            ok = find_s3.upload_file_to_s3("/mnt/efs/data.txt", object_name="x/y.json")
+    def tearDown(self):
+        self.config_patcher.stop()
 
-        self.assertTrue(ok)
-        mock_s3.upload_file.assert_called_once_with(
-            "/mnt/efs/data.txt", "test-audit-bucket", "x/y.json"
-        )
-
-    def test_upload_file_to_s3_client_error_returns_false(self):
-        mock_s3 = Mock()
-        mock_s3.upload_file.side_effect = ClientError(
-            {"Error": {"Code": "AccessDenied", "Message": "nope"}},
-            "UploadFile",
-        )
-        with patch.object(find_s3.boto3, "client", return_value=mock_s3):
-            ok = find_s3.upload_file_to_s3("/mnt/efs/data.txt", object_name="data.txt")
-
-        self.assertFalse(ok)
-
-    def test_upload_file_to_s3_file_not_found_returns_false(self):
-        mock_s3 = Mock()
-        mock_s3.upload_file.side_effect = FileNotFoundError("missing")
-        with patch.object(find_s3.boto3, "client", return_value=mock_s3):
-            ok = find_s3.upload_file_to_s3("/mnt/efs/missing.txt", object_name="missing.txt")
-
-        self.assertFalse(ok)
-
-
-class SaveToS3Tests(unittest.TestCase):
-    def setUp(self):
-        find_s3.AUDIT_BUCKET_NAME = "test-audit-bucket"
-
-    def test_save_to_s3_put_object_called_with_expected_key_and_json_body(self):
-        s3_client = Mock()
-        data = {"a": 1}
-        provider = "PROV"
-
-        find_s3.save_to_s3(s3_client, data, provider)
+    def test_save_to_s3_puts_expected_object(self):
+        s3_client = mock.Mock()
+        find_s3.save_to_s3(s3_client, {"PROV1": ["C1", "C2"]}, "PROV1")
 
         s3_client.put_object.assert_called_once()
-        kwargs = s3_client.put_object.call_args.kwargs
-        self.assertEqual(kwargs["Bucket"], "test-audit-bucket")
-        self.assertEqual(kwargs["Key"], "PROV/PROV_collections.json")
+        _, kwargs = s3_client.put_object.call_args
+        self.assertEqual(kwargs["Bucket"], "my-audit-bucket")
+        self.assertEqual(kwargs["Key"], "PROV1/PROV1_collections.json")
         self.assertEqual(kwargs["ContentType"], "application/json")
-        self.assertEqual(kwargs["Body"], json.dumps(data).encode("utf-8"))
+        self.assertEqual(json.loads(kwargs["Body"].decode("utf-8")), {"PROV1": ["C1", "C2"]})
 
-    def test_save_providers_to_s3_put_object_called_with_expected_key_and_json_body(self):
-        s3_client = Mock()
-        data = [{"id": "P1"}]
-
-        find_s3.save_providers_to_s3(s3_client, data)
+    def test_save_providers_to_s3_puts_expected_object(self):
+        s3_client = mock.Mock()
+        find_s3.save_providers_to_s3(s3_client, ["P1", "P2"])
 
         s3_client.put_object.assert_called_once()
-        kwargs = s3_client.put_object.call_args.kwargs
-        self.assertEqual(kwargs["Bucket"], "test-audit-bucket")
+        _, kwargs = s3_client.put_object.call_args
+        self.assertEqual(kwargs["Bucket"], "my-audit-bucket")
         self.assertEqual(kwargs["Key"], "providers.json")
         self.assertEqual(kwargs["ContentType"], "application/json")
-        self.assertEqual(kwargs["Body"], json.dumps(data).encode("utf-8"))
+        self.assertEqual(json.loads(kwargs["Body"].decode("utf-8")), ["P1", "P2"])
 
+    def test_read_from_s3_reads_and_decodes_body(self):
+        s3_client = mock.Mock()
+        s3_client.get_object.return_value = {
+            "Body": io.BytesIO(b'{"hello":"world"}')
+        }
 
-class ReadFromS3Tests(unittest.TestCase):
-    def setUp(self):
-        find_s3.AUDIT_BUCKET_NAME = "test-audit-bucket"
+        out = find_s3.read_from_s3(s3_client, "some/key.json")
+        self.assertEqual(out, '{"hello":"world"}')
 
-    # ... existing code ...
+        s3_client.get_object.assert_called_once_with(
+            Bucket="my-audit-bucket",
+            Key="some/key.json",
+        )
 
-    def test_read_from_s3_exception_logs_and_raises(self):
-        s3_client = Mock()
-        s3_client.get_object.side_effect = Exception("boom")
+    def test_read_from_s3_reraises_exception(self):
+        s3_client = mock.Mock()
+        s3_client.get_object.side_effect = RuntimeError("boom")
 
-        with patch.object(find_s3, "logger") as mock_logger:
-            with self.assertRaises(Exception) as ctx:
-                find_s3.read_from_s3(s3_client, "some/key.json")
+        with self.assertRaises(RuntimeError):
+            find_s3.read_from_s3(s3_client, "x.json")
 
-        self.assertIn("boom", str(ctx.exception))
-        mock_logger.exception.assert_called()
-
-class ReadJsonHelpersTests(unittest.TestCase):
-    def test_read_providers_from_s3_loads_json_from_read_from_s3(self):
-        s3_client = Mock()
-        with patch.object(find_s3, "read_from_s3", return_value='["P1","P2"]') as m:
+    def test_read_providers_from_s3_parses_json(self):
+        s3_client = mock.Mock()
+        with mock.patch.object(find_s3, "read_from_s3", return_value='["P1","P2"]') as read:
             out = find_s3.read_providers_from_s3(s3_client)
-
         self.assertEqual(out, ["P1", "P2"])
-        m.assert_called_once_with(s3_client, "providers.json")
+        read.assert_called_once_with(s3_client, "providers.json")
 
-    def test_read_collections_from_provider_loads_json_from_read_from_s3(self):
-        s3_client = Mock()
-        with patch.object(find_s3, "read_from_s3", return_value='{"c": [1]}') as m:
-            out = find_s3.read_collections_from_provider(s3_client, "PROV")
+    def test_read_collections_from_provider_parses_json(self):
+        s3_client = mock.Mock()
+        with mock.patch.object(find_s3, "read_from_s3", return_value='{"PROV1":["C1"]}') as read:
+            out = find_s3.read_collections_from_provider(s3_client, "PROV1")
+        self.assertEqual(out, {"PROV1": ["C1"]})
+        read.assert_called_once_with(s3_client, "PROV1/PROV1_collections.json")
 
-        self.assertEqual(out, {"c": [1]})
-        m.assert_called_once_with(s3_client, "PROV/PROV_collections.json")
+    def test_upload_file_to_s3_uses_basename_when_object_name_none(self):
+        s3_client = mock.Mock()
+        with mock.patch.object(find_s3.boto3, "client", return_value=s3_client):
+            ok = find_s3.upload_file_to_s3("/efs/dir/file.txt", object_name=None)
 
+        self.assertTrue(ok)
+        s3_client.upload_file.assert_called_once_with(
+            "/efs/dir/file.txt",
+            "my-audit-bucket",
+            "file.txt",
+        )
+
+    def test_upload_file_to_s3_uses_object_name_when_provided(self):
+        s3_client = mock.Mock()
+        with mock.patch.object(find_s3.boto3, "client", return_value=s3_client):
+            ok = find_s3.upload_file_to_s3("/efs/dir/file.txt", object_name="a/b/c.txt")
+
+        self.assertTrue(ok)
+        s3_client.upload_file.assert_called_once_with(
+            "/efs/dir/file.txt",
+            "my-audit-bucket",
+            "a/b/c.txt",
+        )
+
+    def test_upload_file_to_s3_returns_false_on_client_error(self):
+        # Patch ClientError in find_s3 module so we don't need botocore in the test env
+        class FakeClientError(Exception):
+            pass
+
+        s3_client = mock.Mock()
+        s3_client.upload_file.side_effect = FakeClientError("nope")
+
+        with mock.patch.object(find_s3, "ClientError", FakeClientError), \
+             mock.patch.object(find_s3.boto3, "client", return_value=s3_client):
+            ok = find_s3.upload_file_to_s3("/efs/dir/file.txt", object_name="x.txt")
+
+        self.assertFalse(ok)
+
+    def test_upload_file_to_s3_returns_false_on_file_not_found(self):
+        s3_client = mock.Mock()
+        s3_client.upload_file.side_effect = FileNotFoundError()
+
+        with mock.patch.object(find_s3.boto3, "client", return_value=s3_client):
+            ok = find_s3.upload_file_to_s3("/efs/dir/missing.txt", object_name="x.txt")
+
+        self.assertFalse(ok)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
