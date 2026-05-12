@@ -11,3 +11,9 @@ RUN apt-get update \
       ca-certificates \
  && update-ca-certificates -f \
  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p \$HOME/.lein \
+  && cd \$HOME/.lein \
+  && curl --silent --location --remote-name \
+  https://maven.earthdata.nasa.gov/repository/cmr/profiles.clj
+
