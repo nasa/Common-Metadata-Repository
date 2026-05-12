@@ -25,6 +25,14 @@
     :provider-id provider-id
     :date-time date-time}))
 
+(defn bootstrap-provider-between-date-time-event
+  "Creates an event indicating to bootstrap provider data within a date-time range."
+  [provider-id start-date-time end-date-time]
+  {:action :index-provider-between-date-time
+   :provider-id provider-id
+   :start-date-time start-date-time
+   :end-date-time end-date-time})
+
 (defn publish-bootstrap-concepts-event
   "Put a bootstrap variables event on the message queue."
   [context msg]

@@ -73,6 +73,15 @@
     (:message result)
     (format "%s Processing data after %s for bulk indexing" msg/bulk-index-msg-general date-time)))
 
+(defn data-between-date-time
+  [params result start-date-time end-date-time]
+  (if (api-util/synchronous? params)
+    (:message result)
+    (format "%s Processing data between %s and %s for bulk indexing"
+            msg/bulk-index-msg-general
+            start-date-time
+            end-date-time)))
+
 (defn invalid-datetime
   [date-time]
   (str date-time " is not a valid date-time."))

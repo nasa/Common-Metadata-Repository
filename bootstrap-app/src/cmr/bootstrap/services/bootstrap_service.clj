@@ -31,6 +31,7 @@
    :index-subscriptions :message-queue-dispatcher
    :index-generics :message-queue-dispatcher
    :index-data-later-than-date-time :message-queue-dispatcher
+   :index-data-between-date-time :message-queue-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
@@ -90,6 +91,12 @@
   "Bulk index all the concepts with a revision date later than the given date-time."
   [context dispatcher provider-ids date-time]
   (dispatch/index-data-later-than-date-time dispatcher context provider-ids date-time))
+
+(defn index-data-between-date-time
+  "Bulk index all the concepts with revision dates between the given date-times."
+  [context dispatcher provider-ids start-date-time end-date-time]
+  (dispatch/index-data-between-date-time
+   dispatcher context provider-ids start-date-time end-date-time))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
@@ -327,4 +334,3 @@
 
     ;; Minimize likelihood of triggering race condition (see `finalize-rebalance-collection` above)
     (wait-until-index-set-hash-cache-times-out)))
-

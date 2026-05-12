@@ -1,11 +1,66 @@
 (ns cmr.bootstrap.api.bulk-index
   "Defines the bulk index functions for the bootstrap API."
   (:require
+   [clj-time.core :as time]
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
    [cmr.bootstrap.services.bootstrap-service :as service]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.services.errors :as errors]))
+
+(defn- parse-date-time-param
+  [param-name date-time]
+  (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
+    date-time-value
+    (errors/throw-service-error
+     :invalid-data (msg/invalid-datetime date-time))))
+
+(defn- end-of-day
+  [date-time]
+  (time/plus (time/date-time (time/year date-time)
+                             (time/month date-time)
+                             (time/day date-time))
+             (time/days 1)))
+
+(defn- parse-positive-hours
+  [hours]
+  (try
+    (let [hours (Long/parseLong hours)]
+      (if (pos? hours)
+        hours
+        (errors/throw-service-error
+         :invalid-data "The hours parameter must be a positive integer.")))
+    (catch NumberFormatException _
+      (errors/throw-service-error
+       :invalid-data "The hours parameter must be a positive integer."))))
+
+(defn- parse-between-date-time-range
+  [params]
+  (let [start-date-time (:start_date_time params)
+        end-date-time (:end_date_time params)
+        hours (:hours params)]
+    (when-not start-date-time
+      (errors/throw-service-error
+       :invalid-data (msg/required-params :start_date_time)))
+    (when (and end-date-time hours)
+      (errors/throw-service-error
+       :invalid-data "Only one of end_date_time or hours may be provided."))
+    (let [start-date-time-value (parse-date-time-param :start_date_time start-date-time)
+          end-date-time-value (cond
+                                end-date-time
+                                (parse-date-time-param :end_date_time end-date-time)
+
+                                hours
+                                (time/plus start-date-time-value
+                                           (time/hours (parse-positive-hours hours)))
+
+                                :else
+                                (end-of-day start-date-time-value))]
+      (when-not (time/before? start-date-time-value end-date-time-value)
+        (errors/throw-service-error
+         :invalid-data "The end date-time must be after the start date-time."))
+      {:start-date-time start-date-time-value
+       :end-date-time end-date-time-value})))
 
 (defn index-provider
   "Index all the collections and granules for a given provider."
@@ -56,6 +111,20 @@
       ;; Can't parse date-time.
       (errors/throw-service-error
        :invalid-data (msg/invalid-datetime date-time)))))
+
+(defn data-between-date-time
+  "Index all the data with revision-date between the given date-times."
+  [context body params]
+  (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
+        provider-ids (get body "provider_ids")
+        {:keys [start-date-time end-date-time]} (parse-between-date-time-range params)]
+    {:status 202
+     :body {:message (msg/data-between-date-time
+                      params
+                      (service/index-data-between-date-time
+                       context dispatcher provider-ids start-date-time end-date-time)
+                      start-date-time
+                      end-date-time)}}))
 
 (defn index-system-concepts
   "Index all tags, acls, and access-groups."
