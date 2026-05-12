@@ -1,4 +1,4 @@
-FROM clojure:temurin-17-lein-bullseye
+FROM clojure:temurin-17-lein-trixie
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive \
