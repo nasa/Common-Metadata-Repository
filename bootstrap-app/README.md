@@ -254,6 +254,8 @@ Operator can use the `start_index` parameter to index concepts with sequence num
 
 The `/after_date_time` endpoint is retained for compatibility. New callers should use
 `/between_date_time`, which bounds the request and splits large ranges into smaller indexing chunks.
+Compatibility requests to `/after_date_time` are bounded from the supplied `date_time` to now and
+will be rejected if the implicit range is larger than the configured maximum window.
 
 For all providers and all system concepts:
 

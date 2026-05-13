@@ -2,18 +2,28 @@
   "Defines the bulk index functions for the bootstrap API."
   (:require
    [clj-time.core :as time]
+   [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
    [cmr.bootstrap.services.bootstrap-service :as service]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as time-keeper]))
 
 (defn- parse-date-time-param
-  [param-name date-time]
+  [_param-name date-time]
   (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
     date-time-value
     (errors/throw-service-error
      :invalid-data (msg/invalid-datetime date-time))))
+
+(defn- validate-date-time-range
+  [start-date-time end-date-time]
+  (when-not (time/before? start-date-time end-date-time)
+    (errors/throw-service-error
+     :invalid-data "The end date-time must be after the start date-time."))
+  {:start-date-time start-date-time
+   :end-date-time end-date-time})
 
 (defn- end-of-day
   [date-time]
@@ -56,11 +66,18 @@
 
                                 :else
                                 (end-of-day start-date-time-value))]
-      (when-not (time/before? start-date-time-value end-date-time-value)
-        (errors/throw-service-error
-         :invalid-data "The end date-time must be after the start date-time."))
-      {:start-date-time start-date-time-value
-       :end-date-time end-date-time-value})))
+      (validate-date-time-range start-date-time-value end-date-time-value))))
+
+(defn- validate-after-date-time-window
+  [start-date-time end-date-time]
+  (let [max-window-hours (bootstrap-config/bulk-index-after-date-time-max-window-hours)
+        max-end-date-time (time/plus start-date-time (time/hours max-window-hours))]
+    (when (time/after? end-date-time max-end-date-time)
+      (errors/throw-service-error
+       :invalid-data
+       (format (str "/bulk_index/after_date_time is limited to %d hours. "
+                    "Use /bulk_index/between_date_time with a smaller explicit range.")
+               max-window-hours)))))
 
 (defn index-provider
   "Index all the collections and granules for a given provider."
@@ -96,21 +113,21 @@
      :body {:message (msg/index-collection params result collection-id)}}))
 
 (defn data-later-than-date-time
-  "Index all the data with a revision-date later than a given date-time."
+  "Index all the data with a revision-date later than a given date-time, bounded to now."
   [context body params]
-  (let [dispatcher (api-util/get-dispatcher context params :index-data-later-than-date-time)
+  (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
         provider-ids (get body "provider_ids")
         date-time (:date_time params)]
-    (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
+    (let [start-date-time (parse-date-time-param :date_time date-time)
+          end-date-time (time-keeper/now)]
+      (validate-date-time-range start-date-time end-date-time)
+      (validate-after-date-time-window start-date-time end-date-time)
       {:status 202
        :body {:message (msg/data-later-than-date-time
                         params
-                        (service/index-data-later-than-date-time
-                         context dispatcher provider-ids date-time-value)
-                        date-time)}}
-      ;; Can't parse date-time.
-      (errors/throw-service-error
-       :invalid-data (msg/invalid-datetime date-time)))))
+                        (service/index-data-between-date-time
+                         context dispatcher provider-ids start-date-time end-date-time)
+                        date-time)}})))
 
 (defn data-between-date-time
   "Index all the data with revision-date between the given date-times."
