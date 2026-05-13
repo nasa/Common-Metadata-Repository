@@ -9,6 +9,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -227,6 +228,78 @@
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
        (assert-indexed-tags [tag1])))))
+
+(deftest ^:oracle bulk-index-between-date-time
+  (s/only-with-real-database
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1 {:revision-date "3016-01-01T10:00:00Z"})
+         gran1 (core/save-granule "PROV1" 1 coll1 {:revision-date "3016-01-01T10:00:00Z"})
+         coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-02T10:00:00Z"})
+         gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-02T10:00:00Z"})
+         coll3 (core/save-collection "PROV2" 3 {:revision-date "3016-01-01T10:00:00Z"})
+         gran3 (core/save-granule "PROV2" 3 coll3 {:revision-date "3016-01-01T10:00:00Z"})
+         {:keys [status errors]} (bootstrap/bulk-index-between-date-time
+                                  "3016-01-01T00:00:00Z"
+                                  "3016-01-02T00:00:00Z"
+                                  nil
+                                  ["PROV1"])]
+
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
+
+     (bootstrap/bulk-index-between-date-time
+      "3016-01-01T00:00:00Z"
+      "3016-01-02T00:00:00Z"
+      {tc/token-header (tc/echo-system-token)}
+      ["PROV1"])
+     (index/wait-until-indexed)
+
+     (testing "Only provider concepts within the date-time range are indexed."
+       (verify-collections-granules-are-indexed [coll1] [gran1] (tc/echo-system-token))))))
+
+(deftest ^:oracle bulk-index-after-date-time-uses-bounded-range
+  (s/only-with-real-database
+   (try
+     (dev-sys-util/freeze-time! "3016-01-02T00:00:00Z")
+     (let [;; saved but not indexed
+           coll1 (core/save-collection "PROV1" 1 {:revision-date "3016-01-01T10:00:00Z"})
+           gran1 (core/save-granule "PROV1" 1 coll1 {:revision-date "3016-01-01T10:00:00Z"})
+           coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-02T10:00:00Z"})
+           gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-02T10:00:00Z"})
+           coll3 (core/save-collection "PROV2" 3 {:revision-date "3016-01-01T10:00:00Z"})
+           gran3 (core/save-granule "PROV2" 3 coll3 {:revision-date "3016-01-01T10:00:00Z"})
+           {:keys [status errors]} (bootstrap/bulk-index-after-date-time
+                                    "3016-01-01T00:00:00Z"
+                                    nil
+                                    ["PROV1"])]
+
+       (is (= [401 ["You do not have permission to perform that action."]]
+              [status errors]))
+
+       (bootstrap/bulk-index-after-date-time
+        "3016-01-01T00:00:00Z"
+        {tc/token-header (tc/echo-system-token)}
+        ["PROV1"])
+       (index/wait-until-indexed)
+
+       (testing "Only provider concepts after the date-time and before now are indexed."
+         (verify-collections-granules-are-indexed [coll1] [gran1] (tc/echo-system-token))))
+     (finally
+       (dev-sys-util/clear-current-time!)))))
+
+(deftest ^:oracle bulk-index-after-date-time-rejects-large-window
+  (s/only-with-real-database
+   (try
+     (dev-sys-util/freeze-time! "3016-01-10T00:00:00Z")
+     (let [{:keys [status errors]} (bootstrap/bulk-index-after-date-time
+                                    "3016-01-02T00:00:00Z"
+                                    {tc/token-header (tc/echo-system-token)}
+                                    ["PROV1"])]
+       (is (= 422 status))
+       (is (re-find #"/bulk_index/after_date_time is limited to 168 hours"
+                    (first errors))))
+     (finally
+       (dev-sys-util/clear-current-time!)))))
 
 (deftest ^{:kaocha/skip true
            :oracle true} zzz_bulk-index-after-date-time
