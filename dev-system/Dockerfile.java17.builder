@@ -8,11 +8,7 @@ RUN apt-get update \
       netbase \
       unzip \
       zip \
-      ca-certificates \
- && update-ca-certificates -f \
  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /root/.lein \
-  && cd /root/.lein \
-  && curl --silent --location --remote-name \
-  https://maven.earthdata.nasa.gov/repository/cmr/profiles.clj
+RUN mkdir -p /root/.lein
+COPY profiles.bamboo.clj /root/.lein/profiles.clj
