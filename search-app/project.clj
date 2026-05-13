@@ -30,11 +30,11 @@
                  [org.geotools/gt-geojsondatastore "27-SNAPSHOT"]
                  [org.geotools.xsd/gt-xsd-kml "29.1"]
                  [org.mozilla/rhino "1.7.15.1"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-http "12.1.8"]
+                 [org.eclipse.jetty/jetty-util "12.1.8"]
                  [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-core "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
@@ -59,7 +59,7 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.14.2"]
+                                  [ring/ring-jetty-adapter "1.15.4"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
@@ -73,8 +73,8 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.0.21"]
-                                     [org.eclipse.jetty/jetty-util "12.0.21"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.1.8"]
+                                     [org.eclipse.jetty/jetty-util "12.1.8"]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

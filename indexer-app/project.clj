@@ -15,11 +15,11 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [org.eclipse.jetty/jetty-http "12.0.21"]
-                 [org.eclipse.jetty/jetty-util "12.0.21"]
+                 [org.eclipse.jetty/jetty-http "12.1.8"]
+                 [org.eclipse.jetty/jetty-util "12.1.8"]
                  [ring/ring-codec "1.3.0"]
-                 [ring/ring-core "1.14.2"]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-core "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
@@ -31,7 +31,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.14.2"]]
+                                  [ring/ring-jetty-adapter "1.15.4"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.indexer.runner

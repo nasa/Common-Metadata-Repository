@@ -306,6 +306,19 @@
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
+(defmethod q2e/field->wildcard-field-mappings :granule
+  [_]
+  {:granule-ur :granule-ur-wildcard
+   ;; Both aliases below are needed because pre-existing granule queries use both names.
+   :producer-gran-id :producer-granule-id-wildcard
+   :producer-granule-id :producer-granule-id-wildcard})
+
+(defmethod q2e/field->lowercase-wildcard-field-mappings :granule
+  [_]
+  {:granule-ur "granule-ur-lowercase-wildcard"
+   :producer-gran-id "producer-granule-id-lowercase-wildcard"
+   :producer-granule-id "producer-granule-id-lowercase-wildcard"})
+
 (defn- keywords-in-query
   "Returns a list of keywords if the query contains a keyword condition or nil if not.
   Used to set sort and use function score for keyword queries."
@@ -396,7 +409,7 @@
                                       (string/replace #"^\"" "* ")
                                       (string/replace #"\"$" " *")
                                       (string/replace #"\\\"" "\""))
-                       :field :keyword-phrase)
+             :field :keyword-phrase)
       (if (and query-str
                (string/includes? trimmed-query-str "\\\""))
         (assoc condition :query-str (string/replace trimmed-query-str #"\\\"" "\""))
@@ -412,21 +425,21 @@
     ;;Need the original query here because when the query-str is quoted, it's processed differently.
     (let [keywords (keywords-in-query query)]
       (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]
-       (do
-        (validate-keyword-wildcards all-keywords)
+        (do
+          (validate-keyword-wildcards all-keywords)
         ;; Forces score to be returned even if not sorting by score.
-        {:track_scores true
+          {:track_scores true
          ;; function_score query allows us to compute a custom relevance score for each document
          ;; matched by the primary query. The final document relevance is given by multiplying
          ;; a boosting term for each matching filter in a set of filters.
-         :query {:function_score {:score_mode :multiply
-                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                  :query {:bool {:must (eq/match-all)
-                                                 :filter core-query}}}}})
-       (if boosts
-         (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-         {:query {:bool {:must (eq/match-all)
-                         :filter core-query}}})))))
+           :query {:function_score {:score_mode :multiply
+                                    :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                    :query {:bool {:must (eq/match-all)
+                                                   :filter core-query}}}}})
+        (if boosts
+          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
+          {:query {:bool {:must (eq/match-all)
+                          :filter core-query}}})))))
 
 ;; this only needs to map overrides, defaults to one-to-one mappings
 (defmethod q2e/concept-type->sort-key-map :collection

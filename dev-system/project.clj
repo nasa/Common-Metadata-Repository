@@ -51,7 +51,7 @@
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.3.0"]
-                           [ring/ring-jetty-adapter "1.14.2"]]
+                           [ring/ring-jetty-adapter "1.15.4"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
@@ -63,7 +63,8 @@
                             (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
-             "-Dorg.jruby.embed.localcontext.scope=singlethread"]
+             "-Dorg.jruby.embed.localcontext.scope=singlethread"
+             "-Dfile.encoding=UTF-8"]
   ;; Uncomment to enable logging in jetty.
                                         ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
                                         ; "-Dorg.eclipse.jetty.LEVEL=INFO"

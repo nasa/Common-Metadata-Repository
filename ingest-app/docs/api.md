@@ -180,7 +180,7 @@ The following fields are validated:
 **Note**: the following fields are always checked:
 
 * [Related URL Content Type](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/rucontenttype?format=csv) - Related URL Content Type, Type, and Subtype are all verified and must belong to the correct set and context. Example: A data center contact URL can have a URL Content Type of "DataContactURL" and a Type of "HOME PAGE" with no Subtype.
-* [Granule Data Format](https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format) - Was previously checked against the JSON Schema, but starting with version 1.6.4 CMR will use KMS.
+* [Granule Data Format](https://cmr.sit.earthdata.nasa.gov/search/keywords/granule-data-format) - Was previously checked against the JSON Schema, but starting with version 1.15.5 CMR will use KMS.
 
 #### <a name="validate-umm-c-header"></a> Cmr-Validate-Umm-C Header
 

@@ -120,14 +120,14 @@
   ;; ring-json middleware will handle converting the body to json
   {:status (or (:status result)
                (ingest-status-code result))
-   :headers {"Content-Type" (mt/format->mime-type :json)}
+   :headers {"Content-Type" (str (mt/format->mime-type :json) "; charset=utf-8")}
    :body result})
 
 (defmethod generate-ingest-response :xml
   [_headers result]
   {:status (or (:status result)
                (ingest-status-code result))
-   :headers {"Content-Type" (mt/format->mime-type :xml)}
+   :headers {"Content-Type" (str (mt/format->mime-type :xml) "; charset=utf-8")}
    :body (result-map->xml result)})
 
 (defmulti generate-validate-response
@@ -140,7 +140,7 @@
   ;; ring-json middleware will handle converting the body to json
   (if (seq result)
     {:status 200
-     :headers {"Content-Type" (mt/format->mime-type :json)}
+     :headers {"Content-Type" (str (mt/format->mime-type :json) "; charset=utf-8")}
      :body result}
     {:status 200}))
 
@@ -148,7 +148,7 @@
   [_headers result]
   (if (seq result)
    {:status 200
-    :headers {"Content-Type" (mt/format->mime-type :xml)}
+    :headers {"Content-Type" (str (mt/format->mime-type :xml) "; charset=utf-8")}
     :body (result-map->xml result)}
    {:status 200}))
 

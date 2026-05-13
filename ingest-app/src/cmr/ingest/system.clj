@@ -88,6 +88,33 @@
    :port (ingest-public-port)
    :relative-root-url (transmit-config/ingest-relative-root-url)})
 
+(def application-caches
+  "These are all the caches contain in this microservice."
+  {acl/token-imp-cache-key (acl/create-token-imp-cache)
+   acl/token-smp-cache-key (acl/create-token-smp-cache)
+   acl/token-pc-cache-key (acl/create-token-pc-cache)
+   ;; Caches a map of tokens to the security identifiers
+   context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
+   context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
+
+   pc/providers-cache-key (pc/create-providers-cache)
+   af/acl-cache-key (af/create-consistent-acl-cache
+                     [:catalog-item :system-object :provider-object])
+   ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
+   ingest-translation/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
+   kf/kms-cache-key (kf/create-kms-cache)
+   kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+   kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+   kl/kms-location-cache-key (kl/create-kms-location-cache)
+   kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+   common-health/health-cache-key (common-health/create-health-cache)
+   common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
+   humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
+   launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+   urs/urs-cache-key (urs/create-urs-cache)
+   generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)
+   subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)})
+
 (defn create-system
   "Returns a new instance of the whole application."
   ([]
@@ -99,41 +126,18 @@
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (mdb-util/create-db (config/db-spec connection-pool-name))
               :scheduler (jobs/create-clustered-scheduler
-                           `system-holder :db
-                           (conj (ingest-jobs/jobs)
-                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                 jvm-info/log-jvm-statistics-job
-                                 (cache-info/create-log-cache-info-job "ingest")))
-              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
-                       acl/token-smp-cache-key (acl/create-token-smp-cache)
-                       acl/token-pc-cache-key (acl/create-token-pc-cache)
-                       ;; Caches a map of tokens to the security identifiers
-                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
-                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
-
-                       pc/providers-cache-key (pc/create-providers-cache)
-                       af/acl-cache-key (af/create-consistent-acl-cache
-                                          [:catalog-item :system-object :provider-object])
-                       ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
-                       ingest-translation/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
-                       kf/kms-cache-key (kf/create-kms-cache)
-                       kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
-                       kl/kms-location-cache-key (kl/create-kms-location-cache)
-                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
-                       common-health/health-cache-key (common-health/create-health-cache)
-                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
-                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-                       urs/urs-cache-key (urs/create-urs-cache)
-                       generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)
-                       subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)}
+                          `system-holder :db
+                          (conj (ingest-jobs/jobs)
+                                (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
+                                jvm-info/log-jvm-statistics-job
+                                (cache-info/create-log-cache-info-job "ingest")))
+              :caches application-caches
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
               :sns {:internal (pub-sub/create-topic (queue-config/cmr-internal-subscriptions-topic-name))
                     :external (pub-sub/create-topic (queue-config/cmr-subscriptions-topic-name))}}]
      (transmit-config/system-with-connections
-       sys [:metadata-db :indexer :access-control :echo-rest :search :kms :ordering :urs]))))
+      sys [:metadata-db :indexer :access-control :echo-rest :search :kms :ordering :urs]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
