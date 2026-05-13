@@ -15,4 +15,6 @@ RUN apt-get update \
 # Downgrade Leiningen to 2.10.0 to fix compatibility issues with lein-modules 0.3.11
 RUN curl -L https://raw.githubusercontent.com/technomancy/leiningen/2.10.0/bin/lein -o /usr/local/bin/lein \
  && chmod a+x /usr/local/bin/lein \
+ && mkdir -p /root/.lein \
+ && curl -L https://maven.earthdata.nasa.gov/repository/cmr/profiles.clj -o /root/.lein/profiles.clj \
  && lein version
