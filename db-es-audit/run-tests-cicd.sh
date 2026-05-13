@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 export PYTHONPATH=src
 export AWS_REGION="us-east-1"
 
