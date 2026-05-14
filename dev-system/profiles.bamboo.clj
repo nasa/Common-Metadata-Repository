@@ -6,11 +6,11 @@
 
    ;; It's crucial to include central and clojars, as this list
    ;; completely replaces the Leiningen defaults.
-   ["central" {:url "https://repo1.maven.org/maven2/"
+   ;;["central" {:url "https://repo1.maven.org/maven2/"
                ;; Good practice: Central doesn't host snapshots.
-               :snapshots false}]
-   ["clojars" {:url "https://repo.clojars.org/"}]
+   ;;            :snapshots false}]
+   ;;["clojars" {:url "https://repo.clojars.org/"}]
 
    ;; The other repositories you had defined
-   ["sonatype-releases" {:url "https://oss.sonatype.org/content/repositories/releases/"}]
+   ;;["sonatype-releases" {:url "https://oss.sonatype.org/content/repositories/releases/"}]
    ["apache-releases" {:url "https://repository.apache.org/content/repositories/releases/"}]]}}
