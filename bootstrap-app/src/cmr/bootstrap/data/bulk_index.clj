@@ -519,7 +519,8 @@
     {:message indexing-complete-message
      :max-revision-date (apply util/max-compare
                                (map :max-revision-date
-                                    (apply conj provider-response-map system-concept-response-map)))}))
+                                    (conj (vec provider-response-map)
+                                          system-concept-response-map)))}))
 
 (defn index-data-between-date-time
   "Index all concept revisions created within the given date-time range
@@ -556,7 +557,8 @@
     {:message indexing-complete-message
      :max-revision-date (apply util/max-compare
                                (map :max-revision-date
-                                    (apply conj provider-response-map system-concept-response-map)))}))
+                                    (conj (vec provider-response-map)
+                                          system-concept-response-map)))}))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
