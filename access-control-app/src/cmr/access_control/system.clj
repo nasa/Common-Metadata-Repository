@@ -90,6 +90,18 @@
   "Required for jobs"
   (atom nil))
 
+(def application-caches
+  "These are all the caches contain in this system collected here to clean up the construction of
+   sys latter in this file."
+  {af/acl-cache-key (af/create-acl-cache
+                     [:system-object :provider-object :single-instance-object])
+   provider-cache/cache-key (provider-cache/create-cache)
+   acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
+   common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
+   common-health/health-cache-key (common-health/create-health-cache)
+   launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+   urs/urs-cache-key (urs/create-urs-cache)})
+
 (def hours->ms "Convert hours to ms" (partial * 1000 3600))
 
 (defn create-system
@@ -101,14 +113,7 @@
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
-             :caches {af/acl-cache-key (af/create-acl-cache
-                                        [:system-object :provider-object :single-instance-object])
-                      provider-cache/cache-key (provider-cache/create-cache)
-                      acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
-                      common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)
-                      launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-                      urs/urs-cache-key (urs/create-urs-cache)}
+             :caches application-caches
 
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)

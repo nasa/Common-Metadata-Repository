@@ -38,7 +38,7 @@
     "Models/Analyses"
     "Navigation Platforms"
     "Solar/Space Observation Satellites"
-    "Space Stations/Manned Spacecraft"})
+    "Space Stations/Crewed Spacecraft"})
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
