@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
+   [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]))
 
 (deftest date-time->sql-timestamp-literal-test
@@ -36,3 +37,37 @@
                  "2026-05-13T01:00:00Z"
                  "2026-05-13T02:00:00Z")]
         (is (string/includes? sql "and provider_id = 'PROV''1'"))))))
+
+(deftest index-data-between-date-time-aggregates-provider-and-system-results
+  (let [calls (atom [])
+        start (time/date-time 2026 5 13 1 0)
+        end (time/date-time 2026 5 13 2 0)
+        collection-max (time/date-time 2026 5 13 1 15)
+        granule-max (time/date-time 2026 5 13 1 30)
+        system-max (time/date-time 2026 5 13 1 45)]
+    (with-redefs [helper/get-provider (fn [_system provider-id]
+                                        {:provider-id provider-id})
+                  bulk-index/fetch-and-index-concepts-between-date-times
+                  (fn [_system provider concept-type start-date-time end-date-time]
+                    (swap! calls conj [(:provider-id provider)
+                                       concept-type
+                                       start-date-time
+                                       end-date-time])
+                    (case concept-type
+                      :collection {:num-indexed 2 :max-revision-date collection-max}
+                      :granule {:num-indexed 3 :max-revision-date granule-max}))
+                  bulk-index/index-system-misc-concepts-between-date-times
+                  (fn [_system start-date-time end-date-time]
+                    (swap! calls conj ["CMR" :system start-date-time end-date-time])
+                    {:num-indexed 4 :max-revision-date system-max})]
+      (is (= {:message "Indexed 5 provider concepts and 4 system concepts."
+              :max-revision-date system-max}
+             (bulk-index/index-data-between-date-time
+              {:db-batch-size 10}
+              ["PROV1" "CMR"]
+              start
+              end)))
+      (is (= [["PROV1" :collection start end]
+              ["PROV1" :granule start end]
+              ["CMR" :system start end]]
+             @calls)))))
