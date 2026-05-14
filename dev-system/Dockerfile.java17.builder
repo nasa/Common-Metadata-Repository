@@ -8,6 +8,8 @@ RUN apt-get update \
       netbase \
       unzip \
       zip \
+      ca-certificates \
+ && update-ca-certificates -f \
  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /root/.lein
