@@ -78,7 +78,8 @@
                                                     [at.yawk.lz4/lz4-java]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
-                                                    [org.slf4j/slf4j-api]]]
+                                                    [org.slf4j/slf4j-api]
+                                                    [gov.nasa.earthdata/quartzite]]
                                       [org.clojure/tools.reader "1.3.2"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
