@@ -38,12 +38,14 @@
                                         :exclusions [[com.fasterxml.jackson.core/jackson-core]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                                     [gov.nasa.earthdata/quartzite]]]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                         :exclusions [[com.fasterxml.jackson.core/jackson-core]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                                     [gov.nasa.earthdata/quartzite]]]
 
                                        ;; Elastic library
                                        [org.apache.logging.log4j/log4j-api "2.25.4"]
