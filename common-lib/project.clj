@@ -9,6 +9,7 @@
                                com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time]
                  [clojail "1.0.6"]
+
                  [gov.nasa.earthdata/quartzite "2.2.1-RC"
                   :exclusions [com.mchange/c3p0
                                com.mchange/mchange-commons-java]]
