@@ -28,6 +28,10 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
+  ;; Configure repositories
+  :repositories [^:replace 
+                 ["earthdata-nexus" "https://maven.earthdata.nasa.gov/repository/maven-public"]
+                 ["clojars" :none]]
   :dependencies ~(concat '[[cheshire "5.12.0"
                             :exclusions [com.fasterxml.jackson.core/jackson-core]]
                            [clj-time "0.15.1"]
