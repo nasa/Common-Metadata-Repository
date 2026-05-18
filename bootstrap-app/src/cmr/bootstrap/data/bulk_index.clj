@@ -284,7 +284,7 @@
                                   (and (some #{concept-type} misc-concept-types)
                                        (not= system-concept-provider provider-id)))
                           (format " and provider_id = '%s'" (sql-quote (:provider-id provider))))]
-    (format (str "select * from %s where revision_date >= %s and revision_date < %s%s")
+    (format "select * from %s where revision_date >= %s and revision_date < %s%s"
             table
             (date-time->sql-timestamp-literal start-date-time)
             (date-time->sql-timestamp-literal end-date-time)

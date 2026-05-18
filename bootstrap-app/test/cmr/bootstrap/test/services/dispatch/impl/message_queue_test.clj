@@ -3,6 +3,7 @@
    [clj-time.core :as time]
    [clojure.test :refer [deftest is testing]]
    [cmr.bootstrap.config :as config]
+   [cmr.bootstrap.data.bulk-index :as bulk-index-data]
    [cmr.bootstrap.data.message-queue :as message-queue]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
@@ -90,7 +91,7 @@
 
 (deftest handle-bootstrap-event-index-provider-between-date-time
   (let [call (atom nil)]
-    (with-redefs [cmr.bootstrap.data.bulk-index/index-provider-data-between-date-time
+    (with-redefs [bulk-index-data/index-provider-data-between-date-time
                   (fn [& args]
                     (reset! call args))]
       (message-queue-dispatcher/handle-bootstrap-event

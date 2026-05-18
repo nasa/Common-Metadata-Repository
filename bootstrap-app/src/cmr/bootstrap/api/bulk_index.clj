@@ -117,17 +117,17 @@
   [context body params]
   (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
         provider-ids (get body "provider_ids")
-        date-time (:date_time params)]
-    (let [start-date-time (parse-date-time-param :date_time date-time)
-          end-date-time (time-keeper/now)]
-      (validate-date-time-range start-date-time end-date-time)
-      (validate-after-date-time-window start-date-time end-date-time)
-      {:status 202
-       :body {:message (msg/data-later-than-date-time
-                        params
-                        (service/index-data-between-date-time
-                         context dispatcher provider-ids start-date-time end-date-time)
-                        date-time)}})))
+        date-time (:date_time params)
+        start-date-time (parse-date-time-param :date_time date-time)
+        end-date-time (time-keeper/now)]
+    (validate-date-time-range start-date-time end-date-time)
+    (validate-after-date-time-window start-date-time end-date-time)
+    {:status 202
+     :body {:message (msg/data-later-than-date-time
+                      params
+                      (service/index-data-between-date-time
+                       context dispatcher provider-ids start-date-time end-date-time)
+                      date-time)}}))
 
 (defn data-between-date-time
   "Index all the data with revision-date between the given date-times."
