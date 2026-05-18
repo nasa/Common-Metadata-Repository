@@ -21,6 +21,22 @@
              (time/date-time 2026 5 13 4 30)]]
            (#'message-queue-dispatcher/date-time-chunks start end 1)))))
 
+(deftest date-time-chunks-returns-empty-when-range-is-empty
+  (let [start (time/date-time 2026 5 13 1 0)]
+    (is (= [] (#'message-queue-dispatcher/date-time-chunks start start 1)))))
+
+(deftest bootstrap-provider-between-date-time-event-test
+  (let [start (time/date-time 2026 5 13 1 0)
+        end (time/date-time 2026 5 13 2 0)]
+    (is (= {:action :index-provider-between-date-time
+            :provider-id "PROV1"
+            :start-date-time start
+            :end-date-time end}
+           (message-queue/bootstrap-provider-between-date-time-event
+            "PROV1"
+            start
+            end)))))
+
 (deftest index-data-between-date-time-publishes-provider-chunks
   (let [published (atom [])
         context {:system {:providers [{:provider-id "PROV1"}]}}
