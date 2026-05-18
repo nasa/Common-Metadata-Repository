@@ -2,7 +2,7 @@
   "A map of the other development projects to their versions"
   {:cmr-access-control-app "0.1.0-SNAPSHOT"
    :cmr-acl-lib "0.1.0-SNAPSHOT"
-   :cmr-bootstrap-app "0.1.0-SNAPSHOT"
+   :cmr-bootstrap-app "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common org.eclipse.emf/org.eclipse.emf.ecore]
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-schemas "0.0.1-SNAPSHOT"
@@ -16,10 +16,10 @@
    :cmr-orbits-lib "0.1.0-SNAPSHOT"
    :cmr-redis-utils-lib "0.1.0-SNAPSHOT"
    :cmr-schema-validation-lib "0.1.0-SNAPSHOT"
-   :cmr-search-app "0.1.0-SNAPSHOT"
-   :cmr-search-relevancy-test "0.1.0-SNAPSHOT"
+   :cmr-search-app "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common]
+   :cmr-search-relevancy-test "0.1.0-SNAPSHOT" [org.eclipse.emf/org.eclipse.emf.common]
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
-   :cmr-system-int-test "0.1.0-SNAPSHOT"
+   :cmr-system-int-test "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common]
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"
    :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
