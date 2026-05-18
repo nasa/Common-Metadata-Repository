@@ -226,11 +226,11 @@
                 (pr-str updated-collections))
 
           ;; Reindex the collections that were modified
-          (->> updated-collections
-               (meta-db/get-latest-concepts context)
-               ;; wrap each concept in its own batch for bulk-index
-               (map vector)
-               (index-service/bulk-index context es-config/elastic-name)))))
+          (let [concept-batches (->> updated-collections
+                                     (meta-db/get-latest-concepts context)
+                                     ;; wrap each concept in its own batch for bulk-index
+                                     (map vector))]
+            (index-service/bulk-index context concept-batches es-config/elastic-name)))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))
