@@ -1,6 +1,10 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
+  ;; Configure repositories
+  :repositories [^:replace 
+                 ["earthdata-nexus" "https://maven.earthdata.nasa.gov/repository/maven-public"]
+                 ["clojars" :none]]
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core "2.21.2"]
