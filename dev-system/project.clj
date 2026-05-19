@@ -17,7 +17,7 @@
    :cmr-redis-utils-lib "0.1.0-SNAPSHOT"
    :cmr-schema-validation-lib "0.1.0-SNAPSHOT"
    :cmr-search-app "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common]
-   :cmr-search-relevancy-test "0.1.0-SNAPSHOT" [org.eclipse.emf/org.eclipse.emf.common]
+   :cmr-search-relevancy-test "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common]
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT" :exclusions [org.eclipse.emf/org.eclipse.emf.common]
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
