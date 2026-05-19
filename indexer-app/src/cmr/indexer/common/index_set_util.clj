@@ -19,7 +19,7 @@
          index-set-array)))
 
 (defn get-index-set
-  "Fetch index-set associated with an index-set id."
+  "Fetch index-set from elastic associated with an index-set id."
   [context es-cluster-name index-set-id]
   (or (es/get-index-set context es-cluster-name index-set-id)
       (errors/throw-service-error :not-found

@@ -99,6 +99,15 @@
   []
   (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
 
+(defn mdb-concept-id-url
+  "URL to concept id in mdb."
+  [concept-type provider-id native-id]
+  (format "http://localhost:%s/concept-id/%s/%s/%s"
+          (transmit-config/metadata-db-port)
+          (name concept-type)
+          provider-id
+          native-id))
+
 (defn mdb-force-delete-concept-url
   [concept-id revision-id]
   (format "http://localhost:%s/concepts/force-delete/%s/%s"
@@ -659,6 +668,16 @@
   []
   (format "http://localhost:%s/index-sets/reset" (transmit-config/indexer-port)))
 
+(defn index-set-sync-url
+  "Sync index-sets from database to elasticsearch."
+  []
+  (format "http://localhost:%s/index-sets/sync-with-database" (transmit-config/indexer-port)))
+
+(defn indexer-index-sets-url
+  "Gets the index sets URL"
+  []
+  (format "http://localhost:%s/index-sets" (transmit-config/indexer-port)))
+
 (defn indexer-update-indexes
   "Updates the indexes in the indexer to update mappings and settings"
   []
@@ -668,6 +687,14 @@
   "Gets the index set by id from indexer"
   [id]
   (format "http://localhost:%s/index-sets/%s" (transmit-config/indexer-port) (str id)))
+
+(defn indexer-rebalance-url
+  [id concept-id]
+  (format "%s/rebalancing-collections/%s" (indexer-index-sets-by-id-url id) concept-id))
+
+(defn indexer-reshard-url
+  [id index-name]
+  (format "%s/reshard/%s" (indexer-index-sets-by-id-url id) index-name))
 
 (defn full-refresh-collection-granule-aggregate-cache-url
   []

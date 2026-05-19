@@ -6,6 +6,7 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-context-user-augmenter :as augmenter]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
@@ -80,6 +81,8 @@
    kl/kms-temporal-keywords-cache-key (kl/create-kms-temporal-keywords-uuid-cache)
    cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
    hf/humanizer-cache-key (hf/create-cache-client)
+   augmenter/token-sid-cache-name (augmenter/create-token-sid-cache)
+   augmenter/token-user-id-cache-name (augmenter/create-token-user-id-cache)
    metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
    common-health/health-cache-key (common-health/create-health-cache)})
 

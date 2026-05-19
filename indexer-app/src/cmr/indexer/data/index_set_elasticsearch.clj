@@ -91,7 +91,7 @@
                          index-name error-message))
           (throw e))))))
 
-(defn index-set-exists?
+(defn get-index-set-if-exists-in-es
   "Check index-set existence in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (when (esi-helper/exists? conn index-name)
@@ -109,7 +109,7 @@
   (let [es-cluster-name-keyword (es-config/elastic-name-str->keyword es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when-let [result (index-set-exists?
+    (when-let [result (get-index-set-if-exists-in-es
                        (get-in context [:system es-cluster-name-keyword]) index-name idx-mapping-type index-set-id)]
       (-> result
           (get-in [:_source :index-set-request])

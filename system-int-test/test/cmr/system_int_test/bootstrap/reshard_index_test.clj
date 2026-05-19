@@ -12,6 +12,7 @@
    [cmr.system-int-test.utils.elastic-util :as es-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
@@ -110,11 +111,15 @@
                                           (select-keys [:provider-id :concept-id :entry-title])
                                           (assoc :granule-count 1)))
          gran-elastic-name "gran-elastic"
+         index-set-concept-id (mdb/get-concept-id :index-set "CMR" "1")
+         get-revision #(get (mdb/get-concept index-set-concept-id) :revision-id)
+         initial-revision (get-revision)
          reshard-start-resp (bootstrap/start-reshard-index "1_small_collections" {:synchronous true
                                                                                   :num-shards 100
                                                                                   :elastic-name gran-elastic-name})
          task-id (:task-id reshard-start-resp)]
      (index/wait-until-indexed)
+     (is (= (inc initial-revision) (get-revision)) "Index-set revision should increment after starting reshard")
      (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
      (testing "resharding an index that does exist"
        (is (= 200 (:status reshard-start-resp)))
@@ -129,7 +134,8 @@
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
-              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false :elastic-name gran-elastic-name}))))
+              (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false :elastic-name gran-elastic-name})))
+       (is (= (+ 2 initial-revision) (get-revision)) "Index-set revision should increment after finalizing reshard"))
      (testing "alias is moved to new index"
        (is (index/alias-exists? "1_small_collections_100_shards" "1_small_collections_alias" gran-elastic-name)))
      (testing "index can be resharded more than once"

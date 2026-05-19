@@ -132,7 +132,10 @@
          expected-provider-holdings (-> coll1
                                         (select-keys [:provider-id :concept-id :entry-title])
                                         (assoc :granule-count 1)
-                                        vector)]
+                                        vector)
+         index-set-concept-id (mdb/get-concept-id :index-set "CMR" "1")
+         get-revision #(get (mdb/get-concept index-set-concept-id) :revision-id)
+         initial-revision (get-revision)]
      (index/wait-until-indexed)
 
      (bootstrap/assert-rebalance-status {:small-collections 1 :rebalancing-status "NOT_REBALANCING"} coll1)
@@ -141,6 +144,8 @@
      ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
+
+     (is (= (inc initial-revision) (get-revision)) "Index-set revision should increment after starting rebalance")
 
      ;; After rebalancing 1 granule is in small collections and in the new index.
      (bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
@@ -161,6 +166,8 @@
        ;; Finalize rebalancing
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
        (index/wait-until-indexed)
+
+       (is (= (+ 2 initial-revision) (get-revision)) "Index-set revision should increment after finalizing rebalance")
 
        ;; The granules have been removed from small collections
        (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)

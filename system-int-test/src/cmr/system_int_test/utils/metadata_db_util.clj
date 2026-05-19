@@ -99,3 +99,13 @@
                    :url (url/mdb-expired-concept-cleanup-url)
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :connection-manager (s/conn-mgr)}))
+
+(defn get-concept-id
+  "Returns a concept-id for the given concept-type, provider-id, and native-id"
+  [concept-type provider-id native-id]
+  (let [response (client/get (url/mdb-concept-id-url concept-type provider-id native-id)
+                             {:accept :json
+                              :throw-exceptions false
+                              :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (get body :concept-id)))

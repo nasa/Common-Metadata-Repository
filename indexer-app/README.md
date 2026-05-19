@@ -130,7 +130,33 @@ By default, a comparison is run between the existing elasticsearch indexes and w
 
 ### Get index-set by id
 
+Fetches the operational index-set configuration from Elasticsearch.
+
     curl -XGET "http://localhost:3004/index-sets/3"
+
+Example response:
+```json
+{
+  "index-set": { ... },
+  "revision-id": 5,
+  "deleted": false
+}
+```
+
+### Get index-set revision
+
+Fetches a historical version of the index-set from the Oracle database (Metadata DB).
+
+Optional params:
+- revision-id = int (The specific version to retrieve)
+
+    curl -XGET "http://localhost:3004/index-sets/3?revision-id=2"
+
+### Sync index-sets from database
+
+Disaster recovery endpoint to restore all index-set configurations from Oracle to Elasticsearch. This will recreate all physical indices and aliases in Elasticsearch based on the latest non-deleted version in Oracle.
+
+    curl -i -XPOST http://localhost:3004/index-sets/sync-with-database?token=XXXX
 
 ### Get all index-sets
 

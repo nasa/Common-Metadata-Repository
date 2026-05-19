@@ -44,6 +44,7 @@
    :tool (into common-columns [:provider_id :tool_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
+   :index-set (into common-columns [:user_id])
    :subscription (into common-columns
                        [:provider_id :subscription_name :subscriber_id
                         :collection_concept_id :user_id
