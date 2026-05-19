@@ -191,6 +191,19 @@
 
 (defn get-index-set-by-id
   ([id]
+   "Gets index set by id in clojure map form.
+    Example of returned map:
+    {:index-set {
+      :granule {
+        :indexes [...]
+      }
+      :concepts {
+        :granule {
+          :small-collections '1_small_collections'
+          :C1234-PROV1 '1_c1234_prov1'
+        }
+      }
+    }"
    (get-index-set-by-id id nil))
   ([id params]
    (let [resp (client/get (url/indexer-index-sets-by-id-url id)
@@ -231,7 +244,7 @@
                  {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                   :connection-manager (s/conn-mgr)
                   :throw-exceptions false}))
-
+;;TODO JYNA is this used anywhere?
 (defn sync-index-sets-from-db
   "Triggers a sync of index-sets from database to elasticsearch"
   []
@@ -239,7 +252,7 @@
                {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}))
-
+;; TODO jyna is this used anywhere?
 (defn index-set-reset
   []
   (client/post (url/index-set-reset-url)

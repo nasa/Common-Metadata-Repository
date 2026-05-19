@@ -185,6 +185,7 @@
                                   concept-id-matches-concept-fields-validation-no-provider
                                   humanizer-native-id-validation)))
 
+;; TODO JYNA does this actually validate anything?
 (def index-set-concept-validation
   "Builds a function that validates a concept map that has no provider and returns a list of errors.
    Index-sets are global system-level entities and are not associated with any specific data provider.

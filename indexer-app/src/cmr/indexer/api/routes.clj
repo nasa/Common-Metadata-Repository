@@ -81,6 +81,7 @@
                              (let [gran-index-set (index-set-util/get-index-set request-context es-config/gran-elastic-name id)
                                    non-gran-index-set (index-set-util/get-index-set request-context es-config/elastic-name id)
                                    combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
+                                   ;; TODO JYNA if we're going to get the latest rev info from the db anyway why not get the entire index-set from the db?
                                    ;; Look up latest revision from MDB
                                    latest-rev-info (try
                                                      (index-set-svc/get-index-set-revision request-context id nil)
