@@ -1,8 +1,11 @@
 import hashlib
 import json
+import logging
 from typing import Optional
 
 import redis.asyncio
+
+logger = logging.getLogger(__name__)
 
 
 class ResponseCache:
@@ -28,7 +31,7 @@ class ResponseCache:
         """Look up a cached response. Returns None on miss."""
         key = self._build_key(method, path, query, auth_token)
         cached = await self.redis.get(key)
-        if cached:
+        if cached is not None:
             return json.loads(cached)
         return None
 
@@ -44,6 +47,14 @@ class ResponseCache:
     ):
         """Store a response with the given TTL. Skips oversized responses."""
         if response_size > self.max_response_bytes:
+            logger.debug(
+                "cache_skip_oversized",
+                extra={
+                    "size": response_size,
+                    "limit": self.max_response_bytes,
+                    "path": path,
+                },
+            )
             return
 
         key = self._build_key(method, path, query, auth_token)

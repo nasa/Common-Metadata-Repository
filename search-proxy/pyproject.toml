@@ -13,6 +13,7 @@ dependencies = [
     "httpx>=0.28",
     "redis>=5.0",
     "pydantic-settings>=2.0",
+    "python-json-logger>=2.0",
 ]
 
 [project.optional-dependencies]
