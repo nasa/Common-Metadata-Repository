@@ -150,7 +150,7 @@ Fetches a historical version of the index-set from the Oracle database (Metadata
 Optional params:
 - revision-id = int (The specific version to retrieve)
 
-    curl -XGET "http://localhost:3004/index-sets/3?revision-id=2"
+    curl -XGET "http://localhost:3004/index-sets/3?revision_id=2"
 
 ### Sync index-sets from database
 

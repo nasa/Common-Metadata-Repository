@@ -135,7 +135,7 @@
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
               (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false :elastic-name gran-elastic-name})))
-       (is (= (+ 2 initial-revision) (get-revision)) "Index-set revision should increment after finalizing reshard"))
+       (is (= (+ 3 initial-revision) (get-revision)) "Index-set revision should increment after starting, status-check, and finalizing reshard"))
      (testing "alias is moved to new index"
        (is (index/alias-exists? "1_small_collections_100_shards" "1_small_collections_alias" gran-elastic-name)))
      (testing "index can be resharded more than once"

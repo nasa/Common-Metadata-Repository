@@ -28,6 +28,7 @@
         (let [concept (mdb/get-concept concept-id)]
           (is (= 1 (:revision-id concept)))
           (is (= false (:deleted concept)))
+          (is (not (nil? (:user-id concept))))
           (is (= "CMR" (:provider-id concept))))))
 
     (testing "Update index-set creates revision 2 in Metadata DB"
@@ -37,11 +38,12 @@
             concept-id (mdb/get-concept-id :index-set "CMR" (str index-set-id))
             concept (mdb/get-concept concept-id)]
         (is (= 2 (:revision-id concept)))
+        (is (not (nil? (:user-id concept))))
         (is (= false (:deleted concept)))))
 
     (testing "Retrieve specific revisions and operational state via Indexer API"
-      (let [rev1-data (index/get-index-set-by-id index-set-id {:revision-id 1})
-            rev2-data (index/get-index-set-by-id index-set-id {:revision-id 2})
+      (let [rev1-data (index/get-index-set-by-id index-set-id {:revision_id 1})
+            rev2-data (index/get-index-set-by-id index-set-id {:revision_id 2})
             ops-data (index/get-index-set-by-id index-set-id)]
         (is (= 1 (:revision-id rev1-data)))
         (is (= "sample index" (get-in rev1-data [:index-set :create-reason])))
@@ -59,16 +61,16 @@
             (is (= 404 (:status data)))))
 
         (testing "Can still fetch deleted revision from MDB"
-          (let [rev3-data (index/get-index-set-by-id index-set-id {:revision-id 3})]
+          (let [rev3-data (index/get-index-set-by-id index-set-id {:revision_id 3})]
             (is (= 3 (:revision-id rev3-data)))
             (is (= true (:deleted rev3-data)))
             (is (nil? (:index-set rev3-data)))))
 
         (testing "Restore by fetching Revision 2 and PUTing it back"
-          (let [rev2-data (index/get-index-set-by-id index-set-id {:revision-id 2})
-                ;; Pass inner index-set map to PUT
-                last-good-config {:index-set (:index-set rev2-data)}
-                restore-resp (index/update-index-set last-good-config index-set-id)]
+          (let [rev2-data (index/get-index-set-by-id index-set-id {:revision_id 2})
+                ;; Pass inner index-set map to PUT, and ensure we don't pass the old revision-id
+                last-good-config (dissoc (:index-set rev2-data) :revision-id :deleted)
+                restore-resp (index/update-index-set {:index-set last-good-config} index-set-id)]
             (is (= 200 (:status restore-resp)))
 
             (testing "Operational state is restored with new revision 4"
@@ -92,6 +94,20 @@
         (is (= 1 (:revision-id (mdb/get-concept cid2))))
         (index/update-index-set is2 id2)
         (is (= 2 (:revision-id (mdb/get-concept cid2))))))
+
+    (testing "Graceful Metadata Stripping: revision-id in PUT request is ignored"
+      (let [id 9999
+            is (data-index-set/sample-index-set id)
+            _ (index/create-index-set is)
+            ;; Fetch current state which now includes revision-id
+            current-data (index/get-index-set-by-id id)
+            _ (is (= 1 (:revision-id current-data)))
+            
+            ;; Attempt to PUT it back without manually removing revision-id
+            response (index/update-index-set current-data id)]
+        (is (= 200 (:status response)) "Request should succeed even if revision-id is present")
+        (let [new-data (index/get-index-set-by-id id)]
+          (is (= 2 (:revision-id new-data)) "Oracle should have correctly incremented the revision"))))
 
     (testing "Disaster Recovery: Restore lost ES cluster from Oracle"
       (let [id 5555

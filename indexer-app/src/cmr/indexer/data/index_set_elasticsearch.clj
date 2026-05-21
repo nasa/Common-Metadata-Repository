@@ -95,7 +95,7 @@
   "Check index-set existence in specific elastic cluster."
   [{:keys [conn]} index-name idx-mapping-type index-set-id]
   (when (esi-helper/exists? conn index-name)
-    ;; result will be nil if doc doeesn't exist
+    ;; result will be nil if doc doesn't exist
     (es-helper/doc-get
      conn
      index-name

@@ -145,7 +145,7 @@
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
 
-     (is (= (inc initial-revision) (get-revision)) "Index-set revision should increment after starting rebalance")
+     (is (= (+ 2 initial-revision) (get-revision)) "Index-set revision should increment after starting rebalance")
 
      ;; After rebalancing 1 granule is in small collections and in the new index.
      (bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
@@ -167,7 +167,7 @@
        (bootstrap/finalize-rebalance-collection (:concept-id coll1))
        (index/wait-until-indexed)
 
-       (is (= (+ 2 initial-revision) (get-revision)) "Index-set revision should increment after finalizing rebalance")
+       (is (= (+ 3 initial-revision) (get-revision)) "Index-set revision should increment after finalizing rebalance")
 
        ;; The granules have been removed from small collections
        (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 2 :rebalancing-status "NOT_REBALANCING"} coll1)

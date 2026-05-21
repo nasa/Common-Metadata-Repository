@@ -75,19 +75,15 @@
     (context "/:id" [id]
       (GET "/" {request-context :request-context params :params}
         (acl/verify-ingest-management-permission request-context :read)
-        (let [revision-id (:revision-id params)
+        (let [revision-id (:revision_id params)
               response-map (if revision-id
                              (index-set-svc/get-index-set-revision request-context id revision-id)
                              (let [gran-index-set (index-set-util/get-index-set request-context es-config/gran-elastic-name id)
                                    non-gran-index-set (index-set-util/get-index-set request-context es-config/elastic-name id)
                                    combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
-                                   ;; TODO JYNA if we're going to get the latest rev info from the db anyway why not get the entire index-set from the db?
-                                   ;; Look up latest revision from MDB
-                                   latest-rev-info (try
-                                                     (index-set-svc/get-index-set-revision request-context id nil)
-                                                     (catch Exception _ nil))]
+                                   revision-id (get-in combined-index-set [:index-set :revision-id])]
                                {:index-set (:index-set combined-index-set)
-                                :revision-id (:revision-id latest-rev-info)
+                                :revision-id revision-id
                                 :deleted false}))]
           (r/response response-map)))
 
