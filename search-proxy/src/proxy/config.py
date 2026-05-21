@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
@@ -20,6 +20,11 @@ class ProxySettings(BaseSettings):
 
     lanes_config: str = "lanes.json"
 
+    bypass_enabled: bool = False
+    cache_enabled: bool = True
+    load_shedding_enabled: bool = True
+    classification_enabled: bool = True
+
     model_config = {"env_prefix": "CMR_PROXY_"}
 
 
@@ -28,7 +33,7 @@ class LaneConfig(BaseModel):
 
     name: str
     permits: int
-    overflow: Optional[str] = None
+    overflow: str | None = None
     cache_ttl: int = 0
     retry_after: int = 5
     default: bool = False
