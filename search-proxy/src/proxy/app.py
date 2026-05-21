@@ -9,6 +9,7 @@ import httpx
 import redis.asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
+from pythonjsonlogger import jsonlogger
 
 from proxy.cache import ResponseCache
 from proxy.classifier import classify_request
@@ -31,15 +32,45 @@ HOP_HEADERS = frozenset(
     }
 )
 
+DEFAULT_TOGGLES = {
+    "bypass_enabled": False,
+    "cache_enabled": True,
+    "load_shedding_enabled": True,
+    "classification_enabled": True,
+}
+
+
+def setup_logging():
+    """Configure JSON structured logging for the proxy logger hierarchy."""
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+        jsonlogger.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+    )
+    proxy_log = logging.getLogger("proxy")
+    proxy_log.setLevel(logging.INFO)
+    proxy_log.addHandler(handler)
+    proxy_log.propagate = False
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize shared resources on startup, clean up on shutdown."""
+    setup_logging()
+
     settings = ProxySettings()
     lanes_config = load_lanes_config(settings.lanes_config)
 
     app.state.settings = settings
     app.state.lanes_config = lanes_config
+    app.state.toggles = {
+        "bypass_enabled": settings.bypass_enabled,
+        "cache_enabled": settings.cache_enabled,
+        "load_shedding_enabled": settings.load_shedding_enabled,
+        "classification_enabled": settings.classification_enabled,
+    }
+
+    logger.info("toggles_loaded", extra={"toggles": app.state.toggles})
 
     # Connection-pooled httpx client for forwarding requests to the backend
     app.state.backend = httpx.AsyncClient(
@@ -202,7 +233,9 @@ def _extract_request_id(request: Request) -> str:
 @app.api_route("/{path:path}", methods=["GET", "POST"])
 async def proxy(request: Request, path: str):
     """Main proxy handler: classify, cache check, acquire lane, forward."""
+    t0 = time.monotonic()
     full_path = f"/{path}"
+    toggles = request.app.state.toggles
 
     # Reject oversized POST bodies before reading into memory
     if request.method == "POST":
@@ -249,19 +282,97 @@ async def proxy(request: Request, path: str):
     auth_token = _extract_auth_token(request)
     query_string = str(request.url.query)
 
+    # Bypass: skip classification, cache, and lanes — pure transparent proxy
+    if toggles["bypass_enabled"]:
+        try:
+            backend_response = await forward_to_backend(request, path, request_id)
+        except httpx.TimeoutException:
+            logger.error(
+                "Backend timeout: %s %s [bypass]", request.method, full_path
+            )
+            return JSONResponse(
+                status_code=504,
+                content={"errors": ["Backend timed out"]},
+                headers={"CMR-Request-Id": request_id},
+            )
+        except httpx.ConnectError:
+            logger.error(
+                "Backend unavailable: %s %s [bypass]", request.method, full_path
+            )
+            return JSONResponse(
+                status_code=502,
+                content={"errors": ["Backend unavailable"]},
+                headers={"CMR-Request-Id": request_id},
+            )
+        resp_headers = filter_hop_headers(backend_response.headers)
+        resp_headers["CMR-Request-Id"] = request_id
+        logger.info(
+            "request_completed",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": full_path,
+                "bypass": True,
+                "cache_hit": False,
+                "status_code": backend_response.status_code,
+                "response_bytes": len(backend_response.content),
+                "duration_ms": round((time.monotonic() - t0) * 1000),
+                "provider": params.get("provider"),
+            },
+        )
+        return Response(
+            content=backend_response.content,
+            status_code=backend_response.status_code,
+            headers=resp_headers,
+        )
+
     # Classify the request into a traffic lane based on query parameters
-    lane_name = classify_request(params, content_type)
+    lanes_config = request.app.state.lanes_config
+    if toggles["classification_enabled"]:
+        lane_name = classify_request(params, content_type)
+    else:
+        lane_name = lanes_config.default_lane
+
+    logger.info(
+        "request_classified",
+        extra={
+            "request_id": request_id,
+            "lane": lane_name,
+            "method": request.method,
+            "path": full_path,
+            "provider": params.get("provider"),
+            "has_spatial": any(
+                k in params
+                for k in ("polygon", "bounding_box", "circle[]", "point")
+            ),
+            "classification_enabled": toggles["classification_enabled"],
+        },
+    )
+
     lanes: RequestLanes = request.app.state.lanes
-    lane = request.app.state.lanes_config.get(lane_name)
+    lane = lanes_config.get(lane_name)
     cache: ResponseCache = request.app.state.cache
 
     # Check cache before acquiring a lane permit
-    if lane.cache_ttl > 0:
+    if toggles["cache_enabled"] and lane.cache_ttl > 0:
         try:
             cached = await cache.get(
                 request.method, full_path, query_string, auth_token
             )
             if cached:
+                logger.info(
+                    "request_completed",
+                    extra={
+                        "request_id": request_id,
+                        "method": request.method,
+                        "path": full_path,
+                        "lane": lane_name,
+                        "cache_hit": True,
+                        "status_code": cached["status_code"],
+                        "duration_ms": round((time.monotonic() - t0) * 1000),
+                        "provider": params.get("provider"),
+                    },
+                )
                 response = Response(
                     content=cached["body"],
                     status_code=cached["status_code"],
@@ -274,7 +385,7 @@ async def proxy(request: Request, path: str):
 
     # Acquire a distributed semaphore permit for this lane, then forward
     try:
-        async with lanes.acquire(lane_name) as actual_lane:
+        async with lanes.acquire(lane_name, toggles["load_shedding_enabled"]) as actual_lane:
             try:
                 backend_response = await forward_to_backend(request, path, request_id)
             except httpx.TimeoutException:
@@ -303,7 +414,8 @@ async def proxy(request: Request, path: str):
                 )
 
             # Cache successful responses if this lane has a TTL
-            if lane.cache_ttl > 0 and backend_response.status_code < 400:
+            cache_stored = False
+            if toggles["cache_enabled"] and lane.cache_ttl > 0 and backend_response.status_code < 400:
                 response_data = {
                     "status_code": backend_response.status_code,
                     "body": backend_response.text,
@@ -319,12 +431,31 @@ async def proxy(request: Request, path: str):
                         len(backend_response.content),
                         lane.cache_ttl,
                     )
+                    cache_stored = True
                 except Exception:
                     logger.warning("Cache write failed", exc_info=True)
 
             # Strip hop-by-hop headers and attach the request ID
             resp_headers = filter_hop_headers(backend_response.headers)
             resp_headers["CMR-Request-Id"] = request_id
+
+            logger.info(
+                "request_completed",
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": full_path,
+                    "lane": lane_name,
+                    "actual_lane": actual_lane,
+                    "overflow": actual_lane != lane_name,
+                    "cache_hit": False,
+                    "cache_stored": cache_stored,
+                    "status_code": backend_response.status_code,
+                    "response_bytes": len(backend_response.content),
+                    "duration_ms": round((time.monotonic() - t0) * 1000),
+                    "provider": params.get("provider"),
+                },
+            )
 
             return Response(
                 content=backend_response.content,
@@ -335,10 +466,16 @@ async def proxy(request: Request, path: str):
     # Lane is full — no permit available
     except LoadSheddingError as shed_error:
         logger.warning(
-            "Load shed: %s %s tier=%s",
-            request.method,
-            full_path,
-            shed_error.lane_name,
+            "load_shed",
+            extra={
+                "request_id": request_id,
+                "requested_lane": lane_name,
+                "shed_lane": shed_error.lane_name,
+                "method": request.method,
+                "path": full_path,
+                "provider": params.get("provider"),
+                "retry_after": shed_error.retry_after,
+            },
         )
         return JSONResponse(
             status_code=429,
