@@ -5,7 +5,7 @@ import fakeredis.aioredis
 import httpx
 import pytest
 
-from proxy.app import _health_cache, app, filter_hop_headers
+from proxy.app import DEFAULT_TOGGLES, _health_cache, app, filter_hop_headers
 from proxy.cache import ResponseCache
 from proxy.config import LaneConfig, LanesConfig, ProxySettings
 from proxy.lanes import RequestLanes
@@ -72,6 +72,7 @@ async def client():
     app.state.lanes_config = config
     app.state.lanes = RequestLanes(config, fake_redis)
     app.state.cache = ResponseCache(fake_redis, settings.max_cache_response_bytes)
+    app.state.toggles = dict(DEFAULT_TOGGLES)
     app.state.backend = AsyncMock(spec=httpx.AsyncClient)
     app.state.backend.get = AsyncMock(return_value=make_backend_response())
     app.state.backend.request = AsyncMock(return_value=make_backend_response())

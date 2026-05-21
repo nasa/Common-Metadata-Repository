@@ -1,5 +1,7 @@
 import pytest
 
+from proxy.app import DEFAULT_TOGGLES
+
 
 @pytest.fixture(autouse=True)
 def proxy_env_vars(monkeypatch):

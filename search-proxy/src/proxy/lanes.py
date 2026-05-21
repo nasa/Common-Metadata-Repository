@@ -1,8 +1,11 @@
+import logging
 from contextlib import asynccontextmanager
 
 import redis.asyncio
 
 from proxy.config import LanesConfig
+
+logger = logging.getLogger(__name__)
 
 
 class LoadSheddingError(Exception):
@@ -45,11 +48,15 @@ class RequestLanes:
         if result < 0:
             await self.redis.set(key, 0)
 
-    async def _acquire_permit(self, lane_name: str) -> str:
+    async def _acquire_permit(
+        self, lane_name: str, load_shedding_enabled: bool = True
+    ) -> str:
         """Try to acquire a permit, returning the lane name on success.
 
         Tries the requested lane first. If full and an overflow lane is
-        configured, tries that. Otherwise sheds immediately."""
+        configured, tries that. When load_shedding_enabled is False,
+        force-acquires the original lane instead of shedding — so the
+        counter still reflects over-capacity pressure in the health endpoint."""
         lane = self.config.get(lane_name)
 
         if await self._try_acquire(lane.name, lane.permits):
@@ -61,16 +68,25 @@ class RequestLanes:
             if await self._try_acquire(overflow_lane.name, overflow_lane.permits):
                 return overflow_lane.name
 
+        if not load_shedding_enabled:
+            # Increment without limit so health shows real pressure
+            await self.redis.incr(self._lane_key(lane.name))
+            logger.warning(
+                "load_shed_suppressed",
+                extra={"lane": lane.name, "load_shedding_enabled": False},
+            )
+            return lane.name
+
         raise LoadSheddingError(lane.name, lane.retry_after)
 
     @asynccontextmanager
-    async def acquire(self, lane_name: str):
+    async def acquire(self, lane_name: str, load_shedding_enabled: bool = True):
         """Acquire a distributed permit for the named lane.
 
         Yields the name of the lane that was actually acquired (may differ
         from the requested lane if overflow occurred). The permit is always
         released when the context exits, even on exception."""
-        actual_name = await self._acquire_permit(lane_name)
+        actual_name = await self._acquire_permit(lane_name, load_shedding_enabled)
         try:
             yield actual_name
         finally:
