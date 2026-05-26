@@ -38,9 +38,7 @@
 (defn enable-ingest-writes
   "Use the enable/disable endpoint on ingest to enable writes."
   []
-  (let [response (client/post
-                  (url/enable-ingest-writes-url)
-                  {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
+  (let [response (client/post (url/enable-ingest-writes-url))]
     (is (= 200 (:status response)))))
 
 (defn- create-provider-through-url
@@ -954,7 +952,6 @@
    (reset-fixture providers nil))
   ([providers options]
    (fn [f]
-     (enable-ingest-writes)
      (dev-sys-util/reset)
      (set-ingest-umm-version-to-current)
      (when (seq providers)
