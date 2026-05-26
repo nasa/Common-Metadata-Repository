@@ -473,7 +473,6 @@
        (validate-granule-multipart granule-concept coll-concept))))
 
 (deftest validation-umm-g-granule-test
-  (ingest/enable-ingest-writes)
   (let [collection-attrs {:EntryTitle "correct"
                           :ShortName "S1"
                           :Version "V1"}
