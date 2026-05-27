@@ -12,6 +12,7 @@
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
@@ -158,14 +159,20 @@
    coll-gran-aggregates))
 
 (defn- cached-value->coll-gran-aggregates
-  "Parses a cached value into a collection granule aggregates map."
+  "Parses a cached value into a collection granule aggregates map. Filters out any invalid
+   concept IDs that may have been stored in the cache due to previous bugs or data corruption."
   [cached-value]
-  (util/map-values
-   (fn [aggregate-map]
-     (-> aggregate-map
-         (update :granule-start-date cached-value->joda-time)
-         (update :granule-end-date cached-value->joda-time)))
-   cached-value))
+  (->> cached-value
+       (util/map-values
+        (fn [aggregate-map]
+          (-> aggregate-map
+              (update :granule-start-date cached-value->joda-time)
+              (update :granule-end-date cached-value->joda-time))))
+       ;; Filter out invalid concept IDs from cached data
+       (filter (fn [[concept-id _]]
+                 (and (string? concept-id)
+                      (nil? (concepts/concept-id-validation concept-id)))))
+       (into {})))
 
 (defn- merge-granule-times
   "Merges the granule time maps returning a composite of times. Will only ever expand the ranges."
@@ -226,11 +233,23 @@
                 (pr-str updated-collections))
 
           ;; Reindex the collections that were modified
-          (let [concept-batches (->> updated-collections
+          (let [;; Filter out any invalid concept-ids that might have come from Elasticsearch
+                valid-collection-ids (filter (fn [concept-id]
+                                               (and (string? concept-id)
+                                                    (nil? (concepts/concept-id-validation concept-id))))
+                                             updated-collections)
+                concept-batches (->> valid-collection-ids
                                      (meta-db/get-latest-concepts context)
                                      ;; wrap each concept in its own batch for bulk-index
                                      (map vector))]
-            (index-service/bulk-index context concept-batches es-config/elastic-name)))))
+            (when (not= (count updated-collections) (count valid-collection-ids))
+              (info (format "Filtered out %d invalid concept-ids from updated-collections: %s"
+                            (- (count updated-collections) (count valid-collection-ids))
+                            (pr-str (filter (fn [cid]
+                                              (not (contains? (set valid-collection-ids) cid)))
+                                            updated-collections)))))
+            (when (seq concept-batches)
+              (index-service/bulk-index context concept-batches es-config/elastic-name))))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))
