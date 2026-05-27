@@ -17,6 +17,7 @@ import datetime
 import multiprocessing
 import os
 import subprocess
+import sys
 import time
 
 # Originally written using https://github.com/jceaser/shellwrap, the color file
@@ -33,6 +34,7 @@ lock = Lock() # used to control when the globals are written to
 active_threads = 0 # pylint: disable=invalid-name
 total_time = 0 # pylint: disable=invalid-name
 total_jobs = 0 # pylint: disable=invalid-name
+failed_jobs = [] # pylint: disable=invalid-name
 work_list = [] # will hold a list of modules from lein to test
 base = os.getcwd()
 
@@ -71,6 +73,13 @@ def get_work_list():
             print (f"skipping {item}")
     return list_of_projects
 
+
+def add_failed_job_locking(task, reason):
+    "Track failed jobs in a thread-safe way"
+    global failed_jobs
+    with lock:
+        failed_jobs.append((task, reason))
+
 def worker(_context, id_number):
     "Function for one thread, this is run many times."
     global work_list, total_jobs, total_time, lock
@@ -79,12 +88,15 @@ def worker(_context, id_number):
 
     update_active_threads_locking(1)
 
-    while 0 < len(work_list):
+    while True:
         with lock:
+            if len(work_list) == 0:
+                break
             total_jobs = total_jobs + 1
             task = work_list.pop()
+            tasks_left = len(work_list)
 
-        if task is None or len(task)<1:
+        if task is None or len(task) < 1:
             color.cprint(color.tcode.red, f"restarting: {task}:{len(task)}",
                 verbose=color.VMode.ERROR, environment=env)
             continue
@@ -96,15 +108,29 @@ def worker(_context, id_number):
         # Run the external command in the task directory inside a try/except
         # block, to ensure thread never dies
         try:
-            os.chdir(base+"/"+task)
-            subprocess.run(["lein", "ci-utest"], check=True, capture_output=True)
+            result = subprocess.run(
+                ["lein", "ci-utest"],
+                check=True,
+                capture_output=True,
+                cwd=os.path.join(base, task)
+            )
+            if env["verbose"] == color.VMode.WARN and result.stdout:
+                print(result.stdout.decode("utf-8", errors="replace"))
+        except subprocess.CalledProcessError as e:
+            add_failed_job_locking(task, str(e))
+            color.cprint(color.tcode.red, f"{id_number}: {task} failed", environment=env)
+            if e.stdout:
+                print(f"\n----- {task} stdout -----\n{e.stdout.decode('utf-8', errors='replace')}")
+            if e.stderr:
+                print(f"\n----- {task} stderr -----\n{e.stderr.decode('utf-8', errors='replace')}")
         except Exception as e: # pylint: disable=broad-exception-caught
+            add_failed_job_locking(task, str(e))
             color.cprint(color.tcode.red, f"{id_number}: {task} - {e}", environment=env)
         et = time.time()
         update_total_time_locking(et-st)
 
         # show status
-        stat_msg = f"- task {id_number} took {(et-st):.3f}s on {task}. {len(work_list)} tasks left."
+        stat_msg = f"- task {id_number} took {(et-st):.3f}s on {task}. {tasks_left} tasks left."
         color.cprint(color.tcode.yellow, stat_msg, environment=env)
     update_active_threads_locking(-1)
 
@@ -130,7 +156,7 @@ def init_argparse() -> argparse.ArgumentParser:
 
 def main():
     " Main function, called in command line mode "
-    global work_list, total_jobs, total_time
+    global work_list, total_jobs, total_time, failed_jobs
 
     #handle command line input
     parser = init_argparse()
@@ -145,11 +171,11 @@ def main():
     print (f"{datetime.datetime.now()}")
     print ("This is the new script to run unit tests: run_unit_tests.py")
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
         work_list = get_work_list()
 
         color.cprint(color.tcode.yellow,
-            "Using {args.threads} threads on {len(work_list)} tasks.",
+            f"Using {args.threads} threads on {len(work_list)} tasks.",
             environment=env)
 
         jobs = []
@@ -180,7 +206,18 @@ def main():
 
     color.cprint(color.tcode.yellow, f"Done processing {total_jobs}", environment=env)
     color.cprint(color.tcode.yellow, f"Total: {total_time:.3f}s", environment=env)
-    color.cprint(color.tcode.yellow, f"Average: {total_time/total_jobs:.3f}s", environment=env)
+    average = (total_time / total_jobs) if total_jobs else 0
+    color.cprint(color.tcode.yellow, f"Average: {average:.3f}s", environment=env)
+
+    if failed_jobs:
+        color.cprint(color.tcode.red,
+            f"{len(failed_jobs)} module(s) failed:",
+            environment=env)
+        for task, reason in failed_jobs:
+            print(f"  - {task}: {reason}")
+        print (f"{datetime.datetime.now()}")
+        sys.exit(1)
+
     print (f"{datetime.datetime.now()}")
 
 if __name__ == "__main__":
