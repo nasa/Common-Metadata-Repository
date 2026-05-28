@@ -17,6 +17,7 @@ import datetime
 import multiprocessing
 import os
 import subprocess
+import sys
 import time
 
 # Originally written using https://github.com/jceaser/shellwrap, the color file
@@ -34,6 +35,7 @@ active_threads = 0 # pylint: disable=invalid-name
 total_time = 0 # pylint: disable=invalid-name
 total_jobs = 0 # pylint: disable=invalid-name
 work_list = [] # will hold a list of modules from lein to test
+failed_tasks = [] # will hold module test failures
 base = os.getcwd()
 
 opt_out = ["cmr-dev-system",
@@ -57,6 +59,12 @@ def update_total_time_locking(durration):
     with lock:
         total_time = total_time + durration
 
+def record_failed_task_locking(task, returncode):
+    "Record a failed task, but make sure only one thread at a time can do this"
+    global failed_tasks
+    with lock:
+        failed_tasks.append((task, returncode))
+
 def get_work_list():
     "Get a dump of all the projects that lein manages"
     cmd_result = subprocess.run(["lein", "dump"], check=True, capture_output=True)
@@ -79,8 +87,10 @@ def worker(_context, id_number):
 
     update_active_threads_locking(1)
 
-    while 0 < len(work_list):
+    while True:
         with lock:
+            if len(work_list) < 1:
+                break
             total_jobs = total_jobs + 1
             task = work_list.pop()
 
@@ -96,10 +106,25 @@ def worker(_context, id_number):
         # Run the external command in the task directory inside a try/except
         # block, to ensure thread never dies
         try:
-            os.chdir(base+"/"+task)
-            subprocess.run(["lein", "ci-utest"], check=True, capture_output=True)
+            subprocess.run(["lein", "ci-utest"], check=True, capture_output=True,
+                           cwd=os.path.join(base, task), text=True)
+        except subprocess.CalledProcessError as e:
+            record_failed_task_locking(task, e.returncode)
+            with lock:
+                color.cprint(color.tcode.red,
+                             f"{id_number}: {task} failed with exit code {e.returncode}",
+                             verbose=color.VMode.ERROR,
+                             environment=env)
+                if e.stdout:
+                    print(f"===== {task} stdout =====")
+                    print(e.stdout, end="" if e.stdout.endswith("\n") else "\n")
+                if e.stderr:
+                    print(f"===== {task} stderr =====")
+                    print(e.stderr, end="" if e.stderr.endswith("\n") else "\n")
         except Exception as e: # pylint: disable=broad-exception-caught
-            color.cprint(color.tcode.red, f"{id_number}: {task} - {e}", environment=env)
+            record_failed_task_locking(task, "unknown")
+            color.cprint(color.tcode.red, f"{id_number}: {task} - {e}",
+                         verbose=color.VMode.ERROR, environment=env)
         et = time.time()
         update_total_time_locking(et-st)
 
@@ -149,7 +174,7 @@ def main():
         work_list = get_work_list()
 
         color.cprint(color.tcode.yellow,
-            "Using {args.threads} threads on {len(work_list)} tasks.",
+            f"Using {args.threads} threads on {len(work_list)} tasks.",
             environment=env)
 
         jobs = []
@@ -180,7 +205,14 @@ def main():
 
     color.cprint(color.tcode.yellow, f"Done processing {total_jobs}", environment=env)
     color.cprint(color.tcode.yellow, f"Total: {total_time:.3f}s", environment=env)
-    color.cprint(color.tcode.yellow, f"Average: {total_time/total_jobs:.3f}s", environment=env)
+    if total_jobs > 0:
+        color.cprint(color.tcode.yellow, f"Average: {total_time/total_jobs:.3f}s", environment=env)
+    if failed_tasks:
+        print("Failed unit test modules:")
+        for task, returncode in failed_tasks:
+            print(f"  {task}: {returncode}")
+        print (f"{datetime.datetime.now()}")
+        sys.exit(1)
     print (f"{datetime.datetime.now()}")
 
 if __name__ == "__main__":
