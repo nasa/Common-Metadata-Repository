@@ -5,6 +5,7 @@
    [cmr.common.util :refer [are3]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common-app.test.sample-humanizer :as sh]
+   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as imc]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
@@ -18,7 +19,7 @@
 (defn- create-kms-caches
   "Creates KMS caches using the centralized helper."
   []
-  (kms-lookup/create-all-kms-caches))
+  (test-kms-lookup/create-all-kms-caches))
 
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
