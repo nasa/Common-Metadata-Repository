@@ -93,6 +93,7 @@
    {:name "cmr-base-index-set",
     :id 3,
     :create-reason "include message about reasons for creating this index set"
+    :deleted false
     :granule {:indexes [{:name "small_collections",
                          :settings {:index {:number_of_shards 1, :number_of_replicas 0, :refresh_interval "10s"}}}
                         {:name "C4-PROV3",
@@ -221,6 +222,7 @@
    {:name "cmr-base-index-set-updated"
     :id sample-index-set-id
     :create-reason "updated index set from sample index"
+    :deleted false
     ;; random concept type is created
     :random {:indexes
              [{:name "RAND1-PROV0"
@@ -373,6 +375,10 @@
   "Given an empty index set this is the expected created index-set. This is used for the update-index-sets-test."
   {:index-set {:name "test-index-set",
                :id 3,
+               ;; usually we would have a revision-id in the expected index-set return,
+               ; but because this value keeps changing we are going to leave it out here for test comparisons where this var is used
+               ;:revision-id 1
+               :deleted false
                :concepts {
                           :generic-order-option {},
                           :service {},

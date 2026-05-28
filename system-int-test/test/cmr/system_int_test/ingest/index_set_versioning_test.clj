@@ -45,12 +45,12 @@
       (let [rev1-data (index/get-index-set-by-id index-set-id {:revision_id 1})
             rev2-data (index/get-index-set-by-id index-set-id {:revision_id 2})
             ops-data (index/get-index-set-by-id index-set-id)]
-        (is (= 1 (:revision-id rev1-data)))
+        (is (= 1 (get-in rev1-data [:index-set :revision-id])))
         (is (= "sample index" (get-in rev1-data [:index-set :create-reason])))
-        (is (= 2 (:revision-id rev2-data)))
+        (is (= 2 (get-in rev2-data [:index-set :revision-id])))
         (is (= updated-reason (get-in rev2-data [:index-set :create-reason])))
-        (is (= 2 (:revision-id ops-data)))
-        (is (= false (:deleted ops-data)))))
+        (is (= 2 (get-in ops-data [:index-set :revision-id])))
+        (is (= false (get-in ops-data [:index-set :deleted])))))
 
     (testing "Disaster Recovery: Accidental deletion and restoration"
       (let [response (index/delete-index-set index-set-id)
@@ -62,9 +62,9 @@
 
         (testing "Can still fetch deleted revision from MDB"
           (let [rev3-data (index/get-index-set-by-id index-set-id {:revision_id 3})]
-            (is (= 3 (:revision-id rev3-data)))
-            (is (= true (:deleted rev3-data)))
-            (is (nil? (:index-set rev3-data)))))
+            (is (= 3 (get-in rev3-data [:index-set :revision-id])))
+            (is (= true (get-in rev3-data [:index-set :deleted])))
+            (is (not (contains? (:index-set rev3-data) :create-reason)))))
 
         (testing "Restore by fetching Revision 2 and PUTing it back"
           (let [rev2-data (index/get-index-set-by-id index-set-id {:revision_id 2})
@@ -75,8 +75,8 @@
 
             (testing "Operational state is restored with new revision 4"
               (let [data (index/get-index-set-by-id index-set-id)]
-                (is (= 4 (:revision-id data)))
-                (is (= false (:deleted data)))
+                (is (= 4 (get-in data [:index-set :revision-id])))
+                (is (= false (get-in data [:index-set :deleted])))
                 (is (= updated-reason (get-in data [:index-set :create-reason])))))))))
 
     (testing "Multiple index-sets are versioned independently"
@@ -101,13 +101,13 @@
             _ (index/create-index-set is)
             ;; Fetch current state which now includes revision-id
             current-data (index/get-index-set-by-id id)
-            _ (is (= 1 (:revision-id current-data)))
+            _ (is (= 1 (get-in current-data [:index-set :revision-id])))
             
             ;; Attempt to PUT it back without manually removing revision-id
             response (index/update-index-set current-data id)]
         (is (= 200 (:status response)) "Request should succeed even if revision-id is present")
         (let [new-data (index/get-index-set-by-id id)]
-          (is (= 2 (:revision-id new-data)) "Oracle should have correctly incremented the revision"))))
+          (is (= 2 (get-in new-data [:index-set :revision-id])) "Oracle should have correctly incremented the revision"))))
 
     (testing "Disaster Recovery: Restore lost ES cluster from Oracle"
       (let [id 5555

@@ -82,9 +82,9 @@
                                    non-gran-index-set (index-set-util/get-index-set request-context es-config/elastic-name id)
                                    combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
                                    revision-id (get-in combined-index-set [:index-set :revision-id])]
-                               {:index-set (:index-set combined-index-set)
-                                :revision-id revision-id
-                                :deleted false}))]
+                               {:index-set (assoc (:index-set combined-index-set)
+                                                  :revision-id revision-id
+                                                  :deleted false)}))]
           (r/response response-map)))
 
       (PUT "/" {request-context :request-context body :body}

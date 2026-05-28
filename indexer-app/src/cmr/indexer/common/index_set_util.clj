@@ -15,7 +15,7 @@
         idx-mapping-type (first (keys mapping))
         index-set-array (es/get-index-sets (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type)]
 
-    (map #(select-keys (:index-set %) [:id :name :concepts])
+    (map #(select-keys (:index-set %) [:id :name :concepts :revision-id])
          index-set-array)))
 
 (defn get-index-set
@@ -39,5 +39,5 @@
 
         all-index-set-array (map util/deep-merge gran-index-set-array non-gran-index-set-array)]
 
-    (map #(select-keys (:index-set %) [:id :name :concepts])
+    (map #(select-keys (:index-set %) [:id :name :concepts :revision-id])
          all-index-set-array)))

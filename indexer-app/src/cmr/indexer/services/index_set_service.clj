@@ -186,7 +186,7 @@
 (defn get-index-set-revision
   "Fetch a specific revision of an index-set from metadata-db.
    If revision-id is nil, the latest revision is returned.
-   Returns a map with :index-set, :revision-id, and :deleted."
+   Returns a map with :index-set containing :revision-id and :deleted."
   [context index-set-id revision-id]
   (if-let [concept-id (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))]
     (let [concept (if revision-id
@@ -194,11 +194,12 @@
                     (meta-db/get-latest-concept context concept-id))
           metadata-map (when-let [metadata (:metadata concept)]
                          (json/parse-string metadata true))]
-      {:index-set (if (contains? metadata-map :index-set)
-                    (:index-set metadata-map)
-                    metadata-map)
-       :revision-id (:revision-id concept)
-       :deleted (true? (:deleted concept))})
+      (let [index-set (if (contains? metadata-map :index-set)
+                        (:index-set metadata-map)
+                        metadata-map)]
+        {:index-set (assoc index-set
+                           :revision-id (:revision-id concept)
+                           :deleted (true? (:deleted concept)))}))
     (errors/throw-service-error :not-found
                                 (m/index-set-not-found-msg index-set-id))))
 
@@ -991,10 +992,9 @@
         non-gran-index-set-ids (es/get-index-set-ids
                                 (indexer-util/context->es-store context es-config/elastic-name)
                                 index-name
-                                "_doc")]
-    ;; delete indices assoc with index-set
-    (doseq [id gran-index-set-ids]
-      (delete-index-set-indices context (str id) es-config/gran-elastic-name))
+                                "_doc")
+        all-index-set-ids (into (set gran-index-set-ids) non-gran-index-set-ids)]
 
-    (doseq [id non-gran-index-set-ids]
-      (delete-index-set-indices context (str id) es-config/elastic-name))))
+    ;; delete indices assoc with index-sets
+    (doseq [id all-index-set-ids]
+      (delete-index-set context id))))

@@ -106,31 +106,37 @@
       (doseq [es-idx-name actual-es-indices]
         (is (or (esi/exists? @util/gran-elastic-connection es-idx-name)
                 (esi/exists? @util/elastic-connection es-idx-name))))
+      (is (every? #(some? (:revision-id %)) body))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 ;; Verify that you can update an index set multiple times and get the correct indices created and deleted
 (deftest update-index-sets-test
-  (testing "create and update index set"
+  (testing "create and update index set by id"
     (let [index-set-id util/sample-index-set-id
           ;; create original index set
           index-set util/sample-index-set
           _ (util/create-index-set index-set)
           found-orig-index-set (-> (util/get-index-set index-set-id) :response :body)
           ;; check original index set is correct
-          _ (is (= util/expected-orig-index-set found-orig-index-set))
+          _ (is (= util/expected-orig-index-set (update-in found-orig-index-set [:index-set] dissoc :revision-id)))
+          _ (is (some? (get-in found-orig-index-set [:index-set :revision-id])))
           ;; update index set
           updated-resp (util/update-index-set util/sample-index-set-updated index-set-id)
           _ (is (= (:status updated-resp) 200))
           found-updated-index-set (-> (util/get-index-set index-set-id) :response :body)]
 
-      (is (= util/expected-sample-index-set-after-update found-updated-index-set))))
-  (testing "create index set from put call (not post)"
+      (is (= util/expected-sample-index-set-after-update (update-in found-updated-index-set [:index-set] dissoc :revision-id)))
+      (is (some? (get-in found-updated-index-set [:index-set :revision-id])))))
+
+  (testing "create index set by id from put call (not post)"
     (let [index-set-id util/sample-index-set-id
           ;; create index set
           create-resp (util/update-index-set util/sample-index-set-updated index-set-id)
           _ (is (= (:status create-resp) 200))
           found-index-set (-> (util/get-index-set index-set-id) :response :body)]
-      (is (= util/expected-sample-index-set-after-update found-index-set)))))
+      (is (= util/expected-sample-index-set-after-update (update-in found-index-set [:index-set] dissoc :revision-id)))
+      (is (some? (get-in found-index-set [:index-set :revision-id]))))))
+
 (deftest update-index-sets-with-empty-inputs
   (testing "update index set from put call with no input creates default index set correctly"
     (let [index-set-id util/sample-index-set-id
@@ -138,7 +144,8 @@
           create-resp (util/update-index-set {:index-set {:id index-set-id :name "test-index-set"}} index-set-id)
           _ (is (= (:status create-resp) 200))
           found-index-set (-> (util/get-index-set index-set-id) :response :body)]
-      (is (= util/expected-empty-index-set found-index-set)))))
+      (is (= util/expected-empty-index-set (update-in found-index-set [:index-set] dissoc :revision-id)))
+      (is (some? (get-in found-index-set [:index-set :revision-id]))))))
 
 (deftest create-index-set-with-empty-input
   (testing "create index set from post call with no input creates default index set correctly"
@@ -147,7 +154,8 @@
           create-resp (util/create-index-set {:index-set {:id index-set-id :name "test-index-set"}})
           _ (is (= (:status create-resp) 201))
           found-index-set (-> (util/get-index-set index-set-id) :response :body)]
-      (is (= util/expected-empty-index-set found-index-set)))))
+      (is (= util/expected-empty-index-set (update-in found-index-set [:index-set] dissoc :revision-id)))
+      (is (some? (get-in found-index-set [:index-set :revision-id]))))))
 
 ;; manual reset
 (comment
@@ -314,48 +322,49 @@
           {:keys [status errors]} (util/create-index-set index-set)
 
           ;; get index sets
-          gran-index-sets (get-in (util/get-index-sets es-config/gran-elastic-name) [:response :body])
-          non-gran-index-sets (get-in (util/get-index-sets es-config/elastic-name) [:response :body])
+          gran-index-set (first (get-in (util/get-index-sets es-config/gran-elastic-name) [:response :body]))
+          non-gran-index-set (first (get-in (util/get-index-sets es-config/elastic-name) [:response :body]))
 
-          ;; get index set id
+          ;; get index set id by cluster
           gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/gran-elastic-name) [:response :body])
           non-gran-index-set-by-id (get-in (util/get-index-set index-set-id es-config/elastic-name) [:response :body])
 
-          ;; expected index sets
-          expected-gran-index-sets [{:id index-set-id
+          ;; expected index sets without stating explicit revision-id because revision-id will constantly change
+          expected-gran-index-set {:id index-set-id
                                     :name index-set-name
                                     :concepts {
                                                :deleted-granule {}
                                                :granule {
                                                          :small_collections "3_small_collections"
                                                          :C4-PROV3 "3_c4_prov3"
-                                                         :C5-PROV5 "3_c5_prov5"}}}]
-          expected-non-gran-index-sets [{:id index-set-id
-                                        :name index-set-name
-                                        :concepts {
-                                                   :generic-order-option {}
-                                                   :service {}
-                                                   :generic-tool-draft {}
-                                                   :variable {}
-                                                   :generic-grid-draft {}
-                                                   :generic-service-draft {}
-                                                   :tool {}
-                                                   :generic-visualization {}
-                                                   :generic-citation {}
-                                                   :generic-collection-draft {}
-                                                   :generic-visualization-draft {}
-                                                   :generic-order-option-draft {}
-                                                   :generic-data-quality-summary-draft {}
-                                                   :generic-variable-draft {}
-                                                   :generic-citation-draft {}
-                                                   :autocomplete {}
-                                                   :tag {}
-                                                   :generic-grid {}
-                                                   :generic-data-quality-summary {}
-                                                   :collection {
-                                                                :collections-v2 "3_collections_v2",
-                                                                :all-collection-revisions "3_all_collection_revisions"}
-                                                   :subscription {}}}]
+                                                         :C5-PROV5 "3_c5_prov5"}}}
+
+          expected-non-gran-index-set {:id index-set-id
+                                       :name index-set-name
+                                       :concepts {
+                                                  :generic-order-option {}
+                                                  :service {}
+                                                  :generic-tool-draft {}
+                                                  :variable {}
+                                                  :generic-grid-draft {}
+                                                  :generic-service-draft {}
+                                                  :tool {}
+                                                  :generic-visualization {}
+                                                  :generic-citation {}
+                                                  :generic-collection-draft {}
+                                                  :generic-visualization-draft {}
+                                                  :generic-order-option-draft {}
+                                                  :generic-data-quality-summary-draft {}
+                                                  :generic-variable-draft {}
+                                                  :generic-citation-draft {}
+                                                  :autocomplete {}
+                                                  :tag {}
+                                                  :generic-grid {}
+                                                  :generic-data-quality-summary {}
+                                                  :collection {
+                                                               :collections-v2 "3_collections_v2",
+                                                               :all-collection-revisions "3_all_collection_revisions"}
+                                                  :subscription {}}}
 
           expected-gran-index-set-by-id {:index-set {
                                                      :name index-set-name
@@ -398,7 +407,12 @@
       (is (= 201 status))
       (is (= nil errors))
 
-      (is (= expected-gran-index-sets gran-index-sets))
-      (is (= expected-non-gran-index-sets non-gran-index-sets))
-      (is (= expected-gran-index-set-by-id gran-index-set-by-id))
-      (is (= expected-non-gran-index-set-by-id non-gran-index-set-by-id)))))
+      ;; comparing maps whilst ignoring revision-id because that value will always change
+      (is (= expected-gran-index-set (dissoc gran-index-set :revision-id)))
+      (is (some? (:revision-id gran-index-set)))
+      (is (= expected-non-gran-index-set (dissoc non-gran-index-set :revision-id)))
+      (is (some? (:revision-id non-gran-index-set)))
+      (is (= expected-gran-index-set-by-id (update-in gran-index-set-by-id [:index-set] dissoc :revision-id)))
+      (is (some? (get-in gran-index-set-by-id [:index-set :revision-id])))
+      (is (= expected-non-gran-index-set-by-id (update-in non-gran-index-set-by-id [:index-set] dissoc :revision-id)))
+      (is (some? (get-in non-gran-index-set-by-id [:index-set :revision-id]))))))
