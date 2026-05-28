@@ -2,23 +2,16 @@
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]))
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
+    [cmr.common-app.test.kms-lookup :as test-kms-lookup]))
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
-                     kms-lookup/kms-projects-cache-key (kms-lookup/create-kms-project-uuid-cache)
-                     kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
-                     kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
-                     kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
+  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}})
 
 (def create-context-broken
   "Creates a testing concept with the KMS caches."
-  (-> {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
-                         kms-lookup/kms-projects-cache-key (kms-lookup/create-kms-project-uuid-cache)
-                         kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
-                         kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
-                         kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}
+  (-> {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}}
       (update-in
        [:system :caches :kms-measurement-index :read-connection :spec :host]
        (constantly "example.gov"))))

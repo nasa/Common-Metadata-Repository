@@ -3,6 +3,7 @@
   (:require
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.cache :as cache]))
 
 (def ^:private sample-keyword-map
@@ -24,11 +25,8 @@
 
 (def create-context
   "Simple context that setups KMS caches for testing."
-  {:system {:caches {kf/kms-cache-key (kf/create-kms-cache)
-                     kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
-                     kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
-                     kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
-                     kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
+  {:system {:caches (merge {kf/kms-cache-key (kf/create-kms-cache)}
+                           (test-kms-lookup/create-kms-caches-for-testing))}})
 
 (defn redis-cache-fixture
   "This fixture wraps any tests that use it with a set of values
