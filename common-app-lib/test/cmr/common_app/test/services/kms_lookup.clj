@@ -55,21 +55,21 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (test-kms-lookup/create-all-kms-caches)}})
+  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}})
 
-(deftest create-all-kms-caches-coverage-test
-  (testing "create-all-kms-caches includes every *-cache-key defined in kms-lookup"
+(deftest create-kms-caches-for-testing-coverage-test
+  (testing "create-kms-caches-for-testing includes every *-cache-key defined in kms-lookup"
     (let [expected-cache-keys (->> (ns-publics 'cmr.common-app.services.kms-lookup)
                                    (filter (fn [[sym _]]
                                              (string/ends-with? (name sym) "-cache-key")))
                                    (map (fn [[_ v]] (var-get v)))
                                    set)
-          actual-cache-keys (-> (test-kms-lookup/create-all-kms-caches)
+          actual-cache-keys (-> (test-kms-lookup/create-kms-caches-for-testing)
                                 keys
                                 set)]
       (is (= expected-cache-keys actual-cache-keys)
           (str "KMS cache helper is out of sync. When adding a new `*-cache-key` in "
-               "cmr.common-app.services.kms-lookup, also update create-all-kms-caches so "
+               "cmr.common-app.services.kms-lookup, also update create-kms-caches-for-testing so "
                "test contexts across modules keep working.")))))
 
 (defn redis-cache-fixture

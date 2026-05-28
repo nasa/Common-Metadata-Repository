@@ -42,7 +42,7 @@
 
 (def ^:private context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (test-kms-lookup/create-all-kms-caches)}
+  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}
    :ignore-kms-keywords true})
 
 (defn redis-cache-fixture
