@@ -40,14 +40,9 @@
                        :variable-level-1 "VL1" :variable-level-2 "VL2"
                        :variable-level-3 "VL3" :uuid "sk1-uuid"}]})
 
-(defn- create-kms-caches
-  "Creates KMS caches using the centralized helper."
-  []
-  (test-kms-lookup/create-all-kms-caches))
-
 (def ^:private context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (create-kms-caches)}
+  {:system {:caches (test-kms-lookup/create-all-kms-caches)}
    :ignore-kms-keywords true})
 
 (defn redis-cache-fixture
