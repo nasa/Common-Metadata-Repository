@@ -58,7 +58,7 @@
   "Defines the aggregations to use to find information about all the granules in a collection."
   {:collection-concept-id
    ;; Aggregate by collection concept id
-   {:terms {:field :collection-concept-id
+   {:terms {:field :collection-concept-id-doc-values
             ;; If we get more than 50K collections the parse-aggregations will detect that and throw
             ;; an exception.
             :size 50000}
@@ -220,8 +220,11 @@
       (do
        (info "Running a partial refresh of the collection aggregation cache.")
        (let [existing-aggregate-map (cached-value->coll-gran-aggregates existing-value)
+             _ (info (format "Loaded %d collections from cache (after filtering)" (count existing-aggregate-map)))
              recently-updated-granule-map (fetch-coll-gran-aggregates-updated-in-last-n
                                            context granules-updated-in-last-n)
+             _ (info (format "Fetched %d collections from ES with recent updates" (count recently-updated-granule-map)))
+             _ (info (format "Sample ES collection IDs: %s" (pr-str (take 5 (keys recently-updated-granule-map)))))
              merged-map (merge-coll-gran-aggregates existing-aggregate-map
                                                     recently-updated-granule-map)
              updated-collections (collections-with-updated-times existing-aggregate-map merged-map)]
