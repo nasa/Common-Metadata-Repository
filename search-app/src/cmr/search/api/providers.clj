@@ -57,7 +57,10 @@
         provider-metadata (-> response-body
                               (as-> body (map :metadata body))
                               (as-> metadata-list
-                                    (map #(util/remove-nested-key % [:Administrators]) metadata-list))
+                                  (->> metadata-list
+                                       (map #(util/remove-nested-key % [:Administrators]))
+                                       ;; account for bad metadata and remove null/empty results
+                                       (filter seq)))
                               json/generate-string)
         new-response {}]
     (assoc new-response :hits hits :took time-taken :items (json/parse-string provider-metadata true))))
