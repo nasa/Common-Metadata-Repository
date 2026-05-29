@@ -1,8 +1,10 @@
 (ns cmr.common-app.test.services.kms-lookup
   "Unit tests for KMS lookup namespace."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.util :refer [are3]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
@@ -53,11 +55,22 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
-                     kms-lookup/kms-projects-cache-key (kms-lookup/create-kms-project-uuid-cache)
-                     kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
-                     kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
-                     kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
+  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}})
+
+(deftest create-kms-caches-for-testing-coverage-test
+  (testing "create-kms-caches-for-testing includes every *-cache-key defined in kms-lookup"
+    (let [expected-cache-keys (->> (ns-publics 'cmr.common-app.services.kms-lookup)
+                                   (filter (fn [[sym _]]
+                                             (string/ends-with? (name sym) "-cache-key")))
+                                   (map (fn [[_ v]] (var-get v)))
+                                   set)
+          actual-cache-keys (-> (test-kms-lookup/create-kms-caches-for-testing)
+                                keys
+                                set)]
+      (is (= expected-cache-keys actual-cache-keys)
+          (str "KMS cache helper is out of sync. When adding a new `*-cache-key` in "
+               "cmr.common-app.services.kms-lookup, also update create-kms-caches-for-testing so "
+               "test contexts across modules keep working.")))))
 
 (defn redis-cache-fixture
   "Sets up the redis cache fixture to load data into the caches for testing."
