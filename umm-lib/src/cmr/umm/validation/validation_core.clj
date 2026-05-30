@@ -44,12 +44,13 @@
    (validate-collection collection nil))
   ([collection additional-validations]
    (validation-errors->path-errors
-     (v/validate (cons vc/collection-validations additional-validations)
-                 collection))))
+    (v/validate (cons vc/collection-validations additional-validations)
+                collection))))
 
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   [collection granule]
-  (validation-errors->path-errors
-    (v/validate vg/granule-validations (pw/set-parent granule collection))))
+  ((println (str "🚀" granule))
+   validation-errors->path-errors
+   (v/validate vg/granule-validations (pw/set-parent granule collection))))

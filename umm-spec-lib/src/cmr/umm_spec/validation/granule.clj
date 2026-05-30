@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [cmr.common.validations.core :as v]
    [cmr.spatial.validation :as sv]
+   [cmr.ingest.config :as config]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm-spec.time :as umm-spec-time]
@@ -34,8 +35,8 @@
     (when (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)
        [(format
-          "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
-          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+         "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
+         (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
@@ -44,8 +45,8 @@
     (when-not (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)
        [(format
-          "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
-          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+         "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
+         (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
@@ -63,7 +64,7 @@
                               (is-not-allowed :geometries)]
                  (:geodetic :cartesian) [(is-required :geometries)
                                          (is-not-allowed :orbit)]
-                 :orbit [ (is-required :orbit)])]
+                 :orbit [(is-required :orbit)])]
     (apply merge (remove nil? errors))))
 
 (defn set-geometries-spatial-representation
@@ -83,11 +84,11 @@
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
   [(v/pre-validation
-     ;; The spatial representation has to be set on the geometries before the conversion because
-     ;; polygons etc do not know whether they are geodetic or not.
-     set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)
-      :orbit (v/when-present sv/spatial-validation)})])
+    ;; The spatial representation has to be set on the geometries before the conversion because
+    ;; polygons etc do not know whether they are geodetic or not.
+    set-geometries-spatial-representation
+    {:geometries (v/every sv/spatial-validation)
+     :orbit (v/when-present sv/spatial-validation)})])
 
 (def ocsd-validations
   "Defines orbit calculated spatial domain validations for granules."
@@ -135,7 +136,7 @@
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]
-       [(format "%%s have [%s] which do not reference any projects in parent collection."
+       [(format "%%s have [%s] which do not reference any projects foobar 🚀 in parent collection."
                 (string/join ", " missing-project-refs))]})))
 
 (defn- matches-collection-identifier-validation
@@ -188,6 +189,13 @@
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
 
+;; (defn- when-enforce-collection-consistency
+;;   "A validation that only runs when enforce-granule-collection-consistency is true."
+;;   [validation]
+;;   (fn [field-path value]
+;;     (when (config/enforce-granule-collection-consistency)
+;;       (valid/validate validation field-path value))))
+
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
   [_ temporal]
@@ -206,6 +214,7 @@
   (let [operation-modes (set (:operation-modes instrument-ref))
         parent-operation-modes (-> instrument-ref :parent :OperationalModes set)
         missing-operation-modes (seq (set/difference operation-modes parent-operation-modes))]
+    (def m1 missing-operation-modes)
     (when missing-operation-modes
       {field-path
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
@@ -239,7 +248,7 @@
                      (matches-collection-identifier-validation :short-name [:ShortName])
                      (matches-collection-identifier-validation :version-id [:Version])]
     :spatial-coverage spatial-coverage-validations
-    :orbit-calculated-spatial-domains ocsd-validations 
+    :orbit-calculated-spatial-domains ocsd-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
@@ -250,5 +259,5 @@
                                   (v/every aav/aa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
-   projects-reference-collection
+   (when (config/enforce-granule-collection-consistency) projects-reference-collection)
    spatial-matches-granule-spatial-representation])
