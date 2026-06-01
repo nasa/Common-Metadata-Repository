@@ -8,8 +8,13 @@
    [cmr.oracle.connection :as conn]))
 
 (defconfig validate-keywords-default-true-enabled
-   "Flag for whether or not cmr-validate-keywords value is defaulted to true or false in backend when missing in ingest api headers"
-   {:default true :type Boolean})
+  "Flag for whether or not cmr-validate-keywords value is defaulted to true or false in backend when missing in ingest api headers"
+  {:default true :type Boolean})
+
+;; TODO we gotta make sure this is set to true before merging
+(defconfig enforce-granule-collection-consistency
+  "Flag for whether or not to enforce granule and collection validation consistency."
+  {:default false :type Boolean})
 
 (defconfig progressive-update-enabled
   "Flag for whether or not collection progressive update is enabled."
@@ -29,7 +34,7 @@
 (defconfig granule-bulk-update-tasks-max-rows
   "The maximum number of rows from granule_bulk_update_tasks table
   that can be returned"
-  {:default 1000 
+  {:default 1000
    :type Long})
 
 (defconfig collection-bulk-update-enabled
@@ -89,12 +94,12 @@
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]
   (conn/db-spec
-    connection-pool-name
-    (oracle-config/db-url)
-    (oracle-config/db-fcf-enabled)
-    (oracle-config/db-ons-config)
-    (ingest-username)
-    (ingest-password)))
+   connection-pool-name
+   (oracle-config/db-url)
+   (oracle-config/db-fcf-enabled)
+   (oracle-config/db-ons-config)
+   (ingest-username)
+   (ingest-password)))
 
 (defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."
@@ -109,12 +114,12 @@
   {:default "cmr_ingest.exchange"})
 
 (defconfig provider-exchange-name
-   "The ingest exchange to which provider change and non-ingest messages are published."
-   {:default "cmr_ingest_provider.exchange"})
+  "The ingest exchange to which provider change and non-ingest messages are published."
+  {:default "cmr_ingest_provider.exchange"})
 
 (defconfig bulk-update-exchange-name
-   "The ingest exchange to which granule bulk update messages are published."
-   {:default "cmr_ingest_bulk_update.exchange"})
+  "The ingest exchange to which granule bulk update messages are published."
+  {:default "cmr_ingest_bulk_update.exchange"})
 
 (defconfig ingest-queue-listener-count
   "Number of worker threads to use for the queue listener for the provider queue"

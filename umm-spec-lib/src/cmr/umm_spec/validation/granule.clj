@@ -223,21 +223,21 @@
 (def sensor-ref-validations
   "Defines the sensor validations for granules"
   {:characteristic-refs [(vu/unique-by-name-validator :name)
-                         (vu/has-parent-validator :name "Characteristic Reference name")]})
+                         (when (config/enforce-granule-collection-consistency)(vu/has-parent-validator :name "Characteristic Reference name"))]})
 
 (def instrument-ref-validations
   "Defines the instrument validations for granules"
   [{:characteristic-refs [(vu/unique-by-name-validator :name)
-                          (vu/has-parent-validator :name "Characteristic Reference name")]
+                          (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :name "Characteristic Reference name"))]
     :sensor-refs [(vu/unique-by-name-validator :short-name)
-                  (vu/has-parent-validator :short-name "Sensor short name")
+                  (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Sensor short name"))
                   (v/every sensor-ref-validations)]}
-   operation-modes-reference-collection])
+   (when (config/enforce-granule-collection-consistency)operation-modes-reference-collection)])
 
 (def platform-ref-validations
   "Defines the platform validations for granules"
   {:instrument-refs [(vu/unique-by-name-validator :short-name)
-                     (vu/has-parent-validator :short-name "Instrument short name")
+                     (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Instrument short name"))
                      (v/every instrument-ref-validations)]})
 
 (def granule-validations
@@ -251,7 +251,8 @@
     :orbit-calculated-spatial-domains ocsd-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    (vu/has-parent-validator :short-name "Platform short name")
+                    ;; TODO must be this one
+                    (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Platform short name"))
                     (v/every platform-ref-validations)]
     :two-d-coordinate-system [(vu/has-parent-validator :name "Tiling Identification System Name")
                               two-d-coordinates-range-validation]

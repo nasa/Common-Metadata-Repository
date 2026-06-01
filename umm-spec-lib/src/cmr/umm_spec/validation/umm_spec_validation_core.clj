@@ -63,7 +63,9 @@
   ([collection granule]
    (validate-granule collection granule nil))
   ([collection granule additional-validations]
+   (tap> vg/granule-validations)
    (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+     (tap> granule-with-parent)
      (validation-errors->path-errors
       (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 
