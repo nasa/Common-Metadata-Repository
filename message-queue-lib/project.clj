@@ -23,7 +23,12 @@
                  [io.netty/netty-codec-http ~netty-version]
                  [io.netty/netty-codec-http2 ~netty-version]
                  [io.netty/netty-codec ~netty-version]
-                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
+                 [io.netty/netty-transport-classes-epoll ~netty-version]
+                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
+                  :exclusions [io.netty/netty-codec
+                               io.netty/netty-codec-http
+                               io.netty/netty-handler
+                               io.netty/netty-transport-classes-epoll]]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [software.amazon.awssdk/regions ~aws-java-sdk2-version]
                  [software.amazon.awssdk/sns ~aws-java-sdk2-version
