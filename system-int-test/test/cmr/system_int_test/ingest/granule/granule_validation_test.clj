@@ -22,7 +22,9 @@
     [cmr.umm.umm-granule :as umm-g]
     [cmr.umm.umm-spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (fn [f]
+                      (ingest/enable-ingest-writes)
+                      ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) f)))
 
 (comment
   (do
@@ -478,7 +480,7 @@
                               :short-name "S1"
                               :version-id "V1"}
         collection (data-umm-c/collection collection-attrs)
-        coll-concept (d/umm-c-collection->concept collection :iso-smap)]
+        coll-concept (d/umm-c-collection->concept collection :echo10)]
     (testing "valid UMM-G granule"
       (let [granule (assoc (dg/granule-with-umm-spec-collection collection nil)
                            :collection-ref

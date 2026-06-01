@@ -7,6 +7,9 @@
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [com.fasterxml.jackson.core/jackson-core]
+                 [com.fasterxml.jackson.core/jackson-databind]
+
                  [clj-http]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]

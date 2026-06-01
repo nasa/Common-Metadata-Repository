@@ -5,6 +5,7 @@
    [cmr.common.util :refer [are3]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common-app.test.sample-humanizer :as sh]
+   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as imc]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
@@ -17,11 +18,8 @@
 
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
-    {:system {:caches {hf/humanizer-cache-key humanizer-cache
-                       kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
-                       kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
-                       kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
-                       kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}))
+    {:system {:caches (merge {hf/humanizer-cache-key humanizer-cache}
+                             (test-kms-lookup/create-kms-caches-for-testing))}}))
 
 (defn redis-cache-fixture
   [f]

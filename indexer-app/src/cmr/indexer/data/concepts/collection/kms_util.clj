@@ -100,3 +100,18 @@
     (when uuid
       {:uuid uuid})))
 
+(defn provider->elastic-doc
+  "Converts a provider into an elastic document with the uuid
+  for that provider from the GCMD KMS keywords."
+  [context provider]
+  (let [uuid (kms-lookup/lookup-provider-by-short-name context provider)]
+    (when uuid
+      {:uuid uuid})))
+
+(defn spatial-keyword-by-map->elastic-doc
+  "Converts a spatial keyword into an elastic document with the uuid
+  for that provider from the GCMD KMS keywords."
+  [context spatial-keywords]
+  (let [uuid (kms-lookup/lookup-spatial-keyword-by-map context spatial-keywords)]
+    (when uuid
+      {:uuid uuid})))

@@ -14,7 +14,9 @@
    :iso-topic-categories [{:iso-topic-category "ISO-1" :uuid "uuid-iso-1"}]
    :related-urls [{:url-content-type "Type" :type "Type1" :subtype "SubType1" :uuid "uuid-ru-1"}]
    :granule-data-format [{:short-name "GDF-1" :uuid "uuid-gdf-1"}]
-   :mime-type [{:mime-type "MIME-1" :uuid "uuid-mime-1"}]})
+   :mime-type [{:mime-type "MIME-1" :uuid "uuid-mime-1"}]
+   :provider [{:short-name "NSIDC" :uuid "uuid-provider-1"}]
+   :spatial-keywords [{:category "OCEAN" :type "ATLANTIC OCEAN" :subregion-1 "NORTH ATLANTIC OCEAN" :uuid "uuid-spatial-1"}]})
 
 (defn- mock-cache
   [mock-fn]
@@ -89,7 +91,21 @@
      (mock-cache
       (fn [keyword-scheme]
         (case keyword-scheme
-          nil)))}}})
+          nil)))
+     :kms-providers-index
+     (mock-cache
+      (fn [field]
+        (let [items (:provider sample-map)
+              item (first (filter #(= field (string/lower-case (:short-name %))) items))]
+          (:uuid item))))
+     :kms-spatial-keywords-index
+     (mock-cache
+      (fn [field]
+        (let [items (:spatial-keywords sample-map)
+              item (first (filter #(= field {:category (string/lower-case (:category %))
+                                             :type (string/lower-case (:type %))
+                                             :subregion-1 (string/lower-case (:subregion-1 %))}) items))]
+          (:uuid item))))}}})
 
 (deftest project-short-name->elastic-doc-test
   (testing "Project found in KMS"
@@ -162,3 +178,21 @@
   (testing "Mime type not found in KMS"
     (is (nil?
          (kms-util/mime-type->elastic-doc test-context "NOT-IN-KMS")))))
+
+(deftest provider->elastic-doc-test
+  (testing "Provider found in KMS"
+    (is (= {:uuid "uuid-provider-1"}
+           (kms-util/provider->elastic-doc test-context "NSIDC"))))
+
+  (testing "Provider type not found in KMS"
+    (is (nil?
+         (kms-util/provider->elastic-doc test-context "NOT-IN-KMS")))))
+
+(deftest spatial-keyword-by-map->elastic-doc-test
+  (testing "Spatial keyword found in KMS"
+    (is (= {:uuid "uuid-spatial-1"}
+           (kms-util/spatial-keyword-by-map->elastic-doc test-context {:category "Ocean" :type "Atlantic Ocean" :subregion-1 "North Atlantic Ocean"}))))
+
+  (testing "Spatial keyword not found in KMS"
+    (is (nil?
+         (kms-util/spatial-keyword-by-map->elastic-doc test-context {:category "NOT-IN-KMS"})))))

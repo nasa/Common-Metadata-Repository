@@ -4,6 +4,7 @@
    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
@@ -41,10 +42,7 @@
 
 (def ^:private context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches {kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                     kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
-                     kl/kms-location-cache-key (kl/create-kms-location-cache)
-                     kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)}}
+  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}
    :ignore-kms-keywords true})
 
 (defn redis-cache-fixture
