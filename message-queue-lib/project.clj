@@ -8,7 +8,7 @@
 
 (def netty-version
   "The netty version to use."
-  "4.1.133.Final") ;; latest as of 2025-09-05
+  "4.1.134.Final") ;; latest as of 2026-05-05 for v3 - 2026-05-20 for v4
 
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
