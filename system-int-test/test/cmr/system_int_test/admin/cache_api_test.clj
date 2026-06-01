@@ -33,6 +33,7 @@
         _ (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
         _ (refresh-cache  (url/refresh-index-names-cache-url) (t-config/echo-system-token))
         indexer-caches (map name (keys indexer-system/application-caches))
+        _ (println "indexer-caches = " indexer-caches)
         ingest-caches (map name (keys ingest-system/application-caches))
         search-caches (map name (keys search-system/application-caches))
         access-control-caches (map name (keys access-control-system/application-caches))]

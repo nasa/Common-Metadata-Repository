@@ -117,6 +117,7 @@
       (doseq [[service-name reset-fn] service-reset-fns
               ;; Only call reset on applications which are deployed to the current system
               :when (get-in system [:apps service-name])]
+        (debug "About to reset service " service-name)
         (reset-fn (app-context system service-name)))
       ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
       (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :gran-elastic]))

@@ -8,13 +8,15 @@
 (defn list-caches-for-app
   "Gets a list of the caches for the given url."
   [url token]
-  (let [response (client/request {:url url
-                                  :method :get
-                                  :query-params {:token token}
+  (let [response (client/request {:url                url
+                                  :method             :get
+                                  :query-params       {:token token}
                                   :connection-manager (s/conn-mgr)
-                                  :throw-exceptions false})
-        status (:status response)]
+                                  :throw-exceptions   false})
+        status   (:status response)]
 
+    (println "INSIDE list-caches-for-app with url = " url)
+    (println "response = " response)
     ;; Make sure the status returned is success
     (when (not= status 200)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))

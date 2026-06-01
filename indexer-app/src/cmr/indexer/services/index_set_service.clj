@@ -386,6 +386,7 @@
   (delete-index-set-indices context index-set-id es-config/gran-elastic-name)
   (delete-index-set-indices context index-set-id es-config/elastic-name)
   ;; update database with index-set changes
+  (println "About to get concept for index-set-id = " index-set-id)
   (let [concept-id (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))
         user-id (try
                   (cxt/context->user-id context)
@@ -981,7 +982,7 @@
           (put-index-set context combined-index-set))))))
 
 (defn reset
-  "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
+  "Put elastic and db in a clean state after deleting indices associated with index-sets and index-set docs and the index-set db table."
   [context]
   (let [{:keys [index-name]} (config/idx-cfg-for-index-sets es-config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
@@ -994,6 +995,8 @@
                                 index-name
                                 "_doc")
         all-index-set-ids (into (set gran-index-set-ids) non-gran-index-set-ids)]
+
+    (println "INSIDE reset in indexer with all index set ids = " all-index-set-ids)
 
     ;; delete indices assoc with index-sets
     (doseq [id all-index-set-ids]

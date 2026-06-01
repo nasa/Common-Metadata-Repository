@@ -134,6 +134,7 @@
 
 (defn reset-providers
   [db]
+  (println "INSIDE reset-providers in OracleStore")
   (doseq [provider (get-providers db)]
     (delete-provider db provider)))
 

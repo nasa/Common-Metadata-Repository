@@ -197,6 +197,8 @@
                       (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
                         (index-set-svc/save-index-set-to-mdb context combined)))]
 
+    (println "INSIDE create-default-indexes revision-id = " revision-id)
+
     (cond
       ;; Check if we need to create
       (nil? existing-non-gran-index-set)
@@ -286,7 +288,7 @@
                     (pr-str index))))))
 
 (defn reset-es-store
-  "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
+  "Delete elasticsearch indexes via deleting the index-set and re-create them via index-set app. A nuclear option just for the development team."
   [context]
   (index-set-svc/reset context)
   (create-default-indexes context))

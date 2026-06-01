@@ -51,6 +51,7 @@
    (let [conn (config/context->app-connection context :metadata-db)
          request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id
                           "/" (codec/url-encode native-id))
+         _ (println "metadata db request url = " request-url)
          params (merge
                  (config/conn-params conn)
                  {:accept :json
@@ -60,6 +61,7 @@
                   :throw-exceptions false
                   :http-options (h/include-request-id context {})})
          response (client/get request-url params)
+         _ (println "Response from metadata is = " response)
          status (int (:status response))
          body (json/decode (:body response))]
      (case status
