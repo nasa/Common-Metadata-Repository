@@ -20,6 +20,16 @@
   [v]
   (when v (edn/read-string v)))
 
+(def ^:private invalid-cache-key ::invalid-cache-key)
+
+(defn- safe-deserialize
+  "Deserializes v, marking keys that were not written through this cache."
+  [v]
+  (try
+    (deserialize v)
+    (catch RuntimeException _e
+      invalid-cache-key)))
+
 ;; Implements the CmrCache protocol by saving data in Redis.
 (defrecord RedisCache
   [
@@ -38,12 +48,16 @@
    read-connection
 
    ;; The connection used to write data to redis, this is the primary node.
-   primary-connection]
+   primary-connection
+
+   ;; Optional Redis SCAN match pattern used when listing cache keys.
+   key-match-pattern]
 
   cache/CmrCache
   (get-keys
     [_this]
-    (map deserialize (redis/get-keys read-connection)))
+    (remove #{invalid-cache-key}
+            (map safe-deserialize (redis/get-keys (or key-match-pattern "*") read-connection))))
 
   (key-exists
     [_this key]
@@ -110,10 +124,13 @@
        be a candidate for eviction.
       :refresh-ttl?
        When a GET operation is called called on the key then the ttl is refreshed
-       to the time to live set by the initial cache."
+       to the time to live set by the initial cache.
+      :key-match-pattern
+       A Redis SCAN match pattern used by get-keys. Defaults to *."
   [options]
   (->RedisCache (:keys-to-track options)
                 (:ttl options)
                 (get options :refresh-ttl? false)
                 (:read-connection options)
-                (:primary-connection options)))
+                (:primary-connection options)
+                (:key-match-pattern options)))
