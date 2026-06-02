@@ -454,38 +454,50 @@
 
 (defn index-provider-data-between-date-time
   "Index all concept revisions created within the given date-time range for a given provider."
-  [system provider-id start-date-time end-date-time]
-  (try
-    (info (format "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] started."
-                  msg/bulk-index-prefix-queue
-                  start-date-time
-                  end-date-time
-                  provider-id))
-    (if (= system-concept-provider provider-id)
-      (let [{:keys [num-indexed]} (index-system-misc-concepts-between-date-times
-                                   system start-date-time end-date-time)]
-        (info (msg/index-provider-data-later-than-date-time-sys-concepts num-indexed)))
+  [system provider start-date-time end-date-time]
+  (let [provider-id (if (map? provider)
+                      (:provider-id provider)
+                      provider)]
+    (try
+      (info (format "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] started."
+                    msg/bulk-index-prefix-queue
+                    start-date-time
+                    end-date-time
+                    provider-id))
+      (let [response-map
+            (if (= system-concept-provider provider-id)
+              (let [{:keys [num-indexed] :as response-map}
+                    (index-system-misc-concepts-between-date-times
+                     system start-date-time end-date-time)]
+                (info (msg/index-provider-data-later-than-date-time-sys-concepts num-indexed))
+                response-map)
 
-      (let [provider (helper/get-provider system provider-id)
-            provider-response-map (for [concept-type [:collection :granule]]
-                                    (fetch-and-index-concepts-between-date-times
-                                     system provider concept-type start-date-time end-date-time))
-            provider-concept-count (reduce + (map :num-indexed provider-response-map))]
-        (info (msg/index-provider-data-later-than-date-post provider-concept-count))))
-    (info (format "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] completed."
-                  msg/bulk-index-prefix-queue
-                  start-date-time
-                  end-date-time
-                  provider-id))
-    (catch Throwable e
-      (error e
-             (format
-              "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] completed but failed because << %s >>!"
-              msg/bulk-index-prefix-queue
-              start-date-time
-              end-date-time
-              provider-id
-              (.getMessage e))))))
+              (let [provider (if (map? provider)
+                               provider
+                               (helper/get-provider system provider-id))
+                    provider-response-map (for [concept-type [:collection :granule]]
+                                            (fetch-and-index-concepts-between-date-times
+                                             system provider concept-type start-date-time end-date-time))
+                    provider-concept-count (reduce + (map :num-indexed provider-response-map))
+                    max-revision-date (apply util/max-compare (map :max-revision-date provider-response-map))]
+                (info (msg/index-provider-data-later-than-date-post provider-concept-count))
+                {:max-revision-date max-revision-date
+                 :num-indexed provider-concept-count}))]
+        (info (format "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] completed."
+                      msg/bulk-index-prefix-queue
+                      start-date-time
+                      end-date-time
+                      provider-id))
+        (assoc response-map :provider-id provider-id))
+      (catch Throwable e
+        (error e
+               (format
+                "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] completed but failed because << %s >>!"
+                msg/bulk-index-prefix-queue
+                start-date-time
+                end-date-time
+                provider-id
+                (.getMessage e)))))))
 
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time
@@ -530,22 +542,28 @@
                 start-date-time
                 end-date-time
                 provider-ids))
-  (let [has-cmr-provider? (or (empty? provider-ids)
-                              (some #{system-concept-provider} provider-ids))
-        providers (if (seq provider-ids)
-                    (map #(helper/get-provider system %) (remove #(= system-concept-provider %) provider-ids))
-                    ;; all providers
-                    (helper/get-providers system))
-        provider-response-map (for [provider providers
-                                    concept-type [:collection :granule]]
-                                (fetch-and-index-concepts-between-date-times
-                                 system provider concept-type start-date-time end-date-time))
-        provider-concept-count (reduce + (map :num-indexed provider-response-map))
-        system-concept-response-map (if has-cmr-provider?
-                                      (index-system-misc-concepts-between-date-times
-                                       system start-date-time end-date-time)
-                                      {:num-indexed 0})
-        system-concept-count (:num-indexed system-concept-response-map)
+  (let [provider-ids-to-index (if (seq provider-ids)
+                                provider-ids
+                                (conj
+                                 (helper/get-providers system)
+                                 system-concept-provider))
+        provider-response-map (->> provider-ids-to-index
+                                   distinct
+                                   (map #(index-provider-data-between-date-time
+                                          system
+                                          %
+                                          start-date-time
+                                          end-date-time))
+                                   (remove nil?)
+                                   vec)
+        provider-concept-count (reduce + (map #(if (= system-concept-provider (:provider-id %))
+                                                 0
+                                                 (:num-indexed %))
+                                              provider-response-map))
+        system-concept-count (reduce + (map #(if (= system-concept-provider (:provider-id %))
+                                               (:num-indexed %)
+                                               0)
+                                            provider-response-map))
         indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."
                                           provider-concept-count
                                           system-concept-count)]
@@ -555,10 +573,9 @@
                   provider-ids))
     (info indexing-complete-message)
     {:message indexing-complete-message
-     :max-revision-date (apply util/max-compare
-                               (map :max-revision-date
-                                    (conj (vec provider-response-map)
-                                          system-concept-response-map)))}))
+     :max-revision-date (when (seq provider-response-map)
+                          (apply util/max-compare
+                                 (map :max-revision-date provider-response-map)))}))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
