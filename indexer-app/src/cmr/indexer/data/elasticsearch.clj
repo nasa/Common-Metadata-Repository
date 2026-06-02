@@ -197,8 +197,6 @@
                       (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
                         (index-set-svc/save-index-set-to-mdb context combined)))]
 
-    (println "INSIDE create-default-indexes revision-id = " revision-id)
-
     (cond
       ;; Check if we need to create
       (nil? existing-non-gran-index-set)

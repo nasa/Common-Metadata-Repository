@@ -168,12 +168,10 @@
   [context index-name _mapping-type id es-cluster-name]
   (let [{:keys [host port admin-token]} (get-in context [:system (es-config/elastic-name-str->keyword es-cluster-name) :config])
         delete-doc-url (format "http://%s:%s/%s/_doc/%s?refresh=true" host port index-name id)
-        _ (println "delete doc url in elastic = " delete-doc-url)
         result (client/delete delete-doc-url
                               {:headers {"Authorization" admin-token
                                          "Confirm-delete-action" "true"}
                                :throw-exceptions false})
-        _ (println "result of deleting doc = " result)
         status (:status result)]
     (when-not (= status 200)
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))

@@ -381,13 +381,20 @@
     (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
 
 (defn delete-index-set
-  "Delete the index-set from all elastic clusters and save a tombstone in metadata-db."
-  [context index-set-id]
+  "Delete the index-set from all elastic clusters and save a tombstone in metadata-db.
+  skip-db-delete-if-missing: boolean -- a flag to determine if we should skip trying to delete from the db if the index-set is missing"
+  [context index-set-id skip-db-delete-if-missing]
+  ;; delete indexes and index-set from elastic
   (delete-index-set-indices context index-set-id es-config/gran-elastic-name)
   (delete-index-set-indices context index-set-id es-config/elastic-name)
   ;; update database with index-set changes
-  (println "About to get concept for index-set-id = " index-set-id)
-  (let [concept-id (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))
+  (let [concept-id (try
+                     (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))
+                     (catch Exception e
+                       (let [{:keys [type errors]} (ex-data e)]
+                         (if (and (= type :not-found) skip-db-delete-if-missing)
+                           (info "Caught expected 'not-found' error when trying to delete index-set, exiting gracefully. Errors:" errors)
+                           (throw e)))))
         user-id (try
                   (cxt/context->user-id context)
                   (catch Exception _ "CMR"))]
@@ -996,8 +1003,6 @@
                                 "_doc")
         all-index-set-ids (into (set gran-index-set-ids) non-gran-index-set-ids)]
 
-    (println "INSIDE reset in indexer with all index set ids = " all-index-set-ids)
-
     ;; delete indices assoc with index-sets
     (doseq [id all-index-set-ids]
-      (delete-index-set context id))))
+      (delete-index-set context id true))))

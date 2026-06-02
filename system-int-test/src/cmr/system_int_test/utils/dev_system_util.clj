@@ -25,13 +25,9 @@
   []
   (qb-side-api/wait-for-terminal-states)
   (try
-    (println "starting dev system reset url")
     (client/post (url/dev-system-reset-url) (admin-connect-options))
-    (println "finished dev system reset url")
     (index/refresh-all-elastic-indexes)
-    (println "finished refresh all elastic indexes")
     (load-kms-redis-cache) ;; This will cause the redis cache to reload
-    (println "finished load kms redis cache")
     (catch Exception e
       (error "Failed to send reset to dev-system\n" e)
       (throw e))))

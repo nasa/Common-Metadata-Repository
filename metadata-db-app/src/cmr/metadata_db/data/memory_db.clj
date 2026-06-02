@@ -652,7 +652,6 @@
 
 (defn reset-providers
   [db]
-  (println "INSIDE reset-providers for in memory store")
   (reset! (:providers-atom db) {}))
 
 (def provider-store-behaviour

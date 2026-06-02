@@ -95,7 +95,7 @@
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context id)
+        (index-set-svc/delete-index-set request-context id false)
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]

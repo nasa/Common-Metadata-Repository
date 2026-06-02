@@ -952,16 +952,11 @@
    (reset-fixture providers nil))
   ([providers options]
    (fn [f]
-     (println "INSIDE reset-fixture")
      (dev-sys-util/reset)
-     (println "finished dev-sys-util/reset")
      (set-ingest-umm-version-to-current)
-     (println "finished set ingest")
      (when (seq providers)
        (setup-providers providers options))
-     (println "finished setuping up providers")
-     (f)
-     (println "finished f"))))
+     (f))))
 
 (defn reset-fixture-with-customized-options
   "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
