@@ -133,3 +133,16 @@
        start
        end)
       (is (= [[:system start end]] @calls)))))
+
+(deftest index-system-misc-between-does-not-duplicate-misc-types
+  (let [calls (atom [])]
+    (with-redefs [bulk-index/fetch-and-index-concepts-between-date-times
+                  (fn [_system _provider concept-type _start _end]
+                    (swap! calls conj concept-type)
+                    {:num-indexed 0 :max-revision-date nil})]
+      (#'bulk-index/index-system-misc-concepts-between-date-times
+       {}
+       (time/date-time 2026 5 13 1)
+       (time/date-time 2026 5 13 2))
+      (is (= (count @calls) (count (distinct @calls)))
+          (str "Duplicate concept types indexed: " @calls)))))

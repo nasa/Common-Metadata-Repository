@@ -420,7 +420,7 @@
   "Index all system and miscellaneous concepts created within the given date-time range.
   Returns a map of :max-revision-date and :num-indexed."
   [system start-date-time end-date-time]
-  (let [system-concept-response-map (for [concept-type (concat system-concept-types misc-concept-types)]
+  (let [system-concept-response-map (for [concept-type (distinct( concat system-concept-types misc-concept-types))]
                                       (fetch-and-index-concepts-between-date-times
                                        system
                                        {:provider-id system-concept-provider}
