@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as http]
    [clojure.string :as string]
+   [cmr.common.log :refer [error info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-util :as es-util]
@@ -12,11 +13,13 @@
 (defn search
   "Performs a search query across one or more indexes"
   [conn index _mapping-type opts]
+  (info "CMR-10375: INSIDE search with index = " index " and _mapping-type = " _mapping-type " and opts = " opts)
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))
         body (apply dissoc opts qk)
         url (es-util/url-with-path conn index "_search")]
+    (info "CMR-10375: query params = " qp ", body = " body ", url = " url)
     (let [response (http/post url
                               (merge (:http-opts conn)
                                      {:content-type :json
