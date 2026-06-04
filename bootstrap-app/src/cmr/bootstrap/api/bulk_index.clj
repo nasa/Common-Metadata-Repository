@@ -113,7 +113,7 @@
      :body {:message (msg/index-collection params result collection-id)}}))
 
 (defn data-later-than-date-time
-  "Index all the data with a revision-date later than a given date-time, bounded to now."
+  "Index all data with a revision-date later than the given date-time, with the upper bound set to the request time."
   [context body params]
   (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
         provider-ids (get body "provider_ids")
