@@ -35,9 +35,11 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                                     [gov.nasa.earthdata/quartzite]]]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                                     [gov.nasa.earthdata/quartzite]]]
 
                                        ;; Elastic library
                                        [org.apache.logging.log4j/log4j-api "2.25.4"]
@@ -68,7 +70,8 @@
                                                     [at.yawk.lz4/lz4-java]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
-                                                    [org.slf4j/slf4j-api]]]
+                                                    [org.slf4j/slf4j-api]
+                                                    [gov.nasa.earthdata/quartzite]]]
                                       [org.clojure/tools.reader "1.3.2"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
