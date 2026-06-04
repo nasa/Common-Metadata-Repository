@@ -196,8 +196,8 @@
                   time-keeper/now (constantly (time/date-time 2026 5 13 5 0))
                   bootstrap-config/bulk-index-after-date-time-max-window-hours (constantly 3)]
       (is (= {:type :invalid-data
-              :errors [(str "/bulk_index/after_date_time is limited to 3 hours. "
-                            "Use /bulk_index/between_date_time with a smaller explicit range.")]}
+              :errors [(str "The requested time window exceeds the /bulk_index/after_date_time limit of 3 hours. "
+                            "Please use a smaller date_time value so the range to now is within 3 hours.")]}
              (service-error
               #(bulk-index/data-later-than-date-time
                 context

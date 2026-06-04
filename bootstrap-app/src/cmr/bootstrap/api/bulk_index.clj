@@ -75,8 +75,9 @@
     (when (time/after? end-date-time max-end-date-time)
       (errors/throw-service-error
        :invalid-data
-       (format (str "/bulk_index/after_date_time is limited to %d hours. "
-                    "Use /bulk_index/between_date_time with a smaller explicit range.")
+       (format (str "The requested time window exceeds the /bulk_index/after_date_time limit of %d hours. "
+                    "Please use a smaller date_time value so the range to now is within %d hours.")
+               max-window-hours
                max-window-hours)))))
 
 (defn index-provider
