@@ -83,9 +83,14 @@
 (def keywords-xpath-str
   "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
-(def quality-xpath
-  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality"
-       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
+(def quality-base-xpath
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality"))
+
+(def quality-summary-xpath
+  (str quality-base-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString"))
+
+(def quality-detail-reports-xpath
+  (str quality-base-xpath "/gmd:report/gmd:DQ_UsabilityElement"))
 
 (def data-dates-xpath
   (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
@@ -116,6 +121,35 @@
 
 (def associated-doi-xpath
   (str md-identification-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
+
+(defn- parse-quality-content-details
+  [statement-str]
+  (let [lines (clojure.string/split-lines statement-str)
+        details (for [line lines
+                      :let [match (re-find #"^Type:\s*([^\s-]+)\s*-\s*(.*)$" line)]
+                      :when match]
+                  (cmr.umm-spec.models.umm-common-models/map->QualityTypeOfContent
+                   {:TypeOfContent (clojure.string/trim (nth match 1))
+                    :ContentDescription (clojure.string/trim (nth match 2))}))]
+    (when (seq details)
+      (vec details))))
+
+(defn- parse-quality
+  "Extracts and builds the v1.18.6 Quality record structure out of the ISO-SMAP XML tree."
+  [doc sanitize?]
+  ;; PLACE IT EXACTLY HERE:
+  (let [quality-xpath "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString"
+        raw-string (value-of doc quality-xpath)]
+    (when-not (clojure.string/blank? raw-string)
+      (let [sections (clojure.string/split raw-string #"\n\n")
+            raw-summary (first sections)
+            summary (when-not (= "[No Summary Overview]" raw-summary) raw-summary)
+            details (parse-quality-content-details raw-string)]
+        (cmr.umm-spec.models.umm-common-models/map->QualityType
+         (cmr.common.util/remove-nil-keys
+          {:Summary (when-not (clojure.string/blank? summary)
+                      (cmr.umm-spec.util/truncate (clojure.string/trim summary) cmr.umm-spec.util/QUALITY_MAX sanitize?))
+           :QualityContentDetails details}))))))
 
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
@@ -163,7 +197,7 @@
                              data-id-el
                              "gmd:status/gmd:MD_ProgressCode"
                              sanitize?)
-       :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
+       :Quality (parse-quality doc sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
        :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)

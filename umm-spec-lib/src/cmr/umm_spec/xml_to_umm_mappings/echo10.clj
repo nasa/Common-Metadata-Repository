@@ -65,6 +65,33 @@
                           (for [tr (select temporal "TemporalResolution")]
                            (fields-from-temporal-resolution tr)))}))
 
+(defn- parse-quality-content-details
+  "Parses singular child details out of the mandated XSD wrapping structure."
+  [doc]
+  (let [details (for [detail (select doc "/Collection/Quality/QualityContentDetails/QualityContentDetail")
+                      :let [toc (value-of detail "TypeOfContent")
+                            desc (value-of detail "ContentDescription")]
+                      :when (and (not (clojure.string/blank? toc))
+                                 (not (clojure.string/blank? desc)))]
+                  (cmn/map->QualityTypeOfContent
+                   {:TypeOfContent (clojure.string/trim toc)
+                    :ContentDescription (clojure.string/trim desc)}))]
+    (when (seq details)
+      (vec details))))
+
+(defn- parse-quality
+  "Parses the 1.18.6 Quality object tree out of the existing ECHO 10 XSD configuration."
+  [doc sanitize?]
+  (let [summary (value-of doc "/Collection/Quality/Summary")
+        details (parse-quality-content-details doc)
+        clean-summary (when-not (clojure.string/blank? summary)
+                        (clojure.string/trim summary))]
+    (when (or clean-summary details)
+      (cmn/map->QualityType
+       (util/remove-nil-keys
+        {:Summary (when clean-summary (u/truncate clean-summary u/QUALITY_MAX sanitize?))
+         :QualityContentDetails details})))))
+
 (defn parse-characteristic
   "Returns a UMM characteristic record from an ECHO10 Characteristic element."
   [element]
@@ -368,6 +395,7 @@
                                        (value-of ddi "S3CredentialsAPIEndpoint")
                                      :S3CredentialsAPIDocumentationURL
                                        (value-of ddi "S3CredentialsAPIDocumentationURL")})
+   :Quality (parse-quality doc sanitize?)
    :MetadataSpecification (umm-c/map->MetadataSpecificationType
                              {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
                                         umm-spec-versioning/current-collection-version),

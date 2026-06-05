@@ -61,6 +61,27 @@
       (parse-projects-impl doc sanitize?))
     (parse-projects-impl doc sanitize?)))
 
+(defn- parse-quality
+  "Parse DIF10 Quality into UMM-C."
+  [doc sanitize?]
+  (let [summary (value-of doc "/DIF/Quality/Summary")
+        ;; Fallback to reading the raw Quality element string if the new structure isn't used
+        raw-quality (value-of doc "/DIF/Quality")
+        details (when-let [details (seq (select doc "/DIF/Quality/QualityContentDetails"))]
+                  (mapv (fn [detail]
+                          {:TypeOfContent (value-of detail "TypeOfContent")
+                           :ContentDescription (value-of detail "ContentDescription")})
+                        details))]
+    (when (or (not (clojure.string/blank? summary))
+              (and (not (clojure.string/blank? raw-quality)) (empty? details))
+              (seq details))
+      (util/remove-nil-keys
+       {:Summary (if (not (clojure.string/blank? summary))
+                   (su/truncate summary su/QUALITY_MAX sanitize?)
+                   (when (and (not (clojure.string/blank? raw-quality)) (empty? details))
+                     (su/truncate raw-quality su/QUALITY_MAX sanitize?)))
+        :QualityContentDetails details}))))
+
 (defn- parse-instruments-impl
   [platform-el]
   (for [inst (select platform-el "Instrument")]
@@ -352,7 +373,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
    :DirectoryNames (dif-util/parse-idn-node doc)
-   :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
+   :Quality (parse-quality doc sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (parse-use-constraints doc sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]

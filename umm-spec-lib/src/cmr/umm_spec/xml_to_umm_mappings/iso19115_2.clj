@@ -336,6 +336,35 @@
      (when (and id (some #(= id %) data-maturity-valid-values))
        id))))
 
+(defn- parse-quality-content-details
+  [statement-str]
+  (let [lines (clojure.string/split-lines statement-str)
+        details (for [line lines
+                      :let [match (re-find #"^Type:\s*([^\s-]+)\s*-\s*(.*)$" line)]
+                      :when match]
+                  (cmr.umm-spec.models.umm-common-models/map->QualityTypeOfContent
+                   {:TypeOfContent (clojure.string/trim (nth match 1))
+                    :ContentDescription (clojure.string/trim (nth match 2))}))]
+    (when (seq details)
+      (vec details))))
+
+(defn- parse-quality
+  "Extracts and builds the v1.18.6 Quality record structure out of the ISO 19115-2 XML tree."
+  [doc sanitize?]
+  ;; PLACE IT EXACTLY HERE:
+  (let [quality-xpath "/gmd:MD_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString"
+        raw-string (value-of doc quality-xpath)]
+    (when-not (clojure.string/blank? raw-string)
+      (let [sections (clojure.string/split raw-string #"\n\n")
+            raw-summary (first sections)
+            summary (when-not (= "[No Summary Overview]" raw-summary) raw-summary)
+            details (parse-quality-content-details raw-string)]
+        (cmr.umm-spec.models.umm-common-models/map->QualityType
+         (cmr.common.util/remove-nil-keys
+          {:Summary (when-not (clojure.string/blank? summary)
+                      (cmr.umm-spec.util/truncate (clojure.string/trim summary) cmr.umm-spec.util/QUALITY_MAX sanitize?))
+           :QualityContentDetails details}))))))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc {:keys [sanitize?]}]
@@ -364,7 +393,7 @@
                            "gmd:status/gmd:MD_ProgressCode"
                            sanitize?)
       :DataMaturity (parse-data-maturity doc)
-      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
+      :Quality (parse-quality doc sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
       :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)

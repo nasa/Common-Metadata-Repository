@@ -1422,6 +1422,63 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       name="ScienceKeyword" type="ScienceKeyword" />
     </xs:sequence>
   </xs:complexType>
+  <xs:complexType name="ListOfQualityContentDetails">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="unbounded"
+        name="QualityContentDetail" type="QualityContentDetailType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="QualityContentDetailType">
+    <xs:sequence>
+      <xs:element name="TypeOfContent" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>Pre-defined categories of quality information of the collection data, including 'KnownIssues', 'Strengths', 'Limitations'.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="KnownIssues"/>
+            <xs:enumeration value="Strengths"/>
+            <xs:enumeration value="Limitations"/>
+            <xs:enumeration value="Other"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ContentDescription" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>Specific and detailed quality information of the collection data associated with the selected contentType.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="8000"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Quality">
+    <xs:annotation>
+      <xs:documentation>Elements describing quality of the collection data. The description may include: 1) Known issues, specific, identified problems with the dataset that users should be aware of, including sensor degradation, data gaps, retrieval biases, spatial and/or temporal biases; 2) Strengths, positive attributes of the dataset that describe its utility or scientific rigor, including data product accuracy, reliability, and long-term stability; 3) Limitations, general constraints or weaknesses inherent to the dataset, but not necessarily 'errors', including boundaries of appropriate use due to sensor design, algorithms, or sampling; 4) Other, any additional quality information that does not fall directly in any one of above categories, including descriptions of quality flags.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Summary" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Summary, a short description, of the quality element(s) of the data in the collection in the form of a text overview and can be itemized with hyperlinks.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="12000"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="QualityContentDetails" type="ListOfQualityContentDetails">
+        <xs:annotation>
+          <xs:documentation>Elements describing information about quality of the collection data, including a summary, known issues, strengths, limitations, and other quality-related information</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
   <xs:complexType name="ScienceKeyword">
     <xs:annotation>
       <xs:documentation>This entity holds cross reference between

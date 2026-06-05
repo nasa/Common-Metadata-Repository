@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
+   [clojure.string :as string]
    [cmr.common.xml.gen :refer [xml]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -74,6 +75,24 @@
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
 
+(defn- generate-quality
+  "Maps UMM-C 1.18.6 Quality into a consolidated string block inside an ISO SMAP lineage tree element."
+  [c]
+  (when-let [quality (:Quality c)]
+    (let [summary (:Summary quality)
+          details (:QualityContentDetails quality)
+          details-str (when (seq details)
+                        (string/join "\n"
+                                     (for [detail details]
+                                       (str "Type: " (:TypeOfContent detail) " - " (:ContentDescription detail)))))
+          clean-summary (if (string/blank? summary) "[No Summary Overview]" summary)
+          combined-text (string/join "\n\n" (filter seq [clean-summary details-str]))]
+      (when-not (string/blank? combined-text)
+        [:gmd:lineage
+         [:gmd:LI_Lineage
+          [:gmd:statement
+           [:gco:CharacterString combined-text]]]]))))
+#_{:clj-kondo/ignore [:unused-public-var]}
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -108,11 +127,11 @@
               [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]
             (doi/generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
-             [:gmd:identifier
-              [:gmd:MD_Identifier
-               [:gmd:code [:gco:CharacterString collection-data-type]]
-               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
-               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+              [:gmd:identifier
+               [:gmd:MD_Identifier
+                [:gmd:code [:gco:CharacterString collection-data-type]]
+                [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+                [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
             (collection-citation/convert-creator c)
             (collection-citation/convert-editor c)
             (collection-citation/convert-publisher c)
@@ -146,10 +165,10 @@
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (first (:TilingIdentificationSystems c))
             [:gmd:extent
-              [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
-                [:gmd:description
-                  [:gco:CharacterString "Tiling Identitfication System"]]
-                (tiling/tiling-system-elements c)]])
+             [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+              [:gmd:description
+               [:gco:CharacterString "Tiling Identitfication System"]]
+              (tiling/tiling-system-elements c)]])
           [:gmd:extent
            [:gmd:EX_Extent
             (generate-spatial-extent (:SpatialExtent c))
@@ -176,8 +195,8 @@
                   [:gml:timePosition date]]]]])]]
 
           (when processing-level
-           [:gmd:processingLevel
-            (proc-level/generate-iso-processing-level processing-level)])]]
+            [:gmd:processingLevel
+             (proc-level/generate-iso-processing-level processing-level)])]]
         [:gmd:identificationInfo
          [:gmd:MD_DataIdentification
           [:gmd:citation
@@ -202,11 +221,11 @@
           [:gmd:language (char-string "eng")]]]
         (sdru/generate-service-related-url (:RelatedUrls c))
         (when processing-level
-         [:gmd:contentInfo
-          [:gmd:MD_ImageDescription
-           [:gmd:attributeDescription ""]
-           [:gmd:contentType ""]
-           [:gmd:processingLevelCode
+          [:gmd:contentInfo
+           [:gmd:MD_ImageDescription
+            [:gmd:attributeDescription ""]
+            [:gmd:contentType ""]
+            [:gmd:processingLevelCode
              (proc-level/generate-iso-processing-level processing-level)]]])
         (let [related-url-distributions (sdru/generate-distributions c)
               file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
@@ -239,13 +258,10 @@
             [:gmd:level
              [:gmd:MD_ScopeCode
               {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
-               :codeListValue "series"}
-              "series"]]]]
-          (when-let [quality (:Quality c)]
-            [:gmd:report
-             [:gmd:DQ_QuantitativeAttributeAccuracy
-              [:gmd:evaluationMethodDescription (char-string quality)]
-              [:gmd:result {:gco:nilReason "missing"}]]])]]
+               :codeListValue "dataset"}
+              "dataset"]]]]
+          ;; Inject your custom function into the XML generator tree output
+          (generate-quality c)]]
         [:gmi:acquisitionInformation
          [:gmi:MI_AcquisitionInformation
           (platform/generate-instruments platforms)

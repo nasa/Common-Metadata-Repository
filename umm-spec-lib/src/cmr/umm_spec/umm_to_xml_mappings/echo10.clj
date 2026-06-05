@@ -123,6 +123,28 @@
         [:CollectionType (or (:Type ma) spec-util/not-provided)]
         [:CollectionUse (:Description ma)]])]))
 
+(defn- generate-quality
+  "Maps UMM-C 1.18.6 Quality into strict compliance with the existing Collection.xsd sequence,
+   guaranteeing elements are nested as children, never flattened as siblings."
+  [c]
+  (when-let [quality (:Quality c)]
+    (let [summary (:Summary quality)
+          details (:QualityContentDetails quality)
+          has-summary? (not (clojure.string/blank? summary))
+          has-details? (seq details)]
+      (when (or has-summary? has-details?)
+        ;; We return a nested vector list expression explicitly.
+        ;; Wrapping it as a single root vector item prevents downstream macro flattening!
+        [[:Quality
+          (when has-summary?
+            [:Summary (clojure.string/trim summary)])
+          (when has-details?
+            [:QualityContentDetails
+             (for [detail details]
+               [:QualityContentDetail
+                [:TypeOfContent (:TypeOfContent detail)]
+                [:ContentDescription (:ContentDescription detail)]])])]]))))
+
 (defn generate-collection-citations
   "Finds first OtherCitationDetails value in CollectionCitations and uses it to
    generate a CitationForExternalPublication xml entry"
@@ -267,6 +289,7 @@
      (when-let [fnc (:FileNamingConvention c)]
        [:FileNamingConvention  (elements-from fnc :Convention :Description)])
      (spatial/spatial-element c)
+     (generate-quality c)
      (ru/generate-browse-urls (:RelatedUrls c))
      (when-let [direct-dist-info (:DirectDistributionInformation c)]
        [:DirectDistributionInformation

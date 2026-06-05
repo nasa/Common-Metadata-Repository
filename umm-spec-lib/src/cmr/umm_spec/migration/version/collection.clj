@@ -859,3 +859,33 @@
         (assoc coll :TilingIdentificationSystems updated-systems)
         (dissoc coll :TilingIdentificationSystems))
       coll)))
+
+(defn- quality-details->quality-string
+  "Converts the complex 1.18.6 QualityType map into a single string for 1.18.5 compatibility."
+  [quality-type]
+  (let [summary (:Summary quality-type)
+        quality-content-details (:QualityContentDetails quality-type)
+        details (map (fn [detail]
+                       (str "Type: " (get-in detail [:QualityTypeOfContent :TypeOfContent])
+                            ", Description: " (:ContentDescription detail)))
+                     quality-content-details)
+        summary-str (when summary (str "Summary: " summary))]
+    (clojure.string/join " | " (remove clojure.string/blank? (cons summary-str details)))))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.6" "1.18.5"]
+  [_context c & _]
+  (if-let [quality-type (:Quality c)]
+    (-> c
+        (assoc :Quality (quality-details->quality-string quality-type))
+        ;; In 1.18.5, Quality was a string, replace the 1.18.6 map with the string
+        (m-spec/update-version :collection "1.18.5"))
+    (m-spec/update-version c :collection "1.18.5")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.5" "1.18.6"]
+  ;; Converts the 1.18.5 single string into the 1.18.6 QualityType's Summary."
+  [_context c & _]
+  (if-let [quality-string (:Quality c)]
+    (-> c
+        (assoc :Quality {:Summary quality-string})
+        (m-spec/update-version :collection "1.18.6"))
+    (m-spec/update-version c :collection "1.18.6")))

@@ -140,12 +140,15 @@
    ;; Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
 
-   ;; Free text description of the quality of the collection data. Description may include: 1)
-   ;; succinct description of the quality of data in the collection; 2) Any quality assurance
-   ;; procedures followed in producing the data in the collection; 3) indicators of collection
-   ;; quality or quality flags - both validated or invalidated; 4) recognized or potential problems
-   ;; with quality; 5) established quality control mechanisms; and 6) established quantitative
-   ;; quality measurements.
+   ;; Elements describing quality of the collection data. The description may include: 1) Known
+   ;; issues, specific, identified problems with the dataset that users should be aware of,
+   ;; including sensor degradation, data gaps, retrieval biases, spatial and/or temporal biases; 2)
+   ;; Strengths, positive attributes of the dataset that describe its utility or scientific rigor,
+   ;; including data product accuracy, reliability, and long-term stability; 3) Limitations, general
+   ;; constraints or weaknesses inherent to the dataset, but not necessarily 'errors', including
+   ;; boundaries of appropriate use due to sensor design, algorithms, or sampling; 4) Other, any
+   ;; additional quality information that does not fall directly in any one of above categories,
+   ;; including descriptions of quality flags.
    Quality
 
    ;; The title of the collection or service described by the metadata.
