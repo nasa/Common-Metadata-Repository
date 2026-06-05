@@ -23,8 +23,6 @@
     [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (fn [f]
-                      ;; TODO: test if this is needed
-                      ;;(ingest/enable-ingest-writes)
                       ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) f)))
 
 (comment
