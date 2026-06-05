@@ -2,6 +2,7 @@
   "Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore protocol methods
   for retrieving concepts using parameters"
   (:require
+   [clj-time.coerce :as time-coerce]
    [clojure.java.jdbc :as j]
    [clojure.set :as set]
    [clojure.string :as string]
@@ -144,6 +145,46 @@
                       (from table)
                       (where params-clause))]
      (-> (su/find-one conn stmt)
+         vals
+         first))))
+
+(defn- provider-filter-required?
+  [provider-id concept-type]
+  (and (single-table-with-providers-concept-type? concept-type)
+       (not= "CMR" provider-id)))
+
+(defn- find-concepts-between-date-times-clauses
+  [provider-id concept-type start-date-time end-date-time]
+  (let [provider-clause (when (provider-filter-required? provider-id concept-type)
+                          `(= :provider-id ~provider-id))]
+    (cond-> [`(>= :revision-date ~(time-coerce/to-sql-time start-date-time))
+             `(< :revision-date ~(time-coerce/to-sql-time end-date-time))]
+      provider-clause (conj provider-clause))))
+
+(defn- find-concepts-between-date-times-sql
+  [table provider-id concept-type start-date-time end-date-time]
+  (let [columns (->> (get concept-type->columns concept-type)
+                     (sort-by name)
+                     vec)
+        clauses (find-concepts-between-date-times-clauses
+                 provider-id concept-type start-date-time end-date-time)]
+    (su/build (select columns
+                      (from table)
+                      (where (cons `and clauses))))))
+
+(defn- find-batch-starting-id-between-date-times
+  ([db table provider-id concept-type start-date-time end-date-time]
+   (find-batch-starting-id-between-date-times
+    db table provider-id concept-type start-date-time end-date-time 0))
+  ([db table provider-id concept-type start-date-time end-date-time min-id]
+   (let [clauses (conj (find-concepts-between-date-times-clauses
+                        provider-id concept-type start-date-time end-date-time)
+                       `(>= :id ~min-id))
+         stmt (su/build (select ['(min :id)]
+                                (from table)
+                                (where (cons `and clauses))))]
+     (-> (su/query db stmt)
+         first
          vals
          first))))
 
@@ -330,6 +371,50 @@
        (when-let [start-index (find-batch-starting-id-with-stmt db stmt)]
          (lazy-find (max requested-start-index start-index)))))))
 
+(defn find-concepts-between-date-times-in-batches
+  ([db provider params start-date-time end-date-time batch-size]
+   (find-concepts-between-date-times-in-batches
+    db provider params start-date-time end-date-time batch-size 0))
+  ([db provider params start-date-time end-date-time batch-size requested-start-index]
+   (let [{:keys [provider-id]} provider
+         concept-type (:concept-type params)
+         table (tables/get-table-name provider concept-type)
+         columns (->> (get concept-type->columns concept-type)
+                      (sort-by name)
+                      vec)]
+     (letfn [(find-batch
+               [start-index]
+               (j/with-db-transaction
+                 [conn db :isolation :read-committed :read-only? true]
+                 (let [clauses (-> (find-concepts-between-date-times-clauses
+                                    provider-id concept-type start-date-time end-date-time)
+                                   (conj `(>= :id ~start-index))
+                                   (conj `(< :id ~(+ start-index batch-size))))
+                       stmt (su/build (select columns
+                                              (from table)
+                                              (where (cons `and clauses))))
+                       batch-result (su/query db stmt)]
+                   (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
+                         batch-result))))
+             (lazy-find
+               [start-index]
+               (let [batch (find-batch start-index)]
+                 (if (empty? batch)
+                   (when-let [next-id (find-batch-starting-id-between-date-times
+                                       db
+                                       table
+                                       provider-id
+                                       concept-type
+                                       start-date-time
+                                       end-date-time
+                                       start-index)]
+                     (debug "Found next-id of" next-id)
+                     (lazy-find next-id))
+                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
+       (when-let [start-index (find-batch-starting-id-between-date-times
+                               db table provider-id concept-type start-date-time end-date-time)]
+         (lazy-find (max requested-start-index start-index)))))))
+
 (defn find-latest-concepts
   [db provider params]
   {:pre [(:concept-type params)]}
@@ -381,6 +466,7 @@
   {:find-concepts find-concepts
    :find-concepts-in-batches find-concepts-in-batches
    :find-concepts-in-batches-with-stmt find-concepts-in-batches-with-stmt
+   :find-concepts-between-date-times-in-batches find-concepts-between-date-times-in-batches
    :find-latest-concepts find-latest-concepts
    :find-associations find-associations
    :find-latest-associations find-latest-associations})

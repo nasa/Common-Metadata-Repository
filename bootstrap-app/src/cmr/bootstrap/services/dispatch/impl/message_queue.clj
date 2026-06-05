@@ -140,8 +140,6 @@
 (defn- index-data-between-date-time
   "Bulk index all the concepts with revision dates between the given date-times."
   [_this context provider-ids start-date-time end-date-time]
-  (info (format "Publishing bulk index messages between [%s] and [%s]."
-                start-date-time end-date-time))
   (let [provider-ids (if (seq provider-ids)
                        provider-ids
                        ;; all providers including CMR provider which is for system concepts

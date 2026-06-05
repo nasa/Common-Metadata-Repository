@@ -234,10 +234,10 @@
    (let [;; saved but not indexed
          coll1 (core/save-collection "PROV1" 1 {:revision-date "3016-01-01T10:00:00Z"})
          gran1 (core/save-granule "PROV1" 1 coll1 {:revision-date "3016-01-01T10:00:00Z"})
-         coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-02T10:00:00Z"})
-         gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-02T10:00:00Z"})
-         coll3 (core/save-collection "PROV2" 3 {:revision-date "3016-01-01T10:00:00Z"})
-         gran3 (core/save-granule "PROV2" 3 coll3 {:revision-date "3016-01-01T10:00:00Z"})
+         _coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-02T10:00:00Z"})
+         _gran2 (core/save-granule "PROV1" 2 _coll2 {:revision-date "3016-01-02T10:00:00Z"})
+         _coll3 (core/save-collection "PROV2" 3 {:revision-date "3016-01-01T10:00:00Z"})
+         _gran3 (core/save-granule "PROV2" 3 _coll3 {:revision-date "3016-01-01T10:00:00Z"})
          {:keys [status errors]} (bootstrap/bulk-index-between-date-time
                                   "3016-01-01T00:00:00Z"
                                   "3016-01-02T00:00:00Z"
@@ -255,6 +255,34 @@
      (index/wait-until-indexed)
 
      (testing "Only provider concepts within the date-time range are indexed."
+       (verify-collections-granules-are-indexed [coll1] [gran1] (tc/echo-system-token))))))
+
+(deftest ^:oracle bulk-index-between-date-time-with-hours
+  (s/only-with-real-database
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1 {:revision-date "3016-01-01T10:00:00Z"})
+         gran1 (core/save-granule "PROV1" 1 coll1 {:revision-date "3016-01-01T10:00:00Z"})
+         coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-02T10:00:00Z"})
+         gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-02T10:00:00Z"})
+         coll3 (core/save-collection "PROV2" 3 {:revision-date "3016-01-01T10:00:00Z"})
+         gran3 (core/save-granule "PROV2" 3 coll3 {:revision-date "3016-01-01T10:00:00Z"})
+         {:keys [status errors]} (bootstrap/bulk-index-between-date-time-with-hours
+                                  "3016-01-01T00:00:00Z"
+                                  24
+                                  nil
+                                  ["PROV1"])]
+
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
+
+     (bootstrap/bulk-index-between-date-time-with-hours
+      "3016-01-01T00:00:00Z"
+      24
+      {tc/token-header (tc/echo-system-token)}
+      ["PROV1"])
+     (index/wait-until-indexed)
+
+     (testing "Only provider concepts within the hours-based date-time range are indexed."
        (verify-collections-granules-are-indexed [coll1] [gran1] (tc/echo-system-token))))))
 
 (deftest ^:oracle bulk-index-after-date-time-uses-bounded-range

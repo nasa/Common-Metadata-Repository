@@ -86,6 +86,22 @@
   [date-time]
   (str date-time " is not a valid date-time."))
 
+(def end-date-time-before-start-date-time
+  "The end date-time must be after the start date-time.")
+
+(def hours-must-be-positive
+  "The hours parameter must be a positive integer.")
+
+(def end-date-time-and-hours-provided
+  "Only one of end_date_time or hours may be provided.")
+
+(defn after-date-time-window-exceeded
+  [max-window-hours]
+  (format (str "The requested time window exceeds the /bulk_index/after_date_time limit of %d hours. "
+               "Please use a smaller date_time value so the range to now is within %d hours.")
+          max-window-hours
+          max-window-hours))
+
 (defn system-concepts
   [params result]
   (if (api-util/synchronous? params)

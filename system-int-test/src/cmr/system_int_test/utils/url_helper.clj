@@ -556,6 +556,13 @@
           start-date-time
           end-date-time))
 
+(defn bulk-index-between-date-time-hours-url
+  [start-date-time hours]
+  (format "http://localhost:%s/bulk_index/between_date_time?start_date_time=%s&hours=%s"
+          (transmit-config/bootstrap-port)
+          start-date-time
+          hours))
+
 (defn bulk-index-concepts-url
   []
   (format "http://localhost:%s/bulk_index/concepts" (transmit-config/bootstrap-port)))

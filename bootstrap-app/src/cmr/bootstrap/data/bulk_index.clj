@@ -2,15 +2,12 @@
   "Functions to support concurrent bulk indexing."
   (:require
    [clj-time.coerce :as time-coerce]
-   [clj-time.format :as time-format]
    [clojure.core.async :as async :refer [<!!]]
-   [clojure.string :as string]
    [cmr.access-control.data.bulk-index :as ac-bulk-index]
    [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.common.concepts :as cc]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer (info warn error)]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
@@ -20,7 +17,6 @@
    [cmr.indexer.services.index-service :as index]
    [cmr.indexer.services.index-set-service :as index-set-service]
    [cmr.metadata-db.data.concepts :as db]
-   [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
    [cmr.metadata-db.data.providers :as p]))
 
 (defconfig collection-index-channel-worker-count
@@ -50,21 +46,6 @@
 (def ^:private misc-concept-types
   "The list of miscellaneous concept types that are provider based but saved in a single system table"
   [:variable :service :tool :subscription])
-
-(def ^:private sql-timestamp-formatter
-  (time-format/formatter "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
-
-(defn- sql-quote
-  [s]
-  (string/replace s #"'" "''"))
-
-(defn- date-time->sql-timestamp-literal
-  [date-time]
-  (let [date-time (if (string? date-time)
-                    (date-time-parser/parse-datetime date-time)
-                    date-time)]
-    (format "TO_TIMESTAMP_TZ('%s', 'YYYY-MM-DD\"T\"HH24:MI:SS.FF3\"Z\"')"
-            (time-format/unparse sql-timestamp-formatter date-time))))
 
 (defn elastic-retry-handler
   "A custom http retry handler for use with elastic connections"
@@ -234,13 +215,11 @@
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
-  (info "Indexing access control concepts")
   (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-config/elastic-name))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
   [system concept-batches es-cluster-name]
-  (info "Indexing concepts")
   (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches es-cluster-name))
 
 (defn- fetch-and-index-new-concepts
@@ -276,20 +255,6 @@
     {:max-revision-date max-revision-date
      :num-indexed num-indexed}))
 
-(defn- find-concepts-between-date-times-sql
-  [provider concept-type start-date-time end-date-time]
-  (let [table (concept-tables/get-table-name provider concept-type)
-        provider-id (:provider-id provider)
-        provider-clause (when (or (= :access-group concept-type)
-                                  (and (some #{concept-type} misc-concept-types)
-                                       (not= system-concept-provider provider-id)))
-                          (format " and provider_id = '%s'" (sql-quote (:provider-id provider))))]
-    (format "select * from %s where revision_date >= %s and revision_date < %s%s"
-            table
-            (date-time->sql-timestamp-literal start-date-time)
-            (date-time->sql-timestamp-literal end-date-time)
-            (or provider-clause ""))))
-
 (defn- fetch-and-index-concepts-between-date-times
   "Get batches of concepts for a given provider/concept type that have a revision-date
   within the half-open date-time range and then index them."
@@ -298,16 +263,8 @@
         provider-id (:provider-id provider)
         params {:concept-type concept-type
                 :provider-id provider-id}
-        stmt (find-concepts-between-date-times-sql
-              provider concept-type start-date-time end-date-time)
-        _ (info (format (str "Fetching %s batches for provider %s with revision-date "
-                             "between %s and %s.")
-                        concept-type provider-id start-date-time end-date-time))
-        concept-batches (db/find-concepts-in-batches-with-stmt
-                         db provider params stmt (:db-batch-size system))
-        num-of-concepts (apply + (map count concept-batches))
-        _ (info (format "Found %d %s(s) for provider %s."
-                        num-of-concepts (name concept-type) provider-id))
+        concept-batches (db/find-concepts-between-date-times-in-batches
+                         db provider params start-date-time end-date-time (:db-batch-size system))
         es-cluster-name (if (= concept-type :granule)
                           es-config/gran-elastic-name
                           es-config/elastic-name)
@@ -459,11 +416,6 @@
                       (:provider-id provider)
                       provider)]
     (try
-      (info (format "%s Indexing concepts with revision-date between [%s] and [%s] for provider [%s] started."
-                    msg/bulk-index-prefix-queue
-                    start-date-time
-                    end-date-time
-                    provider-id))
       (let [response-map
             (if (= system-concept-provider provider-id)
               (let [{:keys [num-indexed] :as response-map}

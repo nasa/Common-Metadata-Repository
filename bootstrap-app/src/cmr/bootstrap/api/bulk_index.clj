@@ -21,7 +21,7 @@
   [start-date-time end-date-time]
   (when-not (time/before? start-date-time end-date-time)
     (errors/throw-service-error
-     :invalid-data "The end date-time must be after the start date-time."))
+     :invalid-data msg/end-date-time-before-start-date-time))
   {:start-date-time start-date-time
    :end-date-time end-date-time})
 
@@ -39,10 +39,10 @@
       (if (pos? hours)
         hours
         (errors/throw-service-error
-         :invalid-data "The hours parameter must be a positive integer.")))
+         :invalid-data msg/hours-must-be-positive)))
     (catch NumberFormatException _
       (errors/throw-service-error
-       :invalid-data "The hours parameter must be a positive integer."))))
+       :invalid-data msg/hours-must-be-positive))))
 
 (defn- parse-between-date-time-range
   [params]
@@ -54,7 +54,7 @@
        :invalid-data (msg/required-params :start_date_time)))
     (when (and end-date-time hours)
       (errors/throw-service-error
-       :invalid-data "Only one of end_date_time or hours may be provided."))
+       :invalid-data msg/end-date-time-and-hours-provided))
     (let [start-date-time-value (parse-date-time-param :start_date_time start-date-time)
           end-date-time-value (cond
                                 end-date-time
@@ -75,10 +75,7 @@
     (when (time/after? end-date-time max-end-date-time)
       (errors/throw-service-error
        :invalid-data
-       (format (str "The requested time window exceeds the /bulk_index/after_date_time limit of %d hours. "
-                    "Please use a smaller date_time value so the range to now is within %d hours.")
-               max-window-hours
-               max-window-hours)))))
+       (msg/after-date-time-window-exceeded max-window-hours)))))
 
 (defn index-provider
   "Index all the collections and granules for a given provider."
