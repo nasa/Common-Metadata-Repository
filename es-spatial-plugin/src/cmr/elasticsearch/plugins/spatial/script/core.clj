@@ -37,12 +37,33 @@
     (when-let [^FieldLookup field-lookup (.get lookup key)]
       (seq (.getValues field-lookup)))))
 
+(defn extract-doc-values
+  "Safely extracts and coerces values from a LeafDocLookup field.
+  NOTE: doc-values for every field must be set to 'true' which is default."
+  [^LeafDocLookup doc field-name expected-type]
+  (let [doc-values (.get doc field-name)]
+    (when (and doc-values (pos? (.size doc-values)))
+      (let [vals (seq doc-values)]
+        (case expected-type
+          :int    (mapv int vals)
+          :long   (vec vals)
+          :float  (mapv float vals)
+          :double (vec vals)
+          :bool   (vec vals)
+          :string (mapv str vals)
+          ;; Example for Dates (converting to epoch milliseconds)
+          :date   (mapv #(.toInstant % ) vals) ;; or .toEpochMilli depending on your needs
+          ;; Example for GeoPoints (extracting lat/lon as maps or vectors)
+          :geo    (mapv (fn [gp] [(.getLon gp) (.getLat gp)]) vals)
+          (vec vals))))))
+
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [^LeafStoredFieldsLookup lookup intersects-fn]
+  [^LeafDocLookup doc intersects-fn] ;; <-- 1. Change type hint to LeafDocLookup
 
-  (if-let [ords-info (get-from-fields lookup "ords-info")]
-    (let [ords (get-from-fields lookup "ords")
+  ;; 2. Use extract-doc-values to safely get the ints from ES 8 ScriptDocValues
+  (if-let [ords-info (extract-doc-values doc "ords-info" :int)]
+    (let [ords (extract-doc-values doc "ords" :int)
           shapes (srl/ords-info->shapes ords-info ords)]
       (try
         ;; Must explicitly return true or false or elastic search will complain
@@ -53,6 +74,23 @@
           (.error (LogManager/getLogger "cmr_spatial_script") t)
           (throw (ex-info "An exception occurred checking for intersections" {:shapes shapes} t)))))
     false))
+
+;(defn doc-intersects?
+;  "Returns true if the doc contains a ring that intersects the ring passed in."
+;  [^LeafStoredFieldsLookup lookup intersects-fn]
+;
+;  (if-let [ords-info (get-from-fields lookup "ords-info")]
+;    (let [ords (get-from-fields lookup "ords")
+;          shapes (srl/ords-info->shapes ords-info ords)]
+;      (try
+;        ;; Must explicitly return true or false or elastic search will complain
+;        (if (u/any-true? intersects-fn shapes)
+;          true
+;          false)
+;        (catch Throwable t
+;          (.error (LogManager/getLogger "cmr_spatial_script") t)
+;          (throw (ex-info "An exception occurred checking for intersections" {:shapes shapes} t)))))
+;    false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                         End script helper functions                       ;;
@@ -83,8 +121,16 @@
     [[params lookup doc-reader] {:intersects-fn intersects-fn
                                  :search-lookup (.getLeafSearchLookup lookup context)}]))
 
+;(defn -execute [^SpatialScript this]
+;  (doc-intersects? (.getFields this)
+;                   (-> this .data :intersects-fn)))
+
 (defn -execute [^SpatialScript this]
-  (doc-intersects? (.getFields this)
+  ;; Pass the LeafDocLookup (doc values) instead of StoredFields
+  ;; NOTE: if the doc-values field = false, this will break, but it should be set to true by default.
+  ;; NOTE: if an elastic field for spatial is ever "type":"text" this will break because text does not have doc-value,
+  ;; but this should never happen because text is not a type often or should be used for spatial data
+  (doc-intersects? (-getDoc this)
                    (-> this .data :intersects-fn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
