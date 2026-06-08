@@ -10,7 +10,7 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 COPY src/proxy/ proxy/
-COPY lanes.json .
+COPY lanes.json /lanes.json
 
 ENV PATH="/opt/venv/bin:$PATH"
 
