@@ -24,7 +24,7 @@
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
-                 [ring/ring-jetty-adapter]]
+                 [ring/ring-jetty-adapter "1.15.4"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
