@@ -161,17 +161,6 @@
              `(< :revision-date ~(time-coerce/to-sql-time end-date-time))]
       provider-clause (conj provider-clause))))
 
-(defn- find-concepts-between-date-times-sql
-  [table provider-id concept-type start-date-time end-date-time]
-  (let [columns (->> (get concept-type->columns concept-type)
-                     (sort-by name)
-                     vec)
-        clauses (find-concepts-between-date-times-clauses
-                 provider-id concept-type start-date-time end-date-time)]
-    (su/build (select columns
-                      (from table)
-                      (where (cons `and clauses))))))
-
 (defn- find-batch-starting-id-between-date-times
   ([db table provider-id concept-type start-date-time end-date-time]
    (find-batch-starting-id-between-date-times
@@ -379,7 +368,13 @@
    (let [{:keys [provider-id]} provider
          concept-type (:concept-type params)
          table (tables/get-table-name provider concept-type)
-         columns (->> (get concept-type->columns concept-type)
+         fields (columns-for-find-concept concept-type params)
+         fields (if (or (:small provider)
+                        (single-table-with-providers-concept-type? concept-type)
+                        (cc/generic-concept? concept-type))
+                  fields
+                  (disj fields :provider_id))
+         columns (->> fields
                       (sort-by name)
                       vec)]
      (letfn [(find-batch
