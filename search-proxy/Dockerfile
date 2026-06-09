@@ -14,5 +14,4 @@ COPY lanes.json /lanes.json
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-USER proxy
 EXPOSE 3013
