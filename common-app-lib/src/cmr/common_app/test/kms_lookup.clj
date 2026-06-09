@@ -6,7 +6,7 @@
 (defn create-kms-caches-for-testing
   "Creates all KMS caches required by create-kms-index and lookup functions.
   Intended for centralized context setup to avoid missing-cache test failures when
-  new KMS cache keys are introduced. This is only for testing."
+  new KMS cache keys are introduced."
   []
   {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
    kms-lookup/kms-projects-cache-key (kms-lookup/create-kms-project-uuid-cache)
