@@ -15,15 +15,13 @@
    {:platforms [{:basis "Space-based Platforms", :category "Earth Observation Satellites" :sub-category nil :short-name "Terra" :long-name "Earth Observing System, Terra (AM-1)" :uuid "80eca755-c564-4616-b910-a4c4387b7c54"}
                 {:basis "Space-based Platforms", :category "Space Stations/Crewed Spacecraft", :sub-category "Space Station", :short-name "ISS", :long-name "International Space Station", :uuid "93c5d18c-be62-46c4-9545-42f73a854d85"}]})
 
-(defn- create-kms-caches
-  "Creates KMS caches using the centralized helper."
-  []
-  (kms-lookup/create-all-kms-caches))
-
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
-    {:system {:caches (merge {hf/humanizer-cache-key humanizer-cache}
-                             (create-kms-caches))}}))
+    {:system {:caches {hf/humanizer-cache-key humanizer-cache
+                       kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                       kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
+                       kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
+                       kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}))
 
 (defn redis-cache-fixture
   [f]
