@@ -3,7 +3,7 @@
   (:require
    [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
-(defn create-kms-caches-for-testing
+(defn create-all-kms-caches
   "Creates all KMS caches required by create-kms-index and lookup functions.
   Intended for centralized context setup to avoid missing-cache test failures when
   new KMS cache keys are introduced."

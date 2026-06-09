@@ -7,11 +7,11 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}})
+  {:system {:caches (test-kms-lookup/create-all-kms-caches)}})
 
 (def create-context-broken
   "Creates a testing concept with the KMS caches."
-  (-> {:system {:caches (test-kms-lookup/create-kms-caches-for-testing)}}
+  (-> {:system {:caches (test-kms-lookup/create-all-kms-caches)}}
       (update-in
        [:system :caches :kms-measurement-index :read-connection :spec :host]
        (constantly "example.gov"))))
