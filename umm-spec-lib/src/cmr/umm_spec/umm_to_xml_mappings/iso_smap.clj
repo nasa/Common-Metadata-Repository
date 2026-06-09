@@ -75,24 +75,6 @@
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
 
-(defn- generate-quality
-  "Maps UMM-C 1.18.6 Quality into a consolidated string block inside an ISO SMAP lineage tree element."
-  [c]
-  (when-let [quality (:Quality c)]
-    (let [summary (:Summary quality)
-          details (:QualityContentDetails quality)
-          details-str (when (seq details)
-                        (string/join "\n"
-                                     (for [detail details]
-                                       (str "Type: " (:TypeOfContent detail) " - " (:ContentDescription detail)))))
-          clean-summary (if (string/blank? summary) "[No Summary Overview]" summary)
-          combined-text (string/join "\n\n" (filter seq [clean-summary details-str]))]
-      (when-not (string/blank? combined-text)
-        [:gmd:lineage
-         [:gmd:LI_Lineage
-          [:gmd:statement
-           [:gco:CharacterString combined-text]]]]))))
-#_{:clj-kondo/ignore [:unused-public-var]}
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -258,10 +240,20 @@
             [:gmd:level
              [:gmd:MD_ScopeCode
               {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
-               :codeListValue "dataset"}
-              "dataset"]]]]
-          ;; Inject your custom function into the XML generator tree output
-          (generate-quality c)]]
+               :codeListValue "series"}
+              "series"]]]]
+          ;; Loop through QualityContentDetails to unroll individual report blocks.
+          ;; Interleaves Summary, TypeOfContent, and ContentDescription separated by "|||".
+          (let [quality (:Quality c)
+                summary (:Summary quality)]
+            (for [detail (:QualityContentDetails quality)]
+              [:gmd:report
+               [:gmd:DQ_QuantitativeAttributeAccuracy
+                [:gmd:evaluationMethodDescription
+                 (char-string (str (or summary "") "|||"
+                                   (or (:TypeOfContent detail) "Other") "|||"
+                                   (or (:ContentDescription detail) "")))]
+                [:gmd:result {:gco:nilReason "missing"}]]]))]]
         [:gmi:acquisitionInformation
          [:gmi:MI_AcquisitionInformation
           (platform/generate-instruments platforms)

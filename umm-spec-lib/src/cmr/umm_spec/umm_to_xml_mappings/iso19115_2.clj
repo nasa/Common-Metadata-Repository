@@ -381,24 +381,6 @@
         umm-temporal-maps (flatten (util/remove-nils-empty-maps-seqs umm-temporal-maps))]
     (doall (map generate-iso-temporal-extents umm-temporal-maps))))
 
-(defn- generate-quality
-  "Maps UMM-C 1.18.6 Quality into a consolidated string block inside an ISO 19115-2 lineage tree element."
-  [c]
-  (when-let [quality (:Quality c)]
-    (let [summary (:Summary quality)
-          details (:QualityContentDetails quality)
-          details-str (when (seq details)
-                        (clojure.string/join "\n"
-                                             (for [detail details]
-                                               (str "Type: " (:TypeOfContent detail) " - " (:ContentDescription detail)))))
-          clean-summary (if (clojure.string/blank? summary) "[No Summary Overview]" summary)
-          combined-text (clojure.string/join "\n\n" (filter seq [clean-summary details-str]))]
-      (when-not (clojure.string/blank? combined-text)
-        [[:gmd:lineage
-          [:gmd:LI_Lineage
-           [:gmd:statement
-            [:gco:CharacterString combined-text]]]]]))))
-
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -564,28 +546,41 @@
          [:gmd:DQ_Scope
           [:gmd:level
            [:gmd:MD_ScopeCode
-            {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
-             :codeListValue "dataset"}
-            "dataset"]]]]
-        ;; CONSOLIDATION FIX: Use exactly one, un-nested parent lineage element tag container
+            {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
+             :codeListValue "series"}
+            "series"]]]]
+
+        ;; 1. Existing Precision of Seconds Report
+        [:gmd:report
+         [:gmd:DQ_AccuracyOfATimeMeasurement
+          [:gmd:measureIdentification
+           [:gmd:MD_Identifier
+            [:gmd:code
+             (char-string "PrecisionOfSeconds")]]]
+          [:gmd:result
+           [:gmd:DQ_QuantitativeResult
+            [:gmd:valueUnit ""]
+            [:gmd:value
+             [:gco:Record {:xsi:type "gco:Real_PropertyType"}
+              [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
+
+        ;; 2. NEW: Programmatically generated reports merging Summary, TypeOfContent, and ContentDescription
+        ;; Uses the triple-pipe "|||" delimiter to keep fields split-safe for symmetric parsing
+        (let [quality (:Quality c)
+              summary (:Summary quality)]
+          (for [detail (:QualityContentDetails quality)]
+            [:gmd:report
+             [:gmd:DQ_QuantitativeAttributeAccuracy
+              [:gmd:evaluationMethodDescription
+               (char-string (str (or summary "") "|||"
+                                 (or (:TypeOfContent detail) "Other") "|||"
+                                 (or (:ContentDescription detail) "")))]
+              [:gmd:result {:gco:nilReason "missing"}]]]))
+
+        ;; 3. Sibling Lineage block sequence
         [:gmd:lineage
          [:gmd:LI_Lineage
-          ;; A. Place your custom quality metadata summaries text safely at the top of the container sequence
-          (let [quality (:Quality c)
-                summary (:Summary quality)
-                details (:QualityContentDetails quality)
-                details-str (when (seq details)
-                              (clojure.string/join "\n"
-                                                   (for [detail details]
-                                                     (str "Type: " (:TypeOfContent detail) " - " (:ContentDescription detail)))))
-                clean-summary (if (clojure.string/blank? summary) "[No Summary Overview]" summary)
-                combined-text (clojure.string/join "\n\n" (filter seq [clean-summary details-str]))]
-            (when-not (clojure.string/blank? combined-text)
-              [:gmd:statement
-               [:gco:CharacterString combined-text]]))
-      
-          ;; B. Native element helper macro functions append underneath in their native un-broken order
-          (aa/generate-data-quality-info-additional-attributes (:AdditionalAttributes c))
+          (aa/generate-data-quality-info-additional-attributes additional-attributes)
           (when-let [processing-centers (data-contact/generate-processing-centers (:DataCenters c))]
             [:gmd:processStep
              [:gmd:LI_ProcessStep

@@ -16,6 +16,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
@@ -83,14 +84,9 @@
 (def keywords-xpath-str
   "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
-(def quality-base-xpath
-  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality"))
-
-(def quality-summary-xpath
-  (str quality-base-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString"))
-
-(def quality-detail-reports-xpath
-  (str quality-base-xpath "/gmd:report/gmd:DQ_UsabilityElement"))
+(def quality-xpath
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality"
+       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def data-dates-xpath
   (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
@@ -122,44 +118,15 @@
 (def associated-doi-xpath
   (str md-identification-base-xpath "/gmd:aggregationInfo/gmd:MD_AggregateInformation/"))
 
-(defn- parse-quality-content-details
-  [statement-str]
-  (let [lines (clojure.string/split-lines statement-str)
-        details (for [line lines
-                      :let [match (re-find #"^Type:\s*([^\s-]+)\s*-\s*(.*)$" line)]
-                      :when match]
-                  (cmr.umm-spec.models.umm-common-models/map->QualityTypeOfContent
-                   {:TypeOfContent (clojure.string/trim (nth match 1))
-                    :ContentDescription (clojure.string/trim (nth match 2))}))]
-    (when (seq details)
-      (vec details))))
-
-(defn- parse-quality
-  "Extracts and builds the v1.18.6 Quality record structure out of the ISO-SMAP XML tree."
-  [doc sanitize?]
-  ;; PLACE IT EXACTLY HERE:
-  (let [quality-xpath "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:statement/gco:CharacterString"
-        raw-string (value-of doc quality-xpath)]
-    (when-not (clojure.string/blank? raw-string)
-      (let [sections (clojure.string/split raw-string #"\n\n")
-            raw-summary (first sections)
-            summary (when-not (= "[No Summary Overview]" raw-summary) raw-summary)
-            details (parse-quality-content-details raw-string)]
-        (cmr.umm-spec.models.umm-common-models/map->QualityType
-         (cmr.common.util/remove-nil-keys
-          {:Summary (when-not (clojure.string/blank? summary)
-                      (cmr.umm-spec.util/truncate (clojure.string/trim summary) cmr.umm-spec.util/QUALITY_MAX sanitize?))
-           :QualityContentDetails details}))))))
-
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
   [data-id-el sanitize?]
   (if-let [science-keywords (seq
-                              ;; kws/parse-science-keywords is shared by iso19115 and isosmap
-                              ;; "true" indicates it's isosmap case.
-                              (->> (kws/parse-science-keywords data-id-el sanitize? true)
-                                   (filter #(.contains kws/science-keyword-categories (:Category %)))))]
+                             ;; kws/parse-science-keywords is shared by iso19115 and isosmap
+                             ;; "true" indicates it's isosmap case.
+                             (->> (kws/parse-science-keywords data-id-el sanitize? true)
+                                  (filter #(.contains kws/science-keyword-categories (:Category %)))))]
     science-keywords
     (when sanitize?
       u/not-provided-science-keywords)))
@@ -193,11 +160,11 @@
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
        :CollectionProgress (get-umm-element/get-collection-progress
-                             coll-progress-mapping
-                             data-id-el
-                             "gmd:status/gmd:MD_ProgressCode"
-                             sanitize?)
-       :Quality (parse-quality doc sanitize?)
+                            coll-progress-mapping
+                            data-id-el
+                            "gmd:status/gmd:MD_ProgressCode"
+                            sanitize?)
+       :Quality (quality/parse-quality-summary-only doc quality-xpath)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
        :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
@@ -213,9 +180,9 @@
        ;; Required by UMM-C
        :ProcessingLevel {:Id
                          (u/with-default
-                          (char-string-value
-                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                          sanitize?)
+                           (char-string-value
+                            data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                           sanitize?)
                          :ProcessingLevelDescription
                          (char-string-value
                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
@@ -228,7 +195,7 @@
        :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
                                                                                     dist-info-xpath)
        :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))))
+                               {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                          umm-spec-versioning/current-collection-version),
+                                :Name "UMM-C"
+                                :Version umm-spec-versioning/current-collection-version})}))))
