@@ -9,4 +9,4 @@
  "test/cmr/system_int_test/ingest/provider"
  "test/cmr/system_int_test/ingest/subscription"
  "test/cmr/system_int_test/ingest/bulk_update"
- "test/cmr/system-int-test/es-spatial-plugin"]
+ "test/cmr/system-int-test/es_spatial_plugin"]
