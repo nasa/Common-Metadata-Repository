@@ -324,7 +324,7 @@
                                     {tc/token-header (tc/echo-system-token)}
                                     ["PROV1"])]
        (is (= 422 status))
-       (is (re-find #"/bulk_index/after_date_time is limited to 168 hours"
+       (is (re-find #"The requested time window exceeds the /bulk_index/after_date_time limit of 168 hours"
                     (first errors))))
      (finally
        (dev-sys-util/clear-current-time!)))))
