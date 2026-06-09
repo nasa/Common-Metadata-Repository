@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.util :refer [are3]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
@@ -55,7 +54,7 @@
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (test-kms-lookup/create-all-kms-caches)}})
+  {:system {:caches (kms-lookup/create-all-kms-caches)}})
 
 (deftest create-all-kms-caches-coverage-test
   (testing "create-all-kms-caches includes every *-cache-key defined in kms-lookup"
@@ -64,7 +63,7 @@
                                              (string/ends-with? (name sym) "-cache-key")))
                                    (map (fn [[_ v]] (var-get v)))
                                    set)
-          actual-cache-keys (-> (test-kms-lookup/create-all-kms-caches)
+          actual-cache-keys (-> (kms-lookup/create-all-kms-caches)
                                 keys
                                 set)]
       (is (= expected-cache-keys actual-cache-keys)

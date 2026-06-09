@@ -3,7 +3,6 @@
   (:require
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common-app.test.kms-lookup :as test-kms-lookup]
    [cmr.common.cache :as cache]))
 
 (def ^:private sample-keyword-map
@@ -23,10 +22,15 @@
                        {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "ANGOLA", :uuid "9b0a194d-d617-4fed-9625-df176319892d"}
                        {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "LAKE CHAD", :uuid "a1810ec4-2d03-4d98-b049-2cad380fb789"}]})
 
+(defn- create-kms-caches
+  "Creates KMS caches using the centralized helper."
+  []
+  (kms-lookup/create-all-kms-caches))
+
 (def create-context
   "Simple context that setups KMS caches for testing."
   {:system {:caches (merge {kf/kms-cache-key (kf/create-kms-cache)}
-                           (test-kms-lookup/create-all-kms-caches))}})
+                           (create-kms-caches))}})
 
 (defn redis-cache-fixture
   "This fixture wraps any tests that use it with a set of values

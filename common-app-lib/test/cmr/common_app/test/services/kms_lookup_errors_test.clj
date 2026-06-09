@@ -2,16 +2,15 @@
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.common-app.test.kms-lookup :as test-kms-lookup]))
+    [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
 (def create-context
   "Creates a testing concept with the KMS caches."
-  {:system {:caches (test-kms-lookup/create-all-kms-caches)}})
+  {:system {:caches (kms-lookup/create-all-kms-caches)}})
 
 (def create-context-broken
   "Creates a testing concept with the KMS caches."
-  (-> {:system {:caches (test-kms-lookup/create-all-kms-caches)}}
+  (-> {:system {:caches (kms-lookup/create-all-kms-caches)}}
       (update-in
        [:system :caches :kms-measurement-index :read-connection :spec :host]
        (constantly "example.gov"))))
