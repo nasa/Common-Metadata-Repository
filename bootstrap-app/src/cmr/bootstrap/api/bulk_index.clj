@@ -128,7 +128,9 @@
                       date-time)}}))
 
 (defn data-between-date-time
-  "Index all the data with revision-date between the given date-times."
+  "Index data with revision-date in the requested date-time range.
+   The request must include start_date_time and may include either end_date_time or hours.
+   If provider_ids is omitted, all providers and CMR system concepts are indexed."
   [context body params]
   (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
         provider-ids (get body "provider_ids")
