@@ -19,7 +19,7 @@
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
     {:system {:caches (merge {hf/humanizer-cache-key humanizer-cache}
-                             (test-kms-lookup/create-all-kms-caches))}}))
+                             (test-kms-lookup/create-kms-caches-for-testing))}}))
 
 (defn redis-cache-fixture
   [f]

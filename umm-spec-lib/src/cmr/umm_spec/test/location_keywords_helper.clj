@@ -26,7 +26,7 @@
 (def create-context
   "Simple context that setups KMS caches for testing."
   {:system {:caches (merge {kf/kms-cache-key (kf/create-kms-cache)}
-                           (test-kms-lookup/create-all-kms-caches))}})
+                           (test-kms-lookup/create-kms-caches-for-testing))}})
 
 (defn redis-cache-fixture
   "This fixture wraps any tests that use it with a set of values
