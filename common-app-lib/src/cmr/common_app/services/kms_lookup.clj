@@ -225,29 +225,6 @@
   []
   (create-kms-uuid-cache kms-temporal-keywords-cache-key))
 
-(defn create-all-kms-caches
-  "Creates all KMS caches required by create-kms-index and lookup functions.
-  Intended for centralized context setup to avoid missing-cache test failures when
-  new KMS cache keys are introduced."
-  []
-  {kms-short-name-cache-key (create-kms-short-name-cache)
-   kms-projects-cache-key (create-kms-project-uuid-cache)
-   kms-umm-c-cache-key (create-kms-umm-c-cache)
-   kms-location-cache-key (create-kms-location-cache)
-   kms-measurement-cache-key (create-kms-measurement-cache)
-   kms-processing-level-cache-key (create-kms-processing-level-uuid-cache)
-   kms-science-keywords-cache-key (create-kms-science-keywords-uuid-cache)
-   kms-platforms-cache-key (create-kms-platforms-uuid-cache)
-   kms-instruments-cache-key (create-kms-instruments-uuid-cache)
-   kms-providers-cache-key (create-kms-providers-uuid-cache)
-   kms-spatial-keywords-cache-key (create-kms-spatial-keywords-uuid-cache)
-   kms-concepts-cache-key (create-kms-concepts-uuid-cache)
-   kms-iso-topic-categories-cache-key (create-kms-iso-topic-categories-uuid-cache)
-   kms-granule-data-format-cache-key (create-kms-granule-data-format-uuid-cache)
-   kms-mime-type-cache-key (create-kms-mime-type-uuid-cache)
-   kms-related-urls-cache-key (create-kms-related-urls-uuid-cache)
-   kms-temporal-keywords-cache-key (create-kms-temporal-keywords-uuid-cache)})
-
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when
   comparing fields between KMS and UMM-C, UMM-G, UMM-S, UMM-T, or UMM-Var."
