@@ -21,6 +21,11 @@
     [db provider params stmt batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters or sql statement.")
 
+  (find-concepts-between-date-times-in-batches
+    [db provider params start-date-time end-date-time batch-size]
+    [db provider params start-date-time end-date-time batch-size start-index]
+    "Get a lazy sequence of batched concepts whose revision date is within the half-open date-time range.")
+
   (find-latest-concepts
     [db provider params]
     "Finds the latest concepts by the given provider and parameters.

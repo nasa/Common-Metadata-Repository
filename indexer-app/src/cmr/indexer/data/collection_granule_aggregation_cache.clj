@@ -50,7 +50,9 @@
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (coll-gran-agg-cache-consistent-timeout-seconds)})
       (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
-                                       :primary-connection (redis-config/redis-conn-opts)}))))
+                                       :primary-connection (redis-config/redis-conn-opts)
+                                       :key-match-pattern
+                                       (redis-cache/serialize coll-gran-aggregate-cache-key)}))))
 
 (def ^:private collection-aggregations
   "Defines the aggregations to use to find information about all the granules in a collection."

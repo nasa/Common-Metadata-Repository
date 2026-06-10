@@ -83,6 +83,25 @@
     (is (= (redis-config/redis-max-scan-keys)
            (count (redis/get-keys "get-keys-pattern-2#-*" (redis-config/redis-conn-opts)))))))
 
+(deftest redis-cache-get-keys-skips-non-edn-keys
+  (let [cache-key :redis-cache-get-keys-skips-non-edn-keys
+        rcache (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                                :primary-connection (redis-config/redis-conn-opts)})]
+    (wcar* "SIT-GRAN:" false (redis-config/redis-conn-opts) (carmine/set "SIT-GRAN:" "test"))
+    (cache/set-value rcache cache-key "test")
+    (is (contains? (set (cache/get-keys rcache)) cache-key))))
+
+(deftest redis-cache-get-keys-supports-match-pattern
+  (let [cache-key :redis-cache-get-keys-supports-match-pattern
+        other-cache-key :redis-cache-get-keys-supports-match-pattern-other
+        rcache (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                                :primary-connection (redis-config/redis-conn-opts)
+                                                :key-match-pattern (redis-cache/serialize cache-key)})]
+    (wcar* "SIT-GRAN:" false (redis-config/redis-conn-opts) (carmine/set "SIT-GRAN:" "test"))
+    (cache/set-value rcache cache-key "test")
+    (cache/set-value rcache other-cache-key "test")
+    (is (= [cache-key] (cache/get-keys rcache)))))
+
 (def field-value-map
   {"C1200000001-PROV1"
    {:concept-id "C1200000001-PROV1",
