@@ -23,7 +23,8 @@
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
-                 [org.testcontainers/testcontainers]]
+                 [org.testcontainers/testcontainers]
+                 [ring/ring-jetty-adapter "1.15.4"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
@@ -56,9 +57,7 @@
              :internal-repos {}
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.15.4"]]}}
+                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {"bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]

@@ -106,6 +106,7 @@
    :index-variables (partial not-implemented :index-variables)
    :index-services (partial not-implemented :index-services)
    :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
+   :index-data-between-date-time (partial not-implemented :index-data-between-date-time)
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id

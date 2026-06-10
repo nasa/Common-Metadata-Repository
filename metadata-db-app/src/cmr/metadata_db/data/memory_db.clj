@@ -302,6 +302,55 @@
                      (cons batch (lazy-seq (lazy-find (+ start-index batch-size))))))))]
        (lazy-find start-index)))))
 
+(defn- parse-date-time
+  [date-time]
+  (if (string? date-time)
+    (p/parse-datetime date-time)
+    date-time))
+
+(def ^:private system-concept-provider
+  "Provider name for indexing system concepts."
+  "CMR")
+
+(def ^:private misc-concept-types
+  "The list of miscellaneous concept types that are provider based but saved in a single system table."
+  [:variable :service :tool :subscription])
+
+(defn- provider-filter-params
+  [provider params]
+  (let [provider-id (:provider-id provider)
+        concept-type (:concept-type params)]
+    (if (and (= system-concept-provider provider-id)
+             (some #{concept-type} misc-concept-types))
+      params
+      (assoc params :provider-id provider-id))))
+
+(defn find-concepts-between-date-times-in-batches
+  ([db provider params start-date-time end-date-time batch-size]
+   (find-concepts-between-date-times-in-batches
+    db provider params start-date-time end-date-time batch-size 0))
+  ([db provider params start-date-time end-date-time batch-size requested-start-index]
+   (let [start-date-time (parse-date-time start-date-time)
+         end-date-time (parse-date-time end-date-time)
+         filtered-concepts (->> (concepts/search-with-params
+                                 @(:concepts-atom db)
+                                 (provider-filter-params provider params))
+                                (filter (fn [{:keys [revision-date]}]
+                                          (let [revision-date (parse-date-time revision-date)]
+                                            (and (not (t/before? revision-date start-date-time))
+                                                 (t/before? revision-date end-date-time))))))
+         sorted-concepts (vec (sort-by :concept-id filtered-concepts))
+         start-index (max requested-start-index 0)]
+     (letfn [(find-batch [start-index]
+               (let [end-index (min (+ start-index batch-size) (count sorted-concepts))]
+                 (subvec sorted-concepts start-index end-index)))
+             (lazy-find [start-index]
+               (when (< start-index (count sorted-concepts))
+                 (let [batch (find-batch start-index)]
+                   (when (seq batch)
+                     (cons batch (lazy-seq (lazy-find (+ start-index batch-size))))))))]
+       (lazy-find start-index)))))
+
 (defn find-associations-by-concept-id
   "Searches the passed in concepts (which is the in-memory DB) for all associations that
   involve the passed in concept id."
@@ -335,6 +384,7 @@
   {:find-concepts find-concepts
    :find-latest-concepts find-latest-concepts
    :find-concepts-in-batches find-concepts-in-batches
+   :find-concepts-between-date-times-in-batches find-concepts-between-date-times-in-batches
    :find-associations find-associations
    :find-latest-associations find-latest-associations})
 
