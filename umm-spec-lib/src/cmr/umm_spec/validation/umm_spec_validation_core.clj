@@ -4,6 +4,7 @@
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
    [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.umm-spec.validation.granule :as vg]
    [cmr.umm-spec.validation.parent-weaver :as pw]
    [cmr.umm-spec.additional-attribute :as aa]
@@ -57,15 +58,37 @@
     (v/validate (cons vc/collection-validation-warnings additional-validations)
                 (aa/add-parsed-values collection)))))
 
+;; TODO this is where the weird object reference is coming from
+(defn validate-granule-warnings
+  "Validates the UMM-G record against the list of warnings - issues that we want
+  to convey to the user, but not consider failures."
+  ([collection granule]
+  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+    (tap> {:source "granule-with-parent IN THE WARNING" :value granule-with-parent})
+    (def g1 granule)
+    (def gc1 granule-with-parent)
+    (v/validate vg/granule-validation-warnings granule-with-parent))))
+
+    
+(comment (def foo (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1)))
+         
+         (first (:errors foo))
+
+(validation-errors->path-errors (v/validate vg/granule-validation-warnings g1))
+
+(v/validate vg/granule-validation-warnings gc1)
+         )
+
+
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   ([collection granule]
    (validate-granule collection granule nil))
   ([collection granule additional-validations]
-   (tap> vg/granule-validations)
+   (tap> {:source "validate-granule" :value vg/granule-validations})
    (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-     (tap> granule-with-parent)
+     (tap> {:source "granule-with-parent" :value granule-with-parent})
      (validation-errors->path-errors
       (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 
@@ -75,6 +98,7 @@
    path. Returns an empty sequence if it is valid."
   ([granule]
    (validate-granule granule nil))
+   ;; TODO how to do this without empty param
   ([granule additional-validations]
    (validation-errors->path-errors (v/validate additional-validations granule))))
 
@@ -108,16 +132,6 @@
   ([variable additional-validations]
    (validation-errors->path-errors
     (v/validate (cons vv/variable-validations additional-validations)
-                variable))))
-
-(defn validate-variable-warnings
-  "Validates the UMM record against the list of warnings - issues that we want
-  to convey to the user, but which we do not consider failures."
-  ([variable]
-   (validate-variable-warnings variable nil))
-  ([variable additional-validations]
-   (validation-errors->path-errors
-    (v/validate (cons vv/variable-validation-warnings additional-validations)
                 variable))))
 
 (defn validate-variable-with-no-defaults

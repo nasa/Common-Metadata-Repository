@@ -63,6 +63,7 @@
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
          warnings (concat warnings collection-warnings)]
+         (tap> warnings)
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
       :warnings warnings
@@ -85,6 +86,7 @@
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
     ;; progressive update doesn't apply to business rules validation.
+    (tap> warnings)    
     (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
      :warnings warnings
@@ -108,6 +110,7 @@
                     (if (:token context)
                       (common-context/context->user-id context)
                       "unknown user"))))
+    (tap> {:from "collection exsiting errors", :source existing-errors})
     {:entry-title entry-title
      :concept-id concept-id
      :revision-id revision-id

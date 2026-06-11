@@ -9,10 +9,12 @@
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]))
-
+\
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 (def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
+(def COLLECTION_WARNING_CONTEXT "After translating item to UMM-C the metadata had the following issue(s): ")
+(def COLLECTION_ERROR_CONTEXT "After translating item to UMM-C the metadata had the following existing error(s): ")
 
 (def validate-keywords-default-true-enabled?
   "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
@@ -42,7 +44,7 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response COLLECTION_WARNING_CONTEXT COLLECTION_ERROR_CONTEXT)
                      [:warnings :existing-errors]))))))
 
 (defn ingest-collection
@@ -66,13 +68,14 @@
                              (api-core/concept-with-revision-id save-collection-result)
                              (assoc :entry-title (:entry-title save-collection-result)))]
       ;; Log the successful ingest, with the metadata size in bytes.
+      (tap> {:source "save-collection-result" :value save-collection-result})
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
       (api-core/generate-ingest-response headers
                                          (api-core/format-and-contextualize-warnings-existing-errors
                                           ;; entry-title is added just for the logging above.
                                           ;; dissoc it so that it remains the same as the
                                           ;; original code.
-                                          (dissoc save-collection-result :entry-title))))))
+                                          (dissoc save-collection-result :entry-title) COLLECTION_WARNING_CONTEXT COLLECTION_ERROR_CONTEXT)))))
 
 (defn delete-collection
   "Delete the collection with the given provider id and native id."

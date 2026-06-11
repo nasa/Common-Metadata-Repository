@@ -17,5 +17,6 @@
   [(vu/unique-by-name-validator :ShortName)
    (v/every project-date-validation)])
 
+;; TODO Feels like this one shouldn't be a warning
 (def projects-warning-validation
   [(v/every {:StartDate vu/date-in-past-validator})])

@@ -23,6 +23,7 @@
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request
         concept (api-core/body->concept! :tool provider-id native-id body content-type headers)]
+        (tap> concept)
     (api-core/verify-provider-exists request-context provider-id)
     (info (format "Validating Tool %s from client %s"
                   (api-core/concept->loggable-string concept) (:client-id request-context)))
@@ -30,7 +31,7 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response nil nil)
                      [:warnings :existing-errors]))))))
 
 (defn ingest-tool
@@ -51,6 +52,7 @@
                           (api-core/concept->loggable-string concept-with-user-id)
                           (:client-id request-context)))
           save-tool-result (ingest/save-tool request-context concept-with-user-id)
+          _(tap> save-tool-result)
           concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-tool-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
