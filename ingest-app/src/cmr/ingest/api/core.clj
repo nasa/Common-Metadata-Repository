@@ -97,9 +97,7 @@
 
 (defn format-and-contextualize-warnings-existing-errors
   "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
-  [result]
-  (let [warning-context "After translating item to UMM-C the metadata had the following issue(s): "
-        err-context "After translating item to UMM-C the metadata had the following existing error(s): "]
+  [result warning-context err-context]
     (-> result
         (update :warnings
                 (fn [warnings]
@@ -108,7 +106,34 @@
         (update :existing-errors
                 (fn [existing-errors]
                   (when (not-empty existing-errors)
-                    [(str err-context (string/join ";; " existing-errors))]))))))
+                    [(str err-context (string/join ";; " existing-errors))])))))
+
+
+(defn format-and-contextualize-warnings-existing-errors-granules
+  "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
+  [result]
+  (let [warning-context "After translating item to UMM-G the metadata had the following issue(s): "
+        err-context "After translating item to UMM-G the metadata had the following existing error(s): "]
+    (-> result
+        (update :warnings
+                (fn [warnings]
+                  (when (not-empty warnings)
+                    (str warning-context (string/join ";; " warnings)))))
+        (update :existing-errors
+                (fn [existing-errors]
+                  (when (not-empty existing-errors)
+                    (str err-context (string/join ";; " existing-errors))))))))
+
+
+( comment
+  (def r1 {:path [:project-refs],
+            :errors
+            ["Project References have [project3, campaign1, project2, campaign2, project1] which do not reference any projects foobar 🚀 in parent collection."]}
+ 
+)
+ (format-and-contextualize-warnings-existing-errors-granules r1) 
+)
+
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -330,3 +355,14 @@
                                (ingest/delete-concept
                                 request-context
                                 concept-attribs)))))
+
+
+(comment 
+  (def foo {:concept-id "G1200000002-PROV1",
+            :revision-id 4,
+            :warnings "true",
+            :existing-errors
+            #{"[:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]"}})
+  
+  (format-and-contextualize-warnings-existing-errors foo)
+  )

@@ -13,6 +13,7 @@ profiles.clj
 *.eastwood
 .tags
 .tags1
+.clj-kondo/
 **/.clj-kondo/.cache
 .lsp
 .cider-repl-history

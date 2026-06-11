@@ -5,12 +5,15 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [info]]
+   [cmr.common.util :as util]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]))
 
+
+(def GRANULE_WARNING_CONTEXT "Granule had the following warnings: ")
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
   or a normal request with the XML as the body."
@@ -71,10 +74,34 @@
                           (api-core/concept->loggable-string concept)
                           (:client-id request-context)))
           save-granule-result (ingest/save-granule request-context concept)
+          _(def sgr1 save-granule-result)
+          _(tap> {:source "save-granule-result" :value save-granule-result})
+
           concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
-      (api-core/generate-ingest-response headers save-granule-result))))
+      ;; (api-core/generate-ingest-response headers save-granule-result)
+      (api-core/generate-ingest-response headers (util/remove-nil-keys
+                                                (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil)
+                                                               ))
+      )))
+
+(
+ comment
+ (def hack (api-core/format-and-contextualize-warnings-existing-errors-granules sgr1))
+
+
+(defn flatten-path-errors [m]
+  (let [extract (fn [errs] (when (seq errs) (vec (mapcat #(.-errors %) errs))))]
+    (-> m
+        (update :warnings extract)
+        (update :existing-errors extract))))
+
+      
+      
+ (flatten-path-errors (api-core/format-and-contextualize-warnings-existing-errors-granules sgr1))
+)
+
 
 (defn delete-granule
   [provider-id native-id request]

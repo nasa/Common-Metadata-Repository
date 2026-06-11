@@ -6,8 +6,10 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.validations.core :as v]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.spatial.validation :as sv]
    [cmr.ingest.config :as config]
+   [cmr.ingest.services.messages :as msg]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm-spec.time :as umm-spec-time]
@@ -189,13 +191,6 @@
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
 
-;; (defn- when-enforce-collection-consistency
-;;   "A validation that only runs when enforce-granule-collection-consistency is true."
-;;   [validation]
-;;   (fn [field-path value]
-;;     (when (config/enforce-granule-collection-consistency)
-;;       (valid/validate validation field-path value))))
-
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
   [_ temporal]
@@ -234,14 +229,51 @@
                   (v/every sensor-ref-validations)]}
    (when (config/enforce-granule-collection-consistency)operation-modes-reference-collection)])
 
+(def sensor-ref-validations2
+  "Defines the sensor validations for granules"
+  {:characteristic-refs [(vu/unique-by-name-validator :name)
+                         (vu/has-parent-validator :name "Characteristic Reference name")]})
+
+(def instrument-ref-validations2
+  "Defines the instrument validations for granules"
+  [{:characteristic-refs [(vu/unique-by-name-validator :name) (vu/has-parent-validator :name "Characteristic Reference name")]
+    :sensor-refs [(vu/unique-by-name-validator :short-name)
+                   (vu/has-parent-validator :short-name "Sensor short name")
+                  (v/every sensor-ref-validations2)]}
+   operation-modes-reference-collection])
+
 (def platform-ref-validations
   "Defines the platform validations for granules"
   {:instrument-refs [(vu/unique-by-name-validator :short-name)
                      (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Instrument short name"))
-                     (v/every instrument-ref-validations)]})
+                     (v/every instrument-ref-validations)
+                     ]})
 
-(def granule-validations
-  "Defines validations for granules"
+(def platform-ref-validations2
+  "Defines the platform validations for granules"
+  {:instrument-refs [(vu/unique-by-name-validator :short-name)
+                     (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Instrument short name"))
+                     (v/every instrument-ref-validations2)]})
+
+(def ^:private consistency-validations
+  "Granule-vs-parent-collection consistency validations. Enforced as errors
+   when enforce-granule-collection-consistency is on, surfaced as warnings
+   when it is off."
+  [{:platform-refs
+    [(vu/has-parent-validator :short-name "Platform short name")
+     (v/every
+      {:instrument-refs
+       [(vu/has-parent-validator :short-name "Instrument short name")
+        (v/every
+         [{:characteristic-refs [(vu/has-parent-validator :name "Characteristic Reference name")]
+           :sensor-refs [(vu/has-parent-validator :short-name "Sensor short name")
+                         (v/every {:characteristic-refs
+                                   [(vu/has-parent-validator :name "Characteristic Reference name")]})]}
+          operation-modes-reference-collection])]})]}
+   projects-reference-collection])
+
+(def ^:private base-validations
+  "Granule validations that are always enforced regardless of the toggle."
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:EntryTitle])
                      (matches-collection-identifier-validation :entry-id [:entry-id])
@@ -251,14 +283,30 @@
     :orbit-calculated-spatial-domains ocsd-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    ;; TODO must be this one
-                    (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Platform short name"))
-                    (v/every platform-ref-validations)]
+                    (v/every
+                     {:instrument-refs
+                      [(vu/unique-by-name-validator :short-name)
+                       (v/every
+                        {:characteristic-refs [(vu/unique-by-name-validator :name)]
+                         :sensor-refs [(vu/unique-by-name-validator :short-name)
+                                       (v/every {:characteristic-refs
+                                                 [(vu/unique-by-name-validator :name)]})]})]})]
     :two-d-coordinate-system [(vu/has-parent-validator :name "Tiling Identification System Name")
                               two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Additional Attribute")
                                   (v/every aav/aa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
-   (when (config/enforce-granule-collection-consistency) projects-reference-collection)
    spatial-matches-granule-spatial-representation])
+
+(def granule-validations
+  "Defines validations for granules."
+  (if (config/enforce-granule-collection-consistency)
+    (into base-validations consistency-validations)
+    base-validations))
+
+(def granule-validation-warnings
+  "Defines validations for granules returned as warnings rather than failures."
+  (if (config/enforce-granule-collection-consistency)
+    []
+    consistency-validations))
