@@ -7,29 +7,7 @@
    [cmr.spatial.point :as p]
    [cmr.umm.collection.product-specific-attribute :as psa]
    [cmr.umm.test.unit.validation.validation-test-helpers :as helpers]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.validation.validation-core :as v]))
-
-(defn assert-valid
-  "Asserts that the given collection is valid."
-  [collection]
-  (is (empty? (v/validate-collection collection))))
-
-(defn assert-invalid
-  "Asserts that the given umm model is invalid and has the expected error messages.
-  field-path is the path within the metadata to the error. expected-errors is a list of string error
-  messages."
-  [collection field-path expected-errors]
-  (is (= [(e/map->PathErrors {:path field-path
-                              :errors (vec expected-errors)})]
-         (v/validate-collection collection))))
-
-(defn assert-multiple-invalid
-  "Asserts there are multiple errors at different paths invalid with the UMM. Expected errors
-  should be a list of maps with path and errors."
-  [collection expected-errors]
-  (is (= (set (map e/map->PathErrors expected-errors))
-         (set (v/validate-collection collection)))))
+   [cmr.umm.umm-collection :as c]))
 
 (defn coll-with-psas
   [psas]

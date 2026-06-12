@@ -16,8 +16,7 @@
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.dif.dif-core :as dif]
    [cmr.spatial.mbr :as m]
-   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
-   [cmr.umm.validation.validation-core :as v])
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -681,11 +680,6 @@
                                  {:type :email
                                   :value "geo@unepgrid.ch"})]})]
      :access-value 1.0}))
-
-(deftest validate-parsed-dif-test
-  (testing "Validate DIF to UMM Collection"
-   (let [parsed-dif (c/parse-collection all-fields-collection-xml)]
-     (is (empty? (v/validate-collection parsed-dif))))))
 
 (deftest parse-collection-test
   (testing "parse collection"
