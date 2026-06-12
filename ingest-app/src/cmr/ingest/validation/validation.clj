@@ -5,7 +5,6 @@
    [clojure.data :as data]
    [clojure.edn :as edn]
    [clojure.string :as string]
-   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.log :as log :refer (warn)]
    [cmr.common.mime-types :as mt]

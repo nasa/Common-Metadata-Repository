@@ -6,10 +6,8 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.validations.core :as v]
-   [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.spatial.validation :as sv]
    [cmr.ingest.config :as config]
-   [cmr.ingest.services.messages :as msg]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm-spec.time :as umm-spec-time]
@@ -209,51 +207,10 @@
   (let [operation-modes (set (:operation-modes instrument-ref))
         parent-operation-modes (-> instrument-ref :parent :OperationalModes set)
         missing-operation-modes (seq (set/difference operation-modes parent-operation-modes))]
-    (def m1 missing-operation-modes)
     (when missing-operation-modes
       {field-path
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
                 (string/join ", " missing-operation-modes))]})))
-
-(def sensor-ref-validations
-  "Defines the sensor validations for granules"
-  {:characteristic-refs [(vu/unique-by-name-validator :name)
-                         (when (config/enforce-granule-collection-consistency)(vu/has-parent-validator :name "Characteristic Reference name"))]})
-
-(def instrument-ref-validations
-  "Defines the instrument validations for granules"
-  [{:characteristic-refs [(vu/unique-by-name-validator :name)
-                          (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :name "Characteristic Reference name"))]
-    :sensor-refs [(vu/unique-by-name-validator :short-name)
-                  (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Sensor short name"))
-                  (v/every sensor-ref-validations)]}
-   (when (config/enforce-granule-collection-consistency)operation-modes-reference-collection)])
-
-(def sensor-ref-validations2
-  "Defines the sensor validations for granules"
-  {:characteristic-refs [(vu/unique-by-name-validator :name)
-                         (vu/has-parent-validator :name "Characteristic Reference name")]})
-
-(def instrument-ref-validations2
-  "Defines the instrument validations for granules"
-  [{:characteristic-refs [(vu/unique-by-name-validator :name) (vu/has-parent-validator :name "Characteristic Reference name")]
-    :sensor-refs [(vu/unique-by-name-validator :short-name)
-                   (vu/has-parent-validator :short-name "Sensor short name")
-                  (v/every sensor-ref-validations2)]}
-   operation-modes-reference-collection])
-
-(def platform-ref-validations
-  "Defines the platform validations for granules"
-  {:instrument-refs [(vu/unique-by-name-validator :short-name)
-                     (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Instrument short name"))
-                     (v/every instrument-ref-validations)
-                     ]})
-
-(def platform-ref-validations2
-  "Defines the platform validations for granules"
-  {:instrument-refs [(vu/unique-by-name-validator :short-name)
-                     (when (config/enforce-granule-collection-consistency) (vu/has-parent-validator :short-name "Instrument short name"))
-                     (v/every instrument-ref-validations2)]})
 
 (def ^:private consistency-validations
   "Granule-vs-parent-collection consistency validations. Enforced as errors
@@ -307,6 +264,4 @@
 
 (def granule-validation-warnings
   "Defines validations for granules returned as warnings rather than failures."
-  (if (config/enforce-granule-collection-consistency)
-    []
-    consistency-validations))
+    consistency-validations)

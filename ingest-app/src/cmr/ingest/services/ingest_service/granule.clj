@@ -3,6 +3,7 @@
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
+   [cmr.ingest.config :as config]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.services.helper :as h]
    [cmr.ingest.services.ingest-service.collection :as collection]
@@ -69,14 +70,15 @@
          [parent-collection-concept
           umm-spec-collection] (fetch-parent-collection-concept-fn
                                 context concept granule)
-         _(def c1 context)
-         _(def coll1 umm-spec-collection)
+         _ (def c1 context)
+         _ (def coll1 umm-spec-collection)
          _ (def g1 granule)
-         warnings (v/umm-spec-validate-granule-warnings context umm-spec-collection granule)]
+         ;; If the feauture toggle is on don't process warnings just reutrn `nil`
+         warnings (when-not (config/enforce-granule-collection-consistency)
+                    (v/umm-spec-validate-granule-warnings context umm-spec-collection granule))]
      ;; UMM Validation
      ;; TODO this is the core function that blocks coll-gran mismatches
      (v/validate-granule-umm-spec context umm-spec-collection granule)
-
 
      ;; TODO throw the warning here
      (tap> {:source "warnings" :value warnings})

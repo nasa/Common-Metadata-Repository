@@ -14,7 +14,7 @@
 ;; TODO we gotta make sure this is set to true before merging
 (defconfig enforce-granule-collection-consistency
   "Flag for whether or not to enforce granule and collection validation consistency."
-  {:default false :type Boolean})
+  {:default true :type Boolean})
 
 (defconfig progressive-update-enabled
   "Flag for whether or not collection progressive update is enabled."

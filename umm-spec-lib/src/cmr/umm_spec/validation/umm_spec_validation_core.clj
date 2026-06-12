@@ -4,7 +4,6 @@
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
    [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]
-   [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.umm-spec.validation.granule :as vg]
    [cmr.umm-spec.validation.parent-weaver :as pw]
    [cmr.umm-spec.additional-attribute :as aa]
@@ -69,17 +68,6 @@
     (def gc1 granule-with-parent)
     (v/validate vg/granule-validation-warnings granule-with-parent))))
 
-    
-(comment (def foo (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1)))
-         
-         (first (:errors foo))
-
-(validation-errors->path-errors (v/validate vg/granule-validation-warnings g1))
-
-(v/validate vg/granule-validation-warnings gc1)
-         )
-
-
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
@@ -143,3 +131,11 @@
   sequence if it is valid."
   [variable validations-rules]
    (validation-errors->path-errors (v/validate validations-rules variable)))
+    
+(comment (def foo (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1)))
+
+         (first (:errors foo))
+
+         (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1))
+
+         (v/validate vg/granule-validation-warnings gc1))
