@@ -28,7 +28,9 @@
                   :exclusions [net.jpountz.lz4/lz4
                                org.apache.logging.log4j/log4j-api
                                org.apache.logging.log4j/log4j-core
-                               org.lz4/lz4-java]] ;; force use of at.yawk.lz4 below
+                               org.lz4/lz4-java
+                               org.jruby.joni/joni
+                               org.jruby.jcodings/jcodings]] ;; force use of at.yawk.lz4 below
                  [com.taoensso/carmine "3.0.1" :exclusions [com.taoensso/nippy]]
                  [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
                  [at.yawk.lz4/lz4-java]
