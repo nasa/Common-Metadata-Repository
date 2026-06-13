@@ -256,6 +256,11 @@
   {:default []
    :parser #(map (comp keyword string/trim) (string/split % #","))})
 
+;; TODO we gotta make sure this is set to true before merging
+(defconfig enforce-granule-collection-consistency
+  "Flag for whether or not to enforce granule and collection validation consistency."
+  {:default true :type Boolean})
+  
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment
    variables. If any are unrecognized a warning message is logged. Usually this should be called at

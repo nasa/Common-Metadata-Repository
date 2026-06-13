@@ -5,9 +5,9 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.config :as cfg]
    [cmr.common.validations.core :as v]
    [cmr.spatial.validation :as sv]
-   [cmr.ingest.config :as config]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm-spec.time :as umm-spec-time]
@@ -258,7 +258,7 @@
 
 (def granule-validations
   "Defines validations for granules."
-  (if (config/enforce-granule-collection-consistency)
+  (if (cfg/enforce-granule-collection-consistency)
     (into base-validations consistency-validations)
     base-validations))
 

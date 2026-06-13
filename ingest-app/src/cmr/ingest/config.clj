@@ -11,11 +11,6 @@
   "Flag for whether or not cmr-validate-keywords value is defaulted to true or false in backend when missing in ingest api headers"
   {:default true :type Boolean})
 
-;; TODO we gotta make sure this is set to true before merging
-(defconfig enforce-granule-collection-consistency
-  "Flag for whether or not to enforce granule and collection validation consistency."
-  {:default true :type Boolean})
-
 (defconfig progressive-update-enabled
   "Flag for whether or not collection progressive update is enabled."
   {:default true :type Boolean})
