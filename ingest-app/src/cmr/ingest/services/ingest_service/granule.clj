@@ -3,7 +3,7 @@
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
-   [cmr.ingest.config :as config]
+   [cmr.common.config :as cfg]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.services.helper :as h]
    [cmr.ingest.services.ingest-service.collection :as collection]
@@ -74,7 +74,7 @@
          _ (def coll1 umm-spec-collection)
          _ (def g1 granule)
          ;; If the feauture toggle is on don't process warnings just reutrn `nil`
-         warnings (when-not (config/enforce-granule-collection-consistency)
+         warnings (when-not (cfg/enforce-granule-collection-consistency)
                     (v/umm-spec-validate-granule-warnings context umm-spec-collection granule))]
      ;; UMM Validation
      ;; TODO this is the core function that blocks coll-gran mismatches
@@ -108,7 +108,7 @@
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
   (let [[concept umm-granule warnings] (validate-granule context concept)
-
+        
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)
         granule-edn-concept (assoc concept :metadata umm-granule
                                    :concept-id concept-id
@@ -116,6 +116,8 @@
 
     (def w1 warnings)
     (tap> {:source "save-granule func in ingest service" :warnings warnings})
+    (tap> {:source "(validate-granule context concept)" :warnings (validate-granule context concept)})
+    (tap> {:source "context obj" :value context})
     (try
       (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
       (catch Exception e
