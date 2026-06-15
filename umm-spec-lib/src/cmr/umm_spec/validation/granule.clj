@@ -136,7 +136,7 @@
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]
-       [(format "%%s have [%s] which do not reference any projects foobar 🚀 in parent collection."
+       [(format "%%s have [%s] which do not reference any projects in parent collection."
                 (string/join ", " missing-project-refs))]})))
 
 (defn- matches-collection-identifier-validation
