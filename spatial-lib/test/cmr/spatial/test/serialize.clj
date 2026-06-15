@@ -75,3 +75,8 @@
           parsed-shapes (srl/ords-info->shapes ords-info ords)]
       (= shapes parsed-shapes))))
 
+(deftest ords-info->shapes-nil-test
+  "Test that nil ords-info (granules without spatial data) returns empty list"
+  (is (= [] (srl/ords-info->shapes nil nil)))
+  (is (= [] (srl/ords-info->shapes nil []))))
+

@@ -69,6 +69,13 @@
        ;; line segment at south pole
        [10 -90 30 -90] [0 -90 10 -85] [0 -90]
 
+       ;; Geodetic pole-touching: disjoint longitude ranges but both touch north pole
+       ;; Tests that geodetic semantics correctly identify pole intersection
+       [0 90 90 85] [180 90 -170 85] [0 90]
+
+       ;; Geodetic pole-touching: disjoint longitude ranges at south pole
+       [45 -90 135 -85] [-135 -90 -45 -85] [0 -90]
+
        ;; line segment along antimeridian
        [180 10 180 20] [175 15 -175 15] [180.0 15.0547]
 

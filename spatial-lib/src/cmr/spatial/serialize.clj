@@ -20,7 +20,10 @@
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]))
+   [cmr.spatial.ring-relations :as rr])
+  (:import
+   [cmr.spatial.serialize OrdsInfoShapes]
+   [cmr.spatial.shape SpatialShape Point Mbr Polygon Ring LineString]))
 
 ;; Some thoughts about how to store the elasticsearch data in a way that preserves space and accuracy.
 (comment
@@ -215,29 +218,39 @@
      ;; Create a combined sequence of all the shape ordinates
      :ords (u/mapcatv :ords infos)}))
 
+(defn- java-shape->clojure-shape
+  "Converts a Java shape object to its Clojure record equivalent."
+  [java-shape]
+  (cond
+    (instance? Point java-shape)
+    (p/point (.getLon ^Point java-shape) (.getLat ^Point java-shape))
+
+    (instance? Mbr java-shape)
+    (m/mbr (.getWest ^Mbr java-shape) (.getNorth ^Mbr java-shape)
+           (.getEast ^Mbr java-shape) (.getSouth ^Mbr java-shape))
+
+    (instance? Polygon java-shape)
+    (let [^Polygon poly-obj java-shape
+          rings (.getRings poly-obj)
+          coord-sys (keyword (.getCoordinateSystem poly-obj))
+          clj-rings (mapv (fn [^Ring ring]
+                            (rr/ords->ring (keyword (.getCoordinateSystem ring)) (.getOrdinates ring)))
+                          rings)]
+      (poly/polygon coord-sys clj-rings))
+
+    (instance? LineString java-shape)
+    (let [^LineString ls-obj java-shape]
+      (l/ords->line-string (keyword (.getCoordinateSystem ls-obj)) (.getOrdinates ls-obj)))
+
+    :else
+    (throw (Exception. (str "Unknown Java shape type: " (class java-shape))))))
+
 (defn ords-info->shapes
-  "Converts the ords-info data and ordinates into a sequence of shapes"
+  "Converts the ords-info data and ordinates into a sequence of shapes.
+   Uses the Java implementation for deserialization, then converts back to Clojure records."
   [ords-info ords]
-  (loop [ords-info-pairs (partition 2 ords-info)
-         ords (vec ords)
-         shapes []]
-    (if (empty? ords-info-pairs)
-      shapes
-      (let [[int-type size] (first ords-info-pairs)
-            type (integer->shape-type int-type)
-            _ (when-not type
-                (errors/internal-error!
-                  (format "Could not get a shape type from integer [%s]. Ords info: %s"
-                          int-type (pr-str ords-info))))
-            shape-ords (subvec ords 0 size)
-            shape (stored-ords->shape type shape-ords)
-            ;; If shape is a hole add it to the last shape
-            shapes (if (or (= type :geodetic-hole) (= type :cartesian-hole))
-                     (update-in shapes [(dec (count shapes)) :rings] conj shape)
-                     (conj shapes shape))]
-        (recur (rest ords-info-pairs)
-               (subvec ords size)
-               shapes)))))
+  (let [java-shapes (OrdsInfoShapes/ordsInfoToShapes ords-info ords)]
+    (mapv java-shape->clojure-shape java-shapes)))
 
 ;; This comment left in to show how to test the performance of a spatial search intersection between
 ;; a search area and one possible area.
