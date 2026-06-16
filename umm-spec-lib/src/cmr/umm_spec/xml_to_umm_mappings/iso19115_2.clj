@@ -64,15 +64,9 @@
 (def data-quality-info-xpath
   "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality")
 
-(def quality-base-xpath
-  "gmd:dataQualityInfo/gmd:DQ_DataQuality")
-
 (def quality-xpath
-  (str data-quality-info-xpath
-       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
-(def quality-summary-xpath
-  (str "gmd:dataQualityInfo/gmd:DQ_DataQuality"
-       "/gmd:report/gmd:DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription/gco:CharacterString"))
+   (str data-quality-info-xpath
+        "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def precision-xpath
   (str "gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult"
@@ -371,7 +365,7 @@
                            "gmd:status/gmd:MD_ProgressCode"
                            sanitize?)
       :DataMaturity (parse-data-maturity doc)
-      :Quality (quality/parse-quality-summary-only doc quality-base-xpath)
+      :Quality (quality/parse-quality doc quality-xpath sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
       :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)

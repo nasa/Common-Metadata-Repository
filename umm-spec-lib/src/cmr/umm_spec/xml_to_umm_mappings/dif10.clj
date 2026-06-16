@@ -61,26 +61,39 @@
       (parse-projects-impl doc sanitize?))
     (parse-projects-impl doc sanitize?)))
 
-(defn- parse-quality
+(defn extract-quality-content-details
+  "Helper to pull text values out of the QualityContentDetails element child nodes."
+  [content-details-element]
+  (when content-details-element
+    (let [children (:content content-details-element)]
+      (into {}
+            (for [child children
+                  ;; Filters out whitespace strings between tags
+                  :when (map? child)
+                  :let [tag (:tag child)
+                        text (first (:content child))]
+                  ;; Only include fields with content
+                  :when (seq text)]
+              [tag text])))))
+
+(defn parse-quality
   "Parse DIF10 Quality into UMM-C."
   [doc sanitize?]
-  (let [summary (value-of doc "/DIF/Quality/Summary")
-        ;; Fallback to reading the raw Quality element string if the new structure isn't used
-        raw-quality (value-of doc "/DIF/Quality")
-        details (when-let [details (seq (select doc "/DIF/Quality/QualityContentDetails"))]
-                  (mapv (fn [detail]
-                          {:TypeOfContent (value-of detail "TypeOfContent")
-                           :ContentDescription (value-of detail "ContentDescription")})
-                        details))]
-    (when (or (not (clojure.string/blank? summary))
-              (and (not (clojure.string/blank? raw-quality)) (empty? details))
-              (seq details))
-      (util/remove-nil-keys
-       {:Summary (if (not (clojure.string/blank? summary))
-                   (su/truncate summary su/QUALITY_MAX sanitize?)
-                   (when (and (not (clojure.string/blank? raw-quality)) (empty? details))
-                     (su/truncate raw-quality su/QUALITY_MAX sanitize?)))
-        :QualityContentDetails details}))))
+  (when-let [quality (first (select doc "/DIF/Quality"))]
+    (let [children (:content quality)
+          ;; Filter for nested XML elements (which parse as maps)
+          element-children (filter map? children)
+          summary-node (first (filter #(= "Summary" (name (:tag %))) element-children))]
+      (if (nil? summary-node)
+        ;; The value is a plain string.
+        {:Summary (first children)}
+        ;; The value is a structured object.
+        (let [details-node (first (filter #(= "QualityContentDetails" (name (:tag %))) element-children))
+              summary-text (first (:content summary-node))
+              details-map  (extract-quality-content-details details-node)]
+          (cond-> {}
+            (seq summary-text) (assoc :Summary (su/truncate summary-text su/QUALITY_MAX sanitize?))
+            (seq details-map)  (assoc :QualityContentDetails details-map)))))))
 
 (defn- parse-instruments-impl
   [platform-el]

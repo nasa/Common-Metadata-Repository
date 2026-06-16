@@ -4140,16 +4140,14 @@
 
 (def sample-1-18-6-quality-record
   {:Quality {:Summary "General quality summary."
-             :QualityContentDetails [{:QualityTypeOfContent {:TypeOfContent "Strengths"}
-                                      :ContentDescription "Description 1"}
-                                     {:QualityTypeOfContent {:TypeOfContent "Limitations"}
-                                      :ContentDescription "Description 2"}]}
+             :QualityContentDetails {:Strengths "Description 1"
+                                     :Limitations "Description 2"}}
    :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
                            :Name "UMM-C"
                            :Version "1.18.6"}})
 
 (def expected-1-18-5-quality-string
-  "Summary: General quality summary. | Type: Strengths, Description: Description 1 | Type: Limitations, Description: Description 2")
+  "Summary: General quality summary. | Strengths: Description 1 | Limitations: Description 2")
 
 (deftest migrate-1-18-5-to-1-18-6
   (are3 [expected sample-collection]

@@ -172,9 +172,8 @@
                      {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                       :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                       :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
-   :Quality {:Summary "Pretty good quality"}
-             :QualityContentDetails [{:TypeOfContent "Other"
-                                      :ContentDescription "Quality description"}]
+   :Quality {:Summary "Pretty good quality"
+             :QualityContentDetails {:Other "Quality description"}}
    :EntryTitle "The entry title V5"
    :Distributions [{:DistributionMedia "Online"
                     :Sizes [{:Size 1
@@ -403,14 +402,10 @@
                         "GEOSCIENTIFIC INFORMATION"
                         "EXTRA TERRESTRIAL"]
    :Quality {:Summary "The MODIS Vegetation Continuous Fields (VCF) product is a sub-pixel-level representation of surface vegetation cover estimates globally."
-             :QualityContentDetails [{:TypeOfContent "Strengths"
-                                      :ContentDescription "Global coverage: The product provides consistent vegetation cover estimates."}
-                                     {:TypeOfContent "Limitations"
-                                      :ContentDescription "Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured."}
-                                     {:TypeOfContent "KnownIssues"
-                                      :ContentDescription "Snow/ice confusion: In some high-latitude areas, persistent snow cover may be misclassified."}
-                                     {:TypeOfContent "Other"
-                                      :ContentDescription "Detection Flag at the cell level is used to help identify retrieval conditions."}]}
+             :QualityContentDetails {:Strengths "Global coverage: The product provides consistent vegetation cover estimates."
+                                     :Limitations "Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured."
+                                     :KnownIssues "Snow/ice confusion: In some high-latitude areas, persistent snow cover may be misclassified."
+                                     :Other "Detection Flag at the cell level is used to help identify retrieval conditions."}}
    :DOI {:MissingReason "Not Applicable"
          :Explanation "This is an explanation."}
    :AssociatedDOIs [{:DOI "10.4567/DOI1"

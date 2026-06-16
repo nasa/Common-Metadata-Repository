@@ -1,36 +1,24 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.quality
-  (:require [clojure.string :as string]))
+  (:require
+   [clojure.string :as string]
+   [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (defn generate-quality
-  "Generates an ordered sequence of schema-valid ISO XML elements for a given UMM Quality record.
-   Guarantees no empty self-closing tags are emitted if data fields are missing."
+  "For UMM-C quality this function generates the subfields concatenated together
+  into a string. Each element is preceeded by the element name."
   [c]
-  (let [quality (:Quality c)
-        summary (:Summary quality)
-        details (:QualityContentDetails quality)]
-    (concat
-     ;; 1. Consolidated Quantitative Report Block (Only if summary or details exist)
-     (when (or (not (string/blank? summary)) (seq details))
-       [[:gmd:report
-         [:gmd:DQ_QuantitativeAttributeAccuracy
-          [:gmd:evaluationMethodDescription
-           [:gco:CharacterString
-            (str (or summary "") "|||"
-                 (string/join "; " (map #(str (:TypeOfContent %) ": " (:ContentDescription %)) details)))]]
-          [:gmd:result {:gco:nilReason "missing"}]]]])
-
-     ;; 2. Individual Detail Report Blocks
-     (keep (fn [detail]
-             (when (not (string/blank? (:ContentDescription detail)))
-               [:gmd:report
-                [:gmd:DQ_QuantitativeAttributeAccuracy
-                 [:gmd:evaluationMethodDescription
-                  [:gco:CharacterString (str (or (:TypeOfContent detail) "Other") "|||" (:ContentDescription detail))]]
-                 [:gmd:result {:gco:nilReason "missing"}]]]))
-           details)
-
-     ;; 3. Lineage Statement Element (Only if summary has non-blank string content)
-     (when-not (string/blank? summary)
-       [[:gmd:lineage
-         [:gmd:LI_Lineage
-          [:gmd:statement [:gco:CharacterString summary]]]]]))))
+  (when-let [quality (:Quality c)]
+    (let [{:keys [Summary QualityContentDetails]} quality
+          summary-part (str "Summary: " Summary " ")
+          ;; Map explicitly to maintain a reliable layout order
+          details-order [:Strengths :Limitations :KnownIssues :Other]
+          details-parts (for [k details-order
+                              :let [v (get QualityContentDetails k)]
+                              :when (seq v)]
+                          (str (name k) ": " v " "))
+          full-text (string/trim (apply str summary-part details-parts))]
+      [:gmd:report
+       [:gmd:DQ_QuantitativeAttributeAccuracy
+        [:gmd:evaluationMethodDescription
+         (char-string full-text)]
+        [:gmd:result {:gco:nilReason "missing"}]]])))

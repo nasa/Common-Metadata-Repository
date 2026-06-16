@@ -164,7 +164,7 @@
                             data-id-el
                             "gmd:status/gmd:MD_ProgressCode"
                             sanitize?)
-       :Quality (quality/parse-quality-summary-only doc quality-xpath)
+       :Quality (quality/parse-quality doc quality-xpath sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
        :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)

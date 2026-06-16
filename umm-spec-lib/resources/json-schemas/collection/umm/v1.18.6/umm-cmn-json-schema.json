@@ -1282,32 +1282,30 @@
         },
         "QualityContentDetails": {
           "description": "Elements describing information about quality of the collection data, including a summary, known issues, strengths, limitations, and other quality-related information",
-          "type": "array",
-          "minItems": 0,
-          "items": {
-            "$ref": "#/definitions/QualityTypeOfContent"
-          }
-        }
-      }
-    },
-    "QualityTypeOfContent": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Elements describing quality content characteristics.",
-      "properties": {
-        "TypeOfContent": {
-          "description": "Pre-defined categories of quality information of the collection data, including 'KnownIssues', 'Strengths', 'Limitations'.",
-          "type": "string",
-          "enum": ["KnownIssues", "Strengths", "Limitations", "Other"]
-        },
-        "ContentDescription": {
-          "description": "Specific and detailed quality information of the collection data associated with the selected contentType.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 8000
+          "$ref": "#/definitions/QualityContentDetailsType"
         }
       },
-      "required": ["TypeOfContent", "ContentDescription"]
+      "required": ["Summary"]
+    },
+    "QualityContentDetailsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Elements describing information about quality of the collection data, including a summary, known issues, strengths, limitations, and other quality-related information",
+      "properties": {
+        "Strengths": { "$ref": "#/definitions/QualityContentDetailStringType"},
+        "Limitations": { "$ref": "#/definitions/QualityContentDetailStringType"},
+        "KnownIssues": { "$ref": "#/definitions/QualityContentDetailStringType"},
+        "Other": { "$ref": "#/definitions/QualityContentDetailStringType"}},
+      "anyOf": [{ "required": ["Strengths"] },
+                { "required": ["Limitations"] },
+                { "required": ["KnownIssues"] },
+                { "required": ["Other"]
+      }]
+    },
+    "QualityContentDetailStringType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
     },
     "MetadataAssociateTypeEnum": {
       "description": "The set of supported values for MetadataAssociationType.Type.",

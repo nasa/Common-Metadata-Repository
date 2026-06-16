@@ -419,6 +419,7 @@
       (update :DOI iso-shared/expected-doi)
       (update :UseConstraints iso-shared/expected-use-constraints)
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
+      (update :Quality iso-shared/expected-quality)
       (update-in [:SpatialExtent :HorizontalSpatialDomain] expected-horizontal-spatial-domain)
       (update-in [:FileNamingConvention :Convention] iso-util/safe-trim)
       (update-in [:FileNamingConvention :Description] iso-util/safe-trim)

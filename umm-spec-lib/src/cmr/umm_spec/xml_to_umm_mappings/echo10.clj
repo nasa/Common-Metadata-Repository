@@ -65,32 +65,39 @@
                           (for [tr (select temporal "TemporalResolution")]
                            (fields-from-temporal-resolution tr)))}))
 
-(defn- parse-quality-content-details
-  "Parses singular child details out of the mandated XSD wrapping structure."
-  [doc]
-  (let [details (for [detail (select doc "/Collection/Quality/QualityContentDetails/QualityContentDetail")
-                      :let [toc (value-of detail "TypeOfContent")
-                            desc (value-of detail "ContentDescription")]
-                      :when (and (not (clojure.string/blank? toc))
-                                 (not (clojure.string/blank? desc)))]
-                  (cmn/map->QualityTypeOfContent
-                   {:TypeOfContent (clojure.string/trim toc)
-                    :ContentDescription (clojure.string/trim desc)}))]
-    (when (seq details)
-      (vec details))))
+(defn extract-quality-content-details
+  "Helper to pull text values out of the QualityContentDetails element child nodes."
+  [content-details-element]
+  (when content-details-element
+    (let [children (:content content-details-element)]
+      (into {}
+            (for [child children
+                  ;; Filters out whitespace strings between tags
+                  :when (map? child)
+                  :let [tag (:tag child)
+                        text (first (:content child))]
+                  ;; Only include fields with content
+                  :when (seq text)]
+              [tag text])))))
 
-(defn- parse-quality
+(defn parse-quality
   "Parses the 1.18.6 Quality object tree out of the existing ECHO 10 XSD configuration."
   [doc sanitize?]
-  (let [summary (value-of doc "/Collection/Quality/Summary")
-        details (parse-quality-content-details doc)
-        clean-summary (when-not (clojure.string/blank? summary)
-                        (clojure.string/trim summary))]
-    (when (or clean-summary details)
-      (cmn/map->QualityType
-       (util/remove-nil-keys
-        {:Summary (when clean-summary (u/truncate clean-summary u/QUALITY_MAX sanitize?))
-         :QualityContentDetails details})))))
+  (when-let [quality (first (select doc "/Collection/Quality"))]
+    (let [children (:content quality)
+          element-children (filter map? children)
+
+          ;; Extract target nodes based on schema tags
+          summary-node (first (filter #(= :Summary (:tag %)) element-children))
+          details-node (first (filter #(= :QualityContentDetails (:tag %)) element-children))
+
+          summary-text (first (:content summary-node))
+          details-map  (extract-quality-content-details details-node)]
+
+      ;; Reconstruct matching the target UMM hierarchy
+      (when (seq summary-text)
+        (cond-> {:Summary (u/truncate summary-text u/QUALITY_MAX sanitize?)}
+          (seq details-map) (assoc :QualityContentDetails details-map))))))
 
 (defn parse-characteristic
   "Returns a UMM characteristic record from an ECHO10 Characteristic element."

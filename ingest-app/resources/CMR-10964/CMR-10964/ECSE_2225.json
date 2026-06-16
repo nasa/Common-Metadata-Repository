@@ -106,24 +106,12 @@
   },
 "Quality": {
   "Summary": "The MODIS Vegetation Continuous Fields (VCF) product is a sub-pixel-level representation of surface vegetation cover estimates globally. The product has undergone extensive quality assurance and validation processes. Known strengths include global coverage and consistent methodology, while limitations include potential underestimation in densely forested areas.",
-  "QualityContentDetails": [
-    {
-      "TypeOfContent": "Strengths",
-      "ContentDescription": "1) Global coverage: The product provides consistent vegetation cover estimates for the entire land surface of the Earth. 2) High temporal resolution: Annual updates allow for tracking of changes in vegetation cover over time. 3) Validated methodology: The algorithm has been extensively tested and validated against ground-truth data in various ecosystems. (https://modis-land.gsfc.nasa.gov/ValStatus.php?ProductID=MOD13)"
-    },
-    {
-      "TypeOfContent": "Limitations",
-      "ContentDescription": "1) Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured. 2) Potential underestimation in dense forests: The product may slightly underestimate tree cover in very dense tropical forests due to saturation effects. 3) Mixed pixels: In heterogeneous landscapes, the sub-pixel estimates may not fully capture the complexity of vegetation distribution."
-    },
-    {
-      "TypeOfContent": "KnownIssues",
-      "ContentDescription": "1) Snow/ice confusion: In some high-latitude or high-altitude areas, persistent snow cover may be occasionally misclassified as bare ground. 2) Cloud contamination: Despite rigorous cloud screening, some residual cloud contamination may affect estimates in persistently cloudy regions."
-    },
-    {
-      "TypeOfContent": "Other",
-      "ContentDescription": "Detection Flag at the cell level is used to help identify retrieval conditions influenced by snow or ice: 0 = No snow/ice detected; 1 = Snow detected; 2 = Ice detected."
-    }
-  ]
+  "QualityContentDetails": {
+    "Strengths": "1) Global coverage: The product provides consistent vegetation cover estimates for the entire land surface of the Earth. 2) High temporal resolution: Annual updates allow for tracking of changes in vegetation cover over time. 3) Validated methodology: The algorithm has been extensively tested and validated against ground-truth data in various ecosystems. (https://modis-land.gsfc.nasa.gov/ValStatus.php?ProductID=MOD13)",
+    "Limitations": "1) Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured. 2) Potential underestimation in dense forests: The product may slightly underestimate tree cover in very dense tropical forests due to saturation effects. 3) Mixed pixels: In heterogeneous landscapes, the sub-pixel estimates may not fully capture the complexity of vegetation distribution.",
+    "KnownIssues": "1) Snow/ice confusion: In some high-latitude or high-altitude areas, persistent snow cover may be occasionally misclassified as bare ground. 2) Cloud contamination: Despite rigorous cloud screening, some residual cloud contamination may affect estimates in persistently cloudy regions.",
+    "Other": "Detection Flag at the cell level is used to help identify retrieval conditions influenced by snow or ice: 0 = No snow/ice detected; 1 = Snow detected; 2 = Ice detected."
+  }
 },
   "RelatedUrls" : [ {
     "Description" : "List of scenes confirmed to affected by obstructions.",

@@ -372,7 +372,6 @@
       (update-in [:DOI] expected-echo10-doi)
       (update :DataDates fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
-      (assoc :Quality nil)
       (update :UseConstraints expected-echo10-use-constraints)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)

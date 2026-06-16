@@ -191,3 +191,9 @@
                                                :URI URI}))
             (assoc-in related-url [:GetService :URI] URI))
           (dissoc related-url :GetService))))
+
+(defn expected-quality
+  "Returns the expected DOI."
+  [quality]
+  (when (:Summary quality)
+    (assoc quality :Summary (string/trim(:Summary quality)))))

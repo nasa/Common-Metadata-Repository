@@ -17,6 +17,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
@@ -549,8 +550,6 @@
             {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
              :codeListValue "series"}
             "series"]]]]
-
-        ;; 1. Existing Precision of Seconds Report
         [:gmd:report
          [:gmd:DQ_AccuracyOfATimeMeasurement
           [:gmd:measureIdentification
@@ -563,21 +562,7 @@
             [:gmd:value
              [:gco:Record {:xsi:type "gco:Real_PropertyType"}
               [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
-
-        ;; 2. NEW: Programmatically generated reports merging Summary, TypeOfContent, and ContentDescription
-        ;; Uses the triple-pipe "|||" delimiter to keep fields split-safe for symmetric parsing
-        (let [quality (:Quality c)
-              summary (:Summary quality)]
-          (for [detail (:QualityContentDetails quality)]
-            [:gmd:report
-             [:gmd:DQ_QuantitativeAttributeAccuracy
-              [:gmd:evaluationMethodDescription
-               (char-string (str (or summary "") "|||"
-                                 (or (:TypeOfContent detail) "Other") "|||"
-                                 (or (:ContentDescription detail) "")))]
-              [:gmd:result {:gco:nilReason "missing"}]]]))
-
-        ;; 3. Sibling Lineage block sequence
+          (quality/generate-quality c)
         [:gmd:lineage
          [:gmd:LI_Lineage
           (aa/generate-data-quality-info-additional-attributes additional-attributes)

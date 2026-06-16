@@ -308,20 +308,19 @@
      [:Type (:Type other-identifier)]
      [:Description_Of_Other_Type (:DescriptionOfOtherType other-identifier)]]))
 
-(defn- generate-quality
+(defn generate-quality
   "Maps UMM-C 1.18.6 Quality into a structured DIF10-style XML format, 
    ensuring empty elements are not generated."
   [c]
   (when-let [quality (:Quality c)]
-    [:Quality {:mime_type "text/markdown"}
-     (when-let [summary (:Summary quality)]
-       [:Summary summary])
-     (for [detail (:QualityContentDetails quality)]
-       [:QualityContentDetails
-        (when-let [toc (:TypeOfContent detail)]
-          [:TypeOfContent toc])
-        (when-let [cd (:ContentDescription detail)]
-          [:ContentDescription cd])])]))
+    (let [{:keys [Summary QualityContentDetails]} quality]
+      [:Quality {:mime_type "text/markdown"}
+       [:Summary Summary]
+       (when (seq QualityContentDetails)
+         (into [:QualityContentDetails]
+               (for [[k v] QualityContentDetails
+                     :when (some? v)]
+                 [k v])))])))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."

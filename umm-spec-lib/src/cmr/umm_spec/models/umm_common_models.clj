@@ -113,19 +113,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
-;; Elements describing quality content characteristics.
-(defrecord QualityTypeOfContent
-  [
-   ;; Pre-defined categories of quality information of the collection data, including 'KnownIssues',
-   ;; 'Strengths', 'Limitations'.
-   TypeOfContent
-
-   ;; Specific and detailed quality information of the collection data associated with the selected
-   ;; contentType.
-   ContentDescription
-  ])
-(record-pretty-printer/enable-record-pretty-printing QualityTypeOfContent)
-
 ;; Defines the contact information of a data center or data contact.
 (defrecord ContactInformationType
   [
@@ -446,6 +433,20 @@
    Published
   ])
 (record-pretty-printer/enable-record-pretty-printing PreviousVersionType)
+
+;; Elements describing information about quality of the collection data, including a summary, known
+;; issues, strengths, limitations, and other quality-related information
+(defrecord QualityContentDetailsType
+  [
+   Strengths
+
+   Limitations
+
+   KnownIssues
+
+   Other
+  ])
+(record-pretty-printer/enable-record-pretty-printing QualityContentDetailsType)
 
 ;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType

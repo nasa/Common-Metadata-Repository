@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
-   [clojure.string :as string]
    [cmr.common.xml.gen :refer [xml]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -15,6 +14,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
@@ -242,18 +242,7 @@
               {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
                :codeListValue "series"}
               "series"]]]]
-          ;; Loop through QualityContentDetails to unroll individual report blocks.
-          ;; Interleaves Summary, TypeOfContent, and ContentDescription separated by "|||".
-          (let [quality (:Quality c)
-                summary (:Summary quality)]
-            (for [detail (:QualityContentDetails quality)]
-              [:gmd:report
-               [:gmd:DQ_QuantitativeAttributeAccuracy
-                [:gmd:evaluationMethodDescription
-                 (char-string (str (or summary "") "|||"
-                                   (or (:TypeOfContent detail) "Other") "|||"
-                                   (or (:ContentDescription detail) "")))]
-                [:gmd:result {:gco:nilReason "missing"}]]]))]]
+          (quality/generate-quality c)]]
         [:gmi:acquisitionInformation
          [:gmi:MI_AcquisitionInformation
           (platform/generate-instruments platforms)
