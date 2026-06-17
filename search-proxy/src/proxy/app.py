@@ -139,6 +139,7 @@ async def forward_to_backend(
     }
     if request_id:
         headers["cmr-request-id"] = request_id
+    headers["x-cmr-proxy-request"] = "1"
 
     # Append raw query string directly to avoid double-encoding
     query = str(request.url.query)
