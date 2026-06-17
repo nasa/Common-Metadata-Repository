@@ -454,7 +454,7 @@
 
                             granule)
              ]
-    (tap> {:source "test validate warn" :value warnings})
+    ;; (tap> {:source "test validate warn" :value warnings})
     (def context1 context)
     (def umm-spec-collection1 umm-spec-collection)
     (def granule1 granule)

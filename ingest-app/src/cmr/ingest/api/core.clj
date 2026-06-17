@@ -354,7 +354,7 @@
                               (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept
                                 request-context
-                                concept-attribs)))))
+                                concept-attribs) nil nil))))
 
 
 (comment 

@@ -88,7 +88,7 @@
                           (:client-id request-context)))
           save-granule-result (ingest/save-granule request-context concept)
           _(def sgr1 save-granule-result)
-          _(tap> {:source "save-granule-result" :value save-granule-result})
+          ;; _(tap> {:source "save-granule-result" :value save-granule-result})
 
           concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.

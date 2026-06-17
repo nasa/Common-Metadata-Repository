@@ -63,7 +63,7 @@
   to convey to the user, but not consider failures."
   ([collection granule]
   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-    (tap> {:source "granule-with-parent IN THE WARNING" :value granule-with-parent})
+    ;; (tap>{:source "granule-with-parent IN THE WARNING" :value granule-with-parent})
     (def g1 granule)
     (def gc1 granule-with-parent)
     (v/validate vg/granule-validation-warnings granule-with-parent))))
@@ -74,9 +74,9 @@
   ([collection granule]
    (validate-granule collection granule nil))
   ([collection granule additional-validations]
-   (tap> {:source "validate-granule" :value vg/granule-validations})
+   ;; (tap>{:source "validate-granule" :value vg/granule-validations})
    (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-     (tap> {:source "granule-with-parent" :value granule-with-parent})
+     ;; (tap>{:source "granule-with-parent" :value granule-with-parent})
      (validation-errors->path-errors
       (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 

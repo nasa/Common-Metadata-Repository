@@ -81,7 +81,7 @@
      (v/validate-granule-umm-spec context umm-spec-collection granule)
 
      ;; TODO throw the warning here
-     (tap> {:source "warnings" :value warnings})
+     ;; (tap> {:source "warnings" :value warnings})
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
                          concept granule parent-collection-concept)]
@@ -115,9 +115,9 @@
                                    :revision-id revision-id)]
 
     (def w1 warnings)
-    (tap> {:source "save-granule func in ingest service" :warnings warnings})
-    (tap> {:source "(validate-granule context concept)" :warnings (validate-granule context concept)})
-    (tap> {:source "context obj" :value context})
+    ;; (tap> {:source "save-granule func in ingest service" :warnings warnings})
+    ;; (tap> {:source "(validate-granule context concept)" :warnings (validate-granule context concept)})
+    ;; (tap> {:source "context obj" :value context})
     (try
       (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
       (catch Exception e

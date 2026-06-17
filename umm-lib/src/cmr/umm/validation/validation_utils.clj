@@ -21,7 +21,7 @@
   Example: (has-parent-validator :short-name \"Platform short name\")
   \"The following list of Platform short nameas did not exist in the referenced parent collection: [foo].\""
   [parent-ref-field human-readable-field-name]
-  (tap> parent-ref-field)
+  ;; (tap> parent-ref-field)
   (fn [field-path values]
     (let [values (if (or (sequential? values) (nil? values)) values [values])
           missing-parent-list (->> values
