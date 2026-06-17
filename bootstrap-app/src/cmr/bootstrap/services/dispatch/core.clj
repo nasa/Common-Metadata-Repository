@@ -30,6 +30,10 @@
     [this context provider-ids date-time]
     "Bulk index all the concepts with a revision date later than the given date-time.")
 
+  (index-data-between-date-time
+    [this context provider-ids start-date-time end-date-time]
+    "Bulk index all the concepts with revision dates between the given date-times.")
+
   (index-collection
     [this context provider-id collection-id options]
     "Bulk index all the granules in a collection.")

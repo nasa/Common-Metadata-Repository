@@ -64,6 +64,9 @@
        (POST "/after_date_time" {:keys [request-context body params]}
          (acl/verify-ingest-management-permission request-context :update)
          (bulk-index/data-later-than-date-time request-context body params))
+       (POST "/between_date_time" {:keys [request-context body params]}
+         (acl/verify-ingest-management-permission request-context :update)
+         (bulk-index/data-between-date-time request-context body params))
        (POST "/system_concepts" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
          (bulk-index/index-system-concepts request-context params))

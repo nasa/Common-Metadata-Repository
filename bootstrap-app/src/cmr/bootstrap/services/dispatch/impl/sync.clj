@@ -28,6 +28,12 @@
   [_this context provider-ids date-time]
   (bulk-index/index-data-later-than-date-time (:system context) provider-ids date-time))
 
+(defn- index-data-between-date-time
+  "Bulk index all the concepts with revision dates between the given date-times."
+  [_this context provider-ids start-date-time end-date-time]
+  (bulk-index/index-data-between-date-time
+   (:system context) provider-ids start-date-time end-date-time))
+
 (defn- index-collection
   "Bulk index all the granules in a collection"
   [_this context provider-id collection-id options]
@@ -119,6 +125,7 @@
    :index-subscriptions index-subscriptions
    :index-generics index-generics
    :index-data-later-than-date-time index-data-later-than-date-time
+   :index-data-between-date-time index-data-between-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
