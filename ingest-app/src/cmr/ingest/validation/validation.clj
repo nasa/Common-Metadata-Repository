@@ -458,12 +458,6 @@
     (def umm-spec-collection1 umm-spec-collection)
     (def granule1 granule)
     warnings
-
-    ;; (errors/throw-service-errors :invalid-data err-messages)
-    ;; (
-    ;;   (warn "UMM-G UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-    ;;   err-messages)
-
     
     ))
 (
