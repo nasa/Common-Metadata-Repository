@@ -31,18 +31,6 @@
                   (:client-id request-context)))
     (ingest/validate-granule request-context concept)
     {:status 200}))
-    ;; (let [validate-response (ingest/validate-granule request-context concept)]
-    ;;   (tap> {:source "validate grnaule fun" :value validate-response})
-    ;;   (def vr validate-response)
-
-    ;;   (api-core/generate-validate-response
-    ;;    headers
-    ;;    (util/remove-nil-keys
-    ;;     (select-keys (api-core/format-and-contextualize-warnings-existing-errors
-    ;;                   validate-response GRANULE_WARNING_CONTEXT nil)
-    ;;                  [:warnings :existing-errors])))
-      
-      
 
 (defn- multipart-param->concept
   "Converts a multipart parameter"

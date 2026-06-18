@@ -72,16 +72,6 @@
   (let [sensor-refs (apply sensor-refs sensor-short-names)]
     (g/map->InstrumentRef {:short-name short-name
                            :sensor-refs sensor-refs})))
-
-  ;; (defn instrument-ref-with-sensor-refs-opertion-modes
-  ;; "Return a instrument-ref based on a given short name and a list of sensor short names as well as opertion modes"
-  ;; [short-name & sensor-short-names]
-  ;; (let [sensor-refs (apply sensor-refs sensor-short-names)]
-  ;;   (g/map->InstrumentRef {:short-name short-name
-  ;;                          :sensor-refs sensor-refs
-  ;;                          :operation-modes  ["Mode1",
-  ;;                                            "Mode2"]})))
-
 (defn platform-ref
   "Return a platform-ref based on platform attribs"
   [attribs]
