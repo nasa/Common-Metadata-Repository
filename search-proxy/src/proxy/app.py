@@ -40,14 +40,13 @@ DEFAULT_TOGGLES = {
 }
 
 
-def setup_logging():
-    """Configure JSON structured logging for the proxy logger hierarchy."""
+def setup_logging(level: str = "INFO"):
     handler = logging.StreamHandler()
     handler.setFormatter(
         jsonlogger.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
     )
     proxy_log = logging.getLogger("proxy")
-    proxy_log.setLevel(logging.INFO)
+    proxy_log.setLevel(level.upper())
     proxy_log.addHandler(handler)
     proxy_log.propagate = False
 
@@ -56,9 +55,8 @@ def setup_logging():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize shared resources on startup, clean up on shutdown."""
-    setup_logging()
-
     settings = ProxySettings()
+    setup_logging(settings.log_level)
     lanes_config = load_lanes_config(settings.lanes_config)
 
     app.state.settings = settings
@@ -146,16 +144,28 @@ async def forward_to_backend(
     url = f"/{path}?{query}" if query else f"/{path}"
 
     if request.method == "GET":
-        return await backend.get(url, headers=headers)
+        response = await backend.get(url, headers=headers)
+    else:
+        body = await request.body()
+        response = await backend.request(
+            request.method,
+            url,
+            headers=headers,
+            content=body,
+        )
 
-    # POST body is forwarded as raw bytes
-    body = await request.body()
-    return await backend.request(
-        request.method,
-        url,
-        headers=headers,
-        content=body,
+    logger.debug(
+        "backend_response_headers",
+        extra={
+            "request_id": request_id,
+            "url": url,
+            "status_code": response.status_code,
+            "content_encoding": response.headers.get("content-encoding"),
+            "content_length_header": response.headers.get("content-length"),
+            "actual_content_bytes": len(response.content),
+        },
     )
+    return response
 
 
 # Cached health check result with TTL-based expiration
@@ -420,7 +430,11 @@ async def proxy(request: Request, path: str):
                 response_data = {
                     "status_code": backend_response.status_code,
                     "body": backend_response.text,
-                    "headers": filter_hop_headers(backend_response.headers),
+                    "headers": {
+                        k: v
+                        for k, v in filter_hop_headers(backend_response.headers).items()
+                        if k.lower() not in ("content-length", "content-encoding")
+                    },
                 }
                 try:
                     await cache.set(
