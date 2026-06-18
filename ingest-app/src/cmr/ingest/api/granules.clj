@@ -75,8 +75,6 @@
                           (api-core/concept->loggable-string concept)
                           (:client-id request-context)))
           save-granule-result (ingest/save-granule request-context concept)
-          _(def sgr1 save-granule-result)
-          ;; _(tap> {:source "save-granule-result" :value save-granule-result})
 
           concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
@@ -86,23 +84,6 @@
                                                 (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil)
                                                                ))
       )))
-
-(
- comment
- (def hack (api-core/format-and-contextualize-warnings-existing-errors-granules sgr1))
-
-
-(defn flatten-path-errors [m]
-  (let [extract (fn [errs] (when (seq errs) (vec (mapcat #(.-errors %) errs))))]
-    (-> m
-        (update :warnings extract)
-        (update :existing-errors extract))))
-
-      
-      
- (flatten-path-errors (api-core/format-and-contextualize-warnings-existing-errors-granules sgr1))
-)
-
 
 (defn delete-granule
   [provider-id native-id request]

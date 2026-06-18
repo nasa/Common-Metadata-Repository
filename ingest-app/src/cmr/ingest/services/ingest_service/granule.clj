@@ -63,25 +63,18 @@
   ([context concept]
    (validate-granule context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
-   ;; TODO why are those happening in lets if they're supposed to be side effects
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
    (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
           umm-spec-collection] (fetch-parent-collection-concept-fn
                                 context concept granule)
-         _ (def c1 context)
-         _ (def coll1 umm-spec-collection)
-         _ (def g1 granule)
          ;; If the feauture toggle is on don't process warnings just reutrn `nil`
          warnings (when-not (cfg/enforce-granule-collection-consistency)
                     (v/umm-spec-validate-granule-warnings context umm-spec-collection granule))]
      ;; UMM Validation
-     ;; TODO this is the core function that blocks coll-gran mismatches
      (v/validate-granule-umm-spec context umm-spec-collection granule)
 
-     ;; TODO throw the warning here
-     ;; (tap> {:source "warnings" :value warnings})
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
                          concept granule parent-collection-concept)]
@@ -114,10 +107,6 @@
                                    :concept-id concept-id
                                    :revision-id revision-id)]
 
-    (def w1 warnings)
-    ;; (tap> {:source "save-granule func in ingest service" :warnings warnings})
-    ;; (tap> {:source "(validate-granule context concept)" :warnings (validate-granule context concept)})
-    ;; (tap> {:source "context obj" :value context})
     (try
       (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
       (catch Exception e

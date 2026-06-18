@@ -107,34 +107,6 @@
                 (fn [existing-errors]
                   (when (not-empty existing-errors)
                     [(str err-context (string/join ";; " existing-errors))])))))
-
-
-(defn format-and-contextualize-warnings-existing-errors-granules
-  "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
-  [result]
-  (let [warning-context "After translating item to UMM-G the metadata had the following issue(s): "
-        err-context "After translating item to UMM-G the metadata had the following existing error(s): "]
-    (-> result
-        (update :warnings
-                (fn [warnings]
-                  (when (not-empty warnings)
-                    (str warning-context (string/join ";; " warnings)))))
-        (update :existing-errors
-                (fn [existing-errors]
-                  (when (not-empty existing-errors)
-                    (str err-context (string/join ";; " existing-errors))))))))
-
-
-( comment
-  (def r1 {:path [:project-refs],
-            :errors
-            ["Project References have [project3, campaign1, project2, campaign2, project1] which do not reference any projects foobar 🚀 in parent collection."]}
- 
-)
- (format-and-contextualize-warnings-existing-errors-granules r1) 
-)
-
-
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers _result]

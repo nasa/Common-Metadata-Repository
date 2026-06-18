@@ -41,7 +41,6 @@
     (let [validate-response (ingest/validate-and-prepare-collection request-context
                                                                     concept
                                                                     validation-options)]
-      ;; (tap> {:source "validate collection fun" :value validate-response})
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
@@ -69,7 +68,6 @@
                              (api-core/concept-with-revision-id save-collection-result)
                              (assoc :entry-title (:entry-title save-collection-result)))]
       ;; Log the successful ingest, with the metadata size in bytes.
-      ;; (tap> {:source "save-collection-result" :value save-collection-result})
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
       (api-core/generate-ingest-response headers
                                          (api-core/format-and-contextualize-warnings-existing-errors
