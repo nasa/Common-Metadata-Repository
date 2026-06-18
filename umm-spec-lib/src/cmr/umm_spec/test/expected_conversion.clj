@@ -172,8 +172,7 @@
                      {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                       :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                       :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
-   :Quality {:Summary "Pretty good quality"
-             :QualityContentDetails {:Other "Quality description"}}
+   :Quality "Pretty good quality"
    :EntryTitle "The entry title V5"
    :Distributions [{:DistributionMedia "Online"
                     :Sizes [{:Size 1

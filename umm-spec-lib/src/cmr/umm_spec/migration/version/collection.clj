@@ -860,34 +860,12 @@
         (dissoc coll :TilingIdentificationSystems))
       coll)))
 
-(defn quality-details->quality-string
-  "Converts the complex 1.18.6 QualityType object into a single string for 1.18.5 compatibility."
-  [quality-type]
-  (let [summary (:Summary quality-type)
-        qcd (:QualityContentDetails quality-type)
-        parts (cond-> []
-                summary
-                (conj (str "Summary: " summary))
-
-                (:Strengths qcd)
-                (conj (str "Strengths: " (:Strengths qcd)))
-
-                (:Limitations qcd)
-                (conj (str "Limitations: " (:Limitations qcd)))
-
-                (:KnownIssues qcd)
-                (conj (str "KnownIssues: " (:KnownIssues qcd)))
-
-                (:Other qcd)
-                (conj (str "Other: " (:Other qcd))))]
-    (clojure.string/join " | " parts)))
-
 (defmethod interface/migrate-umm-version [:collection "1.18.6" "1.18.5"]
   [_context c & _]
-  (if-let [quality-type (:Quality c)]
+  (if-let [summary (get-in c [:Quality :Summary])]
     ;; In 1.18.5, Quality was a string, replace the 1.18.6 map with the string
     (-> c
-        (assoc :Quality (quality-details->quality-string quality-type))
+        (assoc :Quality summary)
         (m-spec/update-version :collection "1.18.5"))
     (m-spec/update-version c :collection "1.18.5")))
 

@@ -4146,9 +4146,6 @@
                            :Name "UMM-C"
                            :Version "1.18.6"}})
 
-(def expected-1-18-5-quality-string
-  "Summary: General quality summary. | Strengths: Description 1 | Limitations: Description 2")
-
 (deftest migrate-1-18-5-to-1-18-6
   (are3 [expected sample-collection]
         (is (= expected (vm/migrate-umm {} :collection "1.18.5" "1.18.6" sample-collection)))
@@ -4172,7 +4169,7 @@
         (is (= expected (vm/migrate-umm {} :collection "1.18.6" "1.18.5" sample-collection)))
 
         "Migrating complex Quality object down to a concatenated string"
-        {:Quality expected-1-18-5-quality-string
+        {:Quality "General quality summary."
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"
                                  :Name "UMM-C" :Version "1.18.5"}}
         sample-1-18-6-quality-record
