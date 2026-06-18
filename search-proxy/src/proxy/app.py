@@ -29,6 +29,10 @@ HOP_HEADERS = frozenset(
         "trailers",
         "transfer-encoding",
         "upgrade",
+        # httpx decompresses transparently; these headers reflect the
+        # compressed transport and must not be forwarded as-is
+        "content-encoding",
+        "content-length",
     }
 )
 
@@ -430,11 +434,7 @@ async def proxy(request: Request, path: str):
                 response_data = {
                     "status_code": backend_response.status_code,
                     "body": backend_response.text,
-                    "headers": {
-                        k: v
-                        for k, v in filter_hop_headers(backend_response.headers).items()
-                        if k.lower() not in ("content-length", "content-encoding")
-                    },
+                    "headers": filter_hop_headers(backend_response.headers),
                 }
                 try:
                     await cache.set(
