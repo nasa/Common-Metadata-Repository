@@ -31,7 +31,6 @@
    :service #{mt/umm-json}
    :tool #{mt/umm-json}})
 
-
 (defn- validate-format
   "Validates the format of the concept. Throws a 415 error if invalid."
   [concept]
@@ -434,39 +433,16 @@
                           (granule-keyword-validations context)))]
     (if-errors-throw :invalid-data errors)))
 
-
 (defn umm-spec-validate-granule-warnings
   "Validate umm-spec granule validation warnings functions - errors that we want
   to report but we do not want to fail ingest."
   [context umm-spec-collection granule]
-  (when-let [
-            ;;  warnings (seq (umm-spec-validation/validate-granule-warnings
-            ;;                 (humanizer-alias/update-collection-with-aliases context
-            ;;                                                                 umm-spec-collection
-            ;;                                                                 true)
-
-            ;;                 granule))
-              warnings (umm-spec-validation/validate-granule-warnings
-                            (humanizer-alias/update-collection-with-aliases context
-                                                                            umm-spec-collection
-                                                                            true)
-
-                            granule)
-             ]
-    ;; (tap> {:source "test validate warn" :value warnings})
-    (def context1 context)
-    (def umm-spec-collection1 umm-spec-collection)
-    (def granule1 granule)
-    warnings
-    
-    ))
-(
- comment
- (def foo (umm-spec-validate-granule-warnings context1 (humanizer-alias/update-collection-with-aliases context1
-                                                                                                       umm-spec-collection1
-                                                                                                       true) granule1))
-)
-
+  (when-let [warnings (umm-spec-validation/validate-granule-warnings
+                       (humanizer-alias/update-collection-with-aliases context
+                                                                       umm-spec-collection
+                                                                       true)
+                       granule)]
+    warnings))
 
 (defn umm-spec-validate-granule
   [context collection granule]
