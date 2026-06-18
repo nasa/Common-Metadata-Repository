@@ -63,7 +63,6 @@
   (when (seq errors)
     (errors/throw-service-errors error-type errors)))
 
-;; TODO this would be the hookup except that it'll have to be done for granules
 (defn match-kms-keywords-validation
   "A validation that checks that the item matches a known KMS field. Takes the following arguments:
 

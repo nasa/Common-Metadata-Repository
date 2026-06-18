@@ -57,15 +57,11 @@
     (v/validate (cons vc/collection-validation-warnings additional-validations)
                 (aa/add-parsed-values collection)))))
 
-;; TODO this is where the weird object reference is coming from
 (defn validate-granule-warnings
   "Validates the UMM-G record against the list of warnings - issues that we want
   to convey to the user, but not consider failures."
   ([collection granule]
   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-    ;; (tap>{:source "granule-with-parent IN THE WARNING" :value granule-with-parent})
-    (def g1 granule)
-    (def gc1 granule-with-parent)
     (v/validate vg/granule-validation-warnings granule-with-parent))))
 
 (defn validate-granule
@@ -74,9 +70,7 @@
   ([collection granule]
    (validate-granule collection granule nil))
   ([collection granule additional-validations]
-   ;; (tap>{:source "validate-granule" :value vg/granule-validations})
    (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-     ;; (tap>{:source "granule-with-parent" :value granule-with-parent})
      (validation-errors->path-errors
       (v/validate (cons vg/granule-validations additional-validations) granule-with-parent)))))
 
@@ -86,7 +80,6 @@
    path. Returns an empty sequence if it is valid."
   ([granule]
    (validate-granule granule nil))
-   ;; TODO how to do this without empty param
   ([granule additional-validations]
    (validation-errors->path-errors (v/validate additional-validations granule))))
 
