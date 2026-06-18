@@ -20,6 +20,7 @@ class ProxySettings(BaseSettings):
 
     lanes_config: str = "lanes.json"
 
+    log_level: str = "INFO"
     bypass_enabled: bool = False
     cache_enabled: bool = True
     load_shedding_enabled: bool = True
