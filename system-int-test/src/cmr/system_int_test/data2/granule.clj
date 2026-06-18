@@ -73,6 +73,15 @@
     (g/map->InstrumentRef {:short-name short-name
                            :sensor-refs sensor-refs})))
 
+  ;; (defn instrument-ref-with-sensor-refs-opertion-modes
+  ;; "Return a instrument-ref based on a given short name and a list of sensor short names as well as opertion modes"
+  ;; [short-name & sensor-short-names]
+  ;; (let [sensor-refs (apply sensor-refs sensor-short-names)]
+  ;;   (g/map->InstrumentRef {:short-name short-name
+  ;;                          :sensor-refs sensor-refs
+  ;;                          :operation-modes  ["Mode1",
+  ;;                                            "Mode2"]})))
+
 (defn platform-ref
   "Return a platform-ref based on platform attribs"
   [attribs]
@@ -97,7 +106,17 @@
   (let [instr-ref (apply instrument-ref-with-sensor-refs instr-short-name sensor-short-names)]
     (g/map->PlatformRef {:short-name plat-short-name
                          :instrument-refs [instr-ref]})))
-
+                         
+(defn platform-ref-with-instrument-ref-and-sensor-refs-and-operational-mode
+  "Return a platform-ref based on a given short name and an instrument ref which is
+   based on a short name, a list of sensor short names, and operation modes."
+  [plat-short-name instr-short-name & sensor-short-names]
+  (let [s-refs (apply sensor-refs sensor-short-names)
+        instr-ref (g/map->InstrumentRef {:short-name instr-short-name
+                                         :sensor-refs s-refs
+                                         :operation-modes ["Mode1" "Mode2"]})]
+    (g/map->PlatformRef {:short-name plat-short-name
+                         :instrument-refs [instr-ref]})))
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]
