@@ -73,6 +73,14 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
+(defmethod by-provider :tool
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
+(defmethod by-provider :index-set
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
 (doseq [doseq-concept-type (common-concepts/get-generic-concept-types-array)]
   (defmethod by-provider doseq-concept-type
     [_ {:keys [provider-id]} base-clause]
@@ -516,6 +524,7 @@
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
+  (j/db-do-commands this "DELETE FROM cmr_index_sets")
   (j/db-do-commands this "DELETE FROM cmr_subscriptions")
   (j/db-do-commands this "DELETE FROM cmr_sub_notifications")
   (j/db-do-commands this "DELETE FROM cmr_services")
