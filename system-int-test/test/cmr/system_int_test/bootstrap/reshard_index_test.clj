@@ -121,36 +121,47 @@
      (index/wait-until-indexed)
      (is (= (inc initial-revision) (get-revision)) "Index-set revision should increment after starting reshard")
      (bootstrap/verify-provider-holdings expected-provider-holdings "Initial")
+
      (testing "resharding an index that does exist"
        (is (= 200 (:status reshard-start-resp)))
        (is (= "Resharding started for index 1_small_collections" (:message reshard-start-resp)))
        (is (= false (nil? task-id))))
+
      (testing "get the resharding status"
        (is (= {:status 200
                :original-index "1_small_collections"
                :reshard-index "1_small_collections_100_shards"
                :reshard-status "COMPLETE"}
               (bootstrap/get-reshard-status "1_small_collections" {:elastic-name gran-elastic-name :task-id task-id}))))
+
      (testing "finalizing the resharding"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections"}
               (bootstrap/finalize-reshard-index "1_small_collections" {:synchronous false :elastic-name gran-elastic-name})))
        (is (= (+ 3 initial-revision) (get-revision)) "Index-set revision should increment after starting, status-check, and finalizing reshard"))
+
      (testing "alias is moved to new index"
        (is (index/alias-exists? "1_small_collections_100_shards" "1_small_collections_alias" gran-elastic-name)))
+
      (testing "index can be resharded more than once"
        (let [reshard-start-resp (bootstrap/start-reshard-index "1_small_collections_100_shards" {:synchronous true :num-shards 50 :elastic-name gran-elastic-name})
-             task-id (:task-id reshard-start-resp)]
+             task-id (:task-id reshard-start-resp)
+             status-check-attempts (range 3)]
          (is (= 200 (:status reshard-start-resp)))
          (is (= "Resharding started for index 1_small_collections_100_shards" (:message reshard-start-resp)))
          (is (= false (nil? (:task-id reshard-start-resp))))
 
-         ;; check status. Cannot finalize until status is checked.
-         (is (= {:status 200
-                 :original-index "1_small_collections_100_shards"
-                 :reshard-index "1_small_collections_50_shards"
-                 :reshard-status "COMPLETE"}
-                (bootstrap/get-reshard-status "1_small_collections_100_shards" {:elastic-name gran-elastic-name :task-id task-id})))))
+         (run! (fn [i]
+                 (Thread/sleep 2000) ;; wait for 2 secs
+                 (println "Checking attempt" (inc i))
+                 ;; check status. Cannot finalize until status is checked.
+                 (is (= {:status 200
+                         :original-index "1_small_collections_100_shards"
+                         :reshard-index "1_small_collections_50_shards"
+                         :reshard-status "COMPLETE"}
+                        (bootstrap/get-reshard-status "1_small_collections_100_shards" {:elastic-name gran-elastic-name :task-id task-id}))))
+               (take-while (fn [_] (not (= "actual" "expected"))) status-check-attempts))))
+
      (testing "finalizing the resharding a second time"
        (is (= {:status 200
                :message "Resharding completed for index 1_small_collections_100_shards"}
@@ -159,6 +170,8 @@
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
      (bootstrap/assert-rebalance-status {:small-collections 1 :separate-index 1 :rebalancing-status "COMPLETE"} coll1)
+     (Thread/sleep 2000)
+
      ;; Finalize rebalancing
      (bootstrap/finalize-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
