@@ -77,10 +77,6 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
-(defmethod by-provider :index-set
-  [_ {:keys [provider-id]} base-clause]
-  (add-provider-clause provider-id base-clause))
-
 (doseq [doseq-concept-type (common-concepts/get-generic-concept-types-array)]
   (defmethod by-provider doseq-concept-type
     [_ {:keys [provider-id]} base-clause]
