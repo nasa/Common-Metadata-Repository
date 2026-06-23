@@ -84,8 +84,8 @@
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
   [(v/pre-validation
-    ;; The spatial representation has to be set on the geometries before the conversion because
-    ;; polygons etc do not know whether they are geodetic or not.
+     ;; The spatial representation has to be set on the geometries before the conversion because
+     ;; polygons etc do not know whether they are geodetic or not.
     set-geometries-spatial-representation
     {:geometries (v/every sv/spatial-validation)
      :orbit (v/when-present sv/spatial-validation)})])

@@ -38,20 +38,3 @@ jobs:
         with:
           name: Kondo-Report.txt
           path: report.log
-  self-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: DeLaGuardo/setup-clojure@13.4
-        with:
-          clj-kondo: '2026.05.25'
-      - name: Lint
-        run: |
-          clj-kondo --lint $(find . -maxdepth 1 -mindepth 1 -type d \
-            -not -name "indexer-app" \
-            -not -name "ingest-app" \
-            -not -name "metadata-db-app" \
-            -not -name "mock-echo-app" \
-            -not -name "search-app" \
-            -not -name ".*" \
-            -printf '%f\n')
