@@ -327,14 +327,3 @@
                                (ingest/delete-concept
                                 request-context
                                 concept-attribs) nil nil))))
-
-
-(comment 
-  (def foo {:concept-id "G1200000002-PROV1",
-            :revision-id 4,
-            :warnings "true",
-            :existing-errors
-            #{"[:TemporalExtents 0 :RangeDateTimes 0] BeginningDateTime [2001-01-01T12:00:00.000Z] must be no later than EndingDateTime [2000-05-11T12:00:00.000Z]"}})
-  
-  (format-and-contextualize-warnings-existing-errors foo)
-  )

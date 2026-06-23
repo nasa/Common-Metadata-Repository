@@ -5,9 +5,9 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [info]]
-   [cmr.common.util :as util]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
+   [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]))
@@ -81,9 +81,7 @@
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
       ;; (api-core/generate-ingest-response headers save-granule-result)
       (api-core/generate-ingest-response headers (util/remove-nil-keys
-                                                (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil)
-                                                               ))
-      )))
+                                                (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil))))))
 
 (defn delete-granule
   [provider-id native-id request]

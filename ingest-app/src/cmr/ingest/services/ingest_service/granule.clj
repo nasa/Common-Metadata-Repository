@@ -1,9 +1,9 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
+   [cmr.common.config :as cfg]
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
-   [cmr.common.config :as cfg]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.services.helper :as h]
    [cmr.ingest.services.ingest-service.collection :as collection]
@@ -140,11 +140,3 @@
         (catch Exception e
           (error "Error while processing subscriptions: " e)))
       {:concept-id concept-id, :revision-id revision-id})))
-
-
-(
- 
- comment
-
-(let v (v/umm-spec-validate-granule-warnings c1 coll1 g1))
-)

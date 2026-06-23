@@ -212,7 +212,7 @@
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
                 (string/join ", " missing-operation-modes))]})))
 
-(def ^:private consistency-validations
+(def ^:private granule-consistency-validations
   "Granule-vs-parent-collection consistency validations. Enforced as errors
    when enforce-granule-collection-consistency is on, surfaced as warnings
    when it is off."
@@ -229,7 +229,7 @@
           operation-modes-reference-collection])]})]}
    projects-reference-collection])
 
-(def ^:private base-validations
+(def ^:private base-granule-validations
   "Granule validations that are always enforced regardless of the toggle."
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:EntryTitle])
@@ -259,9 +259,9 @@
 (def granule-validations
   "Defines validations for granules."
   (if (cfg/enforce-granule-collection-consistency)
-    (into base-validations consistency-validations)
-    base-validations))
+    (into base-granule-validations granule-consistency-validations)
+    base-granule-validations))
 
 (def granule-validation-warnings
   "Defines validations for granules returned as warnings rather than failures."
-    consistency-validations)
+  granule-consistency-validations)

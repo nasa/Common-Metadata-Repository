@@ -13,8 +13,8 @@ profiles.clj
 *.eastwood
 .tags
 .tags1
-.clj-kondo/
 **/.clj-kondo/.cache
+.clj-kondo/http-kit/http-kit/
 .lsp
 .cider-repl-history
 **/ignore.*

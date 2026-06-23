@@ -14,7 +14,7 @@
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 (def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
 (def COLLECTION_WARNING_CONTEXT "After translating item to UMM-C the metadata had the following issue(s): ")
-(def COLLECTION_ERROR_CONTEXT "After translating item to UMM-C the metadata had the following existing error(s): ")
+(def COLLECTION_EXISTING_ERROR_CONTEXT "After translating item to UMM-C the metadata had the following existing error(s): ")
 
 (def validate-keywords-default-true-enabled?
   "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
@@ -44,7 +44,7 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response COLLECTION_WARNING_CONTEXT COLLECTION_ERROR_CONTEXT)
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response COLLECTION_WARNING_CONTEXT COLLECTION_EXISTING_ERROR_CONTEXT)
                      [:warnings :existing-errors]))))))
 
 (defn ingest-collection
@@ -74,7 +74,7 @@
                                           ;; entry-title is added just for the logging above.
                                           ;; dissoc it so that it remains the same as the
                                           ;; original code.
-                                          (dissoc save-collection-result :entry-title) COLLECTION_WARNING_CONTEXT COLLECTION_ERROR_CONTEXT)))))
+                                          (dissoc save-collection-result :entry-title) COLLECTION_WARNING_CONTEXT COLLECTION_EXISTING_ERROR_CONTEXT)))))
 
 (defn delete-collection
   "Delete the collection with the given provider id and native id."

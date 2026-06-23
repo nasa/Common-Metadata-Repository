@@ -256,7 +256,6 @@
   {:default []
    :parser #(map (comp keyword string/trim) (string/split % #","))})
 
-;; TODO we gotta make sure this is set to true before merging
 (defconfig enforce-granule-collection-consistency
   "Flag for whether or not to enforce granule and collection validation consistency."
   {:default true :type Boolean})

@@ -1,9 +1,9 @@
 (ns cmr.ingest.api.core-test
   "tests functions in core"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util :refer [are3]]
-    [cmr.ingest.api.core :as core]))
+   [clojure.test :refer :all]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.ingest.api.core :as core]))
 
 (defn- string->stream
   "Turn a string into a stream"
@@ -46,7 +46,7 @@
           "Make sure that XML is passed thru without change"
           ["<example>data</example>"]
           "<example>data</example>")))
-          
+
 (deftest format-and-contextualize-warnings-existing-errors-test
   (testing "single warning and single error get contextualized"
     (let [result {:warnings ["column x not found"]

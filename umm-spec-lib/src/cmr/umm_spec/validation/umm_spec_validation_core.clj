@@ -60,9 +60,9 @@
 (defn validate-granule-warnings
   "Validates the UMM-G record against the list of warnings - issues that we want
   to convey to the user, but not consider failures."
-  ([collection granule]
+  [collection granule]
   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
-    (v/validate vg/granule-validation-warnings granule-with-parent))))
+    (v/validate vg/granule-validation-warnings granule-with-parent)))
 
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
