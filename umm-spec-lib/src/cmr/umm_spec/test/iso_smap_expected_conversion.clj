@@ -309,6 +309,7 @@
       (update :DOI iso-shared/expected-doi)
       (update :DOI #(dissoc % :PreviousVersion))
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
+      (update :Quality iso-shared/expected-quality)
       (dissoc :StandardProduct :DataMaturity :OtherIdentifiers :FileNamingConvention)
       (update-in-each [:AssociatedDOIs] #(-> %
                                              (update :DescriptionOfOtherType iso-util/safe-trim)))

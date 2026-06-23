@@ -123,6 +123,24 @@
         [:CollectionType (or (:Type ma) spec-util/not-provided)]
         [:CollectionUse (:Description ma)]])]))
 
+(defn generate-quality
+  "Maps UMM-C 1.18.6 Quality into strict compliance with the existing Collection.xsd sequence,
+   guaranteeing elements are nested as children, never flattened as siblings."
+  [c]
+  (when-let [quality (:Quality c)]
+    (let [{:keys [Summary QualityContentDetails]} quality]
+      (when (seq Summary)
+        [:Quality
+         ;; 1. Summary is strictly required first by <xs:sequence>
+         [:Summary Summary]
+         ;; 2. QualityContentDetails is structurally added if any valid sub-fields exist
+         (when (seq QualityContentDetails)
+           (into [:QualityContentDetails]
+                 (for [[k v] QualityContentDetails
+                       ;; Filter out keys mapping to nil or empty string values
+                       :when (seq v)]
+                   [k v])))]))))
+
 (defn generate-collection-citations
   "Finds first OtherCitationDetails value in CollectionCitations and uses it to
    generate a CitationForExternalPublication xml entry"
@@ -274,4 +292,5 @@
          (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
            [:S3BucketAndObjectPrefixName prefix-name])
          [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
-         [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])]))
+         [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])
+     (generate-quality c)]))

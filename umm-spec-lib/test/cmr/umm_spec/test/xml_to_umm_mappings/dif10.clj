@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10
   (:require [clj-time.core :as t]
+            [clojure.data.xml :as xml]
             [clojure.test :refer [deftest is testing]]
             [cmr.common.util :as common-util :refer [are3]]
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as parse]))
@@ -426,3 +427,74 @@
          <Description>Some description</Description>
        </Related_URL>
      </DIF>"))
+
+(deftest extract-quality-content-details-test
+  (testing "1. Returns nil immediately when passed a nil element"
+    (is (nil? (parse/extract-quality-content-details nil))))
+
+  (testing "2. Returns an empty map when the element contains no children"
+    (let [node (xml/parse-str "<QualityContentDetails/>")]
+      (is (= {} (parse/extract-quality-content-details node)))))
+
+  (testing "3. Extracts all valid nested child tags into a flat keyword-to-string map"
+    (let [node (xml/parse-str "<QualityContentDetails>
+                                 <Strengths>Highly accurate coverage maps.</Strengths>
+                                 <Limitations>Some minor edge blurring at 250m.</Limitations>
+                                 <KnownIssues>Persistent snow misclassifications.</KnownIssues>
+                                 <Other>Check grid flags manually.</Other>
+                               </QualityContentDetails>")
+          expected {:Strengths "Highly accurate coverage maps."
+                    :Limitations "Some minor edge blurring at 250m."
+                    :KnownIssues "Persistent snow misclassifications."
+                    :Other "Check grid flags manually."}]
+      (is (= expected (parse/extract-quality-content-details node)))))
+
+  (testing "4. Safely ignores linebreaks, spaces, and other structural formatting whitespace strings"
+    ;; This ensures that the `:when (map? child)` filter functions perfectly
+    (let [node (xml/parse-str "\n  <QualityContentDetails>\n    <Strengths>Good</Strengths>\n  </QualityContentDetails>\n")]
+      (is (= {:Strengths "Good"} (parse/extract-quality-content-details node)))))
+
+  (testing "5. Excludes fields where the inner content is empty or contains only spaces"
+    ;; This tests the `:when (seq text)` validation boundary rule
+    (let [node (xml/parse-str "<QualityContentDetails>
+                                 <Strengths>Strong data matrix</Strengths>
+                                 <Limitations></Limitations>
+                                 <KnownIssues/>
+                               </QualityContentDetails>")
+          expected {:Strengths "Strong data matrix"}]
+      (is (= expected (parse/extract-quality-content-details node))))))
+
+(deftest parse-quality-test
+  (testing "1. Returns nil when DIF/Quality tag does not exist"
+    (let [doc "<DIF><Entry_ID>NASA-123</Entry_ID></DIF>"
+          parsed (parse/parse-dif10-xml doc false)]
+      (is (nil? (:Quality parsed)))))
+
+  (testing "2. Parses plain string format directly into :Summary"
+    (let [doc "<DIF><Quality>This is a raw quality string statement.</Quality></DIF>"
+          expected {:Summary "This is a raw quality string statement."}
+          parsed (parse/parse-dif10-xml doc false)]
+      (is (= expected (:Quality parsed)))))
+
+  (testing "3. Parses a fully populated, structured Quality object"
+    (let [doc "<DIF>
+                 <Quality>
+                   <Summary>Valid dataset summary text.</Summary>
+                     <QualityContentDetails>
+                       <Strengths>High coverage spatial metrics.</Strengths>
+                       <Limitations>Known issues at the poles.</Limitations>
+                     </QualityContentDetails>
+                   </Quality>
+                 </DIF>"
+          expected {:Summary "Valid dataset summary text."
+                    :QualityContentDetails {:Strengths "High coverage spatial metrics."
+                                            :Limitations "Known issues at the poles."}}
+          parsed (parse/parse-dif10-xml doc false)]
+      (is (= expected (:Quality parsed)))))
+
+  (testing "5. Omit nested empty structures if child fields evaluate to empty values"
+    (let [doc "<DIF><Quality><Summary>Valid Summary</Summary><QualityContentDetails/></Quality></DIF>"
+          expected {:Summary "Valid Summary"}
+          parsed (parse/parse-dif10-xml doc false)]
+      ;; Assumes extract-quality-content-details returns nil or empty when inner tags are blank
+      (is (= expected (:Quality parsed))))))

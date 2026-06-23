@@ -519,6 +519,16 @@ technical contact
     </xs:simpleType>
 
     <!-- *********************************************************** -->
+    <!-- #mark Quality QualityContentDetails TypeOfContent Enum -->
+
+    <xs:simpleType name="QualityContentDetailStringType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="8000"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
     <!-- #mark Other Identifiers Type Enum -->
 
     <xs:simpleType name="OtherIdentifiersTypeEnum">
@@ -575,7 +585,7 @@ technical contact
                 When set to other, then Description_Of_Other_Type is to be used.
 
                 Example Usage:
-                * Associated_DOIs/Type = 'Other'
+                * Associcated_DOIs/Type = 'Other'
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">

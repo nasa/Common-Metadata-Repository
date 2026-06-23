@@ -14,6 +14,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
@@ -108,11 +109,11 @@
               [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]
             (doi/generate-doi c)
             (when-let [collection-data-type (:CollectionDataType c)]
-             [:gmd:identifier
-              [:gmd:MD_Identifier
-               [:gmd:code [:gco:CharacterString collection-data-type]]
-               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
-               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+              [:gmd:identifier
+               [:gmd:MD_Identifier
+                [:gmd:code [:gco:CharacterString collection-data-type]]
+                [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+                [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
             (collection-citation/convert-creator c)
             (collection-citation/convert-editor c)
             (collection-citation/convert-publisher c)
@@ -146,10 +147,10 @@
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (first (:TilingIdentificationSystems c))
             [:gmd:extent
-              [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
-                [:gmd:description
-                  [:gco:CharacterString "Tiling Identitfication System"]]
-                (tiling/tiling-system-elements c)]])
+             [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+              [:gmd:description
+               [:gco:CharacterString "Tiling Identitfication System"]]
+              (tiling/tiling-system-elements c)]])
           [:gmd:extent
            [:gmd:EX_Extent
             (generate-spatial-extent (:SpatialExtent c))
@@ -176,8 +177,8 @@
                   [:gml:timePosition date]]]]])]]
 
           (when processing-level
-           [:gmd:processingLevel
-            (proc-level/generate-iso-processing-level processing-level)])]]
+            [:gmd:processingLevel
+             (proc-level/generate-iso-processing-level processing-level)])]]
         [:gmd:identificationInfo
          [:gmd:MD_DataIdentification
           [:gmd:citation
@@ -202,11 +203,11 @@
           [:gmd:language (char-string "eng")]]]
         (sdru/generate-service-related-url (:RelatedUrls c))
         (when processing-level
-         [:gmd:contentInfo
-          [:gmd:MD_ImageDescription
-           [:gmd:attributeDescription ""]
-           [:gmd:contentType ""]
-           [:gmd:processingLevelCode
+          [:gmd:contentInfo
+           [:gmd:MD_ImageDescription
+            [:gmd:attributeDescription ""]
+            [:gmd:contentType ""]
+            [:gmd:processingLevelCode
              (proc-level/generate-iso-processing-level processing-level)]]])
         (let [related-url-distributions (sdru/generate-distributions c)
               file-dist-info-formats (archive-and-dist-info/generate-file-dist-info-formats c)
@@ -241,11 +242,7 @@
               {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
                :codeListValue "series"}
               "series"]]]]
-          (when-let [quality (:Quality c)]
-            [:gmd:report
-             [:gmd:DQ_QuantitativeAttributeAccuracy
-              [:gmd:evaluationMethodDescription (char-string quality)]
-              [:gmd:result {:gco:nilReason "missing"}]]])]]
+          (quality/generate-quality c)]]
         [:gmi:acquisitionInformation
          [:gmi:MI_AcquisitionInformation
           (platform/generate-instruments platforms)

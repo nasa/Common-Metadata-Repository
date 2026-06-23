@@ -181,3 +181,51 @@
           use-constraints (first (select result "/DIF/Use_Constraints"))]
       (is (= "Description" (value-of use-constraints "Description")))
       (is (= "License Text" (value-of use-constraints "License_Text"))))))
+
+(deftest generate-quality-test
+  (testing "1. Full valid UMM-C input with all optional sub-fields"
+    (let [input {:Quality {:Summary "Global VCF data."
+                           :QualityContentDetails {:Strengths "Consistent cover."
+                                                   :Limitations "250m scale."
+                                                   :KnownIssues "Snow confusion."
+                                                   :Other "Cell flags."}}}
+          result (dif10/generate-quality input)]
+
+      ;; Verify root element tag and default attribute
+      (is (= :Quality (first result)))
+      (is (= {:mime_type "text/markdown"} (second result)))
+
+      ;; Verify strict xs:sequence ordering (Summary must be index 2)
+      (is (= [:Summary "Global VCF data."] (nth result 2)))
+
+      ;; Verify QualityContentDetails structure and contents
+      (let [details (nth result 3)]
+        (is (= :QualityContentDetails (first details)))
+        ;; Verify the sub-elements were dynamically added to the vector
+        (is (some #{[:Strengths "Consistent cover."]} details))
+        (is (some #{[:Limitations "250m scale."]} details))
+        (is (some #{[:KnownIssues "Snow confusion."]} details))
+        (is (some #{[:Other "Cell flags."]} details)))))
+
+  (testing "2. Return nil when entire :Quality key is missing from input record"
+    (let [input {:MetadataSpecification {:Name "UMM-C" :Version "1.18.6"}}]
+      (is (nil? (dif10/generate-quality input)))))
+
+  (testing "3. Omit <QualityContentDetails> entirely when the map is empty or nil"
+    (let [input {:Quality {:Summary "Global VCF data without nested details."
+                           :QualityContentDetails {}}}
+          result (dif10/generate-quality input)]
+      (is (= [:Summary "Global VCF data without nested details."] (nth result 2)))))
+
+  (testing "4. Cleanly filter out sub-fields containing nil values"
+    (let [input {:Quality {:Summary "Global VCF data."
+                           :QualityContentDetails {:Strengths "Good data."
+                                                   :Limitations nil
+                                                   :KnownIssues "Some issues."}}}
+          result (dif10/generate-quality input)
+          details (nth result 3)]
+      ;; Verify present keys exist
+      (is (some #{[:Strengths "Good data."]} details))
+      (is (some #{[:KnownIssues "Some issues."]} details))
+      ;; Verify the nil field was explicitly excluded from the hiccup output vector
+      (is (not (some (fn [x] (and (vector? x) (= :Limitations (first x)))) details))))))

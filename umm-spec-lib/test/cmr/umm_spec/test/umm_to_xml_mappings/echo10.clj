@@ -182,3 +182,51 @@
           echo-result (first (select result "/Collection/UseConstraints"))]
       (is (and (= "Description" (value-of echo-result "Description"))
                (= "License Text" (value-of echo-result "LicenseText")))))))
+
+(deftest generate-quality-xml-test
+  (testing "1. Returns nil when the root :Quality key is entirely absent"
+    (let [input {:EntryId "NASA-METADATA-1"}]
+      (is (nil? (echo10/generate-quality input)))))
+
+  (testing "2. Returns nil if :Summary is missing or empty (schema violation protection)"
+    (let [input {:Quality {:QualityContentDetails {:Strengths "Good data."}}}]
+      (is (nil? (echo10/generate-quality input)))))
+
+  (testing "3. Generates a valid XML vector sequence structure with all elements populated"
+    (let [input {:Quality {:Summary "Overview statement."
+                           :QualityContentDetails {:Strengths "High precision."
+                                                   :Limitations "Cloud interference."
+                                                   :KnownIssues "Calibration drift."
+                                                   :Other "Flags attached."}}}
+          result (echo10/generate-quality input)]
+
+      ;; Verify root element tag
+      (is (= :Quality (first result)))
+
+      ;; Verify required Summary node position via index ordering
+      (is (= [:Summary "Overview statement."] (nth result 1)))
+
+      ;; Verify structural placement of child blocks
+      (let [details (nth result 2)]
+        (is (= :QualityContentDetails (first details)))
+        (is (some #{[:Strengths "High precision."]} details))
+        (is (some #{[:Limitations "Cloud interference."]} details))
+        (is (some #{[:KnownIssues "Calibration drift."]} details))
+        (is (some #{[:Other "Flags attached."]} details)))))
+
+  (testing "4. Omit QualityContentDetails element completely if the map is empty"
+    (let [input {:Quality {:Summary "Overview only version."
+                           :QualityContentDetails {}}}
+          result (echo10/generate-quality input)]
+      (is (= [:Summary "Overview only version."] (nth result 1)))))
+
+  (testing "5. Safely drop sub-fields mapped to nil or empty string content"
+    (let [input  {:Quality {:Summary "Overview statement."
+                            :QualityContentDetails {:Strengths "Excellent reliability."
+                                                    :Limitations ""
+                                                    :KnownIssues nil}}}
+          result (echo10/generate-quality input)
+          details (nth result 2)]
+      (is (some #{[:Strengths "Excellent reliability."]} details))
+      (is (not (some (fn [x] (and (vector? x) (= :Limitations (first x)))) details)))
+      (is (not (some (fn [x] (and (vector? x) (= :KnownIssues (first x)))) details))))))

@@ -65,6 +65,40 @@
                           (for [tr (select temporal "TemporalResolution")]
                            (fields-from-temporal-resolution tr)))}))
 
+(defn extract-quality-content-details
+  "Helper to pull text values out of the QualityContentDetails element child nodes."
+  [content-details-element]
+  (when content-details-element
+    (let [children (:content content-details-element)]
+      (into {}
+            (for [child children
+                  ;; Filters out whitespace strings between tags
+                  :when (map? child)
+                  :let [tag (:tag child)
+                        text (first (:content child))]
+                  ;; Only include fields with content
+                  :when (seq text)]
+              [tag text])))))
+
+(defn parse-quality
+  "Parses the 1.18.6 Quality object tree out of the existing ECHO 10 XSD configuration."
+  [doc sanitize?]
+  (when-let [quality (first (select doc "/Collection/Quality"))]
+    (let [children (:content quality)
+          element-children (filter map? children)
+
+          ;; Extract target nodes based on schema tags
+          summary-node (first (filter #(= :Summary (:tag %)) element-children))
+          details-node (first (filter #(= :QualityContentDetails (:tag %)) element-children))
+
+          summary-text (first (:content summary-node))
+          details-map  (extract-quality-content-details details-node)]
+
+      ;; Reconstruct matching the target UMM hierarchy
+      (when (seq summary-text)
+        (cond-> {:Summary (u/truncate summary-text u/QUALITY_MAX sanitize?)}
+          (seq details-map) (assoc :QualityContentDetails details-map))))))
+
 (defn parse-characteristic
   "Returns a UMM characteristic record from an ECHO10 Characteristic element."
   [element]
@@ -368,6 +402,7 @@
                                        (value-of ddi "S3CredentialsAPIEndpoint")
                                      :S3CredentialsAPIDocumentationURL
                                        (value-of ddi "S3CredentialsAPIDocumentationURL")})
+   :Quality (parse-quality doc sanitize?)
    :MetadataSpecification (umm-c/map->MetadataSpecificationType
                              {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
                                         umm-spec-versioning/current-collection-version),
