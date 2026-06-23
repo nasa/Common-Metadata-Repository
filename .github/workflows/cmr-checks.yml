@@ -5,6 +5,9 @@ on:
     branches: [ master, main, feature/**, CMR-**, cmr-**]
   pull_request:
     branches: [ master, main , features/**, CMR-**, cmr-**]
+permissions:
+  contents: read
+
 jobs:
   cloc:
     runs-on: ubuntu-latest
