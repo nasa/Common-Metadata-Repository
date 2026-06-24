@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.api.context :as cxt]
    [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [error info warn]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
@@ -18,7 +19,8 @@
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m]
-   [cmr.indexer.indexer-util :as indexer-util])
+   [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.transmit.metadata-db :as meta-db])
   (:import
    (clojure.lang ExceptionInfo)))
 
