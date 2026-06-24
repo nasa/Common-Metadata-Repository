@@ -168,8 +168,6 @@
          (contactpersons-url-validators context)
          (contactgroups-url-validators context)))
 
-;; TODO we should refactor and move this into its own namespace all the other concepts do this
-;; its not obvious this is just for collections
 (defn- optional-keyword-validations
   "A list of keywords validations(against KMS keywords), that are optional.
   They are only done when kms validation header is set."
@@ -437,12 +435,9 @@
   "Validate umm-spec granule validation warnings functions - errors that we want
   to report but we do not want to fail ingest."
   [context umm-spec-collection granule]
-  (when-let [warnings (umm-spec-validation/validate-granule-warnings
-                       (humanizer-alias/update-collection-with-aliases context
-                                                                       umm-spec-collection
-                                                                       true)
-                       granule)]
-    warnings))
+  (umm-spec-validation/validate-granule-warnings
+   (humanizer-alias/update-collection-with-aliases context umm-spec-collection true)
+   granule))
 
 (defn umm-spec-validate-granule
   [context collection granule]

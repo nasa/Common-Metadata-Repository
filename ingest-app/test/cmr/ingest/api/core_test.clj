@@ -43,72 +43,85 @@
           ["{\"url\":\"http://fake.gov/path?content=value&data=value\"}" "{\"XYZ\":\"zyx\"}"]
           "{\"content\":{\"url\":\"http://fake.gov/path?content=value&data=value\"},\"data\":{\"XYZ\":\"zyx\"}}"
 
-          "Make sure that XML is passed thru without change"
+          "Make sure that XML is passed thru withresponse change"
           ["<example>data</example>"]
           "<example>data</example>")))
 
 (deftest format-and-contextualize-warnings-existing-errors-test
   (testing "single warning and single error get contextualized"
-    (let [result {:warnings ["column x not found"]
+    (let [result {:warnings ["Date should be in the past"]
                   :existing-errors ["bad type"]}
-          out (core/format-and-contextualize-warnings-existing-errors
-               result "Warning: " "Error: ")]
-      (is (= ["Warning: column x not found"] (:warnings out)))
-      (is (= ["Error: bad type"] (:existing-errors out)))))
+          response (core/format-and-contextualize-warnings-existing-errors
+                    result "Warning: " "Error: ")]
+      (is (= ["Warning: Date should be in the past"] (:warnings response)))
+      (is (= ["Error: bad type"] (:existing-errors response)))))
 
   (testing "multiple warnings are joined with ';; ' into a single string"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings ["w1" "w2" "w3"] :existing-errors []}
-               "CTX: " "ERR: ")]
-      (is (= ["CTX: w1;; w2;; w3"] (:warnings out)))
-      (is (= 1 (count (:warnings out))))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings ["w1" "w2" "w3"] :existing-errors []}
+                    "CTX: " "ERR: ")]
+      (is (= ["CTX: w1;; w2;; w3"] (:warnings response)))
+      (is (= 1 (count (:warnings response))))))
 
   (testing "multiple errors are joined with ';; ' into a single string"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings nil :existing-errors ["e1" "e2"]}
-               "CTX: " "ERR: ")]
-      (is (= ["ERR: e1;; e2"] (:existing-errors out)))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings nil :existing-errors ["e1" "e2"]}
+                    "CTX: " "ERR: ")]
+      (is (= ["ERR: e1;; e2"] (:existing-errors response)))))
 
-  (testing "empty collections become nil"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings [] :existing-errors []}
-               "CTX: " "ERR: ")]
-      (is (nil? (:warnings out)))
-      (is (nil? (:existing-errors out)))))
+  (testing "empty warnings and errors become nil"
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings [] :existing-errors []}
+                    "CTX: " "ERR: ")]
+      (is (nil? (:warnings response)))
+      (is (nil? (:existing-errors response)))))
 
   (testing "nil values stay nil"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings nil :existing-errors nil}
-               "CTX: " "ERR: ")]
-      (is (nil? (:warnings out)))
-      (is (nil? (:existing-errors out)))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings nil :existing-errors nil}
+                    "CTX: " "ERR: ")]
+      (is (nil? (:warnings response)))
+      (is (nil? (:existing-errors response)))))
 
   (testing "missing keys are added as nil (update on absent key)"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {} "CTX: " "ERR: ")]
-      (is (contains? out :warnings))
-      (is (contains? out :existing-errors))
-      (is (nil? (:warnings out)))
-      (is (nil? (:existing-errors out)))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {} "CTX: " "ERR: ")]
+      (is (contains? response :warnings))
+      (is (contains? response :existing-errors))
+      (is (nil? (:warnings response)))
+      (is (nil? (:existing-errors response)))))
 
   (testing "other keys in result are preserved untouched"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings ["w"] :existing-errors ["e"] :data {:rows 42} :status :ok}
-               "W: " "E: ")]
-      (is (= {:rows 42} (:data out)))
-      (is (= :ok (:status out)))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings ["w"] :existing-errors ["e"] :data {:collection {:Project {:Shortname "Project1"}}} :status :ok}
+                    "W: " "E: ")]
+      (is (= {:collection {:Project {:Shortname "Project1"}}} (:data response)))
+      (is (= :ok (:status response)))))
 
-  (testing "empty context strings still produce joined output"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings ["w1" "w2"] :existing-errors ["e1"]}
-               "" "")]
-      (is (= ["w1;; w2"] (:warnings out)))
-      (is (= ["e1"] (:existing-errors out)))))
+  (testing "empty context strings still produce joined responseput"
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings ["w1" "w2"] :existing-errors ["e1"]}
+                    "" "")]
+      (is (= ["w1;; w2"] (:warnings response)))
+      (is (= ["e1"] (:existing-errors response)))))
 
   (testing "works with non-vector seqs (e.g. lists, lazy seqs)"
-    (let [out (core/format-and-contextualize-warnings-existing-errors
-               {:warnings (list "w1" "w2")
-                :existing-errors (map str ["e1" "e2"])}
-               "W: " "E: ")]
-      (is (= ["W: w1;; w2"] (:warnings out)))
-      (is (= ["E: e1;; e2"] (:existing-errors out))))))
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings (list "w1" "w2")
+                     :existing-errors (map str ["e1" "e2"])}
+                    "W: " "E: ")]
+      (is (= ["W: w1;; w2"] (:warnings response)))
+      (is (= ["E: e1;; e2"] (:existing-errors response)))))
+  
+  (testing "single-arity defaults both contexts to nil (no prefix prepended)"
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings ["w1" "w2"] :existing-errors ["e1" "e2"]})]
+      (is (= ["w1;; w2"] (:warnings response)))
+      (is (= ["e1;; e2"] (:existing-errors response)))))
+
+  (testing "two-arity applies warning-context and defaults err-context to nil"
+    (let [response (core/format-and-contextualize-warnings-existing-errors
+                    {:warnings ["w1" "w2"] :existing-errors ["e1" "e2"]}
+                    "W: ")]
+      (is (= ["W: w1;; w2"] (:warnings response)))
+      (is (= ["e1;; e2"] (:existing-errors response))))))

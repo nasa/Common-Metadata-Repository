@@ -97,16 +97,21 @@
 
 (defn format-and-contextualize-warnings-existing-errors
   "Format and add a message to warnings and existing-errors to make translation issues more clear to the user."
-  [result warning-context err-context]
-    (-> result
-        (update :warnings
-                (fn [warnings]
-                  (when (not-empty warnings)
-                    [(str warning-context (string/join ";; " warnings))])))
-        (update :existing-errors
-                (fn [existing-errors]
-                  (when (not-empty existing-errors)
-                    [(str err-context (string/join ";; " existing-errors))])))))
+  ([result]
+   (format-and-contextualize-warnings-existing-errors result nil nil))
+  ([result warning-context]
+   (format-and-contextualize-warnings-existing-errors result warning-context nil))
+  ([result warning-context err-context]
+   (-> result
+       (update :warnings
+               (fn [warnings]
+                 (when (not-empty warnings)
+                   [(str warning-context (string/join ";; " warnings))])))
+       (update :existing-errors
+               (fn [existing-errors]
+                 (when (not-empty existing-errors)
+                   [(str err-context (string/join ";; " existing-errors))]))))))
+
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers _result]

@@ -79,7 +79,6 @@
           concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
-      ;; (api-core/generate-ingest-response headers save-granule-result)
       (api-core/generate-ingest-response headers (util/remove-nil-keys
                                                 (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil))))))
 

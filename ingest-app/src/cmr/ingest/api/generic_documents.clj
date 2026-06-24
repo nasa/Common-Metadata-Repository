@@ -222,7 +222,7 @@
                                         ;; name is added just for the logging above.
                                         ;; dissoc it so that it remains the same as the
                                         ;; original code.
-                                        (dissoc save-concept-result :name) nil nil))))
+                                        (dissoc save-concept-result :name)))))
 
 (defn create-generic-document
   "Check a document for fitness to be ingested, and then ingest it. Records can

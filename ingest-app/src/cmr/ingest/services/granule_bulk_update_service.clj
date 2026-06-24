@@ -543,7 +543,6 @@
   [context task-id concept granule-ur bulk-update-params user-id]
   (if-let [updated-concept (update-granule-concept context concept bulk-update-params user-id)]
     (do
-      ;; Pass without warnings
       (ingest-service/save-granule context updated-concept)
       (data-granule-bulk-update/update-bulk-update-task-granule-status
        context task-id granule-ur bulk-update-service/updated-status ""))

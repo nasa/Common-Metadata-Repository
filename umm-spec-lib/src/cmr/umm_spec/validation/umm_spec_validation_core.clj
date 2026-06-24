@@ -124,11 +124,3 @@
   sequence if it is valid."
   [variable validations-rules]
    (validation-errors->path-errors (v/validate validations-rules variable)))
-    
-(comment (def foo (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1)))
-
-         (first (:errors foo))
-
-         (validation-errors->path-errors (v/validate vg/granule-validation-warnings g1))
-
-         (v/validate vg/granule-validation-warnings gc1))

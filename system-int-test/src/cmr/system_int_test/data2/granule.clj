@@ -107,6 +107,7 @@
                                          :operation-modes ["Mode1" "Mode2"]})]
     (g/map->PlatformRef {:short-name plat-short-name
                          :instrument-refs [instr-ref]})))
+                         
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]

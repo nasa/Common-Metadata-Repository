@@ -30,7 +30,7 @@
       (api-core/generate-validate-response
        headers
        (util/remove-nil-keys
-        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response nil nil)
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
                      [:warnings :existing-errors]))))))
 
 (defn ingest-tool
