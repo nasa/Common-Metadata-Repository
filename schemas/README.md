@@ -12,8 +12,6 @@ Original Repository: [origin][origin].
 | Index                | Active    | Configuration file for Schema used to specify indexes for Generic Documents
 | Order-Option         | Active    | Configuration files needed for supporting Legacy Services migration
 | Provider             | Active    | Definition of a Provider in CMR
-| Service-Entry        | Active    | Configuration files needed for supporting Legacy Services migration
-| Service-Option       | Active    | Configuration files needed for supporting Legacy Services migration
 | *-draft              | CMR only  | Draft MMT formats which are not in the EMFD repository
 
 ## Usage
