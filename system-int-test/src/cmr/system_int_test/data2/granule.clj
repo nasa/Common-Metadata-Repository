@@ -72,6 +72,7 @@
   (let [sensor-refs (apply sensor-refs sensor-short-names)]
     (g/map->InstrumentRef {:short-name short-name
                            :sensor-refs sensor-refs})))
+
 (defn platform-ref
   "Return a platform-ref based on platform attribs"
   [attribs]
@@ -107,7 +108,7 @@
                                          :operation-modes ["Mode1" "Mode2"]})]
     (g/map->PlatformRef {:short-name plat-short-name
                          :instrument-refs [instr-ref]})))
-                         
+
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]

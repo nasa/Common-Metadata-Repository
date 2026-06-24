@@ -44,6 +44,7 @@
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
                                           content-type (string/join ", " valid-types))))))
+
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
