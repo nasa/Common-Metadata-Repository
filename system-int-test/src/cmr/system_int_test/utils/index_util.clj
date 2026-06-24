@@ -256,10 +256,3 @@
                {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}))
-
-(defn index-set-reset
-  []
-  (client/post (url/index-set-reset-url)
-               {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                :connection-manager (s/conn-mgr)
-                :throw-exceptions false}))

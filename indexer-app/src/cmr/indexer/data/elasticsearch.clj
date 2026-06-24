@@ -237,9 +237,9 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  (let [;; setup for non-gran cluster
+  (let [;; setup non-gran cluster index set
         [existing-non-gran-index-set expected-non-gran-index-set] (compute-expected-index-set context es-config/elastic-name)
-        ;; setup for gran cluster
+        ;; setup gran cluster index set
         [existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)
 
         non-gran-update? (or (= "true" (:force params))

@@ -375,9 +375,10 @@
   "Given an empty index set this is the expected created index-set. This is used for the update-index-sets-test."
   {:index-set {:name "test-index-set",
                :id 3,
-               ;; usually we would have a revision-id in the expected index-set return,
-               ; but because this value keeps changing we are going to leave it out here for test comparisons where this var is used
-               ;:revision-id 1
+               ;; Usually we would have a revision-id in the expected index-set return,
+               ;; but because this value keeps changing we are going to omit it here for test comparisons where this var is used.
+               ;; Commented out so future devs know this is a field that is being intentionally ignored
+               ;; :revision-id 1
                :deleted false
                :concepts {
                           :generic-order-option {},

@@ -355,8 +355,7 @@
 (defn put-index-set
   "Upsert the given index-set to the index-sets index in ES."
   [context combined-index-set]
-  (let [;; Strip out revision-id and deleted if they were provided in the request body
-        ;; to avoid 422 errors from metadata-db.
+  (let [;; Strip out revision-id and deleted if they were provided in the request body to avoid 422 errors from metadata-db.
         clean-combined-index-set (update combined-index-set :index-set dissoc :revision-id :deleted)
         split-index-set-map (split-index-set-by-cluster clean-combined-index-set)
         ;; Save a single unified version to Oracle first to get the revision-id
@@ -660,7 +659,6 @@
         (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs new-gran-index-set) revision-id))
 
       ;; Delete the separate index for this collection when moving back into small collections index
-
       (when (= "small-collections" target)
         (let [collection-key (keyword concept-id)
               old-separate-index (get-in old-gran-index-set [:index-set :concepts :granule collection-key])]
