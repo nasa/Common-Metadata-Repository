@@ -181,6 +181,56 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
+(defn get-index-set-revision
+  "Fetch a specific revision of an index-set from metadata-db.
+   If revision-id is nil, the latest revision is returned.
+   Returns a map with :index-set containing :revision-id and :deleted."
+  [context index-set-id revision-id]
+  (if-let [concept-id (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))]
+    (let [concept (if revision-id
+                    (meta-db/get-concept context concept-id revision-id)
+                    (meta-db/get-latest-concept context concept-id))
+          metadata-map (when-let [metadata (:metadata concept)]
+                         (json/parse-string metadata true))]
+      (let [index-set (if (contains? metadata-map :index-set)
+                        (:index-set metadata-map)
+                        metadata-map)]
+        {:index-set (assoc index-set
+                           :revision-id (:revision-id concept)
+                           :deleted (true? (:deleted concept)))}))
+    (errors/throw-service-error :not-found
+                                (m/index-set-not-found-msg index-set-id))))
+
+(defn save-index-set-to-mdb
+  "Saves the provided combined-index-set to Metadata DB. Index set saved in DB is both the elastic and gran elastic index sets combined.
+   Returns the revision-id from Metadata DB."
+  [context combined-index-set]
+  (let [index-set-id (get-in combined-index-set [:index-set :id])
+        user-id (try
+                  (cxt/context->user-id context)
+                  (catch Exception _ "CMR"))]
+    (let [concept {:concept-type :index-set
+                   :native-id (str index-set-id)
+                   :provider-id "CMR"
+                   :metadata (json/generate-string combined-index-set)
+                   :user-id user-id
+                   :format "application/json"}]
+      (:revision-id (meta-db/save-concept context concept)))))
+
+(defn- save-combined-index-set-to-mdb
+  "Given a cluster's index-set (half of a combined index set), this func reconstructs the combined index-set of both elastic and gran elastic index-sets
+   and saves it to Metadata DB. Uses the provided index-set for the current cluster and fetches the other from ES.
+   Returns the revision-id from Metadata DB."
+  [context es-index-set es-cluster-name]
+  (let [index-set-id (get-in es-index-set [:index-set :id])
+        other-cluster (if (= es-cluster-name es-config/elastic-name)
+                        es-config/gran-elastic-name
+                        es-config/elastic-name)
+        ;; Use es/get-index-set directly to avoid :not-found exception during initial creation
+        other-index-set (es/get-index-set context other-cluster index-set-id)
+        combined-index-set (util/deep-merge other-index-set es-index-set)]
+    (save-index-set-to-mdb context combined-index-set)))
+
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set es-cluster-name]
@@ -873,6 +923,21 @@
         (error e (format "Failed to rollback resharding from [%s] -> [%s]" target-index-name index))
         (errors/throw-service-error :internal-error
                                     (format "Failed to rollback resharding for [%s]; see server logs." index))))))
+
+(defn sync-index-sets-from-db
+  "Fetches all latest non-deleted index-sets from Metadata DB and creates them in Elasticsearch."
+  [context]
+  (info "Syncing index-sets from Metadata DB to Elasticsearch...")
+  (let [index-sets (meta-db/find-concepts context {:latest true} :index-set)]
+    (doseq [concept index-sets]
+      (if (:deleted concept)
+        (info (format "Skipping deleted index-set [%s]" (:concept-id concept)))
+        (let [combined-index-set (json/parse-string (:metadata concept) true)
+              index-set-id (get-in combined-index-set [:index-set :id])]
+          (info (format "Restoring index-set [%s] (ID: %s) to Elasticsearch..."
+                        (:concept-id concept) index-set-id))
+          ;; Use put-index-set to ensure we update existing or create new
+          (put-index-set context combined-index-set))))))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."

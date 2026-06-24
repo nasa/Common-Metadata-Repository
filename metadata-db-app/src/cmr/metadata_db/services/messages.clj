@@ -212,6 +212,11 @@
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
 
+(defn index-sets-only-system-level
+  [provider-id]
+  (format "Index-set could not be associated with provider [%s]. Index-set is system level entity."
+          provider-id))
+
 (defn variable-associations-only-system-level
   [provider-id]
   (format (str "Variable association could not be associated with provider [%s]. "
