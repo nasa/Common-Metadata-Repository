@@ -270,12 +270,10 @@
               admin-update-token
               "Product,ProductVersion,Hosts\nAMSR-L1A,3,x"))))
     (testing "large integer value for hosts (access-count)"
-      (let [{:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
-                                                      admin-update-token
-                                                      "Product,ProductVersion,Hosts\nAMSR-L1A,3,2147483648")]
-        (is (= status 200))
-        (is (= revision-id 2))
-        (is (true? (boolean (re-matches #"H\d+-CMR" concept-id))))))))
+      (is (= {:concept-id "H1200000012-CMR", :revision-id 2, :status 200}
+             (humanizer-util/update-community-usage-metrics
+              admin-update-token
+              "Product,ProductVersion,Hosts\nAMSR-L1A,3,2147483648"))))))
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name

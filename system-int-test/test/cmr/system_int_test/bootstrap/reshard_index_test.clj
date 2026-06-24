@@ -153,7 +153,6 @@
 
          (run! (fn [i]
                  (Thread/sleep 2000) ;; wait for 2 secs
-                 (println "Checking attempt" (inc i))
                  ;; check status. Cannot finalize until status is checked.
                  (is (= {:status 200
                          :original-index "1_small_collections_100_shards"

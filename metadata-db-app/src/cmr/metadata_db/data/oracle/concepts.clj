@@ -69,11 +69,11 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
-(defmethod by-provider :subscription
+(defmethod by-provider :tool
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
-(defmethod by-provider :tool
+(defmethod by-provider :subscription
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 

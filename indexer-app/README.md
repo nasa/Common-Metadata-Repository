@@ -156,7 +156,7 @@ Optional params:
 
 Disaster recovery endpoint to restore all index-set configurations from Oracle to Elasticsearch. This will recreate all physical indices and aliases in Elasticsearch based on the latest non-deleted version in Oracle.
 
-    curl -i -XPOST http://localhost:3004/index-sets/sync-with-database?token=XXXX
+    curl -i -XPOST http://localhost:3004/index-sets/sync-with-database
 
 ### Get all index-sets
 
