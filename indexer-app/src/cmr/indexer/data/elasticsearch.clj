@@ -189,13 +189,19 @@
   (let [;; setup for non-gran cluster
         [existing-non-gran-index-set expected-non-gran-index-set] (compute-expected-index-set context es-config/elastic-name)
         ;; setup for gran cluster
-        [existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)]
+        [existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)
+
+        ;; If any cluster is missing, we will perform a unified save to Oracle to get the revision-id
+        revision-id (when (or (nil? existing-non-gran-index-set)
+                              (nil? existing-gran-index-set))
+                      (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
+                        (index-set-svc/save-index-set-to-mdb context combined)))]
 
     (cond
       ;; Check if we need to create
       (nil? existing-non-gran-index-set)
       (do
-        (index-set-svc/update-index-set context es-config/elastic-name expected-non-gran-index-set)
+        (index-set-svc/update-index-set context es-config/elastic-name expected-non-gran-index-set revision-id)
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
@@ -216,7 +222,7 @@
       (nil? existing-gran-index-set)
       (do
         (warn "Gran index set does not exist so creating it.")
-        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set revision-id))
 
       ;; Check if we need to update
       (index-set-requires-update? existing-gran-index-set expected-gran-index-set)
@@ -231,30 +237,39 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context params]
-  ;; update non-gran cluster's index-set
-  (let [[existing-index-set expected-index-set] (compute-expected-index-set context es-config/elastic-name)]
-    (if (or (= "true" (:force params))
-            (index-set-requires-update? existing-index-set expected-index-set))
+  (let [;; setup non-gran cluster index set
+        [existing-non-gran-index-set expected-non-gran-index-set] (compute-expected-index-set context es-config/elastic-name)
+        ;; setup gran cluster index set
+        [existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)
+
+        non-gran-update? (or (= "true" (:force params))
+                             (index-set-requires-update? existing-non-gran-index-set expected-non-gran-index-set))
+        gran-update? (or (= "true" (:force params))
+                         (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
+
+        ;; If an update is required for either cluster, perform a unified save to Oracle
+        revision-id (when (or non-gran-update? gran-update?)
+                      (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
+                        (index-set-svc/save-index-set-to-mdb context combined)))]
+
+    (if non-gran-update?
       (do
-        (index-set-svc/validate-requested-index-set context es-config/elastic-name expected-index-set true)
-        (index-set-svc/update-index-set context es-config/elastic-name expected-index-set)
+        (index-set-svc/validate-requested-index-set context es-config/elastic-name expected-non-gran-index-set true)
+        (index-set-svc/update-index-set context es-config/elastic-name expected-non-gran-index-set revision-id)
         (info "Creating collection index alias.")
         (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                 (idx-set/collections-index)
                                 (idx-set/collections-index-alias)))
       (do
         (info "Ignoring update indexes request because non-gran index set is unchanged.")
-        (info "Existing non-gran index set:" (pr-str existing-index-set))
-        (info "New non-gran index set:" (pr-str expected-index-set)))))
+        (info "Existing non-gran index set:" (pr-str existing-non-gran-index-set))
+        (info "New non-gran index set:" (pr-str expected-non-gran-index-set))))
 
-  ;; update gran cluster's index-set
-  (let [[existing-gran-index-set expected-gran-index-set] (compute-expected-index-set context es-config/gran-elastic-name)]
-    (if (or (= "true" (:force params))
-            (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
+    (if gran-update?
       (do
         (info "Updating the gran index set to " (pr-str expected-gran-index-set))
         (index-set-svc/validate-requested-index-set context es-config/gran-elastic-name expected-gran-index-set true)
-        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set))
+        (index-set-svc/update-index-set context es-config/gran-elastic-name expected-gran-index-set revision-id))
       (do
         (info "Ignoring update gran indexes request because gran index set is unchanged.")
         (info "Existing gran index set:" (pr-str existing-gran-index-set))
@@ -271,7 +286,7 @@
                     (pr-str index))))))
 
 (defn reset-es-store
-  "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
+  "Delete elasticsearch indexes via deleting the index-set and re-create them via index-set app. A nuclear option just for the development team."
   [context]
   (index-set-svc/reset context)
   (create-default-indexes context))

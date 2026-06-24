@@ -793,8 +793,8 @@
                  :variable_level_3 "Level1-3",
                  :detailed_variable "SUPER DETAILED!"}],
                :name "variable",
-               :concept_id "V1200000011-PROV2",
-               :associations {:collections ["C1200000010-PROV2"]},
+               :concept_id "V1200000012-PROV2",
+               :associations {:collections ["C1200000011-PROV2"]},
                :revision_id 1,
                :provider_id "PROV2",
                :native_id "var1",
@@ -807,5 +807,5 @@
                  :s_3_credentials_api_endpoint "https://api.giovanni.earthdata.nasa.gov/s3credentials",
                  :s_3_credentials_api_documentation_url "https://disc.gsfc.nasa.gov/information/documents?title=In-region%20Direct%20S3%20Zarr%20Cache%20Access"},
                 :chunking_information "Chunk size for this example is 1MB. It is optimized for time series."},
-               :association_details {:collections [{:concept_id "C1200000010-PROV2"}]}}]
+               :association_details {:collections [{:concept_id "C1200000011-PROV2"}]}}]
           (:items (:body (variables/search-json))))))))

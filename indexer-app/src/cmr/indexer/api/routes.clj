@@ -12,6 +12,7 @@
    [cmr.common.util :as c-util]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-logger :as req-log]
+   [cmr.common-app.api.request-context-user-augmenter :as augmenter]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.elastic-utils.config :as es-config]
    [cmr.indexer.common.index-set-util :as index-set-util]
@@ -56,6 +57,11 @@
       (index-set-svc/reset request-context)
       {:status 204})
 
+    (POST "/sync-with-database" {request-context :request-context}
+      (acl/verify-ingest-management-permission request-context :update)
+      (index-set-svc/sync-index-sets-from-db request-context)
+      {:status 204})
+
     (context "/cluster/:es-cluster-name" [es-cluster-name]
       (GET "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :read)
@@ -67,12 +73,19 @@
         (r/response (index-set-util/get-index-set request-context es-cluster-name id))))
 
     (context "/:id" [id]
-      (GET "/" {request-context :request-context}
+      (GET "/" {request-context :request-context params :params}
         (acl/verify-ingest-management-permission request-context :read)
-        (let [gran-index-set (index-set-util/get-index-set request-context es-config/gran-elastic-name id)
-              non-gran-index-set (index-set-util/get-index-set request-context es-config/elastic-name id)
-              combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)]
-          (r/response combined-index-set)))
+        (let [revision-id (:revision_id params)
+              response-map (if revision-id
+                             (index-set-svc/get-index-set-revision request-context id revision-id)
+                             (let [gran-index-set (index-set-util/get-index-set request-context es-config/gran-elastic-name id)
+                                   non-gran-index-set (index-set-util/get-index-set request-context es-config/elastic-name id)
+                                   combined-index-set (c-util/deep-merge gran-index-set non-gran-index-set)
+                                   revision-id (get-in combined-index-set [:index-set :revision-id])]
+                               {:index-set (assoc (:index-set combined-index-set)
+                                                  :revision-id revision-id
+                                                  :deleted false)}))]
+          (r/response response-map)))
 
       (PUT "/" {request-context :request-context body :body}
         (let [index-set (walk/keywordize-keys body)]
@@ -82,8 +95,7 @@
 
       (DELETE "/" {request-context :request-context}
         (acl/verify-ingest-management-permission request-context :update)
-        (index-set-svc/delete-index-set request-context id es-config/gran-elastic-name)
-        (index-set-svc/delete-index-set request-context id es-config/elastic-name)
+        (index-set-svc/delete-index-set request-context id false)
         {:status 204})
 
       (context "/rebalancing-collections/:concept-id" [concept-id]
@@ -214,6 +226,7 @@
   (-> (build-routes system)
       common-routes/add-request-id-response-handler
       req-log/log-ring-request ;; Must be after request id
+      augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
       errors/exception-handler

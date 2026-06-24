@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.api.context :as cxt]
    [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [error info warn]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
@@ -18,7 +19,8 @@
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m]
-   [cmr.indexer.indexer-util :as indexer-util])
+   [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.transmit.metadata-db :as meta-db])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -165,7 +167,7 @@
   (let [index-set-id (get-in index-set [:index-set :id])
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
         idx-mapping-type (first (keys mapping))]
-    (when (es/index-set-exists? (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
+    (when (es/get-index-set-if-exists-in-es (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
 (defn validate-requested-index-set
@@ -181,17 +183,70 @@
   (when-let [error (index-cfg-validation index-set es-cluster-name)]
     (errors/throw-service-error :invalid-data error)))
 
+(defn get-index-set-revision
+  "Fetch a specific revision of an index-set from metadata-db.
+   If revision-id is nil, the latest revision is returned.
+   Returns a map with :index-set containing :revision-id and :deleted."
+  [context index-set-id revision-id]
+  (if-let [concept-id (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))]
+    (let [concept (if revision-id
+                    (meta-db/get-concept context concept-id revision-id)
+                    (meta-db/get-latest-concept context concept-id))
+          metadata-map (when-let [metadata (:metadata concept)]
+                         (json/parse-string metadata true))]
+      (let [index-set (if (contains? metadata-map :index-set)
+                        (:index-set metadata-map)
+                        metadata-map)]
+        {:index-set (assoc index-set
+                           :revision-id (:revision-id concept)
+                           :deleted (true? (:deleted concept)))}))
+    (errors/throw-service-error :not-found
+                                (m/index-set-not-found-msg index-set-id))))
+
+(defn save-index-set-to-mdb
+  "Saves the provided combined-index-set to Metadata DB. Index set saved in DB is both the elastic and gran elastic index sets combined.
+   Returns the revision-id from Metadata DB."
+  [context combined-index-set]
+  (let [index-set-id (get-in combined-index-set [:index-set :id])
+        user-id (try
+                  (cxt/context->user-id context)
+                  (catch Exception _ "CMR"))]
+    (let [concept {:concept-type :index-set
+                   :native-id (str index-set-id)
+                   :provider-id "CMR"
+                   :metadata (json/generate-string combined-index-set)
+                   :user-id user-id
+                   :format "application/json"}]
+      (:revision-id (meta-db/save-concept context concept)))))
+
+(defn- save-combined-index-set-to-mdb
+  "Given a cluster's index-set (half of a combined index set), this func reconstructs the combined index-set of both elastic and gran elastic index-sets
+   and saves it to Metadata DB. Uses the provided index-set for the current cluster and fetches the other from ES.
+   Returns the revision-id from Metadata DB."
+  [context es-index-set es-cluster-name]
+  (let [index-set-id (get-in es-index-set [:index-set :id])
+        other-cluster (if (= es-cluster-name es-config/elastic-name)
+                        es-config/gran-elastic-name
+                        es-config/elastic-name)
+        ;; Use es/get-index-set directly to avoid :not-found exception during initial creation
+        other-index-set (es/get-index-set context other-cluster index-set-id)
+        combined-index-set (util/deep-merge other-index-set es-index-set)]
+    (save-index-set-to-mdb context combined-index-set)))
+
 (defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
-  [context index-set es-cluster-name]
-  (let [indexes-w-added-concepts (prune-index-set (:index-set index-set) es-cluster-name)
-        index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
+  [context es-index-set es-cluster-name revision-id]
+  (let [indexes-w-added-concepts (prune-index-set (:index-set es-index-set) es-cluster-name)
+        index-set-w-es-index-names (assoc-in es-index-set [:index-set :concepts]
                                              (:concepts indexes-w-added-concepts))
-        encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
+        index-set-w-rev (if revision-id
+                          (assoc-in index-set-w-es-index-names [:index-set :revision-id] revision-id)
+                          index-set-w-es-index-names)
+        encoded-index-set-w-es-index-names (-> index-set-w-rev
                                                json/generate-string
                                                util/string->gzip-base64)
-        es-doc {:index-set-id (get-in index-set [:index-set :id])
-                :index-set-name (get-in index-set [:index-set :name])
+        es-doc {:index-set-id (get-in es-index-set [:index-set :id])
+                :index-set-name (get-in es-index-set [:index-set :name])
                 :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
@@ -276,8 +331,10 @@
 
     ;; create index-sets and rollback if index-set creation fails
     (try
-      (index-requested-index-set context gran-index-set es-config/gran-elastic-name)
-      (index-requested-index-set context non-gran-index-set es-config/elastic-name)
+      (let [combined-index-set (util/deep-merge gran-index-set non-gran-index-set)
+            revision-id (save-index-set-to-mdb context combined-index-set)]
+        (index-requested-index-set context gran-index-set es-config/gran-elastic-name revision-id)
+        (index-requested-index-set context non-gran-index-set es-config/elastic-name revision-id))
       (catch ExceptionInfo e
         (warn "failed to create index sets, roll back, this does not always work")
         (dorun (map #(es/delete-index gran-es-store %) gran-index-names))
@@ -286,27 +343,33 @@
 
 (defn update-index-set
   "Updates indices in the index set"
-  [context es-cluster-name index-set]
+  [context es-cluster-name index-set revision-id]
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
 
-    (index-requested-index-set context index-set es-cluster-name)))
+    (index-requested-index-set context index-set es-cluster-name revision-id)))
 
 (defn put-index-set
   "Upsert the given index-set to the index-sets index in ES."
-  [context index-set]
-  (let [split-index-set-map (split-index-set-by-cluster index-set)]
+  [context combined-index-set]
+  (let [;; Strip out revision-id and deleted if they were provided in the request body to avoid 422 errors from metadata-db.
+        clean-combined-index-set (update combined-index-set :index-set dissoc :revision-id :deleted)
+        split-index-set-map (split-index-set-by-cluster clean-combined-index-set)
+        ;; Save a single unified version to Oracle first to get the revision-id
+        revision-id (save-index-set-to-mdb context clean-combined-index-set)
+        gran-elastic-index-set (get split-index-set-map (keyword es-config/gran-elastic-name))
+        elastic-index-set (get split-index-set-map (keyword es-config/elastic-name))]
     ;; Validation for both index sets need to happen before we update anything
-    (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (validate-requested-index-set context es-config/elastic-name index-set true)
+    (validate-requested-index-set context es-config/gran-elastic-name gran-elastic-index-set true)
+    (validate-requested-index-set context es-config/elastic-name elastic-index-set true)
     ;; upsert indexes and index set based on the split index set
-    (update-index-set context es-config/gran-elastic-name ((keyword es-config/gran-elastic-name) split-index-set-map))
-    (update-index-set context es-config/elastic-name ((keyword es-config/elastic-name) split-index-set-map))))
+    (update-index-set context es-config/gran-elastic-name gran-elastic-index-set revision-id)
+    (update-index-set context es-config/elastic-name elastic-index-set revision-id)))
 
-(defn delete-index-set
+(defn- delete-index-set-indices
   "Delete all indices having 'id_' as the prefix the given elastic cluster, followed by
   index-set doc delete"
   [context index-set-id es-cluster-name]
@@ -315,6 +378,29 @@
         idx-mapping-type (first (keys mapping))]
     (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
+
+(defn delete-index-set
+  "Delete the index-set from all elastic clusters and save a tombstone in metadata-db.
+  skip-db-delete-if-missing: boolean -- a flag to determine if we should skip trying to delete from the db if the index-set is missing"
+  [context index-set-id skip-db-delete-if-missing]
+  ;; delete indexes and index-set from elastic
+  (delete-index-set-indices context index-set-id es-config/gran-elastic-name)
+  (delete-index-set-indices context index-set-id es-config/elastic-name)
+  ;; update database with index-set changes
+  (let [concept-id (try
+                     (meta-db/get-concept-id context :index-set "CMR" (str index-set-id))
+                     (catch Exception e
+                       (let [{:keys [type errors]} (ex-data e)]
+                         (if (and (= type :not-found) skip-db-delete-if-missing)
+                           (info "Caught expected 'not-found' error when trying to delete index-set, exiting gracefully. Errors:" errors)
+                           (throw e)))))
+        user-id (try
+                  (cxt/context->user-id context)
+                  (catch Exception _ "CMR"))]
+    (when concept-id
+      (meta-db/save-concept context {:concept-id concept-id
+                                     :user-id user-id
+                                     :deleted true}))))
 
 (defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."
@@ -520,7 +606,7 @@
              :bad-request
              (format "Cannot rebalance [%s] while its related indexes are being resharded."
                      concept-id)))
-        gran-index-set (-> gran-index-set
+        updated-gran-index-set (-> gran-index-set
                            (update-in
                             [:index-set :granule :rebalancing-collections]
                             add-rebalancing-collection concept-id)
@@ -537,8 +623,9 @@
                                   gran-index-set)
                                 (add-new-granule-index-to-index-set gran-index-set concept-id)))))]
     ;; Update the index set. This will create the new collection indexes as needed.
-    (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
-    (update-index-set context es-config/gran-elastic-name gran-index-set)))
+    (validate-requested-index-set context es-config/gran-elastic-name updated-gran-index-set true)
+    (let [revision-id (save-combined-index-set-to-mdb context updated-gran-index-set es-config/gran-elastic-name)]
+      (update-index-set context es-config/gran-elastic-name updated-gran-index-set revision-id))))
 
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
@@ -568,7 +655,8 @@
     (try
       ;; Update the index set. This will create the new collection indexes as needed.
       (validate-requested-index-set context es-config/gran-elastic-name new-gran-index-set true)
-      (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs new-gran-index-set))
+      (let [revision-id (save-combined-index-set-to-mdb context new-gran-index-set es-config/gran-elastic-name)]
+        (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs new-gran-index-set) revision-id))
 
       ;; Delete the separate index for this collection when moving back into small collections index
       (when (= "small-collections" target)
@@ -588,21 +676,25 @@
   (rebalancing-collections/validate-status status)
   (info (format "Updating collection rebalancing status for collection [%s] to status [%s]."
                 concept-id status))
-  (let [index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)]
-    (when-not (get-in index-set [:index-set :granule :rebalancing-status (keyword concept-id)])
+  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
+        current-status (get-in gran-index-set [:index-set :granule :rebalancing-status (keyword concept-id)])]
+    (when-not current-status
       (errors/throw-service-error
        :bad-request
        (format
         "The index set does not contain the rebalancing collection [%s]"
         concept-id)))
-    (validate-requested-index-set context es-config/gran-elastic-name index-set true)
-    (update-index-set
-     context
-     es-config/gran-elastic-name
-     (update-in
-      index-set
-      [:index-set :granule :rebalancing-status]
-      assoc (keyword concept-id) status))))
+    (if (= current-status status)
+      {:status 200}
+      (do
+        (validate-requested-index-set context es-config/gran-elastic-name gran-index-set true)
+        (let [updated-gran-index-set (update-in
+                                      gran-index-set
+                                      [:index-set :granule :rebalancing-status]
+                                      assoc (keyword concept-id) status)
+              revision-id (save-combined-index-set-to-mdb context updated-gran-index-set es-config/gran-elastic-name)]
+          (update-index-set context es-config/gran-elastic-name updated-gran-index-set revision-id))))))
+
 
 (defn get-resharded-index-name
   "Creates a name for a new index using the old name and the new shard count. Strips off the old
@@ -688,8 +780,9 @@
     ;; Create index directly in ES first to avoid potential mapping mismatch issues between old and new indexes
     (es/create-copy-of-index context elastic-name index target-index num-shards)
 
-    ;; Update the index-set and all the indexes with changes
-    (update-index-set context elastic-name new-index-set)))
+    (let [revision-id (save-combined-index-set-to-mdb context new-index-set elastic-name)]
+      ;; Update the index-set and all the indexes with changes
+      (update-index-set context elastic-name new-index-set revision-id))))
 
 (defn update-resharding-status
   "Update the resharding status for the given index"
@@ -698,19 +791,21 @@
   ;; resharding has the same valid statuses as rebalancing
   (rebalancing-collections/validate-status status)
   (let [index-set (index-set-util/get-index-set context elastic-name index-set-id)
-        concept-type (get-concept-type-for-index index-set index)]
-    (when-not (get-in index-set [:index-set concept-type :resharding-status (keyword index)])
+        concept-type (get-concept-type-for-index index-set index)
+        current-status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
+    (when-not current-status
       (errors/throw-service-error
        :bad-request
        (format
         "The index set does not contain the resharding index [%s]." index)))
-    (update-index-set
-     context
-     elastic-name
-     (update-in
-      index-set
-      [:index-set concept-type :resharding-status]
-      assoc (keyword index) status))))
+    (if (= current-status status)
+      {:status 200}
+      (let [updated-index-set (update-in
+                               index-set
+                               [:index-set concept-type :resharding-status]
+                               assoc (keyword index) status)
+            revision-id (save-combined-index-set-to-mdb context updated-index-set elastic-name)]
+        (update-index-set context elastic-name updated-index-set revision-id)))))
 
 (defn get-reshard-status
   "Get the resharding status for the given index"
@@ -827,7 +922,8 @@
       ;; delete old index
       (es/delete-index es-store index)
       ;; persist index-set changes
-      (update-index-set context elastic-name new-index-set)
+      (let [revision-id (save-combined-index-set-to-mdb context new-index-set elastic-name)]
+        (update-index-set context elastic-name new-index-set revision-id))
       (catch Exception e
         (error e (format "Failed to finalize resharding for [%s] -> [%s]" index target))
         (errors/throw-service-error :internal-error
@@ -868,14 +964,30 @@
       ;; delete attempted resharding index
       (es/delete-index es-store target-index-name)
       ;; persist index-set changes
-      (update-index-set context elastic-name new-index-set)
+      (let [revision-id (save-combined-index-set-to-mdb context new-index-set elastic-name)]
+        (update-index-set context elastic-name new-index-set revision-id))
       (catch Exception e
         (error e (format "Failed to rollback resharding from [%s] -> [%s]" target-index-name index))
         (errors/throw-service-error :internal-error
                                     (format "Failed to rollback resharding for [%s]; see server logs." index))))))
 
+(defn sync-index-sets-from-db
+  "Fetches all latest non-deleted index-sets from Metadata DB and creates them in Elasticsearch."
+  [context]
+  (info "Syncing index-sets from Metadata DB to Elasticsearch...")
+  (let [index-sets (meta-db/find-concepts context {:latest true} :index-set)]
+    (doseq [concept index-sets]
+      (if (:deleted concept)
+        (info (format "Skipping deleted index-set [%s]" (:concept-id concept)))
+        (let [combined-index-set (json/parse-string (:metadata concept) true)
+              index-set-id (get-in combined-index-set [:index-set :id])]
+          (info (format "Restoring index-set [%s] (ID: %s) to Elasticsearch..."
+                        (:concept-id concept) index-set-id))
+          ;; Use put-index-set to ensure we update existing or create new
+          (put-index-set context combined-index-set))))))
+
 (defn reset
-  "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
+  "Put elastic and db in a clean state after deleting indices associated with index-sets and index-set docs and the index-set db table."
   [context]
   (let [{:keys [index-name]} (config/idx-cfg-for-index-sets es-config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
@@ -886,10 +998,9 @@
         non-gran-index-set-ids (es/get-index-set-ids
                                 (indexer-util/context->es-store context es-config/elastic-name)
                                 index-name
-                                "_doc")]
-    ;; delete indices assoc with index-set
-    (doseq [id gran-index-set-ids]
-      (delete-index-set context (str id) es-config/gran-elastic-name))
+                                "_doc")
+        all-index-set-ids (into (set gran-index-set-ids) non-gran-index-set-ids)]
 
-    (doseq [id non-gran-index-set-ids]
-      (delete-index-set context (str id) es-config/elastic-name))))
+    ;; delete indices assoc with index-sets
+    (doseq [id all-index-set-ids]
+      (delete-index-set context id true))))
