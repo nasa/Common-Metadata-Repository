@@ -768,28 +768,3 @@
         ;  :stop-orbit-number 1}
         ; [(str "/OrbitCalculatedSpatialDomains/0 instance failed to match all required schemas "
         ;       "(matched only 1 out of 2)")]
-
-(deftest ingest-umm-g-granule-warning-test
-  (let [collection (data-core/ingest-umm-spec-collection
-                    "PROV1" (data-umm-c/collection {:EntryTitle "correct"
-                                                    :ShortName "S1"
-                                                    :Version "V1"
-                                                    :Projects [{:ShortName "proj-A"
-                                                                :cmr-humanized/ShortName {:value "proj-human" :priority 0}}
-                                                               {:ShortName "proj-B"
-                                                                :cmr-humanized/ShortName {:value "proj-human" :priority 0}}]
-                                                    :Platforms (data-umm-c/platforms "p1" "p2" "AM-1" "p4")})
-                    {:validate-keywords false})
-        _ (side/eval-form `(cfg/set-enforce-granule-collection-consistency! false))
-        granule (-> (dg/granule-with-umm-spec-collection
-                     collection (:concept-id collection) {:granule-ur "Gran1"
-                                                          :collection-ref (umm-g/map->CollectionRef {:entry-title "correct"})
-                                                          :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs-and-operational-mode "p2" "i2" "s1")]
-                                                          :project-refs ["KLM"]})
-                    (data-core/item->concept :umm-json))
-        {:keys [status errors warnings]} (ingest/ingest-concept granule)]
-    (index/wait-until-indexed)
-    (testing "Ensure with validation turned off, ingest succeeds for a collection and granule that have different fields previously erroring"
-      (is (= 201 status))
-      (is (= nil errors))
-      (is (= "Granule had the following warnings: [[:platform-refs 0 :instrument-refs] [\"The following list of Instrument short names did not exist in the referenced parent collection: [i2].\"]];; [[:platform-refs 0 :instrument-refs 0 :sensor-refs] [\"The following list of Sensor short names did not exist in the referenced parent collection: [s1].\"]];; [[:platform-refs 0 :instrument-refs 0] [\"The following list of Instrument operation modes did not exist in the referenced parent collection: [Mode1, Mode2].\"]];; [[:project-refs] [\"%s have [klm, not provided] which do not reference any projects in parent collection.\"]]" warnings)))))

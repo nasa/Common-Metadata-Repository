@@ -95,7 +95,6 @@
     (validate-granule context concept
                       (constantly [parent-collection-concept
                                    collection]))))
-;; Declared because of a circular dependency in `validate granule`
 (declare save-granule context concept)
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
