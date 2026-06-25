@@ -16,6 +16,7 @@
    [cmr.ingest.api.generic-documents :as gen-doc]
    [cmr.ingest.api.granules :as granules]
    [cmr.ingest.api.provider :as provider-api]
+   [cmr.ingest.api.realtime-events :as realtime-events]
    [cmr.ingest.api.services :as services]
    [cmr.ingest.api.subscriptions :as subscriptions]
    [cmr.ingest.services.subscriptions-helper :as subscriptions-helper]
@@ -290,6 +291,12 @@
          (GET "/status" ; Gets all tasks for provider
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
+       
+       ;; Real-time
+       (context "realtime/events" []
+         (POST "/"
+           request
+           (realtime-events/routes request)))
 
 (defn build-routes [system]
   (routes

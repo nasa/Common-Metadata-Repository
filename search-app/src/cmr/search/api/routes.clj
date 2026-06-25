@@ -12,6 +12,7 @@
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.providers :as providers-api]
+   [cmr.search.api.realtime-routes :as realtime-routes]
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.tools :as tools-api]
@@ -80,6 +81,9 @@
 
         ;; Add route(s) for the concepts lookup endpoint
        concepts-lookup-api/concepts-routes
+
+       ;; Use real-time searching
+       realtime-routes/routes
 
         ;; Find concepts
        concepts-search-api/search-routes

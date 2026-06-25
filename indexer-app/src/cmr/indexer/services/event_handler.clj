@@ -10,6 +10,7 @@
    [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
    [cmr.indexer.services.autocomplete :as autocomplete]
    [cmr.indexer.services.index-service :as indexer]
+   [cmr.indexer.services.realtime-event-handler :as realtime-handler]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 ;; Isolating provider events from other ingest events to prevent them from ever being processed
@@ -89,6 +90,10 @@
                           "revision-id %s all-revisions-index? %s took %d ms.")
                      (str *ns*) concept-id revision-id all-revisions-index? tm))
       result)))
+
+(defmethod handle-ingest-event :realtime-granule-event
+  [context all-revisions-index? msg]
+  (realtime-handler/handle-realtime-event context all-revisions-index? msg))
 
 (defmethod handle-ingest-event :tombstone-delete
   [context _all-revisions-index? {:keys [concept-id revision-id]}]
