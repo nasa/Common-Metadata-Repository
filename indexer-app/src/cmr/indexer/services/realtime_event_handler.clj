@@ -1,11 +1,11 @@
-(ns cmr.indexer.services.realtime.event-handler
+(ns cmr.indexer.services.realtime-event-handler
   "Realtime event projection hooks for indexer-app.
 
   This namespace deliberately contains orchestration stubs, not Elasticsearch mapping details.
   The real implementation should reuse existing index-service functions and concept mapping code."
   (:require
    [cmr.common.log :refer [info warn]]
-   [cmr.message-queue.realtime.event :as realtime-event]))
+   [cmr.message-queue.topic.realtime-event :as realtime-event]))
 
 (defn- event->index-doc
   "Projects a realtime event into fields that search-app can query.

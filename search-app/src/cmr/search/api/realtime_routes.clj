@@ -1,4 +1,4 @@
-(ns cmr.search.api.realtime.routes
+(ns cmr.search.api.realtime-routes
   "Public realtime discovery routes for search-app."
   (:require
    [cheshire.core :as json]

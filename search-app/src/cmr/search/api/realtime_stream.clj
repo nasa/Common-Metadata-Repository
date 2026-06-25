@@ -1,4 +1,4 @@
-(ns cmr.search.api.realtime.stream
+(ns cmr.search.api.realtime-stream
   "Server-sent-event response skeleton for realtime CMR metadata events."
   (:require
    [cheshire.core :as json]

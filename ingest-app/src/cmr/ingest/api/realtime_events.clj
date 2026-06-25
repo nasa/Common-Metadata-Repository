@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.realtime.events
+(ns cmr.ingest.api.realtime-events
   "Provider-facing realtime event publication routes."
   (:require
    [cheshire.core :as json]
