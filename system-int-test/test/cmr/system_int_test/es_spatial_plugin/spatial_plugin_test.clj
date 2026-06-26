@@ -39,7 +39,7 @@
         response (client/post (str es-url "/" index-name "/_search")
                               {:content-type :json
                                :accept :json
-                               :as :json  ;; <-- This tells clj-http to automatically parse the response into a Clojure map with keyword keys!
+                               :as :json  ;; <-- This tells clj-http to automatically parse the response into a Clojure map with keyword keys
                                :throw-exceptions false
                                :body (json/generate-string query)})]
     (:body response)))

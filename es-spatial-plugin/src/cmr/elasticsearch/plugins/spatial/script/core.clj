@@ -30,8 +30,6 @@
 (defn extract-source-values
   "Extracts arrays from _source natively to bypass Java 17 reflection blocks."
   [source field-name expected-type]
-
-  ;; NOTICE: (get ...) instead of (.get ...). No dots!
   (let [val (get source field-name)]
     (cond
       (nil? val) nil
@@ -91,11 +89,11 @@
 (defn -getSource
   [this]
   (let [lookup (-> this .data :search-lookup (.source))
-        ;; 1. Unwrap the Lambda FIRST
+        ;; Unwrap the Lambda FIRST
         source-obj (if (instance? java.util.function.Supplier lookup)
                      (.get ^java.util.function.Supplier lookup)
                      lookup)]
-    ;; 2. Now that it is unwrapped, get the raw Java Map
+    ;; Now that it is unwrapped, get the raw Java Map
     (.source source-obj)))
 
 (defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^DocReader doc-reader]
