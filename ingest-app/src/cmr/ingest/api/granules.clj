@@ -14,6 +14,7 @@
 
 
 (def GRANULE_WARNING_CONTEXT "Granule had the following warnings: ")
+
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
   or a normal request with the XML as the body."

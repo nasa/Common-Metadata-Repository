@@ -43,7 +43,7 @@
           ["{\"url\":\"http://fake.gov/path?content=value&data=value\"}" "{\"XYZ\":\"zyx\"}"]
           "{\"content\":{\"url\":\"http://fake.gov/path?content=value&data=value\"},\"data\":{\"XYZ\":\"zyx\"}}"
 
-          "Make sure that XML is passed thru withresponse change"
+          "Make sure that XML is passed thru with response change"
           ["<example>data</example>"]
           "<example>data</example>")))
 
