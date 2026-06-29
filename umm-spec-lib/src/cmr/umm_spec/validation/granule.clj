@@ -5,6 +5,7 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.common.config :as cfg]
    [cmr.common.validations.core :as v]
    [cmr.spatial.validation :as sv]
    [cmr.umm.collection.entry-id :as eid]
@@ -34,8 +35,8 @@
     (when (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)
        [(format
-          "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
-          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+         "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
+         (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
@@ -44,8 +45,8 @@
     (when-not (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)
        [(format
-          "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
-          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+         "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
+         (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
@@ -63,7 +64,7 @@
                               (is-not-allowed :geometries)]
                  (:geodetic :cartesian) [(is-required :geometries)
                                          (is-not-allowed :orbit)]
-                 :orbit [ (is-required :orbit)])]
+                 :orbit [(is-required :orbit)])]
     (apply merge (remove nil? errors))))
 
 (defn set-geometries-spatial-representation
@@ -85,9 +86,9 @@
   [(v/pre-validation
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;; polygons etc do not know whether they are geodetic or not.
-     set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)
-      :orbit (v/when-present sv/spatial-validation)})])
+    set-geometries-spatial-representation
+    {:geometries (v/every sv/spatial-validation)
+     :orbit (v/when-present sv/spatial-validation)})])
 
 (def ocsd-validations
   "Defines orbit calculated spatial domain validations for granules."
@@ -211,44 +212,56 @@
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
                 (string/join ", " missing-operation-modes))]})))
 
-(def sensor-ref-validations
-  "Defines the sensor validations for granules"
-  {:characteristic-refs [(vu/unique-by-name-validator :name)
-                         (vu/has-parent-validator :name "Characteristic Reference name")]})
+(def ^:private granule-consistency-validations
+  "Granule-vs-parent-collection consistency validations. Enforced as errors
+   when enforce-granule-collection-consistency is on, surfaced as warnings
+   when it is off."
+  [{:platform-refs
+    [(vu/has-parent-validator :short-name "Platform short name")
+     (v/every
+      {:instrument-refs
+       [(vu/has-parent-validator :short-name "Instrument short name")
+        (v/every
+         [{:characteristic-refs [(vu/has-parent-validator :name "Characteristic Reference name")]
+           :sensor-refs [(vu/has-parent-validator :short-name "Sensor short name")
+                         (v/every {:characteristic-refs
+                                   [(vu/has-parent-validator :name "Characteristic Reference name")]})]}
+          operation-modes-reference-collection])]})]}
+   projects-reference-collection])
 
-(def instrument-ref-validations
-  "Defines the instrument validations for granules"
-  [{:characteristic-refs [(vu/unique-by-name-validator :name)
-                          (vu/has-parent-validator :name "Characteristic Reference name")]
-    :sensor-refs [(vu/unique-by-name-validator :short-name)
-                  (vu/has-parent-validator :short-name "Sensor short name")
-                  (v/every sensor-ref-validations)]}
-   operation-modes-reference-collection])
-
-(def platform-ref-validations
-  "Defines the platform validations for granules"
-  {:instrument-refs [(vu/unique-by-name-validator :short-name)
-                     (vu/has-parent-validator :short-name "Instrument short name")
-                     (v/every instrument-ref-validations)]})
-
-(def granule-validations
-  "Defines validations for granules"
+(def ^:private base-granule-validations
+  "Granule validations that are always enforced regardless of the toggle."
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:EntryTitle])
                      (matches-collection-identifier-validation :entry-id [:entry-id])
                      (matches-collection-identifier-validation :short-name [:ShortName])
                      (matches-collection-identifier-validation :version-id [:Version])]
     :spatial-coverage spatial-coverage-validations
-    :orbit-calculated-spatial-domains ocsd-validations 
+    :orbit-calculated-spatial-domains ocsd-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
-                    (vu/has-parent-validator :short-name "Platform short name")
-                    (v/every platform-ref-validations)]
+                    (v/every
+                     {:instrument-refs
+                      [(vu/unique-by-name-validator :short-name)
+                       (v/every
+                        {:characteristic-refs [(vu/unique-by-name-validator :name)]
+                         :sensor-refs [(vu/unique-by-name-validator :short-name)
+                                       (v/every {:characteristic-refs
+                                                 [(vu/unique-by-name-validator :name)]})]})]})]
     :two-d-coordinate-system [(vu/has-parent-validator :name "Tiling Identification System Name")
                               two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Additional Attribute")
                                   (v/every aav/aa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
-   projects-reference-collection
    spatial-matches-granule-spatial-representation])
+
+(def granule-validations
+  "Defines validations for granules."
+  (if (cfg/enforce-granule-collection-consistency)
+    (into base-granule-validations granule-consistency-validations)
+    base-granule-validations))
+
+(def granule-validation-warnings
+  "Defines validations for granules returned as warnings rather than failures."
+  granule-consistency-validations)

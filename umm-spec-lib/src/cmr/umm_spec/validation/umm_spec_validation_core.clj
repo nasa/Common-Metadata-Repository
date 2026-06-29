@@ -57,6 +57,13 @@
     (v/validate (cons vc/collection-validation-warnings additional-validations)
                 (aa/add-parsed-values collection)))))
 
+(defn validate-granule-warnings
+  "Validates the UMM-G record against the list of warnings - issues that we want
+  to convey to the user, but not consider failures."
+  [collection granule]
+  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+    (v/validate vg/granule-validation-warnings granule-with-parent)))
+
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
@@ -106,16 +113,6 @@
   ([variable additional-validations]
    (validation-errors->path-errors
     (v/validate (cons vv/variable-validations additional-validations)
-                variable))))
-
-(defn validate-variable-warnings
-  "Validates the UMM record against the list of warnings - issues that we want
-  to convey to the user, but which we do not consider failures."
-  ([variable]
-   (validate-variable-warnings variable nil))
-  ([variable additional-validations]
-   (validation-errors->path-errors
-    (v/validate (cons vv/variable-validation-warnings additional-validations)
                 variable))))
 
 (defn validate-variable-with-no-defaults
