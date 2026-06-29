@@ -1,5 +1,6 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
+   [cmr.common.config :as cfg]
    [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
@@ -19,8 +20,8 @@
   (let [{:keys [short-name version-id entry-title entry-id]} collection-ref]
     (when-not (or entry-title entry-id (and short-name version-id))
       (errors/throw-service-error
-        :invalid-data
-        "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
+       :invalid-data
+       "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
 (defn-timed get-granule-parent-collection-and-concept
   "Returns the parent collection concept, parsed UMM spec record, and the parse UMM lib record for a
@@ -62,12 +63,15 @@
   ([context concept]
    (validate-granule context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
-   (let [_ (v/validate-concept-request concept)
-         _ (v/validate-concept-metadata concept)
-         granule (umm-legacy/parse-concept context concept)
+   (v/validate-concept-request concept)
+   (v/validate-concept-metadata concept)
+   (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
-          umm-spec-collection](fetch-parent-collection-concept-fn
-                               context concept granule)]
+          umm-spec-collection] (fetch-parent-collection-concept-fn
+                                context concept granule)
+         ;; If the feauture toggle is on don't process warnings just reutrn `nil`
+         warnings (when-not (cfg/enforce-granule-collection-consistency)
+                    (v/umm-spec-validate-granule-warnings context umm-spec-collection granule))]
      ;; UMM Validation
      (v/validate-granule-umm-spec context umm-spec-collection granule)
 
@@ -75,7 +79,7 @@
      (let [gran-concept (add-extra-fields-for-granule
                          concept granule parent-collection-concept)]
        (v/validate-business-rules context gran-concept)
-       [gran-concept granule]))))
+       [gran-concept granule warnings]))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
@@ -91,21 +95,22 @@
     (validate-granule context concept
                       (constantly [parent-collection-concept
                                    collection]))))
-
 (declare save-granule context concept)
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (let [[concept umm-granule] (validate-granule context concept)
+  (let [[concept umm-granule warnings] (validate-granule context concept)
+        
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)
         granule-edn-concept (assoc concept :metadata umm-granule
-                                           :concept-id concept-id
-                                           :revision-id revision-id)]
+                                   :concept-id concept-id
+                                   :revision-id revision-id)]
+
     (try
       (subscriptions/publish-subscription-notification-if-applicable context granule-edn-concept)
       (catch Exception e
         (error "Error while processing subscriptions: " e)))
-    {:concept-id concept-id, :revision-id revision-id}))
+    {:concept-id concept-id, :revision-id revision-id :warnings warnings}))
 
 (defn-timed delete-granule
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or

@@ -14,6 +14,7 @@ profiles.clj
 .tags
 .tags1
 **/.clj-kondo/.cache
+.clj-kondo/http-kit/http-kit/
 .lsp
 .cider-repl-history
 **/ignore.*
