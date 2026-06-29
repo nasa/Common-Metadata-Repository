@@ -13,7 +13,6 @@
 (defn create-index! []
   (client/put (str es-url "/" index-name)
               {:content-type :json
-               :throw-exceptions false
                :body (json/generate-string
                        {:mappings
                         {:properties
