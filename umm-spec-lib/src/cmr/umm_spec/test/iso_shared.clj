@@ -193,7 +193,7 @@
           (dissoc related-url :GetService))))
 
 (defn expected-quality
-  "Returns the expected DOI."
+  "Returns the expected Quality."
   [quality]
   (when (:Summary quality)
-    (assoc quality :Summary (string/trim(:Summary quality)))))
+    (assoc quality :Summary (string/trim (:Summary quality)))))

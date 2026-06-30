@@ -1543,7 +1543,7 @@ History:
                 <action>changed</action>
                 <src>added mixed case to field with new fields with text and enum on 2026-01</src>
                 <since>10.2.g</since>
-                <note>If the sub-fields are used only the sub-fields should have text and there should be no text between the main field and sub-fields. Allow the user to add text to the main field if only the main field is used but no sub-fields should be used to define the quality.</note>
+                <note>Since this element is a mixed element, the curator either needs to provide text OR provide the defined subfields, but not both.</note>
             </xs:appinfo>
             <xs:documentation>
             | ECHO 10               | UMM                   | DIF 10                | Notes                        |

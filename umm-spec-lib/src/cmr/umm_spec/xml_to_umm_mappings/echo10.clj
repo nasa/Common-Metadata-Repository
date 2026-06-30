@@ -81,7 +81,7 @@
               [tag text])))))
 
 (defn parse-quality
-  "Parses the 1.18.6 Quality object tree out of the existing ECHO 10 XSD configuration."
+  "Parses the Quality object tree out of the existing ECHO 10 XSD configuration."
   [doc sanitize?]
   (when-let [quality (first (select doc "/Collection/Quality"))]
     (let [children (:content quality)
