@@ -50,7 +50,9 @@
                                         :exclusions [net.jpountz.lz4/lz4
                                                      org.apache.logging.log4j/log4j-api
                                                      org.apache.logging.log4j/log4j-core
-                                                     org.lz4/lz4-java]]
+                                                     org.lz4/lz4-java
+                                                     org.jruby.joni/joni
+                                                     org.jruby.jcodings/jcodings]]
                                        [at.yawk.lz4/lz4-java "1.10.1"]
 
                                        [org.clojure/tools.reader "1.3.2"]
