@@ -1580,7 +1580,8 @@ History:
                                 <xs:simpleType>
                                     <xs:restriction base="QualityContentDetailStringType"/>
                                 </xs:simpleType>
-                            </xs:element>                                <xs:element name="Other" minOccurs="0">
+                            </xs:element>
+                            <xs:element name="Other" minOccurs="0">
                                 <xs:simpleType>
                                     <xs:restriction base="QualityContentDetailStringType"/>
                                 </xs:simpleType>
