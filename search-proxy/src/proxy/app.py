@@ -296,6 +296,8 @@ async def proxy(request: Request, path: str):
     request_id = _extract_request_id(request)
     auth_token = _extract_auth_token(request)
     query_string = str(request.url.query)
+    search_after = request.headers.get("cmr-search-after", "")
+    accept = request.headers.get("accept", "")
 
     # Bypass: skip classification, cache, and lanes — pure transparent proxy
     if toggles["bypass_enabled"]:
@@ -372,7 +374,7 @@ async def proxy(request: Request, path: str):
     if toggles["cache_enabled"] and lane.cache_ttl > 0:
         try:
             cached = await cache.get(
-                request.method, full_path, query_string, auth_token
+                request.method, full_path, query_string, auth_token, search_after, accept
             )
             if cached:
                 logger.info(
@@ -445,6 +447,8 @@ async def proxy(request: Request, path: str):
                         response_data,
                         len(backend_response.content),
                         lane.cache_ttl,
+                        search_after,
+                        accept,
                     )
                     cache_stored = True
                 except Exception:
