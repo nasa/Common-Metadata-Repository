@@ -19,17 +19,17 @@ class ResponseCache:
         self.redis = redis_client
         self.max_response_bytes = max_response_bytes
 
-    def _build_key(self, method: str, path: str, query: str, auth_token: str) -> str:
+    def _build_key(self, method: str, path: str, query: str, auth_token: str, search_after: str = "", accept: str = "") -> str:
         """Hash the full request signature into a Redis key."""
-        raw = f"{method}|{path}|{query}|{auth_token}"
+        raw = f"{method}|{path}|{query}|{auth_token}|{search_after}|{accept}"
         digest = hashlib.sha256(raw.encode()).hexdigest()
         return f"cache:{digest}"
 
     async def get(
-        self, method: str, path: str, query: str, auth_token: str
+        self, method: str, path: str, query: str, auth_token: str, search_after: str = "", accept: str = ""
     ) -> Optional[dict]:
         """Look up a cached response. Returns None on miss."""
-        key = self._build_key(method, path, query, auth_token)
+        key = self._build_key(method, path, query, auth_token, search_after, accept)
         cached = await self.redis.get(key)
         if cached is not None:
             return json.loads(cached)
@@ -44,6 +44,8 @@ class ResponseCache:
         response_data: dict,
         response_size: int,
         ttl: int,
+        search_after: str = "",
+        accept: str = "",
     ):
         """Store a response with the given TTL. Skips oversized responses."""
         if response_size > self.max_response_bytes:
@@ -57,5 +59,5 @@ class ResponseCache:
             )
             return
 
-        key = self._build_key(method, path, query, auth_token)
+        key = self._build_key(method, path, query, auth_token, search_after, accept)
         await self.redis.setex(key, ttl, json.dumps(response_data))
