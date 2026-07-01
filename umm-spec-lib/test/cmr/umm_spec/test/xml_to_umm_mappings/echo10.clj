@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.echo10
   (:require
+   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
@@ -365,3 +366,31 @@
             umm-result (:UseConstraints result)]
         (is (and (= "Description" (:Description umm-result))
                  (= "License Text" (:LicenseText umm-result))))))))
+
+(deftest parse-quality-xml->umm-test
+  (testing "1. Returns nil if the Quality element does not exist in the document"
+    (let [doc "<Collection><ShortName>NASA-456</ShortName></Collection>"
+          parsed (#'echo10/parse-echo10-xml test-context doc false)]
+      (is (nil? (:Quality parsed)))))
+
+  (testing "2. Parses a fully structured Quality XML block back into a complete map"
+    (let [doc "<Collection>
+                <Quality>
+                  <Summary>This is the required dataset summary text.</Summary>
+                  <QualityContentDetails>
+                    <Strengths>High instrument stability over 10 years.</Strengths>
+                    <Limitations>Reduced performance during night cycles.</Limitations>
+                  </QualityContentDetails>
+                </Quality>
+              </Collection>"
+          expected {:Summary "This is the required dataset summary text."
+                    :QualityContentDetails {:Strengths "High instrument stability over 10 years."
+                                            :Limitations "Reduced performance during night cycles."}}
+          parsed (#'echo10/parse-echo10-xml test-context doc false)]
+      (is (= expected (:Quality parsed)))))
+
+  (testing "3. Gracefully omits QualityContentDetails if the tag is empty or absent"
+    (let [doc "<Collection><Quality><Summary>Only summary here.</Summary></Quality></Collection>"
+          expected {:Summary "Only summary here."}
+          parsed (#'echo10/parse-echo10-xml test-context doc false)]
+      (is (= expected (:Quality parsed))))))

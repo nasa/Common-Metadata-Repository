@@ -16,6 +16,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
@@ -122,10 +123,10 @@
   Category of each theme descriptive keyword to determine if it is a science keyword."
   [data-id-el sanitize?]
   (if-let [science-keywords (seq
-                              ;; kws/parse-science-keywords is shared by iso19115 and isosmap
-                              ;; "true" indicates it's isosmap case.
-                              (->> (kws/parse-science-keywords data-id-el sanitize? true)
-                                   (filter #(.contains kws/science-keyword-categories (:Category %)))))]
+                             ;; kws/parse-science-keywords is shared by iso19115 and isosmap
+                             ;; "true" indicates it's isosmap case.
+                             (->> (kws/parse-science-keywords data-id-el sanitize? true)
+                                  (filter #(.contains kws/science-keyword-categories (:Category %)))))]
     science-keywords
     (when sanitize?
       u/not-provided-science-keywords)))
@@ -159,11 +160,11 @@
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
        :CollectionProgress (get-umm-element/get-collection-progress
-                             coll-progress-mapping
-                             data-id-el
-                             "gmd:status/gmd:MD_ProgressCode"
-                             sanitize?)
-       :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
+                            coll-progress-mapping
+                            data-id-el
+                            "gmd:status/gmd:MD_ProgressCode"
+                            sanitize?)
+       :Quality (quality/parse-quality doc quality-xpath sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
        :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)
@@ -179,9 +180,9 @@
        ;; Required by UMM-C
        :ProcessingLevel {:Id
                          (u/with-default
-                          (char-string-value
-                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                          sanitize?)
+                           (char-string-value
+                            data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                           sanitize?)
                          :ProcessingLevelDescription
                          (char-string-value
                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
@@ -194,7 +195,7 @@
        :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
                                                                                     dist-info-xpath)
        :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))))
+                               {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                          umm-spec-versioning/current-collection-version),
+                                :Name "UMM-C"
+                                :Version umm-spec-versioning/current-collection-version})}))))

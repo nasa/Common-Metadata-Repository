@@ -61,6 +61,40 @@
       (parse-projects-impl doc sanitize?))
     (parse-projects-impl doc sanitize?)))
 
+(defn extract-quality-content-details
+  "Helper to pull text values out of the QualityContentDetails element child nodes."
+  [content-details-element]
+  (when content-details-element
+    (let [children (:content content-details-element)]
+      (into {}
+            (for [child children
+                  ;; Filters out whitespace strings between tags
+                  :when (map? child)
+                  :let [tag (:tag child)
+                        text (first (:content child))]
+                  ;; Only include fields with content
+                  :when (seq text)]
+              [tag text])))))
+
+(defn parse-quality
+  "Parse DIF10 Quality into UMM-C."
+  [doc sanitize?]
+  (when-let [quality (first (select doc "/DIF/Quality"))]
+    (let [children (:content quality)
+          ;; Filter for nested XML elements (which parse as maps)
+          element-children (filter map? children)
+          summary-node (first (filter #(= "Summary" (name (:tag %))) element-children))]
+      (if (nil? summary-node)
+        ;; The value is a plain string.
+        {:Summary (first children)}
+        ;; The value is a structured object.
+        (let [details-node (first (filter #(= "QualityContentDetails" (name (:tag %))) element-children))
+              summary-text (first (:content summary-node))
+              details-map  (extract-quality-content-details details-node)]
+          (cond-> {}
+            (seq summary-text) (assoc :Summary (su/truncate summary-text su/QUALITY_MAX sanitize?))
+            (seq details-map)  (assoc :QualityContentDetails details-map)))))))
+
 (defn- parse-instruments-impl
   [platform-el]
   (for [inst (select platform-el "Instrument")]
@@ -352,7 +386,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
    :DirectoryNames (dif-util/parse-idn-node doc)
-   :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
+   :Quality (parse-quality doc sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (parse-use-constraints doc sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]

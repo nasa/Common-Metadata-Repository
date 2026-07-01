@@ -400,7 +400,11 @@
                         "INTELLIGENCE/MILITARY"
                         "GEOSCIENTIFIC INFORMATION"
                         "EXTRA TERRESTRIAL"]
-   :Quality "Pretty good quality"
+   :Quality {:Summary "The MODIS Vegetation Continuous Fields (VCF) product is a sub-pixel-level representation of surface vegetation cover estimates globally."
+             :QualityContentDetails {:Strengths "Global coverage: The product provides consistent vegetation cover estimates."
+                                     :Limitations "Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured."
+                                     :KnownIssues "Snow/ice confusion: In some high-latitude areas, persistent snow cover may be misclassified."
+                                     :Other "Detection Flag at the cell level is used to help identify retrieval conditions."}}
    :DOI {:MissingReason "Not Applicable"
          :Explanation "This is an explanation."}
    :AssociatedDOIs [{:DOI "10.4567/DOI1"

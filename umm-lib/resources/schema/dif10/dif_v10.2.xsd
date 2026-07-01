@@ -31,6 +31,7 @@ History:
     2021-03-03 : 10.2 d - CMR-7035 Adding AssociatedDOIs and DirectDistributionInformation
     2021-11-11 : 10.2 e - ECSE-1122 Adding Free_And_Open_Data
     2024-02-13 : 10.2 f - patch, adding ECSE-1474 - CMR landing pages
+    2026-01-30 : 10.2 g - ECSE-2267 add new sub-fields to Quality field
 
 -->
 
@@ -1535,25 +1536,66 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Quality  -->
-        
-    <xs:complexType name="QualityType">
+    <xs:complexType name="QualityType" mixed="true">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
-            <xs:appinfo><action>changed</action><src>UMM (DIF)</src></xs:appinfo>
+            <xs:appinfo>
+                <action>changed</action>
+                <src>added mixed case to field with new fields with text and enum on 2026-01</src>
+                <since>10.2.g</since>
+                <note>Since this element is a mixed element, the curator either needs to provide text OR provide the defined subfields, but not both.</note>
+            </xs:appinfo>
             <xs:documentation>
-            
-            | DIF 9        | ECHO 10 | UMM         | DIF 10   | Notes          |
-            | ------------ | ------- | ------------| -------- | -------------  |
-            | Quality      |    -    | Quality     | Quality  | No change      |
-            
+            | ECHO 10               | UMM                   | DIF 10                | Notes                        |
+            | --------------------- | ----------------------| ----------------------| -----------------------------|
+            | Quality               | Quality               | Quality               | Structure updated            |
+            | Summary               | Summary               | Summary               | Existing Values to this field|
+            | QualityContentDetails | QualityContentDetails | QualityContentDetails | Object of quality details    |
             </xs:documentation>
         </xs:annotation>
-        
-        <xs:simpleContent>
-            <xs:extension base="DisplayableTextTypeBaseType">
-                <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
-            </xs:extension>
-        </xs:simpleContent>
+        <xs:sequence minOccurs="0">
+            <xs:element name="Summary" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="12000"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="QualityContentDetails" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:choice minOccurs="1" maxOccurs="4">
+                            <xs:element name="Strengths" minOccurs="0">
+                                <xs:simpleType>
+                                    <xs:restriction base="QualityContentDetailStringType"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="Limitations" minOccurs="0">
+                                <xs:simpleType>
+                                    <xs:restriction base="QualityContentDetailStringType"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="KnownIssues" minOccurs="0">
+                                <xs:simpleType>
+                                    <xs:restriction base="QualityContentDetailStringType"/>
+                                </xs:simpleType>
+                            </xs:element>
+                            <xs:element name="Other" minOccurs="0">
+                                <xs:simpleType>
+                                    <xs:restriction base="QualityContentDetailStringType"/>
+                                </xs:simpleType>
+                            </xs:element>
+                        </xs:choice>
+                    </xs:sequence>
+                </xs:complexType>
+                <xs:unique name="uniqueQualityContentElements">
+                    <xs:selector xpath="./*"/>
+                    <xs:field xpath="Strengths | Limitations | KnownIssues | Other"/>
+                </xs:unique>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
     </xs:complexType>
 
     <!-- *********************************************************** -->
