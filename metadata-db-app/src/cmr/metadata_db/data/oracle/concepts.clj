@@ -520,6 +520,7 @@
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
+  (j/db-do-commands this "DELETE FROM cmr_index_sets")
   (j/db-do-commands this "DELETE FROM cmr_subscriptions")
   (j/db-do-commands this "DELETE FROM cmr_sub_notifications")
   (j/db-do-commands this "DELETE FROM cmr_services")

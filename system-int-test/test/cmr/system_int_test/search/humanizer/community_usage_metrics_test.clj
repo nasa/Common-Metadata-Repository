@@ -270,7 +270,7 @@
               admin-update-token
               "Product,ProductVersion,Hosts\nAMSR-L1A,3,x"))))
     (testing "large integer value for hosts (access-count)"
-      (is (= {:concept-id "H1200000011-CMR", :revision-id 2, :status 200}
+      (is (= {:concept-id "H1200000012-CMR", :revision-id 2, :status 200}
              (humanizer-util/update-community-usage-metrics
               admin-update-token
               "Product,ProductVersion,Hosts\nAMSR-L1A,3,2147483648"))))))
