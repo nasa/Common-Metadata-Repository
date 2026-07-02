@@ -20,6 +20,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.quality :as quality]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as parsing-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
@@ -64,8 +65,8 @@
   "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality")
 
 (def quality-xpath
-  (str data-quality-info-xpath
-       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
+   (str data-quality-info-xpath
+        "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def precision-xpath
   (str "gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult"
@@ -364,7 +365,7 @@
                            "gmd:status/gmd:MD_ProgressCode"
                            sanitize?)
       :DataMaturity (parse-data-maturity doc)
-      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
+      :Quality (quality/parse-quality doc quality-xpath sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
       :UseConstraints (use-constraints/parse-use-constraints doc constraints-xpath sanitize?)

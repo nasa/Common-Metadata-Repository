@@ -7,9 +7,13 @@
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
+   [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]))
+
+
+(def GRANULE_WARNING_CONTEXT "Granule had the following warnings: ")
 
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
@@ -23,8 +27,8 @@
   [provider-id native-id {:keys [body content-type headers request-context]}]
   (api-core/verify-provider-exists request-context provider-id)
   (let [concept (api-core/body->concept! :granule provider-id native-id body content-type headers)]
-    (info (format "Validating granule %s from client %s"
-                  (api-core/concept->loggable-string concept) (:client-id request-context)))
+    (info (format "Validating granule %s from client %s" (api-core/concept->loggable-string concept)
+                  (:client-id request-context)))
     (ingest/validate-granule request-context concept)
     {:status 200}))
 
@@ -74,7 +78,8 @@
           concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
       (api-core/log-concept-with-metadata-size concept-to-log request-context)
-      (api-core/generate-ingest-response headers save-granule-result))))
+      (api-core/generate-ingest-response headers (util/remove-nil-keys
+                                                (api-core/format-and-contextualize-warnings-existing-errors save-granule-result GRANULE_WARNING_CONTEXT nil))))))
 
 (defn delete-granule
   [provider-id native-id request]

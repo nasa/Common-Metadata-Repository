@@ -122,3 +122,13 @@
                  "select count(*) as c from all_sequences where sequence_name='CONCEPT_ID_SEQ'")
         seq-count (:c (first result))]
     (= 0 (int seq-count))))
+
+(defn column-exists?
+  "Returns true if the column exists in the table"
+  [table-name column-name]
+  (let [result (j/query
+                 (config/db)
+                 ["select count(*) as c from all_tab_columns where owner='METADATA_DB' and table_name=upper(?) and column_name=upper(?)"
+                  table-name column-name])
+        col-count (:c (first result))]
+    (not= 0 (int col-count))))
