@@ -224,3 +224,29 @@
                :body (json/generate-string index-set)
                :connection-manager (s/conn-mgr)
                :throw-exceptions false}))
+
+(defn create-index-set
+  "Creates the given index-set in the indexer"
+  [index-set]
+  (client/post (url/indexer-index-sets-url)
+               {:headers {transmit-config/token-header (transmit-config/echo-system-token)
+                         "content-type" "application/json"}
+                :body (json/generate-string index-set)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}))
+
+(defn delete-index-set
+  "Deletes the index-set with the given id"
+  [id]
+  (client/delete (url/indexer-index-sets-by-id-url id)
+                 {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (s/conn-mgr)
+                  :throw-exceptions false}))
+
+(defn sync-index-sets-from-db
+  "Triggers a sync of index-sets from database to elasticsearch"
+  []
+  (client/post (url/index-set-sync-url)
+               {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}))

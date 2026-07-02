@@ -12,6 +12,7 @@
    [taoensso.carmine :as carmine]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
+(use-fixtures :each test-util/reset-redis-fixture)
 
 (deftest testing-checking-if-redis-is-setup
   (let [key :testing-key-exists

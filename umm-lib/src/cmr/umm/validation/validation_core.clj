@@ -3,7 +3,6 @@
   (:require
    [cmr.common.validations.core :as v]
    [cmr.umm.validation.collection-validation :as vc]
-   [cmr.umm.validation.granule :as vg]
    [cmr.umm.validation.parent-weaver :as pw]
    ;; Required so that the spatial validations will be available.
    [cmr.spatial.ring-validations]
@@ -46,10 +45,3 @@
    (validation-errors->path-errors
      (v/validate (cons vc/collection-validations additional-validations)
                  collection))))
-
-(defn validate-granule
-  "Validates the umm record returning a list of error maps containing a path through the
-  UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
-  [collection granule]
-  (validation-errors->path-errors
-    (v/validate vg/granule-validations (pw/set-parent granule collection))))

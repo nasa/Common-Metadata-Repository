@@ -182,8 +182,15 @@
 (def humanizer-concept-validation
   "Builds a function that validates a concept map that has no provider and returns a list of errors"
   (v-util/compose-validations (conj base-concept-validations
-                                  concept-id-matches-concept-fields-validation-no-provider
-                                  humanizer-native-id-validation)))
+                                    concept-id-matches-concept-fields-validation-no-provider
+                                    humanizer-native-id-validation)))
+
+(def index-set-concept-validation
+  "Builds a function that validates a concept map that has no provider and returns a list of errors.
+   Index-sets are global system-level entities and are not associated with any specific data provider.
+   They are owned by the internal 'CMR' system provider."
+  (v-util/compose-validations (conj base-concept-validations
+                                    concept-id-matches-concept-fields-validation-no-provider)))
 
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
@@ -205,6 +212,10 @@
   "validates a humanizer concept. Throws an error if invalid."
   (v-util/build-validator :invalid-data humanizer-concept-validation))
 
+(def validate-index-set-concept
+  "validates an index-set concept. Throws an error if invalid."
+  (v-util/build-validator :invalid-data index-set-concept-validation))
+
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
   (fn [concept]
@@ -225,6 +236,10 @@
 (defmethod validate-concept :humanizer
   [concept]
   (validate-humanizer-concept concept))
+
+(defmethod validate-concept :index-set
+  [concept]
+  (validate-index-set-concept concept))
 
 (defmethod validate-concept :service-association
   [concept]

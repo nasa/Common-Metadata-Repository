@@ -5,7 +5,6 @@
    [clojure.data :as data]
    [clojure.edn :as edn]
    [clojure.string :as string]
-   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.log :as log :refer (warn)]
    [cmr.common.mime-types :as mt]
@@ -32,7 +31,6 @@
    :service #{mt/umm-json}
    :tool #{mt/umm-json}})
 
-
 (defn- validate-format
   "Validates the format of the concept. Throws a 415 error if invalid."
   [concept]
@@ -46,6 +44,7 @@
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
                                           content-type (string/join ", " valid-types))))))
+
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
@@ -400,7 +399,7 @@
                new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
            (if new-err-messages
              (errors/throw-service-errors :invalid-data new-err-messages)
-              ;; when there is no newly introduced errors, err-messages contains only existing errors.
+             ;; when there is no newly introduced errors, err-messages contains only existing errors.
              err-messages))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
@@ -433,15 +432,19 @@
                           (granule-keyword-validations context)))]
     (if-errors-throw :invalid-data errors)))
 
-(defn validate-granule-umm
-  "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
-  updated with platform aliases whoes shortnames don't exist in the platforms."
+(defn umm-spec-validate-granule-warnings
+  "Validate umm-spec granule validation warnings functions - errors that we want
+  to report but we do not want to fail ingest."
+  [context umm-spec-collection granule]
+  (umm-spec-validation/validate-granule-warnings
+   (humanizer-alias/update-collection-with-aliases context umm-spec-collection true)
+   granule))
+
+(defn umm-spec-validate-granule
   [context collection granule]
-  (if-errors-throw :invalid-data (umm-spec-validation/validate-granule
-                                  (humanizer-alias/update-collection-with-aliases
-                                   context collection false)
-                                  granule
-                                  (granule-keyword-validations context))))
+  (when-let [errors (seq (umm-spec-validation/validate-granule
+                          context collection granule))]
+    (if-errors-throw :invalid-data errors)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
@@ -506,16 +509,16 @@
                                [(variable-keyword-validations-warnings context)]))]
     (if (or (config/return-umm-spec-validation-errors)
             (not warn?))
-       ;;when we are not supposed to return error as warnings
+      ;;when we are not supposed to return error as warnings
       (if err-messages
-         ;; throw errors when it exists
+        ;; throw errors when it exists
         (errors/throw-service-errors :invalid-data err-messages)
-         ;; throw warnings when error doesn't exist.
+        ;; throw warnings when error doesn't exist.
         (when warning-messages
           (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec warning-messages)))
           warning-messages))
-       ;; when we are supposed to return errors as warnings as well,
-       ;; return both errors and warnings as warnings.
+      ;; when we are supposed to return errors as warnings as well,
+      ;; return both errors and warnings as warnings.
       (when-let [all-warning-messages (seq (umm-spec-validation/validate-variable
                                             variable
                                             [(variable-keyword-validations context)
