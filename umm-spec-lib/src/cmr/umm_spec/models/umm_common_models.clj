@@ -79,6 +79,20 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
+;; Information about quality of the collection data, including a summary, known issues, strengths,
+;; limitations, and other quality-related information.
+(defrecord QualityType
+  [
+   ;; Summary, a short description, of the quality element(s) of the data in the collection in the
+   ;; form of a text overview and can be itemized with hyperlinks.
+   Summary
+
+   ;; Elements describing information about quality of the collection data, including a summary,
+   ;; known issues, strengths, limitations, and other quality-related information
+   QualityContentDetails
+  ])
+(record-pretty-printer/enable-record-pretty-printing QualityType)
+
 ;; Child object on an instrument. Has all the same fields as instrument, minus the list of child
 ;; instruments.
 (defrecord InstrumentChildType
@@ -419,6 +433,20 @@
    Published
   ])
 (record-pretty-printer/enable-record-pretty-printing PreviousVersionType)
+
+;; Elements describing information about quality of the collection data, including a summary, known
+;; issues, strengths, limitations, and other quality-related information
+(defrecord QualityContentDetailsType
+  [
+   Strengths
+
+   Limitations
+
+   KnownIssues
+
+   Other
+  ])
+(record-pretty-printer/enable-record-pretty-printing QualityContentDetailsType)
 
 ;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType
