@@ -178,3 +178,19 @@ class TestUnknownLaneFallback:
     async def test_unknown_lane_falls_back_to_default(self, lanes):
         async with lanes.acquire("nonexistent") as actual:
             assert actual == "express"
+
+
+class TestLoadSheddingDisabled:
+    async def test_force_acquires_when_lane_full(self, tight_lanes):
+        """With load shedding off, over-capacity requests are not rejected."""
+        async with tight_lanes.acquire("heavy"):
+            async with tight_lanes.acquire("heavy", load_shedding_enabled=False) as actual:
+                assert actual == "heavy"
+
+    async def test_does_not_raise_load_shedding_error(self, tight_lanes):
+        async with tight_lanes.acquire("heavy"):
+            try:
+                async with tight_lanes.acquire("heavy", load_shedding_enabled=False):
+                    pass
+            except LoadSheddingError:
+                pytest.fail("LoadSheddingError raised with load_shedding_enabled=False")

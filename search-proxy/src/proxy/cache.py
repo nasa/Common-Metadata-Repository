@@ -60,4 +60,4 @@ class ResponseCache:
             return
 
         key = self._build_key(method, path, query, auth_token, search_after, accept)
-        await self.redis.setex(key, ttl, json.dumps(response_data))
+        await self.redis.set(key, json.dumps(response_data), ex=ttl)

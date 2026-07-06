@@ -9,7 +9,7 @@ import httpx
 import redis.asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json as jsonlogger
 
 from proxy.cache import ResponseCache
 from proxy.classifier import classify_request
