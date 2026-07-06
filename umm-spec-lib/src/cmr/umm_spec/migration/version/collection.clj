@@ -859,3 +859,21 @@
         (assoc coll :TilingIdentificationSystems updated-systems)
         (dissoc coll :TilingIdentificationSystems))
       coll)))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.6" "1.18.5"]
+  [_context c & _]
+  (if-let [summary (get-in c [:Quality :Summary])]
+    ;; In 1.18.5, Quality was a string, replace the 1.18.6 map with the string
+    (-> c
+        (assoc :Quality summary)
+        (m-spec/update-version :collection "1.18.5"))
+    (m-spec/update-version c :collection "1.18.5")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.5" "1.18.6"]
+  ;; Converts the 1.18.5 single string into the 1.18.6 map using the QualityType's Summary key"
+  [_context c & _]
+  (if-let [quality-string (:Quality c)]
+    (-> c
+        (assoc :Quality {:Summary quality-string})
+        (m-spec/update-version :collection "1.18.6"))
+    (m-spec/update-version c :collection "1.18.6")))

@@ -16,7 +16,6 @@
   [:umm-json
    :iso19115
    :iso-smap
-   :dif
    :dif10
    :echo10])
 

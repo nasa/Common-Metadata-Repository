@@ -303,7 +303,7 @@
           "Description" : "Reference Online Resource"
         }
       } ],
-      "Quality" : "Some quality statement",
+      "Quality" : {"Summary" : "Some quality statement"},
       "ISOTopicCategories" : [ "BOUNDARIES", "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" ],
       "DirectDistributionInformation" : {
         "Region" : "us-east-2",
@@ -814,9 +814,9 @@
         "LongName" : "MUSES"
       } ],
       "MetadataSpecification" : {
-        "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5",
+        "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6",
         "Name" : "UMM-C",
-        "Version" : "1.18.5"
+        "Version" : "1.18.6"
       },
       "ArchiveAndDistributionInformation" : {
         "FileArchiveInformation" : [ {
