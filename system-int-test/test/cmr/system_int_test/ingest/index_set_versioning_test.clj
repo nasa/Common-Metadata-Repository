@@ -109,7 +109,7 @@
         (let [new-data (index/get-index-set-by-id id)]
           (is (= 2 (get-in new-data [:index-set :revision-id])) "Oracle should have correctly incremented the revision"))))
 
-    (testing "Disaster Recovery: Restore lost ES cluster from Oracle"
+    (testing "Disaster Recovery: Restore lost ES cluster from Oracle with sync from database API"
       (let [id 5555
             is (data-index-set/sample-index-set id)]
         ;; create index-set with revision 1
