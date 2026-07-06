@@ -3,7 +3,6 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [clojurewerkz.elastisch.rest.index :as esi]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.indexer.services.index-set-service :as svc]
@@ -24,12 +23,12 @@
           index-names-from-gran-cluster (svc/get-index-names index-set es-config/gran-elastic-name)
           index-names-from-non-gran-cluster (svc/get-index-names index-set es-config/elastic-name)]
       (doseq [idx-name index-names-from-gran-cluster]
-        (is (esi/exists? @util/gran-elastic-connection idx-name))
-        (is (not (esi/exists? @util/elastic-connection idx-name)))
+        (is (esi-helper/exists? @util/gran-elastic-connection idx-name))
+        (is (not (esi-helper/exists? @util/elastic-connection idx-name)))
         (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/gran-elastic-connection idx-name))))
       (doseq [idx-name index-names-from-non-gran-cluster]
-        (is (esi/exists? @util/elastic-connection idx-name))
-        (is (not (esi/exists? @util/gran-elastic-connection idx-name)))
+        (is (esi-helper/exists? @util/elastic-connection idx-name))
+        (is (not (esi-helper/exists? @util/gran-elastic-connection idx-name)))
         (is (= [(str idx-name "_alias")] (esi-helper/get-aliases @util/elastic-connection idx-name))))))
   (testing "index-set doc existence"
     (let [index-set util/sample-index-set
@@ -71,20 +70,20 @@
         (is (= 201 status))
 
         ;; check that coll idx is in non-gran cluster only
-        (is (esi/exists? @util/elastic-connection coll-idx-name))
-        (is (not (esi/exists? @util/gran-elastic-connection coll-idx-name)))
+        (is (esi-helper/exists? @util/elastic-connection coll-idx-name))
+        (is (not (esi-helper/exists? @util/gran-elastic-connection coll-idx-name)))
 
         ;; check that gran idx is in gran cluster only
-        (is (esi/exists? @util/gran-elastic-connection gran-idx-name))
-        (is (not (esi/exists? @util/elastic-connection gran-idx-name)))))
+        (is (esi-helper/exists? @util/gran-elastic-connection gran-idx-name))
+        (is (not (esi-helper/exists? @util/elastic-connection gran-idx-name)))))
     (testing "delete index-set"
       (let [{:keys [status]} (util/delete-index-set index-set-id)
             _ (is (= 204 status))
             {:keys [status response]} (util/get-index-set index-set-id)
             _ (is (= 404 status))]
         ;; indices should be removed from their respective clusters
-        (is (not (esi/exists? @util/elastic-connection coll-idx-name)))
-        (is (not (esi/exists? @util/gran-elastic-connection gran-idx-name)))))))
+        (is (not (esi-helper/exists? @util/elastic-connection coll-idx-name)))
+        (is (not (esi-helper/exists? @util/gran-elastic-connection gran-idx-name)))))))
 
 ;; Verify get index-sets fetches all index-sets in elastic.
 ;; Create 2 index-sets with different ids but with same number of concepts and indices associated
@@ -104,8 +103,8 @@
           body (-> (util/get-index-sets) :response :body)
           actual-es-indices (util/list-es-indices body)]
       (doseq [es-idx-name actual-es-indices]
-        (is (or (esi/exists? @util/gran-elastic-connection es-idx-name)
-                (esi/exists? @util/elastic-connection es-idx-name))))
+        (is (or (esi-helper/exists? @util/gran-elastic-connection es-idx-name)
+                (esi-helper/exists? @util/elastic-connection es-idx-name))))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 ;; Verify that you can update an index set multiple times and get the correct indices created and deleted
@@ -172,7 +171,7 @@
      (doseq [collection expected-coll-indexes
              :let [collection-index-part (-> collection (string/replace "-" "_") string/lower-case)
                    elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
-       (is (esi/exists? @util/gran-elastic-connection elastic-index-name))
+       (is (esi-helper/exists? @util/gran-elastic-connection elastic-index-name))
        (is (esi-helper/alias-exists? @util/gran-elastic-connection elastic-index-name))))))
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate

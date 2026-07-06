@@ -1,4 +1,4 @@
-(def elastic-version "7.17.25")
+(def elastic-version "8.19.14")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -11,7 +11,6 @@
                  [com.fasterxml.jackson.core/jackson-databind]
 
                  [clj-http]
-                 [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -19,6 +18,7 @@
                  [org.apache.logging.log4j/log4j-api]
                  [org.apache.logging.log4j/log4j-core]
                  [org.clojure/clojure]
+                 [ring/ring-jetty-adapter "1.14.2"]
 
                  ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
                  ;; replacement for it. Exclude these libraries to prevent conflicts.
@@ -28,7 +28,9 @@
                   :exclusions [net.jpountz.lz4/lz4
                                org.apache.logging.log4j/log4j-api
                                org.apache.logging.log4j/log4j-core
-                               org.lz4/lz4-java]] ;; force use of at.yawk.lz4 below
+                               org.lz4/lz4-java
+                               org.jruby.joni/joni
+                               org.jruby.jcodings/jcodings]] ;; force use of at.yawk.lz4 below
                  [com.taoensso/carmine "3.0.1" :exclusions [com.taoensso/nippy]]
                  [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
                  [at.yawk.lz4/lz4-java]

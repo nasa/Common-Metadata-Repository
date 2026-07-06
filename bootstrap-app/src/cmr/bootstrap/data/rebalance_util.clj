@@ -1,7 +1,6 @@
 (ns cmr.bootstrap.data.rebalance-util
   "Utilities for helping with rebalancing a collection."
   (:require
-   [clojurewerkz.elastisch.query :as q]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.config :as es-config]
@@ -15,8 +14,8 @@
 (defn es-query-for-collection-concept-id
   "Returns an elasticsearch query to find granules in the collection."
   [concept-id]
-  {:bool {:must (q/match-all)
-          :filter (q/term :collection-concept-id concept-id)}})
+  {:bool {:must {:match_all {}}
+          :filter {:term {:collection-concept-id concept-id}}}})
 
 (defn- granule-count-for-collection
   "Gets the granule count for the collection in the elastic index."
@@ -57,8 +56,7 @@
   (let [indexer-context {:system (helper/get-indexer (:system context))}
         index-names (index-set/fetch-concept-type-index-names
                      indexer-context index-set/index-set-id)
-        small-coll-index (get-in index-names [:index-names :granule :small_collections])
-        granule-mapping-type-name (-> index-set/granule-mapping keys first name)]
+        small-coll-index (get-in index-names [:index-names :granule :small_collections])]
     (es-helper/delete-by-query
-     (indexer-util/context->conn indexer-context es-config/gran-elastic-name) small-coll-index granule-mapping-type-name
+     (indexer-util/context->conn indexer-context es-config/gran-elastic-name) small-coll-index "_doc"
      (es-query-for-collection-concept-id concept-id))))

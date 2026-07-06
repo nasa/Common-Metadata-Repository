@@ -1,9 +1,8 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:7.17.14
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.19.14
 
-COPY es_libs /usr/share/elasticsearch/lib/
 COPY plugins /usr/share/elasticsearch/plugins/
 COPY embedded-security.policy /usr/share/elasticsearch/config/embedded-security.policy
 
 USER elasticsearch
 CMD export "ES_JAVA_OPTS=$ES_JAVA_OPTS -Djava.security.policy=/usr/share/elasticsearch/config/embedded-security.policy" && \
-  ./bin/elasticsearch -E "discovery.type=single-node"
+  ./bin/elasticsearch -E "discovery.type=single-node" -E "xpack.security.enabled=false" -E "indices.id_field_data.enabled=true"
