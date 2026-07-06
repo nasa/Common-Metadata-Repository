@@ -134,9 +134,9 @@
   (throw (ex-info (format "shapes-intersect? Unsupported shape type [%s]" (class query-shape)) {:query-shape query-shape})))
 
 (defmethod shapes-intersect? S2Polygon
-  [s2-polygon lookup ords-info]
+  [s2-polygon source ords-info]
   (let [;; s2-polygon (s2-cells/shape->s2polygon query-shape)
-        ords (get-from-fields lookup "ords")
+        ords (extract-source-values source "ords" :int)
         shapes (srl/ords-info->shapes ords-info ords)
         ;; If the shape is a polygon, or circle we can directly check for intersection with the query polygon.
         ;; If the shape is an MBR, we need to get the bound rect and then run contains
@@ -150,9 +150,9 @@
     (boolean (s2-polygon-intersects-shape? s2-polygon (first shapes)))))
 
 (defmethod shapes-intersect? S2LatLngRect
-  [s2-rectangle lookup ords-info]
+  [s2-rectangle source ords-info]
   (let [;; s2-rectangle (s2-cells/shape->s2latlngrect query-shape)
-        ords (get-from-fields lookup "ords")
+        ords (extract-source-values source "ords" :int)
         shapes (srl/ords-info->shapes ords-info ords)
         ;; if the shape the shape is an MBR we run a contains check
         ;; if the shape is a polygon we call getBoundRect and then run a contains check
@@ -161,10 +161,10 @@
 
 (defn s2-doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [lookup query-shape]
-  (if-let [ords-info (get-from-fields lookup "ords-info")]
+  [source query-shape]
+  (if-let [ords-info (extract-source-values source "ords-info" :int)]
     (try
-      (if (shapes-intersect? query-shape lookup ords-info)
+      (if (shapes-intersect? query-shape source ords-info)
         true
         false)
       (catch Throwable t
