@@ -81,6 +81,8 @@
    kl/kms-temporal-keywords-cache-key (kl/create-kms-temporal-keywords-uuid-cache)
    cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
    hf/humanizer-cache-key (hf/create-cache-client)
+   augmenter/token-sid-cache-name (augmenter/create-token-sid-cache)
+   augmenter/token-user-id-cache-name (augmenter/create-token-user-id-cache)
    metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
    common-health/health-cache-key (common-health/create-health-cache)})
 
