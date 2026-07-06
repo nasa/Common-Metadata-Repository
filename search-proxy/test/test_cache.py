@@ -87,3 +87,43 @@ class TestCacheKey:
     async def test_miss_returns_none(self, cache):
         result = await cache.get("GET", "/search/granules.json", "p=1", "token")
         assert result is None
+
+    async def test_different_search_after_misses(self, cache):
+        await cache.set(
+            "GET", "/search/granules.json", "p=1", "token",
+            SAMPLE_RESPONSE, 100, 30, search_after="cursor-page1",
+        )
+        result = await cache.get(
+            "GET", "/search/granules.json", "p=1", "token", search_after="cursor-page2"
+        )
+        assert result is None
+
+    async def test_same_search_after_hits(self, cache):
+        await cache.set(
+            "GET", "/search/granules.json", "p=1", "token",
+            SAMPLE_RESPONSE, 100, 30, search_after="cursor-abc",
+        )
+        result = await cache.get(
+            "GET", "/search/granules.json", "p=1", "token", search_after="cursor-abc"
+        )
+        assert result == SAMPLE_RESPONSE
+
+    async def test_different_accept_misses(self, cache):
+        await cache.set(
+            "GET", "/search/granules.json", "p=1", "token",
+            SAMPLE_RESPONSE, 100, 30, accept="application/json",
+        )
+        result = await cache.get(
+            "GET", "/search/granules.json", "p=1", "token", accept="application/xml"
+        )
+        assert result is None
+
+    async def test_same_accept_hits(self, cache):
+        await cache.set(
+            "GET", "/search/granules.json", "p=1", "token",
+            SAMPLE_RESPONSE, 100, 30, accept="application/json",
+        )
+        result = await cache.get(
+            "GET", "/search/granules.json", "p=1", "token", accept="application/json"
+        )
+        assert result == SAMPLE_RESPONSE
