@@ -308,6 +308,20 @@
      [:Type (:Type other-identifier)]
      [:Description_Of_Other_Type (:DescriptionOfOtherType other-identifier)]]))
 
+(defn generate-quality
+  "Maps UMM-C 1.18.6 Quality into a structured DIF10-style XML format, 
+   ensuring empty elements are not generated."
+  [c]
+  (when-let [quality (:Quality c)]
+    (let [{:keys [Summary QualityContentDetails]} quality]
+      [:Quality {:mime_type "text/markdown"}
+       [:Summary Summary]
+       (when (seq QualityContentDetails)
+         (into [:QualityContentDetails]
+               (for [[k v] QualityContentDetails
+                     :when (some? v)]
+                 [k v])))])))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -360,7 +374,6 @@
        [:Short_Name u/not-provided]
        [:Long_Name u/not-provided]
        [:Instrument [:Short_Name u/not-provided]]])
-
     ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
     ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
     ;; be associated with. This is something DIF10 team will look into at improving, but in the
@@ -373,8 +386,6 @@
                  [:Ancillary_Temporal_Keyword tkw])
                (when-let [tr (:TemporalResolution extent)]
                        [[:Temporal_Resolution (gen/elements-from tr :Value :Unit)]]))]))
-
-
     (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
     (generate-paleo-temporal (:PaleoTemporalCoverages c))
     (generate-dataset-progress c)
@@ -388,7 +399,7 @@
        [:Location_Subregion3 (:Subregion3 location-keyword-map)]
        [:Detailed_Location (:DetailedLocation location-keyword-map)]])
     (generate-projects (:Projects c))
-    [:Quality (:Quality c)]
+    (generate-quality c)
     [:Data_Maturity (:DataMaturity c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     (when-let [use-constraints (get c :UseConstraints)]

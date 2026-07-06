@@ -4137,3 +4137,45 @@
          :MetadataSpecification {:URL     "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5",
                                  :Name    "UMM-C",
                                  :Version "1.18.5"}}))
+
+(def sample-1-18-6-quality-record
+  {:Quality {:Summary "General quality summary."
+             :QualityContentDetails {:Strengths "Description 1"
+                                     :Limitations "Description 2"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
+                           :Name "UMM-C"
+                           :Version "1.18.6"}})
+
+(deftest migrate-1-18-5-to-1-18-6
+  (are3 [expected sample-collection]
+        (is (= expected (vm/migrate-umm {} :collection "1.18.5" "1.18.6" sample-collection)))
+
+        "Migrating Quality string up to Quality Summary object"
+        {:Quality {:Summary "Simple quality string"}
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
+                                 :Name "UMM-C" :Version "1.18.6"}}
+        {:Quality "Simple quality string"
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"
+                                 :Name "UMM-C" :Version "1.18.5"}}
+
+        "Migrating with nil Quality"
+        {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
+                                 :Name "UMM-C" :Version "1.18.6"}}
+        {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"
+                                 :Name "UMM-C" :Version "1.18.5"}}))
+
+(deftest migrate-1-18-6-to-1-18-5
+  (are3 [expected sample-collection]
+        (is (= expected (vm/migrate-umm {} :collection "1.18.6" "1.18.5" sample-collection)))
+
+        "Migrating complex Quality object down to a concatenated string"
+        {:Quality "General quality summary."
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"
+                                 :Name "UMM-C" :Version "1.18.5"}}
+        sample-1-18-6-quality-record
+
+        "Migrating with nil Quality"
+        {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.5"
+                                 :Name "UMM-C" :Version "1.18.5"}}
+        {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
+                                 :Name "UMM-C" :Version "1.18.6"}}))

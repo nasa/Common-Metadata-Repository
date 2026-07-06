@@ -1,0 +1,192 @@
+{
+  "TilingIdentificationSystems" : [ {
+    "Coordinate1" : {
+      "MinimumValue" : "01",
+      "MaximumValue" : "60"
+    },
+    "Coordinate2" : {
+      "MinimumValue" : "C",
+      "MaximumValue" : "X"
+    },
+    "TilingIdentificationSystemName" : "VIIRS Rotated Sinusoidal Tiling System"
+  } ],
+  "AdditionalAttributes" : [ {
+    "Value" : "10.5067/ECOSTRESS/ECO_L2T_STARS.002",
+    "Name" : "identifier_product_doi",
+    "Description" : "Digital object identifier that uniquely identifies this data product",
+    "DataType" : "STRING"
+  }, {
+    "Value" : "https://doi.org",
+    "Name" : "identifier_product_doi_authority",
+    "Description" : "URL of the digital object identifier resolving authority",
+    "DataType" : "STRING"
+  } ],
+  "SpatialExtent" : {
+    "HorizontalSpatialDomain" : {
+      "Geometry" : {
+        "BoundingRectangles" : [ {
+          "NorthBoundingCoordinate" : 54,
+          "WestBoundingCoordinate" : -180,
+          "EastBoundingCoordinate" : 180,
+          "SouthBoundingCoordinate" : -54
+        } ],
+        "CoordinateSystem" : "CARTESIAN"
+      },
+      "ResolutionAndCoordinateSystem" : {
+        "HorizontalDataResolution" : {
+          "GenericResolutions" : [ {
+            "XDimension" : 70,
+            "YDimension" : 70,
+            "Unit" : "Meters"
+          } ]
+        },
+        "Description" : "Universal Transverse Mercator (UTM)",
+        "GeodeticModel" : {
+          "HorizontalDatumName" : "World Geodetic System (WGS84)"
+        }
+      },
+      "ZoneIdentifier" : "UTM"
+    },
+    "SpatialCoverageType" : "HORIZONTAL",
+    "GranuleSpatialRepresentation" : "GEODETIC"
+  },
+  "CollectionProgress" : "ACTIVE",
+  "StandardProduct" : true,
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "LAND SURFACE",
+    "Term" : "SURFACE THERMAL PROPERTIES",
+    "VariableLevel1" : "LAND SURFACE TEMPERATURE"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "LAND SURFACE",
+    "Term" : "LAND USE/LAND COVER",
+    "VariableLevel1" : "LAND USE/LAND COVER CLASSIFICATION",
+    "VariableLevel2" : "VEGETATION INDEX",
+    "VariableLevel3" : "NORMALIZED DIFFERENCE VEGETATION INDEX (NDVI)"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "LAND SURFACE",
+    "Term" : "SURFACE RADIATIVE PROPERTIES",
+    "VariableLevel1" : "ALBEDO"
+  } ],
+  "TemporalExtents" : [ {
+    "EndsAtPresentFlag" : true,
+    "PrecisionOfSeconds" : 0,
+    "TemporalResolution" : {
+      "Unit" : "Varies"
+    },
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "2018-07-09T00:00:00.000Z"
+    } ]
+  } ],
+  "FileNamingConvention" : {
+    "Convention" : "ECOv002_L2T_STARS_51KTU_20250907_0713_01_NDVI.tif",
+    "Description" : "The file name begins with the Sensor (ECO) followed by the Product Version (v002), Processing Level and Type (L2T), Geophysical Parameter (STARS), Orbit Number (51KTU), Date and Time of Acquisition designated as YYYYMMDDTHHMMSS (20250907), Build Identifier of product generation software (0713), Product Iteration Number (01), and the Data Format (tif)."
+  },
+  "ProcessingLevel" : {
+    "ProcessingLevelDescription" : "Level 2 data products are derived geophysical variables at the same resolution and location as the Level 1 source data.",
+    "Id" : "2"
+  },
+  "DOI": {
+    "DOI": "10.5067/fake.record.01",
+    
+    
+    "PreviousVersion": {
+      "Version": "3.1459",
+      "Description": "ECSE-1638 addition",
+      "DOI": "10.5067/fake.record.04",
+      "Published": "2024-02-22T12:00:00Z"
+    }
+  },
+  "ShortName" : "ECSE-1916",
+  "EntryTitle" : "ECSE-1916 - UMM 1.18.5",
+  "AccessConstraints" : {
+    "Description" : "None"
+  },
+"Quality": {
+  "Summary": "The MODIS Vegetation Continuous Fields (VCF) product is a sub-pixel-level representation of surface vegetation cover estimates globally. The product has undergone extensive quality assurance and validation processes. Known strengths include global coverage and consistent methodology, while limitations include potential underestimation in densely forested areas.",
+  "QualityContentDetails": {
+    "Strengths": "1) Global coverage: The product provides consistent vegetation cover estimates for the entire land surface of the Earth. 2) High temporal resolution: Annual updates allow for tracking of changes in vegetation cover over time. 3) Validated methodology: The algorithm has been extensively tested and validated against ground-truth data in various ecosystems. (https://modis-land.gsfc.nasa.gov/ValStatus.php?ProductID=MOD13)",
+    "Limitations": "1) Spatial resolution: At 250m, some fine-scale vegetation patterns may not be captured. 2) Potential underestimation in dense forests: The product may slightly underestimate tree cover in very dense tropical forests due to saturation effects. 3) Mixed pixels: In heterogeneous landscapes, the sub-pixel estimates may not fully capture the complexity of vegetation distribution.",
+    "KnownIssues": "1) Snow/ice confusion: In some high-latitude or high-altitude areas, persistent snow cover may be occasionally misclassified as bare ground. 2) Cloud contamination: Despite rigorous cloud screening, some residual cloud contamination may affect estimates in persistently cloudy regions.",
+    "Other": "Detection Flag at the cell level is used to help identify retrieval conditions influenced by snow or ice: 0 = No snow/ice detected; 1 = Snow detected; 2 = Ice detected."
+  }
+},
+  "RelatedUrls" : [ {
+    "Description" : "List of scenes confirmed to affected by obstructions.",
+    "URLContentType" : "PublicationURL",
+    "Type" : "VIEW RELATED INFORMATION",
+    "Subtype" : "ANOMALIES",
+    "URL" : "https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/collection"
+  } ],
+  "DataDates" : [ {
+    "Date" : "2023-11-14T00:00:00.000Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2023-11-14T00:00:00.000Z",
+    "Type" : "UPDATE"
+  } ],
+  "Abstract" : "adding new enumeration",
+  "Purpose" : "Science Research",
+  "LocationKeywords" : [ {
+    "Category" : "GEOGRAPHIC REGION",
+    "Type" : "GLOBAL LAND"
+  } ],
+  "MetadataDates" : [ {
+    "Type" : "CREATE",
+    "Date" : "2021-07-14T17:16:00.000Z"
+  }, {
+    "Type" : "UPDATE",
+    "Date" : "2025-09-12T00:00:00.000Z"
+  } ],
+  "VersionDescription" : "Version 2",
+  "Version" : "002",
+  "CollectionDataType" : "SCIENCE_QUALITY",
+  
+  "DataCenters": [
+    {
+      "ShortName": "AcmeData",
+      "Roles": ["ARCHIVER"]
+    }
+  ],
+
+  "TemporalKeywords" : [ "Varies" ],
+  "Platforms" : [ {
+    "Type" : "Space Stations/Crewed Spacecraft",
+    "ShortName" : "ISS",
+    "LongName" : "International Space Station",
+    "Instruments" : [ {
+      "ShortName" : "ECOSTRESS",
+      "LongName" : "ECOsystem Spaceborne Thermal Radiometer Experiment on Space Station",
+      "ComposedOf" : [ {
+        "ShortName" : "PHyTIR",
+        "LongName" : "Prototype HyspIRI Thermal Infrared Radiometer"
+      } ]
+    } ]
+  } ],
+  "MetadataSpecification" : {
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6",
+    "Name" : "UMM-C",
+    "Version" : "1.18.6"
+  },
+  "ArchiveAndDistributionInformation" : {
+    "FileArchiveInformation" : [ {
+      "FormatType" : "Native",
+      "AverageFileSize" : 21.4,
+      "Format" : "COG",
+      "TotalCollectionFileSizeBeginDate" : "2018-01-01T00:00:00.000Z",
+      "FormatDescription" : "Cloud Optimized GeoTIFF",
+      "AverageFileSizeUnit" : "MB"
+    } ],
+    "FileDistributionInformation" : [ {
+      "Media" : [ "Earthdata Cloud", "HTTPS" ],
+      "FormatType" : "Native",
+      "AverageFileSize" : 21.4,
+      "Format" : "COG",
+      "TotalCollectionFileSizeBeginDate" : "2018-01-01T00:00:00.000Z",
+      "FormatDescription" : "Cloud Optimized GeoTIFF (COG)",
+      "AverageFileSizeUnit" : "MB"
+    } ]
+  }
+}
