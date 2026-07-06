@@ -112,12 +112,13 @@
     (testing "Disaster Recovery: Restore lost ES cluster from Oracle"
       (let [id 5555
             is (data-index-set/sample-index-set id)]
+        ;; create index-set with revision 1
         (index/create-index-set is)
         (is (some? (index/get-index-set-by-id id)))
-        ;; Simulate ES loss
-        (index/index-set-reset)
+        ;; Simulate ES loss by deleting elastic index-set and tombstoning latest index-set in db as revision 2
+        (is (= 204 (:satus (index/index-set-reset))))
         (is (= 404 (:status (index/get-index-set-by-id id))))
-        ;; Sync
+        ;; Sync from db and get latest non-tombstoned index-set revision 1
         (is (= 204 (:status (index/sync-index-sets-from-db))))
         ;; Verify
         (let [restored (index/get-index-set-by-id id)]

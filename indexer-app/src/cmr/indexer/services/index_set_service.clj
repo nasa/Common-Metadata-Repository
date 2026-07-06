@@ -358,13 +358,13 @@
   (let [;; Strip out revision-id and deleted if they were provided in the request body to avoid 422 errors from metadata-db.
         clean-combined-index-set (update combined-index-set :index-set dissoc :revision-id :deleted)
         split-index-set-map (split-index-set-by-cluster clean-combined-index-set)
-        ;; Save a single unified version to Oracle first to get the revision-id
-        revision-id (save-index-set-to-mdb context clean-combined-index-set)
         gran-elastic-index-set (get split-index-set-map (keyword es-config/gran-elastic-name))
-        elastic-index-set (get split-index-set-map (keyword es-config/elastic-name))]
-    ;; Validation for both index sets need to happen before we update anything
-    (validate-requested-index-set context es-config/gran-elastic-name gran-elastic-index-set true)
-    (validate-requested-index-set context es-config/elastic-name elastic-index-set true)
+        elastic-index-set (get split-index-set-map (keyword es-config/elastic-name))
+        ;; Validation for both index sets need to happen before we update anything
+        _ (validate-requested-index-set context es-config/gran-elastic-name gran-elastic-index-set true)
+        _ (validate-requested-index-set context es-config/elastic-name elastic-index-set true)
+        ;; Save a single unified version to Oracle first to get the revision-id
+        revision-id (save-index-set-to-mdb context clean-combined-index-set)]
     ;; upsert indexes and index set based on the split index set
     (update-index-set context es-config/gran-elastic-name gran-elastic-index-set revision-id)
     (update-index-set context es-config/elastic-name elastic-index-set revision-id)))
