@@ -1,3 +1,4 @@
+import gzip
 import json
 from unittest.mock import AsyncMock
 
@@ -336,6 +337,34 @@ class TestForwarding:
         assert "transfer-encoding" not in resp.headers
         assert "connection" not in resp.headers
 
+    async def test_content_encoding_stripped(self, client):
+        compressed = gzip.compress(BACKEND_JSON.encode())
+        app.state.backend.get.return_value = httpx.Response(
+            status_code=200,
+            content=compressed,
+            headers={"content-type": "application/json", "content-encoding": "gzip", "cmr-hits": "5"},
+            request=httpx.Request("GET", "http://backend/test"),
+        )
+        resp = await client.get("/search/granules.json?provider=X")
+        assert "content-encoding" not in resp.headers
+
+    async def test_content_length_not_forwarded_from_backend(self, client):
+        # Backend claims 746 bytes (e.g. compressed size) but actual body is smaller.
+        # Proxy strips the backend content-length; framework sets the correct value.
+        app.state.backend.get.return_value = make_backend_response(
+            headers={"content-type": "application/json", "content-length": "746", "cmr-hits": "5"}
+        )
+        resp = await client.get("/search/granules.json?provider=X")
+        assert resp.headers.get("content-length") != "746"
+
+    async def test_proxy_marker_header_injected(self, client):
+        await client.get("/search/granules.json?provider=X")
+        call_args = app.state.backend.get.call_args
+        forwarded_headers = call_args.kwargs.get(
+            "headers", call_args[1].get("headers", {})
+        )
+        assert forwarded_headers.get("x-cmr-proxy-request") == "1"
+
 
 # Hop header filtering
 
@@ -431,3 +460,117 @@ class TestPostBodyClassification:
             headers={"content-type": "application/x-www-form-urlencoded"},
         )
         app.state.backend.request.assert_called_once()
+
+
+# Feature toggles
+
+
+class TestBypassToggle:
+    async def test_bypass_forwards_directly(self, client):
+        app.state.toggles["bypass_enabled"] = True
+        resp = await client.get("/search/granules.json?provider=POCLOUD")
+        assert resp.status_code == 200
+        app.state.backend.get.assert_called_once()
+        app.state.toggles["bypass_enabled"] = False
+
+    async def test_bypass_timeout_returns_504(self, client):
+        app.state.toggles["bypass_enabled"] = True
+        app.state.backend.get.side_effect = httpx.TimeoutException("timed out")
+        resp = await client.get("/search/granules.json?provider=POCLOUD")
+        assert resp.status_code == 504
+        app.state.backend.get.side_effect = None
+        app.state.toggles["bypass_enabled"] = False
+
+    async def test_bypass_connect_error_returns_502(self, client):
+        app.state.toggles["bypass_enabled"] = True
+        app.state.backend.get.side_effect = httpx.ConnectError("refused")
+        resp = await client.get("/search/granules.json?provider=POCLOUD")
+        assert resp.status_code == 502
+        app.state.backend.get.side_effect = None
+        app.state.toggles["bypass_enabled"] = False
+
+
+class TestCacheToggle:
+    async def test_cache_disabled_skips_caching(self, client):
+        app.state.toggles["cache_enabled"] = False
+        await client.get("/search/granules.json?provider=POCLOUD")
+        await client.get("/search/granules.json?provider=POCLOUD")
+        assert app.state.backend.get.call_count == 2
+        app.state.toggles["cache_enabled"] = True
+
+
+class TestLoadSheddingToggle:
+    async def test_load_shedding_disabled_allows_over_capacity(self, client):
+        app.state.toggles["load_shedding_enabled"] = False
+        fake_redis = app.state.redis
+        config = make_lanes_config(heavy_permits=1)
+        app.state.lanes = RequestLanes(config, fake_redis)
+        await fake_redis.set("lane:heavy:active", 1)
+
+        resp = await client.get("/search/granules.json?include_facets=v2")
+        assert resp.status_code == 200
+
+        await fake_redis.delete("lane:heavy:active")
+        app.state.toggles["load_shedding_enabled"] = True
+        app.state.lanes = RequestLanes(make_lanes_config(), fake_redis)
+
+
+class TestClassificationToggle:
+    async def test_classification_disabled_uses_default_lane(self, client):
+        """With classification off, a normally-heavy request routes to express."""
+        app.state.toggles["classification_enabled"] = False
+        fake_redis = app.state.redis
+        # Fill heavy lane — request should not touch it
+        await fake_redis.set("lane:heavy:active", 50)
+
+        resp = await client.get("/search/granules.json?include_facets=v2")
+        assert resp.status_code == 200
+
+        await fake_redis.delete("lane:heavy:active")
+        app.state.toggles["classification_enabled"] = True
+
+
+# Cache key segmentation
+
+
+class TestCacheKeySegmentation:
+    async def test_search_after_header_creates_separate_cache_entry(self, client):
+        await client.get("/search/granules.json?provider=POCLOUD")
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"cmr-search-after": "cursor-xyz"},
+        )
+        assert app.state.backend.get.call_count == 2
+
+    async def test_same_search_after_hits_cache(self, client):
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"cmr-search-after": "cursor-xyz"},
+        )
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"cmr-search-after": "cursor-xyz"},
+        )
+        assert app.state.backend.get.call_count == 1
+
+    async def test_different_accept_creates_separate_cache_entry(self, client):
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"accept": "application/json"},
+        )
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"accept": "application/xml"},
+        )
+        assert app.state.backend.get.call_count == 2
+
+    async def test_same_accept_hits_cache(self, client):
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"accept": "application/json"},
+        )
+        await client.get(
+            "/search/granules.json?provider=POCLOUD",
+            headers={"accept": "application/json"},
+        )
+        assert app.state.backend.get.call_count == 1
