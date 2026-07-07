@@ -50,6 +50,10 @@ class TestProxySettingsDefaults:
         s = ProxySettings()
         assert s.redis_health_check_interval == 30
 
+    def test_redis_max_connections_default_is_none(self):
+        s = ProxySettings()
+        assert s.redis_max_connections is None
+
     def test_backend_max_connections(self):
         s = ProxySettings()
         assert s.backend_max_connections == 500

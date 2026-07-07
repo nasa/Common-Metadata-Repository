@@ -1,5 +1,8 @@
+from unittest.mock import AsyncMock, patch
+
 import fakeredis.aioredis
 import pytest
+from redis.exceptions import MaxConnectionsError
 
 from proxy.config import LaneConfig, LanesConfig
 from proxy.lanes import LoadSheddingError, RequestLanes
@@ -178,6 +181,25 @@ class TestUnknownLaneFallback:
     async def test_unknown_lane_falls_back_to_default(self, lanes):
         async with lanes.acquire("nonexistent") as actual:
             assert actual == "express"
+
+
+class TestReleaseFailure:
+    async def test_release_redis_error_does_not_propagate(self, lanes):
+        """MaxConnectionsError in _release must not escape to the caller."""
+        with patch.object(lanes.redis, "decr", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
+            try:
+                async with lanes.acquire("heavy"):
+                    pass
+            except MaxConnectionsError:
+                pytest.fail("MaxConnectionsError escaped from _release")
+
+    async def test_release_redis_error_is_logged(self, lanes, caplog):
+        import logging
+        with patch.object(lanes.redis, "decr", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
+            with caplog.at_level(logging.ERROR, logger="proxy.lanes"):
+                async with lanes.acquire("heavy"):
+                    pass
+        assert "permit_release_failed" in caplog.text
 
 
 class TestLoadSheddingDisabled:
