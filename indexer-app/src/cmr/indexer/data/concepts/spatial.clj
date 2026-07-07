@@ -76,7 +76,7 @@
         s2-cells-lvl-3 (map #(s2-cells/get-s2-cell-tokens % 3) shapes)
         s2-cells-lvl-4 (map #(s2-cells/get-s2-cell-tokens % 4) shapes)
         s2-cells-lvl-5 (map #(s2-cells/get-s2-cell-tokens % 5) shapes)
-        s2-cells-range (map #(s2-cells/get-s2-cell-ids-range % 2 5) shapes)
+        ;; s2-cells-range (map #(s2-cells/get-s2-cell-ids-range % 2 5) shapes)
 
         s2-cell-map {:s2-cell-interiors-lvl-3 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-3)))
                      :s2-cell-exteriors-lvl-3 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-3)))
@@ -84,8 +84,9 @@
                      :s2-cell-exteriors-lvl-4 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-4)))
                      :s2-cell-interiors-lvl-5 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-5)))
                      :s2-cell-exteriors-lvl-5 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-5)))
-                     :s2-cell-interiors-range (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-range)))
-                     :s2-cell-exteriors-range (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-range)))}
+                     ;; :s2-cell-interiors-range (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-range)))
+                     ;; :s2-cell-exteriors-range (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-range)))
+                     }
 
         ords-info-map (srl/shapes->ords-info-map shapes)
         lrs (seq (remove nil? (mapv srl/shape->lr shapes)))
