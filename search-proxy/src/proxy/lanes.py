@@ -44,9 +44,19 @@ class RequestLanes:
         """Decrement the lane counter. Floors at zero to prevent
         negative counts from orphaned releases."""
         key = self._lane_key(lane_name)
-        result = await self.redis.decr(key)
-        if result < 0:
-            await self.redis.set(key, 0)
+        try:
+            result = await self.redis.decr(key)
+            if result < 0:
+                await self.redis.set(key, 0)
+        except Exception:
+            # Log and swallow so a Redis failure here doesn't propagate out of
+            # the finally block and crash the ASGI handler. The permit leaks
+            # but the client still gets a response.
+            logger.error(
+                "permit_release_failed",
+                extra={"lane": lane_name},
+                exc_info=True,
+            )
 
     async def _acquire_permit(
         self, lane_name: str, load_shedding_enabled: bool = True

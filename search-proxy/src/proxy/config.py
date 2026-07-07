@@ -15,6 +15,7 @@ class ProxySettings(BaseSettings):
     redis_socket_connect_timeout: float = 2.0
     redis_socket_timeout: float = 2.0
     redis_health_check_interval: int = 30
+    redis_max_connections: int | None = None
     backend_max_connections: int = 500
     backend_max_keepalive: int = 200
 

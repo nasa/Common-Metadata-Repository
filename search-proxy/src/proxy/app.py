@@ -83,13 +83,21 @@ async def lifespan(app: FastAPI):
             max_keepalive_connections=settings.backend_max_keepalive,
         ),
     )
-    # Redis connection for distributed lane semaphores and response cache
+    # Redis connection for distributed lane semaphores and response cache.
+    # Pool size defaults to total lane permits + 50 so it always exceeds the
+    # maximum number of concurrent Redis operations (one per in-flight request).
+    # Override with CMR_PROXY_REDIS_MAX_CONNECTIONS if permits change without
+    # a redeploy or if additional headroom is needed.
+    redis_max_connections = settings.redis_max_connections or (
+        sum(lane.permits for lane in lanes_config.lanes) + 50
+    )
     app.state.redis = redis.asyncio.from_url(
         settings.redis_url,
         retry_on_timeout=True,
         socket_connect_timeout=settings.redis_socket_connect_timeout,
         socket_timeout=settings.redis_socket_timeout,
         health_check_interval=settings.redis_health_check_interval,
+        max_connections=redis_max_connections,
     )
     app.state.lanes = RequestLanes(lanes_config, app.state.redis)
     app.state.cache = ResponseCache(app.state.redis, settings.max_cache_response_bytes)
