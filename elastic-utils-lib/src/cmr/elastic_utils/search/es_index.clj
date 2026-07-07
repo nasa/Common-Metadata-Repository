@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [clojurewerkz.elastisch.rest.index :as esri]
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warnf]]
@@ -229,17 +228,24 @@
            "The search shapefile points are too close together and have too much precision. Please
             reduce precision or simplify your shapefile."))
 
-        (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
-                       (re-find #"\"type\":\"parsing_exception\"" body))
-                   (re-find #"search_after" body))
-          (let [err-msg (-> (json/parse-string body true)
-                            (get-in [:error :root_cause])
-                            str)]
-            (errors/throw-service-error
-             :bad-request
-             (format
-              "The search failed with error: %s. Please double check your search_after header."
-              err-msg))))
+        (let [status (:status (ex-data e))]
+          (when (some #{status} [400 422])
+            (let [body-map (try
+                             (json/parse-string body true)
+                             (catch Exception _
+                               nil))
+                  err-reason (or (some-> body-map :error :root_cause)
+                                 (get-in body-map [:error :reason])
+                                 body)
+                  ;; Only add the hint if search-after was involved
+                  is-search-after? (or (:search-after query)
+                                       (:search_after query)
+                                       (re-find #"search_after" body)
+                                       (re-find #"search-after" body))
+                  full-msg (if is-search-after?
+                             (format "The search failed with error: %s. Please double check your search_after header." (str err-reason))
+                             (format "Elasticsearch reported a bad request error: %s" (str err-reason)))]
+              (errors/throw-service-error :bad-request full-msg))))
 
         (throw (ex-info "An unhandled exception occurred" {} e)))
       ;; for other errors, rethrow the exception
@@ -398,8 +404,9 @@
   "Make changes written to Elasticsearch available for search. See
    https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
   [context]
-  (esri/refresh (context->conn context es-config/elastic-name))
-  (esri/refresh (context->conn context es-config/gran-elastic-name)))
+  ;; Refresh all indexes in both elastic clusters
+  (esi-helper/refresh (context->conn context es-config/elastic-name) nil)
+  (esi-helper/refresh (context->conn context es-config/gran-elastic-name) nil))
 
 (defrecord ElasticSearchIndex
            ;; conn is the connection to elastic

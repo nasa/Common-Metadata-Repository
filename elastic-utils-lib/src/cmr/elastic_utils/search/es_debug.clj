@@ -1,10 +1,9 @@
 (ns cmr.elastic-utils.search.es-debug
-  "Holds a very strange function which is only used by dev-system/control. Moved to this namespace
-   so as to not require any other files from needing to import clojurewerkz."
+  "Holds a very strange function which is only used by dev-system/control."
   (:require
-   [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common.services.errors :as e]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-wrapper :as q]))
 
@@ -23,12 +22,12 @@
    Originally found in cmr.search.data.elastic-search-index/elastic_search_index.clj"
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
-        results (esd/search (context->conn context es-config/elastic-name)
-                            (:index-name index-info)
-                            [(:type-name index-info)]
-                            :query (q/match-all)
-                            :size 10000
-                            :_source ["permitted-group-ids"])
+        results (es-helper/search (context->conn context es-config/elastic-name)
+                                  (:index-name index-info)
+                                  (:type-name index-info)
+                                  {:query (q/match-all)
+                                   :size 10000
+                                   :_source ["permitted-group-ids"]})
         hits (get-in results [:hits :total :value])]
     (when (> hits (count (get-in results [:hits :hits])))
       (e/internal-error! "Failed to retrieve all hits."))

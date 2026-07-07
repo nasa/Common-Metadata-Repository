@@ -5,14 +5,14 @@
    [clojure.data.codec.base64 :as b64]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.cache :as cache]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.test.test-util :as tu]
    [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.elastic-utils.es-index-helper :as esi]
-   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.elasticsearch :as es-data]
    [cmr.indexer.data.index-set :as idx-set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,7 +41,7 @@
    (save-document-in-elastic
     ["tests"] es-type es-doc concept-id revision-id options))
   ([es-index es-type es-doc concept-id revision-id options]
-   (es/save-document-in-elastic
+   (es-data/save-document-in-elastic
     @context es-index es-type es-doc concept-id revision-id revision-id
     options)))
 
@@ -52,14 +52,14 @@
    (delete-document-in-elastic
     ["tests"] es-type concept-id revision-id options))
   ([es-index es-type concept-id revision-id options]
-   (es/delete-document
+   (es-data/delete-document
     @context es-index es-type concept-id revision-id revision-id options)))
 
 (defn- get-document
   ([es-type concept-id]
    (get-document "tests" es-type concept-id))
   ([es-index es-type concept-id]
-   (es/get-document @context es-index es-type concept-id)))
+   (es-data/get-document @context es-index es-type concept-id)))
 
 (defn- assert-same
   "Assert the retrieved document for the given concept and field has the
@@ -110,9 +110,9 @@
   (do
     (reset! context {:system
                      {:gran-elastic {:config gran-elastic-test-config
-                                     :conn (esr/connect (str "http://localhost:" (:port gran-elastic-test-config)))}
+                                     :conn (es/try-connect gran-elastic-test-config)}
                       :elastic {:config elastic-test-config
-                                :conn   (esr/connect (str "http://localhost:" (:port elastic-test-config)))}}})
+                                :conn   (es/try-connect elastic-test-config)}}})
     (try
       (f))))
 

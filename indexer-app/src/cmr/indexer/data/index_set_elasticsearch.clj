@@ -2,13 +2,13 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
-   [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
+   [cmr.elastic-utils.es-util :as es-util]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
    [cmr.indexer.services.messages :as m]
@@ -32,14 +32,20 @@
 (defn create-index
   "Create elastic index"
   [{:keys [conn]} idx-w-config]
-  (let [{:keys [index-name settings mapping]} idx-w-config]
+  (let [{:keys [index-name settings mapping]} idx-w-config
+        ;; Flatten the mapping for ES 8.x
+        mapping (if (map? mapping)
+                  (if (some mapping [:collection :granule :tag :variable :service :tool :subscription :suggestion :deleted-granule])
+                    (first (vals mapping))
+                    mapping)
+                  mapping)]
     (when-not (esi-helper/exists? conn index-name)
       (try
         (info "Now creating Elastic Index:" index-name)
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-                error-message (:error body)]
+                error-message (or (get-in body [:error :reason]) (:error body))]
             (error (format "error creating %s elastic index, elastic reported error: %s"
                            index-name error-message))
             (throw e)))))))
@@ -56,7 +62,7 @@
       (esi/create-index-alias conn index-name alias true)
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error-message (:error body)]
+              error-message (or (get-in body [:error :reason]) (:error body))]
           (error (format "error creating %s elastic index alias, elastic reported error: %s"
                          alias error-message))
           (throw e))))))
@@ -68,16 +74,22 @@
     (try
       (if (esi-helper/exists? conn index-name)
         ;; The index exists. Update the mappings.
-        (doseq [[type-name] mapping]
-          (let [response (esi-helper/update-mapping
-                          conn index-name (name type-name) {:mapping mapping})]
-            (when-not (= {:acknowledged true} response)
-              (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                           (pr-str response))))))
+        (let [;; Mappings in CMR can be {:collection {...}} or just {...}
+              ;; ES 8.x requires them to be typeless and wrapped in "properties"
+              mappings-to-update (if (some mapping [:collection :granule :tag :variable :service :tool :subscription :suggestion :deleted-granule])
+                                   (vals mapping)
+                                   [mapping])]
+          (doseq [m mappings-to-update]
+            (let [formatted-mapping (if (:properties m) m {:properties m})
+                  response (esi-helper/update-mapping
+                            conn index-name "_doc" {:mapping formatted-mapping})]
+              (when-not (= {:acknowledged true} response)
+                (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                             (pr-str response)))))))
         ;; The index does not exist. Create it.
         (do
           (info "Index" index-name "does not exist so it will be created")
-          (esi-helper/create conn index-name {:settings settings :mappings mapping})))
+          (create-index {:conn conn} idx-w-config)))
 
       ;; if the index is not a resharding index and alias does not exist, add an alias for it
       (when-not (or (esi-helper/alias-exists? conn index-name)
@@ -86,7 +98,7 @@
 
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error-message (:error body)]
+              error-message (or (get-in body [:error :reason]) (:error body))]
           (error (format "error updating %s elastic index, elastic reported error: %s"
                          index-name error-message))
           (throw e))))))
@@ -137,7 +149,7 @@
   [{:keys [conn config]} index-name]
   (when (esi-helper/exists? conn index-name)
     (let [admin-token (:admin-token config)
-          response (client/delete (esr/index-url conn index-name)
+          response (client/delete (es-util/url-with-path conn index-name)
                                   {:headers {"Authorization" admin-token
                                              "Confirm-delete-action" "true"
                                              :client-id t-config/cmr-client-id}
@@ -206,22 +218,22 @@
                               :max_result_window (get-in settings [:index :max_result_window])
                               :refresh_interval (get-in settings [:index :refresh_interval])}]
 
-          ;; create new index with same orig mapping but updated shard count
-          (try
-            (info "Now creating empty index: " new-index " which is copy of index:" orig-index)
-            (let [index-create-resp (esi-helper/create conn new-index {:settings updated-settings
-                                                                       :mappings mappings})
-                  success-msg (:acknowledged index-create-resp)]
-              (if-not (= true success-msg)
-                (errors/throw-service-error
-                  :internal-error
-                  (format "error returned from elastic that the index was not created."))))
-            (catch clojure.lang.ExceptionInfo e
-              (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-                    error-message (:error body)]
-                (error (format "error creating %s elastic index to copy %s, elastic reported error: %s"
-                               new-index orig-index error-message))
-                (throw e))))))))
+        ;; create new index with same orig mapping but updated shard count
+        (try
+          (info "Now creating empty index: " new-index " which is copy of index:" orig-index)
+          (let [index-create-resp (esi-helper/create conn new-index {:settings updated-settings
+                                                                    :mappings mappings})
+                success-msg (:acknowledged index-create-resp)]
+            (if-not (= true success-msg)
+              (errors/throw-service-error
+                :internal-error
+                (format "error returned from elastic that the index was not created."))))
+          (catch clojure.lang.ExceptionInfo e
+            (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
+                  error-message (or (get-in body [:error :reason]) (:error body))]
+              (error (format "error creating %s elastic index to copy %s, elastic reported error: %s"
+                             new-index orig-index error-message))
+              (throw e))))))))
 
 (comment
   (es-helper/doc-get "index-sets" "set" "1" {"fields" "index-set-id,index-set-name,index-set-request"}))

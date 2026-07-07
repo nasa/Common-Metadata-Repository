@@ -1,13 +1,10 @@
 (ns cmr.elastic-utils.es-index-helper
   "Defines helper functions for invoking ES index"
   (:require
+   [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojurewerkz.elastisch.rest :as rest]
-   [clojurewerkz.elastisch.rest.index :as esi]
-   [clojurewerkz.elastisch.rest.utils :refer [join-names]]
-   [cmr.transmit.config :as config])
-  #_{:clj-kondo/ignore [:unused-import]}
-  (:import clojurewerkz.elastisch.rest.Connection))
+   [cmr.elastic-utils.es-util :as es-util]
+   [cmr.transmit.config :as config]))
 
 (defn index-alias
   "Returns the default index alias for the given index"
@@ -17,64 +14,89 @@
 (defn exists?
   "Return true if the given index exists"
   [conn index-name]
-  (esi/exists? conn index-name))
+  (let [url (es-util/url-with-path conn index-name)
+        response (client/head url (merge (:http-opts conn) {:throw-exceptions false}))]
+    (= 200 (:status response))))
 
 (defn update-mapping
   "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."
   [conn index-name-or-names _type-name opts]
-  (let [{:keys [mapping]} opts]
-    (rest/put conn
-              (rest/index-mapping-url conn (join-names index-name-or-names))
-              {:content-type :json
-               :body mapping
-               :query-params (dissoc opts :mapping)
-               :throw-exceptions true})))
+  (let [{:keys [mapping]} opts
+        url (es-util/url-with-path conn index-name-or-names "_mapping")
+        response (client/put url
+                             (merge (:http-opts conn)
+                                    {:content-type :json
+                                     :body (json/generate-string mapping)
+                                     :query-params (dissoc opts :mapping)
+                                     :accept :json
+                                     :throw-exceptions false}))
+        status (:status response)]
+    (if (some #{status} [200 201])
+      (es-util/decode-response response)
+      (throw (ex-info (str "Update mapping failed with status " status)
+                      {:status status :body (:body response)})))))
 
 (defn create
   "Create an index"
   [conn index-name opts]
-  (let [{:keys [settings mappings]} opts]
-    (rest/put conn
-              (rest/index-url conn index-name)
-              {:content-type :json
-               :body (cond-> {:settings (or settings {})}
-                       mappings (assoc :mappings mappings))
-               :throw-exceptions true})))
+  (let [{:keys [settings mappings]} opts
+        url (es-util/url-with-path conn index-name)
+        body (cond-> {:settings (or settings {})}
+               mappings (assoc :mappings mappings))]
+    (let [response (client/put url
+                               (merge (:http-opts conn)
+                                      {:content-type :json
+                                       :body (json/generate-string body)
+                                       :query-params (dissoc opts :mappings :settings)
+                                       :accept :json
+                                       :throw-exceptions false}))
+          status (:status response)]
+      (if (some #{status} [200 201])
+        (es-util/decode-response response)
+        (throw (ex-info (str "Create index failed with status " status)
+                        {:status status :body (:body response)}))))))
 
 (defn refresh
   "Refresh an index"
   [conn index-name]
-  (-> (rest/index-refresh-url conn (join-names index-name))
-      (client/post (merge (.http-opts conn)
-                          nil
-                          {:accept :json
-                           :content-type :json
-                           :headers {:client-id config/cmr-client-id}}))
-      (:body)
-      (rest/parse-safely)))
+  (let [url (es-util/url-with-path conn index-name "_refresh")]
+    (es-util/decode-response
+     (client/post url (merge (:http-opts conn)
+                             {:accept :json
+                              :content-type :json
+                              :headers {:client-id config/cmr-client-id}})))))
 
 (defn delete
   "Delete an index"
   [conn index-name]
-  (esi/delete conn index-name))
+  (let [url (es-util/url-with-path conn index-name)]
+    (es-util/decode-response
+     (client/delete url (merge (:http-opts conn)
+                               {:accept :json})))))
 
 (defn update-aliases
   "Update index aliases"
   [conn actions]
-  (rest/post conn
-             (rest/index-aliases-batch-url conn)
-             {:content-type :json
-              :body {:actions actions}}))
+  (let [url (es-util/url-with-path conn "_aliases")]
+    (es-util/decode-response
+     (client/post url (merge (:http-opts conn)
+                             {:content-type :json
+                              :body (json/generate-string {:actions actions})
+                              :accept :json})))))
 
-;; We have to roll our own get-aliases function because Elasticsearch route on GET alias
-;; for an index has changed and clojurewerkz is outdated
 (defn get-aliases
   "Get index aliases"
   [conn index-name]
-  (let [aliases-url (rest/url-with-path conn index-name "_alias")
-        resp (rest/get conn aliases-url)
-        aliases (keys (get-in resp [(keyword index-name) :aliases]))]
-    (mapv name aliases)))
+  (let [url (es-util/url-with-path conn index-name "_alias")
+        response (client/get url (merge (:http-opts conn)
+                                        {:accept :json
+                                         :throw-exceptions false}))
+        status (:status response)]
+    (if (= 404 status)
+      []
+      (let [resp (es-util/decode-response response)
+            aliases (keys (get-in resp [(keyword index-name) :aliases]))]
+        (mapv name aliases)))))
 
 (defn alias-exists?
   "Return true if the given index has the default alias in the form of <index-name>_alias"
@@ -85,24 +107,32 @@
   "Create an index template in elasticsearch"
   [conn template-name opts]
   (let [{:keys [index-patterns settings mappings aliases]} opts
-        template-url (rest/url-with-path conn "_index_template" template-name)
+        url (es-util/url-with-path conn "_index_template" template-name)
         template (merge {:settings settings}
                         (when mappings {:mappings mappings})
                         (when aliases {:aliases aliases}))
-        body (merge {:index_patterns index-patterns
-                     :template template})]
-    (rest/post conn template-url
-               {:content-type :json
-                :body body})))
+        body {:index_patterns index-patterns
+              :template template}]
+    (es-util/decode-response
+     (client/post url (merge (:http-opts conn)
+                             {:content-type :json
+                              :body (json/generate-string body)
+                              :accept :json})))))
 
 (defn get-mapping
   "Get the mapping for an index"
   [conn index-name]
-  (let [url (rest/url-with-path conn index-name "_mapping")]
-    (rest/get conn url)))
+  (let [url (es-util/url-with-path conn index-name "_mapping")]
+    (es-util/decode-response
+     (client/get url (merge (:http-opts conn)
+                            {:accept :json
+                             :throw-exceptions false})))))
 
 (defn get-settings
   "Get the settings for an index"
   [conn index-name]
-  (let [url (rest/url-with-path conn index-name "_settings")]
-    (rest/get conn url)))
+  (let [url (es-util/url-with-path conn index-name "_settings")]
+    (es-util/decode-response
+     (client/get url (merge (:http-opts conn)
+                            {:accept :json
+                             :throw-exceptions false})))))
