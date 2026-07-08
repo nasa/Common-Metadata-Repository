@@ -77,7 +77,7 @@ class LanesConfig(BaseModel):
         for lane in self.lanes:
             if lane.name == name:
                 return lane
-        return self.get(self.default_lane)
+        return next(lane for lane in self.lanes if lane.default)
 
 
 def load_lanes_config(path: str = "lanes.json") -> LanesConfig:
