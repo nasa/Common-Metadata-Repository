@@ -574,3 +574,76 @@
 
     (testing "returns expected index-set structure"
       (is (= expected-index-set result)))))
+
+(deftest remove-collection-granule-index-if-exists-test
+  (let [context {}
+        collection-concept-id "C1234-PROV1"
+        index-name "1_c1234_prov1"]
+    (testing "no-ops when the collection has no individual granule index"
+      (let [calls (atom [])]
+        (with-redefs [idx-set-util/get-index-set
+                      (fn [_context elastic-name index-set-id]
+                        (is (= es-config/gran-elastic-name elastic-name))
+                        (is (= 1 index-set-id))
+                        {:index-set {:id 1
+                                     :granule {:indexes [{:name "small_collections"}]}
+                                     :concepts {:granule {:small_collections "1_small_collections"}}}})
+                      svc/validate-requested-index-set
+                      (fn [& _args]
+                        (swap! calls conj :validate))
+                      svc/save-combined-index-set-to-mdb
+                      (fn [& _args]
+                        (swap! calls conj :save)
+                        2)
+                      svc/update-index-set
+                      (fn [& _args]
+                        (swap! calls conj :update))]
+          (is (nil? (svc/remove-collection-granule-index-if-exists context collection-concept-id)))
+          (is (empty? @calls)))))
+
+    (testing "removes the individual granule index and persists the updated index-set"
+      (let [validated-index-set (atom nil)
+            saved-index-set (atom nil)
+            updated-index-set (atom nil)
+            initial-index-set {:index-set
+                               {:id 1
+                                :granule
+                                {:indexes [{:name "small_collections"}
+                                           {:name index-name :number_of_shards 5}]}
+                                :concepts
+                                {:granule
+                                 {:small_collections "1_small_collections"
+                                  (keyword collection-concept-id) index-name}}}}
+            expected-index-set {:index-set
+                                {:id 1
+                                 :granule
+                                 {:indexes [{:name "small_collections"}]}
+                                 :concepts
+                                 {:granule
+                                  {:small_collections "1_small_collections"}}}}]
+        (with-redefs [idx-set-util/get-index-set
+                      (fn [_context elastic-name index-set-id]
+                        (is (= es-config/gran-elastic-name elastic-name))
+                        (is (= 1 index-set-id))
+                        initial-index-set)
+                      svc/validate-requested-index-set
+                      (fn [_context elastic-name index-set allow-update?]
+                        (is (= es-config/gran-elastic-name elastic-name))
+                        (is allow-update?)
+                        (reset! validated-index-set index-set))
+                      svc/save-combined-index-set-to-mdb
+                      (fn [_context index-set elastic-name]
+                        (is (= es-config/gran-elastic-name elastic-name))
+                        (reset! saved-index-set index-set)
+                        2)
+                      svc/update-index-set
+                      (fn [_context elastic-name index-set revision-id]
+                        (is (= es-config/gran-elastic-name elastic-name))
+                        (is (= 2 revision-id))
+                        (reset! updated-index-set index-set)
+                        {:status 200})]
+          (is (= {:status 200}
+                 (svc/remove-collection-granule-index-if-exists context collection-concept-id)))
+          (is (= expected-index-set @validated-index-set))
+          (is (= expected-index-set @saved-index-set))
+          (is (= expected-index-set @updated-index-set)))))))

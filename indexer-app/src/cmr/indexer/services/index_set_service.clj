@@ -592,6 +592,17 @@
         index-set (update-in index-set [:index-set :concepts :granule] dissoc coll-base-name)]
     index-set))
 
+(defn remove-collection-granule-index-if-exists
+  "Removes the collection's separate granule index from the canonical index-set if one exists."
+  [context collection-concept-id]
+  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set/index-set-id)
+        collection-key (keyword collection-concept-id)]
+    (when (get-in gran-index-set [:index-set :concepts :granule collection-key])
+      (let [updated-gran-index-set (remove-granule-index-from-index-set gran-index-set collection-concept-id)]
+        (validate-requested-index-set context es-config/gran-elastic-name updated-gran-index-set true)
+        (let [revision-id (save-combined-index-set-to-mdb context updated-gran-index-set es-config/gran-elastic-name)]
+          (update-index-set context es-config/gran-elastic-name updated-gran-index-set revision-id))))))
+
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id target]

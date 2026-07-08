@@ -65,36 +65,59 @@
 
       (assert-rebalance-status {:small-collections 0 :separate-index 3 :rebalancing-status "NOT_REBALANCING"} coll2)
 
-      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
-      (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
-      (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
-      ;; Commented out until ACLs and groups are supported in the index by concept-id API
-      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
-      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+      (let [index-set (index/get-index-set-by-id 1)
+            coll2-granule-index (get-in index-set [:index-set :concepts :granule (keyword coll2-id)])]
+        (is (some? coll2-granule-index))
 
-      (index/wait-until-indexed)
+        (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
+        (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
+        (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
+        ;; Commented out until ACLs and groups are supported in the index by concept-id API
+        ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+        ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
-      (testing "Concepts are deleted"
-        ;; Collections and granules
-        (are3 [concept-type expected]
-          (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
+        (index/wait-until-indexed)
 
-          "Collections"
-          :collection [coll2 coll3]
+        (testing "Concepts are deleted"
+          ;; Collections and granules
+          (are3 [concept-type expected]
+            (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
 
-          "Granules"
-          :granule [gran2 gran5])
+            "Collections"
+            :collection [coll2 coll3]
 
-        (are3 [expected-tags]
-            (let [result-tags (update
-                                (tags/search {})
-                                :items
-                                (fn [items]
-                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
-              (tags/assert-tag-search expected-tags result-tags))
+            "Granules"
+            :granule [gran2 gran5])
 
-            "Tags"
-            [tag2])))))
+          (are3 [expected-tags]
+              (let [result-tags (update
+                                  (tags/search {})
+                                  :items
+                                  (fn [items]
+                                    (map #(select-keys % [:concept-id :revision-id]) items)))]
+                (tags/assert-tag-search expected-tags result-tags))
+
+              "Tags"
+              [tag2]))
+
+        (bootstrap/bulk-delete-concepts "PROV1" :collection [coll2-id])
+        (index/wait-until-indexed)
+
+        (testing "Collection cascade delete removes individual granule index-set metadata"
+          (let [updated-index-set (index/get-index-set-by-id 1)]
+            (is (nil? (get-in updated-index-set [:index-set :concepts :granule (keyword coll2-id)])))
+            (is (not-any? #(= coll2-granule-index (:name %))
+                          (get-in updated-index-set [:index-set :granule :indexes])))))
+
+        (testing "Collection cascade delete removes the collection and its granules"
+          (are3 [concept-type expected]
+            (d/refs-match? expected (search/find-refs concept-type {:token (tc/echo-system-token)}))
+
+            "Collections"
+            :collection [coll3]
+
+            "Granules"
+            :granule [gran5]))))))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
