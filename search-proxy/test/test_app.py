@@ -20,6 +20,7 @@ def make_lanes_config(**overrides):
         "express_permits": 200,
         "standard_permits": 150,
         "heavy_permits": 50,
+        "express_cache_ttl": 10,
     }
     defaults.update(overrides)
     return LanesConfig(
@@ -28,7 +29,7 @@ def make_lanes_config(**overrides):
                 name="express",
                 permits=defaults["express_permits"],
                 overflow="standard",
-                cache_ttl=10,
+                cache_ttl=defaults["express_cache_ttl"],
                 default=True,
             ),
             LaneConfig(
@@ -201,10 +202,7 @@ class TestResponseCache:
 
     async def test_no_cache_when_ttl_is_zero(self, client):
         """Lanes with cache_ttl=0 should not cache."""
-        config = make_lanes_config()
-        # Override express to have no caching
-        config.lanes[0].cache_ttl = 0
-        app.state.lanes_config = config
+        app.state.lanes_config = make_lanes_config(express_cache_ttl=0)
 
         await client.get("/search/granules.json?concept_id=C123")
         await client.get("/search/granules.json?concept_id=C123")
@@ -468,35 +466,43 @@ class TestPostBodyClassification:
 class TestBypassToggle:
     async def test_bypass_forwards_directly(self, client):
         app.state.toggles["bypass_enabled"] = True
-        resp = await client.get("/search/granules.json?provider=POCLOUD")
-        assert resp.status_code == 200
-        app.state.backend.get.assert_called_once()
-        app.state.toggles["bypass_enabled"] = False
+        try:
+            resp = await client.get("/search/granules.json?provider=POCLOUD")
+            assert resp.status_code == 200
+            app.state.backend.get.assert_called_once()
+        finally:
+            app.state.toggles["bypass_enabled"] = False
 
     async def test_bypass_timeout_returns_504(self, client):
         app.state.toggles["bypass_enabled"] = True
         app.state.backend.get.side_effect = httpx.TimeoutException("timed out")
-        resp = await client.get("/search/granules.json?provider=POCLOUD")
-        assert resp.status_code == 504
-        app.state.backend.get.side_effect = None
-        app.state.toggles["bypass_enabled"] = False
+        try:
+            resp = await client.get("/search/granules.json?provider=POCLOUD")
+            assert resp.status_code == 504
+        finally:
+            app.state.backend.get.side_effect = None
+            app.state.toggles["bypass_enabled"] = False
 
     async def test_bypass_connect_error_returns_502(self, client):
         app.state.toggles["bypass_enabled"] = True
         app.state.backend.get.side_effect = httpx.ConnectError("refused")
-        resp = await client.get("/search/granules.json?provider=POCLOUD")
-        assert resp.status_code == 502
-        app.state.backend.get.side_effect = None
-        app.state.toggles["bypass_enabled"] = False
+        try:
+            resp = await client.get("/search/granules.json?provider=POCLOUD")
+            assert resp.status_code == 502
+        finally:
+            app.state.backend.get.side_effect = None
+            app.state.toggles["bypass_enabled"] = False
 
 
 class TestCacheToggle:
     async def test_cache_disabled_skips_caching(self, client):
         app.state.toggles["cache_enabled"] = False
-        await client.get("/search/granules.json?provider=POCLOUD")
-        await client.get("/search/granules.json?provider=POCLOUD")
-        assert app.state.backend.get.call_count == 2
-        app.state.toggles["cache_enabled"] = True
+        try:
+            await client.get("/search/granules.json?provider=POCLOUD")
+            await client.get("/search/granules.json?provider=POCLOUD")
+            assert app.state.backend.get.call_count == 2
+        finally:
+            app.state.toggles["cache_enabled"] = True
 
 
 class TestLoadSheddingToggle:
@@ -506,13 +512,13 @@ class TestLoadSheddingToggle:
         config = make_lanes_config(heavy_permits=1)
         app.state.lanes = RequestLanes(config, fake_redis)
         await fake_redis.set("lane:heavy:active", 1)
-
-        resp = await client.get("/search/granules.json?include_facets=v2")
-        assert resp.status_code == 200
-
-        await fake_redis.delete("lane:heavy:active")
-        app.state.toggles["load_shedding_enabled"] = True
-        app.state.lanes = RequestLanes(make_lanes_config(), fake_redis)
+        try:
+            resp = await client.get("/search/granules.json?include_facets=v2")
+            assert resp.status_code == 200
+        finally:
+            await fake_redis.delete("lane:heavy:active")
+            app.state.toggles["load_shedding_enabled"] = True
+            app.state.lanes = RequestLanes(make_lanes_config(), fake_redis)
 
 
 class TestClassificationToggle:
@@ -520,14 +526,13 @@ class TestClassificationToggle:
         """With classification off, a normally-heavy request routes to express."""
         app.state.toggles["classification_enabled"] = False
         fake_redis = app.state.redis
-        # Fill heavy lane — request should not touch it
         await fake_redis.set("lane:heavy:active", 50)
-
-        resp = await client.get("/search/granules.json?include_facets=v2")
-        assert resp.status_code == 200
-
-        await fake_redis.delete("lane:heavy:active")
-        app.state.toggles["classification_enabled"] = True
+        try:
+            resp = await client.get("/search/granules.json?include_facets=v2")
+            assert resp.status_code == 200
+        finally:
+            await fake_redis.delete("lane:heavy:active")
+            app.state.toggles["classification_enabled"] = True
 
 
 # Cache key segmentation
@@ -563,6 +568,34 @@ class TestCacheKeySegmentation:
             headers={"accept": "application/xml"},
         )
         assert app.state.backend.get.call_count == 2
+
+    async def test_post_different_bodies_create_separate_cache_entries(self, client):
+        app.state.backend.request.return_value = make_backend_response()
+        await client.post(
+            "/search/granules.json",
+            content="provider=POCLOUD",
+            headers={"content-type": "application/x-www-form-urlencoded"},
+        )
+        await client.post(
+            "/search/granules.json",
+            content="provider=LPDAAC",
+            headers={"content-type": "application/x-www-form-urlencoded"},
+        )
+        assert app.state.backend.request.call_count == 2
+
+    async def test_post_same_body_hits_cache(self, client):
+        app.state.backend.request.return_value = make_backend_response()
+        await client.post(
+            "/search/granules.json",
+            content="provider=POCLOUD",
+            headers={"content-type": "application/x-www-form-urlencoded"},
+        )
+        await client.post(
+            "/search/granules.json",
+            content="provider=POCLOUD",
+            headers={"content-type": "application/x-www-form-urlencoded"},
+        )
+        assert app.state.backend.request.call_count == 1
 
     async def test_same_accept_hits_cache(self, client):
         await client.get(
