@@ -127,3 +127,23 @@ class TestCacheKey:
             "GET", "/search/granules.json", "p=1", "token", accept="application/json"
         )
         assert result == SAMPLE_RESPONSE
+
+    async def test_different_body_hash_misses(self, cache):
+        await cache.set(
+            "POST", "/search/granules.json", "", "token",
+            SAMPLE_RESPONSE, 100, 30, body_hash="aaaa1111",
+        )
+        result = await cache.get(
+            "POST", "/search/granules.json", "", "token", body_hash="bbbb2222"
+        )
+        assert result is None
+
+    async def test_same_body_hash_hits(self, cache):
+        await cache.set(
+            "POST", "/search/granules.json", "", "token",
+            SAMPLE_RESPONSE, 100, 30, body_hash="aaaa1111",
+        )
+        result = await cache.get(
+            "POST", "/search/granules.json", "", "token", body_hash="aaaa1111"
+        )
+        assert result == SAMPLE_RESPONSE
