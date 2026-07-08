@@ -26,7 +26,7 @@ HOP_HEADERS = frozenset(
         "proxy-authenticate",
         "proxy-authorization",
         "te",
-        "trailers",
+        "trailer",
         "transfer-encoding",
         "upgrade",
         # httpx decompresses transparently; these headers reflect the
@@ -306,6 +306,11 @@ async def proxy(request: Request, path: str):
     query_string = str(request.url.query)
     search_after = request.headers.get("cmr-search-after", "")
     accept = request.headers.get("accept", "")
+    # Hash POST body into the cache key so different bodies don't collide
+    body_hash = ""
+    if request.method == "POST":
+        raw_body = await request.body()
+        body_hash = hashlib.sha256(raw_body).hexdigest()[:16]
 
     # Bypass: skip classification, cache, and lanes — pure transparent proxy
     if toggles["bypass_enabled"]:
@@ -382,7 +387,7 @@ async def proxy(request: Request, path: str):
     if toggles["cache_enabled"] and lane.cache_ttl > 0:
         try:
             cached = await cache.get(
-                request.method, full_path, query_string, auth_token, search_after, accept
+                request.method, full_path, query_string, auth_token, search_after, accept, body_hash
             )
             if cached:
                 logger.info(
@@ -440,7 +445,7 @@ async def proxy(request: Request, path: str):
 
             # Cache successful responses if this lane has a TTL
             cache_stored = False
-            if toggles["cache_enabled"] and lane.cache_ttl > 0 and backend_response.status_code < 400:
+            if toggles["cache_enabled"] and lane.cache_ttl > 0 and 200 <= backend_response.status_code < 300:
                 response_data = {
                     "status_code": backend_response.status_code,
                     "body": backend_response.text,
@@ -457,6 +462,7 @@ async def proxy(request: Request, path: str):
                         lane.cache_ttl,
                         search_after,
                         accept,
+                        body_hash,
                     )
                     cache_stored = True
                 except Exception:
