@@ -26,6 +26,7 @@
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.indexer.services.index-set-service :as index-set-svc]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
    [cmr.transmit.metadata-db :as meta-db]
@@ -685,7 +686,8 @@
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
         (let [resp (es/delete-granule-index context index)]
-          (when (not= (get resp :status) 200)
+          (if (= (get resp :status) 200)
+            (index-set-svc/remove-collection-granule-index-if-exists context concept-id)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
 
   ;; reindex variables associated with the collection
