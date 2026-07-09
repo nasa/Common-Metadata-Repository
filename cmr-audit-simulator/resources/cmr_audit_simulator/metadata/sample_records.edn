@@ -1,0 +1,27 @@
+[{:concept-id "C1200000001-AUDIT"
+  :provider-id "AUDIT"
+  :short-name "AUDIT_GOOD_RECORD"
+  :version-id "1"
+  :temporal {:beginning-date-time "2024-01-01T00:00:00Z"
+             :ending-date-time "2024-01-31T23:59:59Z"}
+  :spatial {:west -10.0
+            :south -5.0
+            :east 10.0
+            :north 5.0}
+  :distribution-urls ["https://example.com/data/good-record"]}
+ {:concept-id "C1200000002-AUDIT"
+  :provider-id "AUDIT"
+  :version-id "1"
+  :temporal {:beginning-date-time "2024-04-10T00:00:00Z"
+             :ending-date-time "2024-04-01T00:00:00Z"}
+  :spatial {:west -190.0
+            :south -95.0
+            :east 200.0
+            :north 120.0}
+  :distribution-urls ["ftp://legacy.example.com/bad-record"]}
+ {:concept-id "C1200000003-AUDIT"
+  :provider-id ""
+  :short-name "AUDIT_MISSING_PROVIDER"
+  :version-id "2"
+  :temporal {:beginning-date-time "not-a-date"}
+  :distribution-urls []}]
