@@ -3,7 +3,6 @@
    NOTE: this originally lived at cmr.common-app.services.search.query-to-elastic"
   (:require
    [clojure.string :as string]
-   [clojurewerkz.elastisch.query :as query]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.config :as config]
@@ -74,7 +73,7 @@
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
-    {:query {:bool {:must (query/match-all)
+    {:query {:bool {:must {:match_all {}}
                     :filter core-query}}}))
 
 (defmethod query->elastic :autocomplete

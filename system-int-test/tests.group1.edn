@@ -8,4 +8,5 @@
  "test/cmr/system_int_test/ingest/granule_bulk_update"
  "test/cmr/system_int_test/ingest/provider"
  "test/cmr/system_int_test/ingest/subscription"
- "test/cmr/system_int_test/ingest/bulk_update"]
+ "test/cmr/system_int_test/ingest/bulk_update"
+ "test/cmr/system_int_test/es_spatial_plugin"]

@@ -41,6 +41,10 @@
   [_ _]
   "cmr_humanizers")
 
+(defmethod get-table-name :index-set
+  [_ _]
+  "cmr_index_sets")
+
 (defmethod get-table-name :subscription
   [_ _]
   "cmr_subscriptions")

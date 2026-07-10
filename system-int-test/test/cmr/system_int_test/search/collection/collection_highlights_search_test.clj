@@ -61,7 +61,7 @@
 
     "Long summary with multiple snippets and case insensitive"
     [["**<em>Findme</em>** So many that elasticsearch will break this summary into multiple snippets."
-      "out what keyword to search for in order to make two different snippets have a match, but that seems (<em>findme</em>"
+      "what keyword to search for in order to make two different snippets have a match, but that seems (<em>findme</em>"
       "The quick brown fox jumped --<em>findme</em>-- over the lazy dog."
       "Now is the time for all good men >><em>FINDME</em><< to come to the aid of the party."]]
     {:keyword "FiNdmE"}
@@ -162,8 +162,8 @@
     ;; This test should be updated to expect the correct length when the bug is fixed.
     "Search with keyword and snippet_length and num_snippets"
     [["**<em>Findme</em>** So many that"
-      "brown fox jumped --<em>findme</em>"
-      "for all good men >><em>FINDME</em>"]]
+      ", but that seems (<em>findme</em>"
+      "brown fox jumped --<em>findme</em>"]]
     {:keyword "findme"}
     {"options[highlights][snippet_length]" 20
      "options[highlights][num_snippets]" 3}))

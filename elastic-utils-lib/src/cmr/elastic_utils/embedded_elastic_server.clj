@@ -16,11 +16,11 @@
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch:7.17.14")
+  "docker.elastic.co/elasticsearch/elasticsearch:8.19.14")
 
 (def ^:private kibana-official-docker-image
   "Official kibana docker image."
-  "docker.elastic.co/kibana/kibana:7.17.14")
+  "docker.elastic.co/kibana/kibana:8.19.14")
 
 (defn- build-kibana
   "Build kibana in an embedded docker."
@@ -28,6 +28,10 @@
   (doto (FixedHostPortGenericContainer. kibana-official-docker-image)
     (.withFixedExposedPort (int http-port) 5601)
     (.withNetwork network)
+    (.withEnv "XPACK_SECURITY_ENABLED" "false")
+    (.withEnv "XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY" "something_at_least_32_characters_long_123")
+    (.withEnv "XPACK_REPORTING_ENCRYPTIONKEY" "something_at_least_32_characters_long_456")
+    (.withEnv "XPACK_SECURITY_ENCRYPTIONKEY" "something_at_least_32_characters_long_789")
     (.withStartupTimeout (Duration/ofSeconds 240))))
 
 (defn- container-cmd
@@ -75,12 +79,18 @@
        ;; modifier below is to limit local embedded elastic container memory, so it will not exit from OOM.
        (.withCreateContainerCmdModifier cmd-consumer)
        (.withEnv "indices.breaker.total.use_real_memory" "false")
+       ;; version 8.15 auto enables TLS/SSL for the HTTP layer, we will disable this for local dev env
+       (.withEnv "xpack.security.enabled" "false")
+       (.withEnv "xpack.security.http.ssl.enabled" "false")
+       (.withEnv "indices.id_field_data.enabled" "true")
        (.withEnv "node.name" "embedded-elastic")
+       ;; Disables the automatic generation of passwords and tokens
+       (.withEnv "xpack.security.autoconfiguration.enabled" "false")
        (.withNetwork network)
        (.withNetworkAliases (into-array String ["elasticsearch"]))
        (.withFixedExposedPort (int http-port) 9200)
        (.waitingFor
-        (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
+        (Wait/forLogMessage ".*\"message\":\"started.*" 1))
        (.withStartupTimeout (Duration/ofSeconds 240)))
      {:elasticsearch container
       :kibana kibana})))

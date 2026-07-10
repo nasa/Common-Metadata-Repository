@@ -41,6 +41,7 @@
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.index-set]
    [cmr.metadata-db.data.oracle.concepts.subscription]
    [cmr.metadata-db.data.oracle.concepts.service-association]
    [cmr.metadata-db.data.oracle.concepts.service]
@@ -64,6 +65,7 @@
    :tag-association 10
    :access-group 10
    :humanizer 10
+   :index-set 10
    :subscription 1
    :variable 10
    :variable-association 10
@@ -87,6 +89,7 @@
   #{:tag
     :tag-association
     :humanizer
+    :index-set
     :variable-association
     :service-association
     :tool-association
@@ -148,8 +151,8 @@
                       :tag (msg/tags-only-system-level provider-id)
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
-                      :variable-association (msg/variable-associations-only-system-level
-                                             provider-id)
+                      :index-set (msg/index-sets-only-system-level provider-id)
+                      :variable-association (msg/variable-associations-only-system-level provider-id)
                       :service-association (msg/service-associations-only-system-level
                                              provider-id)
                       :tool-association (msg/tool-associations-only-system-level

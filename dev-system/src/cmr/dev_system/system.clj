@@ -113,7 +113,6 @@
                                 {:log-level (name @in-memory-elastic-log-level-atom)
                                  :kibana-port kibana-port
                                  :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
-                                             "es_libs" "elasticsearch/es_libs"
                                              "embedded-security.policy" "elasticsearch/embedded-security.policy"
                                              "plugins" "elasticsearch/plugins"}}))
 

@@ -3,8 +3,7 @@
   (:require
     [clojure.test :refer :all]
     [cheshire.core :as json]
-    [clojurewerkz.elastisch.rest :as esr]
-    [clojurewerkz.elastisch.rest.document :as esd]
+    [clj-http.client :as client]
     [cmr.common.log :as log :refer [debug]]
     [cmr.common.util :refer [are3]]
     [cmr.elastic-utils.config :as es-config]
@@ -41,8 +40,11 @@
 
 (defn autocomplete-fixture
   [f]
-  (let [conn (esr/connect (url/elastic-root es-config/elastic-name))
-        documents (map #(esd/create conn "1_autocomplete" "_doc" %) test-values)]
+  (let [root (url/elastic-root es-config/elastic-name)
+        url (str root "/1_autocomplete/_doc")
+        documents (mapv #(client/post url {:body (json/generate-string %)
+                                          :content-type :json
+                                          :accept :json}) test-values)]
     (doseq [doc documents] (debug "ingested " doc))
     (index/wait-until-indexed)
     (f)

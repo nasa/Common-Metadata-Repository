@@ -23,7 +23,7 @@
 (def es-deps-target-path
   "es-deps")
 
-(def elastic-version "7.17.25")
+(def elastic-version "8.19.14")
 
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
@@ -35,16 +35,10 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
                                                      [gov.nasa.earthdata/quartzite]]]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
-                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                        :exclusions [[com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
                                                      [gov.nasa.earthdata/quartzite]]]
 
                                        ;; Elastic library
@@ -56,7 +50,9 @@
                                         :exclusions [net.jpountz.lz4/lz4
                                                      org.apache.logging.log4j/log4j-api
                                                      org.apache.logging.log4j/log4j-core
-                                                     org.lz4/lz4-java]]
+                                                     org.lz4/lz4-java
+                                                     org.jruby.joni/joni
+                                                     org.jruby.jcodings/jcodings]]
                                        [at.yawk.lz4/lz4-java "1.10.1"]
 
                                        [org.clojure/tools.reader "1.3.2"]
@@ -64,13 +60,9 @@
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
-                                                    [com.fasterxml.jackson.core/jackson-core]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
                                                     [commons-codec]
                                                     [commons-logging]
-                                                    [joda-time]
                                                     [org.ow2.asm/asm]
                                                     [org.ow2.asm/asm-all]
                                                     ;; Both lz4 libraries are linked together. yawk
@@ -86,8 +78,13 @@
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
+                       :uberjar-exclusions [#"(?i)^org/apache/commons/io/.*"]
                        :jar-name ~es-deps-jar-name
-                       :aot []}
+                       :aot [cmr.elasticsearch.plugins.spatial.script.core
+                             cmr.elasticsearch.plugins.spatial.factory.lfactory
+                             cmr.elasticsearch.plugins.spatial.factory.core
+                             cmr.elasticsearch.plugins.spatial.engine.core
+                             cmr.elasticsearch.plugins.spatial.plugin]}
              :es-plugin {:aot [cmr.elasticsearch.plugins.spatial.script.core
                                cmr.elasticsearch.plugins.spatial.factory.lfactory
                                cmr.elasticsearch.plugins.spatial.factory.core
@@ -134,13 +131,13 @@
                                  "with-profile" "es-plugin,provided" "clean,"
                                  "with-profile" "es-plugin,provided" "uberjar,"]
             "package-es-plugin" ["do"
-                                 "install-es-plugin"
+                                 "install-es-deps"
                                  ["shell" "echo" "pack-es-deps"]
                                  "shell"
                                  "zip"
                                  "-j"
                                  ~plugin-zip-name
-                                 ~uberjar-name
+                                 ~(str es-deps-target-path "/" es-deps-uberjar-name)
                                  "resources/plugin/plugin-descriptor.properties"]
             "build-all" ["do"
                          ["shell" "echo" "build-all"]

@@ -31,7 +31,8 @@
    ;; XXX This is not a good pattern for large software systems; we need to
    ;;     find a different way to accomplish this goal ... possibly use protocols
    ;;     instead.
-   [cmr.metadata-db.data.oracle.concepts.generic-documents]))
+   [cmr.metadata-db.data.oracle.concepts.generic-documents]
+   [cmr.metadata-db.data.oracle.concepts.index-set]))
 
 (def admin-api-routes
   "The administrative control routes for metadata db."

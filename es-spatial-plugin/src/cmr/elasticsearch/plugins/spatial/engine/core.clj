@@ -1,8 +1,8 @@
 (ns cmr.elasticsearch.plugins.spatial.engine.core
   (:import
-   (cmr.elasticsearch.plugins SpatialScriptFactory) 
+   (cmr.elasticsearch.plugins SpatialScriptFactory)
    (org.elasticsearch.script FilterScript ScriptContext ScriptEngine)
-   (java.util Map))
+   (java.util Map Collections))
   (:gen-class
    :name cmr.elasticsearch.plugins.SpatialScriptEngine
    :implements [org.elasticsearch.script.ScriptEngine]))
@@ -13,6 +13,11 @@
   "Get script lang."
   [^SpatialScriptEngine _this]
   "cmr_spatial")
+
+(defn -getSupportedContexts
+  "Return supported contexts."
+  [^SpatialScriptEngine _this]
+  (Collections/singleton FilterScript/CONTEXT))
 
 (defn -compile
   "Compile script."
