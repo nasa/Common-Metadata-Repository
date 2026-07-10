@@ -5,6 +5,7 @@
    [cmr.spatial.polygon :as polygon]
    [cmr.spatial.point :as point]
    [cmr.spatial.line-string :as line-string]
+   [cmr.spatial.math :refer [EARTH_RADIUS_METERS]]
    [clojure.string :as string])
   (:import
    (cmr.spatial.mbr Mbr)
@@ -368,7 +369,7 @@
   ;; For now, we return a default value, e.g., 3.
   ;; when short-name is SENTINEL-1C_SLC return 5
   (case short-name
-    "C1200000006-PROV1" 8
+    "C1200000006-PROV1" 5
     "SENTINEL-1C_SLC" 8
     "C3470873558-ASF" 8
     "SENTINEL-1A_SLC" 8
@@ -397,3 +398,43 @@
     (catch Throwable t
       (.error (LogManager/getLogger "cmr_s2_cells") (format "Unable to get covering cells for shape [%s]" shape) t)
       (throw (ex-info "An exception occurred getting covering cells" {:shape shape} t)))))
+
+(defmulti get-s2-shape-area
+  "Returns the cell level for the query shape based on the collection requested"
+  (fn [shape]
+    (class shape)))
+
+(defmethod get-s2-shape-area :default
+  [shape]
+  (throw (ex-info (format "get-s2-shape-area Unsupported shape type [%s]" (class shape)) {:shape shape})))
+
+(defmethod get-s2-shape-area Polygon
+  [shape]
+  (try
+    (let [s2-shape (shape->s2polygon shape)
+          steradians-area (.getArea s2-shape)
+          square-m-area (* steradians-area EARTH_RADIUS_METERS EARTH_RADIUS_METERS)
+          square-km-area (/ square-m-area 1000000)]
+      square-km-area)
+    (catch Throwable t
+      (.error (LogManager/getLogger "cmr_s2_cells") (format "Unable to get query cell level for shape [%s]" shape) t)
+      (throw (ex-info "An exception occurred getting query cell level for collection" {} t)))))
+
+(defmethod get-s2-shape-area Mbr
+  [shape]
+  (try
+    (let [s2-shape (shape->s2latlngrect shape)
+          steradians-area (.area s2-shape)
+          square-m-area (* steradians-area EARTH_RADIUS_METERS EARTH_RADIUS_METERS)
+          square-km-area (/ square-m-area 1000000)]
+      square-km-area)
+    (catch Throwable t
+      (.error (LogManager/getLogger "cmr_s2_cells") (format "Unable to get query cell level for shape [%s]" shape) t)
+      (throw (ex-info "An exception occurred getting query cell level for collection" {} t)))))
+
+(defn get-cell-area
+  [level]
+  (let [average-steradians-area (S2Cell/averageArea level)
+        average-square-m-area (* average-steradians-area EARTH_RADIUS_METERS EARTH_RADIUS_METERS)
+        average-square-km-area (/ average-square-m-area 1000000)]
+    average-square-km-area))
