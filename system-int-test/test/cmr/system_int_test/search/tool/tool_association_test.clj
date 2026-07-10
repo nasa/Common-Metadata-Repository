@@ -214,7 +214,7 @@
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id c1-p2-concept-id}])]
         (tool-util/assert-tool-dissociation-bad-request
-         {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
+         {["C1200000020-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   c1-p2-concept-id)]}}
          response)))
 
@@ -224,7 +224,7 @@
             response (association-util/dissociate-by-concept-ids
                       token concept-id [{:concept-id coll-concept-id}])]
         (tool-util/assert-tool-dissociation-bad-request
-         {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
+         {["C1200000027-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                   coll-concept-id)]}}
          response)))))
 
@@ -303,10 +303,10 @@
 
         (tool-util/assert-tool-dissociation-response-mixed?
          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-          ["C1200000012-PROV1"] {:concept-id "TLA1200000016-CMR" :revision-id 2}
-          ["C1200000013-PROV1" 1] {:concept-id "TLA1200000017-CMR" :revision-id 2}
-          ["C1200000014-PROV1"]
-          {:warnings [(format "Tool [%s] is not associated with collection [C1200000014-PROV1]."
+          ["C1200000013-PROV1"] {:concept-id "TLA1200000016-CMR" :revision-id 2}
+          ["C1200000014-PROV1" 1] {:concept-id "TLA1200000017-CMR" :revision-id 2}
+          ["C1200000015-PROV1"]
+          {:warnings [(format "Tool [%s] is not associated with collection [C1200000015-PROV1]."
                               concept-id)]}}
          response)
         (assert-tool-associated [])))))

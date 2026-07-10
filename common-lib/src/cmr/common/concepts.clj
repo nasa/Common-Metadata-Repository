@@ -76,6 +76,7 @@
     :variable
     :variable-association
     :subscription
+    :index-set
     :generic
     :generic-association}
     (keys generic-concept-types->concept-prefix)))
@@ -88,6 +89,7 @@
     "C" :collection
     "G" :granule
     "H" :humanizer
+    "IS" :index-set
     "S" :service
     "SA" :service-association
     "TL" :tool

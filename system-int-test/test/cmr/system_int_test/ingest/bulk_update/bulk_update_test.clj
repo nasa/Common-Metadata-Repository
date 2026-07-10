@@ -944,7 +944,7 @@
             collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))
             collection-statuses (:collection-statuses collection-response)]
         (is (= "COMPLETE" (:task-status collection-response)))
-        (is (= "Collection with concept-id [C1200000009-PROV1] is deleted. Can not be updated."
+        (is (= "Collection with concept-id [C1200000010-PROV1] is deleted. Can not be updated."
                (get (first collection-statuses) :status-message)))
         (is (= "Task completed with 1 FAILED and 1 SKIPPED out of 2 total collection update(s)." (:status-message collection-response)))))
 

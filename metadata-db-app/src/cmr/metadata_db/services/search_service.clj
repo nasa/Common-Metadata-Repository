@@ -27,6 +27,7 @@
     :access-group default-supported-find-parameters
     :acl default-supported-find-parameters
     :humanizer #{:concept-id :native-id}
+    :index-set #{:concept-id :native-id}
     :subscription #{:provider-id :concept-id :native-id :collection-concept-id :subscriber-id :normalized-query
                     :subscription-type}
     :variable #{:provider-id :concept-id :native-id}
@@ -134,6 +135,7 @@
                  :tag-association
                  :acl
                  :humanizer
+                 :index-set
                  :variable-association
                  :service-association
                  :tool-association

@@ -941,7 +941,7 @@
 
 (defn reset-fixture
   "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
-  function to set the accepted umm versions for ingest to the the latest UMM version defined in
+  function to set the accepted umm versions for ingest to the latest UMM version defined in
   umm-spec-lib, so that all the ingest tests are testing against the latest umm version.
   and uses the `setup-providers` function to create a testing fixture.
 

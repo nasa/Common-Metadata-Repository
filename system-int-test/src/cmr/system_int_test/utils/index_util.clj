@@ -190,28 +190,34 @@
   (contains? (set (get-aliases index-name elastic-name)) alias))
 
 (defn get-index-set-by-id
-  [id]
   "Gets index set by id in clojure map form.
-  Example of returned map:
-  {:index-set {
-    :granule {
-      :indexes [...]
-    }
-    :concepts {
-      :granule {
-        :small-collections '1_small_collections'
-        :C1234-PROV1 '1_c1234_prov1'
-      }
-    }
-  }"
-  (let [resp (client/get (url/indexer-index-sets-by-id-url id)
-                         {:query-params {:format "json"}
-                          :headers {transmit-config/token-header (transmit-config/echo-system-token)
-                                    "content-type" "application/json"}
-                          :connection-manager (s/conn-mgr)
-                          :throw-exceptions false})
-        index-sets (json/parse-string (:body resp) true)]
-    index-sets))
+   Example of returned map:
+   {:index-set {
+     :granule {
+       :indexes [...]
+     }
+     :concepts {
+       :granule {
+         :small-collections '1_small_collections'
+         :C1234-PROV1 '1_c1234_prov1'
+       }
+     }
+   }
+   :status 200}"
+  ([id]
+   (get-index-set-by-id id nil))
+  ([id params]
+   (let [resp (client/get (url/indexer-index-sets-by-id-url id)
+                          {:query-params (merge {:format "json"} params)
+                           :headers {transmit-config/token-header (transmit-config/echo-system-token)
+                                     "content-type" "application/json"}
+                           :connection-manager (s/conn-mgr)
+                           :throw-exceptions false})
+         status (:status resp)
+         body (json/parse-string (:body resp) true)]
+     (if (map? body)
+       (assoc body :status status)
+       {:status status :body body}))))
 
 (defn update-index-set
   "Updates index-set to be the given index-set
@@ -247,6 +253,13 @@
   "Triggers a sync of index-sets from database to elasticsearch"
   []
   (client/post (url/index-set-sync-url)
+               {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}))
+
+(defn index-set-reset
+  []
+  (client/post (url/index-set-reset-url)
                {:headers {transmit-config/token-header (transmit-config/echo-system-token)}
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}))

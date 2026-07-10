@@ -15,11 +15,11 @@
         idx-mapping-type (first (keys mapping))
         index-set-array (es/get-index-sets (indexer-util/context->es-store context es-cluster-name) index-name idx-mapping-type)]
 
-    (map #(select-keys (:index-set %) [:id :name :concepts])
+    (map #(select-keys (:index-set %) [:id :name :concepts :revision-id])
          index-set-array)))
 
 (defn get-index-set
-  "Fetch index-set associated with an index-set id."
+  "Fetch index-set from elastic associated with an index-set id."
   [context es-cluster-name index-set-id]
   (or (es/get-index-set context es-cluster-name index-set-id)
       (errors/throw-service-error :not-found
@@ -39,5 +39,5 @@
 
         all-index-set-array (map util/deep-merge gran-index-set-array non-gran-index-set-array)]
 
-    (map #(select-keys (:index-set %) [:id :name :concepts])
+    (map #(select-keys (:index-set %) [:id :name :concepts :revision-id])
          all-index-set-array)))
