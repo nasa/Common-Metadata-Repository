@@ -43,4 +43,12 @@
                    "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
           expected {:Summary "Overview"
                     :QualityContentDetails {:Strengths "Good data"}}]
+      (is (= expected (parse-quality doc text-xpath true)))))
+
+  (testing "6. Preserves trailing whitespace in the last populated detail field"
+    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
+                   "Summary: Overview text. Strengths: )y`m&lt; "
+                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
+          expected {:Summary "Overview text."
+                    :QualityContentDetails {:Strengths ")y`m< "}}]
       (is (= expected (parse-quality doc text-xpath true))))))
