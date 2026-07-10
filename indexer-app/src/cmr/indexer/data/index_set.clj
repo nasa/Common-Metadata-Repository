@@ -382,6 +382,9 @@
    :s2-cell-interiors-lvl-5 (m/stored m/text-field-mapping)
    :s2-cell-exteriors-lvl-5 (m/stored m/text-field-mapping)
 
+   :s2-cell-interiors-custom (m/stored m/text-field-mapping)
+   :s2-cell-exteriors-custom (m/stored m/text-field-mapping)
+
    ;; :s2-cell-interiors-range (m/stored m/ngram-text-field-mapping)
    ;; :s2-cell-exteriors-range (m/stored m/ngram-text-field-mapping)
 

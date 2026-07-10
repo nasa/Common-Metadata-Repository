@@ -360,3 +360,40 @@
     (catch Throwable t
       (.error (LogManager/getLogger "cmr_s2_cells") (format "Unable to get covering cells for shape [%s]" shape) t)
       (throw (ex-info "An exception occurred getting covering cells" {:shape shape} t)))))
+
+(defn get-collection-cell-level
+  "Returns the cell level for the given collection entry title."
+  [short-name]
+  ;; Implement the logic to determine the cell level based on the collection entry title.
+  ;; For now, we return a default value, e.g., 3.
+  ;; when short-name is SENTINEL-1C_SLC return 5
+  (case short-name
+    "C1200000006-PROV1" 8
+    "SENTINEL-1C_SLC" 8
+    "C3470873558-ASF" 8
+    "SENTINEL-1A_SLC" 8
+    "C1214470488-ASF" 8
+    "SENTINEL-1_BURSTS" 11
+    "C2709161906-ASF" 11
+    "TEMPO_CLDO4_L2" 5
+    "C2930760329-LARC_CLOUD" 5
+    "VNP02IMG" 5
+    "C2105091501-LAADS" 5
+    "GEDI02_A" 7
+    "C2142771958-LPCLOUD" 7
+    "MOD11A1" 6
+    "C1748058432-LPCLOUD" 6
+    "ABoVE_MODIS_MAIAC_Reflectance_1858" 6
+    "C2192631093-ORNL_CLOUD" 6
+    "NSIDC-0804" 3
+    "C3892587769-NSIDC_CPRD" 3
+    5))
+
+(defn get-custom-s2-cell-tokens
+  [shape short-name]
+  (try
+    (let [cell-level (get-collection-cell-level short-name)]
+      (get-s2-cell-tokens shape cell-level))
+    (catch Throwable t
+      (.error (LogManager/getLogger "cmr_s2_cells") (format "Unable to get covering cells for shape [%s]" shape) t)
+      (throw (ex-info "An exception occurred getting covering cells" {:shape shape} t)))))

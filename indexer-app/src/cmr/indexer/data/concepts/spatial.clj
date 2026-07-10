@@ -68,7 +68,7 @@
 
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"
-  [shapes coordinate-system]
+  [shapes coordinate-system collection-entry-title]
   (let [shapes (->> shapes
                     (mapv (partial umm-s/set-coordinate-system coordinate-system))
                     (mapv #(get special-cases % %))
@@ -77,6 +77,7 @@
         s2-cells-lvl-4 (map #(s2-cells/get-s2-cell-tokens % 4) shapes)
         s2-cells-lvl-5 (map #(s2-cells/get-s2-cell-tokens % 5) shapes)
         ;; s2-cells-range (map #(s2-cells/get-s2-cell-ids-range % 2 5) shapes)
+        s2-cells-custom (map #(s2-cells/get-custom-s2-cell-tokens % collection-entry-title) shapes)
 
         s2-cell-map {:s2-cell-interiors-lvl-3 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-3)))
                      :s2-cell-exteriors-lvl-3 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-3)))
@@ -86,6 +87,8 @@
                      :s2-cell-exteriors-lvl-5 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-5)))
                      ;; :s2-cell-interiors-range (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-range)))
                      ;; :s2-cell-exteriors-range (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-range)))
+                     :s2-cell-interiors-custom (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-custom)))
+                     :s2-cell-exteriors-custom (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-custom)))
                      }
 
         ords-info-map (srl/shapes->ords-info-map shapes)
@@ -149,12 +152,15 @@
   "Converts the spatial area of the given collection to the elastic documents"
   [coordinate-system collection]
   (when-let [shapes (seq (get-collection-geometry-shapes collection))]
-    (let [doc (shapes->elastic-doc shapes coordinate-system)]
+    (let [doc (shapes->elastic-doc shapes coordinate-system "")]
       doc)))
 
 (defn granule-spatial->elastic-docs
   "Converts the spatial area of the given granule to the elastic documents"
   [coordinate-system granule]
   (when-let [geometries (get-in granule [:spatial-coverage :geometries])]
-    (let [doc (shapes->elastic-doc geometries coordinate-system)]
+    (let [_ (println "granule-spatial->elastic-docs granule" granule)
+          collection-short-name (get-in granule [:collection-ref :short-name])
+          _ (println "granule-spatial->elastic-docs collection-ref" collection-short-name)
+          doc (shapes->elastic-doc geometries coordinate-system collection-short-name)]
       doc)))

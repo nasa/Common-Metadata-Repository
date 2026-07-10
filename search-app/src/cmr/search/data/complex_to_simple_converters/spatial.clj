@@ -199,6 +199,7 @@
                 (subs cell 0 len)))
             cells))))
 
+(def MAX_CELLS 500)
 
 ;; Query with a given cell level
 (extend-protocol c2s/ComplexQueryToSimple
@@ -206,6 +207,8 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [cell-level (:s-2-lvl context)
+          collection-concept-id (first (:query-collection-ids context))
+          _ (println "spatial.clj: collection-concept-id" collection-concept-id)
           s2-intersects (or (:s-2-intersects context) false)
           shape (d/calculate-derived shape)
           orbital-cond (when (= :granule (:query-concept-type context))
@@ -213,20 +216,31 @@
           spatial-script (shape->script-cond shape s2-intersects)
           spatial-cond (if cell-level
                          (if (= cell-level 0)
-                             (let [s2-cells (s2-cells/shape->fancy-cell-ids shape 5)
-                                   expanded-cells (prefix-expansions s2-cells)
-                                   interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-range")) expanded-cells)
-                                   exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-range")) expanded-cells)
-                                   ;interior-cond-terms (qm/match (keyword (str "s2-cell-interiors-range")) (string/join " " s2-cells))
-                                   ;exterior-match-terms (qm/match (keyword (str "s2-cell-exteriors-range")) (string/join " " s2-cells))
-                                   exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
-                               (gc/or-conds [interior-cond-terms exterior-cond]))
-                             (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
-                                   cell-tokens (:cell-tokens s2-cells)
-                                   interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
-                                   exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-lvl-" cell-level)) cell-tokens)
-                                   exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                           ;; cell-level 0 indicates we need to use the custom cell lvl
+                           (let [custom-cell-level (s2-cells/get-collection-cell-level collection-concept-id)
+                                 _ (println "spatial.clj: custom-cell-level" custom-cell-level)
+                                 s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
+                                 cell-tokens (:cell-tokens s2-cells)
+                                 _ (println "spatial.clj: cell-tokens" cell-tokens)
+                                 count-cells (count cell-tokens)
+                                 _ (println "spatial.clj: count-cells" count-cells)
+                                 ;; if the number of cells is more than MAX_CELLS, fall back to using the mbr-cond and lr-cond
+                                 when-too-many-cells? (> count-cells MAX_CELLS)
+                                 ;; if there are too many cells, fall back to using the mbr-cond and lr-cond
+                                 mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
+                                 lr-cond (br->cond "lr" (srl/shape->lr shape))
+                                 interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-custom")) cell-tokens)
+                                 exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-custom")) cell-tokens)
+                                 exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                             (if when-too-many-cells?
+                               (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])
                                (gc/or-conds [interior-cond-terms exterior-cond])))
+                           (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
+                                 cell-tokens (:cell-tokens s2-cells)
+                                 interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
+                                 exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-lvl-" cell-level)) cell-tokens)
+                                 exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                             (gc/or-conds [interior-cond-terms exterior-cond])))
                          (let [mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
                                lr-cond (br->cond "lr" (srl/shape->lr shape))]
                            (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))
