@@ -14,7 +14,7 @@
                   :exclusions [com.mchange/c3p0
                                com.mchange/mchange-commons-java]]
                  [com.mchange/c3p0 "0.12.0"]
-                 [com.mchange/mchange-commons-java "0.4.0"]
+                 [com.mchange/mchange-commons-java "0.6.0"]
 
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]

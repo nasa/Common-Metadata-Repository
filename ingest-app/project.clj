@@ -35,7 +35,7 @@
                  [org.quartz-scheduler/quartz "2.3.2"
                   :exclusions [com.mchange/c3p0 com.mchange/mchange-commons-java]]
                  [com.mchange/c3p0 "0.12.0"]
-                 [com.mchange/mchange-commons-java "0.4.0"]
+                 [com.mchange/mchange-commons-java "0.6.0"]
 
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
