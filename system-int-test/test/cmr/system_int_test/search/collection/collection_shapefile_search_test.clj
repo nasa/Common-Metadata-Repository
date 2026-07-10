@@ -47,6 +47,8 @@
 
 (deftest collection-shapefile-search-test
   (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+        ;; Wait for the flag to actually be enabled with retries to handle race conditions
+        _ (wait-for-shapefile-flag-enabled 5 200)
         ;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
@@ -182,9 +184,42 @@
           "southern_africa with force-cartesian=true"
           "southern_africa" true [whole-world polygon-with-holes polygon-with-holes-cart normal-line normal-line-cart normal-brs wide-south-cart])))))
 
+(defn- wait-for-shapefile-flag-enabled
+  "Waits for the shapefile flag to be enabled by attempting a simple search and verifying
+  it doesn't return a 'Searching by shapefile is not enabled' error. Retries up to max-retries
+  times with a delay."
+  [max-retries delay-ms]
+  (loop [retries 0]
+    (let [test-params [{:name "shapefile"
+                        :content (io/file (io/resource "shapefiles/box.geojson"))
+                        :mime-type mt/geojson}
+                       {:name "provider"
+                        :content "PROV1"}]
+          {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection test-params)
+          ;; Check if we got the "not enabled" error specifically
+          not-enabled-error? (and (= 400 status)
+                                  errors
+                                  (some #(re-find #"Searching by shapefile is not enabled" %) errors))]
+      (cond
+        ;; Success - flag is enabled (we got any response OTHER than "not enabled")
+        (not not-enabled-error?)
+        :enabled
+
+        ;; Max retries reached - flag still not enabled
+        (>= retries max-retries)
+        (throw (Exception. (str "Shapefile flag not enabled after " max-retries " retries. Last status: " status " errors: " errors)))
+
+        ;; Retry - flag not enabled yet
+        :else
+        (do
+          (Thread/sleep delay-ms)
+          (recur (inc retries)))))))
+
 (deftest collection-shapefile-force-cartesian-validation-test
   "Test that cartesian-only shapefiles require force-cartesian=true to pass validation"
-  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))]
+  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
+        ;; Wait for the flag to actually be enabled with retries to handle race conditions
+        _ (wait-for-shapefile-flag-enabled 5 200)]
     (testing "scotland_cartesian.json is only valid when processed as cartesian"
       (testing "with force-cartesian=true should pass validation"
         (let [params [{:name "shapefile"
@@ -194,9 +229,9 @@
                        :content "true"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
           (is (nil? status)
-              "Should pass validation with force-cartesian=true")))
+              (str "Should pass validation with force-cartesian=true. Got status: " status " errors: " errors))))
 
       (testing "without force-cartesian should fail validation"
         (let [params [{:name "shapefile"
@@ -204,9 +239,9 @@
                        :mime-type mt/geojson}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
           (is (= 400 status)
-              "Should fail validation without force-cartesian")))
+              (str "Should fail validation without force-cartesian. Got status: " status " errors: " errors))))
 
       (testing "with force-cartesian=false should fail validation"
         (let [params [{:name "shapefile"
@@ -216,6 +251,6 @@
                        :content "false"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
           (is (= 400 status)
-              "Should fail validation with force-cartesian=false"))))))
+              (str "Should fail validation with force-cartesian=false. Got status: " status " errors: " errors)))))))
