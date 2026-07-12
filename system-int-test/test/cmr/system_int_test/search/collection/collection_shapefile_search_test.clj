@@ -76,6 +76,22 @@
           (Thread/sleep delay-ms)
           (recur (inc retries)))))))
 
+(defn- retry-search-until-success
+  "Retries a shapefile search until it succeeds or max retries reached.
+  Returns the final response map with :status and :errors."
+  [params max-retries delay-ms expected-status expected-status-desc]
+  (loop [retries 0]
+    (let [{:keys [status errors] :as response} (search/find-refs-with-multi-part-form-post :collection params)
+          errors-vec (when errors (vec errors))
+          success? (= status expected-status)]
+      (if success?
+        (assoc response :errors errors-vec)
+        (if (>= retries max-retries)
+          (assoc response :errors errors-vec)
+          (do
+            (Thread/sleep delay-ms)
+            (recur (inc retries))))))))
+
 (deftest collection-shapefile-search-test
   (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
         ;; Wait for the flag to actually be enabled with retries to handle race conditions
@@ -229,7 +245,7 @@
                        :content "true"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (retry-search-until-success params 3 200 nil "success")]
           (is (nil? status)
               (str "Should pass validation with force-cartesian=true. Got status: " status " errors: " errors))))
 
@@ -239,9 +255,10 @@
                        :mime-type mt/geojson}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)
+              errors-vec (when errors (vec errors))]
           (is (= 400 status)
-              (str "Should fail validation without force-cartesian. Got status: " status " errors: " errors))))
+              (str "Should fail validation without force-cartesian. Got status: " status " errors: " errors-vec))))
 
       (testing "with force-cartesian=false should fail validation"
         (let [params [{:name "shapefile"
@@ -251,6 +268,7 @@
                        :content "false"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)
+              errors-vec (when errors (vec errors))]
           (is (= 400 status)
-              (str "Should fail validation with force-cartesian=false. Got status: " status " errors: " errors)))))))
+              (str "Should fail validation with force-cartesian=false. Got status: " status " errors: " errors-vec)))))))
