@@ -207,6 +207,10 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [cell-level (:s-2-lvl context)
+          lower-threshold (:lower-threshold context)
+          _ (println "spatial.clj: lower-threshold" lower-threshold)
+          upper-threshold (:upper-threshold context)
+          _ (println "spatial.clj: upper-threshold" upper-threshold)
           collection-concept-id (first (:query-collection-ids context))
           _ (println "spatial.clj: collection-concept-id" collection-concept-id)
           s2-intersects (or (:s-2-intersects context) false)
@@ -229,20 +233,19 @@
                                  _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
                                  ;; custom-cond (if (> square-km-area (* 500 average-cell-area))
                                  ;; If the ratio is more than 50 and less than 2000
-                                 custom-cond (if (and (> ratio 50) (< ratio 2000))
-                                               (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
-                                                     s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
-                                                     cell-tokens (:cell-tokens s2-cells)
-                                                     interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-custom")) cell-tokens)
-                                                     exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-custom")) cell-tokens)
-                                                     exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
-                                                 (gc/or-conds [interior-cond-terms exterior-cond]))
-                                               (let [_ (println "spatial.clj: square-km-area is too large, falling back to mbr and lr conditions")
-                                                     mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
-                                                     lr-cond (br->cond "lr" (srl/shape->lr shape))]
-                                                 (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])]))
-                                               )]
-                             custom-cond)
+                                 custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
+                                                 (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
+                                                       s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
+                                                       cell-tokens (:cell-tokens s2-cells)
+                                                       interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-custom")) cell-tokens)
+                                                       exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-custom")) cell-tokens)
+                                                       exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                                                   (gc/or-conds [interior-cond-terms exterior-cond]))
+                                                 (let [_ (println "spatial.clj: square-km-area is too large, falling back to mbr and lr conditions")
+                                                       mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
+                                                       lr-cond (br->cond "lr" (srl/shape->lr shape))]
+                                                   (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))]
+                                  custom-cond)
                            (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
                                  cell-tokens (:cell-tokens s2-cells)
                                  interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
