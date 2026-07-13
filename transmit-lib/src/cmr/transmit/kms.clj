@@ -53,7 +53,7 @@
    :processing-levels :uuid})
 
 (comment
- "The following map contains code used for transitioning CMR from SIT->UAT->PROD
+  "The following map contains code used for transitioning CMR from SIT->UAT->PROD
   and keeping in step with KMS changes. These three environment all talk to
   production KMS due to AWS->EBNET network limitations. Because of of this we
   need to be able to publish data for all three environment with one host. while
@@ -64,8 +64,7 @@
 
   To override the scheme KMS settings, set the config kms-scheme-override-json to:
   {\"platforms\":\"static\",
-   \"mime-type\":\"mimetype?format=csv&version=special\"}"
- )
+   \"mime-type\":\"mimetype?format=csv&version=special\"}")
 
 (defn- scheme-overrides
   "CMR will Allow for any KMS resource URL to be overridden by a config
@@ -79,8 +78,8 @@
       (json/parse-string overrides true)
       (catch com.fasterxml.jackson.core.JsonParseException e
         (errorf "refresh-kms-cache: Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
-               (config/kms-scheme-override-json)
-               (.getMessage e))))))
+                (config/kms-scheme-override-json)
+                (.getMessage e))))))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
@@ -138,7 +137,7 @@
           :spatial-keywords [:location-category :location-type :location-subregion-1
                              :location-subregion-2 :location-subregion-3 :location-subregion-4 :uuid]
           :spatial-keywords-old [:location-category :location-type :location-subregion-1
-                             :location-subregion-2 :location-subregion-3 :uuid]
+                                 :location-subregion-2 :location-subregion-3 :uuid]
           :processing-levels [:product-level-id :uuid]}))
 
 (def keyword-scheme->required-field
@@ -184,8 +183,8 @@
   "Remove any keys from a map which have nil or empty string values."
   [m]
   (util/remove-map-keys
-    (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
-    m))
+   (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
+   m))
 
 (def NUM_HEADER_LINES
   "Number of lines which contain header information in csv files (not the actual keyword values)."
@@ -237,7 +236,7 @@
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
   (debugf "refresh-kms-cache: About to parse CSV from KMS, first 1k: [%s]."
-         (subs csv-content 0 (min 1024 (count csv-content))))
+          (subs csv-content 0 (min 1024 (count csv-content))))
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
         raw-field-names (second all-lines)
@@ -342,11 +341,66 @@
              (name keyword-scheme))
       keywords)))
 
+;; (defn detect-keyword-error )
+
+(defn send-to-kms-metadata-fixer
+  "Sends a PUT request to KMS's metadata fixer service, which attempts to
+   reconcile keywords that have since been updated with their current value."
+  [context collection-concept-id]
+  (def c1 context)
+  (def coll1 collection-concept-id)
+  (let [conn (config/context->app-connection context :kms)
+        ;; TODO stubbed endpoint - swap back to (conn/root-url conn) once ready
+        url          (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
+                             collection-concept-id)
+        ;; token    (config/kms-metadata-fixer-token)
+        token "Bearer "
+        params
+
+        (merge
+         (config/conn-params conn)
+         {:headers          {:client-id    "cmr-standalone"
+                             :accept       "application/json"
+                             :authorization token}
+
+          :throw-exceptions false})
+        response (client/put url params)]
+    (def u url)
+    (def p params)
+    (infof "Sending collection [%s] to kms-metadata-fixer-service - response is [%s]"
+           collection-concept-id response)
+    response))
+
+(comment
+  (tap> coll1)
+  (tap> (send-to-kms-metadata-fixer c1 "C1200362831-ARCTEST"))
+  :rcf)
+
 (comment
   (def get-keywords-from-system
     (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
   (get-keywords-from-system :measurement-name)
   (config/set-kms-scheme-override-json! "{\"platforms\": \"static\"}")
   (first (get-keywords-from-system :platforms))
-  (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv")))
-  )
+  (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv"))))
+
+(defn send-to-kms-metadata-fixer-test
+  [collection-concept-id]
+  (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+  (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
+                    collection-concept-id)
+        response (client/put url
+                             {:headers          {:client-id    "cmr-standalone"
+                                                 :accept       "application/json"
+                                                 :authorization "Bearer "}
+                              :throw-exceptions false})]
+    (tap> (format "PUT %s -> status [%s]" url (:status response)))
+    response))
+
+;; (comment
+;;   (send-to-kms-metadata-fixer-test "C1200362831-ARCTEST")
+
+;;   :rcf)
+
+
+

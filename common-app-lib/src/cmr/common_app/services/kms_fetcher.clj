@@ -20,7 +20,7 @@
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.kms :as kms])
+   [cmr.transmit.kms :as transmit-kms])
   (:import #_{:clj-kondo/ignore [:unused-import]}
            (clojure.lang ExceptionInfo)))
 
@@ -74,8 +74,8 @@
   [context]
   (try
     (let [data (into {}
-                     (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-                       [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))
+                     (for [keyword-scheme (keys transmit-kms/keyword-scheme->field-names)]
+                       [keyword-scheme (transmit-kms/get-keywords-for-keyword-scheme context keyword-scheme)]))
           data (cmr.common.util/remove-nil-keys data)]
       (when-not (empty? data)
         (info "refresh-kms-cache: get-kms-index: have parsed keyword data, about to create cache.")

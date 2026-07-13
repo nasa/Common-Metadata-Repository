@@ -115,6 +115,11 @@
     "
   {:default ""})
 
+(declare kms-metadata-fixer-token)
+(defconfig kms-metadata-fixer-token
+           "Defines the token to be used by the KMS fixer to resolve keyword errors on collections"
+           {:default "mock-kms-metadata-fixer"})
+
 (declare urs-username)
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
