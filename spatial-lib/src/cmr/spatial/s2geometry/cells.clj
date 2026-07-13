@@ -369,7 +369,7 @@
   ;; For now, we return a default value, e.g., 3.
   ;; when short-name is SENTINEL-1C_SLC return 5
   (case short-name
-    "C1200000006-PROV1" 5
+    "C1200000006-PROV1" 6
     "SENTINEL-1C_SLC" 8
     "C3470873558-ASF" 8
     "SENTINEL-1A_SLC" 8
@@ -382,8 +382,8 @@
     "C2105091501-LAADS" 5
     "GEDI02_A" 7
     "C2142771958-LPCLOUD" 7
-    "MOD11A1" 6
-    "C1748058432-LPCLOUD" 6
+    "MOD11A1" 7
+    "C1748058432-LPCLOUD" 7
     "ABoVE_MODIS_MAIAC_Reflectance_1858" 6
     "C2192631093-ORNL_CLOUD" 6
     "NSIDC-0804" 3
