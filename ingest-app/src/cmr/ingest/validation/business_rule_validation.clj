@@ -1,20 +1,21 @@
 (ns cmr.ingest.validation.business-rule-validation
-  "Provides functions to validate the ingest business rules"
-  (:require
-    [clj-time.core :as t]
-    [clojure.string :as string]
-    [cmr.common.date-time-parser :as p]
-    [cmr.common.time-keeper :as tk]
-    [cmr.ingest.validation.additional-attribute-validation :as aa]
-    [cmr.ingest.validation.instrument-validation :as instrument-validation]
-    [cmr.ingest.validation.platform-validation :as platform-validation]
-    [cmr.ingest.validation.project-validation :as pv]
-    [cmr.ingest.validation.spatial-validation :as sv]
-    [cmr.ingest.validation.temporal-validation :as tv]
-    [cmr.ingest.validation.tiling-validation :as tiling-validation]
-    [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]
-    [cmr.umm-spec.umm-spec-core :as spec]))
+    "Provides functions to validate the ingest business rules"
+    (:require
+     [clj-time.core :as t]
+     [clojure.string :as string]
+     [cmr.common.config :as cfg]
+     [cmr.common.date-time-parser :as p]
+     [cmr.common.time-keeper :as tk]
+     [cmr.ingest.validation.additional-attribute-validation :as aa]
+     [cmr.ingest.validation.instrument-validation :as instrument-validation]
+     [cmr.ingest.validation.platform-validation :as platform-validation]
+     [cmr.ingest.validation.project-validation :as pv]
+     [cmr.ingest.validation.spatial-validation :as sv]
+     [cmr.ingest.validation.temporal-validation :as tv]
+     [cmr.ingest.validation.tiling-validation :as tiling-validation]
+     [cmr.transmit.metadata-db :as mdb]
+     [cmr.transmit.search :as search]
+     [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
@@ -44,20 +45,22 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
-(def collection-update-searches
+(defn collection-update-searches
   "Defines a list of functions that take the context, concept-id, updated UMM concept and the
    previous UMM concept, and return search maps used to validate that a collection was not updated
    in a way that invalidates granules. Each search map contains a :params key of the parameters to
    use to execute the search and an :error-msg to return if the search finds any hits."
-  [aa/additional-attribute-searches
-   pv/deleted-project-searches
-   instrument-validation/deleted-parent-instrument-searches
-   instrument-validation/deleted-child-instrument-searches
-   platform-validation/deleted-platform-searches
-   tiling-validation/deleted-tiling-searches
-   tv/out-of-range-temporal-searches
-   sv/spatial-param-change-searches])
-
+  []
+  (concat
+   [aa/additional-attribute-searches
+    pv/deleted-project-searches
+    tiling-validation/deleted-tiling-searches
+    tv/out-of-range-temporal-searches
+    sv/spatial-param-change-searches]
+   (when (cfg/enforce-granule-collection-consistency)
+     [instrument-validation/deleted-parent-instrument-searches
+      instrument-validation/deleted-child-instrument-searches
+      platform-validation/deleted-platform-searches])))
 
 (defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
@@ -76,7 +79,7 @@
       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
             has-granule-searches (mapcat
                                   #(% context (:concept-id prev-concept) umm-concept prev-umm-concept)
-                                  collection-update-searches)
+                                  (collection-update-searches))
             search-errors (->> has-granule-searches
                                (map (partial has-granule-search-error context))
                                (remove nil?))]
