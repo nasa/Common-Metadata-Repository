@@ -207,9 +207,9 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [cell-level (:s-2-lvl context)
-          lower-threshold (:lower-threshold context)
+          lower-threshold (or (:lower-threshold context) 0)
           _ (println "spatial.clj: lower-threshold" lower-threshold)
-          upper-threshold (:upper-threshold context)
+          upper-threshold (or (:upper-threshold context) 2000)
           _ (println "spatial.clj: upper-threshold" upper-threshold)
           collection-concept-id (first (:query-collection-ids context))
           _ (println "spatial.clj: collection-concept-id" collection-concept-id)
