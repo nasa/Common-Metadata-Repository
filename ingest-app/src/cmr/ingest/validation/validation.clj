@@ -14,6 +14,7 @@
    [cmr.ingest.services.humanizer-alias :as humanizer-alias]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.business-rule-validation :as bv]
+   [cmr.transmit.kms :as transmit-kms]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.json-schema :as json-schema]
@@ -356,81 +357,106 @@
      (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
-  "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
+      "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
   optional validations defined in keyword-validation-warnings are done with errors returned
-  as warnings."
-  [context validation-options]
-  [(when-not (:validate-keywords? validation-options)
-     (keyword-validation-warnings context))])
+  as warnings. When this is true we need to send that information to the keyword fixer API"
+      [context validation-options]
+      [(when-not (:validate-keywords? validation-options)
+                 (keyword-validation-warnings context))])
+
+(comment
+  
+  (keyword-validation-warning-rules c1 {:validate-keywords? false, :validate-umm? false, :test-existing-errors? false})
+  :rcf)
 
 (defn umm-spec-validate-collection
-  "Validate collection through umm-spec validation functions. If warn? flag is
-  true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
-  ([collection validation-options context warn?]
-   (umm-spec-validate-collection collection nil validation-options context warn?))
-  ([collection prev-collection validation-options context warn?]
-   (when-let [err-messages (seq (umm-spec-validation/validate-collection
-                                 collection
-                                 (keyword-validation-rules context validation-options)))]
-     (if (or (:validate-umm? validation-options)
-             (config/return-umm-spec-validation-errors)
-             (not warn?))
-       ;; whenever it's time to throw errors, we want to check if it's an collection update and
-       ;; it's not bulk-update and progressive-update-enabled is true. If so, we want to throw
-       ;; errors only when new errors are introduced, otherwise return all the existing errors as
-       ;; error-warnings.
-       (if (and (config/progressive-update-enabled)
-                (not (:bulk-update? validation-options))
-                prev-collection)
-         (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
-                                          ;; double check to make sure only the local and ci tests can use the header.
-                                          (transmit-config/echo-system-token? context)
-                                          (= "mock-echo-system-token" (:token context)))
-                                   ;; We can't really test the case when the errors are existing errors
-                                   ;; because we can't ingest invalid collections into the system.
-                                   ;; We can only mimic the case when the validation errors for the updated
-                                   ;; collection are the same as the validation errors for the previous revision
-                                   ;; of the collection.
-                                   err-messages
-                                   (seq (umm-spec-validation/validate-collection
-                                         prev-collection
-                                         (keyword-validation-rules context validation-options))))
-               ;; get the newly introduced validation errors
-               new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
-           (if new-err-messages
-             (errors/throw-service-errors :invalid-data new-err-messages)
-             ;; when there is no newly introduced errors, err-messages contains only existing errors.
-             err-messages))
-         (errors/throw-service-errors :invalid-data err-messages))
-       (do
-         (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-         err-messages)))))
+      "Validate collection through umm-spec validation functions. If warn? flag is
+   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors.
+   Returns a map of :errors and :has-keyword-error?.
+   kw-validation-rules is precomputed once by the caller via keyword-validation-rules."
+      [collection prev-collection kw-validation-rules validation-options context warn?]
+      (def coll1 collection)
+      (def kv1 kw-validation-rules)
+      (tap> {:collection collection
+             :validation-options validation-options
+             :context context
+             :warn? warn?})
+      (def vo validation-options)
+      (def c1 context)
+      (let [{:keys [errors has-keyword-error?]}
+            (umm-spec-validation/validate-collection collection kw-validation-rules)]
+           (if-not (seq errors)
+                   {:errors errors :has-keyword-error? has-keyword-error? :otherKey123 "foobar"}
+                   (do
+                     (def hkc has-keyword-error?)
+        ;; TODO Transmit call to the KMS metadata-fixer service to resolve keyword errors off the historical keywords
+                     (if (or (:validate-umm? validation-options)
+                             (config/return-umm-spec-validation-errors)
+                             (not warn?))
+                         (if (and (config/progressive-update-enabled)
+                                  (not (:bulk-update? validation-options))
+                                  prev-collection)
+                             (let [prev-err-messages (if (and (:test-existing-errors? validation-options)
+                                                              (transmit-config/echo-system-token? context)
+                                                              (= "mock-echo-system-token" (:token context)))
+                                                         errors
+                                                         (seq (:errors (umm-spec-validation/validate-collection
+                                                                         prev-collection kw-validation-rules))))
+                                   new-err-messages (seq (first (data/diff (set errors) (set prev-err-messages))))]
+                                  (if new-err-messages
+                                      (errors/throw-service-errors :invalid-data new-err-messages)
+                                      {:errors errors :has-keyword-error? has-keyword-error? :otherKey "foobar"}))
+                             (errors/throw-service-errors :invalid-data errors))
+                         (do
+                           (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec errors)))
+                           {:errors errors :has-keyword-error? has-keyword-error? :otherKey "foobar"}))))))
 
 (defn umm-spec-validate-collection-warnings
   "Validate umm-spec collection validation warnings functions - errors that we want
   to report but we do not want to fail ingest."
   [collection validation-options context]
-  (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
-                                collection
-                                (keyword-validation-warning-rules context validation-options)))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors))
+  (let [{:keys [errors has-keyword-error?]}
+        (umm-spec-validation/validate-collection-warnings
+         collection
+         (keyword-validation-warning-rules context validation-options))
+        err-messages (seq errors)]
+    (cond
+      (and err-messages
+           (or (:validate-umm? validation-options)
+               (config/return-umm-spec-validation-errors)))
       (errors/throw-service-errors :invalid-data err-messages)
+
+      err-messages
       (do
-        (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-        err-messages))))
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        {:errors err-messages :has-keyword-error? has-keyword-error?})
+
+      :else
+      {:errors nil :has-keyword-error? has-keyword-error?})))
+
+
+(comment
+ (umm-spec-validate-collection-warnings coll1  vo c1)
+
+  (seq (umm-spec-validation/validate-collection-warnings
+         coll1
+         (keyword-validation-warning-rules c1 vo)))
+  
+
+  :rcf)        
+        
 
 (defn validate-granule-umm-spec
-  "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
+      "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
-  [context collection granule]
-  (when-let [errors (seq (umm-spec-validation/validate-granule
-                          (humanizer-alias/update-collection-with-aliases context
-                                                                          collection
-                                                                          true)
-                          granule
-                          (granule-keyword-validations context)))]
-    (if-errors-throw :invalid-data errors)))
+      [context collection granule]
+      (when-let [errors (seq (umm-spec-validation/validate-granule
+                               (humanizer-alias/update-collection-with-aliases context
+                                                                               collection
+                                                                               true)
+                               granule
+                               (granule-keyword-validations context)))]
+                (if-errors-throw :invalid-data errors)))
 
 (defn umm-spec-validate-granule-warnings
   "Validate umm-spec granule validation warnings functions - errors that we want
@@ -565,3 +591,7 @@
          :invalid-data
          (format "Collection [%s] does not exist or is not visible."
                  coll-concept-id))))))
+
+(comment
+  :rcf)
+

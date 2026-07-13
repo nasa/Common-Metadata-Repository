@@ -7,6 +7,7 @@
    [cmr.ingest.services.helper :as ingest-helper]
    [cmr.ingest.services.ingest-service.util :as util]
    [cmr.ingest.validation.validation :as v]
+   [cmr.transmit.kms :as transmit-kms]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.umm-spec-core :as spec]
    [cmr.umm.collection.entry-id :as eid]))
@@ -44,29 +45,44 @@
                                       :collection
                                       (:format prev-concept)
                                       (:metadata prev-concept)))
-         ;; if progressive update is enabled, and it's not bulk update, and pre-concept exists
-         ;;   Either throw newly introduced errors for validation on sanitized collection,
-         ;;   or return existing errors as warnings(it could be nil)
-         ;; else
-         ;;  throw errors for validation on sanitized collection, if there are any.
-         existing-errors (v/umm-spec-validate-collection
-                          sanitized-collection sanitized-prev-collection validation-options context false)
+         _ (def sc sanitized-collection)
+         _ (def scp sanitized-prev-collection)
+         _ (def vo validation-options)
+         _ (def c1 context)
+
+         ;; context + validation-options are identical for every validation below,
+         ;; so build the keyword validation rules once and thread them through.
+         kw-rules (v/keyword-validation-rules context validation-options)
+
+         {existing-errors :errors has-keyword-error? :has-keyword-error?}
+         (v/umm-spec-validate-collection
+          sanitized-collection sanitized-prev-collection kw-rules validation-options context false)
+         _ (def off-func-exist-errors existing-errors)
          existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
                               existing-errors)
+
          ;; Return warnings for schema validation errors going from xml -> UMM
-         warnings (v/validate-collection-umm-spec-schema collection validation-options)
+         collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
+
          ;; Return warnings for validation errors on collection without sanitization
-         collection-warnings (concat
-                              (v/umm-spec-validate-collection collection validation-options context true)
-                              (v/umm-spec-validate-collection-warnings
-                               collection validation-options context))
+         {non-sanitized-errors :errors} (v/umm-spec-validate-collection
+                                         collection nil kw-rules validation-options context true)
+         {warning-errors :errors warning-has-keyword-error? :has-keyword-error?}
+         (v/umm-spec-validate-collection-warnings
+          collection validation-options context)
+         has-keyword-error? (or has-keyword-error? warning-has-keyword-error?)
+         collection-warnings (concat non-sanitized-errors warning-errors)
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
-         warnings (concat warnings collection-warnings)]
+         warnings (concat collection-schema-warnings collection-warnings)]
+     (def cw collection-warnings)
+     (def hke has-keyword-error?)
+
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
       :warnings warnings
-      :existing-errors existing-errors})))
+      :existing-errors existing-errors
+      :has-keyword-error? has-keyword-error?})))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
@@ -76,29 +92,37 @@
         {:keys [provider-id native-id]} concept
         prev-concept (first (ingest-helper/find-visible-collections context {:provider-id provider-id
                                                                              :native-id native-id}))
-        {:keys [collection warnings existing-errors]} (validate-and-parse-collection-concept
-                                                       context
-                                                       concept
-                                                       prev-concept
-                                                       validation-options)
+        {:keys [collection warnings existing-errors has-keyword-error?]} (validate-and-parse-collection-concept
+                                                                          context
+                                                                          concept
+                                                                          prev-concept
+                                                                          validation-options)
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
     ;; progressive update doesn't apply to business rules validation.
     (v/validate-business-rules context coll-concept prev-concept)
+    (def hke has-keyword-error?)
+    (tap> {:locaiton "validate-and-prepare-collection" :body has-keyword-error?})
     {:concept coll-concept
      :warnings warnings
-     :existing-errors existing-errors}))
+     :existing-errors existing-errors
+     :has-keyword-error? has-keyword-error?}))
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
    Return entry-title, concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [{:keys [concept warnings existing-errors]} (validate-and-prepare-collection context
-                                                                                    concept
-                                                                                    validation-options)
+  (def c1 context)
+  (def con1 concept)
+  (let [{:keys [concept warnings existing-errors has-keyword-error?]} (validate-and-prepare-collection context
+                                                                                                       concept
+                                                                                                       validation-options)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)
         entry-title (get-in concept [:extra-fields :entry-title])]
+    (def hke1 has-keyword-error?)
+    (def ee existing-errors)
+    (def w warnings)
       ;; if ingested with existing errors, log the existing errors and warnings for the collection
       ;; and the user
     (when (seq existing-errors)
@@ -108,8 +132,30 @@
                     (if (:token context)
                       (common-context/context->user-id context)
                       "unknown user"))))
+      (when (and has-keyword-error?
+                 (or (seq existing-errors) (seq warnings)))
+            (tap> "About to go send data to kms fixer")   
+            (transmit-kms/send-to-kms-metadata-fixer-test concept-id))
     {:entry-title entry-title
      :concept-id concept-id
      :revision-id revision-id
      :warnings warnings
      :existing-errors existing-errors}))
+
+(comment
+  (v/umm-spec-validate-collection sc nil vo c1 true)
+  (v/umm-spec-validate-collection
+   sc nil (v/keyword-validation-rules c1 vo) vo c1 false)
+;; The conditional statements
+(when (and hke1
+           (or (seq ee) (seq w))))
+
+(when true
+      (transmit-kms/send-to-kms-metadata-fixer c1 "C1200000001-PROV1"))
+
+   (when (and hke1
+               (or (seq ee) (seq w)))
+      (transmit-kms/send-to-kms-metadata-fixer-test c1))
+  :rcf)
+;; (v/umm-spec-validate-collection
+;;    collection nil kw-rules validation-options context true))
