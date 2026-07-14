@@ -77,4 +77,21 @@
           expected {:Summary "Overview text."
                     :QualityContentDetails {:Strengths " ^PA.C]F9B "
                                             :Limitations "250m grid blur."}}]
+      (is (= expected (parse-quality doc text-xpath true)))))
+
+  (testing "10. Leaves non-terminal detail unchanged when no edge whitespace was trimmed"
+    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
+                   "Summary: Overview text. Strengths: ExactLimitations: 250m grid blur."
+                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
+          expected {:Summary "Overview text."
+                    :QualityContentDetails {:Strengths "Exact"
+                                            :Limitations "250m grid blur."}}]
+      (is (= expected (parse-quality doc text-xpath true)))))
+
+  (testing "11. Skips whitespace restoration when raw detail label lacks canonical delimiter spacing"
+    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
+                   "Summary: Overview text. Strengths:Exact "
+                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
+          expected {:Summary "Overview text."
+                    :QualityContentDetails {:Strengths "Exact"}}]
       (is (= expected (parse-quality doc text-xpath true))))))
