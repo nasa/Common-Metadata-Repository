@@ -1,21 +1,21 @@
 (ns cmr.ingest.validation.business-rule-validation
-    "Provides functions to validate the ingest business rules"
-    (:require
-     [clj-time.core :as t]
-     [clojure.string :as string]
-     [cmr.common.config :as cfg]
-     [cmr.common.date-time-parser :as p]
-     [cmr.common.time-keeper :as tk]
-     [cmr.ingest.validation.additional-attribute-validation :as aa]
-     [cmr.ingest.validation.instrument-validation :as instrument-validation]
-     [cmr.ingest.validation.platform-validation :as platform-validation]
-     [cmr.ingest.validation.project-validation :as pv]
-     [cmr.ingest.validation.spatial-validation :as sv]
-     [cmr.ingest.validation.temporal-validation :as tv]
-     [cmr.ingest.validation.tiling-validation :as tiling-validation]
-     [cmr.transmit.metadata-db :as mdb]
-     [cmr.transmit.search :as search]
-     [cmr.umm-spec.umm-spec-core :as spec]))
+  "Provides functions to validate the ingest business rules"
+  (:require
+   [clj-time.core :as t]
+   [clojure.string :as string]
+   [cmr.common.config :as cfg]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.time-keeper :as tk]
+   [cmr.ingest.validation.additional-attribute-validation :as aa]
+   [cmr.ingest.validation.instrument-validation :as instrument-validation]
+   [cmr.ingest.validation.platform-validation :as platform-validation]
+   [cmr.ingest.validation.project-validation :as pv]
+   [cmr.ingest.validation.spatial-validation :as sv]
+   [cmr.ingest.validation.temporal-validation :as tv]
+   [cmr.ingest.validation.tiling-validation :as tiling-validation]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.search :as search]
+   [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
@@ -52,15 +52,14 @@
    use to execute the search and an :error-msg to return if the search finds any hits."
   []
   (concat
-   [aa/additional-attribute-searches
-    pv/deleted-project-searches
-    tiling-validation/deleted-tiling-searches
+   [aa/additional-attribute-searches    tiling-validation/deleted-tiling-searches
     tv/out-of-range-temporal-searches
     sv/spatial-param-change-searches]
    (when (cfg/enforce-granule-collection-consistency)
      [instrument-validation/deleted-parent-instrument-searches
       instrument-validation/deleted-child-instrument-searches
-      platform-validation/deleted-platform-searches])))
+      platform-validation/deleted-platform-searches
+      pv/deleted-project-searches])))
 
 (defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
@@ -113,10 +112,10 @@
         collection-data-type (:CollectionDataType collection)]
     (when (and (= true standard-product)
                (some #(= collection-data-type %) ["NEAR_REAL_TIME" "LOW_LATENCY" "EXPEDITED"]))
-     [(format (str "Standard product validation failed: "
-                   "Standard Product cannot be true with the CollectionDataType being one of the following values: "
-                   "NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [%s].")
-              collection-data-type)])))
+      [(format (str "Standard product validation failed: "
+                    "Standard Product cannot be true with the CollectionDataType being one of the following values: "
+                    "NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [%s].")
+               collection-data-type)])))
 
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
