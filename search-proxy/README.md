@@ -1,0 +1,136 @@
+# CMR Search Proxy
+
+A traffic-shaping proxy that sits in front of CMR search. It classifies incoming requests into priority lanes, enforces concurrency limits via Redis-backed distributed semaphores, and caches responses to reduce backend load.
+
+## How it works
+
+Every request is classified into one of three lanes based on query complexity:
+
+| Lane | Permits | Cache TTL | Overflow | Retry-After |
+|------|---------|-----------|----------|-------------|
+| express | 200 | 10s | standard | 5s |
+| standard | 150 | 15s | — | 5s |
+| heavy | 50 | 30s | — | 10s |
+
+**Classification rules** (first match wins):
+
+- **Heavy**: `include_facets`, `online_only`, `cloud_cover`, temporal facet params (`temporal_facet[`), cycle/pass params (`cycle[`, `passes[`), `options[readable_granule_name][pattern]`, shapefile uploads, `polygon[]` (multi-polygon, always heavy), single `polygon` with >20 vertices, bounding boxes with area >5000 sq degrees, more than 2 bounding boxes (`bounding_box[]` with 3+ values)
+- **Standard**: `temporal`, `updated_since`, `revision_date`, `orbit_number`, `point`, `point[]`, single `circle`, small polygon (≤20 vertices), small bounding box (≤5000 sq degrees)
+- **Express**: `circle[]` (explicit fast path — always express regardless of other params), and everything not matched above
+
+**Concurrency**: each lane has a Redis counter (`lane:{name}:active`). When a request arrives, the counter is atomically incremented. If it exceeds the permit limit, the request either overflows to the configured overflow lane or is rejected with a 429. The counter is decremented when the request completes.
+
+**Cache**: successful (2xx) responses are stored in Redis keyed on a SHA-256 hash of method, path, query string, hashed auth token, `Accept` header, `cmr-search-after` header, and POST body. Cache hits skip lane acquisition entirely.
+
+**Load shedding response**:
+```
+HTTP 429 Too Many Requests
+Retry-After: 10
+
+{"errors": ["Service temporarily overloaded for heavy-tier queries"]}
+```
+
+## Configuration
+
+All settings are environment variables with the `CMR_PROXY_` prefix.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CMR_PROXY_BACKEND_URL` | required | CMR search base URL (no `/search` suffix) |
+| `CMR_PROXY_REDIS_URL` | required | Redis connection URL |
+| `CMR_PROXY_LANES_CONFIG` | `lanes.json` | Path to lanes config file |
+| `CMR_PROXY_LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`) |
+| `CMR_PROXY_MAX_REQUEST_BODY_BYTES` | `52428800` | Max POST body size (50MB) |
+| `CMR_PROXY_MAX_CACHE_RESPONSE_BYTES` | `1048576` | Max response size to cache (1MB) |
+| `CMR_PROXY_BACKEND_TIMEOUT_SECONDS` | `300.0` | Backend request timeout |
+| `CMR_PROXY_BACKEND_MAX_CONNECTIONS` | `500` | httpx connection pool size |
+| `CMR_PROXY_BACKEND_MAX_KEEPALIVE` | `200` | httpx keepalive connection pool size |
+| `CMR_PROXY_REDIS_MAX_CONNECTIONS` | auto | Redis pool size; defaults to total lane permits + 50 |
+| `CMR_PROXY_REDIS_SOCKET_CONNECT_TIMEOUT` | `2.0` | Redis connection timeout in seconds |
+| `CMR_PROXY_REDIS_SOCKET_TIMEOUT` | `2.0` | Redis read/write timeout in seconds |
+| `CMR_PROXY_REDIS_HEALTH_CHECK_INTERVAL` | `30` | Seconds between Redis keepalive pings |
+
+### Feature toggles
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CMR_PROXY_BYPASS_ENABLED` | `false` | Skip classification, cache, and lanes — pure transparent proxy |
+| `CMR_PROXY_CACHE_ENABLED` | `true` | Enable response caching |
+| `CMR_PROXY_LOAD_SHEDDING_ENABLED` | `true` | Return 429 when lanes are full; when false, requests proceed over capacity but the counter still increments so pressure remains visible in `/health` |
+| `CMR_PROXY_CLASSIFICATION_ENABLED` | `true` | Classify requests; when false, all traffic routes to the default lane |
+
+## Lanes configuration
+
+Lane definitions live in `lanes.json`. Each lane supports:
+
+```json
+{
+  "name": "express",
+  "permits": 200,
+  "overflow": "standard",
+  "cache_ttl": 10,
+  "retry_after": 5,
+  "default": true
+}
+```
+
+- `permits` — maximum concurrent in-flight requests
+- `overflow` — lane to try if this one is full (optional)
+- `cache_ttl` — response cache TTL in seconds (0 disables caching)
+- `retry_after` — value of the `Retry-After` header on 429 responses
+- `default` — exactly one lane must be marked as the default
+
+## Health endpoint
+
+```
+GET /health
+```
+
+Returns CMR-compatible `ok?`/`dependencies` format with HTTP 200 when healthy, 503 when any dependency is unhealthy. The result is cached for 5 seconds. Includes Redis status, backend search status, and per-lane utilization:
+
+```json
+{
+  "ok?": true,
+  "dependencies": {
+    "redis": {"ok?": true},
+    "search": {"ok?": true},
+    "lane-express": {"ok?": true, "active": 12, "permits": 200},
+    "lane-standard": {"ok?": true, "active": 3, "permits": 150},
+    "lane-heavy": {"ok?": true, "active": 0, "permits": 50}
+  }
+}
+```
+
+## Running locally
+
+```bash
+# Install dependencies
+pip install -e ".[dev]"
+
+# Start Redis
+docker run -d -p 6379:6379 redis
+
+# Run the proxy
+CMR_PROXY_BACKEND_URL=http://localhost:3003 \
+CMR_PROXY_REDIS_URL=redis://localhost:6379 \
+uvicorn proxy.app:app --port 8080
+```
+
+Requests to `http://localhost:8080/search/collections` are proxied to the backend at `http://localhost:3003/search/collections`.
+
+## Running tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+## Operational notes
+
+**Leaked permits**: If a task is killed mid-request or Redis becomes briefly unavailable, lane counters can accumulate without being decremented. Monitor the health endpoint for lanes that stay near capacity. To reset:
+
+```bash
+redis-cli DEL lane:express:active lane:standard:active lane:heavy:active
+```
+
+**Debugging**: Set `CMR_PROXY_LOG_LEVEL=DEBUG` to log backend response details including content encoding and actual byte counts. Remove when done — debug logging is verbose under load.
