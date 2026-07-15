@@ -581,9 +581,8 @@
         index-name "1_c1234_prov1"]
     (testing "no-ops when the collection has no individual granule index"
       (let [calls (atom [])]
-        (with-redefs [idx-set-util/get-index-set
-                      (fn [_context elastic-name index-set-id]
-                        (is (= es-config/gran-elastic-name elastic-name))
+        (with-redefs [svc/get-index-set-revision
+                      (fn [_context index-set-id _revision-id]
                         (is (= 1 index-set-id))
                         {:index-set {:id 1
                                      :granule {:indexes [{:name "small_collections"}]}
@@ -621,9 +620,8 @@
                                  :concepts
                                  {:granule
                                   {:small_collections "1_small_collections"}}}}]
-        (with-redefs [idx-set-util/get-index-set
-                      (fn [_context elastic-name index-set-id]
-                        (is (= es-config/gran-elastic-name elastic-name))
+        (with-redefs [svc/get-index-set-revision
+                      (fn [_context index-set-id _revision-id]
                         (is (= 1 index-set-id))
                         initial-index-set)
                       svc/validate-requested-index-set

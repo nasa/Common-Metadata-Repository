@@ -596,13 +596,20 @@
 (defn remove-collection-granule-index-if-exists
   "Removes the collection's separate granule index from the canonical index-set if one exists."
   [context collection-concept-id]
-  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set/index-set-id)
-        collection-key (keyword collection-concept-id)]
-    (when (get-in gran-index-set [:index-set :concepts :granule collection-key])
+  ;; Read from MDB to get the authoritative, up-to-date index-set
+  (let [combined-index-set (get-index-set-revision context index-set/index-set-id nil)
+        ;; Extract the granule portion which contains individual collection indexes
+        gran-index-set {:index-set (select-keys (:index-set combined-index-set)
+                                                [:id :name :granule :concepts])}
+        collection-key (keyword collection-concept-id)
+        separate-index-name (get-in gran-index-set [:index-set :concepts :granule collection-key])]
+    (when separate-index-name
+      (info (format "Removing collection [%s] from index-set; separate index name: [%s]"
+                    collection-concept-id separate-index-name))
       (let [updated-gran-index-set (remove-granule-index-from-index-set gran-index-set collection-concept-id)]
         (validate-requested-index-set context es-config/gran-elastic-name updated-gran-index-set true)
         (let [revision-id (save-combined-index-set-to-mdb context updated-gran-index-set es-config/gran-elastic-name)]
-          (update-index-set context es-config/gran-elastic-name updated-gran-index-set revision-id))))))
+          (update-index-set context es-config/gran-elastic-name (util/remove-nils-empty-maps-seqs updated-gran-index-set) revision-id))))))
 
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."

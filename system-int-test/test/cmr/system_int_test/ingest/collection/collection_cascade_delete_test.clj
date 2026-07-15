@@ -46,12 +46,10 @@
          (ingest/delete-concept {:provider-id "PROV1"
                                  :concept-type :collection
                                  :native-id (:entry-title coll)})
-         (index/wait-until-indexed)
-         ;; Sync to ensure indexer has latest index-set from database
-         (index/sync-index-sets-from-db)
-         (Thread/sleep 1000))
+         (index/wait-until-indexed))
 
        (testing "Index-set metadata should no longer contain the collection"
+         ;; Query index-set from MDB to get the updated version
          (let [index-set (index/get-index-set-by-id 1)
                granule-concepts (get-in index-set [:index-set :concepts :granule])
                collection-key (keyword concept-id)]
@@ -78,10 +76,7 @@
            (ingest/delete-concept {:provider-id "PROV1"
                                    :concept-type :collection
                                    :native-id (:entry-title coll)})
-           (index/wait-until-indexed)
-           ;; Sync to ensure indexer has latest index-set from database
-           (index/sync-index-sets-from-db)
-           (Thread/sleep 1000))
+           (index/wait-until-indexed))
 
          (testing "Index-set revision should not change"
            (let [final-revision (get-revision)]
