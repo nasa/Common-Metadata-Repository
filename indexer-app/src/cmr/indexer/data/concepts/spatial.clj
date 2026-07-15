@@ -78,6 +78,15 @@
         s2-cells-lvl-5 (map #(s2-cells/get-s2-cell-tokens % 5) shapes)
         ;; s2-cells-range (map #(s2-cells/get-s2-cell-ids-range % 2 5) shapes)
         s2-cells-custom (map #(s2-cells/get-custom-s2-cell-tokens % collection-entry-title) shapes)
+        ;; _ (println "s2-cells-custom:" s2-cells-custom)
+        ;; _ (println "s2-cell-interiors custom class" (class (map (:s2-cell-interiors s2-cells-custom))))
+        ;; _ (println "s2-cell-exteriors custom class" (class (map (:s2-cell-exteriors s2-cells-custom))))
+        custom-interiors (map :s2-cell-interiors s2-cells-custom)
+        custom-exteriors (map :s2-cell-exteriors s2-cells-custom)
+        ;; _ (println "custom-exteriors:" custom-exteriors)
+        ;; _ (println "custom-exteriors class:" (class custom-exteriors))
+        custom-interiors-string (string/join " " (remove empty? custom-interiors))
+        custom-exteriors-string (string/join " " (remove empty? custom-exteriors))
 
         s2-cell-map {:s2-cell-interiors-lvl-3 (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-lvl-3)))
                      :s2-cell-exteriors-lvl-3 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-3)))
@@ -87,8 +96,10 @@
                      :s2-cell-exteriors-lvl-5 (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-lvl-5)))
                      ;; :s2-cell-interiors-range (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-range)))
                      ;; :s2-cell-exteriors-range (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-range)))
-                     :s2-cell-interiors-custom (string/join " " (remove empty? (map :s2-cell-interiors s2-cells-custom)))
-                     :s2-cell-exteriors-custom (string/join " " (remove empty? (map :s2-cell-exteriors s2-cells-custom)))
+                     :s2-cell-interiors-custom custom-interiors-string
+                     :s2-cell-exteriors-custom custom-exteriors-string
+                     :s2-cell-interiors-custom-keyword (string/split custom-interiors-string #"\s+")
+                     :s2-cell-exteriors-custom-keyword (string/split custom-exteriors-string #"\s+")
                      }
 
         ords-info-map (srl/shapes->ords-info-map shapes)

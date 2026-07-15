@@ -201,6 +201,35 @@
 
 (def MAX_CELLS 500)
 
+(defn custom-cond
+  "The condition for custom cell level."
+  [collection-concept-id shape lower-threshold upper-threshold spatial-script field-postfix]
+  (let [custom-cell-level (s2-cells/get-collection-cell-level collection-concept-id)
+        _ (println "spatial.clj: custom-cell-level" custom-cell-level)
+        average-cell-area (s2-cells/get-cell-area custom-cell-level)
+        _ (println "spatial.clj: average-cell-area" average-cell-area)
+        square-km-area (s2-cells/get-s2-shape-area shape)
+        _ (println "spatial.clj: square-km-area" square-km-area)
+        ;; If the square-km-area is more than 500 times the average-cell-area, we consider it too large and fall back to using the mbr-cond and lr-cond
+        ;; Our target cell count for a granule is 100 cells, we want to limit the queries to elastic to 5 times a granule. That is where 500 is coming from
+        ratio (/ square-km-area average-cell-area)
+        _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
+        ;; custom-cond (if (> square-km-area (* 500 average-cell-area))
+        ;; If the ratio is more than 50 and less than 2000
+        custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
+                      (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
+                            s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
+                            cell-tokens (:cell-tokens s2-cells)
+                            interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-" field-postfix)) cell-tokens)
+                            exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-" field-postfix)) cell-tokens)
+                            exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                        (gc/or-conds [interior-cond-terms exterior-cond]))
+                      (let [_ (println "spatial.clj: square-km-area is too large, falling back to mbr and lr conditions")
+                            mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
+                            lr-cond (br->cond "lr" (srl/shape->lr shape))]
+                        (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))]
+    custom-cond))
+
 ;; Query with a given cell level
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
@@ -219,39 +248,18 @@
                          (orbital-condition context shape))
           spatial-script (shape->script-cond shape s2-intersects)
           spatial-cond (if cell-level
-                         (if (= cell-level 0)
-                           ;; cell-level 0 indicates we need to use the custom cell lvl
-                           (let [custom-cell-level (s2-cells/get-collection-cell-level collection-concept-id)
-                                 _ (println "spatial.clj: custom-cell-level" custom-cell-level)
-                                 average-cell-area (s2-cells/get-cell-area custom-cell-level)
-                                 _ (println "spatial.clj: average-cell-area" average-cell-area)
-                                 square-km-area (s2-cells/get-s2-shape-area shape)
-                                 _ (println "spatial.clj: square-km-area" square-km-area)
-                                 ;; If the square-km-area is more than 500 times the average-cell-area, we consider it too large and fall back to using the mbr-cond and lr-cond
-                                 ;; Our target cell count for a granule is 100 cells, we want to limit the queries to elastic to 5 times a granule. That is where 500 is coming from
-                                 ratio (/ square-km-area average-cell-area)
-                                 _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
-                                 ;; custom-cond (if (> square-km-area (* 500 average-cell-area))
-                                 ;; If the ratio is more than 50 and less than 2000
-                                 custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
-                                                 (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
-                                                       s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
-                                                       cell-tokens (:cell-tokens s2-cells)
-                                                       interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-custom")) cell-tokens)
-                                                       exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-custom")) cell-tokens)
-                                                       exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
-                                                   (gc/or-conds [interior-cond-terms exterior-cond]))
-                                                 (let [_ (println "spatial.clj: square-km-area is too large, falling back to mbr and lr conditions")
-                                                       mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
-                                                       lr-cond (br->cond "lr" (srl/shape->lr shape))]
-                                                   (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))]
-                                  custom-cond)
+                         (if (< cell-level 2)
+                           (if (= cell-level 0)
+                             ;; cell-level 0 indicates we need to use the custom cell lvl
+                             (custom-cond collection-concept-id shape lower-threshold upper-threshold spatial-script "custom")
+                             (custom-cond collection-concept-id shape lower-threshold upper-threshold spatial-script "custom-keyword")
+                           )
                            (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
-                                 cell-tokens (:cell-tokens s2-cells)
-                                 interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
-                                 exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-lvl-" cell-level)) cell-tokens)
-                                 exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
-                             (gc/or-conds [interior-cond-terms exterior-cond])))
+                                   cell-tokens (:cell-tokens s2-cells)
+                                   interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-lvl-" cell-level)) cell-tokens)
+                                   exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-lvl-" cell-level)) cell-tokens)
+                                   exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
+                               (gc/or-conds [interior-cond-terms exterior-cond])))
                          (let [mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
                                lr-cond (br->cond "lr" (srl/shape->lr shape))]
                            (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])))

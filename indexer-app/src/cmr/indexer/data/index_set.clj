@@ -385,6 +385,9 @@
    :s2-cell-interiors-custom (m/stored m/text-field-mapping)
    :s2-cell-exteriors-custom (m/stored m/text-field-mapping)
 
+   :s2-cell-interiors-custom-keyword (m/stored m/string-field-mapping)
+   :s2-cell-exteriors-custom-keyword (m/stored m/string-field-mapping)
+
    ;; :s2-cell-interiors-range (m/stored m/ngram-text-field-mapping)
    ;; :s2-cell-exteriors-range (m/stored m/ngram-text-field-mapping)
 
