@@ -52,7 +52,8 @@
    use to execute the search and an :error-msg to return if the search finds any hits."
   []
   (concat
-   [aa/additional-attribute-searches    tiling-validation/deleted-tiling-searches
+   [aa/additional-attribute-searches
+    tiling-validation/deleted-tiling-searches
     tv/out-of-range-temporal-searches
     sv/spatial-param-change-searches]
    (when (cfg/enforce-granule-collection-consistency)
