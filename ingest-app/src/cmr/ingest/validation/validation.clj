@@ -6,7 +6,7 @@
    [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.log :as log :refer (debug warn)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.core :as v]
