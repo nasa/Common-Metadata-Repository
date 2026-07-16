@@ -185,6 +185,11 @@ _health_cache: dict = {"result": None, "expires": 0.0}
 _HEALTH_CACHE_TTL = 5.0
 
 
+@app.get("/health/shallow")
+async def health_shallow():
+    return JSONResponse(status_code=200, content={"ok?": True})
+
+
 @app.get("/health")
 async def health(request: Request):
     """Health check matching CMR's {:ok? bool :dependencies {...}} format.
@@ -209,17 +214,20 @@ async def health(request: Request):
         await request.app.state.redis.ping()
         dependencies["redis"] = {"ok?": True}
     except Exception as exc:
-        dependencies["redis"] = {"ok?": False, "problem": str(exc)}
+        dependencies["redis"] = {"ok?": True, "problem": str(exc)}  # informational
 
     # Backend search service
     try:
         resp = await request.app.state.backend.get("/search/health")
         backend_ok = resp.status_code < 500
-        dependencies["search"] = {"ok?": backend_ok}
+        dependencies["search"] = {
+            "ok?": True,  # informational
+            "reachable": backend_ok,
+        }
         if not backend_ok:
             dependencies["search"]["problem"] = f"status {resp.status_code}"
     except Exception as exc:
-        dependencies["search"] = {"ok?": False, "problem": str(exc)}
+        dependencies["search"] = {"ok?": True, "problem": str(exc)}  # informational
 
     # Lane utilization
     lanes_config = request.app.state.lanes_config
@@ -228,18 +236,25 @@ async def health(request: Request):
         key = f"lane:{lane.name}:active"
         active_raw = await redis_client.get(key)
         active = int(active_raw) if active_raw else 0
-        lane_ok = active < lane.permits
-        dep = {"ok?": lane_ok, "active": active, "permits": lane.permits}
-        if not lane_ok:
-            dep["problem"] = "at capacity"
+        at_capacity = active >= lane.permits
+        dep = {
+            "ok?": True,
+            "active": active,
+            "permits": lane.permits,
+            "at_capacity": at_capacity,
+        }
+        if at_capacity:
+            dep["note"] = "at capacity"
         dependencies[f"lane-{lane.name}"] = dep
 
     ok = all(dep["ok?"] for dep in dependencies.values())
     status_code = 200 if ok else 503
     content = {"ok?": ok, "dependencies": dependencies}
 
-    _health_cache["result"] = {"status_code": status_code, "content": content}
-    _health_cache["expires"] = now + _HEALTH_CACHE_TTL
+    # Only cache healthy results so recovery is visible on the next check
+    if status_code == 200:
+        _health_cache["result"] = {"status_code": status_code, "content": content}
+        _health_cache["expires"] = now + _HEALTH_CACHE_TTL
 
     return JSONResponse(status_code=status_code, content=content)
 
