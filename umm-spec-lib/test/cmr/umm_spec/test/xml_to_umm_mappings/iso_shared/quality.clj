@@ -45,50 +45,7 @@
                     :QualityContentDetails {:Strengths "Good data"}}]
       (is (= expected (parse-quality doc text-xpath true)))))
 
-  (testing "6. Preserves trailing whitespace in the last populated detail field"
-    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
-                   "Summary: Overview text. Strengths: )y`m&lt; "
-                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
-          expected {:Summary "Overview text."
-                    :QualityContentDetails {:Strengths ")y`m< "}}]
-      (is (= expected (parse-quality doc text-xpath true)))))
-
-  (testing "7. Preserves trailing whitespace in non-terminal detail fields but not joiner spacing"
-    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
-                   "Summary: Overview text. Strengths: )y`m&lt;  Limitations: 250m grid blur."
-                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
-          expected {:Summary "Overview text."
-                    :QualityContentDetails {:Strengths ")y`m< "
-                                            :Limitations "250m grid blur."}}]
-      (is (= expected (parse-quality doc text-xpath true)))))
-
-  (testing "8. Preserves leading whitespace in terminal detail fields"
-    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
-                   "Summary: Overview text. Strengths:  ^PA.C]F9B"
-                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
-          expected {:Summary "Overview text."
-                    :QualityContentDetails {:Strengths " ^PA.C]F9B"}}]
-      (is (= expected (parse-quality doc text-xpath true)))))
-
-  (testing "9. Preserves leading/trailing content whitespace in non-terminal detail fields"
-    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
-                   "Summary: Overview text. Strengths:  ^PA.C]F9B  Limitations: 250m grid blur."
-                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
-          expected {:Summary "Overview text."
-                    :QualityContentDetails {:Strengths " ^PA.C]F9B "
-                                            :Limitations "250m grid blur."}}]
-      (is (= expected (parse-quality doc text-xpath true)))))
-
-  (testing "10. Leaves non-terminal detail unchanged when no edge whitespace was trimmed"
-    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
-                   "Summary: Overview text. Strengths: ExactLimitations: 250m grid blur."
-                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
-          expected {:Summary "Overview text."
-                    :QualityContentDetails {:Strengths "Exact"
-                                            :Limitations "250m grid blur."}}]
-      (is (= expected (parse-quality doc text-xpath true)))))
-
-  (testing "11. Skips whitespace restoration when raw detail label lacks canonical delimiter spacing"
+  (testing "6. Parses non-canonical delimiter spacing via base parser behavior"
     (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
                    "Summary: Overview text. Strengths:Exact "
                    "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")

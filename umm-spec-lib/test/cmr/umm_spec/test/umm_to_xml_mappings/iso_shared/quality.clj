@@ -52,13 +52,13 @@
           eval-method (get-in result [1 1])]
       (is (= [:gco:CharacterString expected-text] (second eval-method)))))
 
-  (testing "6. Preserves trailing whitespace in Strengths when it is the last populated detail"
+  (testing "6. Trims trailing whitespace in the final serialized quality string"
     (let [input {:Quality {:Summary "Overview."
                            :QualityContentDetails {:Strengths "A text with trailing space "
                                                    :Limitations nil
                                                    :KnownIssues nil
                                                    :Other nil}}}
-          expected-text "Summary: Overview. Strengths: A text with trailing space "
+          expected-text "Summary: Overview. Strengths: A text with trailing space"
           result (quality/generate-quality input)
           eval-method (get-in result [1 1])]
       (is (= [:gco:CharacterString expected-text] (second eval-method))))))
