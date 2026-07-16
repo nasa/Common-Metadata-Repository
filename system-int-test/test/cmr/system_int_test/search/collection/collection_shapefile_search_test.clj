@@ -194,9 +194,10 @@
                        :content "true"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
           (is (nil? status)
-              "Should pass validation with force-cartesian=true")))
+              (format "Should pass validation with force-cartesian=true; status=%s errors=%s"
+                      status errors))))
 
       (testing "without force-cartesian should fail validation"
         (let [params [{:name "shapefile"
