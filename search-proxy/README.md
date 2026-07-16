@@ -80,26 +80,30 @@ Lane definitions live in `lanes.json`. Each lane supports:
 - `retry_after` — value of the `Retry-After` header on 429 responses
 - `default` — exactly one lane must be marked as the default
 
-## Health endpoint
+## Health endpoints
 
-```
-GET /health
-```
+### `GET /health/shallow`
 
-Returns CMR-compatible `ok?`/`dependencies` format with HTTP 200 when healthy, 503 when any dependency is unhealthy. The result is cached for 5 seconds. Includes Redis status, backend search status, and per-lane utilization:
+Always returns HTTP 200. Used for ALB/ECS target group health checks so that Redis or backend failures do not trigger task replacement.
+
+### `GET /health`
+
+Informational health check. Always returns HTTP 200 — dependencies report their status but do not affect the top-level `ok?`. The result is cached for 5 seconds (unhealthy results are not cached so recovery is visible immediately).
 
 ```json
 {
   "ok?": true,
   "dependencies": {
     "redis": {"ok?": true},
-    "search": {"ok?": true},
-    "lane-express": {"ok?": true, "active": 12, "permits": 200},
-    "lane-standard": {"ok?": true, "active": 3, "permits": 150},
-    "lane-heavy": {"ok?": true, "active": 0, "permits": 50}
+    "search": {"ok?": true, "reachable": true},
+    "lane-express": {"ok?": true, "active": 12, "permits": 200, "at_capacity": false},
+    "lane-standard": {"ok?": true, "active": 3, "permits": 150, "at_capacity": false},
+    "lane-heavy": {"ok?": true, "active": 0, "permits": 50, "at_capacity": false}
   }
 }
 ```
+
+When a lane is at capacity, `at_capacity` is `true` but `ok?` remains `true`. Use this endpoint to monitor lane utilization rather than to drive automated remediation.
 
 ## Running locally
 
@@ -127,10 +131,6 @@ pytest
 
 ## Operational notes
 
-**Leaked permits**: If a task is killed mid-request or Redis becomes briefly unavailable, lane counters can accumulate without being decremented. Monitor the health endpoint for lanes that stay near capacity. To reset:
-
-```bash
-redis-cli DEL lane:express:active lane:standard:active lane:heavy:active
-```
+**Leaked permits**: If a task is killed mid-request or Redis becomes briefly unavailable, lane counters can accumulate without being decremented. Monitor the health endpoint for lanes that stay near capacity. To reset, delete the lane counter keys from Redis: `lane:express:active`, `lane:standard:active`, `lane:heavy:active`.
 
 **Debugging**: Set `CMR_PROXY_LOG_LEVEL=DEBUG` to log backend response details including content encoding and actual byte counts. Remove when done — debug logging is verbose under load.

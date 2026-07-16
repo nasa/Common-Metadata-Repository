@@ -124,8 +124,8 @@ class TestRouting:
         assert deps["lane-heavy"]["active"] == 0
         assert deps["lane-heavy"]["ok?"] is True
 
-    async def test_health_returns_503_when_lane_full(self, client):
-        """Health reports not ok when a lane is at capacity."""
+    async def test_health_reports_lane_at_capacity(self, client):
+        """Health reports at_capacity but remains ok? true — informational only."""
         app.state.backend.get.return_value = make_backend_response()
         fake_redis = app.state.redis
         await fake_redis.set("lane:heavy:active", 50)
@@ -133,10 +133,16 @@ class TestRouting:
         _health_cache["expires"] = 0.0
         resp = await client.get("/health")
         data = resp.json()
-        assert data["ok?"] is False
-        assert data["dependencies"]["lane-heavy"]["ok?"] is False
-        assert data["dependencies"]["lane-heavy"]["problem"] == "at capacity"
+        assert resp.status_code == 200
+        assert data["ok?"] is True
+        assert data["dependencies"]["lane-heavy"]["ok?"] is True
+        assert data["dependencies"]["lane-heavy"]["at_capacity"] is True
         await fake_redis.delete("lane:heavy:active")
+
+    async def test_health_shallow_always_200(self, client):
+        resp = await client.get("/health/shallow")
+        assert resp.status_code == 200
+        assert resp.json()["ok?"] is True
 
     async def test_health_caches_result(self, client):
         """Rapid /health calls should hit the cache, not backend each time."""
