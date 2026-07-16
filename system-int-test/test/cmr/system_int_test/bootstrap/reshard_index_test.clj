@@ -605,7 +605,6 @@
 
      (testing "index set is in correct state"
        (let [orig-index-set (index/get-index-set-by-id 1)
-             _ (println "orig-index-set = " orig-index-set)
              orig-granule-concepts (get-in orig-index-set [:index-set :concepts :granule])
              expected-granule-concepts {:small_collections "1_small_collections"
                                         (keyword coll1-concept-id) (index-set-service/gen-valid-index-name 1 coll1-concept-id)}]
