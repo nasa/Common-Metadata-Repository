@@ -403,7 +403,7 @@
              err-messages))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
-         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+         (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
          err-messages)))))
 
 (defn umm-spec-validate-collection-warnings
@@ -417,7 +417,7 @@
             (config/return-umm-spec-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
       (do
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
 (defn validate-granule-umm-spec
