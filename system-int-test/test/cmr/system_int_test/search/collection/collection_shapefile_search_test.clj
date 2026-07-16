@@ -94,8 +94,6 @@
 
 (deftest collection-shapefile-search-test
   (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-        ;; Wait for the flag to actually be enabled with retries to handle race conditions
-        _ (wait-for-shapefile-flag-enabled 5 200)
         ;; Lines
         normal-line (make-coll :geodetic "normal-line"
                                (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
@@ -233,9 +231,7 @@
 
 (deftest collection-shapefile-force-cartesian-validation-test
   "Test that cartesian-only shapefiles require force-cartesian=true to pass validation"
-  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))
-        ;; Wait for the flag to actually be enabled with retries to handle race conditions
-        _ (wait-for-shapefile-flag-enabled 5 200)]
+  (let [_ (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))]
     (testing "scotland_cartesian.json is only valid when processed as cartesian"
       (testing "with force-cartesian=true should pass validation"
         (let [params [{:name "shapefile"
