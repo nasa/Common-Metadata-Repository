@@ -50,27 +50,19 @@
          _ (def vo validation-options)
          _ (def c1 context)
 
-         ;; context + validation-options are identical for every validation below,
-         ;; so build the keyword validation rules once and thread them through.
-         kw-rules (v/keyword-validation-rules context validation-options)
-
-         {existing-errors :errors has-keyword-error? :has-keyword-error?}
-         (v/umm-spec-validate-collection
-          sanitized-collection sanitized-prev-collection kw-rules validation-options context false)
-         _ (def off-func-exist-errors existing-errors)
-         existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
-                              existing-errors)
-
          ;; Return warnings for schema validation errors going from xml -> UMM
          collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
-
-         ;; Return warnings for validation errors on collection without sanitization
-         {non-sanitized-errors :errors} (v/umm-spec-validate-collection
-                                         collection nil kw-rules validation-options context true)
-         {warning-errors :errors warning-has-keyword-error? :has-keyword-error?}
+         existing-errors (v/umm-spec-validate-collection
+                          sanitized-collection sanitized-prev-collection validation-options context false)
+         ;; Return warnings for validation errors on collection without checking if they are
+         non-sanitized-errors (v/umm-spec-validate-collection
+                               collection nil validation-options context true)
+;; These are warnings that if the ignore keyword header was not passed would result in errors
+         {warning-errors :errors has-keyword-error? :has-keyword-error?}
          (v/umm-spec-validate-collection-warnings
           collection validation-options context)
-         has-keyword-error? (or has-keyword-error? warning-has-keyword-error?)
+         existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
+                              existing-errors)
          collection-warnings (concat non-sanitized-errors warning-errors)
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
@@ -132,10 +124,10 @@
                     (if (:token context)
                       (common-context/context->user-id context)
                       "unknown user"))))
-      (when (and has-keyword-error?
-                 (or (seq existing-errors) (seq warnings)))
-            (tap> "About to go send data to kms fixer")   
-            (transmit-kms/send-to-kms-metadata-fixer-test concept-id))
+    (when (and has-keyword-error?
+               (or (seq existing-errors) (seq warnings)))
+      (tap> "About to go send data to kms fixer")
+      (transmit-kms/send-to-kms-metadata-fixer-test concept-id))
     {:entry-title entry-title
      :concept-id concept-id
      :revision-id revision-id
@@ -147,15 +139,15 @@
   (v/umm-spec-validate-collection
    sc nil (v/keyword-validation-rules c1 vo) vo c1 false)
 ;; The conditional statements
-(when (and hke1
-           (or (seq ee) (seq w))))
+  (when (and hke1
+             (or (seq ee) (seq w))))
 
-(when true
-      (transmit-kms/send-to-kms-metadata-fixer c1 "C1200000001-PROV1"))
+  (when true
+    (transmit-kms/send-to-kms-metadata-fixer c1 "C1200000001-PROV1"))
 
-   (when (and hke1
-               (or (seq ee) (seq w)))
-      (transmit-kms/send-to-kms-metadata-fixer-test c1))
+  (when (and hke1
+             (or (seq ee) (seq w)))
+    (transmit-kms/send-to-kms-metadata-fixer-test c1))
   :rcf)
 ;; (v/umm-spec-validate-collection
 ;;    collection nil kw-rules validation-options context true))

@@ -295,7 +295,7 @@
         (infof "refresh-kms-cache: Loading static KMS resource from %s for %s. %s. Found keys [%s]."
                gcmd-resource-path
                gcmd-resource-name
-               version-info
+               version-info 
                header)
         data)
       (let [conn (config/context->app-connection context :kms)
@@ -351,10 +351,9 @@
   (def coll1 collection-concept-id)
   (let [conn (config/context->app-connection context :kms)
         ;; TODO stubbed endpoint - swap back to (conn/root-url conn) once ready
-        url          (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
-                             collection-concept-id)
+        url          conn
         ;; token    (config/kms-metadata-fixer-token)
-        token "Bearer "
+        token (config/kms-metadata-fixer-token)
         params
 
         (merge
@@ -386,21 +385,26 @@
 
 (defn send-to-kms-metadata-fixer-test
   [collection-concept-id]
+  (def test-collection "C1200487107-OB_DAAC")
   (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
   (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
                     collection-concept-id)
+        token (config/kms-metadata-fixer-token)
+        _(tap> {:message "Token we are passing to KMS" :token token})
         response (client/put url
                              {:headers          {:client-id    "cmr-standalone"
                                                  :accept       "application/json"
-                                                 :authorization "Bearer "}
+                                                 :authorization (format "Bearer %s" token)}
                               :throw-exceptions false})]
-    (tap> (format "PUT %s -> status [%s]" url (:status response)))
-    response))
+       (tap> (format "PUT %s -> status [%s]" url (:status response)))
+       (tap> (format "Full result from KMS %s" response))
+       (tap> token)
+       response))
 
-;; (comment
-;;   (send-to-kms-metadata-fixer-test "C1200362831-ARCTEST")
+(comment
+  (send-to-kms-metadata-fixer-test "C1200362831-ARCTEST")
 
-;;   :rcf)
+  :rcf)
 
 
 

@@ -39,19 +39,13 @@
 
 (defn validate-collection
   "Validates the UMM record returning a list of error maps containing a path through the
-  UMM model and a list of errors at that path. Returns an empty sequence if it is valid.
-  Also returns whether any of the keyword-validations specifically failed."
+  UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   ([collection]
    (validate-collection collection nil))
-  ([collection keyword-validations]
-   (let [parsed-collection (aa/add-parsed-values collection)
-         _ (def pc parsed-collection)
-         _ (def kv keyword-validations)
-         has-keyword-error? (boolean (seq (v/validate keyword-validations parsed-collection)))]
-     {:errors (validation-errors->path-errors
-               (v/validate (cons vc/collection-validations keyword-validations)
-                           parsed-collection))
-      :has-keyword-error? has-keyword-error?})))
+  ([collection additional-validations]
+   (validation-errors->path-errors
+    (v/validate (cons vc/collection-validations additional-validations)
+                (aa/add-parsed-values collection)))))
 
 (defn validate-collection-warnings
       "Validates the UMM record against the list of warnings - issues that we want
