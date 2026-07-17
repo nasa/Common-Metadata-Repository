@@ -110,6 +110,14 @@
                                 :query-params query-params})]
      response)))
 
+(defn delete-concept
+  "Delete the given concept revision from the indexer."
+  [concept-id revision-id]
+  (client/delete (format "%s/%s/%s" (url/indexer-url) concept-id revision-id)
+                 {:connection-manager (s/conn-mgr)
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :throw-exceptions false}))
+
 (defn- messages+id->message
   "Returns the first message for a given message id."
   [messages id]

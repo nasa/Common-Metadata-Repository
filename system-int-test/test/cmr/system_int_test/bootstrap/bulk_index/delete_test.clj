@@ -100,7 +100,12 @@
               "Tags"
               [tag2]))
 
-        (bootstrap/bulk-delete-concepts "PROV1" :collection [coll2-id])
+        ;; Create a real collection tombstone and index it so collection delete
+        ;; goes through the indexer's cascade delete path.
+        (let [coll2-tombstone {:concept-id coll2-id
+                               :revision-id (inc (:revision-id coll2))}]
+          (is (= 201 (:status (mdb/tombstone-concept coll2-tombstone))))
+          (is (= 204 (:status (index/delete-concept coll2-id (:revision-id coll2-tombstone))))))
         (index/wait-until-indexed)
 
         (testing "Collection cascade delete removes individual granule index-set metadata"
