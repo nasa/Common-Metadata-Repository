@@ -52,6 +52,16 @@
                                :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn db-migrate
+  "Makes the indexer update the index set mappings and indexes"
+  [query-params]
+  (let [response (client/post (url/indexer-db-migrate)
+                              {:connection-manager (s/conn-mgr)
+                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                               :query-params query-params
+                               :throw-exceptions true})]
+    (is (= 200 (:status response)) (:body response))))
+
 (defn delete-tags-from-elastic
   "Delete all tags from elasticsearch index"
   [tags]
@@ -169,6 +179,33 @@
     (client/head (format "%s/%s" (url/elastic-root es-config/gran-elastic-name) index-name)
                  {:connection-manager (s/conn-mgr)
                   :throw-exceptions false})))
+
+(defn get-indexes-mapped-to-alias
+  "Returns a list of indexes that are mapped to the given alias name"
+  [alias-name elastic-name]
+  (let [aliases-url (format "%s/_alias/%s" (url/elastic-root elastic-name) alias-name)
+        resp-json (client/get aliases-url
+                         {:query-params {:format "json"}
+                          :connection-manager (s/conn-mgr)
+                          :throw-exceptions false
+                          :as :json})]
+    (if (= 200 (:status resp-json))
+      (vec (keys (:body resp-json))))))
+
+(defn unmap-alias-from-all-indexes
+  "Removes all indexes that the alias is pointed to"
+  [alias-name elastic-name]
+  (let [aliases-url (format "%s/_aliases" (url/elastic-root elastic-name) alias-name)
+        body {:actions [{:remove {:index "*" :alias alias-name}}]}
+        resp-json (client/post aliases-url
+                              {:query-params {:format "json"}
+                               :connection-manager (s/conn-mgr)
+                               :body (json/generate-string body)
+                               :throw-exceptions false
+                               :as :json})]
+    (if (= 200 (:status resp-json))
+      (vec (keys (:body resp-json)))))
+  )
 
 (defn get-aliases
   "Returns a vector of alias names for the given index."

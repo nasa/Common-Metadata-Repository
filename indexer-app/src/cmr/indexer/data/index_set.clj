@@ -70,6 +70,7 @@
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
 
+;; TODO check where else this is being used and need to update this because it can be resharded
 (defconfig collections-index
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
