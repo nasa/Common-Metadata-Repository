@@ -44,10 +44,17 @@ DEFAULT_TOGGLES = {
 }
 
 
+class _PrefixedJsonFormatter(jsonlogger.JsonFormatter):
+    """Prepend a plain-text timestamp so awslogs-datetime-format can parse it."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return f"{self.formatTime(record)} {super().format(record)}"
+
+
 def setup_logging(level: str = "INFO"):
     handler = logging.StreamHandler()
     handler.setFormatter(
-        jsonlogger.JsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+        _PrefixedJsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
     )
     proxy_log = logging.getLogger("proxy")
     proxy_log.setLevel(level.upper())
