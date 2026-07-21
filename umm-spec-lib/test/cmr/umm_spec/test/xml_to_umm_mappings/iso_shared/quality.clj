@@ -43,4 +43,12 @@
                    "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
           expected {:Summary "Overview"
                     :QualityContentDetails {:Strengths "Good data"}}]
+      (is (= expected (parse-quality doc text-xpath true)))))
+
+  (testing "6. Parses non-canonical delimiter spacing via base parser behavior"
+    (let [doc (str "<report><DQ_QuantitativeAttributeAccuracy><evaluationMethodDescription><CharacterString>"
+                   "Summary: Overview text. Strengths:Exact "
+                   "</CharacterString></evaluationMethodDescription></DQ_QuantitativeAttributeAccuracy></report>")
+          expected {:Summary "Overview text."
+                    :QualityContentDetails {:Strengths "Exact"}}]
       (is (= expected (parse-quality doc text-xpath true))))))

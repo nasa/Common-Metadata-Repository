@@ -216,7 +216,7 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [;; CMR-8128 remove OrbitParameters 
+    (let [;; CMR-8128 remove OrbitParameters
           ;; there are many situations when a parameter is not
           ;; preserved after the roundtrip. We will have to make many special cases
           ;; in order to do the comparison. Since they have been tested in other tests, we will
@@ -236,7 +236,7 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           ;; Collection version 1.17.2 changes yet to be implemented in echo10, iso. 
-          ;; 1. For now, EULAIdentifiers needs to exist (as nil) if UseConstraints exists, 
+          ;; 1. For now, EULAIdentifiers needs to exist (as nil) if UseConstraints exists,
           ;; because it gets added back in (as nil) when round-tripping.
           umm-record (if (and (seq (:UseConstraints umm-record))
                               (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap)))
@@ -266,7 +266,7 @@
 ;; expected output with the result of the actual conversions. This test runs a record
 ;; through all of the supported formats.
 (deftest roundtrip-generated-collection-records-with-seed
-  (checking-with-seed "collection round tripping seed" 100 1496683985472
+  (checking-with-seed "collection round tripping seed" 100 1783446834701
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
