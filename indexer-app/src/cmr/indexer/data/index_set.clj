@@ -70,7 +70,6 @@
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
 
-;; TODO check where else this is being used and need to update this because it can be resharded
 (defconfig collections-index
   "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
@@ -961,7 +960,7 @@
         :else
         (string/replace cleaned #"_" "-")))))
 
-(defn gran-index-set
+(defn gran-base-index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra
    granule indexes that should exist in addition to small_collections. This function
    produces a map containing a list of indexes which contain a settings and a mapping
@@ -993,11 +992,9 @@
                                        ;; a new granule index.
                                        :individual-index-settings granule-settings-for-individual-indexes
                                        :mapping granule-mapping}}]
-
-    ;; merge into the set of indexes all the configured generic documents
     {:index-set set-of-gran-indexes}))
 
-(defn non-gran-index-set
+(defn non-gran-base-index-set
   "Returns the index-set configuration for a brand new non-granule index set. This function
    produces a map containing a list of indexes which contain a settings and a mapping
    map like this:
@@ -1079,7 +1076,7 @@
   "Fetch a map containing index names for each concept type from index-set app along with the list
    of rebalancing collections"
   ([context]
-   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-base-index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
    (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
@@ -1108,7 +1105,7 @@
    concept types which define what the top level field is in each mapping description.
    Normally this is 'properties'."
   ([context]
-   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-base-index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
    (let [fetched-gran-index-set (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id)
@@ -1134,7 +1131,7 @@
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
   ([context]
-   (let [index-set-id (get-in (gran-index-set context) [:index-set :id])]
+   (let [index-set-id (get-in (gran-base-index-set context) [:index-set :id])]
      (fetch-rebalancing-collection-info context index-set-id)))
   ([context index-set-id]
    (let [fetched-gran-index-set (get-in (index-set-es/get-index-set context es-config/gran-elastic-name index-set-id) [:index-set :granule])]

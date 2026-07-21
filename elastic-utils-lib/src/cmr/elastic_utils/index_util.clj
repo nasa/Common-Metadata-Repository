@@ -138,7 +138,6 @@
   ([conn index alias-name]
    (create-index-alias conn index alias-name false))
   ([conn index alias-name is-write-alias?]
-   (println "INSIDE create-index-alias , mapping alias = " alias-name " to index = " index)
    (let [alias-map (cond-> {:index index :alias alias-name}
                      is-write-alias? (assoc :is_write_index true))]
      (esi-helper/update-aliases conn [{:add alias-map}]))))

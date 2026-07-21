@@ -201,7 +201,6 @@
                               {:query-params {:format "json"}
                                :connection-manager (s/conn-mgr)
                                :body (json/generate-string body)
-                               :throw-exceptions false
                                :as :json})]
     (if (= 200 (:status resp-json))
       (vec (keys (:body resp-json)))))
@@ -227,7 +226,7 @@
   (contains? (set (get-aliases index-name elastic-name)) alias))
 
 (defn get-index-set-by-id
-  "Gets index set by id in clojure map form.
+  "Gets index set by id in clojure map form along with the response status.
    Example of returned map:
    {:index-set {
      :granule {
@@ -248,8 +247,7 @@
                           {:query-params (merge {:format "json"} params)
                            :headers {transmit-config/token-header (transmit-config/echo-system-token)
                                      "content-type" "application/json"}
-                           :connection-manager (s/conn-mgr)
-                           :throw-exceptions false})
+                           :connection-manager (s/conn-mgr)})
          status (:status resp)
          body (json/parse-string (:body resp) true)]
      (if (map? body)
@@ -265,8 +263,7 @@
                :headers {transmit-config/token-header (transmit-config/echo-system-token)
                          "content-type" "application/json"}
                :body (json/generate-string index-set)
-               :connection-manager (s/conn-mgr)
-               :throw-exceptions false}))
+               :connection-manager (s/conn-mgr)}))
 
 (defn create-index-set
   "Creates the given index-set in the indexer"
