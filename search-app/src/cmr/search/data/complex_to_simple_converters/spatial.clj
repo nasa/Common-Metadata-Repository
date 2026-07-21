@@ -199,7 +199,11 @@
                 (subs cell 0 len)))
             cells))))
 
-(def MAX_CELLS 500)
+(def MAX_TERMS 65000)
+
+(defn max-area
+  [average-cell-area]
+  (* MAX_TERMS average-cell-area))
 
 (defn custom-cond
   "The condition for custom cell level."
@@ -212,11 +216,16 @@
         _ (println "spatial.clj: square-km-area" square-km-area)
         ;; If the square-km-area is more than 500 times the average-cell-area, we consider it too large and fall back to using the mbr-cond and lr-cond
         ;; Our target cell count for a granule is 100 cells, we want to limit the queries to elastic to 5 times a granule. That is where 500 is coming from
-        ratio (/ square-km-area average-cell-area)
-        _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
+        ;; ratio (/ square-km-area average-cell-area)
+        ;; _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
+
+        ;; If the square-km-area is less than the max-area-for-level, use s2 cells
+        max-area-for-level (max-area average-cell-area)
+        _ (println "spatial.clj: max-area-for-level" max-area-for-level)
         ;; custom-cond (if (> square-km-area (* 500 average-cell-area))
         ;; If the ratio is more than 50 and less than 2000
-        custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
+        ;custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
+        custom-cond (if (< square-km-area max-area-for-level)
                       (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
                             s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
                             cell-tokens (:cell-tokens s2-cells)
