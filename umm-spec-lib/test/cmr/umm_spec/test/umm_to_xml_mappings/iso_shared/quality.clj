@@ -42,12 +42,23 @@
       (is (= [:gco:CharacterString expected-text] (second eval-method)))))
 
   (testing "5. Verifies explicit schema ordering within the details map block"
-    ;; Verifies that the vector layout ordering forces Strengths to appear before Limitations 
+    ;; Verifies that the vector layout ordering forces Strengths to appear before Limitations
     ;; even if the input map key ordering changes.
     (let [input {:Quality {:Summary "Overview."
                            :QualityContentDetails {:Limitations "B text."
                                                    :Strengths "A text."}}}
           expected-text "Summary: Overview. Strengths: A text. Limitations: B text."
+          result (quality/generate-quality input)
+          eval-method (get-in result [1 1])]
+      (is (= [:gco:CharacterString expected-text] (second eval-method)))))
+
+  (testing "6. Trims trailing whitespace in the final serialized quality string"
+    (let [input {:Quality {:Summary "Overview."
+                           :QualityContentDetails {:Strengths "A text with trailing space "
+                                                   :Limitations nil
+                                                   :KnownIssues nil
+                                                   :Other nil}}}
+          expected-text "Summary: Overview. Strengths: A text with trailing space"
           result (quality/generate-quality input)
           eval-method (get-in result [1 1])]
       (is (= [:gco:CharacterString expected-text] (second eval-method))))))

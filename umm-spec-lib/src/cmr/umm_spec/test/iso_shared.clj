@@ -196,4 +196,11 @@
   "Returns the expected Quality."
   [quality]
   (when (:Summary quality)
-    (assoc quality :Summary (string/trim (:Summary quality)))))
+    (let [trimmed-details (some->> (get quality :QualityContentDetails)
+                                   (map (fn [[k v]]
+                                          [k (when v (string/trim v))]))
+                                   (filter (fn [[_ v]] (seq v)))
+                                   (into {}))]
+      (cond-> (assoc quality :Summary (string/trim (:Summary quality)))
+        (seq trimmed-details) (assoc :QualityContentDetails trimmed-details)
+        (empty? trimmed-details) (dissoc :QualityContentDetails)))))
