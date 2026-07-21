@@ -180,8 +180,8 @@
   and expected index sets.
   This does not compare the :concepts values when determining update status because that is a dynamic map that is not known by CMR."
   [existing-index-set expected-index-set]
-  (let [existing-index-set-without-concepts (update-in existing-index-set [:index-set] dissoc :concepts :revision-id)
-        expected-index-set-without-concepts (update-in expected-index-set [:index-set] dissoc :concepts :revision-id)]
+  (let [existing-index-set-without-concepts (update-in existing-index-set [:index-set] dissoc :concepts :revision-id :deleted)
+        expected-index-set-without-concepts (update-in expected-index-set [:index-set] dissoc :concepts :revision-id :deleted)]
     (not= existing-index-set-without-concepts expected-index-set-without-concepts)))
 
 (defn cluster-requires-update?
