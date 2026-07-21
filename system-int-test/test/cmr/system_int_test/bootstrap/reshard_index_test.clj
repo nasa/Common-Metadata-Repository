@@ -619,6 +619,8 @@
                 {:status status
                  :message message}))
 
+         (bootstrap/wait-for-reshard-complete gran1-index gran-elastic-name task-id {})
+
          ;; check reshard status
          (is (= {:status 200
                  :original-index gran1-index
@@ -627,7 +629,6 @@
                 (bootstrap/get-reshard-status gran1-index {:elastic-name gran-elastic-name :task-id task-id})))
 
          ;; finalize reharding
-         (bootstrap/wait-for-reshard-complete gran1-index gran-elastic-name task-id {})
          (is (= {:status 200
                  :message (format "Resharding completed for index %s" gran1-index)}
                 (bootstrap/finalize-reshard-index gran1-index {:synchronous true :elastic-name gran-elastic-name})))
@@ -664,5 +665,4 @@
                  expected-granule-concepts {:small_collections "1_small_collections"}
                  orig-gran-indexes (get-in orig-index-set [:index-set :granule :indexes])]
              (is (= expected-granule-concepts orig-granule-concepts))
-             (is (= 1 (count orig-gran-indexes)))))
-         )))))
+             (is (= 1 (count orig-gran-indexes))))))))))
