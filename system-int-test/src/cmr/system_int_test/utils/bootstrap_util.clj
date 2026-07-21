@@ -432,6 +432,7 @@
                     :headers headers
                     :url (url/start-rebalance-collection-url collection-id)
                     :accept :json
+                    :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
@@ -447,6 +448,7 @@
                     :headers headers
                     :url (url/finalize-rebalance-collection-url collection-id)
                     :accept :json
+                    :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))

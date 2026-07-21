@@ -193,18 +193,14 @@
         [existing-index-set expected-index-set] (get-existing-and-expected-index-sets context es-cluster-name)]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
-
-;; TODO fix this func too
 (defn create-default-indexes
   "Create elastic indexes for each index name for both es clusters."
   [context]
-  (println ">>> INSIDE create-default-indexes")
   (let [;; setup for non-gran cluster
         [existing-non-gran-index-set expected-non-gran-index-set] (get-existing-and-expected-index-sets context es-config/elastic-name)
         ;; setup for gran cluster
         [existing-gran-index-set expected-gran-index-set] (get-existing-and-expected-index-sets context es-config/gran-elastic-name)
 
-        ;; TODO fix this, we are not saving the right revision id
         ;; If any cluster is missing, we will perform a unified save to Oracle to get the revision-id
         revision-id (when (or (nil? existing-non-gran-index-set)
                               (nil? existing-gran-index-set))
@@ -251,7 +247,6 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the required base mappings along with their dynamic mappings"
   [context params]
-  (println "INSIDE update-indexes")
   (let [;; setup non-gran cluster index set
         [existing-non-gran-index-set expected-non-gran-index-set] (get-existing-and-expected-index-sets context es-config/elastic-name)
         ;; setup gran cluster index set
@@ -262,14 +257,9 @@
 
         gran-update? (or (= "true" (:force params))
                          (index-set-requires-update? existing-gran-index-set expected-gran-index-set))
-
-        ;; If an update is required for either cluster, perform a unified save to Oracle
-        revision-id (when (or non-gran-update? gran-update?)
-                      (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
-                        (index-set-svc/save-index-set-to-mdb context combined)))]
-
-    ;; because we have to update the revision-id of both indexes if one needs an update, we need to trigger both update options
+]
     (when (or non-gran-update? gran-update?)
+      ;; because we have to update the revision-id of both indexes if one needs an update, we need to trigger both update options
       (let [revision-id (let [combined (util/deep-merge expected-non-gran-index-set expected-gran-index-set)]
                           (index-set-svc/save-index-set-to-mdb context combined))]
         ;; update non gran
@@ -279,7 +269,11 @@
         (let [coll-alias-indexes (esi/get-indexes-mapped-to-alias (indexer-util/context->conn context es-config/elastic-name)
                                                                   (idx-set/collections-index-alias))]
           (when (nil? coll-alias-indexes)
-            (let [collections-index (get-in existing-non-gran-index-set [:concepts :collection "collections-v2"])]
+            (let [collections-index (get-in existing-non-gran-index-set [:index-set :concepts :collection :collections-v2])]
+              (if (nil? collections-index)
+                (errors/throw-service-error
+                  :internal-error
+                  "Could not find collections index in non-gran cluster when trying to attach the collections alias to it. Index-set is in bad state. Please add back in the collection index."))
               (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
                                       collections-index
                                       (idx-set/collections-index-alias)))))

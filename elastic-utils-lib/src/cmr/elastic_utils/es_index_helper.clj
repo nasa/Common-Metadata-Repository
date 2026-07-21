@@ -109,6 +109,7 @@
   (let [url (es-util/url-with-path conn "_alias/" alias-name)
         resp-json (client/get url (merge (:http-opts conn)
                                          {:accept :json
+                                          :throw-exceptions false
                                           :as :json}))]
     (if (= 200 (:status resp-json))
       (vec (keys (:body resp-json)))

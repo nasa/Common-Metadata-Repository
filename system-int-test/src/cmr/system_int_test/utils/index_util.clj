@@ -58,8 +58,7 @@
   (let [response (client/post (url/indexer-db-migrate)
                               {:connection-manager (s/conn-mgr)
                                :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                               :query-params query-params
-                               :throw-exceptions true})]
+                               :query-params query-params})]
     (is (= 200 (:status response)) (:body response))))
 
 (defn delete-tags-from-elastic
@@ -195,16 +194,16 @@
 (defn unmap-alias-from-all-indexes
   "Removes all indexes that the alias is pointed to"
   [alias-name elastic-name]
-  (let [aliases-url (format "%s/_aliases" (url/elastic-root elastic-name) alias-name)
+  (let [aliases-url (format "%s/_aliases" (url/elastic-root elastic-name))
         body {:actions [{:remove {:index "*" :alias alias-name}}]}
         resp-json (client/post aliases-url
                               {:query-params {:format "json"}
                                :connection-manager (s/conn-mgr)
+                               :content-type "application/json"
                                :body (json/generate-string body)
                                :as :json})]
     (if (= 200 (:status resp-json))
-      (vec (keys (:body resp-json)))))
-  )
+      (vec (keys (:body resp-json))))))
 
 (defn get-aliases
   "Returns a vector of alias names for the given index."
@@ -247,7 +246,8 @@
                           {:query-params (merge {:format "json"} params)
                            :headers {transmit-config/token-header (transmit-config/echo-system-token)
                                      "content-type" "application/json"}
-                           :connection-manager (s/conn-mgr)})
+                           :connection-manager (s/conn-mgr)
+                           :throw-exceptions false})
          status (:status resp)
          body (json/parse-string (:body resp) true)]
      (if (map? body)
@@ -263,7 +263,8 @@
                :headers {transmit-config/token-header (transmit-config/echo-system-token)
                          "content-type" "application/json"}
                :body (json/generate-string index-set)
-               :connection-manager (s/conn-mgr)}))
+               :connection-manager (s/conn-mgr)
+               :throw-exceptions false}))
 
 (defn create-index-set
   "Creates the given index-set in the indexer"

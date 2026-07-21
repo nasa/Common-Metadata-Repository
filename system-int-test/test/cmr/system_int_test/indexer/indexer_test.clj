@@ -145,6 +145,4 @@
                             (json/parse-string metadata true))
           _ (is (= (:index-set curr-index-set) (assoc (:index-set index-set-in-db)
                                                  :deleted (:deleted index-set-in-db-resp)
-                                                 :revision-id (:revision-id index-set-in-db-resp))))])
-    )
-  )
+                                                 :revision-id (:revision-id index-set-in-db-resp))))])))
