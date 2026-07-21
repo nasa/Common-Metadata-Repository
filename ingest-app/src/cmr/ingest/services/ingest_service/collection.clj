@@ -40,41 +40,43 @@
          collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
          sanitized-collection (spec/parse-metadata context :collection format metadata)
          sanitized-prev-collection (when prev-concept
-                                     (spec/parse-metadata
-                                      context
-                                      :collection
-                                      (:format prev-concept)
-                                      (:metadata prev-concept)))
+                                         (spec/parse-metadata
+                                           context
+                                           :collection
+                                           (:format prev-concept)
+                                           (:metadata prev-concept)))
          _ (def sc sanitized-collection)
          _ (def scp sanitized-prev-collection)
          _ (def vo validation-options)
          _ (def c1 context)
+         _ (tap> c1)
 
          ;; Return warnings for schema validation errors going from xml -> UMM
-         collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
          existing-errors (v/umm-spec-validate-collection
-                          sanitized-collection sanitized-prev-collection validation-options context false)
+                           sanitized-collection sanitized-prev-collection validation-options context false)
+         collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
+         _ (def csw collection-schema-warnings)
          ;; Return warnings for validation errors on collection without checking if they are
          non-sanitized-errors (v/umm-spec-validate-collection
-                               collection nil validation-options context true)
+                                collection nil validation-options context true)
 ;; These are warnings that if the ignore keyword header was not passed would result in errors
          {warning-errors :errors has-keyword-error? :has-keyword-error?}
          (v/umm-spec-validate-collection-warnings
-          collection validation-options context)
+           collection validation-options context)
          existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
                               existing-errors)
          collection-warnings (concat non-sanitized-errors warning-errors)
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
          warnings (concat collection-schema-warnings collection-warnings)]
-     (def cw collection-warnings)
-     (def hke has-keyword-error?)
+        (def cw collection-warnings)
+        (def hke has-keyword-error?)
 
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
-     {:collection sanitized-collection
-      :warnings warnings
-      :existing-errors existing-errors
-      :has-keyword-error? has-keyword-error?})))
+        {:collection sanitized-collection
+         :warnings warnings
+         :existing-errors existing-errors
+         :has-keyword-error? has-keyword-error?})))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
