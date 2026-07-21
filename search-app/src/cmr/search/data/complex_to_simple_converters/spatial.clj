@@ -202,12 +202,12 @@
 (def MAX_TERMS 65000)
 
 (defn max-area
-  [average-cell-area]
-  (* MAX_TERMS average-cell-area))
+  [max-terms average-cell-area]
+  (* max-terms average-cell-area))
 
 (defn custom-cond
   "The condition for custom cell level."
-  [collection-concept-id shape lower-threshold upper-threshold spatial-script field-postfix]
+  [collection-concept-id shape max-terms spatial-script field-postfix]
   (let [custom-cell-level (s2-cells/get-collection-cell-level collection-concept-id)
         _ (println "spatial.clj: custom-cell-level" custom-cell-level)
         average-cell-area (s2-cells/get-cell-area custom-cell-level)
@@ -220,15 +220,15 @@
         ;; _ (println "spatial.clj: ratio of square-km-area to average-cell-area" ratio)
 
         ;; If the square-km-area is less than the max-area-for-level, use s2 cells
-        max-area-for-level (max-area average-cell-area)
+        max-area-for-level (max-area max-terms average-cell-area)
         _ (println "spatial.clj: max-area-for-level" max-area-for-level)
-        ;; custom-cond (if (> square-km-area (* 500 average-cell-area))
-        ;; If the ratio is more than 50 and less than 2000
-        ;custom-cond (if (and (> ratio lower-threshold) (< ratio upper-threshold))
+
         custom-cond (if (< square-km-area max-area-for-level)
                       (let [_ (println "spatial.clj: using custom cell level" custom-cell-level)
                             s2-cells (s2-cells/get-s2-cell-tokens shape custom-cell-level)
                             cell-tokens (:cell-tokens s2-cells)
+                            ;; cell-count (count cell-tokens)
+                            ;; _ (println "spatial.clj: cell count" cell-count)
                             interior-cond-terms (qm/terms (keyword (str "s2-cell-interiors-" field-postfix)) cell-tokens)
                             exterior-match-terms (qm/terms (keyword (str "s2-cell-exteriors-" field-postfix)) cell-tokens)
                             exterior-cond (gc/and-conds [exterior-match-terms spatial-script])]
@@ -245,10 +245,8 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [cell-level (:s-2-lvl context)
-          lower-threshold (or (:lower-threshold context) 0)
-          _ (println "spatial.clj: lower-threshold" lower-threshold)
-          upper-threshold (or (:upper-threshold context) 2000)
-          _ (println "spatial.clj: upper-threshold" upper-threshold)
+          max-terms (or (:max-terms context) 20000)
+          _ (println "spatial.clj: max-terms" max-terms)
           collection-concept-id (first (:query-collection-ids context))
           _ (println "spatial.clj: collection-concept-id" collection-concept-id)
           s2-intersects (or (:s-2-intersects context) false)
@@ -260,8 +258,8 @@
                          (if (< cell-level 2)
                            (if (= cell-level 0)
                              ;; cell-level 0 indicates we need to use the custom cell lvl
-                             (custom-cond collection-concept-id shape lower-threshold upper-threshold spatial-script "custom")
-                             (custom-cond collection-concept-id shape lower-threshold upper-threshold spatial-script "custom-keyword")
+                             (custom-cond collection-concept-id shape max-terms spatial-script "custom")
+                             (custom-cond collection-concept-id shape max-terms spatial-script "custom-keyword")
                            )
                            (let [s2-cells (s2-cells/get-s2-cell-tokens shape cell-level)
                                    cell-tokens (:cell-tokens s2-cells)

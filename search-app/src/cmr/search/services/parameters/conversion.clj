@@ -129,7 +129,7 @@
    :granule-ur :string
    :instrument :inheritance
    :line :line
-   :lower-threshold :int
+   :max-terms :int
    :native-id :string
    :orbit-number :orbit-number
    :platform :inheritance
@@ -152,7 +152,6 @@
    :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
    :updated-since :updated-since
-   :upper-threshold :int
    :version :collection-query
    :cycle :int
    :passes :passes
@@ -611,16 +610,14 @@
                                 :granule params lp/param-aliases)
         s-2-lvl-param (:s-2-lvl params)
         s-2-intersects (= "true" (:s-2-intersects params))
-        lower-threshold (when (:lower-threshold params)
-                          (Integer. (:lower-threshold params)))
-        upper-threshold (when (:upper-threshold params)
-                          (Integer. (:upper-threshold params)))
+        max-terms (when (:max-terms params)
+                          (Integer. (:max-terms params)))
         s-2-lvl (when s-2-lvl-param
                   (Integer. (if (sequential? s-2-lvl-param)
                               (first s-2-lvl-param) s-2-lvl-param)))
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])
-        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile :force-cartesian :s-2-lvl :s-2-intersects :lower-threshold :upper-threshold)
+        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile :force-cartesian :s-2-lvl :s-2-intersects :max-terms)
         {:keys [page-size offset]} query-attribs
         concept-id (:concept-id regular-params)
         concept-ids (when concept-id
@@ -644,8 +641,7 @@
             {:echo-compatible? (= "true" (:echo-compatible params))
              :s-2-lvl s-2-lvl
              :s-2-intersects s-2-intersects
-             :lower-threshold lower-threshold
-             :upper-threshold upper-threshold
+             :max-terms max-terms
              :simplify-shapefile? (= "true" (:simplify-shapefile params))
              :result-features result-features
              :gran-specific-items-query? gran-specific-items-query?})]))
