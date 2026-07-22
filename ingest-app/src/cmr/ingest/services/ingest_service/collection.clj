@@ -129,7 +129,7 @@
     (when (and has-keyword-error?
                (or (seq existing-errors) (seq warnings)))
       (tap> "About to go send data to kms fixer")
-      (transmit-kms/send-to-kms-metadata-fixer-test concept-id))
+      (transmit-kms/notify-kms context concept-id))
     {:entry-title entry-title
      :concept-id concept-id
      :revision-id revision-id

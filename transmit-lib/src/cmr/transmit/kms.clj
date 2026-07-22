@@ -1,12 +1,12 @@
 (ns cmr.transmit.kms
-  "This namespace handles retrieval of controlled keywords from the GCMD Keyword Management
-  System (KMS). There are several different keyword schemes within KMS. They include providers,
+  "This namespace handles requests to the Keyword Management
+  System (KMS) service such as retrieval of controlled keywords. There are several different keyword schemes within KMS. They include providers,
   platforms, instruments, science keywords, and locations. This namespace currently supports
   providers, platforms, and instruments.
 
   For each of the supported keyword schemes we expect the short name to uniquely identify a row
   in the KMS. However we have found that the actual KMS does contain duplicates. Until the GCMD
-  enforces uniqueness we will track any duplicate short names so thaqt we can make GCMD aware and
+  enforces uniqueness we will track any duplicate short names so that we can make GCMD aware and
   they fix the entries.
 
   We utilize the clojure.data.csv library to handle parsing the CSV files. Example KMS keyword files
@@ -25,6 +25,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.core.async :as async]
    [clojure.data.csv :as csv]
    [clojure.java.io :as io]
    [clojure.set :as set]
@@ -295,7 +296,7 @@
         (infof "refresh-kms-cache: Loading static KMS resource from %s for %s. %s. Found keys [%s]."
                gcmd-resource-path
                gcmd-resource-name
-               version-info 
+               version-info
                header)
         data)
       (let [conn (config/context->app-connection context :kms)
@@ -341,38 +342,41 @@
              (name keyword-scheme))
       keywords)))
 
-;; (defn detect-keyword-error )
-
 (defn send-to-kms-metadata-fixer
-  "Sends a PUT request to KMS's metadata fixer service, which attempts to
+  "Sends a POST request to KMS's metadata fixer service, which attempts to
    reconcile keywords that have since been updated with their current value."
   [context collection-concept-id]
-  (def c1 context)
-  (def coll1 collection-concept-id)
   (let [conn (config/context->app-connection context :kms)
-        ;; TODO stubbed endpoint - swap back to (conn/root-url conn) once ready
-        url          conn
-        ;; token    (config/kms-metadata-fixer-token)
+        url   conn
         token (config/kms-metadata-fixer-token)
-        params
-
-        (merge
-         (config/conn-params conn)
-         {:headers          {:client-id    "cmr-standalone"
-                             :accept       "application/json"
-                             :authorization token}
-
-          :throw-exceptions false})
-        response (client/put url params)]
-    (def u url)
-    (def p params)
+        body  (json/generate-string
+               {:collectionConceptIds [collection-concept-id]})
+        params (merge
+                (config/conn-params conn)
+                {:headers          {:client-id     "cmr-standalone"
+                                    :accept        "application/json"
+                                    :content-type  "application/json"
+                                    :authorization token}
+                 :body             body
+                 :throw-exceptions false})
+        response (client/post url params)]
+    (def response)
     (infof "Sending collection [%s] to kms-metadata-fixer-service - response is [%s]"
            collection-concept-id response)
     response))
 
+(defn notify-kms
+  "Sent a message to the keyword fix service in KMS"
+  [context collection-concept-id]
+  (def c context)
+  (def cc collection-concept-id)
+  (tap>  "sending keyword fix message to kms in the notify function")
+  (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
+
 (comment
   (tap> coll1)
-  (tap> (send-to-kms-metadata-fixer c1 "C1200362831-ARCTEST"))
+  (send-to-kms-metadata-fixer c cc)
+   (config/context->app-connection c :kms)
   :rcf)
 
 (comment
@@ -383,27 +387,65 @@
   (first (get-keywords-from-system :platforms))
   (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv"))))
 
-(defn send-to-kms-metadata-fixer-test
+(defn send-to-kms-metadata-fixer-test-synchronous
   [collection-concept-id]
   (def test-collection "C1200487107-OB_DAAC")
   (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
   (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
                     collection-concept-id)
         token (config/kms-metadata-fixer-token)
-        _(tap> {:message "Token we are passing to KMS" :token token})
+        _ (tap> {:message "Token we are passing to KMS" :token token})
         response (client/put url
                              {:headers          {:client-id    "cmr-standalone"
                                                  :accept       "application/json"
                                                  :authorization (format "Bearer %s" token)}
                               :throw-exceptions false})]
-       (tap> (format "PUT %s -> status [%s]" url (:status response)))
-       (tap> (format "Full result from KMS %s" response))
-       (tap> token)
-       response))
+    (tap> (format "PUT %s -> status [%s]" url (:status response)))
+    (tap> (format "Full result from KMS %s" response))
+    (tap> token)
+    response))
+
+(defn send-to-kms-metadata-fixer-test-asynchronous
+  [collection-concept-id]
+  (def test-collection "C1200487107-OB_DAAC")
+  (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+  (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
+        token (config/kms-metadata-fixer-token)
+        body  (json/generate-string
+               {:collectionConceptIds [collection-concept-id]})
+        _ (tap> {:message "Token we are passing to KMS" :token token})
+        response (client/post url
+                              {:headers          {:client-id     "cmr-standalone"
+                                                  :accept        "application/json"
+                                                  :content-type  "application/json"
+                                                  :authorization (format "Bearer %s" token)}
+                               :body             body
+                               :throw-exceptions false})]
+    (tap> (format "POST %s -> status [%s]" url (:status response)))
+    (tap> (format "Full result from KMS %s" response))
+    (tap> token)
+    response))
 
 (comment
+  (defn send-to-kms-metadata-fixer-test
+    [collection-concept-id]
+    (def test-collection "C1200487107-OB_DAAC")
+    (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+    (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
+                      collection-concept-id)
+          token (config/kms-metadata-fixer-token)
+          _ (tap> {:message "Token we are passing to KMS" :token token})
+          response (client/put url
+                               {:headers          {:client-id    "cmr-standalone"
+                                                   :accept       "application/json"
+                                                   :authorization (format "Bearer %s" token)}
+                                :throw-exceptions false})]
+      (tap> (format "PUT %s -> status [%s]" url (:status response)))
+      (tap> (format "Full result from KMS %s" response))
+      (tap> token)
+      response))
   (send-to-kms-metadata-fixer-test "C1200362831-ARCTEST")
-
+  (send-to-kms-metadata-fixer-test-asynchronous "C1200362831-ARCTEST")
   :rcf)
 
 
