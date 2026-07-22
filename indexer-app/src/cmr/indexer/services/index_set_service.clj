@@ -764,12 +764,12 @@
                                   :not-found
                                   (format "Index [%s] does not exist." index)))
 
-        ;; validate that the index is not already being resharded
-        reshard-status (get-reshard-status elastic-index-set index)
-        _ (when-not (nil? reshard-status)
-            (errors/throw-service-error
-              :bad-request
-              (format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." index reshard-status)))
+        ;; validate that the source and target index is not already being resharded
+        _ (when (is-resharding? elastic-index-set index)
+            (let [reshard-status (get-reshard-status elastic-index-set index)]
+              (errors/throw-service-error
+                :bad-request
+                (format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." index reshard-status))))
 
         ;; Find the original index configuration
         orig-index-config (get-index-config elastic-index-set concept-type canonical-index-name)
