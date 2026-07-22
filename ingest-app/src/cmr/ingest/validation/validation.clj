@@ -6,7 +6,7 @@
    [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.log :as log :refer (debug warn)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.core :as v]
@@ -403,7 +403,7 @@
              err-messages))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
-         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+         (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
          err-messages)))))
 
 (defn umm-spec-validate-collection-warnings
@@ -417,7 +417,7 @@
             (config/return-umm-spec-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
       (do
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
 (defn validate-granule-umm-spec
