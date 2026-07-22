@@ -108,8 +108,7 @@
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn prune-index-set
-  "Returns the index set with only the id, name, and a map of concept types to
-  the index name map."
+  "Returns the index set with only the id, name, and a map of concepts."
   [index-set es-cluster-name]
   (let [prefix (:id index-set)
         generic-searchable-concept-types (cond
@@ -268,7 +267,7 @@
   (let [;; setup keys we need to extract from the combined index set
         combined-concepts-map (get-in combined-index-set [:index-set :concepts])
         inner-combined-index-set (:index-set combined-index-set)
-        gran-index-keys (keys (:index-set (index-set/gran-index-set nil)))
+        gran-index-keys (keys (:index-set (index-set/gran-base-index-set nil)))
 
         ;; re-build the outer map for gran index set
         gran-outer-map-index-set (select-keys inner-combined-index-set gran-index-keys)
@@ -347,8 +346,8 @@
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
-    (doseq [idx indices-w-config]
-      (es/update-index es-store idx))
+    (doseq [idx-w-config indices-w-config]
+      (es/update-index es-store idx-w-config))
 
     (index-requested-index-set context index-set es-cluster-name revision-id)))
 

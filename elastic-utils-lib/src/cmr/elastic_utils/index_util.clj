@@ -157,6 +157,10 @@
                   base-actions)]
     (esi-helper/update-aliases conn actions)))
 
+(defn get-indexes-mapped-to-alias
+  [conn alias-name]
+  (esi-helper/get-indexes-mapped-to-alias conn alias-name))
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
    follows:

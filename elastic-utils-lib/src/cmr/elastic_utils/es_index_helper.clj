@@ -103,6 +103,18 @@
   [conn index-name]
   (boolean (some #{(index-alias index-name)} (get-aliases conn index-name))))
 
+(defn get-indexes-mapped-to-alias
+  "Return list of indexes mapped to the given alias name"
+  [conn alias-name]
+  (let [url (es-util/url-with-path conn "_alias/" alias-name)
+        resp-json (client/get url (merge (:http-opts conn)
+                                         {:accept :json
+                                          :throw-exceptions false
+                                          :as :json}))]
+    (if (= 200 (:status resp-json))
+      (vec (keys (:body resp-json)))
+      nil)))
+
 (defn create-index-template
   "Create an index template in elasticsearch"
   [conn template-name opts]
