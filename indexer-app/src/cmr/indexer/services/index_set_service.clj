@@ -769,7 +769,7 @@
             (let [reshard-status (get-reshard-status elastic-index-set index)]
               (errors/throw-service-error
                 :bad-request
-                (format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." index reshard-status))))
+                (format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." index reshard-status))))
 
         ;; Find the original index configuration
         orig-index-config (get-index-config elastic-index-set concept-type canonical-index-name)

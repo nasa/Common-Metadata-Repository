@@ -77,7 +77,7 @@
          (is (= "Resharding started for index 1_small_collections" (:message reshard-resp)))
          (is (= false (nil? (:task-id reshard-resp)))))
        (is (= {:status 400
-               :errors [(format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." "1_small_collections" "IN_PROGRESS")]}
+               :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." "1_small_collections" "IN_PROGRESS")]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 4 :elastic-name gran-elastic-name}))))
      (testing "trying to reshard an index that is currently rebalancing should throw error"
        (bootstrap/rollback-reshard-index "1_small_collections" {:elastic-name gran-elastic-name})
@@ -98,7 +98,7 @@
                                    :resharding-status {services-index "COMPLETE"}})
              _ (index/update-index-set index-set 1)]
          (is (= {:status 400
-                 :errors [(format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." services-index "COMPLETE")]}
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "COMPLETE")]}
                 (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
      (testing "trying to reshard an IN_PROGRESS resharding index, should return 400 error"
        (let [index-set (update-in (index/get-index-set-by-id 1)
@@ -109,7 +109,7 @@
                                    :resharding-status {services-index "IN_PROGRESS"}})
              _ (index/update-index-set index-set 1)]
          (is (= {:status 400
-                 :errors [(format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." services-index "IN_PROGRESS")]}
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "IN_PROGRESS")]}
                 (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
      (testing "trying to reshard a FAILED resharded index, should return 400 error"
        (let [index-set (update-in (index/get-index-set-by-id 1)
@@ -120,7 +120,7 @@
                                    :resharding-status {services-index "FAILED"}})
              _ (index/update-index-set index-set 1)]
          (is (= {:status 400
-                 :errors [(format "Index [%s] is in a current resharding state of [%s]. You cannot reshard an index that is currently being resharded." services-index "FAILED")]}
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "FAILED")]}
                 (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
      (testing "no elastic name given to get resharding status"
        (is (= {:status 400
