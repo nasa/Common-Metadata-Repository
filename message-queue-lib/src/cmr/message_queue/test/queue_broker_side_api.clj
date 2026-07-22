@@ -18,9 +18,14 @@
   [broker-wrapper]
   (routes
     (context "/message-queue" []
-      (POST "/wait-for-terminal-states" []
-        (wrapper/wait-for-terminal-states broker-wrapper)
-        {:status 200})
+      (POST "/wait-for-terminal-states" {:keys [params]}
+        (let [timeout (some-> (:timeout params) Long/parseLong)
+              complete? (if timeout
+                          (wrapper/wait-for-terminal-states broker-wrapper timeout)
+                          (wrapper/wait-for-terminal-states broker-wrapper))]
+          {:status 200
+           :body (json/generate-string {:complete? complete?})
+           :headers {"Content-Type" "application/json"}}))
 
       (GET "/history" {:keys [params]}
         {:status 200
@@ -56,9 +61,15 @@
 
 (defn wait-for-terminal-states
   "Waits until all the message queues have reached a terminal state"
-  []
-  (client/post
-   (format "http://localhost:%s/message-queue/wait-for-terminal-states" (side-api/side-api-port))))
+  ([]
+   (wait-for-terminal-states nil))
+  ([timeout]
+   (let [response (client/post
+                   (format "http://localhost:%s/message-queue/wait-for-terminal-states"
+                           (side-api/side-api-port))
+                   (cond-> {}
+                     timeout (assoc :query-params {:timeout timeout})))]
+     (:complete? (json/decode (:body response) true)))))
 
 (defn set-message-queue-retry-behavior
   "Set the message queue retry behavior"

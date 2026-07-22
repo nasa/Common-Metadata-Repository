@@ -92,23 +92,28 @@
   (map :state (current-messages broker-wrapper)))
 
 (defn wait-for-terminal-states
-  "Wait until the messages that have been enqueued have all reached a terminal states. If it takes
-  longer than ms-to-wait, log a warning and stop waiting."
+  "Wait until the messages that have been enqueued have all reached terminal states. If it takes
+  longer than ms-to-wait, log a warning and stop waiting. Returns true when all messages reach a
+  terminal state and false on timeout."
   ([broker-wrapper]
    (wait-for-terminal-states broker-wrapper 7000))
   ([broker-wrapper ms-to-wait]
    (let [start-time (System/currentTimeMillis)]
      (loop [current-states (set (current-message-states broker-wrapper))]
-       (when (seq (set/difference current-states terminal-states))
-         (Thread/sleep 10)
-         (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
-           (recur (set (current-message-states broker-wrapper)))
-           (warn
-            (format
-             "Waited %d ms for messages to complete, but they did not complete. In progress: %s"
-             ms-to-wait
-             (pr-str (remove #(contains? terminal-states (:state %))
-                             (current-messages broker-wrapper)))))))))))
+       (if (seq (set/difference current-states terminal-states))
+         (do
+           (Thread/sleep 10)
+           (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
+             (recur (set (current-message-states broker-wrapper)))
+             (do
+               (warn
+                (format
+                 "Waited %d ms for messages to complete, but they did not complete. In progress: %s"
+                 ms-to-wait
+                 (pr-str (remove #(contains? terminal-states (:state %))
+                                 (current-messages broker-wrapper)))))
+               false)))
+         true)))))
 
 (defn- publish-to-queue
   "Publishes a message to the queue and captures the actions with the queue history."

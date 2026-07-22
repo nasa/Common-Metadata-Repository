@@ -157,7 +157,7 @@
     (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
-    (index/wait-until-indexed)
+    (index/wait-until-indexed 60000)
 
     (are3 [items search]
           (is (d/refs-match? items (search/find-refs :collection search)))

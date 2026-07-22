@@ -19,9 +19,15 @@
 
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
-  []
-  (qb-side-api/wait-for-terminal-states)
-  (refresh-all-elastic-indexes))
+  ([]
+   (qb-side-api/wait-for-terminal-states)
+   (refresh-all-elastic-indexes))
+  ([timeout]
+   (let [complete? (qb-side-api/wait-for-terminal-states timeout)
+         message (format "Message queues did not reach terminal states within %d ms" timeout)]
+     (when-not (is complete? message)
+       (throw (ex-info message {:timeout timeout}))))
+   (refresh-all-elastic-indexes)))
 
 (defn full-refresh-collection-granule-aggregate-cache
   "Triggers a full refresh of the collection granule aggregate cache in the indexer."

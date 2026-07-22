@@ -42,7 +42,7 @@
     ;; Add a listener that will always return a failure when processing a message
     (queue-protocol/subscribe queue-wrapper queue-name retry-handler)
     (queue-protocol/publish-to-queue queue-wrapper queue-name message)
-    (queue-broker-wrapper/wait-for-terminal-states queue-wrapper)
+    (is (queue-broker-wrapper/wait-for-terminal-states queue-wrapper))
     (let [message-history (queue-broker-wrapper/get-message-queue-history queue-wrapper queue-name)
           number-of-retries (get-number-of-retries message message-history)
           final-state (get-final-state message-history)]
