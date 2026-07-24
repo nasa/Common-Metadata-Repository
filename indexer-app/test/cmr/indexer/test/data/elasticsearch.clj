@@ -100,15 +100,14 @@
     (is (= ["C274209-USGS_EROS" "C274211-USGS_EROS"]
            (i/index-set->extra-granule-indexes test-index-set))))
   (testing "no extra indexes configured"
-    (is (empty? (i/index-set->extra-granule-indexes (i/gran-index-set nil)))))
+    (is (empty? (i/index-set->extra-granule-indexes (i/gran-base-index-set nil)))))
   (testing "Nil index set"
     ;; A nil index set is possible if there is no existing index set.
     (is (empty? (i/index-set->extra-granule-indexes nil)))))
 
 (deftest requires-update-test
   (testing "No updates required"
-    (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)]
-      (is (not (es/index-set-requires-update? test-index-set expected-index-set)))))
+    (is (not (es/index-set-requires-update? test-index-set test-index-set))))
   (testing "Updates required from individual index settings"
     (let [expected-index-set (update-in test-index-set [:index-set] dissoc :concepts)
           existing-gran-index-set (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)]
@@ -173,7 +172,7 @@
           :num-shards 10}]]
 
     (testing "does nothing when the resharded index already exists"
-      (let [result (es/reconcile-resharded-index
+      (let [result (es/reconcile-resharded-indexes
                     initial-index-set resharded-already-exists)
             updated-index (get-in result [:index-set :service :indexes 0])]
         (is (= "services_2_shards" (:name updated-index)))
@@ -181,7 +180,7 @@
         (is (= 1 (get-in updated-index [:settings :index :number_of_replicas])))))
 
     (testing "updates canonical index when resharded version not present, preserving other settings"
-      (let [result (es/reconcile-resharded-index
+      (let [result (es/reconcile-resharded-indexes
                     initial-index-set resharded-new)
             updated-index (first (filter #(= "collections_v2_3_shards" (:name %))
                                          (get-in result [:index-set :collection :indexes])))]
@@ -194,7 +193,7 @@
             "custom settings should be preserved")))
 
     (testing "updates granule canonical indexes when resharded versions provided, preserving other settings"
-        (let [result (es/reconcile-resharded-index
+        (let [result (es/reconcile-resharded-indexes
                       initial-index-set resharded-granule)
               granule-indexes (get-in result [:index-set :granule :indexes])
               small-idx (first (filter #(= "small_collections_50_shards" (:name %)) granule-indexes))

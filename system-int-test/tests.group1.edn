@@ -5,6 +5,7 @@
  "test/cmr/system_int_test/site"
  "test/cmr/system_int_test/transmit"
  "test/cmr/system_int_test/virtual_product"
+ "test/cmr/system_int_test/indexer"
  "test/cmr/system_int_test/ingest/granule_bulk_update"
  "test/cmr/system_int_test/ingest/provider"
  "test/cmr/system_int_test/ingest/subscription"
