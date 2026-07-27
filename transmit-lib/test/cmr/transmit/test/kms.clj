@@ -168,3 +168,11 @@
       (with-redefs [client/request action-tester]
         (let [result (kms/get-keywords-for-keyword-scheme context :platforms)]
           (is (nil? result)))))))
+
+(deftest metadata-fixer-url-test
+  (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
+         (kms/metadata-fixer-url {:protocol "https"
+                              :host "localhost"
+                              :port 2999
+                              :context "/kms"}
+                             "C1200000000-PROV1"))))

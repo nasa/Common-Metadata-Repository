@@ -342,13 +342,17 @@
              (name keyword-scheme))
       keywords)))
 
+(defn metadata-fixer-url
+  [connection collection-concept-id]
+  (format "%s/metadata_correction/%s" (conn/root-url connection) collection-concept-id))
+
 (defn send-to-kms-metadata-fixer
   "Sends a POST request to KMS's metadata fixer service, which attempts to
    reconcile keywords that have since been updated with their current value."
   [context collection-concept-id]
   (let [conn (config/context->app-connection context :kms)
-        url   conn
-        token (config/kms-metadata-fixer-token)
+        url (metadata-fixer-url conn collection-concept-id)
+        token (config/echo-system-token)
         body  (json/generate-string
                {:collectionConceptIds [collection-concept-id]})
         params (merge
@@ -360,7 +364,7 @@
                  :body             body
                  :throw-exceptions false})
         response (client/post url params)]
-    (def response)
+    (def r response)
     (infof "Sending collection [%s] to kms-metadata-fixer-service - response is [%s]"
            collection-concept-id response)
     response))
@@ -376,7 +380,7 @@
 (comment
   (tap> coll1)
   (send-to-kms-metadata-fixer c cc)
-   (config/context->app-connection c :kms)
+  (config/context->app-connection c :kms)
   :rcf)
 
 (comment
