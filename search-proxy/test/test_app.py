@@ -1,5 +1,6 @@
 import gzip
 import json
+import time
 from unittest.mock import AsyncMock
 
 import fakeredis.aioredis
@@ -128,7 +129,8 @@ class TestRouting:
         """Health reports at_capacity but remains ok? true — informational only."""
         app.state.backend.get.return_value = make_backend_response()
         fake_redis = app.state.redis
-        await fake_redis.set("lane:heavy:active", 50)
+        future = time.time() + 300
+        await fake_redis.zadd("lane:heavy:active", {f"req-{i}": future for i in range(50)})
         _health_cache["result"] = None
         _health_cache["expires"] = 0.0
         resp = await client.get("/health")
@@ -242,7 +244,7 @@ class TestLoadShedding:
         app.state.lanes = RequestLanes(config, fake_redis)
 
         # Fill the heavy lane via Redis
-        await fake_redis.set("lane:heavy:active", 1)
+        await fake_redis.zadd("lane:heavy:active", {"blocking-req": time.time() + 300})
         resp = await client.get("/search/granules.json?include_facets=v2")
         assert resp.status_code == 429
         assert "Retry-After" in resp.headers
@@ -517,7 +519,7 @@ class TestLoadSheddingToggle:
         fake_redis = app.state.redis
         config = make_lanes_config(heavy_permits=1)
         app.state.lanes = RequestLanes(config, fake_redis)
-        await fake_redis.set("lane:heavy:active", 1)
+        await fake_redis.zadd("lane:heavy:active", {"blocking-req": time.time() + 300})
         try:
             resp = await client.get("/search/granules.json?include_facets=v2")
             assert resp.status_code == 200
