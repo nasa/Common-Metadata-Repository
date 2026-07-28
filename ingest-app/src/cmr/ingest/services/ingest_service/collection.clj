@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.ingest-service.collection
   (:require
    [clojure.string :as string]
+   [clojure.test :refer :all]
    [cmr.common.api.context :as common-context]
    [cmr.common.log :as log :refer (warn)]
    [cmr.common.util :refer [defn-timed]]
@@ -40,11 +41,11 @@
          collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
          sanitized-collection (spec/parse-metadata context :collection format metadata)
          sanitized-prev-collection (when prev-concept
-                                         (spec/parse-metadata
-                                           context
-                                           :collection
-                                           (:format prev-concept)
-                                           (:metadata prev-concept)))
+                                     (spec/parse-metadata
+                                      context
+                                      :collection
+                                      (:format prev-concept)
+                                      (:metadata prev-concept)))
          _ (def sc sanitized-collection)
          _ (def scp sanitized-prev-collection)
          _ (def vo validation-options)
@@ -53,30 +54,30 @@
 
          ;; Return warnings for schema validation errors going from xml -> UMM
          existing-errors (v/umm-spec-validate-collection
-                           sanitized-collection sanitized-prev-collection validation-options context false)
+                          sanitized-collection sanitized-prev-collection validation-options context false)
          collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
          _ (def csw collection-schema-warnings)
          ;; Return warnings for validation errors on collection without checking if they are
          non-sanitized-errors (v/umm-spec-validate-collection
-                                collection nil validation-options context true)
+                               collection nil validation-options context true)
 ;; These are warnings that if the ignore keyword header was not passed would result in errors
          {warning-errors :errors has-keyword-error? :has-keyword-error?}
          (v/umm-spec-validate-collection-warnings
-           collection validation-options context)
+          collection validation-options context)
          existing-errors (map #(str (:path %) " " (string/join " " (:errors %)))
                               existing-errors)
          collection-warnings (concat non-sanitized-errors warning-errors)
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
          warnings (concat collection-schema-warnings collection-warnings)]
-        (def cw collection-warnings)
-        (def hke has-keyword-error?)
+     (def cw collection-warnings)
+     (def hke has-keyword-error?)
 
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
-        {:collection sanitized-collection
-         :warnings warnings
-         :existing-errors existing-errors
-         :has-keyword-error? has-keyword-error?})))
+     {:collection sanitized-collection
+      :warnings warnings
+      :existing-errors existing-errors
+      :has-keyword-error? has-keyword-error?})))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
@@ -103,6 +104,14 @@
      :existing-errors existing-errors
      :has-keyword-error? has-keyword-error?}))
 
+(defn should-notify-kms?
+  "Returns true if a keyword error was found alongside existing errors or warnings,
+   meaning the KMS keyword fixer should be notified."
+  [has-keyword-error? existing-errors warnings]
+  (boolean
+   (and has-keyword-error?
+        (or (seq existing-errors) (seq warnings)))))
+
 (defn-timed save-collection
   "Store a concept in mdb and indexer.
    Return entry-title, concept-id, revision-id, and warnings."
@@ -126,9 +135,8 @@
                     (if (:token context)
                       (common-context/context->user-id context)
                       "unknown user"))))
-    (when (and has-keyword-error?
-               (or (seq existing-errors) (seq warnings)))
-      (tap> "About to go send data to kms fixer")
+    ;; When a keyword error is detected but, ingest is alllowed send to kms fixer to resolve keyword
+    (when (should-notify-kms? has-keyword-error? existing-errors warnings)
       (transmit-kms/notify-kms context concept-id))
     {:entry-title entry-title
      :concept-id concept-id
@@ -149,7 +157,7 @@
 
   (when (and hke1
              (or (seq ee) (seq w)))
-    (transmit-kms/send-to-kms-metadata-fixer-test c1))
+    (transmit-kms/send-to-kms-metadata-fixer-test-asynchronous c1))
   :rcf)
 ;; (v/umm-spec-validate-collection
 ;;    collection nil kw-rules validation-options context true))
