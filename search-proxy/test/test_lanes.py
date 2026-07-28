@@ -1,3 +1,4 @@
+import time
 from unittest.mock import AsyncMock, patch
 
 import fakeredis.aioredis
@@ -102,13 +103,12 @@ class TestDistributedCounting:
                 assert a == "heavy"
                 assert b == "heavy"
 
-                # Third attempt from either instance should be shed
                 with pytest.raises(LoadSheddingError):
                     async with lanes_a.acquire("heavy"):
                         pass
 
-    async def test_redis_counter_returns_to_zero(self, redis_client):
-        """After all permits are released, the counter should be zero."""
+    async def test_active_count_is_zero_after_all_releases(self, redis_client):
+        """After all permits are released, the sorted set should be empty."""
         config = make_config(heavy_permits=5)
         lanes = RequestLanes(config, redis_client)
 
@@ -116,8 +116,8 @@ class TestDistributedCounting:
             async with lanes.acquire("heavy"):
                 pass
 
-        counter = await redis_client.get("lane:heavy:active")
-        assert int(counter) == 0
+        count = await redis_client.zcard("lane:heavy:active")
+        assert count == 0
 
 
 class TestExpressOverflow:
@@ -183,10 +183,35 @@ class TestUnknownLaneFallback:
             assert actual == "express"
 
 
+class TestRedisFailOpen:
+    async def test_acquire_succeeds_when_redis_unavailable(self, lanes):
+        """When Redis is down, acquire fails open rather than 429ing the request."""
+        with patch.object(lanes.redis, "time", new=AsyncMock(side_effect=Exception("Redis down"))):
+            async with lanes.acquire("heavy") as actual:
+                assert actual == "heavy"
+
+    async def test_no_release_attempted_on_fail_open(self, lanes):
+        """When Redis fails during acquire, no release is attempted (nothing was stored)."""
+        with patch.object(lanes.redis, "time", new=AsyncMock(side_effect=Exception("Redis down"))):
+            with patch.object(lanes.redis, "zrem", new=AsyncMock()) as mock_zrem:
+                async with lanes.acquire("heavy"):
+                    pass
+                mock_zrem.assert_not_called()
+
+    async def test_fail_open_does_not_propagate_exception(self, lanes):
+        """A Redis error during acquire must not surface to the caller as an exception."""
+        with patch.object(lanes.redis, "time", new=AsyncMock(side_effect=Exception("Redis down"))):
+            try:
+                async with lanes.acquire("heavy"):
+                    pass
+            except Exception:
+                pytest.fail("Redis exception escaped from acquire")
+
+
 class TestReleaseFailure:
     async def test_release_redis_error_does_not_propagate(self, lanes):
         """MaxConnectionsError in _release must not escape to the caller."""
-        with patch.object(lanes.redis, "decr", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
+        with patch.object(lanes.redis, "zrem", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
             try:
                 async with lanes.acquire("heavy"):
                     pass
@@ -195,7 +220,7 @@ class TestReleaseFailure:
 
     async def test_release_redis_error_is_logged(self, lanes, caplog):
         import logging
-        with patch.object(lanes.redis, "decr", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
+        with patch.object(lanes.redis, "zrem", new=AsyncMock(side_effect=MaxConnectionsError("Too many connections"))):
             with caplog.at_level(logging.ERROR, logger="proxy.lanes"):
                 async with lanes.acquire("heavy"):
                     pass
@@ -216,3 +241,82 @@ class TestLoadSheddingDisabled:
                     pass
             except LoadSheddingError:
                 pytest.fail("LoadSheddingError raised with load_shedding_enabled=False")
+
+
+class TestTTLExpiry:
+    async def test_expired_permit_is_pruned_on_next_acquire(self, redis_client):
+        """A leaked permit with an expired score is cleaned up on the next acquire."""
+        config = make_config(heavy_permits=1)
+        lanes = RequestLanes(config, redis_client)
+
+        # Simulate a leaked permit: score is in the past so it is already expired
+        expired_score = time.time() - 10
+        await redis_client.zadd("lane:heavy:active", {"leaked-request-id": expired_score})
+
+        # The expired entry should be pruned and the slot freed for a new request
+        async with lanes.acquire("heavy") as actual:
+            assert actual == "heavy"
+
+    async def test_non_expired_permit_blocks_acquire(self, redis_client):
+        """A permit with a future score is still counted as active."""
+        config = make_config(heavy_permits=1)
+        lanes = RequestLanes(config, redis_client)
+
+        future_score = time.time() + 300
+        await redis_client.zadd("lane:heavy:active", {"active-request-id": future_score})
+
+        with pytest.raises(LoadSheddingError):
+            async with lanes.acquire("heavy"):
+                pass
+
+    async def test_multiple_expired_permits_all_pruned(self, redis_client):
+        """Multiple leaked permits are all removed before counting capacity."""
+        config = make_config(heavy_permits=2)
+        lanes = RequestLanes(config, redis_client)
+
+        expired = time.time() - 10
+        await redis_client.zadd("lane:heavy:active", {
+            "leaked-1": expired,
+            "leaked-2": expired,
+            "leaked-3": expired,
+        })
+
+        # All three expired entries pruned — both permits now free
+        async with lanes.acquire("heavy"):
+            async with lanes.acquire("heavy") as actual:
+                assert actual == "heavy"
+
+
+class TestUniquePermitSlots:
+    async def test_identical_concurrent_requests_each_occupy_a_slot(self, redis_client):
+        """Two concurrent requests occupy two distinct slots in the sorted set."""
+        config = make_config(express_permits=2)
+        lanes = RequestLanes(config, redis_client)
+
+        async with lanes.acquire("express"):
+            async with lanes.acquire("express"):
+                count = await redis_client.zcard("lane:express:active")
+                assert count == 2
+
+    async def test_third_request_shed_when_two_permit_lane_full(self, redis_client):
+        """A third request is shed when a 2-permit no-overflow lane is fully occupied."""
+        config = make_config(heavy_permits=2)
+        lanes = RequestLanes(config, redis_client)
+
+        async with lanes.acquire("heavy"):
+            async with lanes.acquire("heavy"):
+                with pytest.raises(LoadSheddingError):
+                    async with lanes.acquire("heavy"):
+                        pass
+
+    async def test_permit_slot_removed_on_release(self, redis_client):
+        """Each release removes exactly one entry from the sorted set."""
+        config = make_config(heavy_permits=3)
+        lanes = RequestLanes(config, redis_client)
+
+        async with lanes.acquire("heavy"):
+            async with lanes.acquire("heavy"):
+                count_during = await redis_client.zcard("lane:heavy:active")
+                assert count_during == 2
+            count_after_one_release = await redis_client.zcard("lane:heavy:active")
+            assert count_after_one_release == 1
