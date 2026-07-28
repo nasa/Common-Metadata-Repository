@@ -25,6 +25,7 @@
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
+   [cmr.indexer.services.index-set-service :as idx-set-svc]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
@@ -670,7 +671,8 @@
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
                                          (:granule)
-                                         (:small_collections))]
+                                         (:small_collections))
+        deleted-separate-index? (volatile! false)]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
@@ -685,11 +687,16 @@
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
         (let [resp (es/delete-granule-index context index)]
+          (vreset! deleted-separate-index? true)
           (when (not= (get resp :status) 200)
-            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
+            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
+    ;; If the collection had an individual granule index (not small_collections),
+    ;; remove its mapping from the gran index-set so it is not recreated on restart.
+    (when @deleted-separate-index?
+      (idx-set-svc/remove-collection-granule-index-if-exists context concept-id))
 
-  ;; reindex variables associated with the collection
-  (reindex-associated-variables context concept-id revision-id))
+    ;; reindex variables associated with the collection
+    (reindex-associated-variables context concept-id revision-id)))
 
 (defn get-concept-delete-log-string
   "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"
