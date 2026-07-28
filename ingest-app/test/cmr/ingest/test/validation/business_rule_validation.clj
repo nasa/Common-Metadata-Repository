@@ -25,16 +25,18 @@
 
 ;; Default case: cmr.ingest.config/enforce-granule-collection-consistency is true,
 ;; so the instrument and platform searches are included.
-;; (deftest collection-update-searches-with-consistency-enforcement-enabled
-;;   (is (= [aa/additional-attribute-searches
-;;           pv/deleted-project-searches
-;;           instrument-validation/del eted-parent-instrument-searches
-;;           instrument-validation/deleted-child-instrument-searches
-;;           platform-validation/deleted-platform-searches
-;;           tiling-validation/deleted-tiling-searches
-;;           tv/out-of-range-temporal-searches
-;;           sv/spatial-param-change-searches]
-;;          (bv/collection-update-searches))))
+;; Using a set here so that the order is not affected in the CI test
+;; validations are mapcat together so that order should not really matter
+(deftest collection-update-searches-with-consistency-enforcement-enabled
+  (is (= #{aa/additional-attribute-searches
+           pv/deleted-project-searches
+           instrument-validation/deleted-parent-instrument-searches
+           instrument-validation/deleted-child-instrument-searches
+           platform-validation/deleted-platform-searches
+           tiling-validation/deleted-tiling-searches
+           tv/out-of-range-temporal-searches
+           sv/spatial-param-change-searches}
+         (set (bv/collection-update-searches)))))
 
 ;; NOTE: We can't flip enforce-granule-collection-consistency to false in CI yet
 ;; (it's read from env-driven config), so this is left commented out until we
