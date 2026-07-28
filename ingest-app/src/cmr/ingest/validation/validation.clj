@@ -363,11 +363,6 @@
       [(when-not (:validate-keywords? validation-options)
                  (keyword-validation-warnings context))])
 
-(comment
-  
-  (keyword-validation-warning-rules c1 {:validate-keywords? false, :validate-umm? false, :test-existing-errors? false})
-  :rcf)
-
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
@@ -408,7 +403,7 @@
              err-messages))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
-         (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+         (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
          err-messages)))))
 
 
@@ -430,7 +425,7 @@
 
       err-messages
       (do
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
         {:errors err-messages :has-keyword-error? has-keyword-error?})
 
       :else

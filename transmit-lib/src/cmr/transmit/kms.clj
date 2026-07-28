@@ -377,20 +377,6 @@
   (tap>  "sending keyword fix message to kms in the notify function")
   (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
 
-(comment
-  (tap> coll1)
-  (send-to-kms-metadata-fixer c cc)
-  (config/context->app-connection c :kms)
-  :rcf)
-
-(comment
-  (def get-keywords-from-system
-    (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
-  (get-keywords-from-system :measurement-name)
-  (config/set-kms-scheme-override-json! "{\"platforms\": \"static\"}")
-  (first (get-keywords-from-system :platforms))
-  (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv"))))
-
 (defn send-to-kms-metadata-fixer-test-synchronous
   [collection-concept-id]
   (def test-collection "C1200487107-OB_DAAC")
