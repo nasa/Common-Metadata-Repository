@@ -91,12 +91,15 @@ async def lifespan(app: FastAPI):
         ),
     )
     # Redis connection for distributed lane semaphores and response cache.
-    # Pool size defaults to total lane permits + 50 so it always exceeds the
-    # maximum number of concurrent Redis operations (one per in-flight request).
+    # Pool size defaults to total lane permits + 100. Each acquire involves 3
+    # sequential Redis ops (TIME, ZREMRANGEBYSCORE, ZCARD, ZADD) plus a ZREM
+    # on release and a GET/SET for cache. Connections are released between ops
+    # so peak concurrent demand tracks concurrent requests, not ops per request.
+    # The +100 provides headroom for health checks and reconnect storms.
     # Override with CMR_PROXY_REDIS_MAX_CONNECTIONS if permits change without
     # a redeploy or if additional headroom is needed.
     redis_max_connections = settings.redis_max_connections or (
-        sum(lane.permits for lane in lanes_config.lanes) + 50
+        sum(lane.permits for lane in lanes_config.lanes) + 100
     )
     app.state.redis = redis.asyncio.from_url(
         settings.redis_url,
@@ -106,7 +109,11 @@ async def lifespan(app: FastAPI):
         health_check_interval=settings.redis_health_check_interval,
         max_connections=redis_max_connections,
     )
-    app.state.lanes = RequestLanes(lanes_config, app.state.redis)
+    app.state.lanes = RequestLanes(
+        lanes_config,
+        app.state.redis,
+        permit_ttl=int(settings.backend_timeout_seconds),
+    )
     app.state.cache = ResponseCache(app.state.redis, settings.max_cache_response_bytes)
     yield
     await app.state.backend.aclose()
@@ -125,7 +132,7 @@ def _extract_auth_token(request: Request) -> str:
         "Authorization", ""
     )
     if token:
-        return hashlib.sha256(token.encode()).hexdigest()[:16]
+        return hashlib.sha256(token.encode()).hexdigest()
     return "guest"
 
 
@@ -236,29 +243,33 @@ async def health(request: Request):
     except Exception as exc:
         dependencies["search"] = {"ok?": True, "problem": str(exc)}  # informational
 
-    # Lane utilization
+    # Lane utilization — count only non-expired entries (score > wall clock now)
     lanes_config = request.app.state.lanes_config
     redis_client = request.app.state.redis
+    wall_now = time.time()
     for lane in lanes_config.lanes:
         key = f"lane:{lane.name}:active"
-        active_raw = await redis_client.get(key)
-        active = int(active_raw) if active_raw else 0
-        at_capacity = active >= lane.permits
-        dep = {
-            "ok?": True,
-            "active": active,
-            "permits": lane.permits,
-            "at_capacity": at_capacity,
-        }
-        if at_capacity:
-            dep["note"] = "at capacity"
+        try:
+            active = await redis_client.zcount(key, wall_now, "+inf")
+            at_capacity = active >= lane.permits
+            dep = {
+                "ok?": True,
+                "active": active,
+                "permits": lane.permits,
+                "at_capacity": at_capacity,
+            }
+            if at_capacity:
+                dep["note"] = "at capacity"
+        except Exception as exc:
+            dep = {"ok?": True, "problem": str(exc)}  # informational
         dependencies[f"lane-{lane.name}"] = dep
 
     ok = all(dep["ok?"] for dep in dependencies.values())
     status_code = 200 if ok else 503
     content = {"ok?": ok, "dependencies": dependencies}
 
-    # Only cache healthy results so recovery is visible on the next check
+    # Only cache healthy results so recovery is visible on the next check.
+    # Use monotonic time (consistent with the check at the top of this function).
     if status_code == 200:
         _health_cache["result"] = {"status_code": status_code, "content": content}
         _health_cache["expires"] = now + _HEALTH_CACHE_TTL
@@ -282,7 +293,10 @@ async def proxy(request: Request, path: str):
     full_path = f"/{path}"
     toggles = request.app.state.toggles
 
-    # Reject oversized POST bodies before reading into memory
+    # Read POST body once; reused for size check, form param extraction, and cache key
+    content_type = request.headers.get("content-type", "")
+    body = b""
+    body_hash = ""
     if request.method == "POST":
         content_length = request.headers.get("content-length")
         try:
@@ -295,7 +309,6 @@ async def proxy(request: Request, path: str):
                 content={"errors": ["Request body too large"]},
                 headers={"CMR-Request-Id": _extract_request_id(request)},
             )
-
         body = await request.body()
         if len(body) > request.app.state.settings.max_request_body_bytes:
             return JSONResponse(
@@ -303,13 +316,10 @@ async def proxy(request: Request, path: str):
                 content={"errors": ["Request body too large"]},
                 headers={"CMR-Request-Id": _extract_request_id(request)},
             )
+        body_hash = hashlib.sha256(body).hexdigest()
 
-    # Merge POST form body params into query params for classification
-    content_type = request.headers.get("content-type", "")
     params = dict(request.query_params)
-
     if request.method == "POST" and "application/x-www-form-urlencoded" in content_type:
-        body = await request.body()
         try:
             body_params = parse_qs(body.decode(), keep_blank_values=True)
             for param_name, param_values in body_params.items():
@@ -328,11 +338,6 @@ async def proxy(request: Request, path: str):
     query_string = str(request.url.query)
     search_after = request.headers.get("cmr-search-after", "")
     accept = request.headers.get("accept", "")
-    # Hash POST body into the cache key so different bodies don't collide
-    body_hash = ""
-    if request.method == "POST":
-        raw_body = await request.body()
-        body_hash = hashlib.sha256(raw_body).hexdigest()[:16]
 
     # Bypass: skip classification, cache, and lanes — pure transparent proxy
     if toggles["bypass_enabled"]:
@@ -433,7 +438,7 @@ async def proxy(request: Request, path: str):
                 response.headers["CMR-Request-Id"] = request_id
                 return response
         except Exception:
-            logger.warning("Cache read failed", exc_info=True)
+            logger.warning("cache_read_failed", extra={"request_id": request_id}, exc_info=True)
 
     # Acquire a distributed semaphore permit for this lane, then forward
     try:
@@ -488,7 +493,7 @@ async def proxy(request: Request, path: str):
                     )
                     cache_stored = True
                 except Exception:
-                    logger.warning("Cache write failed", exc_info=True)
+                    logger.warning("cache_write_failed", extra={"request_id": request_id}, exc_info=True)
 
             # Strip hop-by-hop headers and attach the request ID
             resp_headers = filter_hop_headers(backend_response.headers)
