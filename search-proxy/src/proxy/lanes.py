@@ -1,4 +1,5 @@
 import logging
+import uuid
 from contextlib import asynccontextmanager
 
 import redis.asyncio
@@ -17,41 +18,55 @@ class LoadSheddingError(Exception):
 class RequestLanes:
     """Redis-backed distributed traffic lanes.
 
-    Permits are tracked as atomic counters in Redis, shared across all
-    proxy instances. Each lane key (lane:{name}:active) holds the current
-    number of in-flight requests for that lane."""
+    Each lane's active permits are tracked in a Redis sorted set keyed
+    lane:{name}:active. Each in-flight request occupies one member (its UUID);
+    the score is the expiry epoch from Redis server time. Entries whose score
+    has passed are pruned on the next acquire, so leaked permits from crashed
+    tasks recover automatically without manual intervention.
 
-    def __init__(self, config: LanesConfig, redis_client: redis.asyncio.Redis):
+    When Redis is unavailable, acquire fails open: requests are forwarded
+    without a permit rather than 429'd. This degrades gracefully under
+    infrastructure failure at the cost of temporary over-capacity."""
+
+    def __init__(
+        self,
+        config: LanesConfig,
+        redis_client: redis.asyncio.Redis,
+        permit_ttl: int = 300,
+    ):
         self.config = config
         self.redis = redis_client
+        self.permit_ttl = permit_ttl
 
     def _lane_key(self, lane_name: str) -> str:
         return f"lane:{lane_name}:active"
 
-    async def _try_acquire(self, lane_name: str, permits: int) -> bool:
-        """Atomically increment the lane counter and check against limit.
+    async def _redis_now(self) -> float:
+        """Return current time from the Redis server to avoid ECS task clock skew."""
+        seconds, microseconds = await self.redis.time()
+        return seconds + microseconds / 1_000_000
 
-        Uses INCR for atomicity — if the post-increment value exceeds
-        the permit limit, immediately DECR to roll back."""
+    async def _try_acquire(self, lane_name: str, permits: int, request_id: str, redis_now: float) -> bool:
+        """Prune expired entries, count active, and add this request if under limit.
+
+        Redis exceptions propagate to the caller, which decides fail-open vs fail-closed."""
         key = self._lane_key(lane_name)
-        current = await self.redis.incr(key)
-        if current > permits:
-            await self.redis.decr(key)
+        await self.redis.zremrangebyscore(key, "-inf", redis_now)
+        count = await self.redis.zcard(key)
+        if count >= permits:
             return False
+        await self.redis.zadd(key, {request_id: redis_now + self.permit_ttl})
         return True
 
-    async def _release(self, lane_name: str) -> None:
-        """Decrement the lane counter. Floors at zero to prevent
-        negative counts from orphaned releases."""
+    async def _release(self, lane_name: str, request_id: str) -> None:
+        """Remove this request's permit entry from the sorted set."""
         key = self._lane_key(lane_name)
         try:
-            result = await self.redis.decr(key)
-            if result < 0:
-                await self.redis.set(key, 0)
+            await self.redis.zrem(key, request_id)
         except Exception:
             # Log and swallow so a Redis failure here doesn't propagate out of
             # the finally block and crash the ASGI handler. The permit leaks
-            # but the client still gets a response.
+            # but will expire naturally via the TTL score.
             logger.error(
                 "permit_release_failed",
                 extra={"lane": lane_name},
@@ -59,35 +74,49 @@ class RequestLanes:
             )
 
     async def _acquire_permit(
-        self, lane_name: str, load_shedding_enabled: bool = True
-    ) -> str:
-        """Try to acquire a permit, returning the lane name on success.
+        self, lane_name: str, load_shedding_enabled: bool, request_id: str
+    ) -> tuple[str, bool]:
+        """Try to acquire a permit, returning (lane_name, permit_stored).
 
-        Tries the requested lane first. If full and an overflow lane is
-        configured, tries that. When load_shedding_enabled is False,
-        force-acquires the original lane instead of shedding — so the
-        counter still reflects over-capacity pressure in the health endpoint."""
+        permit_stored is False when Redis is unavailable and the request is
+        allowed through without a permit (fail-open). The caller must not
+        attempt a release in that case."""
         lane = self.config.get(lane_name)
 
-        if await self._try_acquire(lane.name, lane.permits):
-            return lane.name
+        try:
+            redis_now = await self._redis_now()
 
-        # Primary lane full — try overflow if configured
-        if lane.overflow:
-            overflow_lane = self.config.get(lane.overflow)
-            if await self._try_acquire(overflow_lane.name, overflow_lane.permits):
-                return overflow_lane.name
+            if await self._try_acquire(lane.name, lane.permits, request_id, redis_now):
+                return lane.name, True
 
-        if not load_shedding_enabled:
-            # Increment without limit so health shows real pressure
-            await self.redis.incr(self._lane_key(lane.name))
-            logger.warning(
-                "load_shed_suppressed",
-                extra={"lane": lane.name, "load_shedding_enabled": False},
+            if lane.overflow:
+                overflow_lane = self.config.get(lane.overflow)
+                if await self._try_acquire(overflow_lane.name, overflow_lane.permits, request_id, redis_now):
+                    return overflow_lane.name, True
+
+            if not load_shedding_enabled:
+                await self.redis.zadd(self._lane_key(lane.name), {request_id: redis_now + self.permit_ttl})
+                logger.warning(
+                    "load_shed_suppressed",
+                    extra={"lane": lane.name, "load_shedding_enabled": False},
+                )
+                return lane.name, True
+
+            raise LoadSheddingError(lane.name, lane.retry_after)
+
+        except LoadSheddingError:
+            raise
+        except Exception:
+            logger.error(
+                "permit_acquire_failed",
+                extra={"lane": lane.name},
+                exc_info=True,
             )
-            return lane.name
-
-        raise LoadSheddingError(lane.name, lane.retry_after)
+            logger.warning(
+                "permit_bypassed",
+                extra={"lane": lane.name, "reason": "redis_unavailable"},
+            )
+            return lane.name, False
 
     @asynccontextmanager
     async def acquire(self, lane_name: str, load_shedding_enabled: bool = True):
@@ -95,9 +124,12 @@ class RequestLanes:
 
         Yields the name of the lane that was actually acquired (may differ
         from the requested lane if overflow occurred). The permit is always
-        released when the context exits, even on exception."""
-        actual_name = await self._acquire_permit(lane_name, load_shedding_enabled)
+        released when the context exits, even on exception. If Redis was
+        unavailable during acquire (fail-open), no release is attempted."""
+        request_id = str(uuid.uuid4())
+        actual_name, permit_stored = await self._acquire_permit(lane_name, load_shedding_enabled, request_id)
         try:
             yield actual_name
         finally:
-            await self._release(actual_name)
+            if permit_stored:
+                await self._release(actual_name, request_id)
