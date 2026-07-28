@@ -18,6 +18,8 @@ HEAVY_PREFIXES = (
     "cycle[",
     "passes[",
     "options[readable_granule_name][pattern]",
+    "options[granule_ur][pattern]",
+    "options[producer_granule_id][pattern]",
 )
 
 # Non-spatial standard signals
