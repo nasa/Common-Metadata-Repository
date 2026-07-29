@@ -374,9 +374,13 @@
   [context index-set-id es-cluster-name]
   (let [index-names (get-index-names (index-set-util/get-index-set context es-cluster-name index-set-id) es-cluster-name)
         {:keys [index-name mapping]} (config/idx-cfg-for-index-sets es-cluster-name)
-        idx-mapping-type (first (keys mapping))]
-    (dorun (map #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names))
-    (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)))
+        idx-mapping-type (first (keys mapping))
+        delete-responses (keep #(es/delete-index (indexer-util/context->es-store context es-cluster-name) %) index-names)
+        non-200-delete-responses (remove #(= 200 (:status %)) delete-responses)]
+    (if (empty? non-200-delete-responses)
+      (es/delete-document context index-name idx-mapping-type index-set-id es-cluster-name)
+      (errors/internal-error!
+       (m/index-delete-failure-msg non-200-delete-responses)))))
 
 (defn delete-index-set
   "Delete the index-set from all elastic clusters and save a tombstone in metadata-db.

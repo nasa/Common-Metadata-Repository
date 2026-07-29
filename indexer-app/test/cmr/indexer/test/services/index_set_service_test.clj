@@ -6,6 +6,8 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.common.index-set-util :as idx-set-util]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
@@ -574,3 +576,99 @@
 
     (testing "returns expected index-set structure"
       (is (= expected-index-set result)))))
+
+(deftest remove-collection-granule-index-if-exists-test
+  (let [context {}
+        concept-id "C1234-PROV1"
+        collection-key (keyword concept-id)
+        small-index "1_small_collections"
+        separate-index "1_c1234_prov1"]
+    (testing "no-ops when collection has no explicit mapping"
+      (let [validate-called? (atom false)
+            save-called? (atom false)
+            update-called? (atom false)]
+        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
+                                                   {:index-set {:concepts {:granule {:small_collections small-index}}
+                                                                :granule {:indexes []}}})
+                      svc/validate-requested-index-set (fn [& _] (reset! validate-called? true))
+                      svc/save-combined-index-set-to-mdb (fn [& _] (reset! save-called? true) 2)
+                      svc/update-index-set (fn [& _] (reset! update-called? true) {:status 200})]
+          (is (= {:status 200}
+                 (svc/remove-collection-granule-index-if-exists context concept-id)))
+          (is (false? @validate-called?))
+          (is (false? @save-called?))
+          (is (false? @update-called?)))))
+
+    (testing "no-ops when collection maps to small_collections"
+      (let [validate-called? (atom false)
+            save-called? (atom false)
+            update-called? (atom false)]
+        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
+                                                   {:index-set {:concepts {:granule {:small_collections small-index
+                                                                                     collection-key small-index}}
+                                                                :granule {:indexes []}}})
+                      svc/validate-requested-index-set (fn [& _] (reset! validate-called? true))
+                      svc/save-combined-index-set-to-mdb (fn [& _] (reset! save-called? true) 2)
+                      svc/update-index-set (fn [& _] (reset! update-called? true) {:status 200})]
+          (is (= {:status 200}
+                 (svc/remove-collection-granule-index-if-exists context concept-id)))
+          (is (false? @validate-called?))
+          (is (false? @save-called?))
+          (is (false? @update-called?)))))
+
+    (testing "removes mapping and persists updated index-set when separate index exists"
+      (let [validate-arg (atom nil)
+            save-arg (atom nil)
+            update-args (atom nil)]
+        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
+                                                   {:index-set {:concepts {:granule {:small_collections small-index
+                                                                                     collection-key separate-index}}
+                                                                :granule {:indexes [{:name separate-index :number_of_shards 5}]}}})
+                      svc/validate-requested-index-set (fn [_ _ updated-index-set _]
+                                                        (reset! validate-arg updated-index-set))
+                      svc/save-combined-index-set-to-mdb (fn [_ updated-index-set _]
+                                                           (reset! save-arg updated-index-set)
+                                                           33)
+                      svc/update-index-set (fn [_ elastic-name updated-index-set revision-id]
+                                             (reset! update-args {:elastic-name elastic-name
+                                                                  :index-set updated-index-set
+                                                                  :revision-id revision-id})
+                                             {:status 200})]
+          (is (= {:status 200}
+                 (svc/remove-collection-granule-index-if-exists context concept-id)))
+          (is (= {:index-set {:concepts {:granule {:small_collections small-index}}
+                              :granule {:indexes []}}}
+                 @validate-arg))
+          (is (= @validate-arg @save-arg))
+          (is (= es-config/gran-elastic-name (:elastic-name @update-args)))
+          (is (= @validate-arg (:index-set @update-args)))
+          (is (= 33 (:revision-id @update-args))))))))
+
+(deftest delete-index-set-indices-gates-index-set-doc-delete-on-200-status
+  (testing "deletes index-set document when all index deletes return 200"
+    (let [delete-document-called? (atom false)]
+      (with-redefs [svc/get-index-names (fn [_ _] ["1_c123_prov" "1_c456_prov"])
+                    idx-set-util/get-index-set (fn [_ _ _] {:index-set {}})
+                    config/idx-cfg-for-index-sets (fn [_] {:index-name "index-sets" :mapping {:index-set {}}})
+                    indexer-util/context->es-store (fn [_ _] {})
+                    es/delete-index (fn [_ _] {:status 200})
+                    es/delete-document (fn [& _] (reset! delete-document-called? true))]
+        (#'svc/delete-index-set-indices {} 1 es-config/elastic-name)
+        (is (true? @delete-document-called?)))))
+
+  (testing "does not delete index-set document when any index delete is non-200"
+    (let [delete-document-called? (atom false)]
+      (with-redefs [svc/get-index-names (fn [_ _] ["1_c123_prov" "1_c456_prov"])
+                    idx-set-util/get-index-set (fn [_ _ _] {:index-set {}})
+                    config/idx-cfg-for-index-sets (fn [_] {:index-name "index-sets" :mapping {:index-set {}}})
+                    indexer-util/context->es-store (fn [_ _] {})
+                    es/delete-index (fn [_ index-name]
+                                      (if (= index-name "1_c123_prov")
+                                        {:status 200}
+                                        {:status 202}))
+                    es/delete-document (fn [& _] (reset! delete-document-called? true))]
+        (is (thrown-with-msg?
+             java.lang.Exception
+             #"index delete operation failed"
+             (#'svc/delete-index-set-indices {} 1 es-config/elastic-name)))
+        (is (false? @delete-document-called?))))))
