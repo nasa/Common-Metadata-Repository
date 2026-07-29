@@ -46,21 +46,19 @@
                                       :collection
                                       (:format prev-concept)
                                       (:metadata prev-concept)))
-         _ (def sc sanitized-collection)
-         _ (def scp sanitized-prev-collection)
-         _ (def vo validation-options)
-         _ (def c1 context)
-         _ (tap> c1)
-
+         ;; if progressive update is enabled, and it's not bulk update, and pre-concept exists
+         ;;   Either throw newly introduced errors for validation on sanitized collection,
+         ;;   or return existing errors as warnings(it could be nil)
+         ;; else
+         ;;  throw errors for validation on sanitized collection, if there are any.
          ;; Return warnings for schema validation errors going from xml -> UMM
          existing-errors (v/umm-spec-validate-collection
                           sanitized-collection sanitized-prev-collection validation-options context false)
          collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
-         _ (def csw collection-schema-warnings)
          ;; Return warnings for validation errors on collection without checking if they are
          non-sanitized-errors (v/umm-spec-validate-collection
                                collection nil validation-options context true)
-;; These are warnings that if the ignore keyword header was not passed would result in errors
+    ;; These are warnings that if the ignore keyword header was not passed would result in errors
          {warning-errors :errors has-keyword-error? :has-keyword-error?}
          (v/umm-spec-validate-collection-warnings
           collection validation-options context)
@@ -70,8 +68,6 @@
          collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                   collection-warnings)
          warnings (concat collection-schema-warnings collection-warnings)]
-     (def cw collection-warnings)
-     (def hke has-keyword-error?)
 
      ;; The sanitized UMM Spec collection is returned so that ingest does not fail
      {:collection sanitized-collection
@@ -97,8 +93,6 @@
                             :umm-concept collection)]
     ;; progressive update doesn't apply to business rules validation.
     (v/validate-business-rules context coll-concept prev-concept)
-    (def hke has-keyword-error?)
-    (tap> {:location "validate-and-prepare-collection" :body has-keyword-error?})
     {:concept coll-concept
      :warnings warnings
      :existing-errors existing-errors
@@ -116,16 +110,11 @@
   "Store a concept in mdb and indexer.
    Return entry-title, concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (def c1 context)
-  (def con1 concept)
   (let [{:keys [concept warnings existing-errors has-keyword-error?]} (validate-and-prepare-collection context
                                                                                                        concept
                                                                                                        validation-options)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)
         entry-title (get-in concept [:extra-fields :entry-title])]
-    (def hke1 has-keyword-error?)
-    (def ee existing-errors)
-    (def w warnings)
       ;; if ingested with existing errors, log the existing errors and warnings for the collection
       ;; and the user
     (when (seq existing-errors)
