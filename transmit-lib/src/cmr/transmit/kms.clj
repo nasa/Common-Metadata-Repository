@@ -364,60 +364,17 @@
                  :body             body
                  :throw-exceptions false})
         response (client/post url params)]
-    (def r response)
-    (infof "Sending collection [%s] to kms-metadata-fixer-service - response is [%s]"
-           collection-concept-id response)
+    (infof "Sending collection [%s] to kms-metadata-fixer-service at [%s] - response is [%s]"
+       collection-concept-id url response)
     response))
 
 (defn notify-kms
   "Sent a message to the keyword fix service in KMS"
   [context collection-concept-id]
-  (def c context)
-  (def cc collection-concept-id)
-  (tap>  "sending keyword fix message to kms in the notify function")
   (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
 
-(defn send-to-kms-metadata-fixer-test-synchronous
-  [collection-concept-id]
-  (def test-collection "C1200487107-OB_DAAC")
-  (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
-  (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
-                    collection-concept-id)
-        token (config/kms-metadata-fixer-token)
-        _ (tap> {:message "Token we are passing to KMS" :token token})
-        response (client/put url
-                             {:headers          {:client-id    "cmr-standalone"
-                                                 :accept       "application/json"
-                                                 :authorization (format "Bearer %s" token)}
-                              :throw-exceptions false})]
-    (tap> (format "PUT %s -> status [%s]" url (:status response)))
-    (tap> (format "Full result from KMS %s" response))
-    (tap> token)
-    response))
-
-(defn send-to-kms-metadata-fixer-test-asynchronous
-  [collection-concept-id]
-  (def test-collection "C1200487107-OB_DAAC")
-  (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
-  (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
-        token (config/kms-metadata-fixer-token)
-        body  (json/generate-string
-               {:collectionConceptIds [collection-concept-id]})
-        _ (tap> {:message "Token we are passing to KMS" :token token})
-        response (client/post url
-                              {:headers          {:client-id     "cmr-standalone"
-                                                  :accept        "application/json"
-                                                  :content-type  "application/json"
-                                                  :authorization (format "Bearer %s" token)}
-                               :body             body
-                               :throw-exceptions false})]
-    (tap> (format "POST %s -> status [%s]" url (:status response)))
-    (tap> (format "Full result from KMS %s" response))
-    (tap> token)
-    response))
-
 (comment
-  (defn send-to-kms-metadata-fixer-test
+  (defn send-to-kms-metadata-fixer-test-synchronous
     [collection-concept-id]
     (def test-collection "C1200487107-OB_DAAC")
     (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
@@ -434,7 +391,30 @@
       (tap> (format "Full result from KMS %s" response))
       (tap> token)
       response))
-  (send-to-kms-metadata-fixer-test "C1200362831-ARCTEST")
+
+  (defn send-to-kms-metadata-fixer-test-asynchronous
+    [collection-concept-id]
+    (def test-collection "C1200487107-OB_DAAC")
+    (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+    (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
+          token (config/kms-metadata-fixer-token)
+          body  (json/generate-string
+                 {:collectionConceptIds [collection-concept-id]})
+          _ (tap> {:message "Token we are passing to KMS" :token token})
+          response (client/post url
+                                {:headers          {:client-id     "cmr-standalone"
+                                                    :accept        "application/json"
+                                                    :content-type  "application/json"
+                                                    :authorization (format "Bearer %s" token)}
+                                 :body             body
+                                 :throw-exceptions false})]
+      (tap> (format "POST %s -> status [%s]" url (:status response)))
+      (tap> (format "Full result from KMS %s" response))
+      (tap> token)
+      response))
+
+  ;; KMS supports both a sync and async request CMR uses async
+  (send-to-kms-metadata-fixer-test-synchronous "C1200362831-ARCTEST")
   (send-to-kms-metadata-fixer-test-asynchronous "C1200362831-ARCTEST")
   :rcf)
 

@@ -98,7 +98,7 @@
     ;; progressive update doesn't apply to business rules validation.
     (v/validate-business-rules context coll-concept prev-concept)
     (def hke has-keyword-error?)
-    (tap> {:locaiton "validate-and-prepare-collection" :body has-keyword-error?})
+    (tap> {:location "validate-and-prepare-collection" :body has-keyword-error?})
     {:concept coll-concept
      :warnings warnings
      :existing-errors existing-errors
@@ -143,21 +143,3 @@
      :revision-id revision-id
      :warnings warnings
      :existing-errors existing-errors}))
-
-(comment
-  (v/umm-spec-validate-collection sc nil vo c1 true)
-  (v/umm-spec-validate-collection
-   sc nil (v/keyword-validation-rules c1 vo) vo c1 false)
-;; The conditional statements
-  (when (and hke1
-             (or (seq ee) (seq w))))
-
-  (when true
-    (transmit-kms/send-to-kms-metadata-fixer c1 "C1200000001-PROV1"))
-
-  (when (and hke1
-             (or (seq ee) (seq w)))
-    (transmit-kms/send-to-kms-metadata-fixer-test-asynchronous c1))
-  :rcf)
-;; (v/umm-spec-validate-collection
-;;    collection nil kw-rules validation-options context true))
