@@ -344,7 +344,11 @@
 
 (defn metadata-fixer-url
   [connection collection-concept-id]
-  (format "%s/metadata_correction/%s" (conn/root-url connection) collection-concept-id))
+  (format "%s/metadata_correction/%s"
+          (clojure.string/replace (conn/root-url connection)
+                                   "/concepts/concept_scheme"
+                                   "")
+          collection-concept-id))
 
 (defn send-to-kms-metadata-fixer
   "Sends a POST request to KMS's metadata fixer service, which attempts to

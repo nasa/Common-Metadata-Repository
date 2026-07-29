@@ -170,9 +170,18 @@
           (is (nil? result)))))))
 
 (deftest metadata-fixer-url-test
-  (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
-         (kms/metadata-fixer-url {:protocol "https"
-                              :host "localhost"
-                              :port 2999
-                              :context "/kms"}
-                             "C1200000000-PROV1"))))
+  (testing "strips concepts/concept_scheme from the root url"
+    (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
+           (kms/metadata-fixer-url {:protocol "https"
+                                     :host "localhost"
+                                     :port 2999
+                                     :context "/kms/concepts/concept_scheme"}
+                                    "C1200000000-PROV1"))))
+
+  (testing "no-op when concepts/concept_scheme is not present"
+    (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
+           (kms/metadata-fixer-url {:protocol "https"
+                                     :host "localhost"
+                                     :port 2999
+                                     :context "/kms"}
+                                    "C1200000000-PROV1")))))
