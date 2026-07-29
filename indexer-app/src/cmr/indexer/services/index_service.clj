@@ -687,8 +687,8 @@
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
         (let [resp (es/delete-granule-index context index)]
-          (vreset! deleted-separate-index? true)
-          (when (not= (get resp :status) 200)
+          (if (= (get resp :status) 200)
+            (vreset! deleted-separate-index? true)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
     ;; If the collection had an individual granule index (not small_collections),
     ;; remove its mapping from the gran index-set so it is not recreated on restart.

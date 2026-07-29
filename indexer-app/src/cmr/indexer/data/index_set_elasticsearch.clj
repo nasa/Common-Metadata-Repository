@@ -156,7 +156,8 @@
                                    :throw-exceptions false})
           status (:status response)]
       (when-not (some #{200 202 204} [status])
-        (errors/internal-error! (m/index-delete-failure-msg response))))))
+        (errors/internal-error! (m/index-delete-failure-msg response)))
+      response)))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
