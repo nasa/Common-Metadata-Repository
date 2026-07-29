@@ -1,11 +1,13 @@
+
 (defproject nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
-  :dependencies [[cheshire "5.12.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+  :dependencies [[cheshire "5.12.0"
+                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core "2.21.5"]
                  [commons-io "2.18.0"] ;; used by migration
                  [compojure "1.6.1" :exclusions [commons-fileupload]]
                  [inflections "0.13.0"]
