@@ -171,3 +171,40 @@
     (when cleanup-var
       (is (empty? @cleanup-calls)
           "Collection delete should not trigger index-set cleanup when separate index deletion fails"))))
+
+(deftest cascade-collection-delete-calls-index-set-cleanup-when-separate-index-already-missing-test
+  (let [concept-id "C1234-PROV1"
+        cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
+                                'remove-collection-granule-index-if-exists)
+        cleanup-calls (atom [])
+        redefs-map (cond-> {#'idx-set/get-concept-type-index-names
+                            (fn [_context]
+                              {:index-names {:granule {:small_collections "1_small_collections"}}})
+                            #'idx-set/get-granule-index-names-for-collection
+                            (fn [_context _concept-id]
+                              ["1_c1234_prov1"])
+                            #'indexer-util/context->conn
+                            (fn [_context _cluster-name]
+                              nil)
+                            #'es/delete-granule-index
+                            (fn [_context _index-name]
+                              {:status 404})
+                            #'es-helper/delete-by-query
+                            (fn [& _args]
+                              {:status 200})
+                            #'index-svc/reindex-associated-variables
+                            (fn [& _args]
+                              :ok)}
+                     cleanup-var
+                     (assoc cleanup-var
+                            (fn [_context concept-id-param]
+                              (swap! cleanup-calls conj concept-id-param)
+                              {:status 200})))]
+    (is (some? cleanup-var)
+        "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
+    (with-redefs-fn redefs-map
+      #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
+         (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
+    (when cleanup-var
+      (is (= [concept-id] @cleanup-calls)
+          "Collection delete should trigger index-set cleanup when separate index is already missing (404)"))))
