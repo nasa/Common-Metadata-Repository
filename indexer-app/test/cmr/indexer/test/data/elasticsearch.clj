@@ -1,9 +1,11 @@
 (ns cmr.indexer.test.data.elasticsearch
   (:require
    [clojure.test :refer [deftest is testing]]
+   [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as i]
-   [cmr.indexer.data.index-set-generics :as index-set-gen]))
+   [cmr.indexer.data.index-set-generics :as index-set-gen]
+   [cmr.indexer.indexer-util :as indexer-util]))
 
 (def test-index-set
   "A real copy of an index set from UAT with the mappings replaced to be smaller and reduce churn"
@@ -94,6 +96,28 @@
       (try
         (is (= nil (#'es/handle-bulk-index-response fake-resp)))
         (catch Exception e (is (= nil e) (.getMessage e)))))))
+
+(deftest delete-granule-index-test
+  (with-redefs [indexer-util/context->conn (constantly :connection)]
+    (testing "adds the HTTP success status to the decoded Elasticsearch response"
+      (with-redefs [esi/delete-index (fn [connection index]
+                                      (is (= :connection connection))
+                                      (is (= "granule-index" index))
+                                      {:acknowledged true})]
+        (is (= {:acknowledged true :status 200}
+               (es/delete-granule-index {} "granule-index")))))
+
+    (testing "returns the HTTP status from an Elasticsearch exception"
+      (with-redefs [esi/delete-index (fn [_connection _index]
+                                      (throw (ex-info "Not found" {:status 404})))]
+        (is (= {:status 404}
+               (es/delete-granule-index {} "missing-granule-index")))))
+
+    (testing "returns an internal error status when an exception has no HTTP status"
+      (with-redefs [esi/delete-index (fn [_connection _index]
+                                      (throw (RuntimeException. "Connection failed")))]
+        (is (= {:status 500}
+               (es/delete-granule-index {} "granule-index")))))))
 
 (deftest extra-granule-indexes-test
   (testing "extra indexes configured"
