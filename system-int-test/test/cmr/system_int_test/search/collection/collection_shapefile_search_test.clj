@@ -207,8 +207,8 @@
                        :content "true"}
                       {:name "provider"
                        :content "PROV1"}]
-              config (shapefile-config)
-              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)
+              config (when status (shapefile-config))]
           (is (nil? status)
               (format (str "Should pass validation with force-cartesian=true; "
                            "status=%s errors=%s shapefile-config=%s")
