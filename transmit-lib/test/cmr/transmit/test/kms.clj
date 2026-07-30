@@ -9,19 +9,19 @@
 (def sample-csv
   "Sample KMS csv file"
   (str
-    "\"This is a sample for testing.\"\n"
-    "Basis,Category,Sub_Category,Short_Name,Long_Name,UUID\n"
-    "\"B1\",\"field1 value, (with commas)\",\"field2\",\"First Entry\",\"\",\"abc-123\"\n"
-    "\"B1\",\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
-    "\"B2\",\"field1 value 2\",\"field2 v2\",\"Last Entry\",\"This is the Last Entry\",\"xyz-789\"\n"))
+   "\"This is a sample for testing.\"\n"
+   "Basis,Category,Sub_Category,Short_Name,Long_Name,UUID\n"
+   "\"B1\",\"field1 value, (with commas)\",\"field2\",\"First Entry\",\"\",\"abc-123\"\n"
+   "\"B1\",\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
+   "\"B2\",\"field1 value 2\",\"field2 v2\",\"Last Entry\",\"This is the Last Entry\",\"xyz-789\"\n"))
 
 (def sample-csv-mimetype
   "Sample KMS csv file for mimetype"
   (str
-    "\"This is a sample for testing.\"\n"
-    "MimeType,UUID\n"
-    "\"application/gml+xml\",\"40bdf6e5-780c-43e2-ab8e-e5dfae4bd779\"\n"
-    "\"application/gzip\",\"a8ee535a-8bc8-46fd-8b97-917bd7ea7666\"\n"))
+   "\"This is a sample for testing.\"\n"
+   "MimeType,UUID\n"
+   "\"application/gml+xml\",\"40bdf6e5-780c-43e2-ab8e-e5dfae4bd779\"\n"
+   "\"application/gzip\",\"a8ee535a-8bc8-46fd-8b97-917bd7ea7666\"\n"))
 
 (def sample-kms-entries
   "Sample KMS entries map"
@@ -86,15 +86,15 @@
 (deftest get-keywords-for-keyword-scheme-test
   (testing "Invalid keyword scheme requested throws an exception"
     (is (thrown? java.lang.AssertionError
-          (kms/get-keywords-for-keyword-scheme nil :not-a-kms-scheme)))))
+                 (kms/get-keywords-for-keyword-scheme nil :not-a-kms-scheme)))))
 
 (deftest subfield-names-valid-test
   (let [good-headers [:basis :category :sub-category :short-name :long-name :uuid]]
     (testing "good matches"
       (is (true? (#'cmr.transmit.kms/subfield-names-valid? :platforms good-headers))))
-  (testing "bad matches"
-    (is (false? (#'cmr.transmit.kms/subfield-names-valid? :platforms [])) "empty list")
-    (is (false? (#'cmr.transmit.kms/subfield-names-valid? :fake good-headers)) "known keyword"))))
+    (testing "bad matches"
+      (is (false? (#'cmr.transmit.kms/subfield-names-valid? :platforms [])) "empty list")
+      (is (false? (#'cmr.transmit.kms/subfield-names-valid? :fake good-headers)) "known keyword"))))
 
 (deftest scheme-overrides-test-3
   (testing "Test scheme override JSON)"
@@ -171,17 +171,15 @@
 
 (deftest metadata-fixer-url-test
   (testing "strips concepts/concept_scheme from the root url"
-    (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
+    (is (= "https://localhost:2999/kms/metadata_correction"
            (kms/metadata-fixer-url {:protocol "https"
-                                     :host "localhost"
-                                     :port 2999
-                                     :context "/kms/concepts/concept_scheme"}
-                                    "C1200000000-PROV1"))))
+                                    :host "localhost"
+                                    :port 2999
+                                    :context "/kms/concepts/concept_scheme"}))))
 
   (testing "no-op when concepts/concept_scheme is not present"
-    (is (= "https://localhost:2999/kms/metadata_correction/C1200000000-PROV1"
+    (is (= "https://localhost:2999/kms/metadata_correction"
            (kms/metadata-fixer-url {:protocol "https"
-                                     :host "localhost"
-                                     :port 2999
-                                     :context "/kms"}
-                                    "C1200000000-PROV1")))))
+                                    :host "localhost"
+                                    :port 2999
+                                    :context "/kms"})))))

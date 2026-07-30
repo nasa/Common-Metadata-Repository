@@ -342,26 +342,26 @@
              (name keyword-scheme))
       keywords)))
 
+;; Remove the path for kms fetch's rather than having to make a new env var
 (defn metadata-fixer-url
-  [connection collection-concept-id]
-  (format "%s/metadata_correction/%s"
+  [connection]
+  (format "%s/metadata_correction"
           (clojure.string/replace (conn/root-url connection)
-                                   "/concepts/concept_scheme"
-                                   "")
-          collection-concept-id))
+                                  "/concepts/concept_scheme"
+                                  "")))
 
 (defn send-to-kms-metadata-fixer
   "Sends a POST request to KMS's metadata fixer service, which attempts to
    reconcile keywords that have since been updated with their current value."
   [context collection-concept-id]
   (let [conn (config/context->app-connection context :kms)
-        url (metadata-fixer-url conn collection-concept-id)
+        url (metadata-fixer-url conn)
         token (config/echo-system-token)
         body  (json/generate-string
                {:collectionConceptIds [collection-concept-id]})
         params (merge
                 (config/conn-params conn)
-                {:headers          {:client-id     "cmr-standalone"
+                {:headers          {:client-id     config/cmr-client-id
                                     :accept        "application/json"
                                     :content-type  "application/json"
                                     :authorization token}
@@ -369,7 +369,7 @@
                  :throw-exceptions false})
         response (client/post url params)]
     (infof "Sending collection [%s] to kms-metadata-fixer-service at [%s] - response is [%s]"
-       collection-concept-id url response)
+           collection-concept-id url response)
     response))
 
 (defn notify-kms
@@ -384,7 +384,7 @@
     (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
     (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
                       collection-concept-id)
-          token (config/kms-metadata-fixer-token)
+          token ""
           _ (tap> {:message "Token we are passing to KMS" :token token})
           response (client/put url
                                {:headers          {:client-id    "cmr-standalone"
@@ -401,7 +401,7 @@
     (def test-collection "C1200487107-OB_DAAC")
     (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
     (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
-          token (config/kms-metadata-fixer-token)
+          token ""
           body  (json/generate-string
                  {:collectionConceptIds [collection-concept-id]})
           _ (tap> {:message "Token we are passing to KMS" :token token})
