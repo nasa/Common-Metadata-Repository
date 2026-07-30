@@ -196,6 +196,7 @@
 
 (deftest reindex-suggestions-test
   (testing "Ensure that response is in proper format and results are correct"
+    (index/wait-until-indexed)
     (compare-autocomplete-results
      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
      [{:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}

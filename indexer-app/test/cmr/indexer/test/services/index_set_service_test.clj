@@ -420,20 +420,20 @@
     (testing "elastic name is not valid"
       (is (thrown-with-msg? clojure.lang.ExceptionInfo
                             #"Empty elastic name is not allowed"
-                            (svc/get-reshard-status context index-set-id small-collections-index {:task_id "task1"}))))
+                            (svc/get-index-resharding-status context index-set-id small-collections-index {:task_id "task1"}))))
     (testing "concept-type is missing"
       (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                     idx-set-util/get-index-set (fn [_context _elastic-name _index-set-id] empty-index-set)]
         (is (thrown-with-msg? clojure.lang.ExceptionInfo
                               #"The index \[.*\] does not exist\."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+                              (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))))
     (testing "current target is missing because index is not being resharded"
       (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                     idx-set-util/get-index-set (fn [_context _elastic-name _index-set-id] empty-index-set)
                     svc/get-concept-type-for-index (fn [_index-set _index] :granule)]
         (is (thrown-with-msg? clojure.lang.ExceptionInfo
                               #"The index \[.*\] is not being resharded."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+                              (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))))
     (testing "current status of index is nil because it's not being resharded"
       (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                     idx-set-util/get-index-set (fn [_context _elastic-name _index-set-id]
@@ -441,7 +441,7 @@
                     svc/get-concept-type-for-index (fn [_index-set _index] :granule)]
         (is (thrown-with-msg? clojure.lang.ExceptionInfo
                               #"The status of resharding index \[.*\] is not found."
-                              (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+                              (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))))
     (testing "index exists but status is complete already"
       (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                     idx-set-util/get-index-set (fn [_context _elastic-name _index-set-id]
@@ -451,7 +451,7 @@
         (is (= {:original-index small-collections-index
                 :reshard-index "1_small_collections_10_shards"
                 :reshard-status "COMPLETE"}
-               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+               (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))))
     (testing "index exists and status is not complete and reindexing is still in progress, then current status will be returned as is."
       (with-redefs [indexer-util/context->conn (fn [_context _elastic-name] nil)
                     idx-set-util/get-index-set (fn [_context _elastic-name _index-set-id]
@@ -464,7 +464,7 @@
         (is (= {:original-index small-collections-index
                 :reshard-index  "1_small_collections_10_shards"
                 :reshard-status "IN_PROGRESS"}
-               (svc/get-reshard-status context index-set-id small-collections-index valid-params)))))
+               (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))))
     (testing "when index exists and status is not complete and reindexing is done, then status will be updated to COMPLETE and index set will be updated. Correct status resp will be returned."
       (let [mock-calls (atom 0)
             get-index-set-mock-fn (fn [& _args]
@@ -487,7 +487,7 @@
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "COMPLETE"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+                 (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))
           (is (= "COMPLETE" @captured-payload))
           )))
     (testing "when index exists and reindex status is not complete and reindexing has failed, then status will be updated to FAILED and index set will be updated. Correct status resp will be returned."
@@ -519,7 +519,7 @@
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "FAILED"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+                 (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))
 
           (is (= "FAILED" @captured-payload)))))
     (testing "when index exists, reindex status is not complete, reindexing has returned internal errors, then status will be updated to FAILED and index set will be updated. Correct status resp will be returned."
@@ -545,7 +545,7 @@
           (is (= {:original-index small-collections-index
                   :reshard-index "1_small_collections_10_shards"
                   :reshard-status "FAILED"}
-                 (svc/get-reshard-status context index-set-id small-collections-index valid-params)))
+                 (svc/get-index-resharding-status context index-set-id small-collections-index valid-params)))
 
           (is (= "FAILED" @captured-payload)))))
     ))

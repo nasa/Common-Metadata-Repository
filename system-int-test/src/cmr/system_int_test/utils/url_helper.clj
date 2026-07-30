@@ -697,6 +697,11 @@
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
+(defn indexer-db-migrate
+  "DB Migrate is an alias func to update-indexes and updates the indexes in the indexer to update mappings and settings"
+  []
+  (format "http://localhost:%s/db-migrate" (transmit-config/indexer-port)))
+
 (defn indexer-index-sets-by-id-url
   "Gets the index set by id from indexer"
   [id]

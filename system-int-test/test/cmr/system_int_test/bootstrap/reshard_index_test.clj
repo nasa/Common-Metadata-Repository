@@ -19,12 +19,15 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
-(deftest reshard-index-error-test
+(deftest ^:oracle reshard-index-error-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}) {:validate-keywords false})
          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}) {:validate-keywords false})
-         _ (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "gran2"}))
+         coll-for-rebalance-check (d/ingest "PROV1" (dc/collection {:entry-title "coll-for-rebalance-check"}) {:validate-keywords false})
+         coll-concept-id-for-rebalance-check (:concept-id coll-for-rebalance-check)
+         index-for-rebalance-check (index-set-service/gen-valid-index-name 1 coll-concept-id-for-rebalance-check)
+         _ (d/ingest (:provider-id coll-for-rebalance-check) (dg/granule coll-for-rebalance-check {:granule-ur "gran-for-rebalance-check-ur"}))
+         services-index "1_services"
          gran-elastic-name "gran-elastic"
          elastic-name "elastic"]
      (index/wait-until-indexed)
@@ -64,18 +67,61 @@
        (is (= {:status 400
                :errors ["Invalid num_shards [abc]. Only integers greater than zero are allowed."]}
               (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards "abc" :elastic-name gran-elastic-name}))))
-     (testing "index must exist"
+     (testing "non-existent index will throw error"
        (is (= {:status 404
                :errors [(format "Index [%s] does not exist in the Elasticsearch cluster [%s]" "1_non-existing-index" gran-elastic-name)]}
               (bootstrap/start-reshard-index "1_non-existing-index" {:synchronous false :num-shards 1 :elastic-name gran-elastic-name}))))
-     (testing "attempting to reshard an index that is already being resharded fails"
-       (let [reshard-resp (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name})]
+     (testing "attempting to reshard an index that is already being resharded should throw error"
+       (let [reshard-resp (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 4 :elastic-name gran-elastic-name})]
          (is (= 200 (:status reshard-resp)))
          (is (= "Resharding started for index 1_small_collections" (:message reshard-resp)))
          (is (= false (nil? (:task-id reshard-resp)))))
        (is (= {:status 400
-               :errors ["The index set already contains resharding index [1_small_collections]"]}
-              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 100 :elastic-name gran-elastic-name}))))
+               :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." "1_small_collections" "IN_PROGRESS")]}
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 4 :elastic-name gran-elastic-name}))))
+     (testing "trying to reshard an index that is currently rebalancing should throw error"
+       (bootstrap/rollback-reshard-index "1_small_collections" {:elastic-name gran-elastic-name})
+       (index/wait-until-indexed)
+
+       (bootstrap/start-rebalance-collection coll-concept-id-for-rebalance-check)
+       (index/wait-until-indexed)
+
+       (is (= {:status 400
+               :errors [(format "%s cannot be resharded as it is being used for rebalancing." "1_small_collections")]}
+              (bootstrap/start-reshard-index "1_small_collections" {:synchronous false :num-shards 7 :elastic-name gran-elastic-name}))))
+     (testing "trying to reshard a COMPLETE resharded index, should return 400 error"
+       (let [index-set (update-in (index/get-index-set-by-id 1)
+                                  [:index-set :service]
+                                  merge
+                                  {:resharding-indexes #{services-index}
+                                   :resharding-targets {services-index (str services-index "_5_shards")}
+                                   :resharding-status {services-index "COMPLETE"}})
+             _ (index/update-index-set index-set 1)]
+         (is (= {:status 400
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "COMPLETE")]}
+                (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
+     (testing "trying to reshard an IN_PROGRESS resharding index, should return 400 error"
+       (let [index-set (update-in (index/get-index-set-by-id 1)
+                                  [:index-set :service]
+                                  merge
+                                  {:resharding-indexes #{services-index}
+                                   :resharding-targets {services-index (str services-index "_5_shards")}
+                                   :resharding-status {services-index "IN_PROGRESS"}})
+             _ (index/update-index-set index-set 1)]
+         (is (= {:status 400
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "IN_PROGRESS")]}
+                (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
+     (testing "trying to reshard a FAILED resharded index, should return 400 error"
+       (let [index-set (update-in (index/get-index-set-by-id 1)
+                                  [:index-set :service]
+                                  merge
+                                  {:resharding-indexes #{services-index}
+                                   :resharding-targets {services-index (str services-index "_5_shards")}
+                                   :resharding-status {services-index "FAILED"}})
+             _ (index/update-index-set index-set 1)]
+         (is (= {:status 400
+                 :errors [(format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." services-index "FAILED")]}
+                (bootstrap/start-reshard-index services-index {:synchronous false :num-shards 7 :elastic-name elastic-name})))))
      (testing "no elastic name given to get resharding status"
        (is (= {:status 400
                :errors ["Empty elastic cluster name is not allowed."]}

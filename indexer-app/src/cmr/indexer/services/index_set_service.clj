@@ -108,8 +108,7 @@
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn prune-index-set
-  "Returns the index set with only the id, name, and a map of concept types to
-  the index name map."
+  "Returns the index set with only the id, name, and a map of concepts."
   [index-set es-cluster-name]
   (let [prefix (:id index-set)
         generic-searchable-concept-types (cond
@@ -268,7 +267,7 @@
   (let [;; setup keys we need to extract from the combined index set
         combined-concepts-map (get-in combined-index-set [:index-set :concepts])
         inner-combined-index-set (:index-set combined-index-set)
-        gran-index-keys (keys (:index-set (index-set/gran-index-set nil)))
+        gran-index-keys (keys (:index-set (index-set/gran-base-index-set nil)))
 
         ;; re-build the outer map for gran index set
         gran-outer-map-index-set (select-keys inner-combined-index-set gran-index-keys)
@@ -347,8 +346,8 @@
   (let [indices-w-config (build-indices-list-w-config index-set es-cluster-name)
         es-store (indexer-util/context->es-store context es-cluster-name)]
 
-    (doseq [idx indices-w-config]
-      (es/update-index es-store idx))
+    (doseq [idx-w-config indices-w-config]
+      (es/update-index es-store idx-w-config))
 
     (index-requested-index-set context index-set es-cluster-name revision-id)))
 
@@ -713,6 +712,15 @@
               concept-type))
           (get-in index-set [:index-set :concepts]))))
 
+(defn- get-reshard-status
+  "Get the current resharding status of the given index set from a specific elastic cluster"
+  [elastic-index-set index]
+  (let [concept-type (get-concept-type-for-index elastic-index-set index)
+        _ (when-not concept-type
+            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
+        status (get-in elastic-index-set [:index-set concept-type :resharding-status (keyword index)])]
+    status))
+
 (defn- validate-elastic-name
   [elastic-name]
   (when (string/blank? elastic-name)
@@ -737,25 +745,33 @@
         target-index (get-resharded-index-name index num-shards)
         _ (info (format "Starting to reshard index [%s] to [%s]" index target-index))
         target-index-no-index-set-id (string/replace-first target-index #".*?_" "")
-        index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        elastic-index-set (index-set-util/get-index-set context elastic-name index-set-id)
         ;; Don't allow conflicts with rebalancing
-        _ (when (is-rebalancing? index-set index)
+        _ (when (is-rebalancing? elastic-index-set index)
             (errors/throw-service-error
              :bad-request
              (format "%s cannot be resharded as it is being used for rebalancing." index)))
-        _ (when (is-rebalancing? index-set target-index)
+        _ (when (is-rebalancing? elastic-index-set target-index)
             (errors/throw-service-error
              :bad-request
              (format "%s cannot be resharded as its target %s is being used for rebalancing."
                      index target-index)))
         ;; search for index name in index-set :concepts to get concept type and to validate the
         ;; index exists
-        concept-type (get-concept-type-for-index index-set index)
+        concept-type (get-concept-type-for-index elastic-index-set index)
         _ (when-not concept-type (errors/throw-service-error
                                   :not-found
                                   (format "Index [%s] does not exist." index)))
+
+        ;; validate that the source and target index is not already being resharded
+        _ (when (is-resharding? elastic-index-set index)
+            (let [reshard-status (get-reshard-status elastic-index-set index)]
+              (errors/throw-service-error
+                :bad-request
+                (format "Index [%s] has a resharding state of [%s]. You cannot start a new reshard on an index that is in a existing reshard state." index reshard-status))))
+
         ;; Find the original index configuration
-        orig-index-config (get-index-config index-set concept-type canonical-index-name)
+        orig-index-config (get-index-config elastic-index-set concept-type canonical-index-name)
 
         ;; Copy and modify it for the new index
         new-index-config (-> orig-index-config
@@ -764,7 +780,7 @@
         ;; Update index-set: add new entry, mark resharding status
         ;; update the index-set to have the new index config and to mark the original index
         ;; as resharding
-        new-index-set (-> index-set
+        new-index-set (-> elastic-index-set
                           (update-in
                            [:index-set concept-type :indexes] conj new-index-config)
                           (update-in
@@ -807,7 +823,7 @@
             revision-id (save-combined-index-set-to-mdb context updated-index-set elastic-name)]
         (update-index-set context elastic-name updated-index-set revision-id)))))
 
-(defn get-reshard-status
+(defn get-index-resharding-status
   "Get the resharding status for the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
@@ -868,25 +884,17 @@
        (format
         "The index [%s] is not being resharded." index)))))
 
-(defn- validate-resharding-complete
-  "Validate that resharding has completed successfully for the given index via the index set status"
-  [context index-set-id index elastic-name]
-  (let [index-set (index-set-util/get-index-set context elastic-name index-set-id)
-        concept-type (get-concept-type-for-index index-set index)
-        _ (when-not concept-type
-            (errors/throw-service-error :not-found (format "The index [%s] does not exist." index)))
-        status (get-in index-set [:index-set concept-type :resharding-status (keyword index)])]
-    (when-not (= status (:COMPLETE indexer-util/reshard-status-states))
-      (errors/throw-service-error
-       :bad-request
-       (format "Index [%s] has not completed resharding" index)))))
-
 (defn finalize-index-resharding
   "Complete the resharding of the given index"
   [context index-set-id index params]
   (let [elastic-name (:elastic_name params)
         _ (validate-elastic-name elastic-name)
-        _ (validate-resharding-complete context index-set-id index elastic-name)
+        elastic-index-set (index-set-util/get-index-set context elastic-name index-set-id)
+        reshard-status (get-reshard-status elastic-index-set index)
+        _ (when-not (= reshard-status (:COMPLETE indexer-util/reshard-status-states))
+            (errors/throw-service-error
+              :bad-request
+              (format "Index [%s] has not completed resharding" index)))
         index-set (index-set-util/get-index-set context elastic-name index-set-id)
         ;; search for index name in index-set :concepts to get concept type
         concept-type (get-concept-type-for-index index-set index)
