@@ -378,14 +378,14 @@
   (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
 
 (comment
+  ;; KMS suports both async and sync methods. Requires token helpful for debuggin integration
   (defn send-to-kms-metadata-fixer-test-synchronous
     [collection-concept-id]
     (def test-collection "C1200487107-OB_DAAC")
-    (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+    (tap> "Sending data to KMS sync endpoint from the send-to-kms-metadata-fixer-test")
     (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
                       collection-concept-id)
           token ""
-          _ (tap> {:message "Token we are passing to KMS" :token token})
           response (client/put url
                                {:headers          {:client-id    "cmr-standalone"
                                                    :accept       "application/json"
@@ -393,18 +393,16 @@
                                 :throw-exceptions false})]
       (tap> (format "PUT %s -> status [%s]" url (:status response)))
       (tap> (format "Full result from KMS %s" response))
-      (tap> token)
       response))
 
   (defn send-to-kms-metadata-fixer-test-asynchronous
     [collection-concept-id]
     (def test-collection "C1200487107-OB_DAAC")
-    (tap> "Sending data to KMS from the send-to-kms-metadata-fixer-test")
+    (tap> "Sending data to KMS async endpoint from the send-to-kms-metadata-fixer-test")
     (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
           token ""
           body  (json/generate-string
                  {:collectionConceptIds [collection-concept-id]})
-          _ (tap> {:message "Token we are passing to KMS" :token token})
           response (client/post url
                                 {:headers          {:client-id     "cmr-standalone"
                                                     :accept        "application/json"
@@ -414,7 +412,6 @@
                                  :throw-exceptions false})]
       (tap> (format "POST %s -> status [%s]" url (:status response)))
       (tap> (format "Full result from KMS %s" response))
-      (tap> token)
       response))
 
   ;; KMS supports both a sync and async request CMR uses async
