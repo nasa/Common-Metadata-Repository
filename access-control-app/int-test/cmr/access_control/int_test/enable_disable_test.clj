@@ -101,25 +101,34 @@
       ;; test delete
       (is (= 200 (:status (u/delete-group token concept_id)))))
 
-    ;; disable writes for access control service
+    ;; disable writes for access control service and give threads time to catch up
     (u/disable-access-control-writes post-options)
+    (Thread/sleep 5000)
 
     (testing "save, update, and delete group fails after disable"
-      (let [group3 (u/make-group {:name "group3" :members ["user1" "user2" "user3"]})
-            {:keys [status]} (u/create-group token group3 {:allow-failure? true})]
-        ;; check save response
-        (is (= 503 status))
-        ;; test update
-        (is (= 503 (:status (u/update-group token concept-id2 {:name "Updated3" :description "Updated3"}))))
-        ;; test delete
-        (is (= 503 (:status (u/delete-group token concept-id2 {:allow-failure? true}))))))
+      (try
+        (let [group3 (u/make-group {:name "group3" :members ["user1" "user2" "user3"]})
+              {:keys [status]} (u/create-group token group3 {:allow-failure? true})]
+          ;; check save response
+          (is (= 503 status))
+          ;; test update
+          (is (= 503 (:status (u/update-group token concept-id2 {:name "Updated3" :description "Updated3"}))))
+          ;; test delete
+          (is (= 503 (:status (u/delete-group token concept-id2 {:allow-failure? true})))))
+        (finally
+          ;; Allways re-eneable writes for access control service, even if there was an exception
+          (u/enable-access-control-writes post-options)
+          (Thread/sleep 5000))))
 
     ;; re-eneable writes for access control service
     (u/enable-access-control-writes post-options)
+    (Thread/sleep 5000)
 
     (testing "save, update, and delete group succeeds after re-enable"
-     (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
+      (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
             {:keys [status]} (u/create-group token group3)]
+        (u/enable-access-control-writes post-options)
+        (Thread/sleep 5000)
         ;; check save response
         (is (= 200 status))
         ;; test update
