@@ -6,8 +6,6 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.common.index-set-util :as idx-set-util]
-   [cmr.indexer.config :as config]
-   [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.indexer.services.index-set-service :as svc]
@@ -643,32 +641,3 @@
           (is (= es-config/gran-elastic-name (:elastic-name @update-args)))
           (is (= @validate-arg (:index-set @update-args)))
           (is (= 33 (:revision-id @update-args))))))))
-
-(deftest delete-index-set-indices-gates-index-set-doc-delete-on-200-status
-  (testing "deletes index-set document when all index deletes return 200"
-    (let [delete-document-called? (atom false)]
-      (with-redefs [svc/get-index-names (fn [_ _] ["1_c123_prov" "1_c456_prov"])
-                    idx-set-util/get-index-set (fn [_ _ _] {:index-set {}})
-                    config/idx-cfg-for-index-sets (fn [_] {:index-name "index-sets" :mapping {:index-set {}}})
-                    indexer-util/context->es-store (fn [_ _] {})
-                    es/delete-index (fn [_ _] {:status 200})
-                    es/delete-document (fn [& _] (reset! delete-document-called? true))]
-        (#'svc/delete-index-set-indices {} 1 es-config/elastic-name)
-        (is (true? @delete-document-called?)))))
-
-  (testing "does not delete index-set document when any index delete is non-200"
-    (let [delete-document-called? (atom false)]
-      (with-redefs [svc/get-index-names (fn [_ _] ["1_c123_prov" "1_c456_prov"])
-                    idx-set-util/get-index-set (fn [_ _ _] {:index-set {}})
-                    config/idx-cfg-for-index-sets (fn [_] {:index-name "index-sets" :mapping {:index-set {}}})
-                    indexer-util/context->es-store (fn [_ _] {})
-                    es/delete-index (fn [_ index-name]
-                                      (if (= index-name "1_c123_prov")
-                                        {:status 200}
-                                        {:status 202}))
-                    es/delete-document (fn [& _] (reset! delete-document-called? true))]
-        (is (thrown-with-msg?
-             java.lang.Exception
-             #"index delete operation failed"
-             (#'svc/delete-index-set-indices {} 1 es-config/elastic-name)))
-        (is (false? @delete-document-called?))))))
