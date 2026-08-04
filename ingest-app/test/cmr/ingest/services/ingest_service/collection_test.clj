@@ -4,14 +4,15 @@
    [cmr.ingest.services.ingest-service.collection :as collection]))
 
 (deftest should-notify-kms?-test
-  (testing "true when has-keyword-error? and existing-errors are present"
+  (testing "When has-keyword-error? is true and existing-errors are present, Then it returns true"
     (is (true? (collection/should-notify-kms? true ["some error"] []))))
 
-  (testing "true when has-keyword-error? and warnings are present"
+  (testing "When has-keyword-error? is true and warnings are present, Then it returns true"
     (is (true? (collection/should-notify-kms? true [] ["some warning"]))))
 
-  (testing "false when has-keyword-error? is false, regardless of errors/warnings"
+  (testing "When has-keyword-error? is false, Then it returns false regardless of errors or warnings"
     (is (not (collection/should-notify-kms? false ["some error"] ["some warning"]))))
 
-  (testing "false when has-keyword-error? is true but no errors or warnings exist"
+  (testing "When has-keyword-error? is true but no errors or warnings exist, Then it returns false"
     (is (not (collection/should-notify-kms? true [] [])))))
+

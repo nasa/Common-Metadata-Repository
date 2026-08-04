@@ -342,8 +342,8 @@
              (name keyword-scheme))
       keywords)))
 
-;; Remove the path for kms fetch's rather than having to make a new env var
 (defn metadata-fixer-url
+  "Remove the path for kms fetch's rather than having to make a new env var"
   [connection]
   (format "%s/metadata_correction"
           (clojure.string/replace (conn/root-url connection)
@@ -351,8 +351,8 @@
                                   "")))
 
 (defn send-to-kms-metadata-fixer
-  "Sends a POST request to KMS's metadata fixer service, which attempts to
-   reconcile keywords that have since been updated with their current value."
+  "Send a POST request to KMS's metadata fixer service, which attempts to
+   reconcile updated keywords with their current values."
   [context collection-concept-id]
   (let [conn (config/context->app-connection context :kms)
         url (metadata-fixer-url conn)
@@ -373,7 +373,7 @@
     response))
 
 (defn notify-kms
-  "Sent a message to the keyword fix service in KMS"
+  "Send a message to the keyword fix service in KMS"
   [context collection-concept-id]
   (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
 
@@ -418,6 +418,3 @@
   (send-to-kms-metadata-fixer-test-synchronous "C1200362831-ARCTEST")
   (send-to-kms-metadata-fixer-test-asynchronous "C1200362831-ARCTEST")
   :rcf)
-
-
-

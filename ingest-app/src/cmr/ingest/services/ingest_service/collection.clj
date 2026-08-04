@@ -55,10 +55,10 @@
          existing-errors (v/umm-spec-validate-collection
                           sanitized-collection sanitized-prev-collection validation-options context false)
          collection-schema-warnings (v/validate-collection-umm-spec-schema collection validation-options)
-         ;; Return warnings for validation errors on collection without checking if they are
+         ;; Return warnings for validation errors on collection without sanitization
          non-sanitized-errors (v/umm-spec-validate-collection
                                collection nil validation-options context true)
-    ;; These are warnings that if the ignore keyword header was not passed would result in errors
+         ;; These are warnings that if the ignore keyword header was not passed would result in errors
          {warning-errors :errors has-keyword-error? :has-keyword-error?}
          (v/umm-spec-validate-collection-warnings
           collection validation-options context)

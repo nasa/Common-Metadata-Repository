@@ -356,12 +356,12 @@
      (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
-      "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
+  "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
   optional validations defined in keyword-validation-warnings are done with errors returned
   as warnings. When this is true we need to send that information to the keyword fixer API"
-      [context validation-options]
-      [(when-not (:validate-keywords? validation-options)
-                 (keyword-validation-warnings context))])
+  [context validation-options]
+  [(when-not (:validate-keywords? validation-options)
+     (keyword-validation-warnings context))])
 
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
@@ -406,8 +406,6 @@
          (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
          err-messages)))))
 
-
-
 (defn umm-spec-validate-collection-warnings
   "Validate umm-spec collection validation warnings functions - errors that we want
   to report but we do not want to fail ingest."
@@ -431,29 +429,17 @@
       :else
       {:errors nil :has-keyword-error? has-keyword-error?})))
 
-
-(comment
- (umm-spec-validate-collection-warnings coll1  vo c1)
-
-  (seq (umm-spec-validation/validate-collection-warnings
-         coll1
-         (keyword-validation-warning-rules c1 vo)))
-  
-
-  :rcf)        
-        
-
 (defn validate-granule-umm-spec
-      "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
+  "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
   updated with platform aliases whoes shortnames don't exist in the platforms."
-      [context collection granule]
-      (when-let [errors (seq (umm-spec-validation/validate-granule
-                               (humanizer-alias/update-collection-with-aliases context
-                                                                               collection
-                                                                               true)
-                               granule
-                               (granule-keyword-validations context)))]
-                (if-errors-throw :invalid-data errors)))
+  [context collection granule]
+  (when-let [errors (seq (umm-spec-validation/validate-granule
+                          (humanizer-alias/update-collection-with-aliases context
+                                                                          collection
+                                                                          true)
+                          granule
+                          (granule-keyword-validations context)))]
+    (if-errors-throw :invalid-data errors)))
 
 (defn umm-spec-validate-granule-warnings
   "Validate umm-spec granule validation warnings functions - errors that we want
@@ -478,6 +464,3 @@
                     (mapcat #(% context concept prev-concept)
                             (bv/business-rule-validations
                              (:concept-type concept))))))
-(comment
-  :rcf)
-
