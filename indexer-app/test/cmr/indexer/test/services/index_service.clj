@@ -61,7 +61,7 @@
       (is (= "ACL" (:ct data)) "Checking concept type")
       (is (= "index-vis" (:mg data)) "Checking message id"))))
 
-(deftest cascade-collection-delete-calls-index-set-cleanup-for-separate-index-test
+(deftest when-separate-index-deletes-succeed-then-call-index-set-cleanup-for-each-index
   (let [concept-id "C1234-PROV1"
         cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
                                 'remove-collection-granule-index-if-exists)
@@ -71,7 +71,7 @@
                               {:index-names {:granule {:small_collections "1_small_collections"}}})
                             #'idx-set/get-granule-index-names-for-collection
                             (fn [_context _concept-id]
-                              ["1_c1234_prov1"])
+                              ["1_c1234_prov1" "1_c1234_prov1_8_shards"])
                             #'indexer-util/context->conn
                             (fn [_context _cluster-name]
                               nil)
@@ -95,8 +95,8 @@
       #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
          (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
     (when cleanup-var
-      (is (= [concept-id] @cleanup-calls)
-          "Collection delete should trigger index-set cleanup when granules are in a separate index"))))
+      (is (= [concept-id concept-id] @cleanup-calls)
+          "Each successful index delete should trigger index-set cleanup"))))
 
 (deftest cascade-collection-delete-does-not-call-index-set-cleanup-for-small-collections-test
   (let [concept-id "C1234-PROV1"

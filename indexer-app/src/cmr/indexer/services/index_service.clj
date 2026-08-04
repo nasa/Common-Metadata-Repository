@@ -671,8 +671,7 @@
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
                                          (:granule)
-                                         (:small_collections))
-        deleted-separate-index? (volatile! false)]
+                                         (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
@@ -689,12 +688,9 @@
         (let [resp (es/delete-granule-index context index)
               status (get resp :status)]
           (if (contains? #{200 404} status)
-            (vreset! deleted-separate-index? true)
+            ;; Remove the mapping so the deleted index is not recreated on restart.
+            (idx-set-svc/remove-collection-granule-index-if-exists context concept-id)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200/404 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
-    ;; If the collection had an individual granule index (not small_collections),
-    ;; remove its mapping from the gran index-set so it is not recreated on restart.
-    (when @deleted-separate-index?
-      (idx-set-svc/remove-collection-granule-index-if-exists context concept-id))
 
     ;; reindex variables associated with the collection
     (reindex-associated-variables context concept-id revision-id)))
