@@ -110,9 +110,8 @@
   "Store a concept in mdb and indexer.
    Return entry-title, concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [{:keys [concept warnings existing-errors has-keyword-error?]} (validate-and-prepare-collection context
-                                                                                                       concept
-                                                                                                       validation-options)
+  (let [{:keys [concept warnings existing-errors has-keyword-error?]}
+        (validate-and-prepare-collection context conceptvalidation-options)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)
         entry-title (get-in concept [:extra-fields :entry-title])]
       ;; if ingested with existing errors, log the existing errors and warnings for the collection
