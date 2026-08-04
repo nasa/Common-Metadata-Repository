@@ -593,29 +593,17 @@
     index-set))
 
 (defn remove-collection-granule-index-if-exists
-  "Removes a collection's separate granule index from the index-set if it exists.
+  "Removes a collection's separate granule index from the given CMR index-set.
 
-   No-op cases:
-   - collection has no explicit granule index mapping in the index-set
-   - collection currently maps to the small_collections index"
-  [context concept-id]
-  (let [index-set-id index-set/index-set-id
-        gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
-        collection-key (keyword concept-id)
-        mapped-index (get-in gran-index-set [:index-set :concepts :granule collection-key])
-        small-collections-index (get-in gran-index-set [:index-set :concepts :granule :small_collections])]
-    (cond
-      (nil? mapped-index)
+   Leaves the index-set unchanged when the collection has no separate granule index."
+  [context index-set-id concept-id]
+  (let [gran-index-set (index-set-util/get-index-set context es-config/gran-elastic-name index-set-id)
+        separate-index-exists? (contains? (collection-ids-from-granule-indexes gran-index-set)
+                                          concept-id)]
+    (if-not separate-index-exists?
       (do
-        (info (format "No separate granule index mapping found for collection [%s]; skipping index-set cleanup." concept-id))
+        (info (format "No separate granule index found for collection [%s]; skipping index-set cleanup." concept-id))
         {:status 200})
-
-      (= mapped-index small-collections-index)
-      (do
-        (info (format "Collection [%s] is mapped to small_collections; no index-set cleanup needed." concept-id))
-        {:status 200})
-
-      :else
       (let [updated-gran-index-set (remove-granule-index-from-index-set gran-index-set concept-id)]
         ;; Update the index set. This keeps metadata-db and ES index-set documents in sync.
         (validate-requested-index-set context es-config/gran-elastic-name updated-gran-index-set true)

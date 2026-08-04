@@ -86,8 +86,8 @@
                               :ok)}
                      cleanup-var
                      (assoc cleanup-var
-                            (fn [_context concept-id-param]
-                              (swap! cleanup-calls conj concept-id-param)
+                            (fn [_context index-set-id-param concept-id-param]
+                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
                               {:status 200})))]
     (is (some? cleanup-var)
         "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
@@ -95,7 +95,9 @@
       #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
          (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
     (when cleanup-var
-      (is (= [concept-id concept-id] @cleanup-calls)
+      (is (= [[idx-set/index-set-id concept-id]
+              [idx-set/index-set-id concept-id]]
+             @cleanup-calls)
           "Each successful index delete should trigger index-set cleanup"))))
 
 (deftest cascade-collection-delete-does-not-call-index-set-cleanup-for-small-collections-test
@@ -123,8 +125,8 @@
                               :ok)}
                      cleanup-var
                      (assoc cleanup-var
-                            (fn [_context concept-id-param]
-                              (swap! cleanup-calls conj concept-id-param)
+                            (fn [_context index-set-id-param concept-id-param]
+                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
                               {:status 200})))]
     (is (some? cleanup-var)
         "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
@@ -160,8 +162,8 @@
                               :ok)}
                      cleanup-var
                      (assoc cleanup-var
-                            (fn [_context concept-id-param]
-                              (swap! cleanup-calls conj concept-id-param)
+                            (fn [_context index-set-id-param concept-id-param]
+                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
                               {:status 200})))]
     (is (some? cleanup-var)
         "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
@@ -197,8 +199,8 @@
                               :ok)}
                      cleanup-var
                      (assoc cleanup-var
-                            (fn [_context concept-id-param]
-                              (swap! cleanup-calls conj concept-id-param)
+                            (fn [_context index-set-id-param concept-id-param]
+                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
                               {:status 200})))]
     (is (some? cleanup-var)
         "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
@@ -206,5 +208,5 @@
       #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
          (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
     (when cleanup-var
-      (is (= [concept-id] @cleanup-calls)
+      (is (= [[idx-set/index-set-id concept-id]] @cleanup-calls)
           "Collection delete should trigger index-set cleanup when separate index is already missing (404)"))))

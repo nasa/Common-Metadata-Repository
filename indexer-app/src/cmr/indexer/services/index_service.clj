@@ -689,7 +689,8 @@
               status (get resp :status)]
           (if (contains? #{200 404} status)
             ;; Remove the mapping so the deleted index is not recreated on restart.
-            (idx-set-svc/remove-collection-granule-index-if-exists context concept-id)
+            (idx-set-svc/remove-collection-granule-index-if-exists
+             context idx-set/index-set-id concept-id)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200/404 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
 
     ;; reindex variables associated with the collection

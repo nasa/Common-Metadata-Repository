@@ -577,48 +577,34 @@
 
 (deftest remove-collection-granule-index-if-exists-test
   (let [context {}
+        index-set-id 42
         concept-id "C1234-PROV1"
         collection-key (keyword concept-id)
         small-index "1_small_collections"
-        separate-index "1_c1234_prov1"]
-    (testing "no-ops when collection has no explicit mapping"
+        separate-index "1_c1234_prov1_8_shards"]
+    (testing "when collection has no separate index, then index-set remains unchanged"
       (let [validate-called? (atom false)
             save-called? (atom false)
             update-called? (atom false)]
-        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
+        (with-redefs [idx-set-util/get-index-set (fn [_ _ requested-index-set-id]
+                                                   (is (= index-set-id requested-index-set-id))
                                                    {:index-set {:concepts {:granule {:small_collections small-index}}
                                                                 :granule {:indexes []}}})
                       svc/validate-requested-index-set (fn [& _] (reset! validate-called? true))
                       svc/save-combined-index-set-to-mdb (fn [& _] (reset! save-called? true) 2)
                       svc/update-index-set (fn [& _] (reset! update-called? true) {:status 200})]
           (is (= {:status 200}
-                 (svc/remove-collection-granule-index-if-exists context concept-id)))
+                 (svc/remove-collection-granule-index-if-exists context index-set-id concept-id)))
           (is (false? @validate-called?))
           (is (false? @save-called?))
           (is (false? @update-called?)))))
 
-    (testing "no-ops when collection maps to small_collections"
-      (let [validate-called? (atom false)
-            save-called? (atom false)
-            update-called? (atom false)]
-        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
-                                                   {:index-set {:concepts {:granule {:small_collections small-index
-                                                                                     collection-key small-index}}
-                                                                :granule {:indexes []}}})
-                      svc/validate-requested-index-set (fn [& _] (reset! validate-called? true))
-                      svc/save-combined-index-set-to-mdb (fn [& _] (reset! save-called? true) 2)
-                      svc/update-index-set (fn [& _] (reset! update-called? true) {:status 200})]
-          (is (= {:status 200}
-                 (svc/remove-collection-granule-index-if-exists context concept-id)))
-          (is (false? @validate-called?))
-          (is (false? @save-called?))
-          (is (false? @update-called?)))))
-
-    (testing "removes mapping and persists updated index-set when separate index exists"
+    (testing "when collection has a resharded separate index, then remove and persist it"
       (let [validate-arg (atom nil)
             save-arg (atom nil)
             update-args (atom nil)]
-        (with-redefs [idx-set-util/get-index-set (fn [_ _ _]
+        (with-redefs [idx-set-util/get-index-set (fn [_ _ requested-index-set-id]
+                                                   (is (= index-set-id requested-index-set-id))
                                                    {:index-set {:concepts {:granule {:small_collections small-index
                                                                                      collection-key separate-index}}
                                                                 :granule {:indexes [{:name separate-index :number_of_shards 5}]}}})
@@ -633,7 +619,7 @@
                                                                   :revision-id revision-id})
                                              {:status 200})]
           (is (= {:status 200}
-                 (svc/remove-collection-granule-index-if-exists context concept-id)))
+                 (svc/remove-collection-granule-index-if-exists context index-set-id concept-id)))
           (is (= {:index-set {:concepts {:granule {:small_collections small-index}}
                               :granule {:indexes []}}}
                  @validate-arg))
