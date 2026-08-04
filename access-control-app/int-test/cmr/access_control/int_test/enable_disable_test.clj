@@ -63,18 +63,21 @@
 
     ;; disable writes for access control service
     (u/disable-access-control-writes post-options)
+    (Thread/sleep 5000)
 
     (testing "save, update, and delete acl fails after disable"
-      (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
-        ;; check save response
-        (is (= 503 (:status resp)))
-        ;; test update
-        (is (= 503 (:status (ac/update-acl (u/conn-context) concept-id2 provider-acl {:token token :raw? true}))))
-        ;; test delete
-        (is (= 503 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))
-
-    ;; re-enable writes for access control service
-    (u/enable-access-control-writes post-options)
+      (try
+        (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
+          ;; check save response
+          (is (= 503 (:status resp)))
+          ;; test update
+          (is (= 503 (:status (ac/update-acl (u/conn-context) concept-id2 provider-acl {:token token :raw? true}))))
+          ;; test delete
+          (is (= 503 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true})))))
+        (finally
+          ;; always re-enable writes for access control service
+          (u/enable-access-control-writes post-options)
+          (Thread/sleep 5000))))
 
     (testing "save, upate, and delete acl works after re-enable"
       (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
@@ -120,15 +123,9 @@
           (u/enable-access-control-writes post-options)
           (Thread/sleep 5000))))
 
-    ;; re-eneable writes for access control service
-    (u/enable-access-control-writes post-options)
-    (Thread/sleep 5000)
-
     (testing "save, update, and delete group succeeds after re-enable"
       (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
             {:keys [status]} (u/create-group token group3)]
-        (u/enable-access-control-writes post-options)
-        (Thread/sleep 5000)
         ;; check save response
         (is (= 200 status))
         ;; test update
