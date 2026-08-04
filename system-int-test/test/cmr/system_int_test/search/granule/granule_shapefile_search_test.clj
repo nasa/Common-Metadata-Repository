@@ -43,10 +43,10 @@
         _ (side/eval-form `(shapefile/set-max-shapefile-features! 2))
         saved-shapefile-max-points (shapefile/max-shapefile-points)
         _ (side/eval-form `(shapefile/set-max-shapefile-points! 50))]
-
-    (testing "ESRI Shapefile Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
+    (try
+      (testing "ESRI Shapefile Failure cases"
+        (are3 [shapefile additional-params regex]
+          (is (re-find regex
                       (first (:errors (search/find-refs-with-multi-part-form-post
                                         :granule
                                         (let [params [{:name "shapefile"
@@ -80,9 +80,9 @@
         "Shapefile has points too close"
         "too_precise.zip" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
 
-    (testing "GeoJSON Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
+      (testing "GeoJSON Failure cases"
+        (are3 [shapefile additional-params regex]
+          (is (re-find regex
                       (first (:errors (search/find-refs-with-multi-part-form-post
                                         :granule
                                         (let [params [{:name "shapefile"
@@ -110,9 +110,9 @@
         "Shapefile has points too close"
         "too_precise.geojson" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
 
-    (testing "KML Failure cases"
-      (are3 [shapefile additional-params regex]
-        (is (re-find regex
+      (testing "KML Failure cases"
+        (are3 [shapefile additional-params regex]
+          (is (re-find regex
                       (first (:errors (search/find-refs-with-multi-part-form-post
                                         :granule
                                         (let [params [{:name "shapefile"
@@ -139,10 +139,10 @@
 
         "Shapefile has points too close"
         "too_precise.kml" {:name "provider" :content "PROV1"} #"The shape contained duplicate points. Points 1 \[lon=-?\d+\.\d+ lat=\d+\.\d+] and \d \[lon=-?\d+\.\d+ lat=\d+\.\d+].* were considered equivalent or very close"))
-
-    (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))
-    (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))
-    (side/eval-form `(shapefile/set-max-shapefile-points! ~saved-shapefile-max-points))))
+      (finally
+        (side/eval-form `(shapefile-middleware/set-max-shapefile-size! ~saved-shapefile-max-size))
+        (side/eval-form `(shapefile/set-max-shapefile-features! ~saved-shapefile-max-features))
+        (side/eval-form `(shapefile/set-max-shapefile-points! ~saved-shapefile-max-points))))))
 
 (deftest granule-shapefile-search-test
   (side/eval-form `(shapefile/set-enable-shapefile-parameter-flag! true))

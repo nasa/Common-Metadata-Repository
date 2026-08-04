@@ -1,12 +1,14 @@
 (ns cmr.system-int-test.search.collection.collection-shapefile-search-test
   (:require
     [clojure.test :refer :all]
+    [clojure.edn :as edn]
     [clojure.java.io :as io]
     [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are3]]
     [cmr.common-app.test.side-api :as side]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
+    [cmr.search.middleware.shapefile :as shapefile-middleware]
     [cmr.spatial.line-string :as l]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.point :as p]
@@ -33,6 +35,17 @@
   {"ESRI" {:extension "zip" :mime-type mt/shapefile}
    "GeoJSON" {:extension "geojson" :mime-type mt/geojson}
    "KML" {:extension "kml" :mime-type mt/kml}})
+
+(defn- shapefile-config
+  "Returns the shapefile configuration currently active in the search app."
+  []
+  (-> (side/eval-form
+        `{:enabled? (shapefile/enable-shapefile-parameter-flag)
+          :max-size (shapefile-middleware/max-shapefile-size)
+          :max-features (shapefile/max-shapefile-features)
+          :max-points (shapefile/max-shapefile-points)})
+      :body
+      edn/read-string))
 
 (defn make-coll
   [coord-sys et & shapes]
@@ -194,9 +207,12 @@
                        :content "true"}
                       {:name "provider"
                        :content "PROV1"}]
-              {:keys [status]} (search/find-refs-with-multi-part-form-post :collection params)]
+              {:keys [status errors]} (search/find-refs-with-multi-part-form-post :collection params)
+              config (when status (shapefile-config))]
           (is (nil? status)
-              "Should pass validation with force-cartesian=true")))
+              (format (str "Should pass validation with force-cartesian=true; "
+                           "status=%s errors=%s shapefile-config=%s")
+                      status (pr-str (vec errors)) (pr-str config)))))
 
       (testing "without force-cartesian should fail validation"
         (let [params [{:name "shapefile"
