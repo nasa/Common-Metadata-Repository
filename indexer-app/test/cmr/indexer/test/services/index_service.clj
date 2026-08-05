@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.indexer.common.index-set-util :as idx-set-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.indexer-util :as indexer-util]
@@ -61,152 +62,71 @@
       (is (= "ACL" (:ct data)) "Checking concept type")
       (is (= "index-vis" (:mg data)) "Checking message id"))))
 
-(deftest when-separate-index-deletes-succeed-then-call-index-set-cleanup-for-each-index
+(defn- cascade-collection-delete-index-set-result
+  [gran-index-set granule-index-names delete-index-status]
   (let [concept-id "C1234-PROV1"
-        cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
-                                'remove-collection-granule-index-if-exists)
-        cleanup-calls (atom [])
-        redefs-map (cond-> {#'idx-set/get-concept-type-index-names
-                            (fn [_context]
-                              {:index-names {:granule {:small_collections "1_small_collections"}}})
-                            #'idx-set/get-granule-index-names-for-collection
-                            (fn [_context _concept-id]
-                              ["1_c1234_prov1" "1_c1234_prov1_8_shards"])
-                            #'indexer-util/context->conn
-                            (fn [_context _cluster-name]
-                              nil)
-                            #'es/delete-granule-index
-                            (fn [_context _index-name]
-                              {:status 200})
-                            #'es-helper/delete-by-query
-                            (fn [& _args]
-                              {:status 200})
-                            #'index-svc/reindex-associated-variables
-                            (fn [& _args]
-                              :ok)}
-                     cleanup-var
-                     (assoc cleanup-var
-                            (fn [_context index-set-id-param concept-id-param]
-                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
-                              {:status 200})))]
-    (is (some? cleanup-var)
-        "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
-    (with-redefs-fn redefs-map
-      #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
-         (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
-    (when cleanup-var
-      (is (= [[idx-set/index-set-id concept-id]
-              [idx-set/index-set-id concept-id]]
-             @cleanup-calls)
-          "Each successful index delete should trigger index-set cleanup"))))
+        updated-index-set (atom nil)]
+    (with-redefs [idx-set/get-concept-type-index-names
+                  (fn [_context]
+                    {:index-names {:granule {:small_collections "1_small_collections"}}})
+                  idx-set/get-granule-index-names-for-collection
+                  (fn [_context _concept-id]
+                    granule-index-names)
+                  idx-set-util/get-index-set
+                  (fn [_context _elastic-name _index-set-id]
+                    gran-index-set)
+                  indexer-util/context->conn
+                  (fn [_context _cluster-name]
+                    nil)
+                  es/delete-granule-index
+                  (fn [_context _index-name]
+                    {:status delete-index-status})
+                  es-helper/delete-by-query
+                  (fn [& _args]
+                    {:status 200})
+                  idx-set-svc/validate-requested-index-set
+                  (fn [& _args])
+                  idx-set-svc/save-combined-index-set-to-mdb
+                  (fn [& _args]
+                    33)
+                  idx-set-svc/update-index-set
+                  (fn [_context _elastic-name index-set _revision-id]
+                    (reset! updated-index-set index-set)
+                    {:status 200})
+                  index-svc/reindex-associated-variables
+                  (fn [& _args]
+                    :ok)]
+      (#'index-svc/cascade-collection-delete {} {:granule "granule"} concept-id 7))
+    @updated-index-set))
 
-(deftest cascade-collection-delete-does-not-call-index-set-cleanup-for-small-collections-test
+(deftest cascade-collection-delete-index-set-result-test
   (let [concept-id "C1234-PROV1"
-        cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
-                                'remove-collection-granule-index-if-exists)
-        cleanup-calls (atom [])
-        redefs-map (cond-> {#'idx-set/get-concept-type-index-names
-                            (fn [_context]
-                              {:index-names {:granule {:small_collections "1_small_collections"}}})
-                            #'idx-set/get-granule-index-names-for-collection
-                            (fn [_context _concept-id]
-                              ["1_small_collections"])
-                            #'indexer-util/context->conn
-                            (fn [_context _cluster-name]
-                              nil)
-                            #'es/delete-granule-index
-                            (fn [_context _index-name]
-                              {:status 200})
-                            #'es-helper/delete-by-query
-                            (fn [& _args]
-                              {:status 200})
-                            #'index-svc/reindex-associated-variables
-                            (fn [& _args]
-                              :ok)}
-                     cleanup-var
-                     (assoc cleanup-var
-                            (fn [_context index-set-id-param concept-id-param]
-                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
-                              {:status 200})))]
-    (is (some? cleanup-var)
-        "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
-    (with-redefs-fn redefs-map
-      #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
-         (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
-    (when cleanup-var
-      (is (empty? @cleanup-calls)
-          "Collection delete should not trigger index-set cleanup for small_collections path"))))
+        small-index "1_small_collections"
+        separate-index "1_c1234_prov1"
+        separate-index-set {:index-set
+                            {:concepts {:granule {:small_collections small-index
+                                                 (keyword concept-id) separate-index}}
+                             :granule {:indexes [{:name separate-index
+                                                  :number_of_shards 5}]}}}
+        small-index-set {:index-set
+                         {:concepts {:granule {:small_collections small-index}}
+                          :granule {:indexes [{:name small-index}]}}}
+        updated-index-set {:index-set
+                           {:concepts {:granule {:small_collections small-index}}
+                            :granule {:indexes []}}}]
+    (are3 [expected gran-index-set granule-index-names delete-index-status]
+      (is (= expected
+             (cascade-collection-delete-index-set-result
+              gran-index-set granule-index-names delete-index-status)))
 
-(deftest cascade-collection-delete-does-not-call-index-set-cleanup-when-separate-index-delete-fails-test
-  (let [concept-id "C1234-PROV1"
-        cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
-                                'remove-collection-granule-index-if-exists)
-        cleanup-calls (atom [])
-        redefs-map (cond-> {#'idx-set/get-concept-type-index-names
-                            (fn [_context]
-                              {:index-names {:granule {:small_collections "1_small_collections"}}})
-                            #'idx-set/get-granule-index-names-for-collection
-                            (fn [_context _concept-id]
-                              ["1_c1234_prov1"])
-                            #'indexer-util/context->conn
-                            (fn [_context _cluster-name]
-                              nil)
-                            #'es/delete-granule-index
-                            (fn [_context _index-name]
-                              {:status 500})
-                            #'es-helper/delete-by-query
-                            (fn [& _args]
-                              {:status 200})
-                            #'index-svc/reindex-associated-variables
-                            (fn [& _args]
-                              :ok)}
-                     cleanup-var
-                     (assoc cleanup-var
-                            (fn [_context index-set-id-param concept-id-param]
-                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
-                              {:status 200})))]
-    (is (some? cleanup-var)
-        "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
-    (with-redefs-fn redefs-map
-      #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
-         (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
-    (when cleanup-var
-      (is (empty? @cleanup-calls)
-          "Collection delete should not trigger index-set cleanup when separate index deletion fails"))))
+      "when separate index deletion returns 200, then remove its index-set configuration"
+      updated-index-set separate-index-set [separate-index] 200
 
-(deftest cascade-collection-delete-calls-index-set-cleanup-when-separate-index-already-missing-test
-  (let [concept-id "C1234-PROV1"
-        cleanup-var (ns-resolve 'cmr.indexer.services.index-set-service
-                                'remove-collection-granule-index-if-exists)
-        cleanup-calls (atom [])
-        redefs-map (cond-> {#'idx-set/get-concept-type-index-names
-                            (fn [_context]
-                              {:index-names {:granule {:small_collections "1_small_collections"}}})
-                            #'idx-set/get-granule-index-names-for-collection
-                            (fn [_context _concept-id]
-                              ["1_c1234_prov1"])
-                            #'indexer-util/context->conn
-                            (fn [_context _cluster-name]
-                              nil)
-                            #'es/delete-granule-index
-                            (fn [_context _index-name]
-                              {:status 404})
-                            #'es-helper/delete-by-query
-                            (fn [& _args]
-                              {:status 200})
-                            #'index-svc/reindex-associated-variables
-                            (fn [& _args]
-                              :ok)}
-                     cleanup-var
-                     (assoc cleanup-var
-                            (fn [_context index-set-id-param concept-id-param]
-                              (swap! cleanup-calls conj [index-set-id-param concept-id-param])
-                              {:status 200})))]
-    (is (some? cleanup-var)
-        "Expected public function remove-collection-granule-index-if-exists to exist in index-set-service")
-    (with-redefs-fn redefs-map
-      #(let [cascade-delete-fn (var index-svc/cascade-collection-delete)]
-         (cascade-delete-fn {} {:granule "granule"} concept-id 7)))
-    (when cleanup-var
-      (is (= [[idx-set/index-set-id concept-id]] @cleanup-calls)
-          "Collection delete should trigger index-set cleanup when separate index is already missing (404)"))))
+      "when separate index deletion returns 404, then remove its stale index-set configuration"
+      updated-index-set separate-index-set [separate-index] 404
+
+      "when separate index deletion fails, then leave the index-set unchanged"
+      nil separate-index-set [separate-index] 500
+
+      "when collection uses small_collections, then leave the index-set unchanged"
+      nil small-index-set [small-index] nil)))
