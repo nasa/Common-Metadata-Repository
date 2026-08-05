@@ -99,7 +99,7 @@
 
 (deftest delete-granule-index-test
   (with-redefs [indexer-util/context->conn (constantly :connection)]
-    (testing "adds the HTTP success status to the decoded Elasticsearch response"
+    (testing "when Elasticsearch deletes the index, then add status 200 to its response"
       (with-redefs [esi/delete-index (fn [connection index]
                                       (is (= :connection connection))
                                       (is (= "granule-index" index))
@@ -107,13 +107,13 @@
         (is (= {:acknowledged true :status 200}
                (es/delete-granule-index {} "granule-index")))))
 
-    (testing "returns the HTTP status from an Elasticsearch exception"
+    (testing "when Elasticsearch throws an exception with an HTTP status, then return that status"
       (with-redefs [esi/delete-index (fn [_connection _index]
                                       (throw (ex-info "Not found" {:status 404})))]
         (is (= {:status 404}
                (es/delete-granule-index {} "missing-granule-index")))))
 
-    (testing "returns an internal error status when an exception has no HTTP status"
+    (testing "when Elasticsearch throws an exception without an HTTP status, then return status 500"
       (with-redefs [esi/delete-index (fn [_connection _index]
                                       (throw (RuntimeException. "Connection failed")))]
         (is (= {:status 500}
