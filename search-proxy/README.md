@@ -45,7 +45,7 @@ All settings are environment variables with the `CMR_PROXY_` prefix.
 | `CMR_PROXY_BACKEND_TIMEOUT_SECONDS` | `300.0` | Backend request timeout |
 | `CMR_PROXY_BACKEND_MAX_CONNECTIONS` | `500` | httpx connection pool size |
 | `CMR_PROXY_BACKEND_MAX_KEEPALIVE` | `200` | httpx keepalive connection pool size |
-| `CMR_PROXY_REDIS_MAX_CONNECTIONS` | auto | Redis pool size; defaults to total lane permits + 50 |
+| `CMR_PROXY_REDIS_MAX_CONNECTIONS` | auto | Redis pool size; defaults to total lane permits + 100 |
 | `CMR_PROXY_REDIS_SOCKET_CONNECT_TIMEOUT` | `2.0` | Redis connection timeout in seconds |
 | `CMR_PROXY_REDIS_SOCKET_TIMEOUT` | `2.0` | Redis read/write timeout in seconds |
 | `CMR_PROXY_REDIS_HEALTH_CHECK_INTERVAL` | `30` | Seconds between Redis keepalive pings |
@@ -131,6 +131,6 @@ pytest
 
 ## Operational notes
 
-**Leaked permits**: If a task is killed mid-request or Redis is briefly unavailable during release, the permit entry is not removed. It will expire automatically once its TTL score passes (defaulting to the backend timeout, 300 seconds). If a lane shows sustained at-capacity pressure before entries age out, the sorted sets can be cleared directly from Redis: `lane:express:active`, `lane:standard:active`, `lane:heavy:active`.
+**Leaked permits**: A permit leaks when a task is killed before `_release` runs, or when Redis is briefly unavailable during release (the exception is swallowed so the ASGI handler can still return a response). Once a leaked entry's TTL score passes (defaulting to `backend_timeout_seconds`, 300 seconds), it stops affecting lane counts — the health endpoint's `ZCOUNT` filters on the current timestamp as a lower bound, and each acquire's `ZCARD` runs after `ZREMRANGEBYSCORE` prunes expired-score entries. Physical removal from Redis happens on the next acquire for that lane. Note: if Redis is unavailable during acquire, the fail-open path applies — no permit is stored and no release is attempted, so there is no leak in that case. To immediately reset a lane without waiting for TTL, delete its sorted set key from Redis: `lane:express:active`, `lane:standard:active`, `lane:heavy:active`.
 
 **Debugging**: Set `CMR_PROXY_LOG_LEVEL=DEBUG` to log backend response details including content encoding and actual byte counts. Remove when done — debug logging is verbose under load.
