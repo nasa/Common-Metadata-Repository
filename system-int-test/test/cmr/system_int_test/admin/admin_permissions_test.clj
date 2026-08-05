@@ -150,5 +150,6 @@
         (has-action-permission? (url/enable-ingest-writes-url) :post admin-read-update-token)
         (has-action-permission? (url/enable-search-writes-url) :post admin-read-update-token)
         (has-action-permission? (url/enable-access-control-writes-url) :post admin-read-update-token)
+        (has-action-permission? (url/enable-email-subscription-processing) :post admin-read-update-token)
         ;; Give the caches time to clear
         (Thread/sleep 5000)))))
