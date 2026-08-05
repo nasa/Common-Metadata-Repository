@@ -1,3 +1,4 @@
+;; TODO Remove this as the API gets sunset EDSC-4645
 (ns cmr.transmit.ordering
   "Handle all communications to the CMR-Ordering application, a graphql app which
    processes orders for Earthdata Search and CMR. This application needs to know

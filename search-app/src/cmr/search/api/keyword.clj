@@ -33,7 +33,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.transmit.kms :as kms]
+   [cmr.transmit.kms :as transmit-kms]
    [compojure.core :refer [GET context]]))
 
 (def sorted-hierarchical-map
@@ -45,8 +45,8 @@
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
   [keyword-scheme]
-  (let [valid-keywords (concat (keys kms/keyword-scheme->field-names)
-                               (keys kms/cmr-to-gcmd-keyword-scheme-aliases))]
+  (let [valid-keywords (concat (keys transmit-kms/keyword-scheme->field-names)
+                               (keys transmit-kms/cmr-to-gcmd-keyword-scheme-aliases))]
     (when-not (contains? (set valid-keywords) keyword-scheme)
       (errors/throw-service-error
         :bad-request
@@ -155,8 +155,8 @@
   [context keyword-scheme]
   (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
     (validate-keyword-scheme orig-keyword-scheme)
-    (let [cmr-keyword-scheme (kms/translate-keyword-scheme-to-cmr orig-keyword-scheme)
-          gcmd-keyword-scheme (kms/translate-keyword-scheme-to-gcmd orig-keyword-scheme)
+    (let [cmr-keyword-scheme (transmit-kms/translate-keyword-scheme-to-cmr orig-keyword-scheme)
+          gcmd-keyword-scheme (transmit-kms/translate-keyword-scheme-to-gcmd orig-keyword-scheme)
           keywords (gcmd-keyword-scheme (kf/get-kms-index context))
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]

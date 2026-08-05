@@ -33,8 +33,8 @@
   [validation-errors]
   (for [[field-path errors] validation-errors]
     (e/map->PathErrors
-      {:path field-path
-       :errors (mapv (partial v/create-error-message
+     {:path field-path
+      :errors (mapv (partial v/create-error-message
                              (map humanize-field-for-error-msg field-path)) errors)})))
 
 (defn validate-collection
@@ -52,10 +52,13 @@
   to convey to the user, but not consider failures."
   ([collection]
    (validate-collection-warnings collection nil))
-  ([collection additional-validations]
-   (validation-errors->path-errors
-    (v/validate (cons vc/collection-validation-warnings additional-validations)
-                (aa/add-parsed-values collection)))))
+  ([collection keyword-validations]
+   (let [parsed-collection (aa/add-parsed-values collection)
+         has-keyword-error? (boolean (seq (v/validate keyword-validations parsed-collection)))]
+     {:errors (validation-errors->path-errors
+               (v/validate (cons vc/collection-validation-warnings keyword-validations)
+                           parsed-collection))
+      :has-keyword-error? has-keyword-error?})))
 
 (defn validate-granule-warnings
   "Validates the UMM-G record against the list of warnings - issues that we want
@@ -102,7 +105,7 @@
    (validate-tool tool nil))
   ([tool additional-validations]
    (validation-errors->path-errors
-    (v/validate additional-validations tool)))) 
+    (v/validate additional-validations tool))))
 
 (defn validate-variable
   "Validates the UMM record returning a list of error maps containing a path
@@ -123,4 +126,4 @@
   through the UMM model and a list of errors at that path. Returns an empty
   sequence if it is valid."
   [variable validations-rules]
-   (validation-errors->path-errors (v/validate validations-rules variable)))
+  (validation-errors->path-errors (v/validate validations-rules variable)))

@@ -358,7 +358,7 @@
 (defn keyword-validation-warning-rules
   "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
   optional validations defined in keyword-validation-warnings are done with errors returned
-  as warnings."
+  as warnings. When this is true we need to send that information to the keyword fixer API"
   [context validation-options]
   [(when-not (:validate-keywords? validation-options)
      (keyword-validation-warnings context))])
@@ -410,15 +410,24 @@
   "Validate umm-spec collection validation warnings functions - errors that we want
   to report but we do not want to fail ingest."
   [collection validation-options context]
-  (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
-                                collection
-                                (keyword-validation-warning-rules context validation-options)))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors))
+  (let [{:keys [errors has-keyword-error?]}
+        (umm-spec-validation/validate-collection-warnings
+         collection
+         (keyword-validation-warning-rules context validation-options))
+        err-messages (seq errors)]
+    (cond
+      (and err-messages
+           (or (:validate-umm? validation-options)
+               (config/return-umm-spec-validation-errors)))
       (errors/throw-service-errors :invalid-data err-messages)
+
+      err-messages
       (do
         (debug "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-        err-messages))))
+        {:errors err-messages :has-keyword-error? has-keyword-error?})
+
+      :else
+      {:errors nil :has-keyword-error? has-keyword-error?})))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
@@ -455,113 +464,3 @@
                     (mapcat #(% context concept prev-concept)
                             (bv/business-rule-validations
                              (:concept-type concept))))))
-
-(defn- measurement-validation
-  "A validation that checks that the measurement matches a known KMS field. Takes the following arguments:
-
-  * context - The request context that holds the cached keywords.
-  * msg-fn - A function taking the invalid measurements and returning the error to return to the user
-    if it doesn't match."
-  [context msg-fn]
-  (v/every
-   (fn [field-path value]
-     (when-let [invalid-measurements (kms-lookup/lookup-by-measurement context value)]
-       {field-path [(msg-fn invalid-measurements)]}))))
-
-(defn- variable-keyword-validations
-  "Creates validations that check various collection fields to see if they match KMS keywords."
-  [context]
-  {:MeasurementIdentifiers (measurement-validation
-                            context msg/measurements-not-matches-kms-keywords)
-   :RelatedURLs (v/every [{:Format (match-kms-keywords-validation-single
-                                    context
-                                    :granule-data-format
-                                    msg/getdata-format-not-matches-kms-keywords)}])})
-
-(defn- variable-keyword-validations-warnings
-  "Creates validations that check Mimetypes to see if they match KMS keywords that will be
-   returned as warnings."
-  [context]
-  {:RelatedURLs (v/every [{:MimeType (match-kms-keywords-validation-single
-                                      context
-                                      :mime-type
-                                      msg/mime-type-not-matches-kms-keywords)}])})
-
-(defn- variable-keyword-validations-unignorable
-  "Creates validations that check various collection fields to see if they match
-  KMS keywords. These validations must always pass regardless of the warn? flag."
-  [context]
-  {:RelatedURLs [(match-related-url-kms-keywords-validations context)]})
-
-(defn umm-spec-validate-variable
-  "Validate variable through umm-spec validation functions. If warn? flag is
-   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
-  [variable context warn?]
-  (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
-                                 variable
-                                 [(variable-keyword-validations-unignorable context)]))]
-    (errors/throw-service-errors :invalid-data non-ignorable))
-  (let [err-messages (seq (umm-spec-validation/validate-variable
-                           variable
-                           [(variable-keyword-validations context)]))
-        warning-messages (seq (umm-spec-validation/validate-variable
-                               variable
-                               [(variable-keyword-validations-warnings context)]))]
-    (if (or (config/return-umm-spec-validation-errors)
-            (not warn?))
-      ;;when we are not supposed to return error as warnings
-      (if err-messages
-        ;; throw errors when it exists
-        (errors/throw-service-errors :invalid-data err-messages)
-        ;; throw warnings when error doesn't exist.
-        (when warning-messages
-          (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec warning-messages)))
-          warning-messages))
-      ;; when we are supposed to return errors as warnings as well,
-      ;; return both errors and warnings as warnings.
-      (when-let [all-warning-messages (seq (umm-spec-validation/validate-variable
-                                            variable
-                                            [(variable-keyword-validations context)
-                                             (variable-keyword-validations-warnings context)]))]
-        (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
-        all-warning-messages))))
-
-(defn validate-variable-associated-collection
-  "Validate the collection being associated to is accessible."
-  [context coll-concept-id coll-revision-id]
-  (when coll-concept-id
-    (let [params (if coll-revision-id
-                   {:concept-id coll-concept-id
-                    :all-revisions true}
-                   {:concept-id coll-concept-id})
-          response (transmit-search/search-for-collections
-                    context
-                    params
-                    {:raw? true
-                     :http-options {:accept mt/umm-json}})
-          items (-> response
-                    :body
-                    (json/parse-string true)
-                    :items)
-          revision-info (->> items
-                             (map :meta)
-                             (map #(select-keys % [:revision-id :deleted])))]
-      (if (seq revision-info)
-        (when coll-revision-id
-          (if-let [revision (->> revision-info
-                                 (filter #(= (edn/read-string coll-revision-id)
-                                             (:revision-id %)))
-                                 first)]
-            (when (:deleted revision)
-              (errors/throw-service-error
-               :invalid-data
-               (format "Collection [%s] revision [%s] is deleted"
-                       coll-concept-id coll-revision-id)))
-            (errors/throw-service-error
-             :invalid-data
-             (format "Collection [%s] revision [%s] does not exist"
-                     coll-concept-id coll-revision-id))))
-        (errors/throw-service-error
-         :invalid-data
-         (format "Collection [%s] does not exist or is not visible."
-                 coll-concept-id))))))
