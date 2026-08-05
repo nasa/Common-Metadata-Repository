@@ -37,6 +37,12 @@ class TestHeavyPatternSignals:
             == HEAVY
         )
 
+    def test_options_granule_ur_pattern(self):
+        assert classify_request({"options[granule_ur][pattern]": "true"}) == HEAVY
+
+    def test_options_producer_granule_id_pattern(self):
+        assert classify_request({"options[producer_granule_id][pattern]": "true"}) == HEAVY
+
 
 # Shapefile detection
 

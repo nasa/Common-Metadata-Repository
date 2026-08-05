@@ -14,11 +14,11 @@ Every request is classified into one of three lanes based on query complexity:
 
 **Classification rules** (first match wins):
 
-- **Heavy**: `include_facets`, `online_only`, `cloud_cover`, temporal facet params (`temporal_facet[`), cycle/pass params (`cycle[`, `passes[`), `options[readable_granule_name][pattern]`, shapefile uploads, `polygon[]` (multi-polygon, always heavy), single `polygon` with >20 vertices, bounding boxes with area >5000 sq degrees, more than 2 bounding boxes (`bounding_box[]` with 3+ values)
+- **Heavy**: `include_facets`, `online_only`, `cloud_cover`, temporal facet params (`temporal_facet[`), cycle/pass params (`cycle[`, `passes[`), `options[readable_granule_name][pattern]`, `options[granule_ur][pattern]`, `options[producer_granule_id][pattern]`, shapefile uploads, `polygon[]` (multi-polygon, always heavy), single `polygon` with >20 vertices, bounding boxes with area >5000 sq degrees, more than 2 bounding boxes (`bounding_box[]` with 3+ values)
 - **Standard**: `temporal`, `updated_since`, `revision_date`, `orbit_number`, `point`, `point[]`, single `circle`, small polygon (≤20 vertices), small bounding box (≤5000 sq degrees)
 - **Express**: `circle[]` (explicit fast path — always express regardless of other params), and everything not matched above
 
-**Concurrency**: each lane has a Redis counter (`lane:{name}:active`). When a request arrives, the counter is atomically incremented. If it exceeds the permit limit, the request either overflows to the configured overflow lane or is rejected with a 429. The counter is decremented when the request completes.
+**Concurrency**: each lane has a Redis sorted set (`lane:{name}:active`). When a request arrives, expired entries are pruned, the active count is checked against the permit limit, and if under the limit the request is added as a member scored by its expiry epoch. If the lane is full, the request either overflows to the configured overflow lane or is rejected with a 429. The entry is removed when the request completes. Entries whose score has passed are pruned automatically on the next acquire, so permits from crashed tasks recover without manual intervention.
 
 **Cache**: successful (2xx) responses are stored in Redis keyed on a SHA-256 hash of method, path, query string, hashed auth token, `Accept` header, `cmr-search-after` header, and POST body. Cache hits skip lane acquisition entirely.
 
@@ -45,7 +45,7 @@ All settings are environment variables with the `CMR_PROXY_` prefix.
 | `CMR_PROXY_BACKEND_TIMEOUT_SECONDS` | `300.0` | Backend request timeout |
 | `CMR_PROXY_BACKEND_MAX_CONNECTIONS` | `500` | httpx connection pool size |
 | `CMR_PROXY_BACKEND_MAX_KEEPALIVE` | `200` | httpx keepalive connection pool size |
-| `CMR_PROXY_REDIS_MAX_CONNECTIONS` | auto | Redis pool size; defaults to total lane permits + 50 |
+| `CMR_PROXY_REDIS_MAX_CONNECTIONS` | auto | Redis pool size; defaults to total lane permits + 100 |
 | `CMR_PROXY_REDIS_SOCKET_CONNECT_TIMEOUT` | `2.0` | Redis connection timeout in seconds |
 | `CMR_PROXY_REDIS_SOCKET_TIMEOUT` | `2.0` | Redis read/write timeout in seconds |
 | `CMR_PROXY_REDIS_HEALTH_CHECK_INTERVAL` | `30` | Seconds between Redis keepalive pings |
@@ -56,7 +56,7 @@ All settings are environment variables with the `CMR_PROXY_` prefix.
 |----------|---------|-------------|
 | `CMR_PROXY_BYPASS_ENABLED` | `false` | Skip classification, cache, and lanes — pure transparent proxy |
 | `CMR_PROXY_CACHE_ENABLED` | `true` | Enable response caching |
-| `CMR_PROXY_LOAD_SHEDDING_ENABLED` | `true` | Return 429 when lanes are full; when false, requests proceed over capacity but the counter still increments so pressure remains visible in `/health` |
+| `CMR_PROXY_LOAD_SHEDDING_ENABLED` | `true` | Return 429 when lanes are full; when false, requests proceed over capacity but are still counted in the sorted set so pressure remains visible in `/health` |
 | `CMR_PROXY_CLASSIFICATION_ENABLED` | `true` | Classify requests; when false, all traffic routes to the default lane |
 
 ## Lanes configuration
@@ -131,6 +131,6 @@ pytest
 
 ## Operational notes
 
-**Leaked permits**: If a task is killed mid-request or Redis becomes briefly unavailable, lane counters can accumulate without being decremented. Monitor the health endpoint for lanes that stay near capacity. To reset, delete the lane counter keys from Redis: `lane:express:active`, `lane:standard:active`, `lane:heavy:active`.
+**Leaked permits**: A permit leaks when a task is killed before `_release` runs, or when Redis is briefly unavailable during release (the exception is swallowed so the ASGI handler can still return a response). Once a leaked entry's TTL score passes (defaulting to `backend_timeout_seconds`, 300 seconds), it stops affecting lane counts — the health endpoint's `ZCOUNT` filters on the current timestamp as a lower bound, and each acquire's `ZCARD` runs after `ZREMRANGEBYSCORE` prunes expired-score entries. Physical removal from Redis happens on the next acquire for that lane. Note: if Redis is unavailable during acquire, the fail-open path applies — no permit is stored and no release is attempted, so there is no leak in that case. To immediately reset a lane without waiting for TTL, delete its sorted set key from Redis: `lane:express:active`, `lane:standard:active`, `lane:heavy:active`.
 
 **Debugging**: Set `CMR_PROXY_LOG_LEVEL=DEBUG` to log backend response details including content encoding and actual byte counts. Remove when done — debug logging is verbose under load.
