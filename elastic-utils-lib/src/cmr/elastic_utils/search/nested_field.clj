@@ -5,7 +5,7 @@
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-params-converter :as p]
-   [cmr.transmit.kms :as kms]))
+   [cmr.transmit.kms :as transmit-kms]))
 
 (def variable-subfields
   "The subfields of variable nested field."
@@ -44,10 +44,10 @@
       :temporal-facet temporal-facet-subfields
       :passes pass-subfields
       :measurement-identifiers measurement-identifier-subfields
-      :platforms2 (conj (:platforms kms/keyword-scheme->field-names) :any)
+      :platforms2 (conj (:platforms transmit-kms/keyword-scheme->field-names) :any)
       ;; else
-      (conj (kms/keyword-scheme->field-names
-             (kms/translate-keyword-scheme-to-gcmd base-parent-field))
+      (conj (transmit-kms/keyword-scheme->field-names
+             (transmit-kms/translate-keyword-scheme-to-gcmd base-parent-field))
             :any))))
 
 (defn get-printable-subfields
