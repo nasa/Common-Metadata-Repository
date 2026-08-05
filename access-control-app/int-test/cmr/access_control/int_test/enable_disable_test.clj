@@ -45,7 +45,7 @@
   (e/login (u/conn-context) username))
 
 
-(deftest enable-disable-re-enable-write-acl
+(deftest ^:serial enable-disable-re-enable-write-acl
   (let [token (get-token "admin")
         first-resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
         concept-id (get-in first-resp [:body :concept_id])
@@ -88,7 +88,7 @@
         ;; test delete
         (is (= 200 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
 
-(deftest enable-disable-re-enable-write-group
+(deftest ^:serial enable-disable-re-enable-write-group
   (let [token (get-token "admin")
         group (u/make-group)
         {:keys [status concept_id]} (u/create-group token group)

@@ -41,7 +41,7 @@
      (is (some #{status} [200 201 204 401]))
      (not= status 401))))
 
-(deftest ingest-management-permission-test
+(deftest ^:serial ingest-management-permission-test
   (let [admin-read-update-group-concept-id (e/get-or-create-group (s/context) "admin-read-update-group")
         admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
         admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
@@ -78,69 +78,77 @@
     ;; Grant provider admin permission, but not system permission
     (e/grant-group-provider-admin (s/context) prov-admin-group-concept-id "PROV1" :read :update)
 
-    (testing "Admin permissions test"
-      (are3 [url methods]
-        (check-all-permissions url methods)
+    (try
+      (testing "Admin permissions test"
+        (are3 [url methods]
+              (check-all-permissions url methods)
 
-        "search-clear-cache"
-        (url/search-clear-cache-url) :post
+              "search-clear-cache"
+              (url/search-clear-cache-url) :post
 
-        "search-reset"
-        (url/search-reset-url) :post
+              "search-reset"
+              (url/search-reset-url) :post
 
-        "indexer-clear-cache"
-        (url/indexer-clear-cache-url) :post
+              "indexer-clear-cache"
+              (url/indexer-clear-cache-url) :post
 
-        "indexer-reset"
-        (url/indexer-reset-url) :post
+              "indexer-reset"
+              (url/indexer-reset-url) :post
 
-        "enable-ingest-writes"
-        (url/enable-ingest-writes-url) :post
+              "enable-ingest-writes"
+              (url/enable-ingest-writes-url) :post
 
-        "disable-ingest-write"
-        (url/disable-ingest-writes-url) :post
+              "disable-ingest-write"
+              (url/disable-ingest-writes-url) :post
 
-        "enable-search-writes"
-        (url/enable-search-writes-url) :post
+              "enable-search-writes"
+              (url/enable-search-writes-url) :post
 
-        "disable-search-writes"
-        (url/disable-search-writes-url) :post
+              "disable-search-writes"
+              (url/disable-search-writes-url) :post
 
-        "enable-access-control-writes"
-        (url/enable-access-control-writes-url) :post
+              "enable-access-control-writes"
+              (url/enable-access-control-writes-url) :post
 
-        "disable-access-control-writes"
-        (url/disable-access-control-writes-url) :post
+              "disable-access-control-writes"
+              (url/disable-access-control-writes-url) :post
 
-        "mdb-reset"
-        (url/mdb-reset-url) :post
+              "mdb-reset"
+              (url/mdb-reset-url) :post
 
-        "index-set-reset"
-        (url/index-set-reset-url) :post
+              "index-set-reset"
+              (url/index-set-reset-url) :post
 
-        "reindex-collection-permitted-groups"
-        (url/reindex-collection-permitted-groups-url) :post
+              "reindex-collection-permitted-groups"
+              (url/reindex-collection-permitted-groups-url) :post
 
-        "reindex-all-collections"
-        (url/reindex-all-collections-url) :post
+              "reindex-all-collections"
+              (url/reindex-all-collections-url) :post
 
-        "cleanup-expired-collections"
-        (url/cleanup-expired-collections-url) :post
+              "cleanup-expired-collections"
+              (url/cleanup-expired-collections-url) :post
 
-        "cleanup-granule-bulk-update-tasks"
-        (url/cleanup-granule-bulk-update-task-url) :post
+              "cleanup-granule-bulk-update-tasks"
+              (url/cleanup-granule-bulk-update-task-url) :post
 
-        "access-control-reindex-acls"
-        (url/access-control-reindex-acls-url) :post
+              "access-control-reindex-acls"
+              (url/access-control-reindex-acls-url) :post
 
-        "enable-email-subscription-processing"
-        (url/enable-email-subscription-processing) :post
+              "enable-email-subscription-processing"
+              (url/enable-email-subscription-processing) :post
 
-        "disable-email-subscription-processing"
-        (url/disable-email-subscription-processing) :post))
+              "disable-email-subscription-processing"
+              (url/disable-email-subscription-processing) :post))
 
-    (testing "Admin permissions test with body"
-      (check-all-permissions (url/email-subscription-processing)
-                             :post
-                             {}
-                             {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))))
+      (testing "Admin permissions test with body"
+        (check-all-permissions (url/email-subscription-processing)
+                               :post
+                               {}
+                               {:revision-date-range "2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"}))
+      (finally
+        ;; Always guarantee writes are re-enabled after this test suite!
+        (has-action-permission? (url/enable-ingest-writes-url) :post admin-read-update-token)
+        (has-action-permission? (url/enable-search-writes-url) :post admin-read-update-token)
+        (has-action-permission? (url/enable-access-control-writes-url) :post admin-read-update-token)
+        ;; Give the caches time to clear
+        (Thread/sleep 5000)))))
