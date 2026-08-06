@@ -4,7 +4,7 @@ import tempfile
 import pytest
 from pydantic import ValidationError
 
-from proxy.config import LaneConfig, LanesConfig, ProxySettings, load_lanes_config
+from proxy.config import LaneConfig, LanesConfig, ProxySettings, load_lanes_config, parse_lanes_config
 
 
 class TestProxySettingsDefaults:
@@ -87,6 +87,15 @@ class TestEnvVarOverrides:
         monkeypatch.setenv("CMR_PROXY_LANES_CONFIG", "/etc/cmr/lanes.json")
         s = ProxySettings()
         assert s.lanes_config == "/etc/cmr/lanes.json"
+
+    def test_proxy_lanes_json_default_is_none(self):
+        s = ProxySettings()
+        assert s.lanes_json is None
+
+    def test_proxy_lanes_json_override(self, monkeypatch):
+        monkeypatch.setenv("CMR_PROXY_LANES_JSON", '[{"name":"x","permits":1,"default":true}]')
+        s = ProxySettings()
+        assert s.lanes_json is not None
 
 
 # Lane config model
@@ -234,3 +243,33 @@ class TestLoadLanesConfig:
         assert len(config.lanes) == 4
         assert config.get("bulk").retry_after == 30
         assert config.get("slow").permits == 100
+
+
+# Parsing from a JSON string
+
+
+VALID_LANES_JSON = json.dumps([
+    {"name": "express", "permits": 200, "overflow": "standard", "cache_ttl": 10, "retry_after": 5, "default": True},
+    {"name": "standard", "permits": 150, "cache_ttl": 15, "retry_after": 5},
+    {"name": "heavy", "permits": 50, "cache_ttl": 30, "retry_after": 10},
+])
+
+
+class TestParseLanesConfig:
+    def test_parses_valid_json(self):
+        config = parse_lanes_config(VALID_LANES_JSON)
+        assert len(config.lanes) == 3
+        assert config.default_lane == "express"
+
+    def test_parsed_values_match_input(self):
+        config = parse_lanes_config(VALID_LANES_JSON)
+        assert config.get("heavy").permits == 50
+        assert config.get("heavy").retry_after == 10
+
+    def test_invalid_json_raises(self):
+        with pytest.raises(Exception):
+            parse_lanes_config("not-valid-json{{")
+
+    def test_invalid_schema_raises(self):
+        with pytest.raises(Exception):
+            parse_lanes_config(json.dumps([{"name": "broken"}]))
