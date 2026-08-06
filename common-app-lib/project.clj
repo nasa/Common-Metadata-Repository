@@ -28,7 +28,9 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-codec "1.3.0"]
+                                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                                  [ring/ring-codec "1.3.0"
+                                   :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                                   [ring/ring-jetty-adapter "1.15.4"]
                                   [ring/ring-core "1.15.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]

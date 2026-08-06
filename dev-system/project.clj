@@ -50,7 +50,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
-                           [ring/ring-codec "1.3.0"]
+                           [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                           [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                            [ring/ring-jetty-adapter "1.15.4"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]

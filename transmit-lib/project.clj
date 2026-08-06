@@ -14,7 +14,10 @@
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-jetty-adapter "1.15.4"]
-                 [buddy/buddy-sign "3.4.333"]]
+                 ;; Buddy-sign does have a newish bouncy-castle, it is still not new enough
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                 [buddy/buddy-sign "3.6.1-359"
+                  :exclusions [org.bouncycastle/bcpkix-jdk18on]]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
