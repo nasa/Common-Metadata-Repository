@@ -18,7 +18,7 @@
                  [org.apache.logging.log4j/log4j-api]
                  [org.apache.logging.log4j/log4j-core]
                  [org.clojure/clojure]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [ring/ring-jetty-adapter "1.15.4"]
 
                  ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
                  ;; replacement for it. Exclude these libraries to prevent conflicts.
