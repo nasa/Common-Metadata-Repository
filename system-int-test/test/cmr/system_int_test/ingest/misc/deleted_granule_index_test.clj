@@ -19,23 +19,23 @@
                     {:validate-keywords false})
         concept-id (:concept-id collection)
         concept-key (keyword concept-id)]
-    (bootstrap/start-rebalance-collection concept-id)
-    (index/wait-until-indexed)
-    (bootstrap/finalize-rebalance-collection concept-id)
-    (index/wait-until-indexed)
+    (testing "When a collection with a separate granule index is deleted, 
+              then cascade deletion removes the index and its index-set entries"
+      (bootstrap/start-rebalance-collection concept-id)
+      (index/wait-until-indexed)
+      (bootstrap/finalize-rebalance-collection concept-id)
+      (index/wait-until-indexed)
 
-    (testing "the separate index exists before collection deletion"
       (let [index-set (index/get-index-set-by-id 1)]
         (is (= 200 (:status index-set)))
         (is (some? (get-in index-set [:index-set :concepts :granule concept-key])))
         (is (some #(= concept-id (:name %))
                   (get-in index-set [:index-set :granule :indexes])))
-        (is (= 200 (:status (index/gran-elastic-index-exists? collection))))))
+        (is (= 200 (:status (index/gran-elastic-index-exists? collection)))))
 
-    (ingest/delete-concept (data-core/umm-c-collection->concept collection :echo10) {})
-    (index/wait-until-indexed)
+      (ingest/delete-concept (data-core/umm-c-collection->concept collection :echo10) {})
+      (index/wait-until-indexed)
 
-    (testing "cascade deletion removes the separate index and its index-set entries"
       (let [index-set (index/get-index-set-by-id 1)]
         (is (= 200 (:status index-set)))
         (is (nil? (get-in index-set [:index-set :concepts :granule concept-key])))
