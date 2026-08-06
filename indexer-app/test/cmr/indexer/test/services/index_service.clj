@@ -63,6 +63,8 @@
       (is (= "index-vis" (:mg data)) "Checking message id"))))
 
 (defn- cascade-collection-delete-index-set-result
+  "Calls cascade-collection-delete with mocked dependencies and returns the index set passed to
+  update-index-set, or nil when no index-set update occurs."
   [gran-index-set granule-index-names delete-index-status]
   (let [concept-id "C1234-PROV1"
         updated-index-set (atom nil)]
@@ -106,27 +108,28 @@
         separate-index-set {:index-set
                             {:concepts {:granule {:small_collections small-index
                                                  (keyword concept-id) separate-index}}
-                             :granule {:indexes [{:name separate-index
+                             :granule {:indexes [{:name small-index}
+                                                 {:name separate-index
                                                   :number_of_shards 5}]}}}
         small-index-set {:index-set
                          {:concepts {:granule {:small_collections small-index}}
                           :granule {:indexes [{:name small-index}]}}}
         updated-index-set {:index-set
                            {:concepts {:granule {:small_collections small-index}}
-                            :granule {:indexes []}}}]
+                            :granule {:indexes [{:name small-index}]}}}]
     (are3 [expected gran-index-set granule-index-names delete-index-status]
       (is (= expected
              (cascade-collection-delete-index-set-result
               gran-index-set granule-index-names delete-index-status)))
 
-      "when separate index deletion returns 200, then remove its index-set configuration"
+      "when deletion of a separate index succeeds, then cascade-collection-delete removes its mapping and definition from the index set"
       updated-index-set separate-index-set [separate-index] 200
 
-      "when separate index deletion returns 404, then remove its stale index-set configuration"
+      "when a separate index is missing from Elasticsearch, then cascade-collection-delete removes its stale mapping and definition from the index set"
       updated-index-set separate-index-set [separate-index] 404
 
-      "when separate index deletion fails, then leave the index-set unchanged"
+      "when deletion of a separate index fails, then cascade-collection-delete does not update the index set"
       nil separate-index-set [separate-index] 500
 
-      "when collection uses small_collections, then leave the index-set unchanged"
+      "when the collection uses small_collections, then cascade-collection-delete does not update the index set"
       nil small-index-set [small-index] nil)))

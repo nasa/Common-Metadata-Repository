@@ -582,7 +582,9 @@
         collection-key (keyword concept-id)
         small-index "1_small_collections"
         separate-index "1_c1234_prov1_8_shards"]
-    (testing "when collection has no separate index, then index-set remains unchanged"
+    (testing "when a collection has no separate granule index, then 
+              remove-collection-granule-index-if-exists returns status 200 
+              without making any changes to the index set"
       (let [validate-called? (atom false)
             save-called? (atom false)
             update-called? (atom false)]
@@ -599,7 +601,9 @@
           (is (false? @save-called?))
           (is (false? @update-called?)))))
 
-    (testing "when collection has a resharded separate index, then remove and persist it"
+    (testing "when a collection has a separate granule index, then 
+              remove-collection-granule-index-if-exists removes the mapping and index definition
+              from the index set and returns status 200"
       (let [validate-arg (atom nil)
             save-arg (atom nil)
             update-args (atom nil)]
