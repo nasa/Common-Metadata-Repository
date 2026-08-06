@@ -20,6 +20,7 @@ class ProxySettings(BaseSettings):
     backend_max_keepalive: int = 200
 
     lanes_config: str = "lanes.json"
+    lanes_json: str | None = None
 
     log_level: str = "INFO"
     bypass_enabled: bool = False
@@ -78,6 +79,11 @@ class LanesConfig(BaseModel):
             if lane.name == name:
                 return lane
         return next(lane for lane in self.lanes if lane.default)
+
+
+def parse_lanes_config(json_str: str) -> LanesConfig:
+    """Parse and validate lanes config from a JSON string."""
+    return LanesConfig(lanes=json.loads(json_str))
 
 
 def load_lanes_config(path: str = "lanes.json") -> LanesConfig:
