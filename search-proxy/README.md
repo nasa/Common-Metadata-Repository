@@ -38,7 +38,8 @@ All settings are environment variables with the `CMR_PROXY_` prefix.
 |----------|---------|-------------|
 | `CMR_PROXY_BACKEND_URL` | required | CMR search base URL (no `/search` suffix) |
 | `CMR_PROXY_REDIS_URL` | required | Redis connection URL |
-| `CMR_PROXY_LANES_CONFIG` | `lanes.json` | Path to lanes config file |
+| `CMR_PROXY_LANES_CONFIG` | `lanes.json` | Path to lanes config file; used when `CMR_PROXY_LANES_JSON` is not set |
+| `CMR_PROXY_LANES_JSON` | — | Lanes config as a JSON string; takes precedence over `CMR_PROXY_LANES_CONFIG` when set. Intended for deployments that inject the value from Parameter Store as an environment variable |
 | `CMR_PROXY_LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`) |
 | `CMR_PROXY_MAX_REQUEST_BODY_BYTES` | `52428800` | Max POST body size (50MB) |
 | `CMR_PROXY_MAX_CACHE_RESPONSE_BYTES` | `1048576` | Max response size to cache (1MB) |

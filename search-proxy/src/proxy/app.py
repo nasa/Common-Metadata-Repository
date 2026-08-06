@@ -13,7 +13,7 @@ from pythonjsonlogger import json as jsonlogger
 
 from proxy.cache import ResponseCache
 from proxy.classifier import classify_request
-from proxy.config import ProxySettings, load_lanes_config
+from proxy.config import ProxySettings, load_lanes_config, parse_lanes_config
 from proxy.lanes import LoadSheddingError, RequestLanes
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,12 @@ async def lifespan(app: FastAPI):
     """Initialize shared resources on startup, clean up on shutdown."""
     settings = ProxySettings()
     setup_logging(settings.log_level)
-    lanes_config = load_lanes_config(settings.lanes_config)
+    if settings.lanes_json:
+        lanes_config = parse_lanes_config(settings.lanes_json)
+        logger.info("lanes_config_source", extra={"source": "env"})
+    else:
+        lanes_config = load_lanes_config(settings.lanes_config)
+        logger.info("lanes_config_source", extra={"source": settings.lanes_config})
 
     app.state.settings = settings
     app.state.lanes_config = lanes_config
