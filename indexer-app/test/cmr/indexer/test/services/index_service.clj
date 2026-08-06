@@ -122,13 +122,16 @@
              (cascade-collection-delete-index-set-result
               gran-index-set granule-index-names delete-index-status)))
 
-      "when deletion of a separate index succeeds, then cascade-collection-delete removes its mapping and definition from the index set"
+      "when deletion of a separate index succeeds, then cascade-collection-delete 
+       removes its mapping and definition from the index set"
       updated-index-set separate-index-set [separate-index] 200
 
-      "when a separate index is missing from Elasticsearch, then cascade-collection-delete removes its stale mapping and definition from the index set"
+      "when a separate index is missing from Elasticsearch, then cascade-collection-delete 
+       removes its stale mapping and definition from the index set"
       updated-index-set separate-index-set [separate-index] 404
 
-      "when deletion of a separate index fails, then cascade-collection-delete does not update the index set"
+      "when deletion of a separate index fails, then cascade-collection-delete 
+       does not update the index set"
       nil separate-index-set [separate-index] 500
 
       "when the collection uses small_collections, then cascade-collection-delete does not update the index set"
