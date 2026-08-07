@@ -53,7 +53,7 @@
                                                      org.lz4/lz4-java
                                                      org.jruby.joni/joni
                                                      org.jruby.jcodings/jcodings]]
-                                       [at.yawk.lz4/lz4-java "1.10.1"]
+                                       [at.yawk.lz4/lz4-java "1.11.1"]
 
                                        [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
@@ -69,7 +69,7 @@
                                                     ;; is supposed to be a drop in replacement and
                                                     ;; uses the same package name as the original.
                                                     [net.jpountz.lz4/lz4]
-                                                    [at.yawk.lz4/lz4-java]
+                                                    [at.yawk.lz4/lz4-java "1.11.1"]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]
