@@ -15,9 +15,11 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]]
   :plugins [[lein-shell "0.5.0"]]
@@ -28,8 +30,10 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-codec "1.3.0"]
-                                  [ring/ring-jetty-adapter "1.15.4"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring/ring-core "1.15.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]
