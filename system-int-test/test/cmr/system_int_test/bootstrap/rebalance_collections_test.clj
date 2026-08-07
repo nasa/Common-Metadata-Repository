@@ -467,11 +467,18 @@
      (is (= 404 (:status (search/retrieve-concept (:concept-id deleted-coll) 1))))
      (is (= 404 (:status (search/retrieve-concept (:concept-id deleted-coll) 2))))
 
-     ;; Rebalance to small-collections
-     (bootstrap/start-rebalance-collection (:concept-id deleted-coll) {:target "small-collections"})
-     (index/wait-until-indexed)
-     (bootstrap/assert-rebalance-status {:small-collections 0 :separate-index 0 :rebalancing-status "COMPLETE"} deleted-coll)
-     (bootstrap/finalize-rebalance-collection (:concept-id deleted-coll))
+     ;; Rebalance to small-collections should fail because collection delete cleanup removes
+     ;; the separate index mapping from the index-set.
+     (is (= {:status 400
+             :errors [(format "The collection [%s] does not have a separate granule index."
+                              (:concept-id deleted-coll))]}
+            (bootstrap/start-rebalance-collection
+             (:concept-id deleted-coll)
+             {:target "small-collections"})))
+
+     ;; Verify collection remains not rebalancing and has no separate index mapping.
+     (bootstrap/assert-rebalance-status {:small-collections 0 :rebalancing-status "NOT_REBALANCING"}
+                                        deleted-coll)
 
      ;; Index is already removed, search for granules
      (index/wait-until-indexed)
