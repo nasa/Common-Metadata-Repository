@@ -24,7 +24,9 @@
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
-                 [ring/ring-jetty-adapter "1.15.4"]]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
   :plugins [[lein-exec "0.3.7"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
