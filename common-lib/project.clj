@@ -35,7 +35,7 @@
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]
                  ;; at.yawk.lz4 is a drop in replacement for net.jpountz.lz4 and actually implements
                  ;; the exact same class path so no code change is needed.
-                 [at.yawk.lz4/lz4-java]
+                 [at.yawk.lz4/lz4-java "1.11.1"]
                  [org.clojure/clojure]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]
