@@ -33,7 +33,7 @@
                                org.jruby.jcodings/jcodings]] ;; force use of at.yawk.lz4 below
                  [com.taoensso/carmine "3.0.1" :exclusions [com.taoensso/nippy]]
                  [com.taoensso/nippy "3.0.0" :exclusions [org.lz4/lz4-java]]
-                 [at.yawk.lz4/lz4-java "1.11.1"]
+                 [at.yawk.lz4/lz4-java]
 
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version

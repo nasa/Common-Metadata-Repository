@@ -69,7 +69,7 @@
                                                     ;; is supposed to be a drop in replacement and
                                                     ;; uses the same package name as the original.
                                                     [net.jpountz.lz4/lz4]
-                                                    [at.yawk.lz4/lz4-java "1.11.1"]
+                                                    [at.yawk.lz4/lz4-java]
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]
