@@ -91,7 +91,7 @@ async def lifespan(app: FastAPI):
         ),
     )
     # Redis connection for distributed lane semaphores and response cache.
-    # Pool size defaults to total lane permits + 100. Each acquire involves 3
+    # Pool size defaults to total lane permits + 100. Each acquire involves 4
     # sequential Redis ops (TIME, ZREMRANGEBYSCORE, ZCARD, ZADD) plus a ZREM
     # on release and a GET/SET for cache. Connections are released between ops
     # so peak concurrent demand tracks concurrent requests, not ops per request.
