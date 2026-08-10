@@ -11,9 +11,11 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.csv "0.1.4"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-jetty-adapter "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [buddy/buddy-sign "3.4.333"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -24,7 +26,9 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

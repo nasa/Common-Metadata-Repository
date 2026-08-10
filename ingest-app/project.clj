@@ -31,20 +31,20 @@
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.nrepl "0.2.13"]
-
                  [org.quartz-scheduler/quartz "2.3.2"
                   :exclusions [com.mchange/c3p0 com.mchange/mchange-commons-java]]
                  [com.mchange/c3p0 "0.12.0"]
                  [com.mchange/mchange-commons-java "0.6.0"]
-
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
                  [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]]
@@ -57,7 +57,9 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.15.4"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

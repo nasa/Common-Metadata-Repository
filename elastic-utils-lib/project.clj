@@ -1,4 +1,5 @@
-(def elastic-version "8.19.14")
+(def elastic-version "8.19.17")
+
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -18,7 +19,9 @@
                  [org.apache.logging.log4j/log4j-api]
                  [org.apache.logging.log4j/log4j-core]
                  [org.clojure/clojure]
-                 [ring/ring-jetty-adapter "1.14.2"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
 
                  ;; net.jpountz.lz4 and org.lz4 is no longer supported and at.yawk.lz4 is a drop in
                  ;; replacement for it. Exclude these libraries to prevent conflicts.
@@ -74,8 +77,10 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.15.4"]]}}
+                                     [ring/ring-jetty-adapter "1.15.4"
+                                      :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

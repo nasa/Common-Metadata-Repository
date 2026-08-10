@@ -44,6 +44,7 @@
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
                  [org.eclipse.jetty/jetty-http "12.1.8"]
@@ -56,7 +57,8 @@
                  [org.ow2.asm/asm "7.0"]
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
@@ -76,7 +78,8 @@
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-core "1.15.4"]
-                                  [ring/ring-jetty-adapter "1.15.4"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [clj-http]]
                    :jvm-opts ^:replace ["-server"]
                    ;; XXX Note that profiling can be kept in a profile,
