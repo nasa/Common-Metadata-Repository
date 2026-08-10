@@ -199,7 +199,7 @@ class TestRedisFailOpen:
                 mock_zrem.assert_not_called()
 
     async def test_fail_open_does_not_propagate_exception(self, lanes):
-        """A Redis error during acquire must not surface to the caller as an exception."""
+        """When Redis is unavailable during acquire, then no exception surfaces to the caller."""
         with patch.object(lanes.redis, "time", new=AsyncMock(side_effect=Exception("Redis down"))):
             try:
                 async with lanes.acquire("heavy"):
@@ -245,7 +245,7 @@ class TestLoadSheddingDisabled:
 
 class TestTTLExpiry:
     async def test_expired_permit_is_pruned_on_next_acquire(self, redis_client):
-        """A leaked permit with an expired score is cleaned up on the next acquire."""
+        """When a permit's TTL score has passed, then it is pruned on the next acquire and the slot is freed."""
         config = make_config(heavy_permits=1)
         lanes = RequestLanes(config, redis_client)
 
@@ -258,7 +258,7 @@ class TestTTLExpiry:
             assert actual == "heavy"
 
     async def test_non_expired_permit_blocks_acquire(self, redis_client):
-        """A permit with a future score is still counted as active."""
+        """When a permit's TTL score is in the future, then it is counted as active and blocks acquisition."""
         config = make_config(heavy_permits=1)
         lanes = RequestLanes(config, redis_client)
 
@@ -270,7 +270,7 @@ class TestTTLExpiry:
                 pass
 
     async def test_multiple_expired_permits_all_pruned(self, redis_client):
-        """Multiple leaked permits are all removed before counting capacity."""
+        """When multiple permits have expired scores, then all are pruned before counting capacity."""
         config = make_config(heavy_permits=2)
         lanes = RequestLanes(config, redis_client)
 
