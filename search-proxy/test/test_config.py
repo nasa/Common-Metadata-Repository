@@ -101,6 +101,32 @@ class TestEnvVarOverrides:
 # Lane config model
 
 
+class TestLaneConfigValidation:
+    def test_permits_zero_raises(self):
+        with pytest.raises(ValidationError, match="permits"):
+            LaneConfig(name="x", permits=0)
+
+    def test_permits_negative_raises(self):
+        with pytest.raises(ValidationError, match="permits"):
+            LaneConfig(name="x", permits=-1)
+
+    def test_cache_ttl_negative_raises(self):
+        with pytest.raises(ValidationError, match="cache_ttl"):
+            LaneConfig(name="x", permits=10, cache_ttl=-1)
+
+    def test_retry_after_zero_raises(self):
+        with pytest.raises(ValidationError, match="retry_after"):
+            LaneConfig(name="x", permits=10, retry_after=0)
+
+    def test_retry_after_negative_raises(self):
+        with pytest.raises(ValidationError, match="retry_after"):
+            LaneConfig(name="x", permits=10, retry_after=-5)
+
+    def test_cache_ttl_zero_is_valid(self):
+        lane = LaneConfig(name="x", permits=10, cache_ttl=0)
+        assert lane.cache_ttl == 0
+
+
 class TestLaneConfigModel:
     def test_minimal_lane(self):
         lane = LaneConfig(name="test", permits=10)
@@ -139,6 +165,15 @@ class TestLanesConfigValidation:
         )
         assert config.default_lane == "express"
         assert len(config.lanes) == 3
+
+    def test_duplicate_lane_names_raises(self):
+        with pytest.raises(ValidationError, match="Duplicate"):
+            LanesConfig(
+                lanes=[
+                    LaneConfig(name="express", permits=200, default=True),
+                    LaneConfig(name="express", permits=100),
+                ]
+            )
 
     def test_overflow_to_nonexistent_lane_fails(self):
         with pytest.raises(ValidationError, match="does not exist"):

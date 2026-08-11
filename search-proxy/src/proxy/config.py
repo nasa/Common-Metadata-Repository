@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -41,6 +41,27 @@ class LaneConfig(BaseModel):
     retry_after: int = 5
     default: bool = False
 
+    @field_validator("permits")
+    @classmethod
+    def permits_must_be_positive(cls, v):
+        if v < 1:
+            raise ValueError(f"permits must be at least 1, got {v}")
+        return v
+
+    @field_validator("cache_ttl")
+    @classmethod
+    def cache_ttl_must_be_non_negative(cls, v):
+        if v < 0:
+            raise ValueError(f"cache_ttl must be >= 0, got {v}")
+        return v
+
+    @field_validator("retry_after")
+    @classmethod
+    def retry_after_must_be_positive(cls, v):
+        if v < 1:
+            raise ValueError(f"retry_after must be at least 1, got {v}")
+        return v
+
 
 class LanesConfig(BaseModel):
     """Validated collection of lane definitions loaded from lanes.json."""
@@ -49,7 +70,17 @@ class LanesConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_lanes(self):
-        names = {lane.name for lane in self.lanes}
+        all_names = [lane.name for lane in self.lanes]
+        names = set(all_names)
+
+        # Lane names must be unique
+        if len(all_names) != len(names):
+            seen, dupes = set(), []
+            for n in all_names:
+                if n in seen:
+                    dupes.append(n)
+                seen.add(n)
+            raise ValueError(f"Duplicate lane names: {sorted(dupes)}")
 
         # Every overflow target must reference an existing lane
         for lane in self.lanes:
