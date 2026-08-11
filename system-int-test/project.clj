@@ -30,6 +30,8 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
+                 ;; replacment for org.bouncycastle/bcpkix-jdk15on
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.3.2"]
@@ -37,7 +39,6 @@
                  [org.jsoup/jsoup "1.14.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"

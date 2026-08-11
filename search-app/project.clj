@@ -20,6 +20,8 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
+                 ;; replacment for org.bouncycastle/bcpkix-jdk15on
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
@@ -39,7 +41,6 @@
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
-                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
