@@ -51,6 +51,7 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
                  [org.clojure/tools.reader "1.3.2"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
@@ -58,7 +59,8 @@
 
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -70,7 +72,9 @@
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
@@ -90,8 +94,10 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.15.4"]]}}
+                                     [ring/ring-jetty-adapter "1.15.4"
+                                      :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

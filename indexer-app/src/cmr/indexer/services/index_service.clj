@@ -25,6 +25,7 @@
    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
+   [cmr.indexer.services.index-set-service :as idx-set-svc]
    [cmr.indexer.indexer-util :as indexer-util]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
@@ -684,12 +685,16 @@
         ;; Instead of running a delete-by-query to remove all granules from
         ;; a collection index, we are just deleting the index. This is
         ;; in line with ES best practices
-        (let [resp (es/delete-granule-index context index)]
-          (when (not= (get resp :status) 200)
-            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp)))))))
+        (let [resp (es/delete-granule-index context index)
+              status (get resp :status)]
+          (if (contains? #{200 404} status)
+            ;; Remove the mapping so the deleted index is not recreated on restart.
+            (idx-set-svc/remove-collection-granule-index-if-exists
+             context idx-set/index-set-id concept-id)
+            (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200/404 status response on deleting index %s. Elastic delete index resp = %s" concept-id revision-id index resp))))))
 
-  ;; reindex variables associated with the collection
-  (reindex-associated-variables context concept-id revision-id))
+    ;; reindex variables associated with the collection
+    (reindex-associated-variables context concept-id revision-id)))
 
 (defn get-concept-delete-log-string
   "Get the log string for concept-delete. Appends granules deleted if concept-type is collection"

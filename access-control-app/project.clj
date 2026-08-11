@@ -39,12 +39,16 @@
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            [org.clojure/clojure "1.11.2"]
                            [org.clojure/tools.reader "1.3.2"]
+                           [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                            [org.eclipse.jetty/jetty-http "12.1.8"]
                            [org.eclipse.jetty/jetty-util "12.1.8"]
                            [ring/ring-core "1.15.4"]
-                           [ring/ring-jetty-adapter "1.15.4"]
+
                            [org.bouncycastle/bcpkix-jdk18on "1.85"]
                            [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+
+                           [ring/ring-jetty-adapter "1.15.4"
+                            :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
   :plugins [[lein-modules "0.3.11"]
@@ -61,11 +65,16 @@
                                   [org.clojure/core.async "0.4.500"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
+
                                   [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
-                                  [ring/ring-jetty-adapter "1.15.4"]
+                                  [ring/ring-codec "1.3.0" :exclusions
+                                   [org.bouncycastle/bcpkix-jdk15on]]
+
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
