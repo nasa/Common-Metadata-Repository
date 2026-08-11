@@ -242,6 +242,27 @@ class TestLanesConfigValidation:
                 ]
             )
 
+    def test_three_node_cycle_raises(self):
+        with pytest.raises(ValidationError, match="cycle"):
+            LanesConfig(
+                lanes=[
+                    LaneConfig(name="a", permits=10, overflow="b", default=True),
+                    LaneConfig(name="b", permits=10, overflow="c"),
+                    LaneConfig(name="c", permits=10, overflow="a"),
+                ]
+            )
+
+    def test_rho_shape_cycle_raises(self):
+        """A→B→C→B: cycle not involving the start node."""
+        with pytest.raises(ValidationError, match="cycle"):
+            LanesConfig(
+                lanes=[
+                    LaneConfig(name="a", permits=10, overflow="b", default=True),
+                    LaneConfig(name="b", permits=10, overflow="c"),
+                    LaneConfig(name="c", permits=10, overflow="b"),
+                ]
+            )
+
     def test_get_unknown_lane_returns_default(self):
         config = LanesConfig(
             lanes=[
