@@ -41,6 +41,13 @@ class LaneConfig(BaseModel):
     retry_after: int = 5
     default: bool = False
 
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_blank(cls, v):
+        if not v.strip():
+            raise ValueError("lane name must not be blank or whitespace-only")
+        return v
+
     @field_validator("permits")
     @classmethod
     def permits_must_be_positive(cls, v):
@@ -89,6 +96,22 @@ class LanesConfig(BaseModel):
                     f"Lane '{lane.name}' overflows to '{lane.overflow}' "
                     f"which does not exist. Available: {sorted(names)}"
                 )
+
+        # Self-overflow and cycle detection
+        for lane in self.lanes:
+            if lane.overflow == lane.name:
+                raise ValueError(f"Lane '{lane.name}' overflows to itself")
+
+        overflow_map = {lane.name: lane.overflow for lane in self.lanes}
+        for start in overflow_map:
+            visited, current = {start}, overflow_map.get(start)
+            while current:
+                if current in visited:
+                    raise ValueError(
+                        f"Overflow cycle detected involving lane '{current}'"
+                    )
+                visited.add(current)
+                current = overflow_map.get(current)
 
         # Exactly one lane must be marked as default
         defaults = [lane for lane in self.lanes if lane.default]
