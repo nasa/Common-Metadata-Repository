@@ -3,8 +3,43 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as es-index]))
+
+(def clause-limit-message
+  "The search is creating more clauses than allowed by CMR. Please narrow your search.")
+
+(defn- send-query-with-es-error
+  [body]
+  (with-redefs [es-index/context->conn (constantly nil)
+                es-helper/search (fn [& _]
+                                   (throw (ex-info "Elasticsearch request failed"
+                                                   {:status 400
+                                                    :body body})))]
+    (#'es-index/do-send-with-retry
+     {}
+     {:index-name "test-index" :type-name "collection"}
+     {}
+     1)))
+
+(deftest clause-limit-errors-are-payload-too-large
+  (doseq [[description body]
+          [["Elasticsearch 7 default clause limit error"
+            "maxClauseCount is set to 1024"]
+           ["Elasticsearch 7 configured clause limit error"
+            "maxClauseCount is set to 4096"]
+           ["Elasticsearch 8 clause limit error"
+            (str "{\"error\":{\"root_cause\":[{\"type\":\"illegal_argument_exception\","
+                 "\"reason\":\"Query rewrite failed: too many clauses\"}]},\"status\":400}")]]]
+    (testing description
+      (let [exception (try
+                        (send-query-with-es-error body)
+                        nil
+                        (catch clojure.lang.ExceptionInfo e
+                          e))]
+        (is (= :payload-too-large (:type (ex-data exception))))
+        (is (= [clause-limit-message] (:errors (ex-data exception))))))))
 
 (deftest test-query->execution-params
   (let [query->execution-params #'es-index/query->execution-params
