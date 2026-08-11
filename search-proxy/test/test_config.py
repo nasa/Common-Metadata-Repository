@@ -267,9 +267,38 @@ class TestParseLanesConfig:
         assert config.get("heavy").retry_after == 10
 
     def test_invalid_json_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(json.JSONDecodeError):
             parse_lanes_config("not-valid-json{{")
 
     def test_invalid_schema_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             parse_lanes_config(json.dumps([{"name": "broken"}]))
+
+    def test_empty_string_raises(self):
+        with pytest.raises(json.JSONDecodeError):
+            parse_lanes_config("")
+
+
+class TestLanesConfigSourceSelection:
+    """Verify the is-not-None semantics that drive the lifespan branch selection."""
+
+    def test_lanes_json_set_is_not_none(self, monkeypatch):
+        """When CMR_PROXY_LANES_JSON is set, settings.lanes_json is not None and parse_lanes_config succeeds."""
+        monkeypatch.setenv("CMR_PROXY_LANES_JSON", VALID_LANES_JSON)
+        settings = ProxySettings()
+        assert settings.lanes_json is not None
+        config = parse_lanes_config(settings.lanes_json)
+        assert config.default_lane == "express"
+
+    def test_empty_lanes_json_is_not_none(self, monkeypatch):
+        """An empty string is not None — lifespan calls parse_lanes_config, which raises rather than silently falling back to the file."""
+        monkeypatch.setenv("CMR_PROXY_LANES_JSON", "")
+        settings = ProxySettings()
+        assert settings.lanes_json is not None
+        with pytest.raises(json.JSONDecodeError):
+            parse_lanes_config(settings.lanes_json)
+
+    def test_unset_lanes_json_is_none(self):
+        """When CMR_PROXY_LANES_JSON is not set, lanes_json is None and the file path is used."""
+        settings = ProxySettings()
+        assert settings.lanes_json is None

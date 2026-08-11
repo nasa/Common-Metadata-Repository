@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
     """Initialize shared resources on startup, clean up on shutdown."""
     settings = ProxySettings()
     setup_logging(settings.log_level)
-    if settings.lanes_json:
+    if settings.lanes_json is not None:
         lanes_config = parse_lanes_config(settings.lanes_json)
         logger.info("lanes_config_source", extra={"source": "env"})
     else:
@@ -85,6 +85,19 @@ async def lifespan(app: FastAPI):
     }
 
     logger.info("toggles_loaded", extra={"toggles": app.state.toggles})
+    logger.info(
+        "settings_loaded",
+        extra={
+            "backend_url": settings.backend_url,
+            "lanes_config_source": "env" if settings.lanes_json is not None else settings.lanes_config,
+            "lanes": [{"name": l.name, "permits": l.permits, "overflow": l.overflow, "cache_ttl": l.cache_ttl} for l in lanes_config.lanes],
+            "cache_enabled": settings.cache_enabled,
+            "load_shedding_enabled": settings.load_shedding_enabled,
+            "bypass_enabled": settings.bypass_enabled,
+            "redis_max_connections": settings.redis_max_connections or (sum(l.permits for l in lanes_config.lanes) + 100),
+            "backend_timeout_seconds": settings.backend_timeout_seconds,
+        },
+    )
 
     # Connection-pooled httpx client for forwarding requests to the backend
     app.state.backend = httpx.AsyncClient(
