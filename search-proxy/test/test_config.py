@@ -96,12 +96,23 @@ class TestEnvVarOverrides:
         monkeypatch.setenv("CMR_PROXY_LANES_JSON", '[{"name":"x","permits":1,"default":true}]')
         s = ProxySettings()
         assert s.lanes_json is not None
+        config = parse_lanes_config(s.lanes_json)
+        assert config.default_lane == "x"
+        assert config.get("x").permits == 1
 
 
 # Lane config model
 
 
 class TestLaneConfigValidation:
+    def test_blank_name_raises(self):
+        with pytest.raises(ValidationError, match="blank"):
+            LaneConfig(name="   ", permits=10)
+
+    def test_empty_name_raises(self):
+        with pytest.raises(ValidationError, match="blank"):
+            LaneConfig(name="", permits=10)
+
     def test_permits_zero_raises(self):
         with pytest.raises(ValidationError, match="permits"):
             LaneConfig(name="x", permits=0)
@@ -213,6 +224,23 @@ class TestLanesConfigValidation:
         lane = config.get("slow")
         assert lane.name == "slow"
         assert lane.permits == 5
+
+    def test_self_overflow_raises(self):
+        with pytest.raises(ValidationError, match="itself"):
+            LanesConfig(
+                lanes=[
+                    LaneConfig(name="express", permits=200, overflow="express", default=True),
+                ]
+            )
+
+    def test_overflow_cycle_raises(self):
+        with pytest.raises(ValidationError, match="cycle"):
+            LanesConfig(
+                lanes=[
+                    LaneConfig(name="a", permits=10, overflow="b", default=True),
+                    LaneConfig(name="b", permits=10, overflow="a"),
+                ]
+            )
 
     def test_get_unknown_lane_returns_default(self):
         config = LanesConfig(
