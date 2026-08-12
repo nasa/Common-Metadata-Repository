@@ -63,7 +63,7 @@
 
     ;; disable writes for access control service
     (u/disable-access-control-writes post-options)
-    (Thread/sleep 5000)
+    (Thread/sleep 1000)
 
     (testing "save, update, and delete acl fails after disable"
       (try
@@ -77,7 +77,7 @@
         (finally
           ;; always re-enable writes for access control service
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 5000))))
+          (Thread/sleep 1000))))
 
     (testing "save, upate, and delete acl works after re-enable"
       (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
@@ -121,7 +121,7 @@
         (finally
           ;; Allways re-eneable writes for access control service, even if there was an exception
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 5000))))
+          (Thread/sleep 1000))))
 
     (testing "save, update, and delete group succeeds after re-enable"
       (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
