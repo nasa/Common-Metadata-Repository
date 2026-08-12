@@ -20,7 +20,7 @@
   (fixtures/grant-all-acl-fixture))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
-(deftest invalid-search-test
+(deftest ^:serial invalid-search-test
   (testing "Accept header"
     (testing "Other than JSON is rejected"
       (is (= {:status 400
@@ -65,7 +65,7 @@
             (group-permission->flat-query index {:permitted-group group :permission permission}))
           (partition 2 group-permissions))))
 
-(deftest acl-search-order-test
+(deftest ^:serial acl-search-order-test
   ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
   (let [token (e/login (u/conn-context) "user1")
         acl1 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
@@ -91,7 +91,7 @@
             "System - GROUP"]
            (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
 
-(deftest acl-search-permission-test
+(deftest ^:serial acl-search-permission-test
   (let [_token (e/login (u/conn-context) "user1")
         admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
@@ -170,7 +170,7 @@
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
-(deftest acl-search-test
+(deftest ^:serial acl-search-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
                                {:name "group1"}
@@ -277,7 +277,7 @@
                                           {:page_size 3 :page_num 2}
                                           {:token admin-token}) :took))))))
 
-(deftest acl-search-by-any-id-test
+(deftest ^:serial acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
         acl2 (u/ingest-acl token (u/catalog-item-acl "All Granules"))
@@ -303,7 +303,7 @@
                 (:concept-id acl2)
                 "acl3-legacy-guid"]})))
 
-(deftest acl-search-permitted-group-test
+(deftest ^:serial acl-search-permitted-group-test
   (declare group-permissions acls query-map)
   (u/without-publishing-messages
     (let [token (e/login (u/conn-context) "user1")
@@ -468,7 +468,7 @@
                 :content-type :json}
                (ac/search-for-acls (u/conn-context) query {:token token :raw? true}))))))))
 
-(deftest acl-search-by-identity-type-test
+(deftest ^:serial acl-search-by-identity-type-test
   (declare identity-types expected-acls)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
@@ -517,7 +517,7 @@
         "Identity type searches are always case-insensitive"
         ["PrOvIdEr"] (concat [fixtures/*fixture-provider-acl*] provider-group-acls)))))
 
-(deftest acl-search-by-target-test
+(deftest ^:serial acl-search-by-target-test
   (declare target)
   (let [token (e/login (u/conn-context) "user1")
         single-instance-acl (u/ingest-acl token
@@ -541,7 +541,7 @@
       "Provider target, case insensitive"
       ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
 
-(deftest acl-search-by-permitted-user-test
+(deftest ^:serial acl-search-by-permitted-user-test
   (declare user users)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
@@ -605,7 +605,7 @@
         "User names are case-insensitive"
         ["USER1"] [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
 
-(deftest acl-search-provider-test
+(deftest ^:serial acl-search-provider-test
   (declare options provider-ids)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
@@ -687,7 +687,7 @@
        "Multiple providers with empty results using ignore_case=false option"
        ["prov1"] {"options[provider][ignore_case]" false} []))))
 
-(deftest acl-search-multiple-criteria
+(deftest ^:serial acl-search-multiple-criteria
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
         group2 (u/ingest-group admin-token {:name "group2"} ["user2"])
@@ -755,7 +755,7 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-with-legacy-group-guid-test
+(deftest ^:serial acl-search-with-legacy-group-guid-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1-legacy-guid "group1-legacy-guid"
         group1 (u/ingest-group admin-token
@@ -816,7 +816,7 @@
         (is (= (u/acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
                (dissoc response :took)))))))
 
-(deftest acl-reindexing-test
+(deftest ^:serial acl-reindexing-test
   (u/without-publishing-messages
    (let [token (e/login (u/conn-context) "user1")
          acl1 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
@@ -862,7 +862,7 @@
                             (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
               (set (:items actual-response))))))))
 
-(deftest acl-search-by-target-group-id-test
+(deftest ^:serial acl-search-by-target-group-id-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
                                {:name "group1"}
