@@ -13,6 +13,7 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]
+   [cmr.ingest.validation.variable-validation :as vv]
    [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- validate-and-prepare-variable-concept
@@ -42,12 +43,12 @@
       request-context :update :provider-object provider-id)
      (common-enabled/validate-write-enabled request-context "ingest")
      ;; Ensures the associated collection is visible and not deleted.
-     (v/validate-variable-associated-collection
+     (vv/validate-variable-associated-collection
       request-context coll-concept-id coll-revision-id)
      (let [concept (validate-and-prepare-variable-concept concept)
            {concept-format :format metadata :metadata} concept
            variable (spec/parse-metadata request-context :variable concept-format metadata)
-           validate-var-result (v/umm-spec-validate-variable
+           validate-var-result (vv/umm-spec-validate-variable
                                 variable request-context (not (ingest-config/validate-umm-var-keywords)))
            concept-with-user-id
            (util/remove-nil-keys

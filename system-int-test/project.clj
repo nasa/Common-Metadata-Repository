@@ -30,15 +30,19 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
+                 ;; replacment for org.bouncycastle/bcpkix-jdk15on
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.3.2"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.jsoup/jsoup "1.14.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
                  [org.eclipse.jetty/jetty-io "12.1.8"]]
@@ -54,8 +58,10 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
@@ -75,7 +81,9 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[ring/ring-jetty-adapter "1.15.4"]
+             :kaocha {:dependencies [[org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [ring/ring-jetty-adapter "1.15.4"
+                                      :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                      [lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}

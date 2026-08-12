@@ -287,10 +287,14 @@
   [context index]
   (info (format "Deleting granule index %s from elastic" index))
   (try
-    (esi/delete-index (indexer-util/context->conn context es-config/gran-elastic-name) index)
+    (assoc (esi/delete-index
+            (indexer-util/context->conn context es-config/gran-elastic-name)
+            index)
+           :status 200)
     (catch Throwable e
       (error e (str "Failed to delete granule index: "
-                    (pr-str index))))))
+                    (pr-str index)))
+      {:status (or (:status (ex-data e)) 500)})))
 
 (defn reset-es-store
   "Delete elasticsearch indexes via deleting the index-set and re-create them via index-set app. A nuclear option just for the development team."

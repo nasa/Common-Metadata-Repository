@@ -23,15 +23,19 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
+                 ;; replaces org.bouncycastle/bcpkix-jdk15on
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
                  [ring/ring-core "1.15.4"]
-                 [ring/ring-jetty-adapter "1.15.4"]
-                 [ring/ring-codec "1.3.0"]
+                 [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
             [lein-exec "0.3.7"]
@@ -45,7 +49,9 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.bootstrap.runner

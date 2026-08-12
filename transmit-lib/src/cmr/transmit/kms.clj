@@ -1,12 +1,12 @@
 (ns cmr.transmit.kms
-  "This namespace handles retrieval of controlled keywords from the GCMD Keyword Management
-  System (KMS). There are several different keyword schemes within KMS. They include providers,
+  "This namespace handles requests to the Keyword Management
+  System (KMS) service such as retrieval of controlled keywords. There are several different keyword schemes within KMS. They include providers,
   platforms, instruments, science keywords, and locations. This namespace currently supports
   providers, platforms, and instruments.
 
   For each of the supported keyword schemes we expect the short name to uniquely identify a row
   in the KMS. However we have found that the actual KMS does contain duplicates. Until the GCMD
-  enforces uniqueness we will track any duplicate short names so thaqt we can make GCMD aware and
+  enforces uniqueness we will track any duplicate short names so that we can make GCMD aware and
   they fix the entries.
 
   We utilize the clojure.data.csv library to handle parsing the CSV files. Example KMS keyword files
@@ -25,6 +25,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.core.async :as async]
    [clojure.data.csv :as csv]
    [clojure.java.io :as io]
    [clojure.set :as set]
@@ -53,7 +54,7 @@
    :processing-levels :uuid})
 
 (comment
- "The following map contains code used for transitioning CMR from SIT->UAT->PROD
+  "The following map contains code used for transitioning CMR from SIT->UAT->PROD
   and keeping in step with KMS changes. These three environment all talk to
   production KMS due to AWS->EBNET network limitations. Because of of this we
   need to be able to publish data for all three environment with one host. while
@@ -64,8 +65,7 @@
 
   To override the scheme KMS settings, set the config kms-scheme-override-json to:
   {\"platforms\":\"static\",
-   \"mime-type\":\"mimetype?format=csv&version=special\"}"
- )
+   \"mime-type\":\"mimetype?format=csv&version=special\"}")
 
 (defn- scheme-overrides
   "CMR will Allow for any KMS resource URL to be overridden by a config
@@ -79,8 +79,8 @@
       (json/parse-string overrides true)
       (catch com.fasterxml.jackson.core.JsonParseException e
         (errorf "refresh-kms-cache: Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
-               (config/kms-scheme-override-json)
-               (.getMessage e))))))
+                (config/kms-scheme-override-json)
+                (.getMessage e))))))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
@@ -138,7 +138,7 @@
           :spatial-keywords [:location-category :location-type :location-subregion-1
                              :location-subregion-2 :location-subregion-3 :location-subregion-4 :uuid]
           :spatial-keywords-old [:location-category :location-type :location-subregion-1
-                             :location-subregion-2 :location-subregion-3 :uuid]
+                                 :location-subregion-2 :location-subregion-3 :uuid]
           :processing-levels [:product-level-id :uuid]}))
 
 (def keyword-scheme->required-field
@@ -184,8 +184,8 @@
   "Remove any keys from a map which have nil or empty string values."
   [m]
   (util/remove-map-keys
-    (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
-    m))
+   (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
+   m))
 
 (def NUM_HEADER_LINES
   "Number of lines which contain header information in csv files (not the actual keyword values)."
@@ -237,7 +237,7 @@
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
   (debugf "refresh-kms-cache: About to parse CSV from KMS, first 1k: [%s]."
-         (subs csv-content 0 (min 1024 (count csv-content))))
+          (subs csv-content 0 (min 1024 (count csv-content))))
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
         raw-field-names (second all-lines)
@@ -342,11 +342,79 @@
              (name keyword-scheme))
       keywords)))
 
+(defn metadata-fixer-url
+  "Remove the path for kms fetch's rather than having to make a new env var"
+  [connection]
+  (format "%s/metadata_correction"
+          (clojure.string/replace (conn/root-url connection)
+                                  "/concepts/concept_scheme"
+                                  "")))
+
+(defn send-to-kms-metadata-fixer
+  "Send a POST request to KMS's metadata fixer service, which attempts to
+   reconcile updated keywords with their current values."
+  [context collection-concept-id]
+  (let [conn (config/context->app-connection context :kms)
+        url (metadata-fixer-url conn)
+        token (config/echo-system-token)
+        body  (json/generate-string
+               {:collectionConceptIds [collection-concept-id]})
+        params (merge
+                (config/conn-params conn)
+                {:headers          {:client-id     config/cmr-client-id
+                                    :accept        "application/json"
+                                    :content-type  "application/json"
+                                    :authorization token}
+                 :body             body
+                 :throw-exceptions false})
+        response (client/post url params)]
+    (infof "Sending collection [%s] to kms-metadata-fixer-service at [%s] - response is [%s]"
+           collection-concept-id url response)
+    response))
+
+(defn notify-kms
+  "Send a message to the keyword fix service in KMS"
+  [context collection-concept-id]
+  (async/thread (send-to-kms-metadata-fixer context collection-concept-id)))
+
 (comment
-  (def get-keywords-from-system
-    (partial get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)}))
-  (get-keywords-from-system :measurement-name)
-  (config/set-kms-scheme-override-json! "{\"platforms\": \"static\"}")
-  (first (get-keywords-from-system :platforms))
-  (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv")))
-  )
+  ;; KMS suports both async and sync methods. Requires token helpful for debuggin integration
+  (defn send-to-kms-metadata-fixer-test-synchronous
+    [collection-concept-id]
+    (def test-collection "C1200487107-OB_DAAC")
+    (tap> "Sending data to KMS sync endpoint from the send-to-kms-metadata-fixer-test")
+    (let [url (format "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction/%s"
+                      collection-concept-id)
+          token ""
+          response (client/put url
+                               {:headers          {:client-id    "cmr-standalone"
+                                                   :accept       "application/json"
+                                                   :authorization (format "Bearer %s" token)}
+                                :throw-exceptions false})]
+      (tap> (format "PUT %s -> status [%s]" url (:status response)))
+      (tap> (format "Full result from KMS %s" response))
+      response))
+
+  (defn send-to-kms-metadata-fixer-test-asynchronous
+    [collection-concept-id]
+    (def test-collection "C1200487107-OB_DAAC")
+    (tap> "Sending data to KMS async endpoint from the send-to-kms-metadata-fixer-test")
+    (let [url   "https://cmr.sit.earthdata.nasa.gov/kms/metadata_correction"
+          token ""
+          body  (json/generate-string
+                 {:collectionConceptIds [collection-concept-id]})
+          response (client/post url
+                                {:headers          {:client-id     "cmr-standalone"
+                                                    :accept        "application/json"
+                                                    :content-type  "application/json"
+                                                    :authorization (format "Bearer %s" token)}
+                                 :body             body
+                                 :throw-exceptions false})]
+      (tap> (format "POST %s -> status [%s]" url (:status response)))
+      (tap> (format "Full result from KMS %s" response))
+      response))
+
+  ;; KMS supports both a sync and async request CMR uses async
+  (send-to-kms-metadata-fixer-test-synchronous "C1200362831-ARCTEST")
+  (send-to-kms-metadata-fixer-test-asynchronous "C1200362831-ARCTEST")
+  :rcf)

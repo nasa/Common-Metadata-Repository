@@ -2,19 +2,25 @@
   :description "The Transmit Library is responsible for defining the common transmit
                 libraries that invoke services within the CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
-  :dependencies [[clj-http "3.11.0"]
+  :dependencies [;; Buddy-sign does have a newish bouncy-castle, it is still not new enough
+                 [buddy/buddy-sign "3.6.1-359"
+                  :exclusions [org.bouncycastle/bcprov-jdk18on]]
+                 [clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
+                 ;; replaces org.bouncycastle/bcprov-jdk18on
+                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.csv "0.1.4"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-jetty-adapter "1.15.4"]
-                 [buddy/buddy-sign "3.4.333"]]
+                 [ring/ring-jetty-adapter "1.15.4"
+                  :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -24,7 +30,9 @@
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

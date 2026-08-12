@@ -22,9 +22,11 @@
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
-                                  [ring/ring-jetty-adapter "1.15.4"]]
+                                  [ring/ring-jetty-adapter "1.15.4"
+                                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
                    ;; See https://github.com/technomancy/leiningen/wiki/Faster
                    :jvm-opts ^:replace ["-server"]
@@ -53,8 +55,10 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.15.4"]]}}
+                                     [ring/ring-jetty-adapter "1.15.4"
+                                      :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}
   :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]
 
             ;; Kaocha test aliases

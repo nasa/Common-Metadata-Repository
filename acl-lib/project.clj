@@ -33,8 +33,10 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                      ;; ring is needed or this fails in sys int group3
-                                     [ring/ring-jetty-adapter "1.15.4"]]}}
+                                     [ring/ring-jetty-adapter "1.15.4"
+                                      :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
