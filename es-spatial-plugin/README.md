@@ -27,7 +27,7 @@ To package the spatial script for use in elastic:
 
 This will create a zip in target/ ready for installation in elasticsearch.
 
-## ES Spatial Lib with Elastic 8.19.17 changes and Java 17
+## ES Spatial Lib with Elastic 8.19.14 changes and Java 17
 
 Due to changes in 8.x requirements for plugins, we updated the es-spatial-lib plugin in the following ways to be able to work with 8.x
 
@@ -85,12 +85,12 @@ Here are the instructions on how to create the zip and install on your remote ES
   - Search for that record using a spatial extent search ( a spatial extent search will invoke the spatial plugin.)  You should get your search
     response back without crashing elastic search.
 
-### docker-compose.yml for ES 8.19.17 for GRAN CLUSTER for local runs
+### docker-compose.yml for ES 8.19.14 for GRAN CLUSTER for local runs
 
 ```
 services:
   elasticsearch:
-    image: elasticsearch:8.19.17
+    image: elasticsearch:8.19.14
     ports:
       - 9210:9200
       - 9300:9300
@@ -109,7 +109,7 @@ services:
     container_name: cmr-gran-kibana
     depends_on: 
       - elasticsearch
-    image: docker.elastic.co/kibana/kibana:8.19.17
+    image: docker.elastic.co/kibana/kibana:8.19.14
     ports:
       - 5601:5601
     environment:
@@ -124,12 +124,12 @@ networks:
  elasticsearch-network: {}
 ```
 
-### docker-compose.yml for ES 8.19.17 for NON-GRAN CLUSTER for local runs
+### docker-compose.yml for ES 8.19.14 for NON-GRAN CLUSTER for local runs
 
 ```
 services:
   elasticsearch:
-    image: elasticsearch:8.19.17
+    image: elasticsearch:8.19.14
     ports:
       - 9211:9200
       - 9301:9300
@@ -148,7 +148,7 @@ services:
     container_name: cmr-kibana
     depends_on: 
       - elasticsearch
-    image: docker.elastic.co/kibana/kibana:8.19.17
+    image: docker.elastic.co/kibana/kibana:8.19.14
     ports:
       - 5602:5601
     environment:
