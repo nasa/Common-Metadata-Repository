@@ -1,13 +1,13 @@
 (ns cmr.ingest.api.collections-test
-   "Unit tests for cmr.ingest.api.collections, starting with
+  "Unit tests for cmr.ingest.api.collections, starting with
    get-validation-options. More tests for other functions in this
    namespace can be added here over time."
   (:require [clojure.test :refer [deftest testing is]]
             [cmr.ingest.api.collections :as v :refer [get-validation-options
-                                             VALIDATE_KEYWORDS_HEADER
-                                             ENABLE_UMM_C_VALIDATION_HEADER
-                                             TESTING_EXISTING_ERRORS_HEADER
-                                             SEND_KMS_METADATA_FIXER_HEADER]]))
+                                                      VALIDATE_KEYWORDS_HEADER
+                                                      ENABLE_UMM_C_VALIDATION_HEADER
+                                                      TESTING_EXISTING_ERRORS_HEADER
+                                                      SEND_KMS_METADATA_FIXER_HEADER]]))
 
 ;; ---------------------------------------------------------------------
 ;; :validate-keywords? — default-true-enabled? = true
