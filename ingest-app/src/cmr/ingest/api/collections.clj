@@ -13,6 +13,7 @@
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 (def TESTING_EXISTING_ERRORS_HEADER "cmr-test-existing-errors")
+(def SEND_KMS_METADATA_FIXER_HEADER "cmr-send-kms-metadata-fixer")
 (def COLLECTION_WARNING_CONTEXT "After translating item to UMM-C the metadata had the following issue(s): ")
 (def COLLECTION_EXISTING_ERROR_CONTEXT "After translating item to UMM-C the metadata had the following existing error(s): ")
 
@@ -28,7 +29,8 @@
                                   (= "true" (get headers VALIDATE_KEYWORDS_HEADER)))]
     {:validate-keywords? validate-keywords-value
      :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
-     :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))}))
+     :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))
+     :send-metadata-fixer? (not= "false" (get headers SEND_KMS_METADATA_FIXER_HEADER))}))
 
 (defn validate-collection
   [provider-id native-id request]
