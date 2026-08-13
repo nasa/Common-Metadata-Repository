@@ -11,11 +11,11 @@
   "The search is creating more clauses than allowed by CMR. Please narrow your search.")
 
 (defn- send-query-with-es-error
-  [body]
+  [status body]
   (with-redefs [es-index/context->conn (constantly nil)
                 es-helper/search (fn [& _]
                                    (throw (ex-info "Elasticsearch request failed"
-                                                   {:status 400
+                                                   {:status status
                                                     :body body})))]
     (#'es-index/do-send-with-retry
      {}
@@ -34,12 +34,21 @@
                  "\"reason\":\"Query rewrite failed: too many clauses\"}]},\"status\":400}")]]]
     (testing description
       (let [exception (try
-                        (send-query-with-es-error body)
+                        (send-query-with-es-error 400 body)
                         nil
                         (catch clojure.lang.ExceptionInfo e
                           e))]
         (is (= :payload-too-large (:type (ex-data exception))))
         (is (= [clause-limit-message] (:errors (ex-data exception))))))))
+
+(deftest clause-limit-errors-require-bad-request-status
+  (let [exception (try
+                    (send-query-with-es-error 500 "Query rewrite failed: too many clauses")
+                    nil
+                    (catch clojure.lang.ExceptionInfo e
+                      e))]
+    (is (nil? (:type (ex-data exception))))
+    (is (= 500 (:status (ex-data (ex-cause exception)))))))
 
 (deftest test-query->execution-params
   (let [query->execution-params #'es-index/query->execution-params
