@@ -123,7 +123,8 @@
                       (common-context/context->user-id context)
                       "unknown user"))))
     ;; When a keyword error is detected but, ingest is alllowed send to kms fixer to resolve keyword
-    (when (should-notify-kms? has-keyword-error? existing-errors warnings)
+    (when (and (should-notify-kms? has-keyword-error? existing-errors warnings)
+               (:send-metadata-fixer? validation-options))
       (transmit-kms/notify-kms context concept-id))
     {:entry-title entry-title
      :concept-id concept-id
