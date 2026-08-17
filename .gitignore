@@ -24,6 +24,7 @@ profiles.clj
 dev-system/local.edn
 *pycache*
 .portal
+.snyk
 
 ###############################
 ### Test Files
