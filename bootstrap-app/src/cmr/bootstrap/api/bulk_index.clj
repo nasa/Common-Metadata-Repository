@@ -2,6 +2,7 @@
   "Defines the bulk index functions for the bootstrap API."
   (:require
    [clj-time.core :as time]
+   [clojure.string :as string]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
@@ -9,6 +10,9 @@
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]))
+
+(def ^:private ignore-after-date-time-limit-header
+  "cmr-bulk-index-ignore-time-range-limit")
 
 (defn- parse-date-time-param
   [_param-name date-time]
@@ -77,6 +81,12 @@
        :invalid-data
        (msg/after-date-time-window-exceeded max-window-hours)))))
 
+(defn- ignore-after-date-time-limit?
+  [headers]
+  (= "true"
+     (some-> (get headers ignore-after-date-time-limit-header)
+             string/lower-case)))
+
 (defn index-provider
   "Index all the collections and granules for a given provider."
   [context provider-id-map params]
@@ -112,20 +122,23 @@
 
 (defn data-later-than-date-time
   "Index all data with a revision-date later than the given date-time, with the upper bound set to the request time."
-  [context body params]
-  (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
-        provider-ids (get body "provider_ids")
-        date-time (:date_time params)
-        start-date-time (parse-date-time-param :date_time date-time)
-        end-date-time (time-keeper/now)]
-    (validate-date-time-range start-date-time end-date-time)
-    (validate-after-date-time-window start-date-time end-date-time)
-    {:status 202
-     :body {:message (msg/data-later-than-date-time
-                      params
-                      (service/index-data-between-date-time
-                       context dispatcher provider-ids start-date-time end-date-time)
-                      date-time)}}))
+  ([context body params]
+   (data-later-than-date-time context body params {}))
+  ([context body params headers]
+   (let [dispatcher (api-util/get-dispatcher context params :index-data-between-date-time)
+         provider-ids (get body "provider_ids")
+         date-time (:date_time params)
+         start-date-time (parse-date-time-param :date_time date-time)
+         end-date-time (time-keeper/now)]
+     (validate-date-time-range start-date-time end-date-time)
+     (when-not (ignore-after-date-time-limit? headers)
+       (validate-after-date-time-window start-date-time end-date-time))
+     {:status 202
+      :body {:message (msg/data-later-than-date-time
+                       params
+                       (service/index-data-between-date-time
+                        context dispatcher provider-ids start-date-time end-date-time)
+                       date-time)}})))
 
 (defn data-between-date-time
   "Index data with revision-date in the requested date-time range.

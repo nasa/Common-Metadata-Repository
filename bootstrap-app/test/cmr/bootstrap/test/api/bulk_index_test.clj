@@ -204,6 +204,42 @@
                 {}
                 {:date_time "2026-05-13T01:00:00Z"})))))))
 
+(deftest data-later-than-date-time-supports-time-range-limit-override
+  (let [context {:system :system}
+        service-call (atom nil)]
+    (with-redefs [api-util/get-dispatcher (constantly :dispatcher)
+                  time-keeper/now (constantly (time/date-time 2026 5 13 5 0))
+                  bootstrap-config/bulk-index-after-date-time-max-window-hours (constantly 3)
+                  service/index-data-between-date-time
+                  (fn [& args]
+                    (reset! service-call args)
+                    {:message "indexed"})]
+      (testing "When the override header is true, then a range over the configured limit is accepted"
+        (is (= 202
+               (:status
+                (bulk-index/data-later-than-date-time
+                 context
+                 {"provider_ids" ["PROV1"]}
+                 {:date_time "2026-05-13T01:00:00Z"}
+                 {"cmr-bulk-index-ignore-time-range-limit" "TRUE"}))))
+        (is (= [context
+                :dispatcher
+                ["PROV1"]
+                (time/date-time 2026 5 13 1 0)
+                (time/date-time 2026 5 13 5 0)]
+               @service-call)))
+
+      (testing "When the override header is not true, then the configured range limit is enforced"
+        (doseq [header-value ["false" "invalid"]]
+          (is (= :invalid-data
+                 (:type
+                  (service-error
+                   #(bulk-index/data-later-than-date-time
+                     context
+                     {}
+                     {:date_time "2026-05-13T01:00:00Z"}
+                     {"cmr-bulk-index-ignore-time-range-limit" header-value}))))))))))
+
 (deftest data-later-than-date-time-validates-range
   (let [context {:system :system}]
     (with-redefs [api-util/get-dispatcher (constantly :dispatcher)

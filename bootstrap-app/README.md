@@ -255,6 +255,17 @@ Operator can use the `start_index` parameter to index concepts with sequence num
 The `/after_date_time` endpoint is retained for compatibility. New callers should use
 `/between_date_time`, which bounds the request to an explicit time range.
 Compatibility requests to `/after_date_time` are implicitly bounded from `date_time` to the request timestamp and are rejected when that window exceeds the configured maximum.
+The maximum is 30 days by default.
+
+To allow an authorized request to exceed the configured maximum time range:
+
+    curl -i \
+        -X POST \
+        -H "CMR-Bulk-Index-Ignore-Time-Range-Limit: true" \
+        "http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
+
+Only a case-insensitive value of `true` disables the time-range limit. If the header is omitted or
+has any other value, the configured maximum remains enforced.
 
 For all providers and all system concepts:
 

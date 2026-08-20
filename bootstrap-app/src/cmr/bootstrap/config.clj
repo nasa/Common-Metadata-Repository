@@ -49,7 +49,7 @@
 (defconfig bulk-index-after-date-time-max-window-hours
   "Maximum number of hours allowed for /bulk_index/after_date_time. Larger windows should use
   /bulk_index/between_date_time explicitly."
-  {:default 168
+  {:default 720
    :type Long})
 
 (declare initialize-kms-on-boot)
