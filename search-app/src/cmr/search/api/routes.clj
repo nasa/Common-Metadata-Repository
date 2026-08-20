@@ -12,6 +12,7 @@
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.providers :as providers-api]
+   [cmr.search.api.semantic-search :as semantic-search-api]
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.tools :as tools-api]
@@ -83,6 +84,9 @@
 
         ;; Find concepts
        concepts-search-api/search-routes
+
+        ;; Prototype semantic collection search proxy
+       semantic-search-api/semantic-search-routes
 
         ;; Granule timeline
        concepts-search-api/granule-timeline-routes

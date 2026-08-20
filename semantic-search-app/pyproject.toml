@@ -1,0 +1,23 @@
+[project]
+name = "cmr-semantic-search"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "elasticsearch[async]>=8.19,<9",
+  "fastapi>=0.115,<1",
+  "pydantic-settings>=2.7,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+test = ["httpx>=0.28,<1", "pytest>=8.3,<9", "pytest-asyncio>=0.25,<1"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+

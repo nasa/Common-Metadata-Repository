@@ -1,0 +1,19 @@
+[project]
+name = "cmr-semantic-search-export"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3==1.40.14",
+    "elasticsearch==8.19.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.1", "ruff==0.12.9"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
