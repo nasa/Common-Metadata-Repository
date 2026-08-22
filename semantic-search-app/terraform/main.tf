@@ -247,10 +247,6 @@ resource "aws_ecs_task_definition" "app" {
     size_in_gib = var.ephemeral_storage_gib
   }
 
-  volume {
-    name = "tmp"
-  }
-
   container_definitions = jsonencode([{
     name      = "semantic-search"
     image     = local.image_uri
@@ -271,12 +267,10 @@ resource "aws_ecs_task_definition" "app" {
       { name = "ELASTICSEARCH_BATCH_SIZE", value = tostring(var.elasticsearch_batch_size) },
       { name = "BEDROCK_MAX_ATTEMPTS", value = tostring(var.bedrock_max_attempts) }
     ]
-    readonlyRootFilesystem = true
-    mountPoints = [{
-      sourceVolume  = "tmp"
-      containerPath = "/tmp"
-      readOnly      = false
-    }]
+    # The non-root application creates import files in /tmp. An anonymous Fargate
+    # volume is root-owned, so use the task's ephemeral container filesystem.
+    readonlyRootFilesystem = false
+    mountPoints            = []
     volumesFrom = []
     linuxParameters = {
       initProcessEnabled = true

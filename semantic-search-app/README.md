@@ -75,3 +75,7 @@ curl --fail-with-body -X POST -H 'Content-Type: application/json' \
 Poll the returned `status_url`. Once it succeeds, `/health` should return 200 and searches can use
 `GET /semantic-collections`. Set `search-app`'s semantic service URL to the Terraform
 `semantic_search_url` output and enable its semantic-search feature flag only after direct testing.
+
+The container runs as a non-root user and uses Fargate's writable ephemeral container filesystem for
+`/tmp`. The `ephemeral_storage_gib` setting therefore bounds space available while an import
+downloads and validates its JSONL source.
