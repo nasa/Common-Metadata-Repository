@@ -77,6 +77,46 @@ The build produces `semantic-search-export-lambda.zip`; configure the Lambda han
 `cmr_export.handler.lambda_handler`. Tests inject fake Elasticsearch and S3 clients and never use
 network services. `tests/test_export.py` also provides the local fake-client invocation example.
 
+## Terraform deployment
+
+The [terraform](terraform/) directory deploys the built ZIP, Lambda execution role, prefix-scoped
+S3 policy, and CloudWatch log group. It deliberately does not create or change the S3 bucket, VPC,
+subnets, security groups, Elasticsearch cluster, or their network rules.
+
+Build the ZIP for the Lambda runtime/architecture, copy the example variables, and fill in the
+existing bucket and network values:
+
+```bash
+./semantic-search-export-lambda/build.sh
+cp semantic-search-export-lambda/terraform/terraform.tfvars.example \
+  semantic-search-export-lambda/terraform/terraform.tfvars
+terraform -chdir=semantic-search-export-lambda/terraform init
+terraform -chdir=semantic-search-export-lambda/terraform plan -out=exporter.tfplan
+terraform -chdir=semantic-search-export-lambda/terraform apply exporter.tfplan
+```
+
+The configured subnets must reach both the Elasticsearch EC2 addresses and S3. For private subnets,
+provide an S3 gateway endpoint or NAT path; putting a Lambda in a public subnet does not itself give
+the function internet access. The supplied security group needs egress to Elasticsearch's port and
+to HTTPS/S3, while the Elasticsearch instance security group must accept traffic from the Lambda
+security group. No Elasticsearch authentication environment variables are set by Terraform.
+
+The S3 role policy is limited to `s3_prefix`. Keep `default_s3_key` and event-provided keys beneath
+that prefix. Terraform will fail at Lambda creation if the deployment ZIP has not been built at
+`deployment_package_path`. If your account requires an IAM permissions boundary, set
+`permissions_boundary_arn` in `terraform.tfvars`.
+
+After apply, run a smoke invocation with a unique key:
+
+```bash
+aws lambda invoke \
+  --function-name cmr-semantic-search-export-test \
+  --cli-binary-format raw-in-base64-out \
+  --payload '{"key":"exports/smoke-20260820.jsonl","max_collections":10}' \
+  /tmp/cmr-export-response.json
+python3 -m json.tool /tmp/cmr-export-response.json
+```
+
 ## Deployment requirements
 
 Use a Python 3.12 Lambda matching the architecture used to build dependencies. Start with 1 GB
