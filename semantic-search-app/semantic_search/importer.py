@@ -42,11 +42,11 @@ def validate_jsonl(path: Path) -> list[Collection]:
 
 INDEX_MAPPING = {"mappings": {"properties": {
     "passage_id": {"type": "keyword"}, "passage_type": {"type": "keyword"},
-    "collection_id": {"type": "keyword"}, "short_name": {"type": "text", "boost": 5},
-    "title": {"type": "text", "boost": 4}, "summary": {"type": "text"},
+    "collection_id": {"type": "keyword"}, "short_name": {"type": "text"},
+    "title": {"type": "text"}, "summary": {"type": "text"},
     "science_keywords": {"type": "text"}, "platforms": {"type": "text"},
     "instruments": {"type": "text"}, "variable_id": {"type": "keyword"},
-    "variable_name": {"type": "text", "boost": 4}, "variable_long_name": {"type": "text"},
+    "variable_name": {"type": "text"}, "variable_long_name": {"type": "text"},
     "variable_definition": {"type": "text"}, "measurements": {"type": "text"},
     "units": {"type": "text"}, "passage_text": {"type": "text"},
     "temporal": {"type": "date_range"}, "spatial": {"type": "geo_shape"},

@@ -3,7 +3,7 @@ import json
 import pytest
 
 from semantic_search.documents import build_passages, passage_id
-from semantic_search.importer import ImportValidationError, validate_jsonl
+from semantic_search.importer import INDEX_MAPPING, ImportValidationError, validate_jsonl
 from semantic_search.models import Collection
 from semantic_search.search import deduplicate, parse_bounding_box, parse_temporal, rrf
 
@@ -14,6 +14,11 @@ RECORD = {
     "spatial": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]},
     "variables": [{"concept_id": "V1-P", "name": "Sea temperature", "units": ["kelvin"]}],
 }
+
+
+def test_index_mapping_uses_query_time_boosts_only():
+    properties = INDEX_MAPPING["mappings"]["properties"]
+    assert all("boost" not in mapping for mapping in properties.values())
 
 
 def test_passages_are_deterministic_and_include_variable_context():
