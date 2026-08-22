@@ -1,0 +1,52 @@
+# Copy to terraform.tfvars and replace every placeholder.
+aws_region  = "us-east-1"
+service_name = "cmr-semantic-search-test"
+
+vpc_id = "vpc-REPLACE_ME"
+subnet_ids = [
+  "subnet-REPLACE_ME_1",
+  "subnet-REPLACE_ME_2",
+  "subnet-REPLACE_ME_3",
+]
+
+# Permit search-app (and optionally a bastion/test client SG) to call the new
+# internal ALB. Attach the working CMR service SG to the task as well so its
+# Elasticsearch network permissions are preserved.
+client_security_group_ids = [
+  "sg-CMR_SERVICE_OR_CLIENT",
+]
+client_cidr_blocks = []
+additional_task_security_group_ids = [
+  "sg-CMR_SERVICE",
+]
+
+# This cluster has an HTTP listener on 9200 and no HTTPS listener.
+elasticsearch_url = "xxxxxxxx:9200"
+
+import_s3_bucket_name = "REPLACE_WITH_EXISTING_BUCKET"
+import_s3_prefix      = "semantic-collections"
+
+ecr_repository_name = "cmr-semantic-search"
+# Use an immutable/versioned value in normal operation, e.g. a commit SHA.
+image_tag = "test-20260821"
+
+bedrock_model_id          = "amazon.titan-embed-text-v2:0"
+semantic_index_alias      = "semantic_collections"
+import_control_index      = "semantic_search_imports"
+embedding_concurrency     = 4
+elasticsearch_batch_size  = 100
+bedrock_max_attempts      = 5
+
+task_cpu              = 1024
+task_memory_mb        = 2048
+ephemeral_storage_gib = 21
+cpu_architecture      = "X86_64"
+log_retention_days    = 14
+
+permissions_boundary_arn = null
+
+tags = {
+  Environment = "test"
+  Application = "cmr-semantic-search"
+}
+
