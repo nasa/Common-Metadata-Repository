@@ -1,10 +1,16 @@
 import json
+from types import SimpleNamespace
 
 import pytest
 
 from semantic_search.documents import build_passages, passage_id
-from semantic_search.importer import INDEX_MAPPING, ImportValidationError, validate_jsonl
-from semantic_search.models import Collection
+from semantic_search.importer import (
+    INDEX_MAPPING,
+    ImportManager,
+    ImportValidationError,
+    validate_jsonl,
+)
+from semantic_search.models import Collection, ImportJob
 from semantic_search.search import deduplicate, parse_bounding_box, parse_temporal, rrf
 
 
@@ -42,6 +48,45 @@ def test_validate_rejects_duplicate_ids(tmp_path):
     source.write_text("\n".join((json.dumps(RECORD), json.dumps(RECORD))), encoding="utf-8")
     with pytest.raises(ImportValidationError, match="line 2: duplicate"):
         validate_jsonl(source)
+
+
+async def test_importer_embeds_and_indexes_bounded_batches(monkeypatch):
+    bulk_batches = []
+
+    async def fake_bulk(es, actions, **options):
+        documents = list(actions)
+        bulk_batches.append(documents)
+        assert options["chunk_size"] == 2
+        return len(documents), []
+
+    class Embedder:
+        async def embed(self, text):
+            return [float(len(text))], 3
+
+    monkeypatch.setattr("semantic_search.importer.async_bulk", fake_bulk)
+    manager = ImportManager(
+        SimpleNamespace(embedding_concurrency=2, elasticsearch_batch_size=2),
+        s3=None,
+        embedder=Embedder(),
+        es=object(),
+    )
+    job = ImportJob(import_id="import-1", status="running", source_uri="s3://bucket/key")
+    passages = (
+        {"passage_id": f"passage-{number}", "passage_text": f"text-{number}"}
+        for number in range(5)
+    )
+
+    await manager._embed_and_index("target-index", passages, job)
+
+    assert [len(batch) for batch in bulk_batches] == [2, 2, 1]
+    assert all(
+        document["_source"]["embedding"] == [6.0]
+        for batch in bulk_batches
+        for document in batch
+    )
+    assert job.bedrock_input_tokens == 15
+    assert job.indexed_documents == 5
+    assert job.failed_documents == 0
 
 
 def _hit(collection, passage):

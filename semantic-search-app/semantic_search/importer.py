@@ -3,6 +3,7 @@ import json
 import logging
 import tempfile
 from datetime import UTC, datetime
+from itertools import batched
 from pathlib import Path
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -94,6 +95,32 @@ class ImportManager:
         await self.es.index(index=self.settings.import_control_index, id=job.import_id,
                             document=job.model_dump(mode="json"), refresh=True)
 
+    async def _embed_and_index(self, index, passages, job):
+        semaphore = asyncio.Semaphore(self.settings.embedding_concurrency)
+
+        async def enrich(passage):
+            async with semaphore:
+                vector, tokens = await self.embedder.embed(passage["passage_text"])
+            job.bedrock_input_tokens += tokens
+            return {**passage, "embedding": vector}
+
+        for passage_batch in batched(passages, self.settings.elasticsearch_batch_size):
+            documents = await asyncio.gather(*(enrich(passage) for passage in passage_batch))
+            actions = (
+                {"_index": index, "_id": document["passage_id"], "_source": document}
+                for document in documents
+            )
+            success, failures = await async_bulk(
+                self.es,
+                actions,
+                chunk_size=self.settings.elasticsearch_batch_size,
+                raise_on_error=False,
+            )
+            job.indexed_documents += success
+            job.failed_documents += len(failures)
+            if failures:
+                raise RuntimeError(f"{job.failed_documents} documents failed indexing")
+
     async def _run(self, job):
         try:
             job.status, job.started_at = "running", datetime.now(UTC)
@@ -105,22 +132,15 @@ class ImportManager:
                     path = Path(directory) / "source.jsonl"
                     await asyncio.to_thread(self.s3.download_file, parsed.netloc, parsed.path.lstrip("/"), str(path))
                     collections = validate_jsonl(path)
-                passages = [p for collection in collections for p in build_passages(collection)]
-                job.collections_processed, job.passages_processed = len(collections), len(passages)
+                job.collections_processed = len(collections)
+                job.passages_processed = sum(1 + len(collection.variables) for collection in collections)
                 await self.es.indices.create(index=index, **INDEX_MAPPING)
-                semaphore = asyncio.Semaphore(self.settings.embedding_concurrency)
-                async def enrich(passage):
-                    async with semaphore:
-                        vector, tokens = await self.embedder.embed(passage["passage_text"])
-                    job.bedrock_input_tokens += tokens
-                    return {**passage, "embedding": vector}
-                documents = await asyncio.gather(*(enrich(p) for p in passages))
-                actions = ({"_index": index, "_id": p["passage_id"], "_source": p} for p in documents)
-                success, failures = await async_bulk(self.es, actions,
-                    chunk_size=self.settings.elasticsearch_batch_size, raise_on_error=False)
-                job.indexed_documents, job.failed_documents = success, len(failures)
-                if failures:
-                    raise RuntimeError(f"{len(failures)} documents failed indexing")
+                passages = (
+                    passage
+                    for collection in collections
+                    for passage in build_passages(collection)
+                )
+                await self._embed_and_index(index, passages, job)
                 await self.es.indices.refresh(index=index)
                 await self.es.search(index=index, size=1, query={"match_all": {}})
                 await self.es.indices.update_aliases(actions=[
