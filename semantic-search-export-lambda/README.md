@@ -11,7 +11,7 @@ Required: `ELASTICSEARCH_URL`. Optional settings are:
 | Variable | Default | Meaning |
 |---|---:|---|
 | `COLLECTION_ALIAS` | `collection_search_alias` | Current non-deleted collection alias |
-| `VARIABLE_ALIAS` | `variables` | Current non-deleted variable alias; **confirm in cloud** |
+| `VARIABLE_ALIAS` | `variables` | Current non-deleted variable index/alias; test cloud was observed as `1_variables` |
 | `S3_BUCKET`, `S3_KEY` | none | Invocation defaults |
 | `PAGE_SIZE` | `100` | PIT search page size |
 | `VARIABLE_BATCH_SIZE` | `500` | IDs per bounded variable query |
@@ -82,6 +82,10 @@ network services. `tests/test_export.py` also provides the local fake-client inv
 The [terraform](terraform/) directory deploys the built ZIP, Lambda execution role, prefix-scoped
 S3 policy, and CloudWatch log group. It deliberately does not create or change the S3 bucket, VPC,
 subnets, security groups, Elasticsearch cluster, or their network rules.
+
+Terraform requires `variable_alias` to be set explicitly because deployed index-set names can differ
+from the repository-level `variables` default. The cloud test environment was observed using
+`1_variables`; confirm it for every environment rather than relying on that value universally.
 
 Build the ZIP for the Lambda runtime/architecture, copy the example variables, and fill in the
 existing bucket and network values:

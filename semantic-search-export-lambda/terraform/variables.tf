@@ -38,9 +38,8 @@ variable "collection_alias" {
 }
 
 variable "variable_alias" {
-  description = "Current/latest variable index or alias."
+  description = "Current/latest variable index or alias. This is environment-specific and must be confirmed from Elasticsearch."
   type        = string
-  default     = "variables"
 }
 
 variable "s3_bucket_name" {
@@ -186,4 +185,3 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
-

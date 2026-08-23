@@ -9,7 +9,9 @@ deployment_package_path = "../semantic-search-export-lambda.zip"
 elasticsearch_url          = "http://10.0.0.123:9200"
 elasticsearch_verify_certs = true
 collection_alias           = "collection_search_alias"
-variable_alias             = "variables"
+# The cloud test index was observed as 1_variables. Confirm this in each
+# environment with GET /_alias/*variable* and GET /_cat/indices/*variable*.
+variable_alias             = "1_variables"
 
 # Create this bucket before terraform apply. The output key must remain beneath
 # s3_prefix because the execution role is restricted to that prefix.
@@ -44,4 +46,3 @@ tags = {
   Environment = "test"
   Application = "cmr-semantic-search-export"
 }
-
