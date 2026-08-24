@@ -1,26 +1,19 @@
 # Copy this file to terraform.tfvars and replace every placeholder.
 aws_region = "us-east-1"
+task_name  = "cmr-semantic-search-export-test"
 
-function_name           = "cmr-semantic-search-export-test"
-deployment_package_path = "../semantic-search-export-lambda.zip"
-
-# No username, password, API key, or IAM signing is configured. Security groups
-# and routing must allow this Lambda to connect directly to the EC2 cluster.
+# No Elasticsearch credentials or IAM signing are configured. Network routes
+# and security groups must allow this task to connect directly to the cluster.
 elasticsearch_url          = "http://10.0.0.123:9200"
 elasticsearch_verify_certs = true
 collection_alias           = "collection_search_alias"
-# The cloud test index was observed as 1_variables. Confirm this in each
-# environment with GET /_alias/*variable* and GET /_cat/indices/*variable*.
-variable_alias             = "1_variables"
+# Confirm this alias in each environment.
+variable_alias = "1_variables"
 
-# Create this bucket before terraform apply. The output key must remain beneath
-# s3_prefix because the execution role is restricted to that prefix.
+# The task generates a unique versioned object name beneath this prefix.
 s3_bucket_name = "REPLACE_WITH_EXISTING_BUCKET"
-s3_prefix      = "exports"
-default_s3_key = "exports/collections-test.jsonl"
+s3_prefix      = "semantic-collections"
 
-# Use private subnets that can route to Elasticsearch. They also need S3 access,
-# either through an S3 gateway endpoint or through NAT.
 subnet_ids = [
   "subnet-REPLACE_ME_1",
   "subnet-REPLACE_ME_2",
@@ -29,18 +22,22 @@ security_group_ids = [
   "sg-REPLACE_ME",
 ]
 
-max_collections     = 1000
+max_collections     = 100000
 page_size            = 100
 variable_batch_size = 500
 
-runtime                  = "python3.12"
-architecture             = "x86_64"
-memory_size_mb           = 1024
-timeout_seconds          = 900
-ephemeral_storage_mb     = 1024
-reserved_concurrency     = 1
-log_retention_days       = 14
-permissions_boundary_arn = null
+ecr_repository_name = "cmr-semantic-search-export"
+# Use a commit SHA or another immutable value and push it before full apply.
+image_tag = "test-20260823"
+
+task_cpu              = 1024
+task_memory_mb        = 2048
+ephemeral_storage_gib = 21
+cpu_architecture      = "X86_64"
+
+container_insights_enabled = true
+log_retention_days          = 14
+permissions_boundary_arn    = null
 
 tags = {
   Environment = "test"

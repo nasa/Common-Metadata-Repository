@@ -17,43 +17,74 @@ provider "aws" {
   }
 }
 
-locals {
-  package_path = startswith(var.deployment_package_path, "/") ? var.deployment_package_path : "${path.module}/${var.deployment_package_path}"
-  s3_prefix    = trim(var.s3_prefix, "/")
-  s3_objects   = local.s3_prefix == "" ? "arn:${data.aws_partition.current.partition}:s3:::${var.s3_bucket_name}/*" : "arn:${data.aws_partition.current.partition}:s3:::${var.s3_bucket_name}/${local.s3_prefix}/*"
-}
-
 data "aws_partition" "current" {}
 
-resource "aws_cloudwatch_log_group" "exporter" {
-  name              = "/aws/lambda/${var.function_name}"
-  retention_in_days = var.log_retention_days
-}
-
-resource "aws_iam_role" "exporter" {
-  name                 = "${var.function_name}-execution"
-  permissions_boundary = var.permissions_boundary_arn
-
-  assume_role_policy = jsonencode({
+locals {
+  image_uri  = "${aws_ecr_repository.exporter.repository_url}:${var.image_tag}"
+  s3_prefix  = trim(var.s3_prefix, "/")
+  s3_objects = local.s3_prefix == "" ? "arn:${data.aws_partition.current.partition}:s3:::${var.s3_bucket_name}/*" : "arn:${data.aws_partition.current.partition}:s3:::${var.s3_bucket_name}/${local.s3_prefix}/*"
+  ecs_task_assume_role = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
       Principal = {
-        Service = "lambda.amazonaws.com"
+        Service = "ecs-tasks.amazonaws.com"
       }
       Action = "sts:AssumeRole"
     }]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "vpc_execution" {
-  role       = aws_iam_role.exporter.name
-  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+resource "aws_ecr_repository" "exporter" {
+  name                 = var.ecr_repository_name
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "exporter" {
+  repository = aws_ecr_repository.exporter.name
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Retain the newest 20 images"
+      selection = {
+        tagStatus   = "any"
+        countType   = "imageCountMoreThan"
+        countNumber = 20
+      }
+      action = { type = "expire" }
+    }]
+  })
+}
+
+resource "aws_cloudwatch_log_group" "exporter" {
+  name              = "/ecs/${var.task_name}"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_iam_role" "execution" {
+  name                 = "${var.task_name}-execution"
+  permissions_boundary = var.permissions_boundary_arn
+  assume_role_policy   = local.ecs_task_assume_role
+}
+
+resource "aws_iam_role_policy_attachment" "execution" {
+  role       = aws_iam_role.execution.name
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role" "task" {
+  name                 = "${var.task_name}-task"
+  permissions_boundary = var.permissions_boundary_arn
+  assume_role_policy   = local.ecs_task_assume_role
 }
 
 resource "aws_iam_role_policy" "s3_export" {
   name = "s3-export-prefix"
-  role = aws_iam_role.exporter.id
+  role = aws_iam_role.task.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -66,47 +97,64 @@ resource "aws_iam_role_policy" "s3_export" {
   })
 }
 
-resource "aws_lambda_function" "exporter" {
-  function_name = var.function_name
-  description   = "Exports current CMR collection and variable metadata to semantic-search JSONL"
-  role          = aws_iam_role.exporter.arn
-  runtime       = var.runtime
-  architectures = [var.architecture]
-  handler       = "cmr_export.handler.lambda_handler"
+resource "aws_ecs_cluster" "exporter" {
+  name = var.task_name
 
-  filename         = local.package_path
-  source_code_hash = filebase64sha256(local.package_path)
+  setting {
+    name  = "containerInsights"
+    value = var.container_insights_enabled ? "enabled" : "disabled"
+  }
+}
 
-  memory_size                    = var.memory_size_mb
-  timeout                        = var.timeout_seconds
-  reserved_concurrent_executions = var.reserved_concurrency
+resource "aws_ecs_task_definition" "exporter" {
+  family                   = var.task_name
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = tostring(var.task_cpu)
+  memory                   = tostring(var.task_memory_mb)
+  execution_role_arn       = aws_iam_role.execution.arn
+  task_role_arn            = aws_iam_role.task.arn
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = var.cpu_architecture
+  }
 
   ephemeral_storage {
-    size = var.ephemeral_storage_mb
+    size_in_gib = var.ephemeral_storage_gib
   }
 
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = var.security_group_ids
-  }
-
-  environment {
-    variables = {
-      ELASTICSEARCH_URL          = var.elasticsearch_url
-      ELASTICSEARCH_VERIFY_CERTS = tostring(var.elasticsearch_verify_certs)
-      COLLECTION_ALIAS           = var.collection_alias
-      VARIABLE_ALIAS             = var.variable_alias
-      S3_BUCKET                  = var.s3_bucket_name
-      S3_KEY                     = var.default_s3_key
-      PAGE_SIZE                  = tostring(var.page_size)
-      VARIABLE_BATCH_SIZE        = tostring(var.variable_batch_size)
-      MAX_COLLECTIONS            = tostring(var.max_collections)
+  container_definitions = jsonencode([{
+    name      = "semantic-search-exporter"
+    image     = local.image_uri
+    essential = true
+    environment = [
+      { name = "AWS_REGION", value = var.aws_region },
+      { name = "ELASTICSEARCH_URL", value = var.elasticsearch_url },
+      { name = "ELASTICSEARCH_VERIFY_CERTS", value = tostring(var.elasticsearch_verify_certs) },
+      { name = "COLLECTION_ALIAS", value = var.collection_alias },
+      { name = "VARIABLE_ALIAS", value = var.variable_alias },
+      { name = "S3_BUCKET", value = var.s3_bucket_name },
+      { name = "S3_PREFIX", value = local.s3_prefix },
+      { name = "PAGE_SIZE", value = tostring(var.page_size) },
+      { name = "VARIABLE_BATCH_SIZE", value = tostring(var.variable_batch_size) },
+      { name = "MAX_COLLECTIONS", value = tostring(var.max_collections) }
+    ]
+    readonlyRootFilesystem = false
+    mountPoints            = []
+    volumesFrom            = []
+    linuxParameters = {
+      initProcessEnabled = true
     }
-  }
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.exporter.name
+        awslogs-region        = var.aws_region
+        awslogs-stream-prefix = "export"
+      }
+    }
+  }])
 
-  depends_on = [
-    aws_cloudwatch_log_group.exporter,
-    aws_iam_role_policy_attachment.vpc_execution,
-    aws_iam_role_policy.s3_export,
-  ]
+  depends_on = [aws_iam_role_policy_attachment.execution]
 }

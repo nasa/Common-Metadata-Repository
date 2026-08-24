@@ -1,18 +1,12 @@
 variable "aws_region" {
-  description = "AWS region containing the Lambda, VPC, and S3 bucket."
+  description = "AWS region containing ECS, the VPC, Elasticsearch, ECR, and S3 bucket."
   type        = string
 }
 
-variable "function_name" {
-  description = "Lambda function name."
+variable "task_name" {
+  description = "Name used for the on-demand ECS task, cluster, IAM roles, and logs."
   type        = string
   default     = "cmr-semantic-search-export"
-}
-
-variable "deployment_package_path" {
-  description = "Absolute path, or path relative to this Terraform directory, to the built Lambda ZIP."
-  type        = string
-  default     = "../semantic-search-export-lambda.zip"
 }
 
 variable "elasticsearch_url" {
@@ -26,7 +20,7 @@ variable "elasticsearch_url" {
 }
 
 variable "elasticsearch_verify_certs" {
-  description = "Whether the Elasticsearch client verifies TLS certificates. Has no effect for HTTP URLs."
+  description = "Whether the Elasticsearch client verifies TLS certificates."
   type        = bool
   default     = true
 }
@@ -38,7 +32,7 @@ variable "collection_alias" {
 }
 
 variable "variable_alias" {
-  description = "Current/latest variable index or alias. This is environment-specific and must be confirmed from Elasticsearch."
+  description = "Current/latest variable index or alias; confirm it for each environment."
   type        = string
 }
 
@@ -48,7 +42,7 @@ variable "s3_bucket_name" {
 }
 
 variable "s3_prefix" {
-  description = "Only this existing bucket prefix is writable by the Lambda role; do not include a leading slash."
+  description = "Only this bucket prefix is writable by the task role."
   type        = string
   default     = "exports"
 
@@ -58,14 +52,8 @@ variable "s3_prefix" {
   }
 }
 
-variable "default_s3_key" {
-  description = "Default output key. Invocation events can override it but IAM still restricts writes to s3_prefix."
-  type        = string
-  default     = "exports/collections.jsonl"
-}
-
 variable "subnet_ids" {
-  description = "Private subnet IDs with network routes to Elasticsearch and S3 access via NAT or an S3 VPC endpoint."
+  description = "Private subnets used when starting the Fargate task."
   type        = list(string)
 
   validation {
@@ -75,7 +63,7 @@ variable "subnet_ids" {
 }
 
 variable "security_group_ids" {
-  description = "Security group IDs allowing egress to the Elasticsearch EC2 cluster and HTTPS access to S3."
+  description = "Security groups attached to the task ENI when starting the task."
   type        = list(string)
 
   validation {
@@ -85,9 +73,9 @@ variable "security_group_ids" {
 }
 
 variable "max_collections" {
-  description = "Hard upper limit for an invocation's max_collections value."
+  description = "Number of collections exported by each task run."
   type        = number
-  default     = 1000
+  default     = 100000
 
   validation {
     condition     = var.max_collections > 0 && floor(var.max_collections) == var.max_collections
@@ -117,55 +105,54 @@ variable "variable_batch_size" {
   }
 }
 
-variable "runtime" {
-  description = "Lambda Python runtime used for the deployment package."
+variable "ecr_repository_name" {
+  description = "ECR repository created for the exporter container."
   type        = string
-  default     = "python3.12"
+  default     = "cmr-semantic-search-export"
 }
 
-variable "architecture" {
-  description = "Lambda instruction-set architecture. Build dependencies for the same architecture."
+variable "image_tag" {
+  description = "Immutable container image tag used by the task definition."
   type        = string
-  default     = "x86_64"
-
-  validation {
-    condition     = contains(["x86_64", "arm64"], var.architecture)
-    error_message = "architecture must be x86_64 or arm64."
-  }
+  default     = "test"
 }
 
-variable "memory_size_mb" {
-  description = "Lambda memory allocation in MB."
+variable "task_cpu" {
+  description = "Fargate task CPU units."
   type        = number
   default     = 1024
 }
 
-variable "timeout_seconds" {
-  description = "Lambda timeout in seconds (maximum 900)."
+variable "task_memory_mb" {
+  description = "Fargate task memory in MB."
   type        = number
-  default     = 900
+  default     = 2048
+}
+
+variable "ephemeral_storage_gib" {
+  description = "Fargate ephemeral storage for the generated JSONL file."
+  type        = number
+  default     = 21
 
   validation {
-    condition     = var.timeout_seconds >= 1 && var.timeout_seconds <= 900
-    error_message = "timeout_seconds must be between 1 and 900."
+    condition     = var.ephemeral_storage_gib >= 21 && var.ephemeral_storage_gib <= 200
+    error_message = "ephemeral_storage_gib must be between 21 and 200."
   }
 }
 
-variable "ephemeral_storage_mb" {
-  description = "Lambda /tmp storage in MB."
-  type        = number
-  default     = 1024
+variable "cpu_architecture" {
+  type    = string
+  default = "X86_64"
 
   validation {
-    condition     = var.ephemeral_storage_mb >= 512 && var.ephemeral_storage_mb <= 10240
-    error_message = "ephemeral_storage_mb must be between 512 and 10240."
+    condition     = contains(["X86_64", "ARM64"], var.cpu_architecture)
+    error_message = "cpu_architecture must be X86_64 or ARM64."
   }
 }
 
-variable "reserved_concurrency" {
-  description = "Reserved executions. Keep at 1 to avoid concurrent writes to the same default key."
-  type        = number
-  default     = 1
+variable "container_insights_enabled" {
+  type    = bool
+  default = true
 }
 
 variable "log_retention_days" {
@@ -175,7 +162,7 @@ variable "log_retention_days" {
 }
 
 variable "permissions_boundary_arn" {
-  description = "Optional IAM permissions boundary ARN required by some accounts."
+  description = "Optional IAM permissions boundary required by some accounts."
   type        = string
   default     = null
 }

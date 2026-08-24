@@ -25,6 +25,7 @@ class Settings:
     variable_alias: str = "variables"
     bucket: str | None = None
     key: str | None = None
+    s3_prefix: str = "exports"
     page_size: int = 100
     variable_batch_size: int = 500
     max_collections: int = 1000
@@ -46,6 +47,7 @@ class Settings:
             variable_alias=env.get("VARIABLE_ALIAS", "variables"),
             bucket=env.get("S3_BUCKET"),
             key=env.get("S3_KEY"),
+            s3_prefix=env.get("S3_PREFIX", "exports"),
             page_size=_positive_int("PAGE_SIZE", env.get("PAGE_SIZE", "100")),
             variable_batch_size=_positive_int(
                 "VARIABLE_BATCH_SIZE", env.get("VARIABLE_BATCH_SIZE", "500")

@@ -1,10 +1,12 @@
 import hashlib
+from datetime import UTC, datetime
 
 import pytest
 
 from cmr_export.config import ConfigurationError, Settings, invocation
 from cmr_export.exporter import fetch_collections, retry, run_export, write_jsonl
 from cmr_export.handler import lambda_handler
+from cmr_export.task import task_event, versioned_key
 from cmr_export.transform import (
     RecordValidationError,
     collection,
@@ -201,3 +203,19 @@ def test_event_validation_and_handler_injection():
         settings=SETTINGS,
     )
     assert result["collections"] == 1
+
+
+def test_task_uses_unique_versioned_key_under_configured_prefix():
+    key = versioned_key(
+        "/semantic-collections/",
+        now=datetime(2026, 8, 23, 12, 34, 56, tzinfo=UTC),
+        identifier="abc123",
+    )
+    assert key == "semantic-collections/collections-20260823T123456Z-abc123.jsonl"
+    settings = Settings("http://example", bucket="bucket", s3_prefix="semantic-collections")
+    assert task_event(settings)["key"].startswith("semantic-collections/collections-")
+
+
+def test_task_allows_explicit_key_override():
+    settings = Settings("http://example", bucket="bucket", key="exports/manual.jsonl")
+    assert task_event(settings) == {"bucket": "bucket", "key": "exports/manual.jsonl"}

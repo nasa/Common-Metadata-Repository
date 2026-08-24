@@ -1,0 +1,9 @@
+.git
+.pytest_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+*.egg-info
+semantic-search-export-lambda.zip
+terraform
+tests
