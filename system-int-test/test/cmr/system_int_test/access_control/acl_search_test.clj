@@ -3,7 +3,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer [are deftest is testing use-fixtures]]
-   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.system-int-test.access-control.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.common-app.api.routes :as routes]
    [cmr.common.util :as util :refer [are3]]
