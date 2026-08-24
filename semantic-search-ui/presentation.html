@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Stakeholder presentation for the CMR semantic collection search prototype.">
+  <title>Finding Earth Science Data by Meaning</title>
+  <style>
+    :root {
+      --ink: #102c37;
+      --muted: #52707a;
+      --paper: #f6f3e9;
+      --ocean: #075f6b;
+      --deep: #063946;
+      --aqua: #38b9ad;
+      --sun: #efb44b;
+      --coral: #e56d50;
+      --line: rgba(16, 44, 55, .16);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--deep);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button { font: inherit; }
+    .slide {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100svh;
+      padding: clamp(3.4rem, 7vw, 7rem) clamp(2rem, 8vw, 8rem) clamp(3rem, 6vw, 6rem);
+      display: grid;
+      align-content: center;
+      overflow: hidden;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      background: var(--paper);
+    }
+    .slide::after {
+      content: attr(data-number);
+      position: absolute;
+      right: clamp(1.4rem, 3vw, 3rem);
+      bottom: 1.4rem;
+      color: var(--muted);
+      font: 700 .72rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .16em;
+    }
+    .dark { color: #f8f5eb; background: var(--deep); }
+    .dark::after { color: rgba(255,255,255,.55); }
+    .dark .eyebrow, .dark .muted { color: #9dd8d2; }
+    .dark .rule { background: rgba(255,255,255,.2); }
+    .warm { background: #efe7d8; }
+    .eyebrow {
+      margin: 0 0 1.3rem;
+      color: var(--ocean);
+      font: 800 clamp(.68rem, 1vw, .82rem)/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2 {
+      max-width: 15ch;
+      margin-bottom: clamp(1.2rem, 3vw, 2.4rem);
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: .98;
+    }
+    h1 { font-size: clamp(3rem, 8.4vw, 8.5rem); }
+    h2 { font-size: clamp(2.5rem, 5.6vw, 5.8rem); }
+    h3 { font-size: clamp(1rem, 1.5vw, 1.35rem); line-height: 1.2; }
+    .lede { max-width: 62ch; color: var(--muted); font-size: clamp(1.05rem, 1.8vw, 1.55rem); line-height: 1.55; }
+    .dark .lede { color: #c9dfdd; }
+    .accent { color: var(--aqua); font-style: italic; }
+    .coral { color: var(--coral); }
+    .sun { color: var(--sun); }
+    .rule { width: 5rem; height: 3px; margin: .4rem 0 1.6rem; background: var(--ink); }
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: clamp(1rem, 2.2vw, 2rem); align-items: stretch; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card {
+      padding: clamp(1.2rem, 2.1vw, 2rem);
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(255,255,255,.46);
+    }
+    .card p { margin-bottom: 0; color: var(--muted); line-height: 1.5; }
+    .dark .card { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.055); }
+    .dark .card p { color: #bcd6d3; }
+    .number { display: block; margin-bottom: .9rem; color: var(--coral); font: 500 clamp(2rem, 4vw, 4.2rem)/1 Georgia, serif; }
+    .pill { display: inline-block; padding: .32rem .62rem; border-radius: 2rem; background: #d9ebe7; color: var(--ocean); font: 800 .68rem/1 ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; }
+    .flow { display: grid; grid-template-columns: repeat(7, auto); align-items: center; gap: clamp(.4rem, 1.2vw, 1rem); margin-top: 2rem; }
+    .flow-box { min-width: 0; padding: 1.3rem 1rem; border: 1px solid var(--line); border-radius: .8rem; background: rgba(255,255,255,.55); text-align: center; }
+    .flow-box strong { display: block; margin-bottom: .35rem; }
+    .flow-box small { color: var(--muted); }
+    .arrow { color: var(--coral); font-size: 1.6rem; text-align: center; }
+    .query { margin: 1rem 0 2rem; max-width: 27ch; font: italic clamp(1.7rem, 3vw, 3.2rem)/1.25 Georgia, serif; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 3vw, 3rem); }
+    .compare > div { padding: 1.4rem 0; border-top: 3px solid var(--ink); }
+    .compare ul, .clean-list { margin: 1.2rem 0 0; padding: 0; list-style: none; }
+    .compare li, .clean-list li { position: relative; margin: .7rem 0; padding-left: 1.25rem; line-height: 1.45; }
+    .compare li::before, .clean-list li::before { content: "—"; position: absolute; left: 0; color: var(--coral); }
+    .axis { position: relative; margin: 2.4rem 1rem 0; height: 15rem; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .dot { position: absolute; width: clamp(1.6rem, 2.7vw, 2.6rem); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, 50%); background: var(--aqua); border: 4px solid rgba(255,255,255,.75); box-shadow: 0 5px 20px rgba(6,57,70,.18); }
+    .dot.query-dot { background: var(--coral); }
+    .dot-label { position: absolute; width: max-content; max-width: 13rem; transform: translate(-50%, -50%); font-size: .78rem; font-weight: 700; }
+    .axis-label { position: absolute; color: var(--muted); font: 700 .68rem/1 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .axis-label.x { right: 0; bottom: -1.8rem; }
+    .axis-label.y { top: -1rem; left: -1rem; transform: rotate(-90deg); transform-origin: left; }
+    .passages { display: grid; grid-template-columns: .85fr 1.4fr; gap: clamp(1rem, 3vw, 3rem); align-items: center; }
+    .collection-node { padding: 1.5rem; border: 2px solid var(--ocean); border-radius: 1rem; }
+    .passage-stack { display: grid; gap: .75rem; }
+    .passage { padding: 1rem 1.2rem; border-left: 5px solid var(--aqua); background: #fff; box-shadow: 0 8px 30px rgba(6,57,70,.08); }
+    .passage.variable { border-left-color: var(--sun); }
+    .passage small { display: block; margin-top: .3rem; color: var(--muted); }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    pre { margin: 1rem 0 0; padding: 1.2rem; overflow: hidden; border-radius: .8rem; color: #d9eeee; background: #092f39; font: clamp(.68rem, 1vw, .92rem)/1.55 ui-monospace, monospace; }
+    .code-key { color: #79d2c7; } .code-string { color: #f3c56a; }
+    .index-strip { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 1rem; align-items: center; margin-top: 2rem; }
+    .index-strip .card { min-height: 10rem; }
+    .mode { position: relative; padding-top: 1.4rem; border-top: 4px solid var(--aqua); }
+    .mode:nth-child(2) { border-color: var(--sun); }
+    .mode:nth-child(3) { border-color: var(--coral); }
+    .mode h3 { font-family: Georgia, serif; font-size: 1.6rem; font-weight: 500; }
+    .formula { margin: 1.4rem 0; font: clamp(1.5rem, 3.4vw, 3.4rem)/1.2 Georgia, serif; }
+    .filter-bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin-top: 2rem; }
+    .filter-shape { padding: 1.5rem; border: 2px solid var(--aqua); border-radius: 999px; text-align: center; }
+    .timeline { position: relative; height: 6rem; margin: 1.8rem 2rem 0; border-top: 4px solid var(--ink); }
+    .timeline span { position: absolute; top: -1rem; height: 2rem; border-radius: 1rem; background: var(--aqua); opacity: .72; }
+    .timeline .request { top: 1.4rem; background: var(--coral); }
+    .future { counter-reset: future; }
+    .future li { counter-increment: future; display: grid; grid-template-columns: 3rem 1fr; gap: 1rem; margin: 1.2rem 0; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,.18); list-style: none; }
+    .future li::before { content: "0" counter(future); color: var(--sun); font: 500 1.5rem/1 Georgia, serif; }
+    .future strong { display: block; margin-bottom: .25rem; }
+    .future span { color: #bcd6d3; }
+    .orbit { position: absolute; width: min(48vw, 44rem); aspect-ratio: 1; right: -10vw; top: 50%; transform: translateY(-50%); border: 1px solid rgba(56,185,173,.26); border-radius: 50%; }
+    .orbit::before, .orbit::after { content: ""; position: absolute; inset: 16%; border: inherit; border-radius: inherit; }
+    .orbit::after { inset: 35%; background: var(--aqua); opacity: .16; }
+    .section-mark { position: absolute; top: 0; left: clamp(2rem, 8vw, 8rem); width: 7rem; height: .55rem; background: var(--coral); }
+    .nav {
+      position: fixed;
+      z-index: 20;
+      right: .9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: grid;
+      gap: .45rem;
+      padding: .65rem .5rem;
+      border-radius: 2rem;
+      background: rgba(6,57,70,.74);
+      backdrop-filter: blur(8px);
+    }
+    .nav button { width: .55rem; height: .55rem; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.35); cursor: pointer; }
+    .nav button.active { background: var(--sun); transform: scale(1.35); }
+    .progress { position: fixed; z-index: 30; top: 0; left: 0; width: 0; height: 4px; background: var(--sun); transition: width .25s ease; }
+    .hint { position: absolute; left: clamp(2rem, 8vw, 8rem); bottom: 1.4rem; color: rgba(255,255,255,.55); font: 700 .68rem/1 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    @media (max-width: 780px) {
+      .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); }
+      .passages, .compare, .filter-bar { grid-template-columns: 1fr; }
+      .index-strip { grid-template-columns: 1fr; }
+      .index-strip .arrow { transform: rotate(90deg); }
+      .slide { height: auto; min-height: 100svh; overflow: visible; }
+      .nav { display: none; }
+    }
+    @media (max-width: 520px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      @page { size: 16in 9in; margin: 0; }
+      html, body { background: #fff; }
+      .slide { width: 16in; height: 9in; min-height: 0; break-after: page; overflow: hidden; }
+      .nav, .progress, .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"></div>
+  <nav class="nav" aria-label="Slide navigation"></nav>
+
+  <main>
+    <section class="slide dark" data-title="Title" data-number="01 / 15">
+      <div class="orbit" aria-hidden="true"></div>
+      <p class="eyebrow">CMR Discovery Lab · Prototype</p>
+      <h1>Finding Earth science data <span class="accent">by meaning.</span></h1>
+      <p class="lede">A semantic collection search experiment for asking scientific questions in natural language.</p>
+      <p class="hint">Scroll or press ↓ to continue</p>
+    </section>
+
+    <section class="slide" data-title="The discovery gap" data-number="02 / 15">
+      <span class="section-mark"></span>
+      <p class="eyebrow">The discovery gap</p>
+      <h2>The science and the metadata do not always use the same words.</h2>
+      <div class="compare">
+        <div>
+          <span class="pill">A scientist asks</span>
+          <p class="query">“How is drought changing vegetation health?”</p>
+        </div>
+        <div>
+          <span class="pill">Metadata may say</span>
+          <ul>
+            <li>Normalized Difference Vegetation Index</li>
+            <li>Root-zone soil moisture</li>
+            <li>Evapotranspiration anomaly</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide warm" data-title="What semantic search adds" data-number="03 / 15">
+      <p class="eyebrow">What semantic search adds</p>
+      <h2>Search for the <span class="coral">idea</span>, not only the phrase.</h2>
+      <div class="grid-3">
+        <article class="card"><span class="number">01</span><h3>Describe an investigation</h3><p>Use ordinary scientific language, questions, or phenomena of interest.</p></article>
+        <article class="card"><span class="number">02</span><h3>Compare meaning</h3><p>Represent the query and catalog descriptions in the same mathematical space.</p></article>
+        <article class="card"><span class="number">03</span><h3>Surface evidence</h3><p>Return collections with the collection or variable passage that helped them match.</p></article>
+      </div>
+    </section>
+
+    <section class="slide dark" data-title="What the prototype does" data-number="04 / 15">
+      <p class="eyebrow">Prototype scope</p>
+      <h2>Natural-language discovery, with scientific constraints intact.</h2>
+      <div class="grid-4">
+        <article class="card"><h3>Meaning</h3><p>Find conceptually related metadata.</p></article>
+        <article class="card"><h3>Keywords</h3><p>Retain exact names and familiar terminology.</p></article>
+        <article class="card"><h3>Space</h3><p>Require collection coverage to intersect a bounding box.</p></article>
+        <article class="card"><h3>Time</h3><p>Require collection coverage to intersect a date interval.</p></article>
+      </div>
+      <p class="lede" style="margin-top:2rem">The result is a ranked list of <strong>collections</strong>—not an AI-generated scientific answer.</p>
+    </section>
+
+    <section class="slide" data-title="From question to results" data-number="05 / 15">
+      <p class="eyebrow">The experience</p>
+      <h2>One question. Three retrieval choices.</h2>
+      <div class="flow">
+        <div class="flow-box"><strong>Ask</strong><small>Natural language</small></div><div class="arrow">→</div>
+        <div class="flow-box"><strong>Constrain</strong><small>Time + region</small></div><div class="arrow">→</div>
+        <div class="flow-box"><strong>Search</strong><small>Hybrid by default</small></div><div class="arrow">→</div>
+        <div class="flow-box"><strong>Inspect</strong><small>Rank + evidence</small></div>
+      </div>
+      <p class="query">“Ocean temperature observations near coral reefs”</p>
+      <p class="lede">This is an additional discovery path. It does not replace CMR’s established search behavior.</p>
+    </section>
+
+    <section class="slide dark" data-title="Engineering section" data-number="06 / 15">
+      <div class="orbit" aria-hidden="true"></div>
+      <p class="eyebrow">Under the hood</p>
+      <h1 style="font-size:clamp(3rem,7vw,7rem)">From metadata to vectors to ranked collections.</h1>
+      <p class="lede">A focused tour of the branch implementation.</p>
+    </section>
+
+    <section class="slide" data-title="System flow" data-number="07 / 15">
+      <p class="eyebrow">Data and request flow</p>
+      <h2>A separate index, integrated through Search.</h2>
+      <div class="flow">
+        <div class="flow-box"><strong>CMR Elasticsearch</strong><small>Collections + variables</small></div><div class="arrow">→</div>
+        <div class="flow-box"><strong>JSONL export</strong><small>Joined, normalized records</small></div><div class="arrow">→</div>
+        <div class="flow-box"><strong>Semantic index</strong><small>Passages + embeddings</small></div><div class="arrow">←</div>
+        <div class="flow-box"><strong>Search API proxy</strong><small>Feature-gated endpoint</small></div>
+      </div>
+      <p class="lede" style="margin-top:2.2rem"><code>GET /semantic-collections</code> validates the public request, forwards it to the prototype service, and normalizes dependency failures.</p>
+    </section>
+
+    <section class="slide warm" data-title="Collections and variables" data-number="08 / 15">
+      <p class="eyebrow">Indexing strategy</p>
+      <h2>One collection becomes several searchable passages.</h2>
+      <div class="passages">
+        <div class="collection-node">
+          <span class="pill">C123-PROVIDER</span>
+          <h3 style="margin-top:1rem">Ocean Surface Temperature</h3>
+          <p class="muted">Summary · science keywords · platforms · instruments · spatial + temporal coverage</p>
+        </div>
+        <div class="passage-stack">
+          <div class="passage"><strong>Collection passage</strong><small>Collection title, summary, keywords, platforms, instruments</small></div>
+          <div class="passage variable"><strong>Variable passage · Sea Surface Temperature</strong><small>Collection context + variable name, definition, measurements, units</small></div>
+          <div class="passage variable"><strong>Variable passage · Temperature Anomaly</strong><small>Collection context + variable name, definition, measurements, units</small></div>
+        </div>
+      </div>
+      <p class="lede" style="margin-top:1.5rem">Variable-level concepts can retrieve their parent collection without losing collection context.</p>
+    </section>
+
+    <section class="slide" data-title="Import lifecycle" data-number="09 / 15">
+      <p class="eyebrow">Safe index construction</p>
+      <h2>Validate first. Build off to the side. Swap when ready.</h2>
+      <div class="index-strip">
+        <article class="card"><span class="pill">1 · Validate</span><h3 style="margin-top:1rem">Whole JSONL file</h3><p>Schema, required fields, dates, geometry, and duplicate concept IDs.</p></article>
+        <div class="arrow">→</div>
+        <article class="card"><span class="pill">2 · Enrich</span><h3 style="margin-top:1rem">Embed in bounded batches</h3><p>Concurrent Bedrock calls; bulk Elasticsearch indexing; deterministic passage IDs.</p></article>
+        <div class="arrow">→</div>
+        <article class="card"><span class="pill">3 · Publish</span><h3 style="margin-top:1rem">Atomic alias swap</h3><p>Refresh and smoke-search the new index before moving <code>semantic_collections</code>.</p></article>
+      </div>
+    </section>
+
+    <section class="slide dark" data-title="Embeddings" data-number="10 / 15">
+      <p class="eyebrow">How embeddings work</p>
+      <h2>Text becomes a location in a high-dimensional map of meaning.</h2>
+      <div class="grid-2">
+        <div>
+          <p class="lede">Amazon Titan Text Embeddings v2 converts every passage—and each incoming query—into a normalized vector with <strong>1,024 numbers</strong>.</p>
+          <ul class="clean-list">
+            <li>Similar meaning tends toward nearby coordinates</li>
+            <li>Different wording can still be close</li>
+            <li>It retrieves text; it does not generate an answer</li>
+          </ul>
+        </div>
+        <div class="axis" aria-label="Conceptual two-dimensional projection of vector similarity">
+          <span class="axis-label y">ocean ↕ land</span><span class="axis-label x">temperature →</span>
+          <i class="dot" style="left:72%;bottom:68%"></i><b class="dot-label" style="left:72%;bottom:82%">sea surface temperature</b>
+          <i class="dot" style="left:61%;bottom:58%"></i><b class="dot-label" style="left:61%;bottom:42%">ocean thermal anomaly</b>
+          <i class="dot query-dot" style="left:67%;bottom:64%"></i><b class="dot-label coral" style="left:70%;bottom:51%">query</b>
+          <i class="dot" style="left:28%;bottom:24%"></i><b class="dot-label" style="left:28%;bottom:10%">soil moisture</b>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Elasticsearch vectors" data-number="11 / 15">
+      <p class="eyebrow">Elasticsearch vector index</p>
+      <h2>Approximate nearest neighbors, ranked by cosine similarity.</h2>
+      <div class="grid-2">
+        <div>
+          <pre><span class="code-key">"embedding"</span>: {
+  <span class="code-key">"type"</span>: <span class="code-string">"dense_vector"</span>,
+  <span class="code-key">"dims"</span>: 1024,
+  <span class="code-key">"index"</span>: true,
+  <span class="code-key">"similarity"</span>: <span class="code-string">"cosine"</span>
+}</pre>
+        </div>
+        <div>
+          <ul class="clean-list" style="font-size:1.08rem">
+            <li><strong>Query vector:</strong> embed the user’s text with the same model</li>
+            <li><strong>Candidate search:</strong> inspect 200 approximate neighbors</li>
+            <li><strong>Top passages:</strong> retain the closest 50</li>
+            <li><strong>Collection result:</strong> deduplicate passage hits by collection ID</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide warm" data-title="Search modes" data-number="12 / 15">
+      <p class="eyebrow">Three retrieval modes</p>
+      <h2>Exact language and conceptual similarity are complementary.</h2>
+      <div class="grid-3">
+        <article class="mode"><span class="pill">Keyword</span><h3>Lexical search</h3><p>Multi-field text match. Boosts short name, title, variable name, science keywords, and instruments. Best for exact identifiers and terminology.</p></article>
+        <article class="mode"><span class="pill">Semantic</span><h3>Vector search</h3><p>Nearest passages in embedding space. Best when intent matches but vocabulary differs.</p></article>
+        <article class="mode"><span class="pill">Default</span><h3>Hybrid search</h3><p>Runs both searches, deduplicates each list by collection, then combines their ranks with reciprocal-rank fusion.</p></article>
+      </div>
+    </section>
+
+    <section class="slide dark" data-title="Hybrid ranking" data-number="13 / 15">
+      <p class="eyebrow">Reciprocal-rank fusion</p>
+      <h2>Reward agreement without comparing incompatible scores.</h2>
+      <p class="formula"><span class="sun">score(c)</span> = Σ 1 / (60 + rank<sub>source</sub>(c))</p>
+      <div class="grid-3">
+        <article class="card"><h3>Lexical list</h3><p>BM25-style relevance scores are converted to ranks.</p></article>
+        <article class="card"><h3>Semantic list</h3><p>Cosine-based vector scores are converted to ranks.</p></article>
+        <article class="card"><h3>Fused list</h3><p>Collections appearing near the top of either—or both—rise in the final order.</p></article>
+      </div>
+      <p class="lede" style="margin-top:1.5rem">Evidence records preserve which passage and retrieval source contributed to the result.</p>
+    </section>
+
+    <section class="slide" data-title="Space and time" data-number="14 / 15">
+      <p class="eyebrow">Scientific constraints</p>
+      <h2>Space and time filter candidates; text ranks what remains.</h2>
+      <div class="filter-bar">
+        <div class="filter-shape"><strong>Query bounding box</strong><br><small>west, south, east, north</small></div>
+        <div class="arrow">∩</div>
+        <div class="filter-shape"><strong>Collection geometry</strong><br><small>Elasticsearch <code>geo_shape</code></small></div>
+      </div>
+      <div class="timeline">
+        <span style="left:8%;width:67%" title="Collection temporal coverage"></span>
+        <span class="request" style="left:48%;width:42%" title="Requested interval"></span>
+      </div>
+      <div class="grid-2" style="margin-top:1rem">
+        <p><strong>Spatial:</strong> envelope and stored geometry must <em>intersect</em>.</p>
+        <p><strong>Temporal:</strong> requested and stored date ranges must <em>intersect</em>.</p>
+      </div>
+      <p class="muted">Current prototype validation rejects query boxes that cross the antimeridian; export also omits unusable or antimeridian-crossing MBRs.</p>
+    </section>
+
+    <section class="slide dark" data-title="Future improvements" data-number="15 / 15">
+      <p class="eyebrow">Where this could go next</p>
+      <h2>Measure, learn, then broaden.</h2>
+      <ol class="future grid-2">
+        <li><div><strong>Relevance evaluation</strong><span>Curated scientist queries, judgments, and mode-by-mode metrics.</span></div></li>
+        <li><div><strong>Better passages</strong><span>Test field selection, chunking, model choices, and domain-aware enrichment.</span></div></li>
+        <li><div><strong>Richer geospatial handling</strong><span>Antimeridian support and more expressive spatial relationships.</span></div></li>
+        <li><div><strong>Freshness and scale</strong><span>Incremental updates, deletion handling, performance tuning, and cost controls.</span></div></li>
+        <li><div><strong>Explainability</strong><span>Clearer matched-variable evidence, highlights, and result rationale.</span></div></li>
+        <li><div><strong>Discovery experience</strong><span>Query suggestions, filters, feedback loops, and accessibility testing.</span></div></li>
+      </ol>
+    </section>
+  </main>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const nav = document.querySelector(".nav");
+    const progress = document.querySelector(".progress");
+    let current = 0;
+
+    slides.forEach((slide, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.title = `${index + 1}. ${slide.dataset.title}`;
+      button.setAttribute("aria-label", `Go to slide ${index + 1}: ${slide.dataset.title}`);
+      button.addEventListener("click", () => slide.scrollIntoView({behavior: "smooth"}));
+      nav.append(button);
+    });
+
+    function activate(index) {
+      current = index;
+      [...nav.children].forEach((button, item) => button.classList.toggle("active", item === index));
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+      document.title = `${slides[index].dataset.title} · CMR Semantic Search`;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) activate(slides.indexOf(visible.target));
+    }, {threshold: [.55, .75]});
+    slides.forEach(slide => observer.observe(slide));
+
+    document.addEventListener("keydown", event => {
+      const nextKeys = ["ArrowDown", "ArrowRight", "PageDown", " "];
+      const previousKeys = ["ArrowUp", "ArrowLeft", "PageUp"];
+      let target = current;
+      if (nextKeys.includes(event.key)) target = Math.min(slides.length - 1, current + 1);
+      else if (previousKeys.includes(event.key)) target = Math.max(0, current - 1);
+      else if (event.key === "Home") target = 0;
+      else if (event.key === "End") target = slides.length - 1;
+      else return;
+      event.preventDefault();
+      slides[target].scrollIntoView({behavior: "smooth"});
+    });
+    activate(0);
+  </script>
+</body>
+</html>
