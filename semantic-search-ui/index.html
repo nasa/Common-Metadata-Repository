@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A local demonstration of CMR semantic collection search.">
+    <title>CMR Discovery Lab</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="CMR Discovery Lab home">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span><strong>CMR</strong><small>Discovery Lab</small></span>
+      </a>
+      <div class="service-status" title="Prototype API status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Connecting</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="eyebrow">Experimental · Collection discovery</div>
+        <h1 id="page-title">Search Earth science<br><em>by meaning.</em></h1>
+        <p class="intro">Describe what you want to study in your own words. Semantic search finds relevant collections even when your phrasing differs from the metadata.</p>
+
+        <form id="search-form" class="search-panel">
+          <label for="query" class="sr-only">Search collections</label>
+          <div class="search-row">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+            <textarea id="query" name="q" rows="1" maxlength="1000" required placeholder="Try “ocean temperature observations near coral reefs”"></textarea>
+            <button id="search-button" type="submit"><span>Search</span><span aria-hidden="true">→</span></button>
+          </div>
+          <div class="search-options">
+            <fieldset>
+              <legend class="sr-only">Search mode</legend>
+              <label><input type="radio" name="mode" value="hybrid" checked><span>Hybrid</span></label>
+              <label><input type="radio" name="mode" value="semantic"><span>Semantic</span></label>
+              <label><input type="radio" name="mode" value="lexical"><span>Keyword</span></label>
+            </fieldset>
+            <button class="filter-toggle" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filters">Filters <span id="filter-count"></span></button>
+          </div>
+          <div class="filters" id="filters" hidden>
+            <label>Start date <input id="start-date" type="date"></label>
+            <label>End date <input id="end-date" type="date"></label>
+            <label>Bounding box <input id="bounding-box" type="text" placeholder="west, south, east, north"></label>
+            <label>Results <select id="page-size"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>
+          </div>
+        </form>
+
+        <div class="suggestions" id="suggestions">
+          <span>Explore an idea</span>
+          <button type="button">Wildfire smoke over North America</button>
+          <button type="button">Changes in polar ice coverage</button>
+          <button type="button">Soil moisture for drought monitoring</button>
+        </div>
+      </section>
+
+      <section class="results-section" id="results-section" hidden aria-live="polite">
+        <div class="results-heading">
+          <div><span class="eyebrow">Search results</span><h2 id="results-title">Collections</h2></div>
+          <p id="results-meta"></p>
+        </div>
+        <div id="results"></div>
+      </section>
+
+      <section class="empty-state" id="empty-state">
+        <div class="orbit" aria-hidden="true"><span></span></div>
+        <p>Ask a scientific question to begin exploring CMR collections.</p>
+      </section>
+    </main>
+
+    <footer><span>CMR semantic search prototype</span><span id="version-text">Experimental interface</span></footer>
+    <div class="toast" id="toast" role="alert" hidden></div>
+  </body>
+</html>
