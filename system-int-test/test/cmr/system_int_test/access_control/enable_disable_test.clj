@@ -2,7 +2,7 @@
   "CMR Access Control Enable/Disable endpoint test"
   (:require
    [clojure.test :refer[deftest is testing use-fixtures]]
-   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.system-int-test.access-control.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]

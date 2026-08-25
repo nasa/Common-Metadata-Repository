@@ -6,8 +6,7 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]))
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
