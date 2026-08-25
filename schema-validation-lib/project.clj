@@ -1,11 +1,14 @@
 (defproject nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"
   :description "Provides json schema validation code"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
                  [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]

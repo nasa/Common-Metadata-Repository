@@ -1,9 +1,11 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[cheshire "5.12.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.18.0"]
@@ -55,7 +57,8 @@
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
                  ["geo-snapshot" "https://repo.osgeo.org/repository/snapshot"]]
-  :plugins [[lein-exec "0.3.7"]]
+  :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]]
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
