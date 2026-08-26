@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8000:8000"
+    command: -jar DynamoDBLocal.jar -sharedDb -inMemory
+
+  reindexer:
+    build: .
+    ports:
+      - "8080:8000"
+    depends_on:
+      - dynamodb-local
+    environment:
+      # Oracle DB
+      DB_HOST: "${DB_HOST:-host.docker.internal}"
+      DB_PORT: "${DB_PORT:-1521}"
+      DB_SERVICE: "${DB_SERVICE:-cmr}"
+      DB_USER: "${DB_USER:-cmr}"
+      DB_PASSWORD: "${DB_PASSWORD:-}"
+
+      # Elasticsearch — defaults match the CMR dev-system ports
+      CMR_ELASTIC_HOST: "${CMR_ELASTIC_HOST:-host.docker.internal}"
+      CMR_ELASTIC_PORT: "${CMR_ELASTIC_PORT:-9211}"
+      CMR_GRAN_ELASTIC_HOST: "${CMR_GRAN_ELASTIC_HOST:-host.docker.internal}"
+      CMR_GRAN_ELASTIC_PORT: "${CMR_GRAN_ELASTIC_PORT:-9210}"
+
+      # SQS (local ElasticMQ started via `cmr start local sqs-sns`)
+      SQS_ENDPOINT_URL: "${SQS_ENDPOINT_URL:-http://host.docker.internal:4100}"
+      INTERMEDIATE_QUEUE_URL: "${INTERMEDIATE_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-reindexer-jobs}"
+      INDEXER_QUEUE_URL: "${INDEXER_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-indexer-jobs}"
+
+      # Throttler
+      CHUNK_SIZE: "${CHUNK_SIZE:-10000}"
+      RATE_PER_MINUTE: "${RATE_PER_MINUTE:-600}"
+
+      # DynamoDB (job tracking)
+      DYNAMODB_ENDPOINT_URL: "${DYNAMODB_ENDPOINT_URL:-http://dynamodb-local:8000}"
+      DYNAMODB_JOB_TABLE: "${DYNAMODB_JOB_TABLE:-cmr-reindexer-jobs}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-fakekey}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-fakesecret}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-us-east-1}"
+
+    restart: unless-stopped
