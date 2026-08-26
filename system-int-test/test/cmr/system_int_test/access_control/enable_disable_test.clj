@@ -45,7 +45,7 @@
   (e/login (u/conn-context) username))
 
 
-(deftest ^:disruptive ^:serial enable-disable-re-enable-write-acl
+(deftest ^:serial enable-disable-re-enable-write-acl
   (let [token (get-token "admin")
         first-resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
         concept-id (get-in first-resp [:body :concept_id])
@@ -63,7 +63,7 @@
 
     ;; disable writes for access control service
     (u/disable-access-control-writes post-options)
-    (Thread/sleep 1000)
+    (Thread/sleep 500)
 
     (testing "save, update, and delete acl fails after disable"
       (try
@@ -77,7 +77,7 @@
         (finally
           ;; always re-enable writes for access control service
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 1000))))
+          (Thread/sleep 500))))
 
     (testing "save, upate, and delete acl works after re-enable"
       (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
@@ -88,7 +88,7 @@
         ;; test delete
         (is (= 200 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
 
-(deftest ^:disruptive ^:serial enable-disable-re-enable-write-group
+(deftest ^:serial enable-disable-re-enable-write-group
   (let [token (get-token "admin")
         group (u/make-group)
         {:keys [status concept_id]} (u/create-group token group)
@@ -106,7 +106,7 @@
 
     ;; disable writes for access control service and give threads time to catch up
     (u/disable-access-control-writes post-options)
-    (Thread/sleep 5000)
+    (Thread/sleep 500)
 
     (testing "save, update, and delete group fails after disable"
       (try
@@ -121,7 +121,7 @@
         (finally
           ;; Allways re-eneable writes for access control service, even if there was an exception
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 1000))))
+          (Thread/sleep 500))))
 
     (testing "save, update, and delete group succeeds after re-enable"
       (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
