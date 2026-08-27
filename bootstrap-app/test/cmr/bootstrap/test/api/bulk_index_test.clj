@@ -197,7 +197,7 @@
                   bootstrap-config/bulk-index-after-date-time-max-window-hours (constantly 3)]
       (is (= {:type :invalid-data
               :errors [(str "The requested time window exceeds the /bulk_index/after_date_time limit of 3 hours. "
-                            "Please use a smaller date_time value so the range to now is within 3 hours.")]}
+                            "Please use a later date_time value so the range to now is within 3 hours.")]}
              (service-error
               #(bulk-index/data-later-than-date-time
                 context
