@@ -1,8 +1,8 @@
-(ns cmr.access-control.int-test.enable-disable-test
+(ns cmr.system-int-test.access-control.enable-disable-test
   "CMR Access Control Enable/Disable endpoint test"
   (:require
    [clojure.test :refer[deftest is testing use-fixtures]]
-   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.system-int-test.access-control.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]
@@ -63,7 +63,7 @@
 
     ;; disable writes for access control service
     (u/disable-access-control-writes post-options)
-    (Thread/sleep 1000)
+    (Thread/sleep 500)
 
     (testing "save, update, and delete acl fails after disable"
       (try
@@ -77,7 +77,7 @@
         (finally
           ;; always re-enable writes for access control service
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 1000))))
+          (Thread/sleep 500))))
 
     (testing "save, upate, and delete acl works after re-enable"
       (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
@@ -106,7 +106,7 @@
 
     ;; disable writes for access control service and give threads time to catch up
     (u/disable-access-control-writes post-options)
-    (Thread/sleep 5000)
+    (Thread/sleep 500)
 
     (testing "save, update, and delete group fails after disable"
       (try
@@ -121,7 +121,7 @@
         (finally
           ;; Allways re-eneable writes for access control service, even if there was an exception
           (u/enable-access-control-writes post-options)
-          (Thread/sleep 1000))))
+          (Thread/sleep 500))))
 
     (testing "save, update, and delete group succeeds after re-enable"
       (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
