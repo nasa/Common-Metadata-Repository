@@ -1,6 +1,7 @@
 (ns cmr.ingest.config
   "Contains functions to retrieve ingest specific configuration"
   (:require
+   [clojure.string :as string]
    [cmr.common-app.config :as common-config]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.message-queue.config :as queue-config]
