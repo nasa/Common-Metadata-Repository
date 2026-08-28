@@ -98,7 +98,7 @@
 (defn after-date-time-window-exceeded
   [max-window-hours]
   (format (str "The requested time window exceeds the /bulk_index/after_date_time limit of %d hours. "
-               "Please use a smaller date_time value so the range to now is within %d hours.")
+               "Please use a later date_time value so the range to now is within %d hours.")
           max-window-hours
           max-window-hours))
 

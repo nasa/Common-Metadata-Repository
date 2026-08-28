@@ -318,13 +318,13 @@
 (deftest ^:oracle bulk-index-after-date-time-rejects-large-window
   (s/only-with-real-database
    (try
-     (dev-sys-util/freeze-time! "3016-01-10T00:00:00Z")
+     (dev-sys-util/freeze-time! "3016-02-01T00:00:00Z")
      (let [{:keys [status errors]} (bootstrap/bulk-index-after-date-time
-                                    "3016-01-02T00:00:00Z"
+                                    "3016-01-01T00:00:00Z"
                                     {tc/token-header (tc/echo-system-token)}
                                     ["PROV1"])]
        (is (= 422 status))
-       (is (re-find #"The requested time window exceeds the /bulk_index/after_date_time limit of 168 hours"
+       (is (re-find #"The requested time window exceeds the /bulk_index/after_date_time limit of 720 hours"
                     (first errors))))
      (finally
        (dev-sys-util/clear-current-time!)))))
