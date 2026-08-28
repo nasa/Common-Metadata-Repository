@@ -253,8 +253,19 @@ Operator can use the `start_index` parameter to index concepts with sequence num
 ### Bulk index concepts newer than a given date-time
 
 The `/after_date_time` endpoint is retained for compatibility. New callers should use
-`/between_date_time`, which bounds the request and splits large ranges into smaller indexing chunks.
+`/between_date_time`, which bounds the request to an explicit time range.
 Compatibility requests to `/after_date_time` are implicitly bounded from `date_time` to the request timestamp and are rejected when that window exceeds the configured maximum.
+The maximum is 30 days by default.
+
+To allow an authorized request to exceed the configured maximum time range:
+
+    curl -i \
+        -X POST \
+        -H "CMR-Bulk-Index-Ignore-Time-Range-Limit: true" \
+        "http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
+
+Only a case-insensitive value of `true` disables the time-range limit. If the header is omitted or
+has any other value, the configured maximum remains enforced.
 
 For all providers and all system concepts:
 
@@ -295,8 +306,8 @@ To provide a range in hours instead of an explicit end date-time:
         "http://localhost:3006/bulk_index/between_date_time?start_date_time=2015-02-02T10:00:00Z&hours=2"
 
 The `start_date_time` parameter is required. Callers can provide either `end_date_time` or `hours`.
-If neither is provided, bootstrap uses the end of the start date's day. Internally, bootstrap enforces
-smaller chunks across the requested time range before publishing indexing work.
+If neither is provided, bootstrap uses the end of the start date's day. Bootstrap publishes one
+indexing request per provider covering the complete requested time range.
 
 ### Bulk index all system concepts (tags/acls/access-groups)
 

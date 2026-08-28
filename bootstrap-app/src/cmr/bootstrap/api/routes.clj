@@ -61,9 +61,9 @@
        (POST "/collections" {:keys [request-context body params]}
          (acl/verify-ingest-management-permission request-context :update)
          (bulk-index/index-collection request-context body params))
-       (POST "/after_date_time" {:keys [request-context body params]}
+       (POST "/after_date_time" {:keys [request-context body params headers]}
          (acl/verify-ingest-management-permission request-context :update)
-         (bulk-index/data-later-than-date-time request-context body params))
+         (bulk-index/data-later-than-date-time request-context body params headers))
        (POST "/between_date_time" {:keys [request-context body params]}
          (acl/verify-ingest-management-permission request-context :update)
          (bulk-index/data-between-date-time request-context body params))
