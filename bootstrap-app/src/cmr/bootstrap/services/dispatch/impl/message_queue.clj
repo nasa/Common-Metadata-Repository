@@ -2,7 +2,6 @@
   "Functions implementing the dispatch protocol to support bootstrap operations using a message
   queue."
   (:require
-   [clj-time.core :as time]
    [cmr.bootstrap.api.messages-bulk-index :as msg]
    [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
@@ -123,40 +122,22 @@
        (message-queue/bootstrap-provider-event provider-id nil date-time)))
     (info (msg/index-data-later-than-date-time-done))))
 
-(defn- date-time-chunks
-  "Returns half-open date-time ranges no larger than chunk-hours."
-  [start-date-time end-date-time chunk-hours]
-  (let [chunk-period (time/hours chunk-hours)]
-    (loop [chunk-start start-date-time
-           chunks []]
-      (if (time/before? chunk-start end-date-time)
-        (let [candidate-end (time/plus chunk-start chunk-period)
-              chunk-end (if (time/before? candidate-end end-date-time)
-                          candidate-end
-                          end-date-time)]
-          (recur chunk-end (conj chunks [chunk-start chunk-end])))
-        chunks))))
-
 (defn- index-data-between-date-time
   "Bulk index all the concepts with revision dates between the given date-times."
   [_this context provider-ids start-date-time end-date-time]
   (let [provider-ids (if (seq provider-ids)
                        provider-ids
                        ;; all providers including CMR provider which is for system concepts
-                       (conj (map :provider-id (helper/get-providers (:system context))) "CMR"))
-        chunk-hours (max 1 (config/bulk-index-between-date-time-window-hours))
-        chunks (date-time-chunks start-date-time end-date-time chunk-hours)]
-    (doseq [provider-id provider-ids
-            [chunk-start chunk-end] chunks]
+                       (conj (map :provider-id (helper/get-providers (:system context))) "CMR"))]
+    (doseq [provider-id provider-ids]
       (message-queue/publish-bootstrap-concepts-event
        context
        (message-queue/bootstrap-provider-between-date-time-event
-        provider-id chunk-start chunk-end)))
-    (info (format "Published %d bulk index messages between [%s] and [%s] using %d hour chunks."
-                  (* (count provider-ids) (count chunks))
+        provider-id start-date-time end-date-time)))
+    (info (format "Published %d bulk index messages between [%s] and [%s], one per provider."
+                  (count provider-ids)
                   start-date-time
-                  end-date-time
-                  chunk-hours))))
+                  end-date-time))))
 
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
