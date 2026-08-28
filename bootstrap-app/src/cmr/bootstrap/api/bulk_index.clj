@@ -2,7 +2,6 @@
   "Defines the bulk index functions for the bootstrap API."
   (:require
    [clj-time.core :as time]
-   [clojure.string :as string]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.api.messages :as msg]
    [cmr.bootstrap.api.util :as api-util]
@@ -83,9 +82,8 @@
 
 (defn- ignore-after-date-time-limit?
   [headers]
-  (= "true"
-     (some-> (get headers ignore-after-date-time-limit-header)
-             string/lower-case)))
+  (Boolean/parseBoolean
+   (get headers ignore-after-date-time-limit-header)))
 
 (defn index-provider
   "Index all the collections and granules for a given provider."
