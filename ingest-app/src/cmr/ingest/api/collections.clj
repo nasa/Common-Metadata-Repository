@@ -24,21 +24,17 @@
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers provider-id]
-  (def p1 provider-id)
-  (let [validate-keywords-value (if (contains? (set (ingest-config/keyword-enforced-providers)) provider-id)
-                                  "true"
-                                  (if validate-keywords-default-true-enabled?
-                                    (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
-                                    (= "true" (get headers VALIDATE_KEYWORDS_HEADER))))]
+  (let [validate-keywords-value
+        (if (and (not (contains? headers SEND_KMS_METADATA_FIXER_HEADER))
+                 (contains? (set (ingest-config/keyword-enforced-providers)) provider-id))
+          true
+          (if validate-keywords-default-true-enabled?
+            (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
+            (= "true" (get headers VALIDATE_KEYWORDS_HEADER))))]
     {:validate-keywords? validate-keywords-value
      :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
      :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))
      :send-metadata-fixer? (not= "false" (get headers SEND_KMS_METADATA_FIXER_HEADER))}))
-
-(comment
-(contains? (set (ingest-config/keyword-enforced-providers)) ["PROV1"])
-)
-
 
 (defn validate-collection
   [provider-id native-id request]
