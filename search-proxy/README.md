@@ -36,8 +36,8 @@ All settings are environment variables with the `CMR_PROXY_` prefix.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CMR_PROXY_BACKEND_URL` | required | CMR search base URL (no `/search` suffix) |
-| `CMR_PROXY_REDIS_URL` | required | Redis connection URL |
+| `CMR_PROXY_BACKEND_URL` | _none — required, startup fails if unset_ | CMR search base URL (no `/search` suffix) |
+| `CMR_PROXY_REDIS_URL` | _none — required, startup fails if unset_ | Redis connection URL |
 | `CMR_PROXY_LANES_CONFIG` | `lanes.json` | Path to lanes config file; used when `CMR_PROXY_LANES_JSON` is not set |
 | `CMR_PROXY_LANES_JSON` | — | Lanes config as a JSON string; takes precedence over `CMR_PROXY_LANES_CONFIG` when set. Intended for deployments that inject the value from Parameter Store as an environment variable |
 | `CMR_PROXY_LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`) |
@@ -108,7 +108,14 @@ When a lane is at capacity, `at_capacity` is `true` but `ok?` remains `true`. Us
 
 ## Running locally
 
+Requires Python 3.11+ (`pyproject.toml` sets `requires-python = ">=3.11"`).
+Deploys run on `python:3.11-slim` and `ruff` targets `py311`, so develop on
+3.11 to match — on macOS, `brew install python@3.11`. Use a virtualenv:
+
 ```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+
 # Install dependencies
 pip install -e ".[dev]"
 
