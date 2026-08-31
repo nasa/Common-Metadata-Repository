@@ -7,7 +7,7 @@ import fakeredis.aioredis
 import httpx
 import pytest
 
-from proxy.app import DEFAULT_TOGGLES, _health_cache, app, filter_hop_headers
+from proxy.app import DEFAULT_TOGGLES, app, filter_hop_headers
 from proxy.cache import ResponseCache
 from proxy.config import LaneConfig, LanesConfig, ProxySettings
 from proxy.lanes import RequestLanes
@@ -80,9 +80,6 @@ async def client():
     app.state.backend.get = AsyncMock(return_value=make_backend_response())
     app.state.backend.request = AsyncMock(return_value=make_backend_response())
 
-    _health_cache["result"] = None
-    _health_cache["expires"] = 0.0
-
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
         base_url="http://test",
@@ -131,8 +128,6 @@ class TestRouting:
         fake_redis = app.state.redis
         future = time.time() + 300
         await fake_redis.zadd("lane:heavy:active", {f"req-{i}": future for i in range(50)})
-        _health_cache["result"] = None
-        _health_cache["expires"] = 0.0
         resp = await client.get("/health")
         data = resp.json()
         assert resp.status_code == 200
@@ -146,23 +141,10 @@ class TestRouting:
         assert resp.status_code == 200
         assert resp.json()["ok?"] is True
 
-    async def test_health_caches_result(self, client):
-        """Rapid /health calls should hit the cache, not backend each time."""
+    async def test_health_not_cached(self, client):
+        """/health is not cached — every call re-checks the backend."""
         app.state.backend.get.return_value = make_backend_response()
         await client.get("/health")
-        await client.get("/health")
-        health_calls = [
-            c
-            for c in app.state.backend.get.call_args_list
-            if "/search/health" in str(c)
-        ]
-        assert len(health_calls) == 1
-
-    async def test_health_cache_expires(self, client):
-        """After TTL expires, /health should re-check the backend."""
-        app.state.backend.get.return_value = make_backend_response()
-        await client.get("/health")
-        _health_cache["expires"] = 0.0
         await client.get("/health")
         health_calls = [
             c

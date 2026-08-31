@@ -212,11 +212,6 @@ async def forward_to_backend(
     return response
 
 
-# Cached health check result with TTL-based expiration
-_health_cache: dict = {"result": None, "expires": 0.0}
-_HEALTH_CACHE_TTL = 5.0
-
-
 @app.get("/health/shallow")
 async def health_shallow():
     return JSONResponse(status_code=200, content={"ok?": True})
@@ -226,19 +221,9 @@ async def health_shallow():
 async def health(request: Request):
     """Health check matching CMR's {:ok? bool :dependencies {...}} format.
 
-    Each dependency reports ok? and optionally a problem string. Lane
-    status is included so the health endpoint doubles as the single
-    place to check lane utilization."""
-    now = time.monotonic()
-
-    # Return cached result if still valid
-    if _health_cache["result"] and now < _health_cache["expires"]:
-        cached = _health_cache["result"]
-        return JSONResponse(
-            status_code=cached["status_code"],
-            content=cached["content"],
-        )
-
+    Informational only and not cached — nothing automated polls this
+    (ALB/ECS use /health/shallow). It exists so an operator can see
+    dependency and lane-utilization status in one place."""
     dependencies = {}
 
     # Redis
@@ -285,12 +270,6 @@ async def health(request: Request):
     ok = all(dep["ok?"] for dep in dependencies.values())
     status_code = 200 if ok else 503
     content = {"ok?": ok, "dependencies": dependencies}
-
-    # Only cache healthy results so recovery is visible on the next check.
-    # Use monotonic time (consistent with the check at the top of this function).
-    if status_code == 200:
-        _health_cache["result"] = {"status_code": status_code, "content": content}
-        _health_cache["expires"] = now + _HEALTH_CACHE_TTL
 
     return JSONResponse(status_code=status_code, content=content)
 

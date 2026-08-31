@@ -89,7 +89,7 @@ Always returns HTTP 200. Used for ALB/ECS target group health checks so that Red
 
 ### `GET /health`
 
-Informational health check. Always returns HTTP 200 — dependencies report their status but do not affect the top-level `ok?`. The result is cached for 5 seconds (unhealthy results are not cached so recovery is visible immediately).
+Informational health check, not cached. Nothing automated polls it — ALB/ECS use `/health/shallow`. Currently always returns HTTP 200: dependencies report their status but do not affect the top-level `ok?`.
 
 ```json
 {
