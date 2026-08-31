@@ -25,6 +25,8 @@
   "Returns a map of validation options with boolean values"
   [headers provider-id]
   (let [validate-keywords-value
+        ;; There is a temporary carveout for the KMS API itself until we resolve the cache delay issue either by removing the CMR cache entirely 
+        ;; or having KMS issue a cache refresh to CMR see CMR-11524.
         (if (and (not (contains? headers SEND_KMS_METADATA_FIXER_HEADER))
                  (contains? (set (ingest-config/keyword-enforced-providers)) provider-id))
           true

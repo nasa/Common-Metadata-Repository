@@ -173,6 +173,8 @@ The following fields are validated:
 
 **Note**: if cmr-validate-keywords header is not set explicitly, it will behave as if it was set to FALSE by default behind the scenes
 
+**Note**: cmr-validate-keywords is being deprecated by provider to prevent ESDIS providers from using it and thus putting stale keywords onto the system
+
 **Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
 
 **Note**: Among the validation fields above, [Platforms], [Instruments], [Projects], [Science Keywords], [Location Keywords] and [Data Centers] are also validated when the `Cmr-Validate-Keywords` header is not set to `true` except that  validation errors will be returned to users as warnings.
