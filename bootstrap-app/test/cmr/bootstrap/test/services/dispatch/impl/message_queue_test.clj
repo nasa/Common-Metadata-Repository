@@ -2,29 +2,11 @@
   (:require
    [clj-time.core :as time]
    [clojure.test :refer [deftest is testing]]
-   [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index-data]
    [cmr.bootstrap.data.message-queue :as message-queue]
    [cmr.bootstrap.embedded-system-helper :as helper]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.bootstrap.services.dispatch.impl.message-queue :as message-queue-dispatcher]))
-
-(deftest date-time-chunks-creates-half-open-ranges
-  (let [start (time/date-time 2026 5 13 1 0)
-        end (time/date-time 2026 5 13 4 30)]
-    (is (= [[(time/date-time 2026 5 13 1 0)
-             (time/date-time 2026 5 13 2 0)]
-            [(time/date-time 2026 5 13 2 0)
-             (time/date-time 2026 5 13 3 0)]
-            [(time/date-time 2026 5 13 3 0)
-             (time/date-time 2026 5 13 4 0)]
-            [(time/date-time 2026 5 13 4 0)
-             (time/date-time 2026 5 13 4 30)]]
-           (#'message-queue-dispatcher/date-time-chunks start end 1)))))
-
-(deftest date-time-chunks-returns-empty-when-range-is-empty
-  (let [start (time/date-time 2026 5 13 1 0)]
-    (is (= [] (#'message-queue-dispatcher/date-time-chunks start start 1)))))
 
 (deftest bootstrap-provider-between-date-time-event-test
   (let [start (time/date-time 2026 5 13 1 0)
@@ -38,34 +20,31 @@
             start
             end)))))
 
-(deftest index-data-between-date-time-publishes-provider-chunks
+(deftest index-data-between-date-time-publishes-full-range-per-provider
   (let [published (atom [])
-        context {:system {:providers [{:provider-id "PROV1"}]}}
+        context {:system {:providers [{:provider-id "PROV1"}
+                                      {:provider-id "PROV2"}]}}
         start (time/date-time 2026 5 13 1 0)
         end (time/date-time 2026 5 13 3 30)]
-    (with-redefs [config/bulk-index-between-date-time-window-hours (constantly 1)
-                  message-queue/publish-bootstrap-concepts-event
+    (with-redefs [message-queue/publish-bootstrap-concepts-event
                   (fn [_context msg]
                     (swap! published conj msg))]
-      (dispatch/index-data-between-date-time
-       (message-queue-dispatcher/->MessageQueueDispatcher)
-       context
-       ["PROV1"]
-       start
-       end)
-      (is (= [{:action :index-provider-between-date-time
-               :provider-id "PROV1"
-               :start-date-time (time/date-time 2026 5 13 1 0)
-               :end-date-time (time/date-time 2026 5 13 2 0)}
-              {:action :index-provider-between-date-time
-               :provider-id "PROV1"
-               :start-date-time (time/date-time 2026 5 13 2 0)
-               :end-date-time (time/date-time 2026 5 13 3 0)}
-              {:action :index-provider-between-date-time
-               :provider-id "PROV1"
-               :start-date-time (time/date-time 2026 5 13 3 0)
-               :end-date-time (time/date-time 2026 5 13 3 30)}]
-             @published)))))
+      (testing "When provider IDs are supplied, then one full-range event is published per provider"
+        (dispatch/index-data-between-date-time
+         (message-queue-dispatcher/->MessageQueueDispatcher)
+         context
+         ["PROV1" "PROV2"]
+         start
+         end)
+        (is (= [{:action :index-provider-between-date-time
+                 :provider-id "PROV1"
+                 :start-date-time (time/date-time 2026 5 13 1 0)
+                 :end-date-time (time/date-time 2026 5 13 3 30)}
+                {:action :index-provider-between-date-time
+                 :provider-id "PROV2"
+                 :start-date-time (time/date-time 2026 5 13 1 0)
+                 :end-date-time (time/date-time 2026 5 13 3 30)}]
+               @published))))))
 
 (deftest index-data-between-date-time-expands-empty-provider-list
   (let [published (atom [])
@@ -74,11 +53,10 @@
         end (time/date-time 2026 5 13 2 0)]
     (with-redefs [helper/get-providers (constantly [{:provider-id "PROV1"}
                                                     {:provider-id "PROV2"}])
-                  config/bulk-index-between-date-time-window-hours (constantly 0)
                   message-queue/publish-bootstrap-concepts-event
                   (fn [_context msg]
                     (swap! published conj msg))]
-      (testing "empty provider ids uses all providers plus CMR and clamps chunk hours to one"
+      (testing "When provider IDs are omitted, then one full-range event is published for all providers plus CMR"
         (dispatch/index-data-between-date-time
          (message-queue-dispatcher/->MessageQueueDispatcher)
          context
