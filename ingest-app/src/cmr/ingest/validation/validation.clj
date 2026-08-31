@@ -1,9 +1,7 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
-   [cheshire.core :as json]
    [clojure.data :as data]
-   [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.log :as log :refer (debug warn)]
@@ -15,7 +13,6 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.business-rule-validation :as bv]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.search :as transmit-search]
    [cmr.umm-spec.json-schema :as json-schema]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
