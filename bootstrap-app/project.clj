@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire "5.12.0"
+  :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "2.3.0"]
                  [com.fasterxml.jackson.core/jackson-core]

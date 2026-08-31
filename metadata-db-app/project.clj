@@ -4,7 +4,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire "5.12.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+  :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core]

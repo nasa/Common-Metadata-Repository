@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire "5.12.0"
+  :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-time "0.15.1"]

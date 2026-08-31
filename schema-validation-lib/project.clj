@@ -6,7 +6,7 @@
   :plugins [[lein-exec "0.3.7"]
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
-  :dependencies [[cheshire "5.12.0"
+  :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
