@@ -22,8 +22,8 @@
                           [clj-http "3.11.0"] ;; latest is 3.13.1
                           [clj-time "0.15.1"] ;; latest is 0.15.2
                           [com.fasterxml.jackson.core/jackson-annotations "2.21"]
-                          [com.fasterxml.jackson.core/jackson-core "2.21.4"]
-                          [com.fasterxml.jackson.core/jackson-databind "2.21.4"]
+                          [com.fasterxml.jackson.core/jackson-core "2.21.5"]
+                          [com.fasterxml.jackson.core/jackson-databind "2.21.5"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.21.5"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.21.5"]
                           [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
