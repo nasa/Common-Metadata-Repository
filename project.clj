@@ -26,7 +26,11 @@
                           [com.fasterxml.jackson.core/jackson-databind "2.21.5"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.21.5"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.21.5"]
+                          [nrepl/nrepl "1.1.0"]
                           [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
+                          [org.clojure/core.cache "1.0.225"]
+                          [org.clojure/test.check "1.1.1"]
+                          [org.clojure/tools.reader "1.4.0"]
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.apache.logging.log4j/log4j-api "2.25.4"]
                           [org.apache.logging.log4j/log4j-core "2.25.4"]

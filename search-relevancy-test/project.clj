@@ -19,7 +19,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader "1.4.0"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
