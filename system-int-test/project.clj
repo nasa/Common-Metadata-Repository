@@ -38,7 +38,7 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 [org.jsoup/jsoup "1.14.2"]
+                 [org.jsoup/jsoup "1.23.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
