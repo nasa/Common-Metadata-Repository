@@ -45,17 +45,25 @@
                                {:foo "bar"}
                                {:token (transmit-config/echo-system-token) :raw? true})))))
 
+(defn group-permission->flat-query
+  "Converts a map of group permissions to a flat query map with bracket notation.
+  Example: (group-permission->flat-query 0 {:permitted-group \"guest\"})
+           => {\"group-permission[0][permitted-group]\" \"guest\"}"
+  [index permission-map]
+  (into {}
+        (for [[k v] permission-map]
+          [(str "group-permission[" index "][" (name k) "]") v])))
+
 (defn- generate-query-map-for-group-permissions
   "Returns a query map generated from group permission pairs.
-  group-permissions should be a sequence of group/user-identifer permission pairs such as
+  group-permissions should be a sequence of group/user-identifier permission pairs such as
   [\"guest\" \"read\" \"AG10000-PROV1\" \"create\" \"registered\" \"order\"]"
   [group-permissions]
-  (reduce (fn [query-map [index [group permission]]]
-            (assoc query-map
-              (str "group-permission[" index "][permitted-group]") group
-              (str "group-permission[" index "][permission]") permission))
-          {}
-          (map-indexed vector (partition 2 group-permissions))))
+  (into {}
+        (map-indexed
+          (fn [index [group permission]]
+            (group-permission->flat-query index {:permitted-group group :permission permission}))
+          (partition 2 group-permissions))))
 
 (deftest acl-search-order-test
   ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
@@ -413,9 +421,7 @@
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
-        (let [flat-query (into {}
-                               (for [[k v] query-map]
-                                 [(str "group-permission[0][" (name k) "]") v]))
+        (let [flat-query (group-permission->flat-query 0 query-map)
               ;; Merge the flattened query with the page_size parameter
               response (ac/search-for-acls (u/conn-context)
                                            (merge flat-query {:page_size 20})
