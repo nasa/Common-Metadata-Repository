@@ -314,7 +314,6 @@
                  [keyword-scheme maps-by-short-name]))
              (select-keys gcmd-keywords-map keywords-to-lookup-by-short-name))))
 
-;; TODO remove this via any means necessary
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
   Common key is :uuid which is a field in the location-keyword map. "
@@ -446,12 +445,6 @@
   [gcmd-keywords-map]
   (def gkm gcmd-keywords-map)
   (generate-lookup-by-comparison-map gcmd-keywords-map :related-urls))
-
-(comment
-
-(tap> (generate-lookup-by-comparison-map gkm :related-urls))
-
-)
 
 (defn- generate-lookup-by-measurement-name
   "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."

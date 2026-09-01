@@ -166,5 +166,7 @@
    Example  \"PROV1,PROV2\", would enforce keyword validation for PROV1 and PROV2.
    If no providers should have keyword validation enforced, set to an empty array."
   {:default []
-   :parser #(map (comp keyword string/trim) (string/split % #","))})
-
+   :parser #(->> (string/split % #",")
+               (remove string/blank?)
+               (map (comp keyword string/trim)))
+  })

@@ -21,14 +21,23 @@
   "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
   (ingest-config/validate-keywords-default-true-enabled))
 
+;; Cache the enforced-providers set. NOTE: this uses `delay`, which evaluates
+;; exactly once for the life of the JVM process.
+(def enforced-providers-cache
+  (delay (set (ingest-config/keyword-enforced-providers))))
+
+(defn provider-enforced?
+  [provider-id]
+  (contains? @enforced-providers-cache provider-id))
+
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
   [headers provider-id]
   (let [validate-keywords-value
-        ;; There is a temporary carveout for the KMS API itself until we resolve the cache delay issue either by removing the CMR cache entirely 
+        ;; There is a temporary carveout for the KMS API itself until we resolve the cache delay issue either by removing the CMR cache entirely
         ;; or having KMS issue a cache refresh to CMR see CMR-11524.
         (if (and (not (contains? headers SEND_KMS_METADATA_FIXER_HEADER))
-                 (contains? (set (ingest-config/keyword-enforced-providers)) provider-id))
+                 (provider-enforced? provider-id))
           true
           (if validate-keywords-default-true-enabled?
             (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
