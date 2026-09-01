@@ -18,12 +18,14 @@
             [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
    :managed-dependencies [[at.yawk.lz4/lz4-java "1.11.1"]
-                          [cheshire "5.12.0"] ;; latest is 6.1.0
+                          [cheshire "6.2.0"]
                           [clj-http "3.11.0"] ;; latest is 3.13.1
                           [clj-time "0.15.1"] ;; latest is 0.15.2
                           [com.fasterxml.jackson.core/jackson-annotations "2.21"]
-                          [com.fasterxml.jackson.core/jackson-core "2.21.4"]
-                          [com.fasterxml.jackson.core/jackson-databind "2.21.4"]
+                          [com.fasterxml.jackson.core/jackson-core "2.21.5"]
+                          [com.fasterxml.jackson.core/jackson-databind "2.21.5"]
+                          [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.21.5"]
+                          [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.21.5"]
                           [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.apache.logging.log4j/log4j-api "2.25.4"]

@@ -45,19 +45,25 @@
                                {:foo "bar"}
                                {:token (transmit-config/echo-system-token) :raw? true})))))
 
+(defn group-permission->flat-query
+  "Converts a map of group permissions to a flat query map with bracket notation.
+  Example: (group-permission->flat-query 0 {:permitted-group \"guest\"})
+           => {\"group-permission[0][permitted-group]\" \"guest\"}"
+  [index permission-map]
+  (into {}
+        (for [[k v] permission-map]
+          [(str "group-permission[" index "][" (name k) "]") v])))
+
 (defn- generate-query-map-for-group-permissions
   "Returns a query map generated from group permission pairs.
-  group-permissions should be a seqeuence of group/user-identifer permission pairs such as
+  group-permissions should be a sequence of group/user-identifier permission pairs such as
   [\"guest\" \"read\" \"AG10000-PROV1\" \"create\" \"registered\" \"order\"]"
   [group-permissions]
-  (first (reduce (fn [[m count] [group permission]]
-                   [(assoc-in m
-                              [:group-permission (keyword (str count))]
-                              {:permitted-group group
-                               :permission permission})
-                    (inc count)])
-                 [{} 0]
-                 (partition 2 group-permissions))))
+  (into {}
+        (map-indexed
+          (fn [index [group permission]]
+            (group-permission->flat-query index {:permitted-group group :permission permission}))
+          (partition 2 group-permissions))))
 
 (deftest acl-search-order-test
   ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
@@ -415,11 +421,14 @@
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
-        (let [response (ac/search-for-acls (u/conn-context)
-                                           {:group-permission {:0 query-map} :page_size 20}
+        (let [flat-query (group-permission->flat-query 0 query-map)
+              ;; Merge the flattened query with the page_size parameter
+              response (ac/search-for-acls (u/conn-context)
+                                           (merge flat-query {:page_size 20})
                                            {:token token})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
         "Just user type"
         {:permitted-group "guest"} guest-acls
 
@@ -434,7 +443,8 @@
 
     ;; CMR-3154 acceptance criterium 4
     (testing "Search ACLS by group permission with non integer index is an error"
-      (let [query {:group-permission {:foo {:permitted-group "guest" :permission "read"}}}]
+      (let [query {"group-permission[foo][permitted-group]" "guest"
+                   "group-permission[foo][permission]" "read"}]
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid index value [foo]. Only integers greater than or equal to zero may be specified."]}
                 :content-type :json}
@@ -442,14 +452,16 @@
 
     ;; CMR-3154 acceptance criterium 5
     (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
-      (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
+      (let [query {"group-permission[0][allowed-group]" "guest"
+                   "group-permission[0][permission]" "read"}]
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
                 :content-type :json}
                (ac/search-for-acls (u/conn-context) query {:token token :raw? true})))))
 
     (testing "Searching ACLS by group permission with permission values other than read, create, update, delete, or order is an error"
-      (let [query {:group-permission {:0 {:permitted_group "guest" :permission "foo"}}}]
+      (let [query {"group-permission[0][permitted_group]" "guest"
+                   "group-permission[0][permission]" "foo"}]
         (is (= {:status 400
                 :body {:errors ["Sub-parameter permission of parameter group_permissions has invalid values [foo]. Only 'read', 'update', 'create', 'delete', or 'order' may be specified."]}
                 :content-type :json}
