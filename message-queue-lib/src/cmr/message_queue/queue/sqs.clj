@@ -11,6 +11,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.message-queue.config :as config]
+   [cmr.message-queue.queue.names :as names]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol])
   (:import
    (clojure.lang Keyword Reflector)
@@ -122,12 +123,7 @@
   replaces dots with underscores. This is needed because SQS only allows alpha-numeric chars
   plus dashes and underscores in queue names, while CMR has dots (periods) in queue names."
   [queue-name]
-  (let [prefix (str "gsfc-eosdis-cmr-" (config/app-environment))
-        prefix-regex (re-pattern (str "^(" prefix "-)*"))]
-    (-> queue-name
-        (string/replace "." "_")
-        (string/replace "cmr_" "")
-        (string/replace prefix-regex (str prefix "-")))))
+  (names/normalize-queue-name queue-name))
 
 (defn- -get-topic
   "Returns the Topic with the given display name."

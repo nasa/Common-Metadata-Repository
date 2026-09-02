@@ -3,7 +3,8 @@
   (:require
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.memory-queue :as memory]
-   [cmr.message-queue.queue.sqs :as sqs]))
+   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.message-queue.queue.sqs-v2 :as sqs-v2]))
 
 (defn create-queue-broker
   "Create a queue broker using the given queue configuration. The type is determined
@@ -13,3 +14,11 @@
                     "memory" memory/create-memory-queue-broker
                     "aws" sqs/create-queue-broker)]
     (create-fn queue-config)))
+
+(defn create-v2-queue-broker
+  "Creates the SDK v2 AWS broker, retaining the memory broker for local in-memory mode."
+  [queue-config]
+  ((case (config/queue-type)
+     "memory" memory/create-memory-queue-broker
+     "aws" sqs-v2/create-queue-broker)
+   queue-config))

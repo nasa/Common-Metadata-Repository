@@ -167,7 +167,7 @@
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:gran-elastic :config :retry-handler] bi/elastic-retry-handler)
                     (assoc-in [:elastic :config :retry-handler] bi/elastic-retry-handler))
-        queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
+        queue-broker (queue-broker/create-v2-queue-broker (bootstrap-config/queue-config))
         sys {:instance-name (common-sys/instance-name "bootstrap")
              :log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
