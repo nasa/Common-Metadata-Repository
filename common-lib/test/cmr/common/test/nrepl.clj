@@ -2,11 +2,11 @@
   "Tests for the nREPL component."
   (:require
    [clojure.test :refer [deftest is]]
-   [clojure.tools.nrepl :as nrepl]
+   [nrepl.core :as nrepl]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.nrepl :as nrepl-component])
   (:import
-   (clojure.tools.nrepl.transport FnTransport)
+   (nrepl.transport FnTransport)
    (java.net BindException)))
 
 (deftest test-nrepl-component
