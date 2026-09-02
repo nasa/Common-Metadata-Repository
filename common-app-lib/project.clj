@@ -19,6 +19,7 @@
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.jsoup/jsoup "1.23.2"]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
