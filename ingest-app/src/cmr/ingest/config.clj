@@ -165,8 +165,8 @@
    Should be an array of provider ids for which keywords must be present/valid.
    Example  \"PROV1,PROV2\", would enforce keyword validation for PROV1 and PROV2.
    If no providers should have keyword validation enforced, set to an empty array."
-  {:default []
+  {:default ["PROV1","PROV2"]
    :parser #(->> (string/split % #",")
-               (remove string/blank?)
-               (map (comp keyword string/trim)))
+              (remove string/blank?)
+              (map string/trim))
   })
