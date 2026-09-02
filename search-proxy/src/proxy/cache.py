@@ -1,0 +1,64 @@
+import hashlib
+import json
+import logging
+from typing import Optional
+
+import redis.asyncio
+
+logger = logging.getLogger(__name__)
+
+
+class ResponseCache:
+    """Redis-backed response cache keyed on the full request signature."""
+
+    def __init__(
+        self,
+        redis_client: redis.asyncio.Redis,
+        max_response_bytes: int,
+    ):
+        self.redis = redis_client
+        self.max_response_bytes = max_response_bytes
+
+    def _build_key(self, method: str, path: str, query: str, auth_token: str, search_after: str = "", accept: str = "", body_hash: str = "") -> str:
+        """Hash the full request signature into a Redis key."""
+        raw = f"{method}|{path}|{query}|{auth_token}|{search_after}|{accept}|{body_hash}"
+        digest = hashlib.sha256(raw.encode()).hexdigest()
+        return f"cache:{digest}"
+
+    async def get(
+        self, method: str, path: str, query: str, auth_token: str, search_after: str = "", accept: str = "", body_hash: str = ""
+    ) -> Optional[dict]:
+        """Look up a cached response. Returns None on miss."""
+        key = self._build_key(method, path, query, auth_token, search_after, accept, body_hash)
+        cached = await self.redis.get(key)
+        if cached is not None:
+            return json.loads(cached)
+        return None
+
+    async def set(
+        self,
+        method: str,
+        path: str,
+        query: str,
+        auth_token: str,
+        response_data: dict,
+        response_size: int,
+        ttl: int,
+        search_after: str = "",
+        accept: str = "",
+        body_hash: str = "",
+    ):
+        """Store a response with the given TTL. Skips oversized responses."""
+        if response_size > self.max_response_bytes:
+            logger.debug(
+                "cache_skip_oversized",
+                extra={
+                    "size": response_size,
+                    "limit": self.max_response_bytes,
+                    "path": path,
+                },
+            )
+            return
+
+        key = self._build_key(method, path, query, auth_token, search_after, accept, body_hash)
+        await self.redis.set(key, json.dumps(response_data), ex=ttl)
