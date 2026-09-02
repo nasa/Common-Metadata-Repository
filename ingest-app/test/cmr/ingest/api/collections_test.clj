@@ -57,22 +57,23 @@
 ;; ---------------------------------------------------------------------
 ;; :validate-keywords? — provider is in keyword-enforced-providers,
 ;;   SEND_KMS_METADATA_FIXER_HEADER absent -> enforced true
+;; Since we cache this value we need to redef the whole cache on these tests
 ;; ---------------------------------------------------------------------
 (deftest validate-keywords-enforced-provider-header-absent-test
   (with-redefs [ingest-config/keyword-enforced-providers (constantly ["PROV1" "PROV2"])]
 
     (testing "enforced provider + fixer header absent + keywords header explicitly \"false\" -> still true"
-      (with-redefs [v/validate-keywords-default-true-enabled? true]
+      (with-redefs [v/enforced-providers-cache (delay #{"PROV1" "PROV2"})]
         (is (= true (:validate-keywords?
                      (get-validation-options {VALIDATE_KEYWORDS_HEADER "false"} "PROV1"))))))
 
     (testing "enforced provider + fixer header absent, default-true-enabled? false -> still true"
-      (with-redefs [v/validate-keywords-default-true-enabled? false]
+      (with-redefs [v/enforced-providers-cache (delay #{"PROV1" "PROV2"})]
         (is (= true (:validate-keywords?
                      (get-validation-options {VALIDATE_KEYWORDS_HEADER "false"} "PROV1"))))))
 
     (testing "enforced provider + no headers at all -> still true"
-      (with-redefs [v/validate-keywords-default-true-enabled? false]
+      (with-redefs [v/enforced-providers-cache (delay #{"PROV1" "PROV2"})]
         (is (= true (:validate-keywords?
                      (get-validation-options {} "PROV1"))))))
 
