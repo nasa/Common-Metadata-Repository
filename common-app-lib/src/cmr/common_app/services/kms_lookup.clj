@@ -443,8 +443,6 @@
 (defn- generate-lookup-by-related-urls-map
   "Create a map with the related url comparison map as keys to the UUID for that related url."
   [gcmd-keywords-map]
-  (def gkm gcmd-keywords-map)
-  (generate-lookup-by-comparison-map gcmd-keywords-map :related-urls))
 
 (defn- generate-lookup-by-measurement-name
   "Create a map with the measurement field values defined in UMM-Var map to the KMS keywords."
