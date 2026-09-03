@@ -213,3 +213,42 @@
                TESTING_EXISTING_ERRORS_HEADER "true"
                SEND_KMS_METADATA_FIXER_HEADER "false"}
               "PROV1"))))))
+
+;; ---------------------------------------------------------------------
+;; normalize-providers — directly exercise the shape-handling logic
+;; that makes this module resilient to upstream parser variations.
+;; ---------------------------------------------------------------------
+(deftest normalize-providers-test
+  (testing "already-parsed collection of ids"
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers ["PROV1" "PROV2"]))))
+
+  (testing "collection containing a single unsplit comma-string"
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers ["PROV1,PROV2"]))))
+
+  (testing "bare comma-separated string"
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers "PROV1,PROV2"))))
+
+  (testing "bare single-provider string"
+    (is (= #{"PROV1"} (#'v/normalize-providers "PROV1"))))
+
+  (testing "single-element collection"
+    (is (= #{"PROV1"} (#'v/normalize-providers ["PROV1"]))))
+
+  (testing "empty collection"
+    (is (= #{} (#'v/normalize-providers []))))
+
+  (testing "whitespace around ids is trimmed"
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers ["PROV1, PROV2"])))
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers " PROV1 , PROV2 "))))
+
+  (testing "blank/empty entries from stray commas are dropped"
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers ["PROV1,,PROV2"])))
+    (is (= #{"PROV1" "PROV2"} (#'v/normalize-providers "PROV1,PROV2,"))))
+
+  (testing "duplicates collapse via set"
+    (is (= #{"PROV1"} (#'v/normalize-providers ["PROV1" "PROV1"])))
+    (is (= #{"PROV1"} (#'v/normalize-providers "PROV1,PROV1"))))
+
+  (testing "mixed collection (already-split ids and a comma-string) is flattened"
+    (is (= #{"PROV1" "PROV2" "PROV3"}
+           (#'v/normalize-providers ["PROV1" "PROV2,PROV3"])))))

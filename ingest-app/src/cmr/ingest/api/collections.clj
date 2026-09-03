@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.collections
   "Collection ingest functions in support of the ingest API."
   (:require
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
@@ -21,10 +22,29 @@
   "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
   (ingest-config/validate-keywords-default-true-enabled))
 
+(defn- normalize-providers
+  "Normalizes the raw config value into a set of trimmed, non-blank provider id strings.
+   Accepts a collection whose elements may each be a single id or a comma-separated
+   string of ids:
+     - [\"PROV1\" \"PROV2\"]     -> #{\"PROV1\" \"PROV2\"}
+     - [\"PROV1,PROV2\"]         -> #{\"PROV1\" \"PROV2\"}
+     - [\"PROV1\"]               -> #{\"PROV1\"}
+     - []                        -> #{}
+   This makes the module resilient to upstream config plumbing that may or may
+   not apply the defconfig :parser."
+  [provider-list]
+   (->> (if (string? provider-list) [provider-list] provider-list)
+       (mapcat #(string/split (str %) #","))
+       (map string/trim)
+       (remove string/blank?)
+       set))
+
 ;; Cache the enforced-providers set. NOTE: this uses `delay`, which evaluates
 ;; exactly once for the life of the JVM process.
 (def enforced-providers-cache
-  (delay (set (ingest-config/keyword-enforced-providers))))
+  "Cache the enforced-providers set. NOTE: this uses `delay`, which evaluates
+   exactly once for the life of the JVM process."
+  (delay (normalize-providers (ingest-config/keyword-enforced-providers))))
 
 (defn provider-enforced?
   [provider-id]
