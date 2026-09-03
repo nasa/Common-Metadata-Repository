@@ -1,9 +1,11 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
-  :dependencies [[cheshire "5.12.0"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"
                   :exclusions [commons-fileupload]]
@@ -17,12 +19,14 @@
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.jsoup/jsoup "1.23.2"]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]

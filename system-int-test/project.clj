@@ -1,11 +1,13 @@
 (defproject nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"
   :description "This project provides end to end integration testing for CMR components."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[cheshire "5.12.0"
+  :dependencies [[cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
@@ -36,7 +38,7 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 [org.jsoup/jsoup "1.14.2"]
+                 [org.jsoup/jsoup "1.23.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
@@ -46,7 +48,8 @@
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
                  [org.eclipse.jetty/jetty-io "12.1.8"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-XX:-OmitStackTraceInFastThrow"
                        "-Dclojure.compiler.direct-linking=true"

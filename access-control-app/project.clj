@@ -28,10 +28,16 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :dependencies ~(concat '[[cheshire "5.12.0"
-                            :exclusions [com.fasterxml.jackson.core/jackson-core]]
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
+  :dependencies ~(concat '[[cheshire
+                            :exclusions [com.fasterxml.jackson.core/jackson-core
+                                         com.fasterxml.jackson.dataformat/jackson-dataformat-cbor
+                                         com.fasterxml.jackson.dataformat/jackson-dataformat-smile]]
                            [clj-time "0.15.1"]
-                           [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                           [com.fasterxml.jackson.core/jackson-core]
+                           [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                            [commons-codec/commons-codec "1.11"]
                            [commons-io "2.18.0"]
                            [compojure "1.6.1"
@@ -52,8 +58,9 @@
                             :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
-  :plugins [[lein-modules "0.3.11"]
-            [lein-exec "0.3.7"]
+  :plugins [[lein-exec "0.3.7"]
+            [lein-modules "0.3.11"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
