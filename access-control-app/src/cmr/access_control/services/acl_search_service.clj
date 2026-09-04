@@ -105,12 +105,9 @@
 
   which corresponds to acls that grant read permission to guests for order permission (to anyone)."
   [_context params]
-  (let [gp (:group-permission params)]
-    (if (and (some? gp) (not (map? gp)))
-      ["Parameter group_permission must be a map with integer indices as keys."]
-      (concat (group-permission-parameter-index-validation params)
-              (group-permission-parameter-subfield-validation params)
-              (group-permission-permission-validation params)))))
+  (concat (group-permission-parameter-index-validation params)
+          (group-permission-parameter-subfield-validation params)
+          (group-permission-permission-validation params)))
 
 (def acl-identity-type->search-value
  "Maps identity type query parameter values to the actual values used in the index."
