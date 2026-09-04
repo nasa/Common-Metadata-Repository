@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.collections
   "Collection ingest functions in support of the ingest API."
   (:require
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
@@ -21,12 +22,46 @@
   "Checks to see if the feature toggle for validate-keywords-default-true is enabled."
   (ingest-config/validate-keywords-default-true-enabled))
 
+(defn- normalize-providers
+  "Normalizes the raw config value into a set of trimmed, non-blank provider id strings.
+   Accepts a collection whose elements may each be a single id or a comma-separated
+   string of ids:
+     - [\"PROV1\" \"PROV2\"]     -> #{\"PROV1\" \"PROV2\"}
+     - [\"PROV1,PROV2\"]         -> #{\"PROV1\" \"PROV2\"}
+     - [\"PROV1\"]               -> #{\"PROV1\"}
+     - []                        -> #{}
+   This makes the module resilient to upstream config plumbing that may or may
+   not apply the defconfig :parser."
+  [provider-list]
+   (->> (if (string? provider-list) [provider-list] provider-list)
+       (mapcat #(string/split (str %) #","))
+       (map string/trim)
+       (remove string/blank?)
+       set))
+
+;; Cache the enforced-providers set. NOTE: this uses `delay`, which evaluates
+;; exactly once for the life of the JVM process.
+(def enforced-providers-cache
+  "Cache the enforced-providers set. NOTE: this uses `delay`, which evaluates
+   exactly once for the life of the JVM process."
+  (delay (normalize-providers (ingest-config/keyword-enforced-providers))))
+
+(defn provider-enforced?
+  [provider-id]
+  (contains? @enforced-providers-cache provider-id))
+
 (defn get-validation-options
   "Returns a map of validation options with boolean values"
-  [headers]
-  (let [validate-keywords-value (if validate-keywords-default-true-enabled?
-                                  (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
-                                  (= "true" (get headers VALIDATE_KEYWORDS_HEADER)))]
+  [headers provider-id]
+  (let [validate-keywords-value
+        ;; There is a temporary carveout for the KMS API itself until we resolve the cache delay issue either by removing the CMR cache entirely
+        ;; or having KMS issue a cache refresh to CMR see CMR-11524.
+        (if (and (not (contains? headers SEND_KMS_METADATA_FIXER_HEADER))
+                 (provider-enforced? provider-id))
+          true
+          (if validate-keywords-default-true-enabled?
+            (if (= "false" (get headers VALIDATE_KEYWORDS_HEADER)) false true)
+            (= "true" (get headers VALIDATE_KEYWORDS_HEADER))))]
     {:validate-keywords? validate-keywords-value
      :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))
      :test-existing-errors? (= "true" (get headers TESTING_EXISTING_ERRORS_HEADER))
@@ -36,7 +71,7 @@
   [provider-id native-id request]
   (let [{:keys [body content-type _params headers request-context]} request
         concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
-        validation-options (get-validation-options headers)]
+        validation-options (get-validation-options headers provider-id)]
     (api-core/verify-provider-exists request-context provider-id)
     (info (format "Validating Collection %s from client %s"
                   (api-core/concept->loggable-string concept) (:client-id request-context)))
@@ -57,7 +92,7 @@
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (let [concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
-          validation-options (get-validation-options headers)
+          validation-options (get-validation-options headers provider-id)
           ;; Log the ingest attempt
           _ (info (format "Ingesting collection %s from client %s"
                           (api-core/concept->loggable-string concept)

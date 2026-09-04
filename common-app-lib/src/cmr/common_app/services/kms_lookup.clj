@@ -31,6 +31,10 @@
   (:import #_{:clj-kondo/ignore [:unused-import]}
            (clojure.lang ExceptionInfo)))
 
+;; ---------------------------------------------------------------------
+;; initializing kms cache keys
+;; ---------------------------------------------------------------------
+
 (def kms-short-name-cache-key
   "The key used to store the data generated from KMS into a short name index cache
   in the system hash cache map for fast lookups."
@@ -115,6 +119,11 @@
   "The key used to store the data generated from KMS into a temporal keywords index cache
   in the system hash cache map for fast lookups."
   :kms-temporal-keywords-index)
+
+
+;; ---------------------------------------------------------------------
+;; Initializing cache instances for kms keywords
+;; ---------------------------------------------------------------------
 
 (def kms-cache-ttl
   "Time To Live value for KMS caches. nil means never expire."
@@ -224,6 +233,10 @@
   "Creates an instance of the cache."
   []
   (create-kms-uuid-cache kms-temporal-keywords-cache-key))
+
+;; ---------------------------------------------------------------------
+;; Define rules for scheme lookups
+;; ---------------------------------------------------------------------
 
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when
@@ -445,119 +458,53 @@
                                           [(normalize-for-lookup keyword-map fields)
                                            keyword-map])
                                         keyword-maps)))]])))
+;; ---------------------------------------------------------------------
+;; Create KMS indexes for cache
+;; ---------------------------------------------------------------------
 
-;; Candidate to make private as this function is currently used very little outside of the
-;; common_app package (kms_lookup.clj) and several tests. Try to not call this function in any
-;; actual code to limit how many apps directly manage KMS cache.
+(def ^:private kms-index-definitions
+  "Pairs of [cache-key generate-fn] describing every KMS index. The generate-fn takes the
+   kms-keywords-map and returns the lookup map to store under that cache key. Adding a new
+   KMS index means adding one line here."
+  [[kms-short-name-cache-key           generate-lookup-by-short-name-map]
+   [kms-projects-cache-key             generate-lookup-by-project-name-map]
+   [kms-processing-level-cache-key     generate-lookup-by-processing-level-map]
+   [kms-umm-c-cache-key                generate-lookup-by-umm-c-map]
+   [kms-location-cache-key             generate-lookup-by-location-map]
+   [kms-measurement-cache-key          generate-lookup-by-measurement-name]
+   [kms-science-keywords-cache-key     generate-lookup-by-science-keywords-map]
+   [kms-platforms-cache-key            generate-lookup-by-platforms-name-map]
+   [kms-instruments-cache-key          generate-lookup-by-instruments-name-map]
+   [kms-providers-cache-key            generate-lookup-by-providers-name-map]
+   [kms-spatial-keywords-cache-key     generate-lookup-by-spatial-keywords-map]
+   [kms-concepts-cache-key             generate-lookup-by-concepts-name-map]
+   [kms-iso-topic-categories-cache-key generate-lookup-by-iso-topic-categories-name-map]
+   [kms-granule-data-format-cache-key  generate-lookup-by-granule-data-format-name-map]
+   [kms-mime-type-cache-key            generate-lookup-by-mime-type-name-map]
+   [kms-related-urls-cache-key         generate-lookup-by-related-urls-map]
+   [kms-temporal-keywords-cache-key    generate-lookup-by-temporal-keywords-name-map]])
+
+(defn- store-kms-index!
+  "Writes a single KMS lookup map to redis under cache-key. No-ops on an empty map so we
+   never clobber a populated cache with nothing."
+  [context cache-key lookup-map]
+  (when (seq lookup-map)
+    (let [cache (hash-cache/context->cache context cache-key)
+          [tm _] (util/time-execution (hash-cache/set-values cache cache-key lookup-map))]
+      (rl-util/log-redis-write-complete "create-kms-index" cache-key tm))))
+
 (defn create-kms-index
   "Creates the KMS index structure to be used for fast lookups and stores these values in
    redis. Calling this function will CHANGE an external resource."
   [context kms-keywords-map]
-  (let [short-name-lookup-map (generate-lookup-by-short-name-map kms-keywords-map)
-        project-uuid-lookup-map (generate-lookup-by-project-name-map kms-keywords-map)
-        processing-level-uuid-lookup-map (generate-lookup-by-processing-level-map kms-keywords-map)
-        umm-c-lookup-map (generate-lookup-by-umm-c-map kms-keywords-map)
-        location-lookup-map (generate-lookup-by-location-map kms-keywords-map)
-        measurement-lookup-map (generate-lookup-by-measurement-name kms-keywords-map)
-        science-keywords-uuid-lookup-map (generate-lookup-by-science-keywords-map kms-keywords-map)
-        platforms-uuid-lookup-map (generate-lookup-by-platforms-name-map kms-keywords-map)
-        instruments-uuid-lookup-map (generate-lookup-by-instruments-name-map kms-keywords-map)
-        providers-uuid-lookup-map (generate-lookup-by-providers-name-map kms-keywords-map)
-        spatial-keywords-uuid-lookup-map (generate-lookup-by-spatial-keywords-map kms-keywords-map)
-        concepts-uuid-lookup-map (generate-lookup-by-concepts-name-map kms-keywords-map)
-        iso-topic-categories-uuid-lookup-map (generate-lookup-by-iso-topic-categories-name-map kms-keywords-map)
-        granule-data-format-uuid-lookup-map (generate-lookup-by-granule-data-format-name-map kms-keywords-map)
-        mime-type-uuid-lookup-map (generate-lookup-by-mime-type-name-map kms-keywords-map)
-        related-urls-uuid-lookup-map (generate-lookup-by-related-urls-map kms-keywords-map)
-        temporal-keywords-uuid-lookup-map (generate-lookup-by-temporal-keywords-name-map kms-keywords-map)
-        project-cache (hash-cache/context->cache context kms-projects-cache-key)
-        processing-level-cache (hash-cache/context->cache context kms-processing-level-cache-key)
-        short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
-        umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-        location-cache (hash-cache/context->cache context kms-location-cache-key)
-        measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-        science-keywords-cache (hash-cache/context->cache context kms-science-keywords-cache-key)
-        platforms-cache (hash-cache/context->cache context kms-platforms-cache-key)
-        instruments-cache (hash-cache/context->cache context kms-instruments-cache-key)
-        providers-cache (hash-cache/context->cache context kms-providers-cache-key)
-        spatial-keywords-cache (hash-cache/context->cache context kms-spatial-keywords-cache-key)
-        concepts-cache (hash-cache/context->cache context kms-concepts-cache-key)
-        iso-topic-categories-cache (hash-cache/context->cache context kms-iso-topic-categories-cache-key)
-        granule-data-format-cache (hash-cache/context->cache context kms-granule-data-format-cache-key)
-        mime-type-cache (hash-cache/context->cache context kms-mime-type-cache-key)
-        related-urls-cache (hash-cache/context->cache context kms-related-urls-cache-key)
-        temporal-keywords-cache (hash-cache/context->cache context kms-temporal-keywords-cache-key)
-        _ (rl-util/log-refresh-start (format "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s"
-                                             kms-short-name-cache-key
-                                             kms-umm-c-cache-key
-                                             kms-location-cache-key
-                                             kms-measurement-cache-key
-                                             kms-processing-level-cache-key
-                                             kms-science-keywords-cache-key
-                                             kms-platforms-cache-key
-                                             kms-instruments-cache-key
-                                             kms-providers-cache-key
-                                             kms-spatial-keywords-cache-key
-                                             kms-concepts-cache-key
-                                             kms-iso-topic-categories-cache-key
-                                             kms-granule-data-format-cache-key
-                                             kms-mime-type-cache-key
-                                             kms-related-urls-cache-key
-                                             kms-temporal-keywords-cache-key))]
-    ;; Only update caches that exist
-    (when-not (empty? short-name-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)))
-    (when-not (empty? project-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values project-cache kms-projects-cache-key project-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-projects-cache-key tm)))
-    (when-not (empty? processing-level-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values processing-level-cache kms-processing-level-cache-key processing-level-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-processing-level-cache-key tm)))
-    (when-not (empty? umm-c-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)))
-    (when-not (empty? location-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-location-cache-key tm)))
-    (when-not (empty? measurement-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)))
-    (when-not (empty? science-keywords-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values science-keywords-cache kms-science-keywords-cache-key science-keywords-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-science-keywords-cache-key tm)))
-    (when-not (empty? platforms-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values platforms-cache kms-platforms-cache-key platforms-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-platforms-cache-key tm)))
-    (when-not (empty? instruments-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values instruments-cache kms-instruments-cache-key instruments-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-instruments-cache-key tm)))
-    (when-not (empty? providers-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values providers-cache kms-providers-cache-key providers-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-providers-cache-key tm)))
-    (when-not (empty? spatial-keywords-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values spatial-keywords-cache kms-spatial-keywords-cache-key spatial-keywords-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-spatial-keywords-cache-key tm)))
-    (when-not (empty? concepts-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values concepts-cache kms-concepts-cache-key concepts-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-concepts-cache-key tm)))
-    (when-not (empty? iso-topic-categories-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values iso-topic-categories-cache kms-iso-topic-categories-cache-key iso-topic-categories-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-iso-topic-categories-cache-key tm)))
-    (when-not (empty? granule-data-format-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values granule-data-format-cache kms-granule-data-format-cache-key granule-data-format-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-granule-data-format-cache-key tm)))
-    (when-not (empty? mime-type-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values mime-type-cache kms-mime-type-cache-key mime-type-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-mime-type-cache-key tm)))
-    (when-not (empty? related-urls-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values related-urls-cache kms-related-urls-cache-key related-urls-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-related-urls-cache-key tm)))
-    (when-not (empty? temporal-keywords-uuid-lookup-map)
-      (let [[tm _] (util/time-execution (hash-cache/set-values temporal-keywords-cache kms-temporal-keywords-cache-key temporal-keywords-uuid-lookup-map))]
-        (rl-util/log-redis-write-complete "create-kms-index" kms-temporal-keywords-cache-key tm)))
-    kms-keywords-map))
+  (rl-util/log-refresh-start (string/join " " (map first kms-index-definitions)))
+  (doseq [[cache-key generate-fn] kms-index-definitions]
+    (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+  kms-keywords-map)
 
+;; ---------------------------------------------------------------------
+;; Define scheme lookups
+;; ---------------------------------------------------------------------
 
 (defn- lookup-by-field
   "Generic lookup function for KMS caches that use a lowercased string as the key."
