@@ -9,7 +9,8 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure "1.6.3"
+                  :exclusions [commons-fileupload]]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [inflections "0.13.0"]
                  [instaparse "1.4.10"]

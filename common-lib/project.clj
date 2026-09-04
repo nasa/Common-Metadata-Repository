@@ -23,8 +23,7 @@
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
                  [commons-codec/commons-codec "1.11"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
                  [environ "1.1.0"]
                  [hiccup "1.0.5"]

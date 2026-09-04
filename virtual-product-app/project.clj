@@ -2,7 +2,7 @@
   :description "Adds virtual products to the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/virtual-product-app"
   :dependencies [[commons-logging "1.2"]
-                 [compojure "1.6.1"
+                 [compojure "1.6.3"
                   :exclusions [commons-fileupload]]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
-  :dependencies [[compojure "1.6.1"
+  :dependencies [[compojure "1.6.3"
                   :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]

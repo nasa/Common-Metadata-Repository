@@ -40,7 +40,7 @@
                            [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                            [commons-codec/commons-codec "1.11"]
                            [commons-io "2.18.0"]
-                           [compojure "1.6.1"
+                           [compojure "1.6.3"
                             :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on

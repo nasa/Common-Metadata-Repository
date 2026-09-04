@@ -2,7 +2,7 @@
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
   :dependencies [[commons-io "2.18.0"]
-                 [compojure "1.6.1"
+                 [compojure "1.6.3"
                   :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

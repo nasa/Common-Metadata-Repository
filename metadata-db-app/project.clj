@@ -10,7 +10,7 @@
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core]
                  [commons-io "2.18.0"] ;; used by migration
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [inflections "0.13.0"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
