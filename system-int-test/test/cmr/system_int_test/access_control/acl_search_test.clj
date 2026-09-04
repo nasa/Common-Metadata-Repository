@@ -1,9 +1,9 @@
-(ns cmr.access-control.int-test.acl-search-test
+(ns cmr.system-int-test.access-control.acl-search-test
   (:require
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer [are deftest is testing use-fixtures]]
-   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.system-int-test.access-control.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.common-app.api.routes :as routes]
    [cmr.common.util :as util :refer [are3]]
@@ -20,7 +20,7 @@
   (fixtures/grant-all-acl-fixture))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
-(deftest invalid-search-test
+(deftest ^:serial invalid-search-test
   (testing "Accept header"
     (testing "Other than JSON is rejected"
       (is (= {:status 400
@@ -65,7 +65,7 @@
             (group-permission->flat-query index {:permitted-group group :permission permission}))
           (partition 2 group-permissions))))
 
-(deftest acl-search-order-test
+(deftest ^:serial acl-search-order-test
   ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
   (let [token (e/login (u/conn-context) "user1")
         acl1 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
@@ -91,7 +91,7 @@
             "System - GROUP"]
            (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
 
-(deftest acl-search-permission-test
+(deftest ^:serial acl-search-permission-test
   (let [_token (e/login (u/conn-context) "user1")
         admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
@@ -170,7 +170,7 @@
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
-(deftest acl-search-test
+(deftest ^:serial acl-search-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
                                {:name "group1"}
@@ -277,7 +277,7 @@
                                           {:page_size 3 :page_num 2}
                                           {:token admin-token}) :took))))))
 
-(deftest acl-search-by-any-id-test
+(deftest ^:serial acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
         acl2 (u/ingest-acl token (u/catalog-item-acl "All Granules"))
@@ -303,65 +303,66 @@
                 (:concept-id acl2)
                 "acl3-legacy-guid"]})))
 
-(deftest acl-search-permitted-group-test
+(deftest ^:serial acl-search-permitted-group-test
   (declare group-permissions acls query-map)
-  (let [token (e/login (u/conn-context) "user1")
-        acl1 (u/ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl2 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["read"]}]))
-        ;; SYSTEM GROUP ACL is already created in the fixture loading, so need to update, not create.
-        _acl3-id (e/grant (u/conn-context)
-                          [{:group_id "AG12345-PROV" :permissions ["create" "read"]}
-                           {:user_type "guest" :permissions ["read"]}]
-                          :system_identity
-                          {:target "GROUP"})
-        acl3 (first (e/get-system-group-acls (u/conn-context)))
+  (u/without-publishing-messages
+    (let [token (e/login (u/conn-context) "user1")
+          acl1 (u/ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
+                                          :group_permissions
+                                          [{:user_type "guest" :permissions ["read"]}]))
+          acl2 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
+                                          :group_permissions
+                                          [{:user_type "registered" :permissions ["read"]}]))
+          ;; SYSTEM GROUP ACL is already created in the fixture loading, so need to update, not create.
+          _acl3-id (e/grant (u/conn-context)
+                            [{:group_id "AG12345-PROV" :permissions ["create" "read"]}
+                             {:user_type "guest" :permissions ["read"]}]
+                            :system_identity
+                            {:target "GROUP"})
+          acl3 (first (e/get-system-group-acls (u/conn-context)))
 
-        acl4 (u/ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl5 (u/ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
-        acl6 (u/ingest-acl token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
-                                      :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
+          acl4 (u/ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
+                                          :group_permissions
+                                          [{:user_type "guest" :permissions ["read"]}]))
+          acl5 (u/ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
+                                          :group_permissions
+                                          [{:user_type "registered" :permissions ["create"]}]))
+          acl6 (u/ingest-acl token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
+                                          :group_permissions
+                                          [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
 
-        acl7 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
-        acl8 (u/ingest-acl token (assoc (u/catalog-item-acl "All Granules")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["read" "order"]}
-                                       {:group_id "AG10000-PROV" :permissions ["create"]}]))
-        provider-group-acls (e/get-provider-group-acls (u/conn-context))
+          acl7 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
+          acl8 (u/ingest-acl token (assoc (u/catalog-item-acl "All Granules")
+                                          :group_permissions
+                                          [{:user_type "registered" :permissions ["read" "order"]}
+                                           {:group_id "AG10000-PROV" :permissions ["create"]}]))
+          provider-group-acls (e/get-provider-group-acls (u/conn-context))
 
-        guest-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl3 acl4 acl7]
-        registered-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl2 acl5 acl8]
-        AG12345-acls [acl3 acl6]
-        AG10000-acls [acl8]
-        read-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8] provider-group-acls)
-        create-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8] provider-group-acls)
-        all-acls-no-admin [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
+          guest-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl3 acl4 acl7]
+          registered-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl2 acl5 acl8]
+          AG12345-acls [acl3 acl6]
+          AG10000-acls [acl8]
+          read-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8] provider-group-acls)
+          create-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8] provider-group-acls)
+          all-acls-no-admin [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
 
-    (testing "Search ACLs by permitted group"
-      (are [permitted-groups acls]
-           (let [response (ac/search-for-acls (u/conn-context)
-                                              {:permitted-group permitted-groups}
-                                              {:token token})]
-             (= (u/acls->search-response (count acls) acls)
-                (dissoc response :took)))
+      (testing "Search ACLs by permitted group"
+        (are [permitted-groups acls]
+             (let [response (ac/search-for-acls (u/conn-context)
+                                                {:permitted-group permitted-groups}
+                                                {:token token})]
+               (= (u/acls->search-response (count acls) acls)
+                  (dissoc response :took)))
 
-           ["guest"] guest-acls
-           ["registered"] registered-acls
-           ["AG12345-PROV"] AG12345-acls
-           ["AG10000-PROV"] AG10000-acls
-           ;; permitted-group search is case insensitive by default
-           ["REGISTERED" "AG10000-PROV"] registered-acls
-           ["GUEST" "AG10000-PROV"] (concat guest-acls AG10000-acls)
-           ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
-           ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls-no-admin))
+          ["guest"] guest-acls
+          ["registered"] registered-acls
+          ["AG12345-PROV"] AG12345-acls
+          ["AG10000-PROV"] AG10000-acls
+          ;; permitted-group search is case insensitive by default
+          ["REGISTERED" "AG10000-PROV"] registered-acls
+          ["GUEST" "AG10000-PROV"] (concat guest-acls AG10000-acls)
+          ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
+          ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls-no-admin))
 
     (testing "Search ACLs by permitted group with options"
       (are [permitted-groups options acls]
@@ -371,52 +372,52 @@
              (= (u/acls->search-response (count acls) acls)
                 (dissoc response :took)))
 
-           ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
-           ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
+        ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
+        ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
 
     (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
-           (let [query-map (generate-query-map-for-group-permissions group-permissions)
-                 response (ac/search-for-acls (u/conn-context) query-map {:token token})]
-             (is (= (u/acls->search-response (count acls) acls)
-                    (dissoc response :took))))
-           ;; CMR-3154 acceptance criterium 1
-           "Guests create"
-           ["guest" "create"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl7]
+            (let [query-map (generate-query-map-for-group-permissions group-permissions)
+                  response (ac/search-for-acls (u/conn-context) query-map {:token token})]
+              (is (= (u/acls->search-response (count acls) acls)
+                     (dissoc response :took))))
+            ;; CMR-3154 acceptance criterium 1
+            "Guests create"
+            ["guest" "create"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl7]
 
-           "Guest read"
-           ["guest" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl1 acl3 acl4]
+            "Guest read"
+            ["guest" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl1 acl3 acl4]
 
-           "Registered read"
-           ["registered" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl8]
+            "Registered read"
+            ["registered" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl8]
 
-           "Group create"
-           ["AG10000-PROV" "create"] [acl8]
+            "Group create"
+            ["AG10000-PROV" "create"] [acl8]
 
-           "Registered order"
-           ["registered" "order"] [acl8]
+            "Registered order"
+            ["registered" "order"] [acl8]
 
-           "Group create"
-           ["AG12345-PROV" "create"] [acl3]
+            "Group create"
+            ["AG12345-PROV" "create"] [acl3]
 
-           "Another group create"
-           ["AG10000-PROV" "create"] AG10000-acls
+            "Another group create"
+            ["AG10000-PROV" "create"] AG10000-acls
 
-           "Group read"
-           ["AG12345-PROV" "read"] [acl3]
+            "Group read"
+            ["AG12345-PROV" "read"] [acl3]
 
-           "Group delete"
-           ["AG12345-PROV" "delete"] [acl6]
+            "Group delete"
+            ["AG12345-PROV" "delete"] [acl6]
 
-           "Case-insensitive group create"
-           ["AG10000-PROV" "CREATE"] AG10000-acls
+            "Case-insensitive group create"
+            ["AG10000-PROV" "CREATE"] AG10000-acls
 
-           ;; CMR-3154 acceptance criterium 2
-           "Registered read or registered create"
-           ["registered" "read" "registered" "create"] registered-acls
+            ;; CMR-3154 acceptance criterium 2
+            "Registered read or registered create"
+            ["registered" "read" "registered" "create"] registered-acls
 
-           "Registered read or group AG12345-PROV delete"
-           ["registered" "read" "AG12345-PROV" "delete"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl6 acl8]))
+            "Registered read or group AG12345-PROV delete"
+            ["registered" "read" "AG12345-PROV" "delete"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl6 acl8]))
 
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
@@ -432,14 +433,14 @@
         "Just user type"
         {:permitted-group "guest"} guest-acls
 
-        "Just group"
-        {:permitted-group "AG10000-PROV"} AG10000-acls
+            "Just group"
+            {:permitted-group "AG10000-PROV"} AG10000-acls
 
-        "Just read permission"
-        {:permission "read"} read-acls
+            "Just read permission"
+            {:permission "read"} read-acls
 
-        "Just create permission"
-        {:permission "create"} create-acls))
+            "Just create permission"
+            {:permission "create"} create-acls))
 
     ;; CMR-3154 acceptance criterium 4
     (testing "Search ACLS by group permission with non integer index is an error"
@@ -465,9 +466,9 @@
         (is (= {:status 400
                 :body {:errors ["Sub-parameter permission of parameter group_permissions has invalid values [foo]. Only 'read', 'update', 'create', 'delete', or 'order' may be specified."]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:token token :raw? true})))))))
+               (ac/search-for-acls (u/conn-context) query {:token token :raw? true}))))))))
 
-(deftest acl-search-by-identity-type-test
+(deftest ^:serial acl-search-by-identity-type-test
   (declare identity-types expected-acls)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
@@ -516,7 +517,7 @@
         "Identity type searches are always case-insensitive"
         ["PrOvIdEr"] (concat [fixtures/*fixture-provider-acl*] provider-group-acls)))))
 
-(deftest acl-search-by-target-test
+(deftest ^:serial acl-search-by-target-test
   (declare target)
   (let [token (e/login (u/conn-context) "user1")
         single-instance-acl (u/ingest-acl token
@@ -540,7 +541,7 @@
       "Provider target, case insensitive"
       ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
 
-(deftest acl-search-by-permitted-user-test
+(deftest ^:serial acl-search-by-permitted-user-test
   (declare user users)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
@@ -604,7 +605,7 @@
         "User names are case-insensitive"
         ["USER1"] [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
 
-(deftest acl-search-provider-test
+(deftest ^:serial acl-search-provider-test
   (declare options provider-ids)
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
@@ -686,7 +687,7 @@
        "Multiple providers with empty results using ignore_case=false option"
        ["prov1"] {"options[provider][ignore_case]" false} []))))
 
-(deftest acl-search-multiple-criteria
+(deftest ^:serial acl-search-multiple-criteria
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
         group2 (u/ingest-group admin-token {:name "group2"} ["user2"])
@@ -754,7 +755,7 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-with-legacy-group-guid-test
+(deftest ^:serial acl-search-with-legacy-group-guid-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1-legacy-guid "group1-legacy-guid"
         group1 (u/ingest-group admin-token
@@ -815,7 +816,7 @@
         (is (= (u/acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
                (dissoc response :took)))))))
 
-(deftest acl-reindexing-test
+(deftest ^:serial acl-reindexing-test
   (u/without-publishing-messages
    (let [token (e/login (u/conn-context) "user1")
          acl1 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
@@ -861,7 +862,7 @@
                             (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
               (set (:items actual-response))))))))
 
-(deftest acl-search-by-target-group-id-test
+(deftest ^:serial acl-search-by-target-group-id-test
   (let [admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1 (u/ingest-group admin-token
                                {:name "group1"}
