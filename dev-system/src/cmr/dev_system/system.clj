@@ -16,6 +16,7 @@
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
+   [cmr.indexer.test.api.test-api :as indexer-test-api]
    [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.memory-db :as ingest-data]
    [cmr.ingest.system :as ingest-system]
@@ -216,10 +217,20 @@
                       (mdb-system/create-system))]
     (assoc sys-with-db :queue-broker queue-broker)))
 
+;(defn create-indexer-app
+;  "Create an instance of the indexer application."
+;  [queue-broker]
+;  (assoc (indexer-system/create-system) :queue-broker queue-broker))
+
 (defn create-indexer-app
   "Create an instance of the indexer application."
   [queue-broker]
-  (assoc (indexer-system/create-system) :queue-broker queue-broker))
+  (-> (indexer-system/create-system)
+      (assoc :queue-broker queue-broker)
+      ;; OVERWRITE the production :web component with a new one that uses test-api wrapper
+      (assoc :web (web-serv/create-web-server
+                    (transmit-config/indexer-port)
+                    indexer-test-api/make-test-app))))
 
 (defn create-virtual-product-app
   "Create an instance of the virtual product application."

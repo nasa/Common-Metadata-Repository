@@ -96,7 +96,7 @@
                                         ;                     "-Dcom.sun.management.jmxremote.ssl=false"
                                         ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
                                         ;                     "-Dcom.sun.management.jmxremote.port=1098"]
-                                :source-paths ["src" "dev" "test"]
+                                :source-paths ["src" "dev" "test" "../indexer-app/test"]
                                 :injections [(require 'pjstadig.humane-test-output)
                                              (pjstadig.humane-test-output/activate!)]}
              ;; This is to separate the dependencies from the dev-config specified in profiles.clj

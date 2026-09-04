@@ -69,7 +69,7 @@
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
                                         "-XX:-OmitStackTraceInFastThrow"]
-                   :source-paths ["src" "dev"]}
+                   :source-paths ["src" "dev" "../indexer-app/test"]}
              :static {}
              ;; This profile is used for linting and static analysis. To run for this
              ;; project, use `lein lint` from inside the project directory. To run for
