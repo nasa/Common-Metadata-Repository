@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:8.19.14
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.19.17
 
 COPY plugins /usr/share/elasticsearch/plugins/
 COPY embedded-security.policy /usr/share/elasticsearch/config/embedded-security.policy

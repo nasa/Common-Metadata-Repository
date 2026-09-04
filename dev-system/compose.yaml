@@ -11,7 +11,7 @@ services:
     build:
       context: .
       dockerfile: resources/elasticsearch/Dockerfile.elasticsearch
-    image: cmr-elasticsearch:8.19.14
+    image: cmr-elasticsearch:8.19.17
     ports: 
       - 9211:9200
       - 9300:9300
@@ -37,7 +37,7 @@ services:
     build:
       context: .
       dockerfile: resources/elasticsearch/Dockerfile.elasticsearch
-    image: cmr-elasticsearch:8.19.14
+    image: cmr-elasticsearch:8.19.17
     ports: 
       - 9210:9200
       - 9301:9300
@@ -62,7 +62,7 @@ services:
     container_name: cmr-kibana
     depends_on: 
       - elasticsearch
-    image: docker.elastic.co/kibana/kibana:8.19.14
+    image: docker.elastic.co/kibana/kibana:8.19.17
     ports:
       - 5602:5601
     environment:
@@ -76,7 +76,7 @@ services:
     container_name: cmr-gran-kibana
     depends_on: 
       - gran-elasticsearch
-    image: docker.elastic.co/kibana/kibana:8.19.14
+    image: docker.elastic.co/kibana/kibana:8.19.17
     ports:
       - 5601:5601
     environment:
