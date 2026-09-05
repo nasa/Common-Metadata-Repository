@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
-  :dependencies [[compojure "1.6.1"
+  :dependencies [[compojure "1.6.3"
                   :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
@@ -16,7 +16,7 @@
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [nrepl/nrepl "1.1.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]

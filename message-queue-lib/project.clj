@@ -50,7 +50,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
@@ -71,7 +71,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]

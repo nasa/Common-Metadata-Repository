@@ -10,8 +10,7 @@
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -26,8 +25,8 @@
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [nrepl/nrepl]
+                 [org.clojure/tools.reader]
                  [potemkin "0.4.5"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]

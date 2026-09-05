@@ -1,3 +1,4 @@
+
 (defproject nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
@@ -9,7 +10,7 @@
                  [clj-time "0.15.1"]
                  [com.fasterxml.jackson.core/jackson-core]
                  [commons-io "2.18.0"] ;; used by migration
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [inflections "0.13.0"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
@@ -23,8 +24,8 @@
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [nrepl/nrepl]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]

@@ -23,8 +23,7 @@
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
                  [commons-codec/commons-codec "1.11"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
                  [environ "1.1.0"]
                  [hiccup "1.0.5"]
@@ -36,13 +35,13 @@
                  ;; the exact same class path so no code change is needed.
                  [at.yawk.lz4/lz4-java]
                  [org.clojure/clojure]
-                 [org.clojure/core.async "0.4.490"]
-                 [org.clojure/core.cache "0.7.2"]
+                 [org.clojure/core.async "1.6.681"]
+                 [org.clojure/core.cache]
                  [org.clojure/data.codec "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/test.check "0.9.0"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/test.check]
+                 [nrepl/nrepl]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0

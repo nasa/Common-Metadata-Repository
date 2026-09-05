@@ -7,8 +7,7 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-time "0.15.1"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -34,7 +33,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on "1.85"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl "1.1.0"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-codec "1.3.0"

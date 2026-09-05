@@ -9,7 +9,8 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure "1.6.3"
+                  :exclusions [commons-fileupload]]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [inflections "0.13.0"]
                  [instaparse "1.4.10"]
@@ -32,7 +33,7 @@
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [nrepl/nrepl "1.1.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]

@@ -9,7 +9,7 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.3.2"]]
+                 [org.clojure/tools.reader "1.4.0"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -21,7 +21,7 @@
                                   [criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl "1.1.0"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
