@@ -48,6 +48,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :source-paths ["src" "../indexer-app/test"]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
                            [org.bouncycastle/bcpkix-jdk18on "1.85"]
@@ -96,7 +97,7 @@
                                         ;                     "-Dcom.sun.management.jmxremote.ssl=false"
                                         ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
                                         ;                     "-Dcom.sun.management.jmxremote.port=1098"]
-                                :source-paths ["src" "dev" "test" "../indexer-app/test"]
+                                :source-paths ["src" "dev" "test"]
                                 :injections [(require 'pjstadig.humane-test-output)
                                              (pjstadig.humane-test-output/activate!)]}
              ;; This is to separate the dependencies from the dev-config specified in profiles.clj
