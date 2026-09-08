@@ -1,4 +1,4 @@
-(ns cmr.indexer.test.api.test-api
+(ns cmr.dev-system.indexer-test-api
   "APIs for testing only"
   (:require
     [cmr.acl.core :as acl]

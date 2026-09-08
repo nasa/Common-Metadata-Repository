@@ -12,6 +12,7 @@
    [cmr.common.util :as u]
    [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.control :as control]
+   [cmr.dev-system.indexer-test-api :as indexer-test-api]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
    [cmr.indexer.config :as indexer-config]
@@ -231,18 +232,27 @@
 ;                    (transmit-config/indexer-port)
 ;                    indexer-test-api/make-test-app))))
 
+;(defn create-indexer-app
+;  "Create an instance of the indexer application."
+;  [queue-broker]
+;  (let [;; Dynamically load the test routes at RUNTIME to bypass the compiler
+;        ;; The @ symbol dereferences the Var to get the actual function
+;        make-test-app @(requiring-resolve 'cmr.indexer.test.api.indexer-test-api/make-test-app)]
+;
+;    (-> (indexer-system/create-system)
+;        (assoc :queue-broker queue-broker)
+;        (assoc :web (web-serv/create-web-server
+;                      (transmit-config/indexer-port)
+;                      make-test-app)))))
+
 (defn create-indexer-app
   "Create an instance of the indexer application."
   [queue-broker]
-  (let [;; Dynamically load the test routes at RUNTIME to bypass the compiler
-        ;; The @ symbol dereferences the Var to get the actual function
-        make-test-app @(requiring-resolve 'cmr.indexer.test.api.test-api/make-test-app)]
-
-    (-> (indexer-system/create-system)
-        (assoc :queue-broker queue-broker)
-        (assoc :web (web-serv/create-web-server
-                      (transmit-config/indexer-port)
-                      make-test-app)))))
+  (-> (indexer-system/create-system)
+      (assoc :queue-broker queue-broker)
+      (assoc :web (web-serv/create-web-server
+                    (transmit-config/indexer-port)
+                    indexer-test-api/make-test-app))))
 
 (defn create-virtual-product-app
   "Create an instance of the virtual product application."
