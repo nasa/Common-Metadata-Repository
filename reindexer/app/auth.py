@@ -24,20 +24,22 @@ def _extract_token(
 
 def _get_sids(token: str) -> list:
     """Return the current user's SIDs (group concept IDs + 'registered'/'guest')."""
+    url = f"{config.acl_base_url}/current-sids"
     try:
-        r = httpx.post(
-            f"{config.acl_base_url}/current-sids",
-            json={"user-token": token},
-            timeout=10.0,
-        )
+        r = httpx.post(url, json={"user-token": token}, timeout=10.0)
     except Exception as exc:
-        logger.error({"event": "sids_check_error", "error": str(exc)})
+        logger.error({"event": "sids_check_error", "url": url, "error": str(exc), "error_type": type(exc).__name__})
         raise HTTPException(status_code=503, detail="ACL service unavailable")
 
     if r.status_code == 401:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     if r.status_code != 200:
-        logger.warning({"event": "sids_check_unexpected_status", "status": r.status_code})
+        logger.warning({
+            "event": "sids_check_unexpected_status",
+            "url": url,
+            "status": r.status_code,
+            "body": r.text[:500],
+        })
         raise HTTPException(status_code=503, detail="ACL service error")
 
     return r.json()
@@ -45,20 +47,25 @@ def _get_sids(token: str) -> list:
 
 def _get_ingest_mgmt_acls() -> list:
     """Fetch all INGEST_MANAGEMENT_ACL system ACLs with full ACL detail."""
+    url = f"{config.acl_base_url}/acls"
     try:
         r = httpx.get(
-            f"{config.acl_base_url}/acls",
+            url,
             params={"target": "INGEST_MANAGEMENT_ACL", "include_full_acl": "true"},
             headers={"Authorization": config.echo_system_token},
             timeout=10.0,
         )
     except Exception as exc:
-        logger.error({"event": "acl_fetch_error", "error": str(exc)})
+        logger.error({"event": "acl_fetch_error", "url": url, "error": str(exc), "error_type": type(exc).__name__})
         raise HTTPException(status_code=503, detail="ACL service unavailable")
 
     if r.status_code != 200:
-        logger.warning({"event": "acl_fetch_unexpected_status", "status": r.status_code})
-        raise HTTPException(status_code=503, detail="ACL service error")
+        logger.warning({
+            "event": "acl_fetch_unexpected_status",
+            "url": url,
+            "status": r.status_code,
+            "body": r.text[:500],
+        })
 
     return r.json().get("items", [])
 
