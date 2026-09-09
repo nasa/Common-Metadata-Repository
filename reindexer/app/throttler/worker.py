@@ -226,8 +226,14 @@ class ThrottlerWorker:
         job_store.update_heartbeat(item.request_id)
         if self.is_job_cancelled(item.request_id):
             return
-        # Rate-limit: block until bucket allows this batch, or shutdown fires
-        if not self._token_bucket.consume(len(granule_records), stop_event=self._stop_event):
+        # Rate-limit: block until bucket allows this batch, shutdown fires, or job is cancelled.
+        # cancel_fn is polled each wake-up so a cancellation during a long token wait
+        # (e.g. a 10k-granule page at 600/min ≈ 1000s wait) aborts promptly.
+        if not self._token_bucket.consume(
+            len(granule_records),
+            stop_event=self._stop_event,
+            cancel_fn=lambda: self.is_job_cancelled(item.request_id),
+        ):
             return
 
         for concept_id, revision_id in granule_records:
