@@ -1,8 +1,8 @@
 """
 Unit tests for SQS client message body and queue routing.
 
-Verifies the JSON shape sent by enqueue_collection_item, enqueue_page_item,
-and publish_concept_update — in particular that publish_concept_update uses
+Verifies the JSON shape sent by enqueue_collection_item, publish_concept_update,
+and publish_concept_updates_batch — in particular that publish_concept_update uses
 hyphenated keys ("concept-id", "revision-id") matching the CMR indexer contract.
 
 _sqs() is replaced with a lambda returning a mock boto3 client so that
@@ -19,7 +19,7 @@ import pytest
 
 import app.sqs.client as _sqs_mod
 from app.config import config
-from app.sqs.client import enqueue_collection_item, enqueue_page_item, publish_concept_update, publish_concept_updates_batch
+from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_concept_updates_batch
 
 
 # ---------------------------------------------------------------------------
@@ -99,39 +99,6 @@ class TestEnqueueCollectionItem:
 
 
 # ---------------------------------------------------------------------------
-# enqueue_page_item
-# ---------------------------------------------------------------------------
-
-class TestEnqueuePageItem:
-
-    def test_targets_intermediate_queue(self, sqs):
-        enqueue_page_item("req-1", "C1234-PROV", offset=0, limit=10000)
-        assert _queue(sqs) == config.intermediate_queue_url
-
-    def test_type_is_granule_page(self, sqs):
-        enqueue_page_item("req-1", "C1234-PROV", offset=0, limit=10000)
-        assert _body(sqs)["type"] == "granule-page"
-
-    def test_offset_propagated(self, sqs):
-        enqueue_page_item("req-1", "C1-PROV", offset=20000, limit=10000)
-        assert _body(sqs)["offset"] == 20000
-
-    def test_limit_propagated(self, sqs):
-        enqueue_page_item("req-1", "C1-PROV", offset=0, limit=5000)
-        assert _body(sqs)["limit"] == 5000
-
-    def test_after_propagated(self, sqs):
-        enqueue_page_item("req-1", "C1-PROV", offset=0, limit=100, after="2024-06-01T00:00:00Z")
-        assert _body(sqs)["after"] == "2024-06-01T00:00:00Z"
-
-    def test_after_and_before_null_when_omitted(self, sqs):
-        enqueue_page_item("req-1", "C1-PROV", offset=0, limit=100)
-        body = _body(sqs)
-        assert body["after"] is None
-        assert body["before"] is None
-
-
-# ---------------------------------------------------------------------------
 # publish_concept_update
 # ---------------------------------------------------------------------------
 
@@ -140,10 +107,6 @@ class TestPublishConceptUpdate:
     def test_targets_indexer_queue(self, sqs):
         publish_concept_update("V1234-PROV", 3, "req-1")
         assert _queue(sqs) == config.indexer_queue_url
-
-    def test_does_not_target_intermediate_queue(self, sqs):
-        publish_concept_update("V1234-PROV", 3, "req-1")
-        assert _queue(sqs) != config.intermediate_queue_url
 
     def test_action_is_concept_update(self, sqs):
         publish_concept_update("V1234-PROV", 3, "req-1")
@@ -180,11 +143,6 @@ class TestPublishConceptUpdatesBatch:
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
         assert _batch_queue(sqs) == config.indexer_queue_url
-
-    def test_does_not_target_intermediate_queue(self, sqs):
-        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
-        assert _batch_queue(sqs) != config.intermediate_queue_url
 
     def test_action_is_concept_update(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}

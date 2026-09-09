@@ -29,9 +29,6 @@ class Config:
 
     # SQS — endpoint_url None means real AWS SQS; set SQS_ENDPOINT_URL for local ElasticMQ
     sqs_endpoint_url: Optional[str] = field(default_factory=lambda: os.environ.get("SQS_ENDPOINT_URL"))
-    intermediate_queue_url: str = field(default_factory=lambda: os.environ.get(
-        "INTERMEDIATE_QUEUE_URL", "http://localhost:4100/queue/cmr-reindexer-jobs"
-    ))
     collection_queue_url: str = field(default_factory=lambda: os.environ.get(
         "COLLECTION_QUEUE_URL", "http://localhost:4100/queue/cmr-reindexer-collections"
     ))
@@ -40,8 +37,13 @@ class Config:
     ))
 
     # Throttler
-    chunk_size: int = field(default_factory=lambda: int(os.environ.get("CHUNK_SIZE", "10000")))
     rate_per_minute: int = field(default_factory=lambda: int(os.environ.get("RATE_PER_MINUTE", "600")))
+    # Option C: stream chunk size (rows per fetchmany / checkpoint interval).
+    # Must be <= rate_per_minute; startup asserts this.  At production rates
+    # (60k/min) 1000 granules/chunk ≈ one checkpoint per second.
+    stream_chunk_size: int = field(default_factory=lambda: int(os.environ.get("STREAM_CHUNK_SIZE", "1000")))
+    # Parallel worker threads for publish_concept_updates_batch SQS sends.
+    sqs_send_workers: int = field(default_factory=lambda: int(os.environ.get("SQS_SEND_WORKERS", "20")))
 
     # DB backend: "oracle" (default) or "stub" (hardcoded fake data, for unit tests)
     db_backend: str = field(default_factory=lambda: os.environ.get("DB_BACKEND", "oracle"))
@@ -53,6 +55,8 @@ class Config:
     # DynamoDB job table
     dynamodb_table_name: str = field(default_factory=lambda: os.environ.get("DYNAMODB_JOB_TABLE", "cmr-reindexer-jobs"))
     dynamodb_endpoint_url: Optional[str] = field(default_factory=lambda: os.environ.get("DYNAMODB_ENDPOINT_URL"))
+    # DynamoDB collection checkpoint table (Option C: mid-collection resume cursor)
+    dynamodb_checkpoint_table: str = field(default_factory=lambda: os.environ.get("DYNAMODB_CHECKPOINT_TABLE", "cmr-reindexer-checkpoints"))
 
     # Cancellation cache refresh interval
     cancel_check_interval_seconds: int = field(default_factory=lambda: int(os.environ.get("CANCEL_CHECK_INTERVAL_SECONDS", "5")))

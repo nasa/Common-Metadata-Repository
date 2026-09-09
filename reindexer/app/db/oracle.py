@@ -6,12 +6,12 @@ SQL patterns mirror db-es-audit/src/cmr_db.py exactly:
   - Provider derived from concept-id suffix: C1234-PROV → PROV
   - Tables: METADATA_DB.{PROVIDER}_GRANULES / _COLLECTIONS
 
-Pagination uses Oracle 12c+ OFFSET/FETCH rather than cursor.fetchmany()
-because the throttler enqueues discrete page work items (offset, limit).
+Granule dispatch uses stream_granule_ids() (keyset pagination via fetchmany)
+rather than OFFSET/FETCH, so cost is O(page_size) not O(n^2).
 """
 import logging
 import re
-from typing import Optional
+from typing import Iterator, Optional
 
 import oracledb
 
@@ -25,28 +25,22 @@ _BATCH_SIZE = 500
 # Per-provider granule / collection SQL
 # ---------------------------------------------------------------------------
 
-_COUNT_SQL = """\
-SELECT COUNT(*)
-FROM (
-    SELECT concept_id
-    FROM METADATA_DB.{table}
-    WHERE PARENT_COLLECTION_ID = :collection_id
-    {after_clause}
-    {before_clause}
-    GROUP BY concept_id
-    HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-)"""
-
-_IDS_SQL = """\
+# Streaming keyset query: no OFFSET/FETCH — cursor.fetchmany() controls chunk size.
+# ORDER BY ASC is required for the keyset forward scan (concept_id > :start_after).
+_STREAM_IDS_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
 FROM METADATA_DB.{table}
 WHERE PARENT_COLLECTION_ID = :collection_id
 {after_clause}
 {before_clause}
+{keyset_clause}
 GROUP BY concept_id
 HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-ORDER BY concept_id DESC
-OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY"""
+ORDER BY concept_id ASC"""
+
+# Keyset resume cursor: skip rows already dispatched ('' → all rows on first run, but
+# Oracle treats '' as NULL so we omit the clause entirely when start_after is falsy).
+_KEYSET_CLAUSE = "AND concept_id > :start_after"
 
 _COLLECTIONS_SQL = """\
 SELECT concept_id
@@ -188,53 +182,52 @@ class OracleClient:
             cur.execute(sql)
             return [row[0] for row in cur.fetchall()]
 
-    def get_granule_count(
+    def stream_granule_ids(
         self,
         collection_id: str,
+        chunk_size: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> int:
+        start_after_concept_id: Optional[str] = None,
+    ) -> Iterator[list[tuple[str, int]]]:
+        """Yield successive chunks of (concept_id, revision_id) tuples using keyset pagination.
+
+        Opens one Oracle cursor for the full collection and streams via fetchmany()
+        rather than OFFSET/FETCH, so cost is O(chunk_size) per call instead of O(n^2).
+
+        start_after_concept_id: resume cursor — skip concepts at or before this ID.
+            Pass None (or empty string) to start from the beginning.
+
+        The Oracle connection is held for the full stream.  Callers should handle
+        ORA-03113/ORA-03114 (idle timeout) by catching OperationalError and retrying
+        from the last checkpoint.
+        """
         provider = _provider_from_collection(collection_id)
         table = f"{provider}_GRANULES"
-        sql = _COUNT_SQL.format(
+
+        use_keyset = bool(start_after_concept_id)
+        sql = _STREAM_IDS_SQL.format(
             table=table,
             after_clause=_AFTER_CLAUSE if after else "",
             before_clause=_BEFORE_CLAUSE if before else "",
+            keyset_clause=_KEYSET_CLAUSE if use_keyset else "",
         )
         bind: dict = {"collection_id": collection_id}
         if after:
             bind["after"] = _oracle_ts(after)
         if before:
             bind["before"] = _oracle_ts(before)
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
-            cur.execute(sql, bind)
-            row = cur.fetchone()
-            return row[0] if row else 0
+        if use_keyset:
+            bind["start_after"] = start_after_concept_id
 
-    def get_granule_ids(
-        self,
-        collection_id: str,
-        offset: int,
-        limit: int,
-        after: Optional[str] = None,
-        before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        provider = _provider_from_collection(collection_id)
-        table = f"{provider}_GRANULES"
-        sql = _IDS_SQL.format(
-            table=table,
-            after_clause=_AFTER_CLAUSE if after else "",
-            before_clause=_BEFORE_CLAUSE if before else "",
-        )
-        bind: dict = {"collection_id": collection_id, "offset": offset, "limit": limit}
-        if after:
-            bind["after"] = _oracle_ts(after)
-        if before:
-            bind["before"] = _oracle_ts(before)
         with self._get_pool().acquire() as conn, conn.cursor() as cur:
-            cur.arraysize = min(limit, 5000)
+            cur.arraysize = chunk_size
             cur.execute(sql, bind)
-            return [(row[0], row[1]) for row in cur.fetchall()]
+            while True:
+                rows = cur.fetchmany(chunk_size)
+                if not rows:
+                    break
+                yield [(row[0], row[1]) for row in rows]
 
     # ------------------------------------------------------------------
     # Shared concept type tables

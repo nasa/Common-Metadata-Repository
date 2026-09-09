@@ -2,7 +2,7 @@
 Unit tests for GET /health, GET /status, and the ES health utility.
 
 /health must return 200 with zero dependency checks (ALB probe requirement).
-/status is unauthenticated and returns live ES health + intermediate queue depth.
+/status is unauthenticated and returns live ES health + queue depths (collection, indexer).
   - If SQS is unreachable, queue_depth is -1 (not a 5xx).
 ES health utility: correct status aggregation across two clusters, red fallback
   on connection failure, and wait_for_green polling behaviour.
@@ -83,24 +83,11 @@ class TestStatus:
                 body = client.get("/reindexer/status").json()
         assert "es_health" in body
 
-    def test_response_contains_page_queue_depth(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=42):
-                body = client.get("/reindexer/status").json()
-        assert body["page_queue_depth"] == 42
-
     def test_response_contains_collection_queue_depth(self):
         with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
             with patch("app.routers.status.get_queue_depth", return_value=7):
                 body = client.get("/reindexer/status").json()
         assert body["collection_queue_depth"] == 7
-
-    def test_page_sqs_unreachable_returns_minus_one_not_5xx(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", side_effect=Exception("no sqs")):
-                r = client.get("/reindexer/status")
-        assert r.status_code == 200
-        assert r.json()["page_queue_depth"] == -1
 
     def test_collection_sqs_unreachable_returns_minus_one_not_5xx(self):
         with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
