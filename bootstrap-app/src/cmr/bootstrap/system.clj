@@ -155,7 +155,7 @@
   []
   (let [metadata-db (-> "metadata-db-in-bootstrap-pool"
                         (mdb-system/create-system)
-                        (dissoc :log :web :scheduler :unclustered-scheduler :queue-broker))
+                        (dissoc :log :web :scheduler :queue-broker))
         indexer (-> (idx-system/create-system)
                     (dissoc :log :web :queue-broker)
                     ;; Setting the parent-collection-cache to cache parent collection umm
