@@ -32,10 +32,17 @@ class TokenBucket:
             self._rate_per_second = rate_per_minute / 60.0
             self._max_tokens = float(rate_per_minute)
 
-    def consume(self, count: int = 1, stop_event: Optional[threading.Event] = None) -> bool:
+    def consume(
+        self,
+        count: int = 1,
+        stop_event: Optional[threading.Event] = None,
+        cancel_fn=None,
+    ) -> bool:
         """Block until 'count' tokens are available, then consume them.
 
-        Returns True if tokens were consumed, False if stop_event fired first.
+        Returns True if tokens were consumed, False if stop_event fired or
+        cancel_fn returned True.  cancel_fn is polled each wake-up interval so
+        the caller can abort a long wait (e.g. when a job is cancelled mid-page).
         """
         while True:
             with self._lock:
@@ -53,6 +60,8 @@ class TokenBucket:
                     return False
             else:
                 time.sleep(min(wait_for, 1.0))
+            if cancel_fn is not None and cancel_fn():
+                return False
 
     def _refill(self) -> None:
         now = time.monotonic()
