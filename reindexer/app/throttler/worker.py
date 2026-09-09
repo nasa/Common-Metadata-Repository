@@ -79,7 +79,7 @@ class ThrottlerWorker:
                 logger.warning({"event": "throttler_thread_did_not_exit"})
         if job_id:
             try:
-                job_store.mark_job(job_id, "interrupted")
+                job_store.try_mark_interrupted(job_id)
             except Exception as exc:
                 logger.warning({"event": "interrupted_job_mark_failed", "error": str(exc)})
         logger.info({"event": "throttler_stopped"})

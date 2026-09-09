@@ -227,6 +227,37 @@ class JobStore:
                 return False
             raise
 
+    def try_mark_interrupted(self, job_id: str) -> bool:
+        """Atomically mark a job interrupted only if it is not already in a terminal status.
+
+        Prevents a task shutdown from overwriting a cancelled/completed status with interrupted,
+        which would cause resume logic to incorrectly re-enqueue the job on next startup.
+        Returns True if marked interrupted, False if already terminal.
+        """
+        try:
+            self._table().update_item(
+                Key={"job_id": job_id},
+                UpdateExpression="SET #st = :interrupted, completed_at = :now, last_heartbeat = :now",
+                ConditionExpression=(
+                    "#st <> :completed AND #st <> :failed"
+                    " AND #st <> :interrupted AND #st <> :cancelled"
+                ),
+                ExpressionAttributeNames={"#st": "status"},
+                ExpressionAttributeValues={
+                    ":interrupted": "interrupted",
+                    ":completed": "completed",
+                    ":failed": "failed",
+                    ":cancelled": "cancelled",
+                    ":now": _now_iso(),
+                },
+            )
+            logger.info({"event": "job_interrupted", "job_id": job_id})
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                return False
+            raise
+
     def try_cancel_job(self, job_id: str) -> bool:
         """Atomically cancel a job unless it is already in a terminal status.
 
@@ -237,15 +268,13 @@ class JobStore:
                 Key={"job_id": job_id},
                 UpdateExpression="SET #st = :cancelled, completed_at = :now, last_heartbeat = :now",
                 ConditionExpression=(
-                    "#st <> :completed AND #st <> :failed"
-                    " AND #st <> :interrupted AND #st <> :cancelled"
+                    "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
                 ),
                 ExpressionAttributeNames={"#st": "status"},
                 ExpressionAttributeValues={
                     ":cancelled": "cancelled",
                     ":completed": "completed",
                     ":failed": "failed",
-                    ":interrupted": "interrupted",
                     ":now": _now_iso(),
                 },
             )
