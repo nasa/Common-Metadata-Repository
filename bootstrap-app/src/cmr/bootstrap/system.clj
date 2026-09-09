@@ -15,7 +15,6 @@
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-gran-acls-caches]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
@@ -109,8 +108,7 @@
   "Create all the schedules to be added to the sys latter."
   (jobs/create-scheduler
    `system-holder
-   [jvm-info/log-jvm-statistics-job
-    (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
+   [(provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
 
     (b-coll-metadata-cache/refresh-collections-metadata-cache-job
      "bootstrap-collections-metadata-cache-refresh")
