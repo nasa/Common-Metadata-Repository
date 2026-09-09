@@ -56,11 +56,12 @@ async def lifespan(app: FastAPI):
     logger.info({
         "event": "startup_config",
         "acl_base_url": config.acl_base_url,
-        "intermediate_queue_url": config.intermediate_queue_url,
         "collection_queue_url": config.collection_queue_url,
         "dynamodb_table_name": config.dynamodb_table_name,
+        "dynamodb_checkpoint_table": config.dynamodb_checkpoint_table,
         "db_backend": config.db_backend,
         "rate_per_minute": config.rate_per_minute,
+        "stream_chunk_size": config.stream_chunk_size,
     })
 
     resume_stalled_jobs(db_client, job_store, enqueue_collection_item)
