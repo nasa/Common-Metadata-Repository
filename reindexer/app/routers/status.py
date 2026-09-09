@@ -55,12 +55,6 @@ async def status():
     es_health = check_all_es_health()
 
     try:
-        page_queue_depth = get_queue_depth(config.intermediate_queue_url)
-    except Exception as exc:
-        logger.warning({"event": "queue_depth_check_failed", "queue": "intermediate", "error": str(exc)})
-        page_queue_depth = -1
-
-    try:
         collection_queue_depth = get_queue_depth(config.collection_queue_url)
     except Exception as exc:
         logger.warning({"event": "queue_depth_check_failed", "queue": "collection", "error": str(exc)})
@@ -77,7 +71,6 @@ async def status():
 
     return {
         "es_health": es_health,
-        "page_queue_depth": page_queue_depth,
         "collection_queue_depth": collection_queue_depth,
         "indexer_queue_depth": indexer_queue_depth,
         "throttler_alive": liveness["alive"],

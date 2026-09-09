@@ -29,6 +29,18 @@ def _dynamo_table():
     return dynamodb.Table(config.dynamodb_table_name)
 
 
+@functools.lru_cache(maxsize=1)
+def _checkpoint_table():
+    dynamodb = boto3.resource(
+        "dynamodb",
+        region_name=config.aws_region,
+        endpoint_url=config.dynamodb_endpoint_url,
+        aws_access_key_id=config.aws_access_key_id,
+        aws_secret_access_key=config.aws_secret_access_key,
+    )
+    return dynamodb.Table(config.dynamodb_checkpoint_table)
+
+
 def _deserialize(item: dict) -> dict:
     result = {}
     for k, v in item.items():
@@ -317,3 +329,52 @@ class JobStore:
 
 
 job_store = JobStore()
+
+
+class CheckpointStore:
+    """Per-collection keyset resume cursors for in-progress granule reindex jobs.
+
+    Each record tracks how far a collection has been streamed so a SIGTERM/restart
+    can resume mid-collection rather than restarting from offset 0.
+
+    Table schema (partition key: job_id, sort key: collection_id):
+      job_id            String  PK
+      collection_id     String  SK
+      last_concept_id   String  keyset cursor (resume after this concept_id)
+      chunks_dispatched Number  diagnostic
+      granules_dispatched Number cumulative granules dispatched for this collection
+      updated_at        String  ISO timestamp
+    """
+
+    def _table(self):
+        return _checkpoint_table()
+
+    def write_collection_checkpoint(
+        self,
+        job_id: str,
+        collection_id: str,
+        last_concept_id: str,
+        granules_dispatched: int,
+        chunks_dispatched: int,
+    ) -> None:
+        ttl = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
+        self._table().put_item(Item={
+            "job_id": job_id,
+            "collection_id": collection_id,
+            "last_concept_id": last_concept_id,
+            "chunks_dispatched": chunks_dispatched,
+            "granules_dispatched": granules_dispatched,
+            "updated_at": _now_iso(),
+            "ttl": ttl,
+        })
+
+    def get_collection_checkpoint(self, job_id: str, collection_id: str) -> Optional[dict]:
+        resp = self._table().get_item(Key={"job_id": job_id, "collection_id": collection_id})
+        item = resp.get("Item")
+        return _deserialize(item) if item is not None else None
+
+    def delete_collection_checkpoint(self, job_id: str, collection_id: str) -> None:
+        self._table().delete_item(Key={"job_id": job_id, "collection_id": collection_id})
+
+
+checkpoint_store = CheckpointStore()

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Iterator, Optional
 
 
 class StubOracleClient:
@@ -41,26 +41,31 @@ class StubOracleClient:
     def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
         return list(self._collections.get(provider_id, []))
 
-    def get_granule_count(
+    def stream_granule_ids(
         self,
         collection_id: str,
+        chunk_size: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> int:
-        return self._granule_counts.get(collection_id, 0)
+        start_after_concept_id: Optional[str] = None,
+    ) -> Iterator[list[tuple[str, int]]]:
+        """Yield chunks of fake granule IDs, respecting keyset resume and chunk_size.
 
-    def get_granule_ids(
-        self,
-        collection_id: str,
-        offset: int,
-        limit: int,
-        after: Optional[str] = None,
-        before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
+        start_after_concept_id mirrors the Oracle keyset cursor: only IDs that sort
+        after that value are returned.  The stub uses a sequential integer suffix so
+        lexicographic order matches the generation order.
+        """
         count = self._granule_counts.get(collection_id, 0)
         provider = collection_id.split("-", 1)[1] if "-" in collection_id else "UNKNOWN"
-        end = min(offset + limit, count)
-        return [(f"G{1000000000 + i}-{provider}", 1) for i in range(offset, end)]
+
+        # Build all IDs for this collection and apply the keyset filter
+        all_ids = [(f"G{1000000000 + i}-{provider}", 1) for i in range(count)]
+        if start_after_concept_id:
+            all_ids = [(cid, rev) for cid, rev in all_ids if cid > start_after_concept_id]
+
+        # Yield in chunk_size batches
+        for i in range(0, len(all_ids), chunk_size):
+            yield all_ids[i:i + chunk_size]
 
     def get_concept_ids_by_type(
         self,
