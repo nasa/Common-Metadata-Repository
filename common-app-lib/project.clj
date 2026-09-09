@@ -33,7 +33,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on "1.85"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
+                                  [nrepl/nrepl]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-codec "1.3.0"
