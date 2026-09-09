@@ -97,3 +97,29 @@ class TestTokenBucket:
         t.start()
         result = tb.consume(10_000, stop_event=stop)
         assert result is False
+
+    def test_consume_with_cancel_fn_true_returns_false(self):
+        """cancel_fn returning True on the first poll causes consume() to return False."""
+        tb = TokenBucket(1)  # very slow — forces a wait cycle
+        result = tb.consume(10_000, cancel_fn=lambda: True)
+        assert result is False
+
+    def test_consume_with_cancel_fn_false_does_not_abort(self):
+        """cancel_fn returning False has no effect when tokens are plentiful."""
+        tb = TokenBucket(10_000_000)
+        result = tb.consume(1, cancel_fn=lambda: False)
+        assert result is True
+
+    def test_consume_cancel_fn_polled_on_each_wake_up(self):
+        """cancel_fn is called on successive wake-ups until it returns True."""
+        import threading
+        tb = TokenBucket(1)
+        call_count = [0]
+
+        def cancel_fn():
+            call_count[0] += 1
+            return call_count[0] >= 2  # allow one sleep, abort on the second
+
+        result = tb.consume(10_000, cancel_fn=cancel_fn)
+        assert result is False
+        assert call_count[0] >= 2

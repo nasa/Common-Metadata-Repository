@@ -105,6 +105,9 @@ def _enqueue_all_providers(request_id: str, after: Optional[str], before: Option
                 provider_enqueued=provider_id,
                 work_items_delta=len(collection_ids),
             )
+        if throttler.is_job_cancelled(request_id):
+            logger.info({"event": "enqueue_cancelled_before_dispatching", "request_id": request_id})
+            return
         job_store.mark_job(request_id, "dispatching")
         job_store.try_complete_job(request_id)
         logger.info({
@@ -134,6 +137,9 @@ def _enqueue_provider(
             provider_enqueued=provider_id,
             work_items_delta=len(collection_ids),
         )
+        if throttler.is_job_cancelled(request_id):
+            logger.info({"event": "enqueue_cancelled_before_dispatching", "request_id": request_id, "provider_id": provider_id})
+            return
         job_store.mark_job(request_id, "dispatching")
         job_store.try_complete_job(request_id)
         logger.info({

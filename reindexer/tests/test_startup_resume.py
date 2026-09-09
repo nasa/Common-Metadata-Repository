@@ -19,11 +19,12 @@ from app.startup import resume_stalled_jobs
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_deps(stalled_jobs=None):
+def _make_deps(stalled_jobs=None, interrupted_jobs=None):
     db = MagicMock()
     db.get_collection_ids_for_provider.return_value = ["C1-P", "C2-P"]
     js = MagicMock()
     js.find_stalled_jobs.return_value = stalled_jobs or []
+    js.find_interrupted_jobs.return_value = interrupted_jobs or []
     js.claim_stalled_job.return_value = True
     enqueue = MagicMock()
     return db, js, enqueue
@@ -126,3 +127,43 @@ class TestResumeStalledJobs:
         kw = enqueue.call_args[1]
         assert kw["after"] == "2024-01-01T00:00:00Z"
         assert kw["before"] == "2024-12-31T23:59:59Z"
+
+    # ------------------------------------------------------------------
+    # Interrupted job resume (graceful-shutdown / SIGTERM recovery)
+    # ------------------------------------------------------------------
+
+    def test_interrupted_job_is_resumed(self):
+        """Interrupted jobs (set by throttler.stop() on SIGTERM) are resumed on startup."""
+        db, js, enqueue = _make_deps(interrupted_jobs=[
+            _job("granules-by-collection", collection_id="C1-P")
+        ])
+        resume_stalled_jobs(db, js, enqueue)
+        enqueue.assert_called_once()
+
+    def test_no_stalled_but_interrupted_job_is_still_resumed(self):
+        """An empty stalled list does not prevent interrupted jobs from being processed."""
+        db, js, enqueue = _make_deps(stalled_jobs=[], interrupted_jobs=[_job("granules-by-collection", collection_id="C1-P")])
+        resume_stalled_jobs(db, js, enqueue)
+        js.mark_job.assert_called_with("job-1", "running")
+
+    def test_both_stalled_and_interrupted_jobs_are_resumed(self):
+        """Stalled and interrupted jobs are processed in a single pass."""
+        stalled = _job("granules-by-collection", collection_id="C1-P")
+        interrupted = _job("granules-by-collection", collection_id="C2-P")
+        interrupted["job_id"] = "job-2"
+        db, js, enqueue = _make_deps(stalled_jobs=[stalled], interrupted_jobs=[interrupted])
+        resume_stalled_jobs(db, js, enqueue)
+        assert enqueue.call_count == 2
+
+    def test_find_interrupted_jobs_called_on_startup(self):
+        """Verifies startup always queries for interrupted jobs."""
+        db, js, enqueue = _make_deps()
+        resume_stalled_jobs(db, js, enqueue)
+        js.find_interrupted_jobs.assert_called_once()
+
+    def test_interrupted_non_granule_job_marked_failed(self):
+        """Non-granule concept types cannot be resumed and are marked failed."""
+        db, js, enqueue = _make_deps(interrupted_jobs=[_job("variables")])
+        resume_stalled_jobs(db, js, enqueue)
+        js.mark_job.assert_called_once_with("job-1", "failed")
+        enqueue.assert_not_called()

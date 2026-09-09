@@ -358,6 +358,100 @@ class TestTryCompleteJob:
         assert key == {"job_id": "job-xyz"}
 
 
+class TestFindInterruptedJobs:
+
+    def test_filter_targets_interrupted_status(self, store, mock_table):
+        store.find_interrupted_jobs()
+        call = mock_table.scan.call_args[1]
+        assert call["ExpressionAttributeValues"][":interrupted"] == "interrupted"
+
+    def test_filter_expression_references_status_attribute(self, store, mock_table):
+        store.find_interrupted_jobs()
+        call = mock_table.scan.call_args[1]
+        assert "#st" in call["ExpressionAttributeNames"]
+        assert call["ExpressionAttributeNames"]["#st"] == "status"
+
+    def test_returns_empty_list_when_none_found(self, store, mock_table):
+        assert store.find_interrupted_jobs() == []
+
+    def test_returns_deserialized_items(self, store, mock_table):
+        import decimal
+        mock_table.scan.return_value = {"Items": [{"job_id": "j1", "total_dispatched": decimal.Decimal(5)}]}
+        results = store.find_interrupted_jobs()
+        assert results[0]["total_dispatched"] == 5
+        assert isinstance(results[0]["total_dispatched"], int)
+
+
+class TestTryMarkInterrupted:
+
+    def test_returns_true_on_success(self, store, mock_table):
+        assert store.try_mark_interrupted("job-1") is True
+
+    def test_returns_false_on_conditional_check_failure(self, store, mock_table):
+        mock_table.update_item.side_effect = ClientError(
+            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "..."}},
+            "UpdateItem",
+        )
+        assert store.try_mark_interrupted("job-1") is False
+
+    def test_reraises_unexpected_errors(self, store, mock_table):
+        mock_table.update_item.side_effect = ClientError(
+            {"Error": {"Code": "InternalServerError", "Message": "boom"}},
+            "UpdateItem",
+        )
+        with pytest.raises(ClientError):
+            store.try_mark_interrupted("job-1")
+
+    def test_sets_status_to_interrupted(self, store, mock_table):
+        store.try_mark_interrupted("job-1")
+        values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        assert values[":interrupted"] == "interrupted"
+
+    def test_sets_completed_at_in_expression(self, store, mock_table):
+        store.try_mark_interrupted("job-1")
+        expr = mock_table.update_item.call_args[1]["UpdateExpression"]
+        assert "completed_at" in expr
+
+    def test_condition_excludes_completed(self, store, mock_table):
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :completed" in cond
+
+    def test_condition_excludes_failed(self, store, mock_table):
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :failed" in cond
+
+    def test_condition_excludes_already_interrupted(self, store, mock_table):
+        # idempotent — already interrupted should not overwrite itself
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :interrupted" in cond
+
+    def test_condition_excludes_cancelled(self, store, mock_table):
+        # a cancelled job must never be overwritten with interrupted
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :cancelled" in cond
+
+    def test_condition_allows_running(self, store, mock_table):
+        # running jobs are the primary target of this call
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :running" not in cond
+
+    def test_condition_allows_dispatching(self, store, mock_table):
+        # dispatching is the normal granule-job state during dispatch
+        store.try_mark_interrupted("job-1")
+        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
+        assert "<> :dispatching" not in cond
+
+    def test_uses_correct_job_id_as_key(self, store, mock_table):
+        store.try_mark_interrupted("job-xyz")
+        key = mock_table.update_item.call_args[1]["Key"]
+        assert key == {"job_id": "job-xyz"}
+
+
 class TestTryCancelJob:
 
     def test_returns_true_when_update_succeeds(self, store, mock_table):
@@ -398,10 +492,11 @@ class TestTryCancelJob:
         cond = mock_table.update_item.call_args[1]["ConditionExpression"]
         assert "<> :failed" in cond
 
-    def test_condition_excludes_interrupted(self, store, mock_table):
+    def test_condition_allows_interrupted(self, store, mock_table):
+        # interrupted jobs can be cancelled — they must NOT be excluded by the condition
         store.try_cancel_job("job-1")
         cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :interrupted" in cond
+        assert "<> :interrupted" not in cond
 
     def test_condition_excludes_already_cancelled(self, store, mock_table):
         store.try_cancel_job("job-1")
