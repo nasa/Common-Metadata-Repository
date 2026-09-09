@@ -42,6 +42,11 @@ def _enrich_job(job: dict) -> dict:
     if expected > 0:
         result["pct_complete"] = round(dispatched / expected * 100, 1)
 
+    collections_split = job.get("collections_split", 0)
+    work_items_enqueued = job.get("work_items_enqueued", 0)
+    if work_items_enqueued > 0:
+        result["pct_collections_split"] = round(collections_split / work_items_enqueued * 100, 1)
+
     return result
 
 
@@ -77,6 +82,7 @@ async def status():
         "indexer_queue_depth": indexer_queue_depth,
         "throttler_alive": liveness["alive"],
         "throttler_last_active": liveness["last_active"],
+        "throttler_current_job": throttler.current_job_id,
         "rate_per_minute": tokens["rate_per_minute"],
         "tokens_available": tokens["tokens_available"],
     }
