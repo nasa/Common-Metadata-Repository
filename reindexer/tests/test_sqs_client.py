@@ -19,7 +19,7 @@ import pytest
 
 import app.sqs.client as _sqs_mod
 from app.config import config
-from app.sqs.client import enqueue_collection_item, enqueue_page_item, publish_concept_update
+from app.sqs.client import enqueue_collection_item, enqueue_page_item, publish_concept_update, publish_concept_updates_batch
 
 
 # ---------------------------------------------------------------------------
@@ -45,6 +45,15 @@ def _body(sqs_mock) -> dict:
 
 def _queue(sqs_mock) -> str:
     return sqs_mock.send_message.call_args[1]["QueueUrl"]
+
+
+def _batch_entries(sqs_mock, call_index: int = 0) -> list:
+    """Return the Entries list from the nth send_message_batch call."""
+    return sqs_mock.send_message_batch.call_args_list[call_index][1]["Entries"]
+
+
+def _batch_queue(sqs_mock, call_index: int = 0) -> str:
+    return sqs_mock.send_message_batch.call_args_list[call_index][1]["QueueUrl"]
 
 
 # ---------------------------------------------------------------------------
@@ -159,3 +168,98 @@ class TestPublishConceptUpdate:
     def test_revision_id_value_correct(self, sqs):
         publish_concept_update("G9876-TESTPROV", 42, "req-1")
         assert _body(sqs)["revision-id"] == 42
+
+
+# ---------------------------------------------------------------------------
+# publish_concept_updates_batch
+# ---------------------------------------------------------------------------
+
+class TestPublishConceptUpdatesBatch:
+
+    def test_targets_indexer_queue(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        assert _batch_queue(sqs) == config.indexer_queue_url
+
+    def test_does_not_target_intermediate_queue(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        assert _batch_queue(sqs) != config.intermediate_queue_url
+
+    def test_action_is_concept_update(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
+        assert body["action"] == "concept-update"
+
+    def test_concept_id_key_is_hyphenated(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
+        assert "concept-id" in body, "key must be 'concept-id' (hyphenated) to match CMR indexer contract"
+        assert "concept_id" not in body
+
+    def test_revision_id_key_is_hyphenated(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
+        assert "revision-id" in body, "key must be 'revision-id' (hyphenated) to match CMR indexer contract"
+        assert "revision_id" not in body
+
+    def test_concept_id_and_revision_id_values_correct(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G9876-TESTPROV", 42)], "req-1")
+        body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
+        assert body["concept-id"] == "G9876-TESTPROV"
+        assert body["revision-id"] == 42
+
+    def test_entry_id_is_string(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1), ("G2-PROV", 2)], "req-1")
+        for entry in _batch_entries(sqs):
+            assert isinstance(entry["Id"], str), "SQS requires Id to be a string"
+
+    def test_ten_records_sends_one_batch(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        records = [("G%d-P" % i, i) for i in range(10)]
+        publish_concept_updates_batch(records, "req-1")
+        assert sqs.send_message_batch.call_count == 1
+        assert len(_batch_entries(sqs)) == 10
+
+    def test_eleven_records_sends_two_batches(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        records = [("G%d-P" % i, i) for i in range(11)]
+        publish_concept_updates_batch(records, "req-1")
+        assert sqs.send_message_batch.call_count == 2
+        assert len(_batch_entries(sqs, call_index=0)) == 10
+        assert len(_batch_entries(sqs, call_index=1)) == 1
+
+    def test_twenty_records_sends_two_batches(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        records = [("G%d-P" % i, i) for i in range(20)]
+        publish_concept_updates_batch(records, "req-1")
+        assert sqs.send_message_batch.call_count == 2
+
+    def test_twenty_one_records_sends_three_batches(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        records = [("G%d-P" % i, i) for i in range(21)]
+        publish_concept_updates_batch(records, "req-1")
+        assert sqs.send_message_batch.call_count == 3
+        assert len(_batch_entries(sqs, call_index=2)) == 1
+
+    def test_partial_failure_raises_runtime_error(self, sqs):
+        sqs.send_message_batch.return_value = {
+            "Successful": [],
+            "Failed": [{"Id": "0", "Code": "InternalError", "Message": "SQS blew up"}],
+        }
+        with pytest.raises(RuntimeError, match="partial failure"):
+            publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+
+    def test_no_error_on_empty_failed_list(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [{"Id": "0"}], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")  # must not raise
+
+    def test_uses_send_message_batch_not_send_message(self, sqs):
+        sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        sqs.send_message.assert_not_called()

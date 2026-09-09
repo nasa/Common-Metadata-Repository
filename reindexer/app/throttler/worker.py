@@ -8,7 +8,7 @@ from app.config import config
 from app.db import db_client
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health, wait_for_green
-from app.sqs.client import delete_message, enqueue_page_item, publish_concept_update, receive_messages
+from app.sqs.client import delete_message, enqueue_page_item, publish_concept_update, publish_concept_updates_batch, receive_messages
 from app.sqs.schemas import CollectionWorkItem, GranulePageWorkItem, parse_work_item
 from app.throttler.token_bucket import TokenBucket
 
@@ -236,8 +236,7 @@ class ThrottlerWorker:
         ):
             return
 
-        for concept_id, revision_id in granule_records:
-            publish_concept_update(concept_id, revision_id, item.request_id)
+        publish_concept_updates_batch(granule_records, item.request_id)
 
         job_store.update_dispatched(item.request_id, len(granule_records))
         job_store.try_complete_job(item.request_id)

@@ -199,6 +199,19 @@ class JobStore:
         )
         return [_deserialize(item) for item in items]
 
+    def find_interrupted_jobs(self) -> list:
+        """Return all jobs in the interrupted status (set by graceful shutdown handler).
+
+        These jobs were mid-run when the ECS task received SIGTERM and need to be
+        re-enqueued by the next task's startup resume pass.
+        """
+        items = self._scan_all(
+            FilterExpression="#st = :interrupted",
+            ExpressionAttributeNames={"#st": "status"},
+            ExpressionAttributeValues={":interrupted": "interrupted"},
+        )
+        return [_deserialize(item) for item in items]
+
     def try_complete_job(self, job_id: str) -> bool:
         """Conditionally mark a granule job completed if all collections split and all granules dispatched.
 

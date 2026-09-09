@@ -8,7 +8,7 @@ Run with:
     cd reindexer
     PYTHONPATH=. python -m pytest tests/test_throttler_worker.py -v
 """
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 
@@ -28,6 +28,7 @@ def worker(monkeypatch):
     monkeypatch.setattr(_worker_mod, "db_client", MagicMock())
     monkeypatch.setattr(_worker_mod, "enqueue_page_item", MagicMock())
     monkeypatch.setattr(_worker_mod, "publish_concept_update", MagicMock())
+    monkeypatch.setattr(_worker_mod, "publish_concept_updates_batch", MagicMock())
     monkeypatch.setattr(_worker_mod, "delete_message", MagicMock())
     monkeypatch.setattr(_worker_mod, "receive_messages", MagicMock(return_value=[]))
     monkeypatch.setattr(_worker_mod, "check_all_es_health", MagicMock(return_value={"overall": "green"}))
@@ -144,21 +145,22 @@ class TestHandleCollection:
 class TestHandleGranulePage:
 
     def test_publishes_one_message_per_granule(self, worker):
-        _worker_mod.db_client.get_granule_ids.return_value = [
-            ("G1-PROV", 1), ("G2-PROV", 2), ("G3-PROV", 3),
-        ]
+        granules = [("G1-PROV", 1), ("G2-PROV", 2), ("G3-PROV", 3)]
+        _worker_mod.db_client.get_granule_ids.return_value = granules
         worker._handle_granule_page(_page())
-        assert _worker_mod.publish_concept_update.call_count == 3
+        _worker_mod.publish_concept_updates_batch.assert_called_once_with(granules, "req-1")
 
     def test_publishes_correct_concept_id_revision_and_request_id(self, worker):
-        _worker_mod.db_client.get_granule_ids.return_value = [("G5-PROV", 7)]
+        granules = [("G5-PROV", 7)]
+        _worker_mod.db_client.get_granule_ids.return_value = granules
         worker._handle_granule_page(_page(request_id="req-42"))
-        _worker_mod.publish_concept_update.assert_called_once_with("G5-PROV", 7, "req-42")
+        _worker_mod.publish_concept_updates_batch.assert_called_once_with(granules, "req-42")
 
     def test_empty_page_publishes_nothing(self, worker):
         _worker_mod.db_client.get_granule_ids.return_value = []
         worker._handle_granule_page(_page())
         _worker_mod.publish_concept_update.assert_not_called()
+        _worker_mod.publish_concept_updates_batch.assert_not_called()
 
     def test_empty_page_skips_token_bucket(self, worker):
         _worker_mod.db_client.get_granule_ids.return_value = []
@@ -169,7 +171,9 @@ class TestHandleGranulePage:
         granules = [("G%d-P" % i, i) for i in range(5)]
         _worker_mod.db_client.get_granule_ids.return_value = granules
         worker._handle_granule_page(_page())
-        worker._token_bucket.consume.assert_called_once_with(5, stop_event=worker._stop_event)
+        worker._token_bucket.consume.assert_called_once_with(
+            5, stop_event=worker._stop_event, cancel_fn=ANY
+        )
 
     def test_date_params_forwarded_to_db(self, worker):
         _worker_mod.db_client.get_granule_ids.return_value = []
@@ -276,7 +280,7 @@ class TestGracefulShutdown:
 
         worker.stop()
 
-        _worker_mod.job_store.mark_job.assert_called_with("job-123", "interrupted")
+        _worker_mod.job_store.try_mark_interrupted.assert_called_with("job-123")
 
     def test_stop_does_not_mark_interrupted_when_no_job_in_flight(self, worker):
         worker._current_job_id = None
@@ -372,7 +376,7 @@ class TestJobCompletionDetection:
     def test_stop_marks_current_job_as_interrupted(self, worker):
         worker._current_job_id = "active-job-123"
         worker.stop()
-        _worker_mod.job_store.mark_job.assert_called_once_with("active-job-123", "interrupted")
+        _worker_mod.job_store.try_mark_interrupted.assert_called_once_with("active-job-123")
 
     def test_stop_without_active_job_does_not_call_mark_job(self, worker):
         worker.stop()

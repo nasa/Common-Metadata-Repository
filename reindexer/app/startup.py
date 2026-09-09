@@ -7,15 +7,23 @@ logger = logging.getLogger(__name__)
 
 
 def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
-    """Find jobs stalled mid-run and re-enqueue their remaining work."""
+    """Find jobs stalled mid-run and re-enqueue their remaining work.
+
+    Handles two recovery cases:
+    - Stalled (crash recovery): status is running/dispatching with a stale heartbeat
+    - Interrupted (graceful-shutdown recovery): status is interrupted, written by
+      throttler.stop() when the previous ECS task received SIGTERM
+    """
     stalled = job_store.find_stalled_jobs(stale_minutes=config.stall_minutes)
-    if not stalled:
+    interrupted = job_store.find_interrupted_jobs()
+    resumable = stalled + interrupted
+    if not resumable:
         logger.info({"event": "no_stalled_jobs"})
         return
 
-    logger.info({"event": "stalled_jobs_found", "count": len(stalled)})
+    logger.info({"event": "stalled_jobs_found", "count": len(resumable), "interrupted": len(interrupted)})
 
-    for job in stalled:
+    for job in resumable:
         job_id = job["job_id"]
         last_heartbeat = job["last_heartbeat"]
 

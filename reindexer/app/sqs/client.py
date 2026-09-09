@@ -66,7 +66,7 @@ def enqueue_page_item(
 
 
 def publish_concept_update(concept_id: str, revision_id: int, request_id: str) -> None:
-    """Send a concept-update message to the CMR indexer queue."""
+    """Send a single concept-update message to the CMR indexer queue."""
     msg = json.dumps({
         "action": "concept-update",
         "concept-id": concept_id,
@@ -78,6 +78,46 @@ def publish_concept_update(concept_id: str, revision_id: int, request_id: str) -
         "request_id": request_id,
         "concept_id": concept_id,
         "revision_id": revision_id,
+    })
+
+
+_BATCH_SIZE = 10
+
+
+def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: str) -> None:
+    """Send concept-update messages to the CMR indexer queue in batches of 10.
+
+    SQS send_message_batch accepts up to 10 messages per call — 10x fewer API
+    calls than individual sends for a typical granule page.  Raises RuntimeError
+    if any message in a batch is rejected by SQS.
+    """
+    for i in range(0, len(records), _BATCH_SIZE):
+        chunk = records[i:i + _BATCH_SIZE]
+        entries = [
+            {
+                "Id": str(j),
+                "MessageBody": json.dumps({
+                    "action": "concept-update",
+                    "concept-id": concept_id,
+                    "revision-id": revision_id,
+                }),
+            }
+            for j, (concept_id, revision_id) in enumerate(chunk)
+        ]
+        response = _sqs().send_message_batch(
+            QueueUrl=config.indexer_queue_url,
+            Entries=entries,
+        )
+        failed = response.get("Failed", [])
+        if failed:
+            raise RuntimeError(
+                f"SQS batch send partial failure: {len(failed)}/{len(chunk)} messages failed — "
+                f"{failed[0].get('Code')}: {failed[0].get('Message')}"
+            )
+    logger.debug({
+        "event": "concept_updates_batch_published",
+        "request_id": request_id,
+        "count": len(records),
     })
 
 
