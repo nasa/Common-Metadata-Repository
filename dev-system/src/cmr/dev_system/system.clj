@@ -217,34 +217,6 @@
                       (mdb-system/create-system))]
     (assoc sys-with-db :queue-broker queue-broker)))
 
-;(defn create-indexer-app
-;  "Create an instance of the indexer application."
-;  [queue-broker]
-;  (assoc (indexer-system/create-system) :queue-broker queue-broker))
-;
-;(defn create-indexer-app
-;  "Create an instance of the indexer application."
-;  [queue-broker]
-;  (-> (indexer-system/create-system)
-;      (assoc :queue-broker queue-broker)
-;      ;; OVERWRITE the production :web component with a new one that uses test-api wrapper
-;      (assoc :web (web-serv/create-web-server
-;                    (transmit-config/indexer-port)
-;                    indexer-test-api/make-test-app))))
-
-;(defn create-indexer-app
-;  "Create an instance of the indexer application."
-;  [queue-broker]
-;  (let [;; Dynamically load the test routes at RUNTIME to bypass the compiler
-;        ;; The @ symbol dereferences the Var to get the actual function
-;        make-test-app @(requiring-resolve 'cmr.indexer.test.api.indexer-test-api/make-test-app)]
-;
-;    (-> (indexer-system/create-system)
-;        (assoc :queue-broker queue-broker)
-;        (assoc :web (web-serv/create-web-server
-;                      (transmit-config/indexer-port)
-;                      make-test-app)))))
-
 (defn create-indexer-app
   "Create an instance of the indexer application."
   [queue-broker]
