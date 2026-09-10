@@ -213,7 +213,7 @@
 (defn apply-middleware [raw-routes system]
   (-> raw-routes
       common-routes/add-request-id-response-handler
-      req-log/log-ring-request
+      req-log/log-ring-request  ;; Must be after request id
       augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
@@ -224,8 +224,8 @@
       ring-json/wrap-json-body
       ring-json/wrap-json-response
       req-log/add-body-hashes
+      ;; Last in line, but really first for request as they process in reverse
       req-log/add-time-stamp))
 
-;; Update make-api to use it
 (defn make-api [system]
   (apply-middleware (build-routes system) system))
