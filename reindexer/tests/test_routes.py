@@ -573,3 +573,55 @@ class TestSnapshotBeforeTimestamp:
         kw = _r.db_client.stream_concept_ids_by_type.call_args[1]
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
+
+
+# ---------------------------------------------------------------------------
+# _publish_concept_type — periodic update_dispatched visibility
+# ---------------------------------------------------------------------------
+
+def _fake_concepts(n):
+    return [(f"V{i}-PROV", i) for i in range(1, n + 1)]
+
+
+class TestConceptTypePeriodicDispatch:
+    """update_dispatched is called incrementally during a concept type reindex,
+    not only at the end, so operators see total_dispatched rising."""
+
+    def test_empty_stream_no_update_dispatched(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = []
+        client.post("/reindexer/reindex/variables")
+        _r.job_store.update_dispatched.assert_not_called()
+
+    def test_partial_page_flushes_remainder_once(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(250)
+        client.post("/reindexer/reindex/variables")
+        calls = _r.job_store.update_dispatched.call_args_list
+        assert len(calls) == 1
+        assert calls[0].args[1] == 250
+
+    def test_full_page_calls_periodic_no_remainder(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(500)
+        client.post("/reindexer/reindex/variables")
+        calls = _r.job_store.update_dispatched.call_args_list
+        assert len(calls) == 1
+        assert calls[0].args[1] == 500
+
+    def test_over_one_page_calls_periodic_then_remainder(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(750)
+        client.post("/reindexer/reindex/variables")
+        calls = _r.job_store.update_dispatched.call_args_list
+        assert len(calls) == 2
+        assert calls[0].args[1] == 500
+        assert calls[1].args[1] == 250
+
+    def test_two_full_pages_two_periodic_no_remainder(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(1000)
+        client.post("/reindexer/reindex/variables")
+        calls = _r.job_store.update_dispatched.call_args_list
+        assert len(calls) == 2
+        assert all(c.args[1] == 500 for c in calls)

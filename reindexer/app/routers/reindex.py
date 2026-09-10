@@ -158,17 +158,26 @@ def _enqueue_provider(
         job_store.mark_job(request_id, "failed")
 
 
+# How often to flush total_dispatched to DynamoDB during a non-granule reindex.
+# Independent of the Oracle page size — change either without affecting the other.
+_CONCEPT_TYPE_REPORT_INTERVAL = 500
+
+
 def _publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     try:
         dispatched = 0
         for concept_id, revision_id in db_client.stream_concept_ids_by_type(internal_type, before=before):
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
-                job_store.update_dispatched(request_id, dispatched)
+                if dispatched % _CONCEPT_TYPE_REPORT_INTERVAL:
+                    job_store.update_dispatched(request_id, dispatched % _CONCEPT_TYPE_REPORT_INTERVAL)
                 return
             publish_concept_update(concept_id, revision_id, request_id)
             dispatched += 1
-        job_store.update_dispatched(request_id, dispatched)
+            if dispatched % _CONCEPT_TYPE_REPORT_INTERVAL == 0:
+                job_store.update_dispatched(request_id, _CONCEPT_TYPE_REPORT_INTERVAL)
+        if dispatched % _CONCEPT_TYPE_REPORT_INTERVAL:
+            job_store.update_dispatched(request_id, dispatched % _CONCEPT_TYPE_REPORT_INTERVAL)
         if throttler.is_job_cancelled(request_id):
             logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
             return
