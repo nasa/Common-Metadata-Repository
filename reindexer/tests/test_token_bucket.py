@@ -69,10 +69,11 @@ class TestTokenBucket:
 
     def test_consume_with_stop_event_already_set_returns_false(self):
         import threading
-        tb = TokenBucket(1)  # very slow — forces a wait
+        tb = TokenBucket(1)  # very slow — drain so next consume must wait
+        tb.consume(1)        # drain the bucket
         stop = threading.Event()
         stop.set()
-        result = tb.consume(10_000, stop_event=stop)
+        result = tb.consume(1, stop_event=stop)
         assert result is False
 
     def test_tokens_available_returns_float(self):
@@ -91,17 +92,19 @@ class TestTokenBucket:
 
     def test_consume_with_stop_event_fired_during_wait_returns_false(self):
         import threading
-        tb = TokenBucket(1)  # forces a wait
+        tb = TokenBucket(1)  # very slow — drain so next consume must wait
+        tb.consume(1)        # drain the bucket
         stop = threading.Event()
         t = threading.Timer(0.05, stop.set)
         t.start()
-        result = tb.consume(10_000, stop_event=stop)
+        result = tb.consume(1, stop_event=stop)
         assert result is False
 
     def test_consume_with_cancel_fn_true_returns_false(self):
         """cancel_fn returning True on the first poll causes consume() to return False."""
-        tb = TokenBucket(1)  # very slow — forces a wait cycle
-        result = tb.consume(10_000, cancel_fn=lambda: True)
+        tb = TokenBucket(1)  # very slow — drain so next consume must wait
+        tb.consume(1)        # drain the bucket
+        result = tb.consume(1, cancel_fn=lambda: True)
         assert result is False
 
     def test_consume_with_cancel_fn_false_does_not_abort(self):
@@ -112,14 +115,23 @@ class TestTokenBucket:
 
     def test_consume_cancel_fn_polled_on_each_wake_up(self):
         """cancel_fn is called on successive wake-ups until it returns True."""
-        import threading
         tb = TokenBucket(1)
+        tb.consume(1)  # drain the bucket so subsequent consumes must wait
         call_count = [0]
 
         def cancel_fn():
             call_count[0] += 1
             return call_count[0] >= 2  # allow one sleep, abort on the second
 
-        result = tb.consume(10_000, cancel_fn=cancel_fn)
+        result = tb.consume(1, cancel_fn=cancel_fn)
         assert result is False
         assert call_count[0] >= 2
+
+    def test_consume_clamps_to_max_tokens_after_rate_decrease(self):
+        """consume() never deadlocks when count > max_tokens due to a mid-run rate decrease."""
+        tb = TokenBucket(10_000)  # starts full at 10_000 tokens
+        tb.update_rate(1)         # rate decreased: max_tokens drops to 1, tokens clamped to 1
+        # Without clamping: consume(10_000) would deadlock (10_000 > max_tokens=1).
+        # With clamping: effective=min(10_000, 1)=1; bucket holds 1 token → returns immediately.
+        result = tb.consume(10_000)
+        assert result is True

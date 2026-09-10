@@ -30,8 +30,8 @@ _ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
     "order-options":         "order-option",
     "visualizations":        "visualization",
     "subscriptions":         "subscription",
-    "grid":                  "grid",
-    "citation":              "citation",
+    "grids":                 "grid",
+    "citations":             "citation",
 }
 
 # CMR concept-id format: one or more uppercase letters, digits, hyphen, provider (uppercase letters/digits/underscores)
@@ -161,12 +161,15 @@ def _enqueue_provider(
 def _publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     try:
         concept_ids = db_client.get_concept_ids_by_type(internal_type, before=before)
+        dispatched = 0
         for concept_id, revision_id in concept_ids:
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
+                job_store.update_dispatched(request_id, dispatched)
                 return
             publish_concept_update(concept_id, revision_id, request_id)
-        job_store.update_dispatched(request_id, len(concept_ids))
+            dispatched += 1
+        job_store.update_dispatched(request_id, dispatched)
         if throttler.is_job_cancelled(request_id):
             logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
             return
@@ -175,7 +178,7 @@ def _publish_concept_type(request_id: str, internal_type: str, before: Optional[
             "event": "concept_type_reindex_complete",
             "request_id": request_id,
             "concept_type": internal_type,
-            "count": len(concept_ids),
+            "count": dispatched,
         })
     except Exception as exc:
         logger.error({
