@@ -93,16 +93,16 @@ HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0"""
 # column (stores the kebab-case concept type, e.g. "citation", "data-quality-summary").
 # document_name stores the individual concept's Name/ShortName — NOT the type name.
 _SHARED_TYPE_TABLES: dict[str, tuple[str, Optional[str]]] = {
-    "variable":             ("cmr_variables", None),
-    "service":              ("cmr_services", None),
-    "tool":                 ("cmr_tools", None),
-    "subscription":         ("cmr_subscriptions", None),
-    "generic":              ("cmr_generic_documents", None),
-    "data-quality-summary": ("cmr_generic_documents", "data-quality-summary"),
-    "order-option":         ("cmr_generic_documents", "order-option"),
-    "grid":                 ("cmr_generic_documents", "grid"),
-    "citation":             ("cmr_generic_documents", "citation"),
-    "visualization":        ("cmr_generic_documents", "visualization"),
+    "variable":             ("cmr_variables",          None),
+    "service":              ("cmr_services",            None),
+    "tool":                 ("cmr_tools",               None),
+    "subscription":         ("cmr_subscriptions",       None),
+    "generic":              ("cmr_generic_documents",   None),
+    "data-quality-summary": ("cmr_generic_documents",   "data-quality-summary"),
+    "order-option":         ("cmr_generic_documents",   "order-option"),
+    "grid":                 ("cmr_generic_documents",   "grid"),
+    "citation":             ("cmr_generic_documents",   "citation"),
+    "visualization":        ("cmr_generic_documents",   "visualization"),
 }
 
 # concept-id prefix → (shared_table_name or None, table_suffix or None)
@@ -248,16 +248,37 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
-        """Return (concept_id, revision_id) for all live concepts of the given type."""
+        """Return (concept_id, revision_id) for all live concepts of the given type.
+
+        Prefer stream_concept_ids_by_type() for large result sets: this method
+        calls fetchall() which blocks until all rows are transferred.
+        """
+        return list(self.stream_concept_ids_by_type(concept_type, after=after, before=before))
+
+    def stream_concept_ids_by_type(
+        self,
+        concept_type: str,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> Iterator[tuple[str, int]]:
+        """Yield (concept_id, revision_id) for all live concepts of the given type.
+
+        Streams via fetchmany so callers see rows as soon as Oracle returns the first
+        batch rather than waiting for the full result set.  The Oracle connection is
+        held open for the full stream.
+        """
         if concept_type == "collection":
-            return self._get_all_collection_ids(after=after, before=before)
+            yield from self._stream_all_collection_ids(after=after, before=before)
+            return
 
         table_doc = _SHARED_TYPE_TABLES.get(concept_type)
         if table_doc is None:
             raise ValueError(f"Unknown concept type: {concept_type!r}")
 
         table, schema = table_doc
-        return self._query_concept_ids(table, schema=schema, after=after, before=before)
+        yield from self._stream_concept_ids(
+            table, schema=schema, after=after, before=before
+        )
 
     def get_concept_by_id(self, concept_id: str) -> Optional[dict]:
         """Return {"concept-id": ..., "revision-id": ...} for a live concept, or None."""
@@ -289,25 +310,28 @@ class OracleClient:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _get_all_collection_ids(
+    def _stream_all_collection_ids(
         self,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        results: list[tuple[str, int]] = []
+    ) -> Iterator[tuple[str, int]]:
         for provider_id in self.get_all_provider_ids():
             _validate_provider_id(provider_id)
             table = f"{provider_id}_COLLECTIONS"
-            results.extend(self._query_concept_ids(table, schema=None, after=after, before=before))
-        return results
+            yield from self._stream_concept_ids(table, schema=None, after=after, before=before)
 
-    def _query_concept_ids(
+    def _stream_concept_ids(
         self,
         table: str,
         schema: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
+    ) -> Iterator[tuple[str, int]]:
+        """Stream (concept_id, revision_id) rows via fetchmany.
+
+        Avoids blocking on fetchall — callers receive rows as soon as Oracle returns
+        the first batch rather than waiting for the full result set.
+        """
         conditions: list[str] = []
         bind: dict = {}
 
@@ -327,4 +351,21 @@ class OracleClient:
         with self._get_pool().acquire() as conn, conn.cursor() as cur:
             cur.arraysize = _BATCH_SIZE
             cur.execute(sql, bind)
-            return [(row[0], row[1]) for row in cur.fetchall()]
+            while True:
+                rows = cur.fetchmany(_BATCH_SIZE)
+                if not rows:
+                    break
+                for row in rows:
+                    yield (row[0], row[1])
+
+    def _query_concept_ids(
+        self,
+        table: str,
+        schema: Optional[str] = None,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> list[tuple[str, int]]:
+        """Blocking list version — used by tests.  Prefer _stream_concept_ids for production."""
+        return list(self._stream_concept_ids(
+            table, schema=schema, after=after, before=before
+        ))
