@@ -60,7 +60,7 @@ def mock_deps(monkeypatch):
 _KNOWN_CONCEPT_TYPES = [
     "variables", "services", "tools", "collections",
     "generics", "data-quality-summaries", "order-options",
-    "visualizations", "subscriptions", "grid", "citation",
+    "visualizations", "subscriptions", "grids", "citations",
 ]
 
 

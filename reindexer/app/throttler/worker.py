@@ -130,11 +130,13 @@ class ThrottlerWorker:
                         timeout_seconds=300.0,
                         stop_event=self._stop_event,
                     )
-                    self._last_es_check = 0.0  # force re-check through the guarded path next iteration
-                    logger.info({"event": "dispatch_resumed_es_green"})
                 except TimeoutError:
                     logger.error({"event": "es_not_green_wait_timeout"})
                     continue
+                if self._stop_event.is_set():
+                    continue  # shutting down — don't log a false "resumed" or block in receive_messages
+                self._last_es_check = 0.0  # force re-check through the guarded path next iteration
+                logger.info({"event": "dispatch_resumed_es_green"})
 
             try:
                 source_queue = config.collection_queue_url
@@ -243,8 +245,11 @@ class ThrottlerWorker:
             # STREAM_CHUNK_SIZE can exceed RATE_PER_MINUTE without deadlocking the bucket.
             # (consume(N) deadlocks when N > max_tokens because the bucket can never hold
             # more than rate_per_minute tokens at once.)
-            sub_size = max(1, int(self._token_bucket.current_rate))
-            for i in range(0, len(chunk), sub_size):
+            # sub_size is re-evaluated each iteration so a mid-chunk rate decrease via
+            # PUT /throttle can never leave us asking for more tokens than the bucket holds.
+            i = 0
+            while i < len(chunk):
+                sub_size = max(1, int(self._token_bucket.current_rate))
                 sub = chunk[i:i + sub_size]
                 if not self._token_bucket.consume(
                     len(sub),
@@ -256,6 +261,7 @@ class ThrottlerWorker:
                     logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
                     return
                 publish_concept_updates_batch(sub, item.request_id)
+                i += len(sub)
 
             collection_total += len(chunk)
             total_dispatched += len(chunk)

@@ -2,7 +2,7 @@
 Unit tests for OracleClient SQL generation.
 
 Verifies that every concept type maps to the correct table name and optional
-document_name filter, that date clauses are injected correctly, and that
+schema filter, that date clauses are injected correctly, and that
 get_concept_by_id routes each concept-id prefix to the right table.
 
 No real Oracle connection is needed — oracledb.create_pool is mocked.
@@ -58,22 +58,22 @@ def _last_execute(cur):
 
 
 # ---------------------------------------------------------------------------
-# get_concept_ids_by_type — table and document_name filter (all 10 types)
+# get_concept_ids_by_type — table and schema filter (all 10 types)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("concept_type,expected_table,expected_doc_name", [
+@pytest.mark.parametrize("concept_type,expected_table,expected_schema", [
     ("variable",              "cmr_variables",         None),
     ("service",               "cmr_services",          None),
     ("tool",                  "cmr_tools",             None),
     ("subscription",          "cmr_subscriptions",     None),
     ("generic",               "cmr_generic_documents", None),
-    ("data-quality-summary",  "cmr_generic_documents", "Data Quality Summary"),
-    ("order-option",          "cmr_generic_documents", "Order Option"),
-    ("grid",                  "cmr_generic_documents", "Grid"),
-    ("citation",              "cmr_generic_documents", "Citation"),
-    ("visualization",         "cmr_generic_documents", "Visualization"),
+    ("data-quality-summary",  "cmr_generic_documents", "data-quality-summary"),
+    ("order-option",          "cmr_generic_documents", "order-option"),
+    ("grid",                  "cmr_generic_documents", "grid"),
+    ("citation",              "cmr_generic_documents", "citation"),
+    ("visualization",         "cmr_generic_documents", "visualization"),
 ])
-def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected_table, expected_doc_name):
+def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected_table, expected_schema):
     client, cur = oracle
 
     client.get_concept_ids_by_type(concept_type)
@@ -82,18 +82,18 @@ def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected
     assert f"METADATA_DB.{expected_table}" in sql, (
         f"type={concept_type!r}: expected METADATA_DB.{expected_table} in SQL"
     )
-    if expected_doc_name:
-        assert "document_name = :document_name" in sql, (
-            f"type={concept_type!r}: expected document_name filter in SQL"
+    if expected_schema:
+        assert "schema = :schema" in sql, (
+            f"type={concept_type!r}: expected schema filter in SQL"
         )
-        assert bind.get("document_name") == expected_doc_name, (
-            f"type={concept_type!r}: bind['document_name'] should be {expected_doc_name!r}"
+        assert bind.get("schema") == expected_schema, (
+            f"type={concept_type!r}: bind['schema'] should be {expected_schema!r}"
         )
     else:
-        assert "document_name" not in sql, (
-            f"type={concept_type!r}: unexpected document_name filter in SQL"
+        assert "schema" not in sql, (
+            f"type={concept_type!r}: unexpected schema filter in SQL"
         )
-        assert "document_name" not in bind
+        assert "schema" not in bind
 
 
 def test_get_concept_ids_by_type_returns_concept_revision_tuples(oracle):
@@ -166,31 +166,31 @@ def test_no_dates_produces_no_where_clause(oracle):
     assert not bind
 
 
-def test_generic_subtype_with_doc_filter_and_after_coexist(oracle):
-    """document_name = :document_name AND REVISION_DATE >= must both appear in WHERE."""
+def test_generic_subtype_with_schema_filter_and_after_coexist(oracle):
+    """schema = :schema AND REVISION_DATE >= must both appear in WHERE."""
     client, cur = oracle
 
     client.get_concept_ids_by_type("data-quality-summary", after="2024-03-01T00:00:00Z")
 
     sql, bind = _last_execute(cur)
     assert "METADATA_DB.cmr_generic_documents" in sql
-    assert "document_name = :document_name" in sql
+    assert "schema = :schema" in sql
     assert "REVISION_DATE >=" in sql
-    assert bind["document_name"] == "Data Quality Summary"
+    assert bind["schema"] == "data-quality-summary"
     assert bind["after"] == "2024-03-01T00:00:00 +00:00"
 
 
 def test_generic_no_subtype_filter_with_after(oracle):
-    """'generics' queries cmr_generic_documents with no document_name filter."""
+    """'generics' queries cmr_generic_documents with no schema filter."""
     client, cur = oracle
 
     client.get_concept_ids_by_type("generic", after="2024-01-01T00:00:00Z")
 
     sql, bind = _last_execute(cur)
     assert "METADATA_DB.cmr_generic_documents" in sql
-    assert "document_name" not in sql
+    assert "schema" not in sql
     assert "REVISION_DATE >=" in sql
-    assert "document_name" not in bind
+    assert "schema" not in bind
     assert bind["after"] == "2024-01-01T00:00:00 +00:00"
 
 
@@ -248,20 +248,20 @@ def test_collection_type_no_providers_returns_empty(oracle):
 # get_concept_by_id — prefix → table routing (all 11 prefixes)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("concept_id,expected_table,expected_doc_name", [
-    ("C1234567890-MYPROV",    "MYPROV_COLLECTIONS",   None),
-    ("G1234567890-MYPROV",    "MYPROV_GRANULES",      None),
-    ("V1234567890-MYPROV",    "cmr_variables",        None),
-    ("S1234567890-MYPROV",    "cmr_services",         None),
-    ("TL1234567890-MYPROV",   "cmr_tools",            None),
-    ("SUB1234567890-MYPROV",  "cmr_subscriptions",    None),
-    ("DQS1234567890-MYPROV",  "cmr_generic_documents", "Data Quality Summary"),
-    ("OO1234567890-MYPROV",   "cmr_generic_documents", "Order Option"),
-    ("GRD1234567890-MYPROV",  "cmr_generic_documents", "Grid"),
-    ("CIT1234567890-MYPROV",  "cmr_generic_documents", "Citation"),
-    ("VIS1234567890-MYPROV",  "cmr_generic_documents", "Visualization"),
+@pytest.mark.parametrize("concept_id,expected_table", [
+    ("C1234567890-MYPROV",    "MYPROV_COLLECTIONS"),
+    ("G1234567890-MYPROV",    "MYPROV_GRANULES"),
+    ("V1234567890-MYPROV",    "cmr_variables"),
+    ("S1234567890-MYPROV",    "cmr_services"),
+    ("TL1234567890-MYPROV",   "cmr_tools"),
+    ("SUB1234567890-MYPROV",  "cmr_subscriptions"),
+    ("DQS1234567890-MYPROV",  "cmr_generic_documents"),
+    ("OO1234567890-MYPROV",   "cmr_generic_documents"),
+    ("GRD1234567890-MYPROV",  "cmr_generic_documents"),
+    ("CIT1234567890-MYPROV",  "cmr_generic_documents"),
+    ("VIS1234567890-MYPROV",  "cmr_generic_documents"),
 ])
-def test_get_concept_by_id_correct_table_and_filter(oracle, concept_id, expected_table, expected_doc_name):
+def test_get_concept_by_id_correct_table_and_filter(oracle, concept_id, expected_table):
     client, cur = oracle
     cur.fetchone.return_value = (concept_id, 5)
 
@@ -274,16 +274,9 @@ def test_get_concept_by_id_correct_table_and_filter(oracle, concept_id, expected
         f"concept_id={concept_id!r}: expected METADATA_DB.{expected_table} in SQL"
     )
     assert bind["concept_id"] == concept_id
-
-    if expected_doc_name:
-        assert "AND document_name = :document_name" in sql, (
-            f"concept_id={concept_id!r}: expected document_name filter in SQL"
-        )
-        assert bind["document_name"] == expected_doc_name
-    else:
-        assert "document_name" not in bind, (
-            f"concept_id={concept_id!r}: unexpected document_name in bind"
-        )
+    assert "document_name" not in bind, (
+        f"concept_id={concept_id!r}: document_name filter is redundant for single-concept lookup"
+    )
 
 
 def test_get_concept_by_id_not_found_in_db_returns_none(oracle):

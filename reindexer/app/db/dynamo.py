@@ -150,24 +150,48 @@ class JobStore:
             ExpressionAttributeValues={":n": count, ":ts": _now_iso()},
         )
 
-    def mark_job(self, job_id: str, status: str) -> None:
+    def mark_job(self, job_id: str, status: str) -> bool:
+        """Set job status.  Returns False (no-op) if the job is already in a terminal status.
+
+        Terminal statuses (completed, failed, interrupted, cancelled) cannot be overwritten.
+        This prevents a background task — still running after the user cancelled a job — from
+        silently resurrecting it by calling mark_job('dispatching') or mark_job('completed').
+        """
         now = _now_iso()
         terminal = status in ("completed", "failed", "interrupted", "cancelled")
+        update_expr = "SET #st = :s, last_heartbeat = :ts"
         if terminal:
+            update_expr += ", completed_at = :ts"
+        try:
             self._table().update_item(
                 Key={"job_id": job_id},
-                UpdateExpression="SET #st = :s, completed_at = :ts, last_heartbeat = :ts",
+                UpdateExpression=update_expr,
+                ConditionExpression=(
+                    "#st <> :completed AND #st <> :failed"
+                    " AND #st <> :cancelled AND #st <> :interrupted"
+                ),
                 ExpressionAttributeNames={"#st": "status"},
-                ExpressionAttributeValues={":s": status, ":ts": now},
+                ExpressionAttributeValues={
+                    ":s": status,
+                    ":ts": now,
+                    ":completed": "completed",
+                    ":failed": "failed",
+                    ":cancelled": "cancelled",
+                    ":interrupted": "interrupted",
+                },
             )
-        else:
-            self._table().update_item(
-                Key={"job_id": job_id},
-                UpdateExpression="SET #st = :s, last_heartbeat = :ts",
-                ExpressionAttributeNames={"#st": "status"},
-                ExpressionAttributeValues={":s": status, ":ts": now},
-            )
-        logger.info({"event": "job_status_updated", "job_id": job_id, "status": status})
+            logger.info({"event": "job_status_updated", "job_id": job_id, "status": status})
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.info({
+                    "event": "job_status_update_skipped",
+                    "job_id": job_id,
+                    "status": status,
+                    "reason": "already in terminal status",
+                })
+                return False
+            raise
 
     def get_job(self, job_id: str) -> Optional[dict]:
         resp = self._table().get_item(Key={"job_id": job_id})

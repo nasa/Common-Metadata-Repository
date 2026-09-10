@@ -39,7 +39,13 @@ class TokenBucket:
         stop_event: Optional[threading.Event] = None,
         cancel_fn=None,
     ) -> bool:
-        """Block until 'count' tokens are available, then consume them.
+        """Block until tokens are available, then consume them.
+
+        Requests are clamped to max_tokens on every iteration so a mid-run rate
+        decrease via update_rate() can never make count permanently un-fillable.
+        The effective amount consumed may be less than count when the rate has
+        just been lowered; the caller's next sub-batch will be sliced at the new
+        (smaller) rate, so the overage is bounded to one sub-batch.
 
         Returns True if tokens were consumed, False if stop_event fired or
         cancel_fn returned True.  cancel_fn is polled each wake-up interval so
@@ -48,13 +54,16 @@ class TokenBucket:
         while True:
             with self._lock:
                 self._refill()
-                if self._tokens >= count:
-                    self._tokens -= count
+                # Clamp to max_tokens each iteration: if update_rate() lowered the
+                # rate below count, count can never be satisfied without clamping.
+                effective = min(count, max(1, int(self._max_tokens)))
+                if self._tokens >= effective:
+                    self._tokens -= effective
                     return True
                 if self._rate_per_second == 0:
                     wait_for = 1.0
                 else:
-                    deficit = count - self._tokens
+                    deficit = effective - self._tokens
                     wait_for = deficit / self._rate_per_second
             if stop_event is not None:
                 if stop_event.wait(timeout=min(wait_for, 1.0)):

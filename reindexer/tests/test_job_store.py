@@ -214,6 +214,33 @@ class TestMarkJob:
         expr = mock_table.update_item.call_args[1]["UpdateExpression"]
         assert "completed_at" not in expr
 
+    def test_always_includes_condition_expression_to_protect_terminal_statuses(self, store, mock_table):
+        """mark_job must never overwrite a terminal status — condition expression required on all paths."""
+        for status in ("dispatching", "running", "completed", "failed", "cancelled", "interrupted"):
+            mock_table.reset_mock()
+            store.mark_job("job-1", status)
+            kwargs = mock_table.update_item.call_args[1]
+            assert "ConditionExpression" in kwargs, (
+                f"mark_job({status!r}) must carry a ConditionExpression"
+            )
+            values = kwargs["ExpressionAttributeValues"]
+            assert ":cancelled" in values, "condition must guard against overwriting 'cancelled'"
+
+    def test_returns_false_when_already_in_terminal_status(self, store, mock_table):
+        """mark_job returns False (no-op) when DynamoDB rejects the condition."""
+        from botocore.exceptions import ClientError
+        mock_table.update_item.side_effect = ClientError(
+            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "condition failed"}},
+            "UpdateItem",
+        )
+        result = store.mark_job("job-1", "dispatching")
+        assert result is False
+
+    def test_returns_true_on_successful_update(self, store, mock_table):
+        mock_table.update_item.return_value = {}
+        result = store.mark_job("job-1", "dispatching")
+        assert result is True
+
 
 # ---------------------------------------------------------------------------
 # get_job

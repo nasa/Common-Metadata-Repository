@@ -40,26 +40,40 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                 providers_enqueued = set(job.get("providers_enqueued") or [])
                 remaining = providers_to_process - providers_enqueued
                 for provider_id in remaining:
-                    for cid in db_client.get_collection_ids_for_provider(provider_id):
+                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    for cid in collection_ids:
                         enqueue_fn(
                             request_id=job_id,
                             collection_id=cid,
                             after=job.get("after"),
                             before=job.get("before"),
                         )
+                    # Update work_items_enqueued so try_complete_job's condition stays
+                    # satisfiable after the throttler processes these resumed collections.
+                    job_store.update_progress(
+                        job_id,
+                        provider_enqueued=provider_id,
+                        work_items_delta=len(collection_ids),
+                    )
                 job_store.mark_job(job_id, "dispatching")
 
             elif concept_type == "granules-by-provider":
                 provider_id = job.get("provider_id")
                 providers_enqueued = set(job.get("providers_enqueued") or [])
                 if provider_id and provider_id not in providers_enqueued:
-                    for cid in db_client.get_collection_ids_for_provider(provider_id):
+                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    for cid in collection_ids:
                         enqueue_fn(
                             request_id=job_id,
                             collection_id=cid,
                             after=job.get("after"),
                             before=job.get("before"),
                         )
+                    job_store.update_progress(
+                        job_id,
+                        provider_enqueued=provider_id,
+                        work_items_delta=len(collection_ids),
+                    )
                 job_store.mark_job(job_id, "dispatching")
 
             elif concept_type == "granules-by-collection":

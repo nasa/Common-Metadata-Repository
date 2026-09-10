@@ -88,22 +88,27 @@ HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0"""
 # Type maps
 # ---------------------------------------------------------------------------
 
-# Internal concept type → (table_name, document_name_filter or None)
+# Internal concept type → (table_name, schema_filter or None)
+# Generic documents share cmr_generic_documents and are distinguished by the `schema`
+# column (stores the kebab-case concept type, e.g. "citation", "data-quality-summary").
+# document_name stores the individual concept's Name/ShortName — NOT the type name.
 _SHARED_TYPE_TABLES: dict[str, tuple[str, Optional[str]]] = {
     "variable":             ("cmr_variables", None),
     "service":              ("cmr_services", None),
     "tool":                 ("cmr_tools", None),
     "subscription":         ("cmr_subscriptions", None),
     "generic":              ("cmr_generic_documents", None),
-    "data-quality-summary": ("cmr_generic_documents", "Data Quality Summary"),
-    "order-option":         ("cmr_generic_documents", "Order Option"),
-    "grid":                 ("cmr_generic_documents", "Grid"),
-    "citation":             ("cmr_generic_documents", "Citation"),
-    "visualization":        ("cmr_generic_documents", "Visualization"),
+    "data-quality-summary": ("cmr_generic_documents", "data-quality-summary"),
+    "order-option":         ("cmr_generic_documents", "order-option"),
+    "grid":                 ("cmr_generic_documents", "grid"),
+    "citation":             ("cmr_generic_documents", "citation"),
+    "visualization":        ("cmr_generic_documents", "visualization"),
 }
 
-# concept-id prefix → (shared_table_name or None, document_name_or_table_suffix)
-# None table_name means per-provider; second element is then the table suffix
+# concept-id prefix → (shared_table_name or None, table_suffix or None)
+# None table_name means per-provider table; second element is the table name suffix.
+# Generic documents (DQS, OO, GRD, CIT, VIS) all share cmr_generic_documents; their
+# concept_id prefix is globally unique within that table so no extra filter is needed.
 _PREFIX_TO_LOOKUP: dict[str, tuple[Optional[str], Optional[str]]] = {
     "C":   (None, "_COLLECTIONS"),
     "G":   (None, "_GRANULES"),
@@ -111,11 +116,11 @@ _PREFIX_TO_LOOKUP: dict[str, tuple[Optional[str], Optional[str]]] = {
     "S":   ("cmr_services", None),
     "TL":  ("cmr_tools", None),
     "SUB": ("cmr_subscriptions", None),
-    "DQS": ("cmr_generic_documents", "Data Quality Summary"),
-    "OO":  ("cmr_generic_documents", "Order Option"),
-    "GRD": ("cmr_generic_documents", "Grid"),
-    "CIT": ("cmr_generic_documents", "Citation"),
-    "VIS": ("cmr_generic_documents", "Visualization"),
+    "DQS": ("cmr_generic_documents", None),
+    "OO":  ("cmr_generic_documents", None),
+    "GRD": ("cmr_generic_documents", None),
+    "CIT": ("cmr_generic_documents", None),
+    "VIS": ("cmr_generic_documents", None),
 }
 
 _CONCEPT_ID_PREFIX_RE = re.compile(r'^([A-Z]+)')
@@ -251,8 +256,8 @@ class OracleClient:
         if table_doc is None:
             raise ValueError(f"Unknown concept type: {concept_type!r}")
 
-        table, document_name = table_doc
-        return self._query_concept_ids(table, document_name=document_name, after=after, before=before)
+        table, schema = table_doc
+        return self._query_concept_ids(table, schema=schema, after=after, before=before)
 
     def get_concept_by_id(self, concept_id: str) -> Optional[dict]:
         """Return {"concept-id": ..., "revision-id": ...} for a live concept, or None."""
@@ -261,25 +266,17 @@ class OracleClient:
         if lookup is None:
             return None
 
-        table_name, extra = lookup
+        table_name, table_suffix = lookup
 
         if table_name is None:
-            # Per-provider table; extra is the table suffix
+            # Per-provider table; table_suffix is the table name suffix
             provider = _provider_from_collection(concept_id)
-            table = f"{provider}{extra}"
-            sql = _SINGLE_CONCEPT_SQL.format(table=table, extra_cond="")
-            bind: dict = {"concept_id": concept_id}
-        elif extra is not None:
-            # Shared table with document_name filter (generic documents)
-            sql = _SINGLE_CONCEPT_SQL.format(
-                table=table_name,
-                extra_cond=" AND document_name = :document_name",
-            )
-            bind = {"concept_id": concept_id, "document_name": extra}
+            table = f"{provider}{table_suffix}"
         else:
-            # Shared table, no additional filter
-            sql = _SINGLE_CONCEPT_SQL.format(table=table_name, extra_cond="")
-            bind = {"concept_id": concept_id}
+            table = table_name
+
+        sql = _SINGLE_CONCEPT_SQL.format(table=table, extra_cond="")
+        bind: dict = {"concept_id": concept_id}
 
         with self._get_pool().acquire() as conn, conn.cursor() as cur:
             cur.execute(sql, bind)
@@ -301,22 +298,22 @@ class OracleClient:
         for provider_id in self.get_all_provider_ids():
             _validate_provider_id(provider_id)
             table = f"{provider_id}_COLLECTIONS"
-            results.extend(self._query_concept_ids(table, document_name=None, after=after, before=before))
+            results.extend(self._query_concept_ids(table, schema=None, after=after, before=before))
         return results
 
     def _query_concept_ids(
         self,
         table: str,
-        document_name: Optional[str] = None,
+        schema: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
         conditions: list[str] = []
         bind: dict = {}
 
-        if document_name is not None:
-            conditions.append("document_name = :document_name")
-            bind["document_name"] = document_name
+        if schema is not None:
+            conditions.append("schema = :schema")
+            bind["schema"] = schema
         if after:
             conditions.append(_AFTER_COND)
             bind["after"] = _oracle_ts(after)
