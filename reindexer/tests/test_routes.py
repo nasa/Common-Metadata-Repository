@@ -363,7 +363,7 @@ class TestJobsEndpoint:
 
 
 # ---------------------------------------------------------------------------
-# N1 — Snapshot end timestamp: granule endpoints always set an implicit before
+# Snapshot end timestamp: granule endpoints always set an implicit before
 # ---------------------------------------------------------------------------
 
 class TestJobEnrichment:
@@ -397,23 +397,28 @@ class TestJobEnrichment:
         result = self._enrich({"job_id": "j1", "status": "running", "last_heartbeat": hb})
         assert result["heartbeat_stale"] is True
 
-    def test_pct_complete_computed_when_both_counts_present(self):
+    def test_dispatch_rate_computed_from_dispatched_and_elapsed(self):
+        from datetime import datetime, timedelta, timezone
+        # 6000 granules in 60 seconds = 6000/min
         result = self._enrich({
-            "job_id": "j1", "status": "dispatching",
-            "total_dispatched": 500, "total_granules_expected": 1000,
+            "job_id": "j1", "status": "running",
+            "started_at": (datetime.now(timezone.utc) - timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "total_dispatched": 6000,
         })
-        assert result["pct_complete"] == 50.0
+        assert result["dispatch_rate_per_minute"] == 6000
 
-    def test_pct_complete_absent_when_expected_is_zero(self):
+    def test_dispatch_rate_absent_when_nothing_dispatched(self):
+        from datetime import datetime, timedelta, timezone
         result = self._enrich({
-            "job_id": "j1", "status": "dispatching",
-            "total_dispatched": 0, "total_granules_expected": 0,
+            "job_id": "j1", "status": "running",
+            "started_at": (datetime.now(timezone.utc) - timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "total_dispatched": 0,
         })
-        assert "pct_complete" not in result
+        assert "dispatch_rate_per_minute" not in result
 
-    def test_pct_complete_absent_when_expected_missing(self):
-        result = self._enrich({"job_id": "j1", "status": "running"})
-        assert "pct_complete" not in result
+    def test_dispatch_rate_absent_when_no_timestamps(self):
+        result = self._enrich({"job_id": "j1", "status": "running", "total_dispatched": 1000})
+        assert "dispatch_rate_per_minute" not in result
 
     def test_original_fields_preserved(self):
         result = self._enrich({"job_id": "j1", "status": "running", "concept_type": "granules"})
@@ -432,13 +437,13 @@ class TestJobEnrichment:
         _s.job_store.get_job.return_value = {
             "job_id": "j1", "status": "running",
             "started_at": started, "last_heartbeat": started,
-            "total_dispatched": 250, "total_granules_expected": 1000,
+            "total_dispatched": 1000,
         }
         body = client.get("/reindexer/jobs/j1").json()
         assert "elapsed_seconds" in body
         assert "heartbeat_age_seconds" in body
         assert "heartbeat_stale" in body
-        assert body["pct_complete"] == 25.0
+        assert "dispatch_rate_per_minute" in body
 
 
 class TestListJobsEndpoint:

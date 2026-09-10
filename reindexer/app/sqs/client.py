@@ -98,8 +98,18 @@ def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: st
 
     with ThreadPoolExecutor(max_workers=config.sqs_send_workers) as pool:
         futures = [pool.submit(_send_one_sqs_batch, batch) for batch in batches]
-        for fut in as_completed(futures):
-            fut.result()  # propagate any RuntimeError immediately
+    # Executor has shut down — all futures are done. Collect every error so none are silently
+    # dropped (raising inside as_completed would exit the loop early, swallowing later failures).
+    errors = []
+    for fut in futures:
+        try:
+            fut.result()
+        except Exception as exc:
+            errors.append(exc)
+    if errors:
+        raise RuntimeError(
+            f"{len(errors)} of {len(futures)} SQS batch(es) failed; first: {errors[0]}"
+        )
 
     logger.debug({
         "event": "concept_updates_batch_published",

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Demo: job lifecycle for a full granule reindex (all providers).
-# Shows status transitioning from "running" → "completed" and the
+# Shows status transitioning from "running" → "dispatching" → "completed" and the
 # total_dispatched counter incrementing after the background task finishes.
 #
 # Run: bash demos/01_job_lifecycle.sh

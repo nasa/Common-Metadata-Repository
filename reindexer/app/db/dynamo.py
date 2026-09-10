@@ -64,6 +64,7 @@ class JobStore:
         *,
         provider_id: Optional[str] = None,
         collection_id: Optional[str] = None,
+        concept_id: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> None:
@@ -77,7 +78,6 @@ class JobStore:
             "started_at": now,
             "work_items_enqueued": 0,
             "collections_split": 0,
-            "total_granules_expected": 0,
             "total_dispatched": 0,
             "ttl": ttl,
         }
@@ -85,6 +85,8 @@ class JobStore:
             item["provider_id"] = provider_id
         if collection_id is not None:
             item["collection_id"] = collection_id
+        if concept_id is not None:
+            item["concept_id"] = concept_id
         if after is not None:
             item["after"] = after
         if before is not None:
@@ -134,11 +136,11 @@ class JobStore:
             ExpressionAttributeValues=values,
         )
 
-    def increment_collections_split(self, job_id: str, granule_count: int) -> None:
+    def increment_collections_split(self, job_id: str) -> None:
         self._table().update_item(
             Key={"job_id": job_id},
-            UpdateExpression="ADD collections_split :one, total_granules_expected :n SET last_heartbeat = :ts",
-            ExpressionAttributeValues={":one": 1, ":n": granule_count, ":ts": _now_iso()},
+            UpdateExpression="ADD collections_split :one SET last_heartbeat = :ts",
+            ExpressionAttributeValues={":one": 1, ":ts": _now_iso()},
         )
 
     def update_dispatched(self, job_id: str, count: int) -> None:
@@ -184,12 +186,26 @@ class JobStore:
         return items
 
     def list_jobs(self, status_filter: Optional[str] = None, limit: int = 50) -> list:
+        """Return up to `limit` jobs, scanning DynamoDB pages until enough are found.
+
+        Uses page-by-page scanning rather than _scan_all so it stops as soon as
+        `limit` filtered results are accumulated — avoids reading the entire table
+        for small result sets when no status filter is applied.
+        """
+        table = self._table()
         kwargs: dict = {}
         if status_filter:
             kwargs["FilterExpression"] = "#st = :s"
             kwargs["ExpressionAttributeNames"] = {"#st": "status"}
             kwargs["ExpressionAttributeValues"] = {":s": status_filter}
-        items = self._scan_all(**kwargs)
+
+        items: list = []
+        while len(items) < limit:
+            resp = table.scan(**kwargs)
+            items.extend(resp.get("Items", []))
+            if "LastEvaluatedKey" not in resp:
+                break
+            kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
         return [_deserialize(item) for item in items[:limit]]
 
     def find_stalled_jobs(self, stale_minutes: int = 10) -> list:
@@ -236,7 +252,6 @@ class JobStore:
                 ConditionExpression=(
                     "#st = :dispatching"
                     " AND collections_split = work_items_enqueued"
-                    " AND total_dispatched >= total_granules_expected"
                 ),
                 ExpressionAttributeNames={"#st": "status"},
                 ExpressionAttributeValues={

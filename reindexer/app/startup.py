@@ -47,7 +47,7 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                             after=job.get("after"),
                             before=job.get("before"),
                         )
-                job_store.mark_job(job_id, "running")
+                job_store.mark_job(job_id, "dispatching")
 
             elif concept_type == "granules-by-provider":
                 provider_id = job.get("provider_id")
@@ -60,7 +60,7 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                             after=job.get("after"),
                             before=job.get("before"),
                         )
-                job_store.mark_job(job_id, "running")
+                job_store.mark_job(job_id, "dispatching")
 
             elif concept_type == "granules-by-collection":
                 collection_id = job.get("collection_id")
@@ -71,7 +71,7 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                         after=job.get("after"),
                         before=job.get("before"),
                     )
-                job_store.mark_job(job_id, "running")
+                job_store.mark_job(job_id, "dispatching")
 
             else:
                 # Non-granule concept type jobs (variables, services, etc.) can't be resumed

@@ -11,6 +11,7 @@ rather than OFFSET/FETCH, so cost is O(page_size) not O(n^2).
 """
 import logging
 import re
+import threading
 from typing import Iterator, Optional
 
 import oracledb
@@ -149,19 +150,22 @@ def _provider_from_collection(collection_id: str) -> str:
 class OracleClient:
     def __init__(self) -> None:
         self._pool = None
+        self._pool_lock = threading.Lock()
 
     def _get_pool(self):
         if self._pool is None:
-            dsn = f"{config.db_host}:{config.db_port}/{config.db_service}"
-            self._pool = oracledb.create_pool(
-                user=config.db_user,
-                password=config.db_password,
-                dsn=dsn,
-                min=1,
-                max=5,
-                increment=1,
-            )
-            logger.info({"event": "oracle_pool_created", "dsn": dsn})
+            with self._pool_lock:
+                if self._pool is None:  # double-checked locking
+                    dsn = f"{config.db_host}:{config.db_port}/{config.db_service}"
+                    self._pool = oracledb.create_pool(
+                        user=config.db_user,
+                        password=config.db_password,
+                        dsn=dsn,
+                        min=1,
+                        max=5,
+                        increment=1,
+                    )
+                    logger.info({"event": "oracle_pool_created", "dsn": dsn})
         return self._pool
 
     # ------------------------------------------------------------------

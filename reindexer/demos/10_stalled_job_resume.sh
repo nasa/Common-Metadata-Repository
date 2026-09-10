@@ -49,6 +49,7 @@ table.put_item(Item={
     "providers_to_process": ["$PROVIDER_ID"],
     "providers_enqueued":  [],
     "work_items_enqueued": 0,
+    "collections_split":   0,
     "total_dispatched":    0,
     "ttl":                 ttl,
 })
@@ -68,7 +69,6 @@ restart_reindexer() {
     export DB_USER=METADATA_DB DB_PASSWORD=CHANGE_ME
     export CMR_ELASTIC_HOST=host.docker.internal CMR_GRAN_ELASTIC_HOST=host.docker.internal
     export SQS_ENDPOINT_URL=http://host.docker.internal:4100
-    export INTERMEDIATE_QUEUE_URL=http://host.docker.internal:4100/queue/cmr-reindexer-jobs
     export RATE_PER_MINUTE=600000 CMR_ACL_BASE_URL=http://localhost:3011
     export DYNAMODB_ENDPOINT_URL="$DYNAMO_URL"
     export AWS_ACCESS_KEY_ID=fakekey AWS_SECRET_ACCESS_KEY=fakesecret AWS_DEFAULT_REGION=us-east-1

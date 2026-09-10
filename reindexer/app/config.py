@@ -38,7 +38,7 @@ class Config:
 
     # Throttler
     rate_per_minute: int = field(default_factory=lambda: int(os.environ.get("RATE_PER_MINUTE", "600")))
-    # Option C: stream chunk size (rows per fetchmany / checkpoint interval).
+    # Stream chunk size (rows per fetchmany / checkpoint interval).
     # Must be <= rate_per_minute; startup asserts this.  At production rates
     # (60k/min) 1000 granules/chunk ≈ one checkpoint per second.
     stream_chunk_size: int = field(default_factory=lambda: int(os.environ.get("STREAM_CHUNK_SIZE", "1000")))
@@ -55,7 +55,7 @@ class Config:
     # DynamoDB job table
     dynamodb_table_name: str = field(default_factory=lambda: os.environ.get("DYNAMODB_JOB_TABLE", "cmr-reindexer-jobs"))
     dynamodb_endpoint_url: Optional[str] = field(default_factory=lambda: os.environ.get("DYNAMODB_ENDPOINT_URL"))
-    # DynamoDB collection checkpoint table (Option C: mid-collection resume cursor)
+    # DynamoDB collection checkpoint table (keyset resume cursor for mid-collection restarts)
     dynamodb_checkpoint_table: str = field(default_factory=lambda: os.environ.get("DYNAMODB_CHECKPOINT_TABLE", "cmr-reindexer-checkpoints"))
 
     # Cancellation cache refresh interval

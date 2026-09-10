@@ -13,6 +13,7 @@ class CancelledJobCache:
         self._job_store = job_store
         self._interval = interval_seconds if interval_seconds is not None else config.cancel_check_interval_seconds
         self._cancelled_ids: set = set()
+        self._lock = threading.Lock()
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
 
@@ -29,7 +30,8 @@ class CancelledJobCache:
         logger.info({"event": "cancel_cache_stopped"})
 
     def is_cancelled(self, job_id: str) -> bool:
-        return job_id in self._cancelled_ids
+        with self._lock:
+            return job_id in self._cancelled_ids
 
     def _run(self) -> None:
         while not self._stop_event.wait(timeout=self._interval):
@@ -38,7 +40,9 @@ class CancelledJobCache:
     def _refresh(self) -> None:
         try:
             cancelled = self._job_store.find_cancelled_jobs()
-            self._cancelled_ids = {job["job_id"] for job in cancelled}
+            new_ids = {job["job_id"] for job in cancelled}
+            with self._lock:
+                self._cancelled_ids = new_ids
             logger.debug({"event": "cancel_cache_refreshed", "count": len(self._cancelled_ids)})
         except Exception as exc:
             logger.warning({"event": "cancel_cache_refresh_failed", "error": str(exc)})

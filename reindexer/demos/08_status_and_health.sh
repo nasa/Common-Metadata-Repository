@@ -10,7 +10,7 @@ LOG_START=$(wc -l < "$REINDEXER_LOG" 2>/dev/null || echo 0)
 header "Service health"
 curl -s "$REINDEXER/health" | pp
 
-header "Full status (ES cluster health + intermediate queue depth)"
+header "Full status (ES cluster health + queue depths)"
 curl -s "$REINDEXER/status" | pp
 
 header "Current throttle rate"
@@ -35,7 +35,9 @@ cat <<'EOF'
   completed_at      ISO8601Z — when mark_job(completed/failed/cancelled) was called
   last_heartbeat    ISO8601Z — updated on every progress write; used for stall detection
   total_dispatched  cumulative concept updates sent to the indexer queue (by throttler)
-  work_items_enqueued  collection work items sent to the intermediate queue
+  dispatch_rate_per_minute  granules/min averaged over elapsed time; compare against rate_per_minute
+  work_items_enqueued  collection SQS messages sent at job start (one per collection)
+  collections_split     collections fully streamed by the throttler (ticks up at completion)
   providers_to_process  (granules only) list of provider IDs enumerated at start
   providers_enqueued    (granules only) providers whose collections have been queued
   collection_id     (granules-by-collection only) target collection

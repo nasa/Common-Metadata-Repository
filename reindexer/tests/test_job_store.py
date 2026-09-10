@@ -93,7 +93,6 @@ class TestCreateJob:
         item = mock_table.put_item.call_args[1]["Item"]
         assert item["work_items_enqueued"] == 0
         assert item["collections_split"] == 0
-        assert item["total_granules_expected"] == 0
         assert item["total_dispatched"] == 0
 
 
@@ -167,33 +166,22 @@ class TestUpdateDispatched:
 class TestIncrementCollectionsSplit:
 
     def test_calls_update_item(self, store, mock_table):
-        store.increment_collections_split("job-1", 500)
+        store.increment_collections_split("job-1")
         mock_table.update_item.assert_called_once()
 
     def test_add_expression_increments_collections_split_by_one(self, store, mock_table):
-        store.increment_collections_split("job-1", 500)
+        store.increment_collections_split("job-1")
         call = mock_table.update_item.call_args[1]
         assert "collections_split :one" in call["UpdateExpression"]
         assert call["ExpressionAttributeValues"][":one"] == 1
 
-    def test_add_expression_increments_total_granules_expected(self, store, mock_table):
-        store.increment_collections_split("job-1", 1234)
-        call = mock_table.update_item.call_args[1]
-        assert "total_granules_expected :n" in call["UpdateExpression"]
-        assert call["ExpressionAttributeValues"][":n"] == 1234
-
     def test_updates_heartbeat(self, store, mock_table):
-        store.increment_collections_split("job-1", 100)
+        store.increment_collections_split("job-1")
         values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
         assert ":ts" in values
 
-    def test_zero_granule_count_accepted(self, store, mock_table):
-        store.increment_collections_split("job-1", 0)
-        call = mock_table.update_item.call_args[1]
-        assert call["ExpressionAttributeValues"][":n"] == 0
-
     def test_correct_job_id_used_as_key(self, store, mock_table):
-        store.increment_collections_split("job-xyz", 10)
+        store.increment_collections_split("job-xyz")
         key = mock_table.update_item.call_args[1]["Key"]
         assert key == {"job_id": "job-xyz"}
 
@@ -346,11 +334,6 @@ class TestTryCompleteJob:
         store.try_complete_job("job-1")
         cond = mock_table.update_item.call_args[1]["ConditionExpression"]
         assert "collections_split = work_items_enqueued" in cond
-
-    def test_condition_checks_total_dispatched_ge_total_expected(self, store, mock_table):
-        store.try_complete_job("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "total_dispatched >= total_granules_expected" in cond
 
     def test_uses_correct_job_id_as_key(self, store, mock_table):
         store.try_complete_job("job-xyz")

@@ -31,6 +31,7 @@ class TokenBucket:
         with self._lock:
             self._rate_per_second = rate_per_minute / 60.0
             self._max_tokens = float(rate_per_minute)
+            self._tokens = min(self._tokens, self._max_tokens)
 
     def consume(
         self,

@@ -281,7 +281,7 @@ async def reindex_concept(
         raise HTTPException(status_code=400, detail=f"Invalid CMR concept ID format: {concept_id!r}")
 
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "concept", collection_id=concept_id)
+    job_store.create_job(request_id, "concept", concept_id=concept_id)
     logger.info({
         "event": "reindex_concept_requested",
         "request_id": request_id,

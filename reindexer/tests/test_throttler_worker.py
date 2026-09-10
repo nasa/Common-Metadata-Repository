@@ -1,5 +1,5 @@
 """
-Unit tests for ThrottlerWorker._handle_collection (Option C streaming model)
+Unit tests for ThrottlerWorker._handle_collection (direct Oracle-to-indexer streaming)
 and ._process.
 
 All external dependencies (Oracle, SQS, DynamoDB, ES health) are mocked.
@@ -78,10 +78,10 @@ class TestHandleCollection:
         worker._handle_collection(_collection())
         _worker_mod.publish_concept_updates_batch.assert_not_called()
 
-    def test_zero_granules_increment_collections_split_called_with_zero(self, worker):
+    def test_zero_granules_increment_collections_split_still_called(self, worker):
         _make_chunks()
         worker._handle_collection(_collection(request_id="req-1"))
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", 0)
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
 
     def test_zero_granules_try_complete_called(self, worker):
         _make_chunks()
@@ -141,25 +141,21 @@ class TestHandleCollection:
         worker._handle_collection(_collection())
         _worker_mod.checkpoint_store.delete_collection_checkpoint.assert_called_once()
 
-    def test_increment_collections_split_with_full_collection_count_fresh_run(self, worker):
+    def test_increment_collections_split_called_once_on_completion(self, worker):
         _make_chunks([("G1-PROV", 1), ("G2-PROV", 2)], [("G3-PROV", 3)])
         worker._handle_collection(_collection(request_id="req-1"))
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", 3)
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
 
-    def test_increment_collections_split_uses_total_dispatched_not_tail_on_resume(self, worker):
-        """On resume, increment_collections_split must receive the full collection count
-        (prior dispatched + this run), not just the post-checkpoint tail, so that
-        total_granules_expected in the job record reflects the real collection size."""
+    def test_increment_collections_split_called_once_on_resume_completion(self, worker):
+        """On resume, increment_collections_split is still called exactly once when streaming finishes."""
         _worker_mod.checkpoint_store.get_collection_checkpoint.return_value = {
             "last_concept_id": "G60-PROV",
             "granules_dispatched": 60,
             "chunks_dispatched": 2,
         }
-        # Only 40 granules remain after the checkpoint
         _make_chunks([("G61-PROV", 61)] * 40)
         worker._handle_collection(_collection(request_id="req-1"))
-        # Should report 100 (60 prior + 40 this run), not 40
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", 100)
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
 
     def test_update_dispatched_called_per_chunk_with_correct_counts(self, worker):
         _make_chunks([("G1-PROV", 1), ("G2-PROV", 2)], [("G3-PROV", 3)])

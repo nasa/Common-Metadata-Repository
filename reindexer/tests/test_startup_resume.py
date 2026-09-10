@@ -86,10 +86,10 @@ class TestResumeStalledJobs:
         resume_stalled_jobs(db, js, enqueue)
         enqueue.assert_not_called()
 
-    def test_granule_job_marked_running_after_resume(self):
+    def test_granule_job_marked_dispatching_after_resume(self):
         db, js, enqueue = _make_deps(stalled_jobs=[_job("granules")])
         resume_stalled_jobs(db, js, enqueue)
-        js.mark_job.assert_called_with("job-1", "running")
+        js.mark_job.assert_called_with("job-1", "dispatching")
 
     def test_claim_lost_skips_job(self):
         db, js, enqueue = _make_deps(stalled_jobs=[_job("granules")])
@@ -144,7 +144,7 @@ class TestResumeStalledJobs:
         """An empty stalled list does not prevent interrupted jobs from being processed."""
         db, js, enqueue = _make_deps(stalled_jobs=[], interrupted_jobs=[_job("granules-by-collection", collection_id="C1-P")])
         resume_stalled_jobs(db, js, enqueue)
-        js.mark_job.assert_called_with("job-1", "running")
+        js.mark_job.assert_called_with("job-1", "dispatching")
 
     def test_both_stalled_and_interrupted_jobs_are_resumed(self):
         """Stalled and interrupted jobs are processed in a single pass."""
