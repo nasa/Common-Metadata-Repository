@@ -175,6 +175,7 @@
        (is (= false (nil? task-id))))
 
      (testing "get the resharding status"
+       (bootstrap/wait-for-reshard-complete "1_small_collections" gran-elastic-name task-id {})
        (is (= {:status 200
                :original-index "1_small_collections"
                :reshard-index "1_small_collections_100_shards"
