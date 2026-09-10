@@ -1,16 +1,17 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[commons-io "2.18.0"]
-                 [compojure "1.6.3"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.reader "1.4.0"]
+                 [org.clojure/clojure]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
@@ -20,6 +21,7 @@
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
@@ -31,7 +33,7 @@
                    :dependencies [[nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
+                                  [nrepl/nrepl]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]

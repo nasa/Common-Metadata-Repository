@@ -6,8 +6,8 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "3.11.0"]
-                 [clj-time "0.15.1"]
+                 [clj-http]
+                 [clj-time]
                  [com.fasterxml.jackson.core/jackson-core]
                  [commons-io "2.18.0"] ;; used by migration
                  [compojure :exclusions [commons-fileupload]]
@@ -23,7 +23,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]

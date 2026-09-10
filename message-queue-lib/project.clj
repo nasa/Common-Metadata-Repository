@@ -15,9 +15,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire
-                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "2.3.0"] ;;behind other cmr projects
+  :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [clj-http] ;;behind other cmr projects - was 2.3.0
                  [clj-time]
                  [io.netty/netty-handler ~netty-version]
                  [io.netty/netty-codec-http ~netty-version]
