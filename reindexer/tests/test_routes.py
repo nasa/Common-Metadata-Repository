@@ -38,6 +38,7 @@ def mock_deps(monkeypatch):
     """Replace all external I/O in the reindex/status routers with safe no-op mocks."""
     monkeypatch.setattr("app.routers.reindex.enqueue_collection_item", MagicMock())
     monkeypatch.setattr("app.routers.reindex.publish_concept_update", MagicMock())
+    monkeypatch.setattr("app.routers.reindex.publish_concept_updates_batch", MagicMock())
 
     mock_db = MagicMock()
     mock_db.stream_concept_ids_by_type.return_value = []
@@ -584,14 +585,21 @@ def _fake_concepts(n):
 
 
 class TestConceptTypePeriodicDispatch:
-    """update_dispatched is called incrementally during a concept type reindex,
-    not only at the end, so operators see total_dispatched rising."""
+    """Concepts are collected into batches and sent via publish_concept_updates_batch.
+    update_dispatched is called once per batch so total_dispatched rises incrementally."""
 
     def test_empty_stream_no_update_dispatched(self, client):
         import app.routers.reindex as _r
         _r.db_client.stream_concept_ids_by_type.return_value = []
         client.post("/reindexer/reindex/variables")
         _r.job_store.update_dispatched.assert_not_called()
+
+    def test_uses_batch_publish_not_single(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(10)
+        client.post("/reindexer/reindex/variables")
+        _r.publish_concept_updates_batch.assert_called_once()
+        _r.publish_concept_update.assert_not_called()
 
     def test_partial_page_flushes_remainder_once(self, client):
         import app.routers.reindex as _r
