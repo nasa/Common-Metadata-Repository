@@ -1,3 +1,9 @@
+"""SQS client helpers for the cmr-reindexer service.
+
+Provides functions for enqueuing collection work items, sending single-concept
+updates, and publishing concept-update messages to the CMR indexer queue in
+parallel batches of up to 10 (the SQS send_message_batch limit).
+"""
 import functools
 import json
 import logging

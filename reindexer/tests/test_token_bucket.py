@@ -1,13 +1,8 @@
 """
 Unit tests for TokenBucket.
 
-Exercises rate reading, rate updating, and set_rate/update_rate equivalence.
-The consume() blocking behaviour is not tested here to avoid slow tests;
-that logic is covered implicitly by the throttler worker tests.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_token_bucket.py -v
+Exercises rate reading, rate setting, consume behavior with stop_event and
+cancel_fn, and refill math.
 """
 import pytest
 
@@ -49,7 +44,8 @@ class TestTokenBucket:
 
     def test_high_rate_consume_returns_immediately(self):
         tb = TokenBucket(10_000_000)  # 10M/min — bucket starts full
-        tb.consume(1)  # should not block
+        result = tb.consume(1)
+        assert result is True
 
     def test_current_rate_after_multiple_updates(self):
         tb = TokenBucket(100)

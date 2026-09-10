@@ -1,6 +1,6 @@
-"""Real Oracle DB client (thin mode via oracledb).
+"""Oracle DB client using the oracledb thin driver.
 
-SQL patterns mirror db-es-audit/src/cmr_db.py exactly:
+SQL patterns used:
   - HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
   - REVISION_DATE filtered with TO_TIMESTAMP_TZ()
   - Provider derived from concept-id suffix: C1234-PROV → PROV
@@ -409,7 +409,7 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
-        """List wrapper around _stream_concept_ids — used by tests."""
+        """Return all (concept_id, revision_id) for a table as a list."""
         return list(self._stream_concept_ids(
             table, prefix=prefix, after=after, before=before
         ))

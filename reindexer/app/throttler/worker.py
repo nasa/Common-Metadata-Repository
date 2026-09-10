@@ -1,3 +1,11 @@
+"""Throttler worker for the cmr-reindexer service.
+
+Reads CollectionWorkItems from the collection SQS queue, streams granule IDs
+from Oracle using keyset pagination, and dispatches concept-update messages to
+the CMR indexer queue at a configurable rate via TokenBucket.  A DynamoDB
+checkpoint is written after each chunk so a SIGTERM/restart resumes mid-collection
+rather than restarting from offset 0.
+"""
 import logging
 import threading
 import time

@@ -1,3 +1,9 @@
+"""FastAPI router for /reindex/* endpoints.
+
+Handles reindex requests by concept type, single concept, and granule subsets
+(all providers, by provider, or by collection).  Long-running work is offloaded
+to FastAPI background tasks; progress is tracked in DynamoDB via job_store.
+"""
 import logging
 import re
 import uuid
