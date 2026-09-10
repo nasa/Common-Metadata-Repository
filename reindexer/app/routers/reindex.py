@@ -160,9 +160,8 @@ def _enqueue_provider(
 
 def _publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     try:
-        concept_ids = db_client.get_concept_ids_by_type(internal_type, before=before)
         dispatched = 0
-        for concept_id, revision_id in concept_ids:
+        for concept_id, revision_id in db_client.stream_concept_ids_by_type(internal_type, before=before):
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
                 job_store.update_dispatched(request_id, dispatched)

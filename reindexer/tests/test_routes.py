@@ -40,7 +40,7 @@ def mock_deps(monkeypatch):
     monkeypatch.setattr("app.routers.reindex.publish_concept_update", MagicMock())
 
     mock_db = MagicMock()
-    mock_db.get_concept_ids_by_type.return_value = []
+    mock_db.stream_concept_ids_by_type.return_value = []
     mock_db.get_concept_by_id.return_value = None
     mock_db.get_all_provider_ids.return_value = []
     mock_db.get_collection_ids_for_provider.return_value = []
@@ -268,7 +268,7 @@ class TestGranuleJobStatusTransitions:
 
     def test_concept_type_reindex_still_marks_completed(self, client):
         import app.routers.reindex as _r
-        _r.db_client.get_concept_ids_by_type.return_value = []
+        _r.db_client.stream_concept_ids_by_type.return_value = []
         r = client.post("/reindexer/reindex/variables")
         assert r.status_code == 202
         statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
@@ -536,7 +536,7 @@ class TestSnapshotBeforeTimestamp:
 
     def test_concept_type_reindex_sets_before_in_job(self, client):
         import app.routers.reindex as _r
-        _r.db_client.get_concept_ids_by_type.return_value = []
+        _r.db_client.stream_concept_ids_by_type.return_value = []
         client.post("/reindexer/reindex/variables")
         kw = _r.job_store.create_job.call_args[1]
         assert kw.get("before") is not None
@@ -544,8 +544,8 @@ class TestSnapshotBeforeTimestamp:
 
     def test_concept_type_reindex_passes_before_to_db(self, client):
         import app.routers.reindex as _r
-        _r.db_client.get_concept_ids_by_type.return_value = []
+        _r.db_client.stream_concept_ids_by_type.return_value = []
         client.post("/reindexer/reindex/variables")
-        kw = _r.db_client.get_concept_ids_by_type.call_args[1]
+        kw = _r.db_client.stream_concept_ids_by_type.call_args[1]
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
