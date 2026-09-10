@@ -35,8 +35,8 @@ _ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
 }
 
 # CMR concept-id format: one or more uppercase letters, digits, hyphen, provider (uppercase letters/digits/underscores)
-_CONCEPT_ID_RE = re.compile(r'^[A-Z]+\d+-[A-Z0-9_]+$')
-_PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+$')
+_CONCEPT_ID_RE = re.compile(r'^[A-Z]+\d+-[A-Z0-9_]+\Z')
+_PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+\Z')
 
 # ---------------------------------------------------------------------------
 # Date validation helpers
