@@ -75,7 +75,8 @@ FROM METADATA_DB.{table}
 {where_clause}
 GROUP BY concept_id
 HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-ORDER BY concept_id"""
+ORDER BY concept_id
+FETCH FIRST {page_size} ROWS ONLY"""
 
 _SINGLE_CONCEPT_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
@@ -248,11 +249,7 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
-        """Return (concept_id, revision_id) for all live concepts of the given type.
-
-        Prefer stream_concept_ids_by_type() for large result sets: this method
-        calls fetchall() which blocks until all rows are transferred.
-        """
+        """Return (concept_id, revision_id) for all live concepts of the given type."""
         return list(self.stream_concept_ids_by_type(concept_type, after=after, before=before))
 
     def stream_concept_ids_by_type(
@@ -261,12 +258,7 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        """Yield (concept_id, revision_id) for all live concepts of the given type.
-
-        Streams via fetchmany so callers see rows as soon as Oracle returns the first
-        batch rather than waiting for the full result set.  The Oracle connection is
-        held open for the full stream.
-        """
+        """Yield (concept_id, revision_id) for all live concepts of the given type."""
         if concept_type == "collection":
             yield from self._stream_all_collection_ids(after=after, before=before)
             return
@@ -327,36 +319,49 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        """Stream (concept_id, revision_id) rows via fetchmany.
+        """Yield (concept_id, revision_id) via keyset-paginated aggregation.
 
-        Avoids blocking on fetchall — callers receive rows as soon as Oracle returns
-        the first batch rather than waiting for the full result set.
+        Each page uses FETCH FIRST N ROWS ONLY with concept_id > :start_after so
+        Oracle aggregates a small window of rows per call rather than the full table.
         """
-        conditions: list[str] = []
-        bind: dict = {}
+        start_after: Optional[str] = None
 
-        if schema is not None:
-            conditions.append("schema = :schema")
-            bind["schema"] = schema
-        if after:
-            conditions.append(_AFTER_COND)
-            bind["after"] = _oracle_ts(after)
-        if before:
-            conditions.append(_BEFORE_COND)
-            bind["before"] = _oracle_ts(before)
+        while True:
+            conditions: list[str] = []
+            bind: dict = {}
 
-        where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-        sql = _SHARED_IDS_SQL.format(table=table, where_clause=where_clause)
+            if start_after:
+                conditions.append("concept_id > :start_after")
+                bind["start_after"] = start_after
+            if schema is not None:
+                conditions.append("schema = :schema")
+                bind["schema"] = schema
+            if after:
+                conditions.append(_AFTER_COND)
+                bind["after"] = _oracle_ts(after)
+            if before:
+                conditions.append(_BEFORE_COND)
+                bind["before"] = _oracle_ts(before)
 
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
-            cur.arraysize = _BATCH_SIZE
-            cur.execute(sql, bind)
-            while True:
-                rows = cur.fetchmany(_BATCH_SIZE)
-                if not rows:
-                    break
-                for row in rows:
-                    yield (row[0], row[1])
+            where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+            sql = _SHARED_IDS_SQL.format(
+                table=table, where_clause=where_clause, page_size=_BATCH_SIZE
+            )
+
+            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+                cur.execute(sql, bind)
+                rows = cur.fetchall()
+
+            if not rows:
+                break
+
+            for row in rows:
+                yield (row[0], row[1])
+
+            if len(rows) < _BATCH_SIZE:
+                break  # last page — no need to query again
+
+            start_after = rows[-1][0]
 
     def _query_concept_ids(
         self,
@@ -365,7 +370,7 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
-        """Blocking list version — used by tests.  Prefer _stream_concept_ids for production."""
+        """List wrapper around _stream_concept_ids — used by tests."""
         return list(self._stream_concept_ids(
             table, schema=schema, after=after, before=before
         ))

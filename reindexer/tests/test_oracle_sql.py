@@ -38,8 +38,8 @@ def oracle():
         mock_conn.cursor.return_value.__enter__.return_value = mock_cur
         pool.acquire.return_value.__enter__.return_value = mock_conn
 
-        # fetchall is used by get_all_provider_ids.
-        # fetchmany is used by _stream_concept_ids — empty list terminates the generator.
+        # fetchall: used by get_all_provider_ids and _stream_concept_ids (keyset pages).
+        # fetchmany: used by stream_granule_ids (single open cursor for a full collection).
         mock_cur.fetchall.return_value = []
         mock_cur.fetchmany.return_value = []
         mock_cur.fetchone.return_value = None
@@ -101,8 +101,8 @@ def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected
 
 def test_get_concept_ids_by_type_returns_concept_revision_tuples(oracle):
     client, cur = oracle
-    # _stream_concept_ids uses fetchmany; returning a batch then an empty list ends the loop.
-    cur.fetchmany.side_effect = [[("V1234-PROV", 3), ("V5678-PROV", 1)], []]
+    # 2 rows < _BATCH_SIZE → treated as last page, no second query issued.
+    cur.fetchall.return_value = [("V1234-PROV", 3), ("V5678-PROV", 1)]
 
     result = client.get_concept_ids_by_type("variable")
 
@@ -204,17 +204,17 @@ def test_generic_no_subtype_filter_with_after(oracle):
 
 def test_collection_type_queries_each_provider_table(oracle):
     client, cur = oracle
-    # get_all_provider_ids uses fetchall; _stream_concept_ids uses fetchmany.
-    cur.fetchall.return_value = [("PROV_A",), ("PROV_B",)]
-    cur.fetchmany.side_effect = [
-        [("C1-PROV_A", 1)], [],   # PROV_A_COLLECTIONS: one batch then done
-        [("C2-PROV_B", 2)], [],   # PROV_B_COLLECTIONS: one batch then done
+    # All queries use fetchall: providers + one keyset page per provider (< _BATCH_SIZE → stops).
+    cur.fetchall.side_effect = [
+        [("PROV_A",), ("PROV_B",)],   # get_all_provider_ids
+        [("C1-PROV_A", 1)],            # PROV_A_COLLECTIONS page 1
+        [("C2-PROV_B", 2)],            # PROV_B_COLLECTIONS page 1
     ]
 
     result = client.get_concept_ids_by_type("collection")
 
     assert result == [("C1-PROV_A", 1), ("C2-PROV_B", 2)]
-    assert cur.execute.call_count == 3  # providers + two collection queries
+    assert cur.execute.call_count == 3
 
     executed_sqls = [c.args[0] for c in cur.execute.call_args_list]
     assert any("PROV_A_COLLECTIONS" in s for s in executed_sqls), "missing PROV_A_COLLECTIONS query"
@@ -223,12 +223,10 @@ def test_collection_type_queries_each_provider_table(oracle):
 
 def test_collection_type_with_after_passes_bind_to_each_provider(oracle):
     client, cur = oracle
-    cur.fetchall.return_value = [("PROV_X",)]
-    cur.fetchmany.side_effect = [[("C1-PROV_X", 1)], []]
+    cur.fetchall.side_effect = [[("PROV_X",)], [("C1-PROV_X", 1)]]
 
     client.get_concept_ids_by_type("collection", after="2024-06-01T00:00:00Z")
 
-    # The collection query (second execute call) should include after bind
     coll_call = cur.execute.call_args_list[1]
     coll_sql = coll_call.args[0]
     coll_bind = coll_call.args[1]
@@ -239,12 +237,27 @@ def test_collection_type_with_after_passes_bind_to_each_provider(oracle):
 
 def test_collection_type_no_providers_returns_empty(oracle):
     client, cur = oracle
-    cur.fetchall.return_value = []  # no providers
-
+    # fetchall returns [] for providers → no collection queries issued
     result = client.get_concept_ids_by_type("collection")
 
     assert result == []
-    assert cur.execute.call_count == 1  # only the providers query, no collection queries
+    assert cur.execute.call_count == 1
+
+
+def test_stream_concept_ids_issues_second_query_with_keyset_when_page_is_full(oracle):
+    """When a page returns exactly _BATCH_SIZE rows, a second query is issued with concept_id > last."""
+    from app.db.oracle import _BATCH_SIZE
+    client, cur = oracle
+    full_page = [(f"V{i:04d}-PROV", i) for i in range(_BATCH_SIZE)]
+    cur.fetchall.side_effect = [full_page, []]  # full page → second query → empty → stop
+
+    result = client.get_concept_ids_by_type("variable")
+
+    assert len(result) == _BATCH_SIZE
+    assert cur.execute.call_count == 2
+    # Second execute must carry concept_id > :start_after keyset bind
+    second_bind = cur.execute.call_args_list[1].args[1]
+    assert second_bind["start_after"] == full_page[-1][0]
 
 
 # ---------------------------------------------------------------------------
