@@ -1,6 +1,6 @@
 # CMR Reindexer
 
-A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` messages to the CMR indexer's SQS queue. It runs as a single process with a background throttler thread and a background cancellation cache thread.
+A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` messages to the CMR indexer's SQS queue. It runs as a single process with a background throttler thread and a background cancellation-cache thread.
 
 ## How it works
 
@@ -21,12 +21,12 @@ Operator (VPN / VPC only)
     [Oracle DB]         |  DynamoDB  |
          |              +------------+
          | 3. enqueue         ^
-         |    collection      | 6. update total_dispatched
+         |    collection      | 5. update total_dispatched
          |    work items      |
          v                    |
 +-------------------------+   |
-|  cmr-reindexer-jobs SQS |   |
-|  (intermediate queue)   |   |
+|  Collection Queue SQS   |   |
+|  (COLLECTION_QUEUE_URL) |   |
 +-------------------------+   |
          |                    |
          | 4. poll            |
@@ -35,12 +35,11 @@ Operator (VPN / VPC only)
 |   Throttler Worker      |---+
 |                         |
 |  - check ES health      |-----> [Elasticsearch _cluster/health]
-|  - split collections    |-----> [Oracle DB] (granule IDs per page)
-|    into page items      |
+|  - stream granule IDs   |-----> [Oracle DB] (keyset pagination)
 |  - rate limit output    |
 +-------------------------+
          |
-         | 5. concept-update messages
+         | concept-update messages
          |    (rate limited, ES-green-gated)
          v
 +-------------------------+
@@ -51,10 +50,11 @@ Operator (VPN / VPC only)
     [CMR Indexer App] --> [Elasticsearch]
 ```
 
-**Two levels of fan-out for granules:**
-1. API enqueues one `CollectionWorkItem` per collection onto the intermediate queue
-2. Throttler expands each collection into `GranulePageWorkItem`s based on granule count and `CHUNK_SIZE`
-3. Throttler fetches each page from Oracle and publishes individual `concept-update` messages to the indexer queue
+**Processing flow for granules:**
+1. API enqueues one `CollectionWorkItem` per collection onto the collection queue (`COLLECTION_QUEUE_URL`)
+2. Throttler reads each `CollectionWorkItem`, opens an Oracle cursor for the collection, and streams granule IDs in chunks via keyset pagination (`fetchmany`)
+3. Each chunk is published directly to the indexer queue, rate-limited by a token bucket and gated on ES cluster health
+4. A DynamoDB checkpoint is written after each successfully dispatched chunk; SIGTERM or task replacement resumes from the last checkpoint rather than restarting from offset 0
 
 **Job state** is persisted in DynamoDB. If an ECS task is replaced or crashes, the new task resumes any interrupted granule jobs from the last checkpoint on startup.
 
@@ -72,7 +72,7 @@ All write endpoints require an `echo-token` or `Authorization` header with a tok
 | POST | `/reindex/concept/{concept_id}` | Reindex a single concept by CMR concept ID |
 | POST | `/reindex/{concept_type}` | Reindex all concepts of a type |
 
-Supported concept types: `variables`, `services`, `tools`, `collections`, `generics`, `data-quality-summaries`, `order-options`, `visualizations`, `subscriptions`, `grid`, `citation`
+Supported concept types: `variables`, `services`, `tools`, `collections`, `generics`, `data-quality-summaries`, `order-options`, `visualizations`, `subscriptions`, `grids`, `citations`
 
 **Date filtering** (granule endpoints only):
 
@@ -96,6 +96,7 @@ All reindex endpoints return `202 Accepted` with a `request_id`:
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
+| GET | `/jobs` | none | List jobs; optional `?status=<status>` filter and `?limit=<1–200>` (default 50) |
 | GET | `/jobs/{job_id}` | none | Get job status and progress |
 | DELETE | `/jobs/{job_id}` | required | Cancel a running job |
 
@@ -116,11 +117,17 @@ Job record example:
   "total_dispatched": 12000,
   "last_heartbeat": "2026-08-24T10:30:15Z",
   "started_at": "2026-08-24T10:00:00Z",
-  "completed_at": null
+  "completed_at": null,
+  "elapsed_seconds": 1815,
+  "heartbeat_age_seconds": 12,
+  "heartbeat_stale": false,
+  "dispatch_rate_per_minute": 397
 }
 ```
 
-Job statuses: `running`, `completed`, `failed`, `interrupted`, `cancelled`
+The `elapsed_seconds`, `heartbeat_age_seconds`, `heartbeat_stale`, and `dispatch_rate_per_minute` fields are computed at query time and not stored in DynamoDB.
+
+Job statuses: `running`, `dispatching`, `completed`, `failed`, `interrupted`, `cancelled`
 
 ### Throttle control
 
@@ -141,18 +148,22 @@ curl -X PUT http://localhost:8080/throttle \
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/health` | none | Liveness check (used by ALB — no dependency checks) |
-| GET | `/status` | none | ES cluster health, queue depth, current rate |
+| GET | `/status` | none | ES cluster health, queue depths, throttler state |
 
 `/status` response:
 
 ```json
 {
   "es_health": {"collections": "green", "granules": "green", "overall": "green"},
-  "intermediate_queue_depth": 14230
+  "collection_queue_depth": 14230,
+  "indexer_queue_depth": 0,
+  "throttler_alive": true,
+  "throttler_last_active": "2026-08-24T10:30:00Z",
+  "throttler_current_job": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "rate_per_minute": 600,
+  "tokens_available": 584.3
 }
 ```
-
-Note: the ES health gate requires `green`. For local dev with single-node Elasticsearch, set replicas to 0 (`curl -X PUT "http://localhost:9211/_all/_settings" -d '{"index":{"number_of_replicas":0}}'` and same for port 9210) so the cluster reports green rather than yellow.
 
 ## Configuration
 
@@ -162,13 +173,13 @@ All config is via environment variables.
 
 | Variable | Description |
 |----------|-------------|
-| `INTERMEDIATE_QUEUE_URL` | SQS URL for the cmr-reindexer-jobs queue |
+| `COLLECTION_QUEUE_URL` | SQS URL for the collection work-item queue |
 | `INDEXER_QUEUE_URL` | SQS URL for the CMR indexer queue |
 | `CMR_ACL_BASE_URL` | Base URL of the CMR ACL service |
 | `DB_HOST` | Oracle DB host |
 | `DB_PORT` | Oracle DB port (default: `1521`) |
 | `DB_SERVICE` | Oracle service name (default: `cmr`) |
-| `DB_USER` | Oracle username |
+| `DB_USER` | Oracle username (default: `cmr`) |
 | `DB_PASSWORD` | Oracle password |
 
 ### Optional
@@ -177,15 +188,19 @@ All config is via environment variables.
 |----------|---------|-------------|
 | `DB_BACKEND` | `oracle` | `oracle` (production) or `stub` (unit tests / local dev without Oracle) |
 | `DYNAMODB_JOB_TABLE` | `cmr-reindexer-jobs` | DynamoDB table for job tracking |
-| `DYNAMODB_ENDPOINT_URL` | `http://dynamodb-local:8000` | DynamoDB endpoint (docker-compose sets this automatically) |
-| `SQS_ENDPOINT_URL` | `None` | Override for local SQS (local dev only) |
+| `DYNAMODB_CHECKPOINT_TABLE` | `cmr-reindexer-checkpoints` | DynamoDB table for mid-collection resume cursors |
+| `DYNAMODB_ENDPOINT_URL` | `None` | DynamoDB endpoint override (docker-compose sets this automatically) |
+| `SQS_ENDPOINT_URL` | `None` | SQS endpoint override for local ElasticMQ |
 | `CMR_ELASTIC_HOST` | `localhost` | Collections ES host |
 | `CMR_ELASTIC_PORT` | `9211` | Collections ES port |
 | `CMR_GRAN_ELASTIC_HOST` | `localhost` | Granules ES host |
 | `CMR_GRAN_ELASTIC_PORT` | `9210` | Granules ES port |
-| `CHUNK_SIZE` | `10000` | Granules per page work item |
+| `STREAM_CHUNK_SIZE` | `1000` | Granule IDs per Oracle fetchmany call and checkpoint interval |
+| `SQS_SEND_WORKERS` | `20` | Parallel threads for batched SQS sends |
 | `RATE_PER_MINUTE` | `600` | Indexer queue rate limit (also adjustable live via `PUT /throttle`) |
-| `CANCEL_CHECK_INTERVAL_SECONDS` | `30` | How often the cancellation cache refreshes |
+| `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often the cancellation cache refreshes from DynamoDB |
+| `STALL_MINUTES` | `20` | Heartbeat age threshold before a job is considered stalled |
+| `CMR_ECHO_SYSTEM_TOKEN` | `mock-echo-system-token` | Echo system token used for ACL validation |
 | `AWS_DEFAULT_REGION` | `us-east-1` | AWS region |
 | `AWS_ACCESS_KEY_ID` | `None` | Explicit AWS key (omit to use IAM task role) |
 | `AWS_SECRET_ACCESS_KEY` | `None` | Explicit AWS secret (omit to use IAM task role) |
@@ -194,66 +209,6 @@ All config is via environment variables.
 
 - **`oracle`** (default) — direct Oracle connection via `oracledb` thin mode (no Oracle Instant Client needed)
 - **`stub`** — hardcoded fake data, no external dependencies; used by the unit test suite and local dev without Oracle
-
-## Running locally
-
-### Prerequisites
-
-- Docker Desktop running
-- The `cmr-dev` Linux container (see repo-level dev workflow docs)
-- ElasticMQ running locally for SQS (started via `cmr start local sqs-sns`)
-- The CMR dev-system running for Elasticsearch and Redis (`cd dev-system && docker compose up`)
-
-### Start the service
-
-DynamoDB Local is included in `docker-compose.yml` and starts automatically. The reindexer service depends on it so no manual setup is needed.
-
-From inside the `cmr-dev` container after running `sync`:
-
-```bash
-cd /root/Common-Metadata-Repository/reindexer
-docker compose up
-```
-
-The service is available at `http://localhost:8080`.
-
-**First run only** — create the DynamoDB job tracking table:
-
-```bash
-aws dynamodb create-table \
-  --table-name cmr-reindexer-jobs \
-  --attribute-definitions AttributeName=job_id,AttributeType=S \
-  --key-schema AttributeName=job_id,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --endpoint-url http://localhost:8000 \
-  --region us-east-1 \
-  --no-sign-request
-```
-
-For development with live reload, run uvicorn directly with the same env vars docker-compose sets:
-
-```bash
-cd /root/Common-Metadata-Repository/reindexer
-
-DB_BACKEND=stub \
-SQS_ENDPOINT_URL=http://host.docker.internal:4100 \
-INTERMEDIATE_QUEUE_URL=http://host.docker.internal:4100/queue/cmr-reindexer-jobs \
-INDEXER_QUEUE_URL=http://host.docker.internal:4100/queue/cmr-indexer-jobs \
-DYNAMODB_ENDPOINT_URL=http://host.docker.internal:8000 \
-AWS_ACCESS_KEY_ID=test \
-AWS_SECRET_ACCESS_KEY=test \
-CMR_ACL_BASE_URL=http://host.docker.internal:3011 \
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-The service is then available at `http://localhost:8000`.
-
-### Iteration workflow
-
-1. Edit files on Windows in VS Code as normal
-2. Inside the `cmr-dev` container run `sync` to copy changes into the Linux filesystem
-3. `uvicorn` with `--reload` picks up the changes automatically
-4. Repeat
 
 ## Running tests
 
@@ -275,34 +230,28 @@ pip install pytest pytest-asyncio httpx
 pytest tests/ -v
 ```
 
-### Run a specific test file
+### Run a specific test file or test
 
 ```bash
 pytest tests/test_job_store.py -v
-pytest tests/test_throttler_worker.py -v
-```
-
-### Run a specific test
-
-```bash
 pytest tests/test_routes.py::test_reindex_granules_returns_job_id -v
 ```
 
-### Test files and what they cover
+### Test files
 
 | File | Tests | What it covers |
 |------|-------|----------------|
-| `test_auth.py` | 8 | Token extraction, ACL validation, 401/403/503 responses |
-| `test_health_status.py` | 28 | Liveness check, status endpoint, ES health aggregation |
+| `test_auth.py` | 14 | Token extraction, ACL validation, 401/403/503 responses |
+| `test_health_status.py` | 38 | Liveness check, `/status` fields, ES health aggregation, queue-depth failure handling |
 | `test_date_validation.py` | 32 | ISO8601 format, ordering, 30-day limit, override header |
-| `test_oracle_sql.py` | 17 | SQL table routing by concept type, document_name filters |
-| `test_sqs_client.py` | 21 | Message body shape, hyphenated keys, queue URL routing |
-| `test_job_store.py` | 27 | All JobStore methods with mocked DynamoDB |
+| `test_oracle_sql.py` | 28 | SQL table routing by concept type, date clause injection, concept-id prefix routing |
+| `test_sqs_client.py` | 27 | Message body shape, hyphenated keys, queue URL routing |
+| `test_job_store.py` | 81 | All JobStore methods with mocked DynamoDB |
 | `test_cancel_cache.py` | 8 | Cache refresh, is_cancelled lookup, thread stop |
-| `test_startup_resume.py` | 10 | Stalled job detection, re-enqueue logic, race condition handling |
-| `test_throttler_worker.py` | 40 | Page splitting, dispatch, cancellation check, SIGTERM behavior |
-| `test_token_bucket.py` | 8 | Rate limiting, set_rate, thread safety |
-| `test_routes.py` | 26 | All endpoints, request_id in response, GET/DELETE /jobs |
+| `test_startup_resume.py` | 15 | Stalled job detection, re-enqueue logic, race condition handling |
+| `test_throttler_worker.py` | 58 | Chunk streaming, dispatch, cancellation, SIGTERM/checkpoint behaviour |
+| `test_token_bucket.py` | 20 | Rate limiting, set_rate, thread safety |
+| `test_routes.py` | 72 | All endpoints, request_id in response, GET/DELETE /jobs |
 | `test_throttle_endpoint.py` | 9 | GET/PUT /throttle, auth, rate validation |
 
 ### Integration test
