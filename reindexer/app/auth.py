@@ -66,6 +66,7 @@ def _get_ingest_mgmt_acls() -> list:
             "status": r.status_code,
             "body": r.text[:500],
         })
+        raise HTTPException(status_code=503, detail="ACL service unavailable")
 
     return r.json().get("items", [])
 

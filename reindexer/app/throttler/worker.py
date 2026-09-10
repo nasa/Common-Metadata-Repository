@@ -164,7 +164,10 @@ class ThrottlerWorker:
             item = parse_work_item(msg["Body"])
         except Exception as exc:
             logger.error({"event": "work_item_parse_error", "error": str(exc), "body": msg.get("Body")})
-            delete_message(queue_url, receipt)
+            try:
+                delete_message(queue_url, receipt)
+            except Exception as del_exc:
+                logger.warning({"event": "delete_message_failed", "error": str(del_exc)})
             return
 
         if self._cancel_cache and self._cancel_cache.is_cancelled(item.request_id):
@@ -201,7 +204,10 @@ class ThrottlerWorker:
             with self._job_lock:
                 self._current_job_id = None
 
-        delete_message(queue_url, receipt)
+        try:
+            delete_message(queue_url, receipt)
+        except Exception as exc:
+            logger.warning({"event": "delete_message_failed", "error": str(exc)})
 
     def _handle_collection(self, item: CollectionWorkItem) -> None:
         """Stream all granule IDs for a collection and dispatch them directly to the indexer queue.
@@ -271,10 +277,8 @@ class ThrottlerWorker:
             job_store.update_dispatched(item.request_id, len(chunk))
 
         # All chunks dispatched — clear checkpoint and record the collection as split.
-        # Pass total_dispatched (prior checkpoint + this run) so total_granules_expected
-        # in the job record always reflects the full collection count, even on resume.
         checkpoint_store.delete_collection_checkpoint(item.request_id, item.collection_id)
-        job_store.increment_collections_split(item.request_id, total_dispatched)
+        job_store.increment_collections_split(item.request_id)
 
         logger.info({
             "event": "collection_streaming_complete",

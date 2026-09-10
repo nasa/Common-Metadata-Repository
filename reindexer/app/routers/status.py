@@ -37,15 +37,12 @@ def _enrich_job(job: dict) -> dict:
         except Exception:
             pass
 
+    # dispatch_rate_per_minute: granules sent per minute averaged over the job lifetime.
+    # Works for any concept type; comparable directly against rate_per_minute from /status.
     dispatched = job.get("total_dispatched", 0)
-    expected = job.get("total_granules_expected", 0)
-    if expected > 0:
-        result["pct_complete"] = round(dispatched / expected * 100, 1)
-
-    collections_split = job.get("collections_split", 0)
-    work_items_enqueued = job.get("work_items_enqueued", 0)
-    if work_items_enqueued > 0:
-        result["pct_collections_split"] = round(collections_split / work_items_enqueued * 100, 1)
+    elapsed = result.get("elapsed_seconds", 0)
+    if dispatched > 0 and elapsed > 0:
+        result["dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
 
     return result
 
