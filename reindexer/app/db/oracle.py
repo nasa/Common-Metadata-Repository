@@ -69,14 +69,25 @@ _BEFORE_CLAUSE = "AND REVISION_DATE <= TO_TIMESTAMP_TZ(:before, 'YYYY-MM-DD\"T\"
 _AFTER_COND  = "REVISION_DATE >= TO_TIMESTAMP_TZ(:after,  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 _BEFORE_COND = "REVISION_DATE <= TO_TIMESTAMP_TZ(:before, 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 
+# Two-query keyset strategy for non-granule types:
+#   1. _PAGE_IDS_SQL  — fast DISTINCT index scan to find the page boundary (no aggregation)
+#   2. _SHARED_IDS_SQL — bounded aggregation for only those concept_ids (concept_id <= page_end)
+# Separating them lets Oracle use the concept_id index for the boundary scan without
+# blocking on a full-table GROUP BY before FETCH FIRST can apply.
+_PAGE_IDS_SQL = """\
+SELECT DISTINCT concept_id
+FROM METADATA_DB.{table}
+{where_clause}
+ORDER BY concept_id
+FETCH FIRST {page_size} ROWS ONLY"""
+
 _SHARED_IDS_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
 FROM METADATA_DB.{table}
 {where_clause}
 GROUP BY concept_id
 HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-ORDER BY concept_id
-FETCH FIRST {page_size} ROWS ONLY"""
+ORDER BY concept_id"""
 
 _SINGLE_CONCEPT_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
@@ -89,21 +100,22 @@ HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0"""
 # Type maps
 # ---------------------------------------------------------------------------
 
-# Internal concept type → (table_name, schema_filter or None)
-# Generic documents share cmr_generic_documents and are distinguished by the `schema`
-# column (stores the kebab-case concept type, e.g. "citation", "data-quality-summary").
-# document_name stores the individual concept's Name/ShortName — NOT the type name.
+# Internal concept type → (table_name, concept_id LIKE prefix or None)
+# Generic document subtypes share cmr_generic_documents; their concept_id prefix is
+# globally unique within that table so LIKE lets Oracle use the concept_id index
+# directly instead of filtering on the unindexed `schema` column.
+# "generic" (no prefix) targets all rows in the table regardless of subtype.
 _SHARED_TYPE_TABLES: dict[str, tuple[str, Optional[str]]] = {
     "variable":             ("cmr_variables",          None),
     "service":              ("cmr_services",            None),
     "tool":                 ("cmr_tools",               None),
     "subscription":         ("cmr_subscriptions",       None),
     "generic":              ("cmr_generic_documents",   None),
-    "data-quality-summary": ("cmr_generic_documents",   "data-quality-summary"),
-    "order-option":         ("cmr_generic_documents",   "order-option"),
-    "grid":                 ("cmr_generic_documents",   "grid"),
-    "citation":             ("cmr_generic_documents",   "citation"),
-    "visualization":        ("cmr_generic_documents",   "visualization"),
+    "data-quality-summary": ("cmr_generic_documents",   "DQS%"),
+    "order-option":         ("cmr_generic_documents",   "OO%"),
+    "grid":                 ("cmr_generic_documents",   "GRD%"),
+    "citation":             ("cmr_generic_documents",   "CIT%"),
+    "visualization":        ("cmr_generic_documents",   "VIS%"),
 }
 
 # concept-id prefix → (shared_table_name or None, table_suffix or None)
@@ -267,9 +279,9 @@ class OracleClient:
         if table_doc is None:
             raise ValueError(f"Unknown concept type: {concept_type!r}")
 
-        table, schema = table_doc
+        table, prefix = table_doc
         yield from self._stream_concept_ids(
-            table, schema=schema, after=after, before=before
+            table, prefix=prefix, after=after, before=before
         )
 
     def get_concept_by_id(self, concept_id: str) -> Optional[dict]:
@@ -310,67 +322,94 @@ class OracleClient:
         for provider_id in self.get_all_provider_ids():
             _validate_provider_id(provider_id)
             table = f"{provider_id}_COLLECTIONS"
-            yield from self._stream_concept_ids(table, schema=None, after=after, before=before)
+            yield from self._stream_concept_ids(table, prefix=None, after=after, before=before)
 
     def _stream_concept_ids(
         self,
         table: str,
-        schema: Optional[str] = None,
+        prefix: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        """Yield (concept_id, revision_id) via keyset-paginated aggregation.
+        """Yield (concept_id, revision_id) using a two-query keyset strategy per page.
 
-        Each page uses FETCH FIRST N ROWS ONLY with concept_id > :start_after so
-        Oracle aggregates a small window of rows per call rather than the full table.
+        Query 1 (_PAGE_IDS_SQL): fast DISTINCT index scan with FETCH FIRST to locate
+        the page boundary — no aggregation, returns in milliseconds even for 300k rows.
+
+        Query 2 (_SHARED_IDS_SQL): GROUP BY + HAVING aggregation bounded to
+        concept_id <= page_end, so Oracle aggregates only ~page_size concepts' rows.
+
+        Date filters (after/before) apply only to Query 2 so the page boundary cursor
+        advances monotonically regardless of which revisions fall in the date range.
         """
         start_after: Optional[str] = None
 
         while True:
-            conditions: list[str] = []
-            bind: dict = {}
-
+            # --- Query 1: locate page boundary (fast index scan, no aggregation) ---
+            page_conds: list[str] = []
+            page_bind: dict = {}
             if start_after:
-                conditions.append("concept_id > :start_after")
-                bind["start_after"] = start_after
-            if schema is not None:
-                conditions.append("schema = :schema")
-                bind["schema"] = schema
-            if after:
-                conditions.append(_AFTER_COND)
-                bind["after"] = _oracle_ts(after)
-            if before:
-                conditions.append(_BEFORE_COND)
-                bind["before"] = _oracle_ts(before)
+                page_conds.append("concept_id > :start_after")
+                page_bind["start_after"] = start_after
+            if prefix is not None:
+                page_conds.append("concept_id LIKE :prefix")
+                page_bind["prefix"] = prefix
 
-            where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
-            sql = _SHARED_IDS_SQL.format(
-                table=table, where_clause=where_clause, page_size=_BATCH_SIZE
+            page_where = ("WHERE " + " AND ".join(page_conds)) if page_conds else ""
+            page_sql = _PAGE_IDS_SQL.format(
+                table=table, where_clause=page_where, page_size=_BATCH_SIZE
             )
-
             with self._get_pool().acquire() as conn, conn.cursor() as cur:
-                cur.execute(sql, bind)
-                rows = cur.fetchall()
+                cur.execute(page_sql, page_bind)
+                page_ids = cur.fetchall()
 
-            if not rows:
+            if not page_ids:
                 break
+
+            page_end = page_ids[-1][0]
+            is_last_page = len(page_ids) < _BATCH_SIZE
+
+            # --- Query 2: aggregate the bounded range ---
+            agg_conds: list[str] = []
+            agg_bind: dict = {}
+            if start_after:
+                agg_conds.append("concept_id > :start_after")
+                agg_bind["start_after"] = start_after
+            agg_conds.append("concept_id <= :page_end")
+            agg_bind["page_end"] = page_end
+            if prefix is not None:
+                agg_conds.append("concept_id LIKE :prefix")
+                agg_bind["prefix"] = prefix
+            if after:
+                agg_conds.append(_AFTER_COND)
+                agg_bind["after"] = _oracle_ts(after)
+            if before:
+                agg_conds.append(_BEFORE_COND)
+                agg_bind["before"] = _oracle_ts(before)
+
+            agg_sql = _SHARED_IDS_SQL.format(
+                table=table, where_clause="WHERE " + " AND ".join(agg_conds)
+            )
+            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+                cur.execute(agg_sql, agg_bind)
+                rows = cur.fetchall()
 
             for row in rows:
                 yield (row[0], row[1])
 
-            if len(rows) < _BATCH_SIZE:
-                break  # last page — no need to query again
+            if is_last_page:
+                break
 
-            start_after = rows[-1][0]
+            start_after = page_end
 
     def _query_concept_ids(
         self,
         table: str,
-        schema: Optional[str] = None,
+        prefix: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int]]:
         """List wrapper around _stream_concept_ids — used by tests."""
         return list(self._stream_concept_ids(
-            table, schema=schema, after=after, before=before
+            table, prefix=prefix, after=after, before=before
         ))

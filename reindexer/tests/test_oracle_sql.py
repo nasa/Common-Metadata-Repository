@@ -61,22 +61,22 @@ def _last_execute(cur):
 
 
 # ---------------------------------------------------------------------------
-# get_concept_ids_by_type — table and schema filter (all 10 types)
+# get_concept_ids_by_type — table and concept_id prefix filter (all 10 types)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("concept_type,expected_table,expected_schema", [
+@pytest.mark.parametrize("concept_type,expected_table,expected_prefix", [
     ("variable",              "cmr_variables",         None),
     ("service",               "cmr_services",          None),
     ("tool",                  "cmr_tools",             None),
     ("subscription",          "cmr_subscriptions",     None),
     ("generic",               "cmr_generic_documents", None),
-    ("data-quality-summary",  "cmr_generic_documents", "data-quality-summary"),
-    ("order-option",          "cmr_generic_documents", "order-option"),
-    ("grid",                  "cmr_generic_documents", "grid"),
-    ("citation",              "cmr_generic_documents", "citation"),
-    ("visualization",         "cmr_generic_documents", "visualization"),
+    ("data-quality-summary",  "cmr_generic_documents", "DQS%"),
+    ("order-option",          "cmr_generic_documents", "OO%"),
+    ("grid",                  "cmr_generic_documents", "GRD%"),
+    ("citation",              "cmr_generic_documents", "CIT%"),
+    ("visualization",         "cmr_generic_documents", "VIS%"),
 ])
-def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected_table, expected_schema):
+def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected_table, expected_prefix):
     client, cur = oracle
 
     client.get_concept_ids_by_type(concept_type)
@@ -85,28 +85,34 @@ def test_get_concept_ids_by_type_table_and_filter(oracle, concept_type, expected
     assert f"METADATA_DB.{expected_table}" in sql, (
         f"type={concept_type!r}: expected METADATA_DB.{expected_table} in SQL"
     )
-    if expected_schema:
-        assert "schema = :schema" in sql, (
-            f"type={concept_type!r}: expected schema filter in SQL"
+    if expected_prefix:
+        assert "concept_id LIKE :prefix" in sql, (
+            f"type={concept_type!r}: expected concept_id LIKE filter in SQL"
         )
-        assert bind.get("schema") == expected_schema, (
-            f"type={concept_type!r}: bind['schema'] should be {expected_schema!r}"
+        assert bind.get("prefix") == expected_prefix, (
+            f"type={concept_type!r}: bind['prefix'] should be {expected_prefix!r}"
         )
     else:
-        assert "schema" not in sql, (
-            f"type={concept_type!r}: unexpected schema filter in SQL"
+        assert "LIKE" not in sql, (
+            f"type={concept_type!r}: unexpected LIKE filter in SQL"
         )
-        assert "schema" not in bind
+        assert "prefix" not in bind
 
 
 def test_get_concept_ids_by_type_returns_concept_revision_tuples(oracle):
     client, cur = oracle
-    # 2 rows < _BATCH_SIZE → treated as last page, no second query issued.
-    cur.fetchall.return_value = [("V1234-PROV", 3), ("V5678-PROV", 1)]
+    # Two queries are always issued for a non-empty page:
+    #   call 0 — page_ids (SELECT DISTINCT concept_id → 1-tuples; 2 rows < _BATCH_SIZE → is_last_page=True)
+    #   call 1 — agg (SELECT concept_id, MAX(revision_id) → 2-tuples; is_last_page causes break after)
+    cur.fetchall.side_effect = [
+        [("V1234-PROV",), ("V5678-PROV",)],       # page_ids query: 1-tuples (DISTINCT concept_id)
+        [("V1234-PROV", 3), ("V5678-PROV", 1)],   # agg query: 2-tuples (concept_id, revision_id)
+    ]
 
     result = client.get_concept_ids_by_type("variable")
 
     assert result == [("V1234-PROV", 3), ("V5678-PROV", 1)]
+    assert cur.execute.call_count == 2
 
 
 def test_get_concept_ids_by_type_unknown_type_raises_value_error(oracle):
@@ -121,9 +127,12 @@ def test_get_concept_ids_by_type_unknown_type_raises_value_error(oracle):
 
 def test_after_injects_revision_date_ge_clause(oracle):
     client, cur = oracle
+    # page_ids query (call 0) returns one boundary so the agg query (call 1) executes.
+    cur.fetchall.side_effect = [[("V1-PROV",)], []]
 
     client.get_concept_ids_by_type("variable", after="2024-01-01T00:00:00Z")
 
+    # Date filters live in the aggregation query (second execute call).
     sql, bind = _last_execute(cur)
     assert "REVISION_DATE >=" in sql
     assert "TO_TIMESTAMP_TZ(:after" in sql
@@ -133,6 +142,7 @@ def test_after_injects_revision_date_ge_clause(oracle):
 
 def test_before_injects_revision_date_le_clause(oracle):
     client, cur = oracle
+    cur.fetchall.side_effect = [[("V1-PROV",)], []]
 
     client.get_concept_ids_by_type("variable", before="2024-12-31T23:59:59Z")
 
@@ -145,6 +155,7 @@ def test_before_injects_revision_date_le_clause(oracle):
 
 def test_after_and_before_both_injected(oracle):
     client, cur = oracle
+    cur.fetchall.side_effect = [[("S1-PROV",)], []]
 
     client.get_concept_ids_by_type(
         "service",
@@ -170,31 +181,33 @@ def test_no_dates_produces_no_where_clause(oracle):
     assert not bind
 
 
-def test_generic_subtype_with_schema_filter_and_after_coexist(oracle):
-    """schema = :schema AND REVISION_DATE >= must both appear in WHERE."""
+def test_generic_subtype_with_prefix_filter_and_after_coexist(oracle):
+    """concept_id LIKE :prefix AND REVISION_DATE >= must both appear in the agg query."""
     client, cur = oracle
+    cur.fetchall.side_effect = [[("DQS1-PROV",)], []]
 
     client.get_concept_ids_by_type("data-quality-summary", after="2024-03-01T00:00:00Z")
 
     sql, bind = _last_execute(cur)
     assert "METADATA_DB.cmr_generic_documents" in sql
-    assert "schema = :schema" in sql
+    assert "concept_id LIKE :prefix" in sql
     assert "REVISION_DATE >=" in sql
-    assert bind["schema"] == "data-quality-summary"
+    assert bind["prefix"] == "DQS%"
     assert bind["after"] == "2024-03-01T00:00:00 +00:00"
 
 
 def test_generic_no_subtype_filter_with_after(oracle):
-    """'generics' queries cmr_generic_documents with no schema filter."""
+    """'generics' agg query has no prefix filter but does carry the date condition."""
     client, cur = oracle
+    cur.fetchall.side_effect = [[("GEN1-PROV",)], []]
 
     client.get_concept_ids_by_type("generic", after="2024-01-01T00:00:00Z")
 
     sql, bind = _last_execute(cur)
     assert "METADATA_DB.cmr_generic_documents" in sql
-    assert "schema" not in sql
+    assert "LIKE" not in sql
     assert "REVISION_DATE >=" in sql
-    assert "schema" not in bind
+    assert "prefix" not in bind
     assert bind["after"] == "2024-01-01T00:00:00 +00:00"
 
 
@@ -204,17 +217,19 @@ def test_generic_no_subtype_filter_with_after(oracle):
 
 def test_collection_type_queries_each_provider_table(oracle):
     client, cur = oracle
-    # All queries use fetchall: providers + one keyset page per provider (< _BATCH_SIZE → stops).
+    # Two queries per provider (page_ids + agg); each returns 1 row → last page.
     cur.fetchall.side_effect = [
-        [("PROV_A",), ("PROV_B",)],   # get_all_provider_ids
-        [("C1-PROV_A", 1)],            # PROV_A_COLLECTIONS page 1
-        [("C2-PROV_B", 2)],            # PROV_B_COLLECTIONS page 1
+        [("PROV_A",), ("PROV_B",)],  # get_all_provider_ids
+        [("C1-PROV_A",)],             # PROV_A page_ids (boundary)
+        [("C1-PROV_A", 1)],           # PROV_A agg
+        [("C2-PROV_B",)],             # PROV_B page_ids (boundary)
+        [("C2-PROV_B", 2)],           # PROV_B agg
     ]
 
     result = client.get_concept_ids_by_type("collection")
 
     assert result == [("C1-PROV_A", 1), ("C2-PROV_B", 2)]
-    assert cur.execute.call_count == 3
+    assert cur.execute.call_count == 5
 
     executed_sqls = [c.args[0] for c in cur.execute.call_args_list]
     assert any("PROV_A_COLLECTIONS" in s for s in executed_sqls), "missing PROV_A_COLLECTIONS query"
@@ -223,16 +238,18 @@ def test_collection_type_queries_each_provider_table(oracle):
 
 def test_collection_type_with_after_passes_bind_to_each_provider(oracle):
     client, cur = oracle
-    cur.fetchall.side_effect = [[("PROV_X",)], [("C1-PROV_X", 1)]]
+    # providers + PROV_X page_ids + PROV_X agg
+    cur.fetchall.side_effect = [[("PROV_X",)], [("C1-PROV_X",)], [("C1-PROV_X", 1)]]
 
     client.get_concept_ids_by_type("collection", after="2024-06-01T00:00:00Z")
 
-    coll_call = cur.execute.call_args_list[1]
-    coll_sql = coll_call.args[0]
-    coll_bind = coll_call.args[1]
-    assert "PROV_X_COLLECTIONS" in coll_sql
-    assert "REVISION_DATE >=" in coll_sql
-    assert coll_bind["after"] == "2024-06-01T00:00:00 +00:00"
+    # Agg query is the third execute call (index 2); it carries the date bind.
+    agg_call = cur.execute.call_args_list[2]
+    agg_sql = agg_call.args[0]
+    agg_bind = agg_call.args[1]
+    assert "PROV_X_COLLECTIONS" in agg_sql
+    assert "REVISION_DATE >=" in agg_sql
+    assert agg_bind["after"] == "2024-06-01T00:00:00 +00:00"
 
 
 def test_collection_type_no_providers_returns_empty(oracle):
@@ -245,19 +262,24 @@ def test_collection_type_no_providers_returns_empty(oracle):
 
 
 def test_stream_concept_ids_issues_second_query_with_keyset_when_page_is_full(oracle):
-    """When a page returns exactly _BATCH_SIZE rows, a second query is issued with concept_id > last."""
+    """Full first page triggers a second page_ids query using concept_id > last boundary."""
     from app.db.oracle import _BATCH_SIZE
     client, cur = oracle
-    full_page = [(f"V{i:04d}-PROV", i) for i in range(_BATCH_SIZE)]
-    cur.fetchall.side_effect = [full_page, []]  # full page → second query → empty → stop
+    # page_ids returns concept_ids only; agg returns (concept_id, revision_id) tuples.
+    full_page_ids = [(f"V{i:04d}-PROV",) for i in range(_BATCH_SIZE)]
+    full_page_agg = [(f"V{i:04d}-PROV", i) for i in range(_BATCH_SIZE)]
+    # page_ids(1) → full → agg(1) → results; page_ids(2) → empty → stop
+    cur.fetchall.side_effect = [full_page_ids, full_page_agg, []]
 
     result = client.get_concept_ids_by_type("variable")
 
     assert len(result) == _BATCH_SIZE
-    assert cur.execute.call_count == 2
-    # Second execute must carry concept_id > :start_after keyset bind
-    second_bind = cur.execute.call_args_list[1].args[1]
-    assert second_bind["start_after"] == full_page[-1][0]
+    assert cur.execute.call_count == 3
+
+    # Third execute call is the second-page page_ids query; it must carry the keyset.
+    second_page_sql, second_page_bind = cur.execute.call_args_list[2].args[:2]
+    assert "concept_id > :start_after" in second_page_sql
+    assert second_page_bind["start_after"] == f"V{_BATCH_SIZE - 1:04d}-PROV"
 
 
 # ---------------------------------------------------------------------------
