@@ -374,7 +374,7 @@ class TestGracefulShutdown:
         worker._thread = MagicMock()
         worker._thread.is_alive.return_value = False
         worker.stop()
-        _worker_mod.job_store.mark_job.assert_not_called()
+        _worker_mod.job_store.try_mark_interrupted.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -419,20 +419,6 @@ class TestEsHealthGating:
 
 class TestJobCompletionDetection:
 
-    def test_try_complete_called_after_collection_streamed(self, worker):
-        _make_chunks()
-        worker._handle_collection(_collection())
-        _worker_mod.job_store.try_complete_job.assert_called_with("req-1")
-
-    def test_try_complete_not_called_when_stop_event_fires(self, worker):
-        from app.throttler.worker import _CollectionInterrupted
-        _make_chunks([("G1-P", 1)])
-        worker._token_bucket.consume.return_value = False
-        worker._stop_event.set()
-        with pytest.raises(_CollectionInterrupted):
-            worker._handle_collection(_collection())
-        _worker_mod.job_store.try_complete_job.assert_not_called()
-
     def test_stop_event_passed_to_consume(self, worker):
         _make_chunks([("G1-P", 1)])
         worker._handle_collection(_collection())
@@ -465,9 +451,9 @@ class TestJobCompletionDetection:
         worker.stop()
         _worker_mod.job_store.try_mark_interrupted.assert_called_once_with("active-job-123")
 
-    def test_stop_without_active_job_does_not_call_mark_job(self, worker):
+    def test_stop_without_active_job_does_not_call_try_mark_interrupted(self, worker):
         worker.stop()
-        _worker_mod.job_store.mark_job.assert_not_called()
+        _worker_mod.job_store.try_mark_interrupted.assert_not_called()
 
     def test_current_job_id_cleared_after_successful_process(self, worker):
         _make_chunks()

@@ -320,3 +320,123 @@ def test_get_concept_by_id_granule_goes_to_granules_table(oracle):
     sql, _ = _last_execute(cur)
     assert "PROV_GRANULES" in sql
     assert "PROV_COLLECTIONS" not in sql
+
+
+# ---------------------------------------------------------------------------
+# get_collection_ids_for_provider — direct SQL verification
+# ---------------------------------------------------------------------------
+
+def test_get_collection_ids_for_provider_queries_correct_table(oracle):
+    client, cur = oracle
+    cur.fetchall.return_value = [("C1-MYPROV",), ("C2-MYPROV",)]
+
+    result = client.get_collection_ids_for_provider("MYPROV")
+
+    assert result == ["C1-MYPROV", "C2-MYPROV"]
+    sql, bind = _last_execute(cur)
+    assert "METADATA_DB.MYPROV_COLLECTIONS" in sql
+    # Collections SQL has no per-row date clause; keyset and PARENT_COLLECTION_ID are absent
+    assert "REVISION_DATE" not in sql
+    assert "PARENT_COLLECTION_ID" not in sql
+
+
+def test_get_collection_ids_for_provider_rejects_invalid_provider_id(oracle):
+    client, _ = oracle
+    with pytest.raises(ValueError, match="Invalid provider ID"):
+        client.get_collection_ids_for_provider("bad-provider!")
+
+
+# ---------------------------------------------------------------------------
+# stream_granule_ids — SQL and keyset clause verification
+# ---------------------------------------------------------------------------
+
+def _drain_stream(gen):
+    """Exhaust the stream_granule_ids generator so cursor.execute() is called."""
+    return list(gen)
+
+
+def test_stream_granule_ids_queries_correct_granule_table(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=500))
+
+    sql, bind = _last_execute(cur)
+    assert "METADATA_DB.PROV_GRANULES" in sql
+    assert bind["collection_id"] == "C1234-PROV"
+
+
+def test_stream_granule_ids_filters_by_collection_id(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids("C99-TESTPROV", chunk_size=500))
+
+    sql, bind = _last_execute(cur)
+    assert "PARENT_COLLECTION_ID = :collection_id" in sql
+    assert bind["collection_id"] == "C99-TESTPROV"
+
+
+def test_stream_granule_ids_keyset_clause_present_when_start_after_given(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids(
+        "C1234-PROV", chunk_size=500, start_after_concept_id="G100-PROV"
+    ))
+
+    sql, bind = _last_execute(cur)
+    assert "concept_id > :start_after" in sql
+    assert bind["start_after"] == "G100-PROV"
+
+
+def test_stream_granule_ids_no_keyset_clause_when_start_after_is_none(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=500))
+
+    sql, _ = _last_execute(cur)
+    assert "start_after" not in sql
+
+
+def test_stream_granule_ids_after_injects_revision_date_ge(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids(
+        "C1-PROV", chunk_size=500, after="2024-01-01T00:00:00Z"
+    ))
+
+    sql, bind = _last_execute(cur)
+    assert "REVISION_DATE >=" in sql
+    assert bind["after"] == "2024-01-01T00:00:00 +00:00"
+
+
+def test_stream_granule_ids_before_injects_revision_date_le(oracle):
+    client, cur = oracle
+    cur.fetchmany.return_value = []
+
+    _drain_stream(client.stream_granule_ids(
+        "C1-PROV", chunk_size=500, before="2024-12-31T23:59:59Z"
+    ))
+
+    sql, bind = _last_execute(cur)
+    assert "REVISION_DATE <=" in sql
+    assert bind["before"] == "2024-12-31T23:59:59 +00:00"
+
+
+def test_stream_granule_ids_yields_multiple_chunks(oracle):
+    """stream_granule_ids yields one list per fetchmany batch, not individual rows."""
+    client, cur = oracle
+    cur.fetchmany.side_effect = [
+        [("G1-PROV", 1), ("G2-PROV", 2)],
+        [("G3-PROV", 3)],
+        [],
+    ]
+
+    chunks = _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=2))
+
+    assert len(chunks) == 2
+    assert chunks[0] == [("G1-PROV", 1), ("G2-PROV", 2)]
+    assert chunks[1] == [("G3-PROV", 3)]

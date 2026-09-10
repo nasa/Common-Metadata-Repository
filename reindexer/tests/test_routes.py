@@ -223,6 +223,15 @@ class TestGranuleJobStatusTransitions:
         statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
         assert "completed" not in statuses
 
+    def test_invalid_provider_id_format_returns_400(self, client):
+        r = client.post("/reindexer/reindex/granules/provider/lowercase-prov")
+        assert r.status_code == 400
+
+    def test_invalid_provider_id_no_db_call(self, client):
+        import app.routers.reindex as _r
+        client.post("/reindexer/reindex/granules/provider/bad.provider!")
+        _r.db_client.get_collection_ids_for_provider.assert_not_called()
+
     def test_reindex_provider_granules_marks_dispatching(self, client):
         import app.routers.reindex as _r
         _r.db_client.get_collection_ids_for_provider.return_value = []
@@ -454,10 +463,15 @@ class TestListJobsEndpoint:
         r = client.get("/reindexer/jobs")
         assert r.status_code == 200
 
-    def test_requires_no_auth(self, client):
+    def test_requires_no_auth(self):
+        """GET /jobs must be accessible without auth — verify with a plain unauthenticated client."""
+        from fastapi.testclient import TestClient
         import app.routers.status as _s
         _s.job_store.list_jobs.return_value = []
-        r = client.get("/reindexer/jobs")
+        # Use app directly (no auth override) to confirm no auth dependency on this route
+        from app.main import app as _app
+        plain_client = TestClient(_app, raise_server_exceptions=False)
+        r = plain_client.get("/reindexer/jobs")
         assert r.status_code == 200
 
     def test_returns_jobs_list(self, client):
@@ -530,6 +544,16 @@ class TestSnapshotBeforeTimestamp:
     def test_by_collection_before_forwarded_to_enqueue(self, client):
         import app.routers.reindex as _r
         client.post("/reindexer/reindex/granules/collection/C1234567890-PROV")
+        kw = _r.enqueue_collection_item.call_args[1]
+        assert kw.get("before") is not None
+        assert self._ISO_RE.match(kw["before"])
+
+    def test_by_provider_before_forwarded_to_enqueue(self, client):
+        """before snapshot must be passed to each enqueue_collection_item call in _enqueue_provider."""
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = ["C1-PROV", "C2-PROV"]
+        client.post("/reindexer/reindex/granules/provider/TESTPROV")
+        # Both collections enqueued — check the before on the last call
         kw = _r.enqueue_collection_item.call_args[1]
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
