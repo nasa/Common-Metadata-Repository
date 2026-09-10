@@ -6,10 +6,6 @@ schema filter, that date clauses are injected correctly, and that
 get_concept_by_id routes each concept-id prefix to the right table.
 
 No real Oracle connection is needed — oracledb.create_pool is mocked.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_oracle_sql.py -v
 """
 import sys
 from unittest.mock import MagicMock, patch
@@ -459,6 +455,36 @@ def test_stream_granule_ids_before_injects_revision_date_le(oracle):
     sql, bind = _last_execute(cur)
     assert "REVISION_DATE <=" in sql
     assert bind["before"] == "2024-12-31T23:59:59 +00:00"
+
+
+def test_stream_concept_ids_full_page_with_sparse_agg_advances_keyset(oracle):
+    """Full page_ids triggers a second page even when the agg returns fewer rows.
+
+    When page_ids returns exactly _BATCH_SIZE concept_ids (is_last_page=False)
+    but the HAVING filter deletes most of them, the keyset cursor must advance
+    to the last boundary from page_ids (page_end), not the last agg result.
+    """
+    from app.db.oracle import _BATCH_SIZE
+    client, cur = oracle
+
+    full_page_ids = [(f"V{i:04d}-PROV",) for i in range(_BATCH_SIZE)]
+    # Only 3 of the _BATCH_SIZE concepts survived the HAVING filter
+    sparse_agg = [("V0010-PROV", 2), ("V0200-PROV", 5), ("V0499-PROV", 1)]
+    # Second page_ids returns empty → stop
+    cur.fetchall.side_effect = [full_page_ids, sparse_agg, []]
+
+    result = client.get_concept_ids_by_type("variable")
+
+    # Result contains only the live concepts from the agg query, not all page_ids rows
+    assert result == sparse_agg
+    # Three execute calls: page_ids(1), agg(1), page_ids(2)
+    assert cur.execute.call_count == 3
+
+    # The second page_ids call must use page_end = page_ids[-1][0] (the full-page boundary),
+    # not the last concept_id from the sparse agg result
+    second_page_sql, second_page_bind = cur.execute.call_args_list[2].args[:2]
+    assert "concept_id > :start_after" in second_page_sql
+    assert second_page_bind["start_after"] == f"V{_BATCH_SIZE - 1:04d}-PROV"
 
 
 def test_stream_granule_ids_yields_multiple_chunks(oracle):

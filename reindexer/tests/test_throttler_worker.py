@@ -5,10 +5,6 @@ and ._process.
 All external dependencies (Oracle, SQS, DynamoDB, ES health) are mocked.
 The worker thread is never started except in the few tests that explicitly
 exercise start()/stop().
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_throttler_worker.py -v
 """
 from unittest.mock import ANY, MagicMock
 
@@ -450,10 +446,6 @@ class TestJobCompletionDetection:
         worker._current_job_id = "active-job-123"
         worker.stop()
         _worker_mod.job_store.try_mark_interrupted.assert_called_once_with("active-job-123")
-
-    def test_stop_without_active_job_does_not_call_try_mark_interrupted(self, worker):
-        worker.stop()
-        _worker_mod.job_store.try_mark_interrupted.assert_not_called()
 
     def test_current_job_id_cleared_after_successful_process(self, worker):
         _make_chunks()

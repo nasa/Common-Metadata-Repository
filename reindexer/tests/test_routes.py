@@ -8,10 +8,6 @@ Covers:
   - All known concept-id prefix formats pass validation
 
 Auth is bypassed via dependency_overrides; see test_auth.py for full auth coverage.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_routes.py -v
 """
 from unittest.mock import MagicMock
 

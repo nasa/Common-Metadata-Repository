@@ -4,7 +4,7 @@ from typing import Optional
 
 
 class TokenBucket:
-    """Thread-safe token bucket. Swappable via the interface used by ThrottlerWorker."""
+    """Thread-safe token bucket rated in tokens per minute."""
 
     def __init__(self, rate_per_minute: float):
         self._lock = threading.Lock()

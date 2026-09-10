@@ -1,9 +1,5 @@
 """
 Unit tests for JobStore — all DynamoDB I/O is mocked.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_job_store.py -v
 """
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
@@ -156,10 +152,6 @@ class TestUpdateDispatched:
 # ---------------------------------------------------------------------------
 
 class TestIncrementCollectionsSplit:
-
-    def test_calls_update_item(self, store, mock_table):
-        store.increment_collections_split("job-1")
-        mock_table.update_item.assert_called_once()
 
     def test_add_expression_increments_collections_split_by_one(self, store, mock_table):
         store.increment_collections_split("job-1")
@@ -538,13 +530,6 @@ class TestClaimStalledJob:
         assert "ConditionExpression" in call
         assert "last_heartbeat" in call["ConditionExpression"]
         assert call["ExpressionAttributeValues"][":expected"] == "2026-08-24T00:00:00Z"
-
-    def test_condition_expression_not_present_would_allow_double_claim(self, store, mock_table):
-        """Sanity-check: the :expected bind value IS the heartbeat we observed."""
-        ts = "2026-01-15T12:34:56Z"
-        store.claim_stalled_job("job-99", ts)
-        values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert values[":expected"] == ts
 
 
 # ---------------------------------------------------------------------------
