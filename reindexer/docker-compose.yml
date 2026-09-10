@@ -29,11 +29,11 @@ services:
 
       # SQS (local ElasticMQ started via `cmr start local sqs-sns`)
       SQS_ENDPOINT_URL: "${SQS_ENDPOINT_URL:-http://host.docker.internal:4100}"
-      INTERMEDIATE_QUEUE_URL: "${INTERMEDIATE_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-reindexer-jobs}"
+      COLLECTION_QUEUE_URL: "${COLLECTION_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-reindexer-jobs}"
       INDEXER_QUEUE_URL: "${INDEXER_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-indexer-jobs}"
 
       # Throttler
-      CHUNK_SIZE: "${CHUNK_SIZE:-10000}"
+      STREAM_CHUNK_SIZE: "${STREAM_CHUNK_SIZE:-10000}"
       RATE_PER_MINUTE: "${RATE_PER_MINUTE:-600}"
 
       # DynamoDB (job tracking)
