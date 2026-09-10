@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
 import boto3
+from botocore.config import Config
 
 from app.config import config
 from app.sqs.schemas import CollectionWorkItem
@@ -20,6 +21,7 @@ def _sqs():
         endpoint_url=config.sqs_endpoint_url,        # None → real AWS SQS
         aws_access_key_id=config.aws_access_key_id,  # None → credential chain (IAM task role)
         aws_secret_access_key=config.aws_secret_access_key,
+        config=Config(max_pool_connections=config.sqs_send_workers),
     )
 
 
