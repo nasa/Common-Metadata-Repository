@@ -3,10 +3,9 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire
-                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
+  :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
-                 [clj-time "0.15.1"]
+                 [clj-time]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.18.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
@@ -24,7 +23,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/tools.reader]
