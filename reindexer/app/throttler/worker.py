@@ -76,13 +76,6 @@ class ThrottlerWorker:
         }
 
     def start(self) -> None:
-        if config.stream_chunk_size > config.rate_per_minute:
-            raise ValueError(
-                f"STREAM_CHUNK_SIZE ({config.stream_chunk_size}) must be <= "
-                f"RATE_PER_MINUTE ({config.rate_per_minute}): the token bucket "
-                f"can never accumulate enough tokens to unblock a consume() call "
-                f"of that size, causing an infinite loop."
-            )
         self._thread = threading.Thread(target=self._run, name="throttler", daemon=True)
         self._thread.start()
         logger.info({
@@ -246,19 +239,23 @@ class ThrottlerWorker:
                 logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
                 return
 
-            # Block until the token bucket allows this chunk, or stop/cancel fires.
-            if not self._token_bucket.consume(
-                len(chunk),
-                stop_event=self._stop_event,
-                cancel_fn=lambda: self.is_job_cancelled(item.request_id),
-            ):
-                if self._stop_event.is_set():
-                    raise _CollectionInterrupted()  # keep SQS message + checkpoint intact
-                # cancel_fn fired inside consume()
-                logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
-                return
-
-            publish_concept_updates_batch(chunk, item.request_id)
+            # Consume tokens and send in sub-batches of at most rate_per_minute so that
+            # STREAM_CHUNK_SIZE can exceed RATE_PER_MINUTE without deadlocking the bucket.
+            # (consume(N) deadlocks when N > max_tokens because the bucket can never hold
+            # more than rate_per_minute tokens at once.)
+            sub_size = max(1, int(self._token_bucket.current_rate))
+            for i in range(0, len(chunk), sub_size):
+                sub = chunk[i:i + sub_size]
+                if not self._token_bucket.consume(
+                    len(sub),
+                    stop_event=self._stop_event,
+                    cancel_fn=lambda: self.is_job_cancelled(item.request_id),
+                ):
+                    if self._stop_event.is_set():
+                        raise _CollectionInterrupted()
+                    logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
+                    return
+                publish_concept_updates_batch(sub, item.request_id)
 
             collection_total += len(chunk)
             total_dispatched += len(chunk)
