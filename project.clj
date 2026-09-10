@@ -34,6 +34,7 @@
                           [org.eclipse.jetty/jetty-http "12.1.12"]
                           [org.eclipse.jetty/jetty-io "12.1.12"]
                           [org.eclipse.jetty/jetty-util "12.1.12"]
+                          [org.eclipse.jetty/jetty-server "12.1.12"]
                           [org.testcontainers/testcontainers "2.0.2" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"

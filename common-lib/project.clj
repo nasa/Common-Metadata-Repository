@@ -44,12 +44,10 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 ;; These dependencies should be updated in tandem with the ring dependencies below.
-                 ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.13.0
-                 [org.eclipse.jetty/jetty-http "12.1.8"]
-                 [org.eclipse.jetty/jetty-util "12.1.8"]
-                 [org.eclipse.jetty/jetty-io "12.1.8"]
-                 [org.eclipse.jetty/jetty-server "12.1.8"]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
+                 [org.eclipse.jetty/jetty-io]
+                 [org.eclipse.jetty/jetty-server]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]

@@ -88,8 +88,8 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.1.8"]
-                                     [org.eclipse.jetty/jetty-util "12.1.8"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 
