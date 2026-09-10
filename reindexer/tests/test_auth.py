@@ -239,4 +239,37 @@ def test_acl_query_params():
     params = mock_g.call_args[1]["params"]
     assert params["target"] == "INGEST_MANAGEMENT_ACL"
     assert params["include_full_acl"] == "true"
+    assert params["identity_type"] == "system", (
+        "Must restrict to system-level ACLs only; provider-level INGEST_MANAGEMENT_ACL "
+        "must not grant global reindex access"
+    )
     assert "permission" not in params
+
+
+# ---------------------------------------------------------------------------
+# Provider-level ACL does not grant reindex access
+# ---------------------------------------------------------------------------
+
+_ACL_PROVIDER_UPDATE = {
+    "concept_id": "ACL-004",
+    "acl": {
+        "group_permissions": [
+            {"user_type": "registered", "permissions": ["read", "update"]}
+        ],
+        # provider_identity (not system_identity) — scoped to a single provider
+        "provider_identity": {"provider_id": "PROV1", "target": "INGEST_MANAGEMENT_ACL"},
+    },
+}
+
+
+def test_provider_level_acl_does_not_grant_access():
+    """A provider-scoped INGEST_MANAGEMENT_ACL update must not allow global reindex.
+
+    The API filter (identity_type=system) prevents these from being returned, but
+    _sid_has_update is also tested here as defense in depth.
+    """
+    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_PROVIDER_UPDATE])
+    with patch("app.auth.httpx.post", return_value=mock_post), \
+         patch("app.auth.httpx.get", return_value=mock_get):
+        r = client.post("/protected", headers={"Authorization": "provider-token"})
+    assert r.status_code == 403
