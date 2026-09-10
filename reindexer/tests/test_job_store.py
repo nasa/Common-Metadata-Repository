@@ -102,10 +102,6 @@ class TestCreateJob:
 
 class TestUpdateHeartbeat:
 
-    def test_calls_update_item(self, store, mock_table):
-        store.update_heartbeat("job-1")
-        mock_table.update_item.assert_called_once()
-
     def test_updates_last_heartbeat(self, store, mock_table):
         store.update_heartbeat("job-1")
         values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
@@ -147,10 +143,6 @@ class TestUpdateProgress:
 # ---------------------------------------------------------------------------
 
 class TestUpdateDispatched:
-
-    def test_calls_update_item(self, store, mock_table):
-        store.update_dispatched("job-1", 100)
-        mock_table.update_item.assert_called_once()
 
     def test_adds_count_to_total_dispatched(self, store, mock_table):
         store.update_dispatched("job-1", 42)
@@ -538,3 +530,91 @@ class TestClaimStalledJob:
         )
         with pytest.raises(ClientError):
             store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z")
+
+    def test_condition_expression_uses_last_heartbeat_for_atomic_claim(self, store, mock_table):
+        """The optimistic lock: only the caller that saw this exact heartbeat can claim the job."""
+        store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z")
+        call = mock_table.update_item.call_args[1]
+        assert "ConditionExpression" in call
+        assert "last_heartbeat" in call["ConditionExpression"]
+        assert call["ExpressionAttributeValues"][":expected"] == "2026-08-24T00:00:00Z"
+
+    def test_condition_expression_not_present_would_allow_double_claim(self, store, mock_table):
+        """Sanity-check: the :expected bind value IS the heartbeat we observed."""
+        ts = "2026-01-15T12:34:56Z"
+        store.claim_stalled_job("job-99", ts)
+        values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        assert values[":expected"] == ts
+
+
+# ---------------------------------------------------------------------------
+# CheckpointStore
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def mock_checkpoint_table(monkeypatch):
+    t = MagicMock()
+    t.get_item.return_value = {}
+    monkeypatch.setattr(_dynamo_mod, "_checkpoint_table", lambda: t)
+    return t
+
+
+@pytest.fixture
+def checkpoint_store(mock_checkpoint_table):
+    from app.db.dynamo import CheckpointStore
+    return CheckpointStore()
+
+
+class TestCheckpointStore:
+
+    def test_write_uses_put_item(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.write_collection_checkpoint("job-1", "C1-PROV", "G500-PROV", 500, 5)
+        mock_checkpoint_table.put_item.assert_called_once()
+
+    def test_write_stores_all_fields(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.write_collection_checkpoint("job-1", "C1-PROV", "G500-PROV", 500, 5)
+        item = mock_checkpoint_table.put_item.call_args[1]["Item"]
+        assert item["job_id"] == "job-1"
+        assert item["collection_id"] == "C1-PROV"
+        assert item["last_concept_id"] == "G500-PROV"
+        assert item["granules_dispatched"] == 500
+        assert item["chunks_dispatched"] == 5
+
+    def test_write_ttl_approximately_30_days(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.write_collection_checkpoint("job-1", "C1-PROV", "G1-PROV", 1, 1)
+        item = mock_checkpoint_table.put_item.call_args[1]["Item"]
+        expected = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
+        assert abs(item["ttl"] - expected) < 10
+
+    def test_get_returns_none_when_no_checkpoint(self, checkpoint_store, mock_checkpoint_table):
+        mock_checkpoint_table.get_item.return_value = {}
+        assert checkpoint_store.get_collection_checkpoint("job-1", "C1-PROV") is None
+
+    def test_get_returns_checkpoint_when_present(self, checkpoint_store, mock_checkpoint_table):
+        mock_checkpoint_table.get_item.return_value = {
+            "Item": {
+                "job_id": "job-1",
+                "collection_id": "C1-PROV",
+                "last_concept_id": "G100-PROV",
+                "granules_dispatched": 100,
+                "chunks_dispatched": 2,
+            }
+        }
+        ckpt = checkpoint_store.get_collection_checkpoint("job-1", "C1-PROV")
+        assert ckpt is not None
+        assert ckpt["last_concept_id"] == "G100-PROV"
+        assert ckpt["granules_dispatched"] == 100
+
+    def test_get_uses_composite_key(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.get_collection_checkpoint("job-abc", "C99-XYZ")
+        key = mock_checkpoint_table.get_item.call_args[1]["Key"]
+        assert key == {"job_id": "job-abc", "collection_id": "C99-XYZ"}
+
+    def test_delete_uses_delete_item(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.delete_collection_checkpoint("job-1", "C1-PROV")
+        mock_checkpoint_table.delete_item.assert_called_once()
+
+    def test_delete_uses_composite_key(self, checkpoint_store, mock_checkpoint_table):
+        checkpoint_store.delete_collection_checkpoint("job-xyz", "C55-PROV")
+        key = mock_checkpoint_table.delete_item.call_args[1]["Key"]
+        assert key == {"job_id": "job-xyz", "collection_id": "C55-PROV"}
