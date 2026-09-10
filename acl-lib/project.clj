@@ -1,11 +1,14 @@
 (defproject nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for retreiving and working with ACLs."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[commons-io "2.18.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
                  [potemkin "0.4.5"]]
-  :plugins [[lein-shell "0.5.0"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
@@ -34,6 +37,7 @@
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
                                      [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"
                                       :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}

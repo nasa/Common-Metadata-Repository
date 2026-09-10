@@ -48,8 +48,8 @@
                            [org.clojure/clojure "1.11.2"]
                            [org.clojure/tools.reader "1.3.2"]
                            [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                           [org.eclipse.jetty/jetty-http "12.1.8"]
-                           [org.eclipse.jetty/jetty-util "12.1.8"]
+                           [org.eclipse.jetty/jetty-http]
+                           [org.eclipse.jetty/jetty-util]
                            [ring/ring-core "1.15.4"]
 
                            [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]

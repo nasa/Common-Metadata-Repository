@@ -30,6 +30,10 @@
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.apache.logging.log4j/log4j-api "2.25.4"]
                           [org.apache.logging.log4j/log4j-core "2.25.4"]
+                          [org.eclipse.jetty.websocket/jetty-websocket-core-common "12.1.12"]
+                          [org.eclipse.jetty/jetty-http "12.1.12"]
+                          [org.eclipse.jetty/jetty-io "12.1.12"]
+                          [org.eclipse.jetty/jetty-util "12.1.12"]
                           [org.testcontainers/testcontainers "2.0.2" ;; latest
                            :exclusions [[org.apache.commons/commons-compress]]]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
