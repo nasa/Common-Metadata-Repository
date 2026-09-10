@@ -42,6 +42,7 @@ def worker(monkeypatch):
     w = ThrottlerWorker()
     w._token_bucket = MagicMock()
     w._token_bucket.consume.return_value = True  # don't block by default
+    w._token_bucket.current_rate = 1_000_000    # large enough that each Oracle chunk is one sub-batch
     return w
 
 
@@ -487,17 +488,18 @@ class TestJobCompletionDetection:
 
 
 # ---------------------------------------------------------------------------
-# Startup assertion — stream_chunk_size vs rate_per_minute
+# Startup — stream_chunk_size can exceed rate_per_minute (sub-chunked internally)
 # ---------------------------------------------------------------------------
 
-class TestStartupAssertion:
+class TestStartup:
 
-    def test_start_raises_when_chunk_size_exceeds_rate(self, worker, monkeypatch):
+    def test_start_succeeds_when_chunk_size_exceeds_rate(self, worker, monkeypatch):
+        """STREAM_CHUNK_SIZE > RATE_PER_MINUTE no longer raises — sub-chunking handles it."""
         from app import config as cfg_mod
-        monkeypatch.setattr(cfg_mod.config, "stream_chunk_size", 2000)
+        monkeypatch.setattr(cfg_mod.config, "stream_chunk_size", 200_000)
         monkeypatch.setattr(cfg_mod.config, "rate_per_minute", 600)
-        with pytest.raises(ValueError, match="STREAM_CHUNK_SIZE"):
-            worker.start()
+        worker.start()
+        worker.stop()
 
     def test_start_succeeds_when_chunk_size_equals_rate(self, worker, monkeypatch):
         from app import config as cfg_mod
