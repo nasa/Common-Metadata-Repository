@@ -1,0 +1,96 @@
+"""Resume stalled reindex jobs on service startup."""
+import logging
+
+from app.config import config
+
+logger = logging.getLogger(__name__)
+
+
+def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
+    """Find jobs stalled mid-run and re-enqueue their remaining work.
+
+    Handles two recovery cases:
+    - Stalled (crash recovery): status is running/dispatching with a stale heartbeat
+    - Interrupted (graceful-shutdown recovery): status is interrupted, written by
+      throttler.stop() when the previous ECS task received SIGTERM
+    """
+    stalled = job_store.find_stalled_jobs(stale_minutes=config.stall_minutes)
+    interrupted = job_store.find_interrupted_jobs()
+    resumable = stalled + interrupted
+    if not resumable:
+        logger.info({"event": "no_stalled_jobs"})
+        return
+
+    logger.info({"event": "stalled_jobs_found", "count": len(resumable), "interrupted": len(interrupted)})
+
+    for job in resumable:
+        job_id = job["job_id"]
+        last_heartbeat = job["last_heartbeat"]
+
+        if not job_store.claim_stalled_job(job_id, last_heartbeat):
+            logger.info({"event": "stalled_job_claim_lost", "job_id": job_id})
+            continue
+
+        concept_type = job.get("concept_type", "")
+        logger.info({"event": "resuming_stalled_job", "job_id": job_id, "concept_type": concept_type})
+
+        try:
+            if concept_type == "granules":
+                providers_to_process = set(job.get("providers_to_process") or [])
+                providers_enqueued = set(job.get("providers_enqueued") or [])
+                remaining = providers_to_process - providers_enqueued
+                for provider_id in remaining:
+                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    for cid in collection_ids:
+                        enqueue_fn(
+                            request_id=job_id,
+                            collection_id=cid,
+                            after=job.get("after"),
+                            before=job.get("before"),
+                        )
+                    # Update work_items_enqueued so try_complete_job's condition stays
+                    # satisfiable after the throttler processes these resumed collections.
+                    job_store.update_progress(
+                        job_id,
+                        provider_enqueued=provider_id,
+                        work_items_delta=len(collection_ids),
+                    )
+                job_store.mark_job(job_id, "dispatching")
+
+            elif concept_type == "granules-by-provider":
+                provider_id = job.get("provider_id")
+                providers_enqueued = set(job.get("providers_enqueued") or [])
+                if provider_id and provider_id not in providers_enqueued:
+                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    for cid in collection_ids:
+                        enqueue_fn(
+                            request_id=job_id,
+                            collection_id=cid,
+                            after=job.get("after"),
+                            before=job.get("before"),
+                        )
+                    job_store.update_progress(
+                        job_id,
+                        provider_enqueued=provider_id,
+                        work_items_delta=len(collection_ids),
+                    )
+                job_store.mark_job(job_id, "dispatching")
+
+            elif concept_type == "granules-by-collection":
+                collection_id = job.get("collection_id")
+                if collection_id:
+                    enqueue_fn(
+                        request_id=job_id,
+                        collection_id=collection_id,
+                        after=job.get("after"),
+                        before=job.get("before"),
+                    )
+                job_store.mark_job(job_id, "dispatching")
+
+            else:
+                # Non-granule concept type jobs (variables, services, etc.) can't be resumed
+                job_store.mark_job(job_id, "failed")
+
+        except Exception as exc:
+            logger.error({"event": "stalled_job_resume_error", "job_id": job_id, "error": str(exc)})
+            job_store.mark_job(job_id, "failed")
