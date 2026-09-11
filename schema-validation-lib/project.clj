@@ -10,7 +10,7 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
-                 [org.clojure/clojure "1.11.2"]]
+                 [org.clojure/clojure]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
@@ -18,12 +18,12 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/test.check "1.1.0"]
+             :dev {:dependencies [[org.clojure/test.check]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
-                                  [clj-http "2.3.0"]]
+                                  [clj-http]] ;; was using 2.3.0
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

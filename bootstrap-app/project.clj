@@ -3,15 +3,13 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire
-                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "2.3.0"]
+  :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [clj-http] ;; was 2.3.0
                  [com.fasterxml.jackson.core/jackson-core]
-                 [clj-time "0.15.1"]
+                 [clj-time]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -25,9 +23,9 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/clojure]
+                 [nrepl/nrepl]
+                 [org.clojure/tools.reader]
                  [potemkin "0.4.5"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]

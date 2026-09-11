@@ -1,15 +1,17 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.2"]
-                 [clj-http "2.3.0"]
+                 [clj-http] ;; was 2.3.0
                  [com.draines/postal "2.0.3"]
                  [com.mchange/c3p0 "0.12.0"]
                  [com.mchange/mchange-commons-java "0.6.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [inflections "0.13.0"]
                  [instaparse "1.4.10"]
@@ -30,9 +32,9 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure ]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http "12.1.8"]
                  [org.eclipse.jetty/jetty-util "12.1.8"]
@@ -46,6 +48,7 @@
                  [ring/ring-jetty-adapter "1.15.4" :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
+            [lein-parent "0.3.9"]
             [lein-exec "0.3.7"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"

@@ -46,18 +46,21 @@
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
+  :parent-project {:path "../project.clj"
+                   :inherit [:managed-dependencies]}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
                            [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                           [org.clojure/clojure "1.11.2"]
+                           [org.clojure/clojure]
                            [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                            [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
                            [ring/ring-jetty-adapter "1.15.4"
                             :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
+            [lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :repl-options {:init-ns user
@@ -82,7 +85,7 @@
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
                                                [org.clojure/tools.namespace "0.2.11"]
-                                               [org.clojure/tools.nrepl "0.2.13"]
+                                               [nrepl/nrepl]
                                                [pjstadig/humane-test-output "0.9.0"]
                                                [proto-repl "0.3.1"]
                                                [proto-repl-charts "0.3.2"]

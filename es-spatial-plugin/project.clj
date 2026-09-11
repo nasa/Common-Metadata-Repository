@@ -55,7 +55,7 @@
                                                      org.jruby.jcodings/jcodings]]
                                        [at.yawk.lz4/lz4-java "1.11.1"]
 
-                                       [org.clojure/tools.reader "1.3.2"]
+                                       [org.clojure/tools.reader "1.4.0"]
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
@@ -74,7 +74,7 @@
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]
                                                     [gov.nasa.earthdata/quartzite]]]
-                                      [org.clojure/tools.reader "1.3.2"]
+                                      [org.clojure/tools.reader "1.4.0"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
@@ -92,12 +92,12 @@
                                cmr.elasticsearch.plugins.spatial.plugin]}
              :dev {:dependencies [[criterium "0.4.4"]
                                   [cheshire "6.2.0"]
-                                  [org.clojure/tools.reader "1.3.2"]
+                                  [org.clojure/tools.reader "1.4.0"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch ~elastic-version]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl "1.1.0"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.yaml/snakeyaml "1.31"]]
                    :aot [cmr.elasticsearch.plugins.spatial.script.core
