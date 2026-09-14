@@ -262,23 +262,6 @@ pytest tests/test_job_store.py -v
 pytest tests/test_routes.py::test_reindex_granules_returns_job_id -v
 ```
 
-### Test files
-
-| File | Tests | What it covers |
-|------|-------|----------------|
-| `test_auth.py` | 14 | Token extraction, ACL validation, 401/403/503 responses |
-| `test_health_status.py` | 38 | Liveness check, `/status` fields, ES health aggregation, queue-depth failure handling |
-| `test_date_validation.py` | 32 | ISO8601 format, ordering, 30-day limit, override header |
-| `test_oracle_sql.py` | 28 | SQL table routing by concept type, date clause injection, concept-id prefix routing |
-| `test_sqs_client.py` | 27 | Message body shape, hyphenated keys, queue URL routing |
-| `test_job_store.py` | 81 | All JobStore methods with mocked DynamoDB |
-| `test_cancel_cache.py` | 8 | Cache refresh, is_cancelled lookup, thread stop |
-| `test_startup_resume.py` | 15 | Stalled job detection, re-enqueue logic, race condition handling |
-| `test_throttler_worker.py` | 58 | Chunk streaming, dispatch, cancellation, SIGTERM/checkpoint behaviour |
-| `test_token_bucket.py` | 20 | Rate limiting, set_rate, thread safety |
-| `test_routes.py` | 72 | All endpoints, request_id in response, GET/DELETE /jobs |
-| `test_throttle_endpoint.py` | 9 | GET/PUT /throttle, auth, rate validation |
-
 ### Integration test
 
 `tests/integration_test.py` tests the full end-to-end flow against a live local CMR instance. It requires all services running (metadata-db, ingest, search, Elasticsearch, ElasticMQ, DynamoDB Local, and the reindexer itself).
