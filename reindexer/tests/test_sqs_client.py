@@ -56,6 +56,17 @@ def _batch_queue(sqs_mock, call_index: int = 0) -> str:
     return sqs_mock.send_message_batch.call_args_list[call_index][1]["QueueUrl"]
 
 
+def _all_batch_sizes(sqs_mock) -> list[int]:
+    """Return sorted batch sizes across all send_message_batch calls.
+
+    Batches are sent concurrently so call order is non-deterministic; sort
+    before asserting to avoid flaky index-based checks.
+    """
+    return sorted(
+        len(call[1]["Entries"]) for call in sqs_mock.send_message_batch.call_args_list
+    )
+
+
 # ---------------------------------------------------------------------------
 # enqueue_collection_item
 # ---------------------------------------------------------------------------
@@ -189,8 +200,8 @@ class TestPublishConceptUpdatesBatch:
         records = [("G%d-P" % i, i) for i in range(11)]
         publish_concept_updates_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 2
-        assert len(_batch_entries(sqs, call_index=0)) == 10
-        assert len(_batch_entries(sqs, call_index=1)) == 1
+        # Batches run concurrently; sort sizes to avoid non-deterministic ordering
+        assert _all_batch_sizes(sqs) == [1, 10]
 
     def test_twenty_records_sends_two_batches(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
@@ -203,7 +214,8 @@ class TestPublishConceptUpdatesBatch:
         records = [("G%d-P" % i, i) for i in range(21)]
         publish_concept_updates_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 3
-        assert len(_batch_entries(sqs, call_index=2)) == 1
+        # Batches run concurrently; sort sizes to avoid non-deterministic ordering
+        assert _all_batch_sizes(sqs) == [1, 10, 10]
 
     def test_partial_failure_raises_runtime_error(self, sqs):
         sqs.send_message_batch.return_value = {
