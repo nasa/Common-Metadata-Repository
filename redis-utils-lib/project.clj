@@ -25,6 +25,7 @@
                  [org.apache.commons/commons-compress]
                  [org.testcontainers/testcontainers]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
   :plugins [[lein-exec "0.3.7"]

@@ -1,4 +1,3 @@
-
 (defproject nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
@@ -27,8 +26,8 @@
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 [org.eclipse.jetty/jetty-http "12.1.8"]
-                 [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]

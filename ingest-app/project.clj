@@ -32,12 +32,12 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure ]
+                 [org.clojure/clojure]
                  [org.clojure/data.xml "0.0.8"]
                  [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 [org.eclipse.jetty/jetty-http "12.1.8"]
-                 [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
                  [org.quartz-scheduler/quartz "2.3.2"
                   :exclusions [com.mchange/c3p0 com.mchange/mchange-commons-java]]
                  [org.slf4j/slf4j-api "1.7.30"]
@@ -48,8 +48,8 @@
                  [ring/ring-jetty-adapter "1.15.4" :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
-            [lein-parent "0.3.9"]
-            [lein-exec "0.3.7"]]
+            [lein-exec "0.3.7"]
+            [lein-parent "0.3.9"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"
@@ -69,8 +69,8 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {:dependencies [[org.eclipse.jetty/jetty-http "12.1.8"]
-                                     [org.eclipse.jetty/jetty-util "12.1.8"]]}
+             :static {:dependencies [[org.eclipse.jetty/jetty-http]
+                                     [org.eclipse.jetty/jetty-util]]}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this
