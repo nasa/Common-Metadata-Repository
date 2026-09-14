@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 
 from app.auth import require_auth
 from app.db import db_client
@@ -219,6 +219,7 @@ def _publish_concept_type(request_id: str, internal_type: str, before: Optional[
 
 @router.post("/reindex/granules", status_code=202)
 async def reindex_granules(
+    request: Request,
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
@@ -228,7 +229,7 @@ async def reindex_granules(
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules", after=after, before=before)
+    job_store.create_job(request_id, "granules", after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({"event": "reindex_granules_requested", "request_id": request_id, "after": after, "before": before})
     background_tasks.add_task(_enqueue_all_providers, request_id, after, before)
     return {"request_id": request_id, "message": "Reindex started for all providers"}
@@ -237,6 +238,7 @@ async def reindex_granules(
 @router.post("/reindex/granules/provider/{provider_id}", status_code=202)
 async def reindex_granules_by_provider(
     provider_id: str,
+    request: Request,
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
@@ -248,7 +250,7 @@ async def reindex_granules_by_provider(
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before)
+    job_store.create_job(request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({
         "event": "reindex_provider_requested",
         "request_id": request_id,
@@ -263,6 +265,7 @@ async def reindex_granules_by_provider(
 @router.post("/reindex/granules/collection/{collection_id:path}", status_code=202)
 async def reindex_granules_by_collection(
     collection_id: str,
+    request: Request,
     after: Optional[str] = None,
     before: Optional[str] = None,
     override: bool = Depends(_override_flag),
@@ -273,7 +276,7 @@ async def reindex_granules_by_collection(
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules-by-collection", collection_id=collection_id, after=after, before=before)
+    job_store.create_job(request_id, "granules-by-collection", collection_id=collection_id, after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({
         "event": "reindex_collection_requested",
         "request_id": request_id,
@@ -301,13 +304,14 @@ async def reindex_granules_by_collection(
 @router.post("/reindex/concept/{concept_id}", status_code=202)
 async def reindex_concept(
     concept_id: str,
+    request: Request,
     _token: str = Depends(require_auth),
 ):
     if not _CONCEPT_ID_RE.match(concept_id):
         raise HTTPException(status_code=400, detail=f"Invalid CMR concept ID format: {concept_id!r}")
 
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "concept", concept_id=concept_id)
+    job_store.create_job(request_id, "concept", concept_id=concept_id, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({
         "event": "reindex_concept_requested",
         "request_id": request_id,
@@ -338,6 +342,7 @@ async def reindex_concept(
 @router.post("/reindex/{concept_type}", status_code=202)
 async def reindex_by_concept_type(
     concept_type: str,
+    request: Request,
     background_tasks: BackgroundTasks,
     _token: str = Depends(require_auth),
 ):
@@ -347,7 +352,7 @@ async def reindex_by_concept_type(
 
     before = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, concept_type, before=before)
+    job_store.create_job(request_id, concept_type, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({
         "event": "reindex_concept_type_requested",
         "request_id": request_id,

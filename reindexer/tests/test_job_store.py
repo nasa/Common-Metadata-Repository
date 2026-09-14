@@ -60,22 +60,28 @@ class TestCreateJob:
             "job-1", "granules-by-provider",
             provider_id="PROV",
             collection_id="C1-PROV",
+            concept_id="V1-PROV",
             after="2024-01-01T00:00:00Z",
             before="2024-12-31T23:59:59Z",
+            source_url="/reindexer/reindex/granules/provider/PROV",
         )
         item = mock_table.put_item.call_args[1]["Item"]
         assert item["provider_id"] == "PROV"
         assert item["collection_id"] == "C1-PROV"
+        assert item["concept_id"] == "V1-PROV"
         assert item["after"] == "2024-01-01T00:00:00Z"
         assert item["before"] == "2024-12-31T23:59:59Z"
+        assert item["source_url"] == "/reindexer/reindex/granules/provider/PROV"
 
     def test_optional_fields_absent_when_not_provided(self, store, mock_table):
         store.create_job("job-1", "granules")
         item = mock_table.put_item.call_args[1]["Item"]
         assert "provider_id" not in item
         assert "collection_id" not in item
+        assert "concept_id" not in item
         assert "after" not in item
         assert "before" not in item
+        assert "source_url" not in item
 
     def test_ttl_is_approximately_30_days_from_now(self, store, mock_table):
         store.create_job("job-1", "granules")
