@@ -88,8 +88,13 @@ POST /reindex/granules?after=2026-07-25T00:00:00Z&before=2026-08-24T00:00:00Z
 
 All reindex endpoints return `202 Accepted` with a `request_id`:
 
+```bash
+curl -X POST http://localhost:8080/reindexer/reindex/citations \
+  -H "Authorization: $TOKEN"
+```
+
 ```json
-{"request_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "message": "Reindex started for all providers"}
+{"request_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "message": "Reindex started for concept type citations"}
 ```
 
 ### Job management
@@ -99,6 +104,20 @@ All reindex endpoints return `202 Accepted` with a `request_id`:
 | GET | `/jobs` | none | List jobs; optional `?status=<status>` filter and `?limit=<1–200>` (default 50) |
 | GET | `/jobs/{job_id}` | none | Get job status and progress |
 | DELETE | `/jobs/{job_id}` | required | Cancel a running job |
+
+Examples:
+
+```bash
+# List recent jobs
+curl -s http://localhost:8080/reindexer/jobs?status=running
+
+# Get a specific job
+curl -s http://localhost:8080/reindexer/jobs/3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+# Cancel a job
+curl -X DELETE http://localhost:8080/reindexer/jobs/3fa85f64-5717-4562-b3fc-2c963f66afa6 \
+  -H "Authorization: $TOKEN"
+```
 
 Job record example:
 
@@ -137,8 +156,12 @@ Job statuses: `running`, `dispatching`, `completed`, `failed`, `interrupted`, `c
 | PUT | `/throttle` | required | Update rate limit without restart |
 
 ```bash
-curl -X PUT http://localhost:8080/throttle \
-  -H "echo-token: $TOKEN" \
+# Get current rate
+curl -s http://localhost:8080/reindexer/throttle
+
+# Update rate
+curl -X PUT http://localhost:8080/reindexer/throttle \
+  -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"rate_per_minute": 300}'
 ```
@@ -149,6 +172,11 @@ curl -X PUT http://localhost:8080/throttle \
 |--------|------|------|-------------|
 | GET | `/health` | none | Liveness check (used by ALB — no dependency checks) |
 | GET | `/status` | none | ES cluster health, queue depths, throttler state |
+
+```bash
+curl -s http://localhost:8080/reindexer/health
+curl -s http://localhost:8080/reindexer/status
+```
 
 `/status` response:
 
