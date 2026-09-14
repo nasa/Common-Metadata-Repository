@@ -179,8 +179,8 @@ class TestJobTracking:
 
     def test_reindex_concept_not_found_creates_job_then_marks_failed(self, client):
         import app.routers.reindex as _r
-        # A job record is always created first so the caller gets a request_id,
-        # then immediately marked failed when the concept is not found.
+        # A job record is created before the concept lookup so a job_id is
+        # available for logging, but the 404 response does not include it.
         client.post("/reindexer/reindex/concept/V9-MISSING")
         _r.job_store.create_job.assert_called_once()
         _r.job_store.mark_job.assert_called_once_with(
@@ -193,6 +193,21 @@ class TestJobTracking:
         request_id = r.json()["request_id"]
         job_id_arg = _r.job_store.create_job.call_args.args[0]
         assert request_id == job_id_arg
+
+    @pytest.mark.parametrize("path,expected_fragment", [
+        ("/reindexer/reindex/variables",                          "variables"),
+        ("/reindexer/reindex/granules",                           "granules"),
+        ("/reindexer/reindex/granules/provider/PROV_A",           "PROV_A"),
+        ("/reindexer/reindex/granules/collection/C1234-PROV",     "C1234-PROV"),
+        ("/reindexer/reindex/concept/V1234-PROV",                 "V1234"),
+    ])
+    def test_source_url_passed_to_create_job(self, client, path, expected_fragment):
+        import app.routers.reindex as _r
+        _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1234-PROV", "revision-id": 1}
+        client.post(path)
+        kw = _r.job_store.create_job.call_args.kwargs
+        assert "source_url" in kw
+        assert expected_fragment in kw["source_url"]
 
 
 # ---------------------------------------------------------------------------
