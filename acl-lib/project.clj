@@ -5,7 +5,7 @@
                    :inherit [:managed-dependencies]}
   :dependencies [[commons-io "2.18.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [potemkin "0.4.5"]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
@@ -15,7 +15,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

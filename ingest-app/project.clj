@@ -4,14 +4,14 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[camel-snake-kebab "0.4.2"]
-                 [clj-http "2.3.0"]
+                 [clj-http] ;; was 2.3.0
                  [com.draines/postal "2.0.3"]
                  [com.mchange/c3p0 "0.12.0"]
                  [com.mchange/mchange-commons-java "0.6.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-fileupload "1.6.0"]
                  [commons-io "2.18.0"]
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [inflections "0.13.0"]
                  [instaparse "1.4.10"]
@@ -32,9 +32,9 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]

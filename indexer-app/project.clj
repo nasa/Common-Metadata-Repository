@@ -3,8 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+  :dependencies [[compojure :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -17,8 +16,8 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [org.clojure/clojure]
+                 [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
@@ -27,8 +26,8 @@
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[lein-shell "0.5.0"]
-            [lein-parent "0.3.9"]]
+  :plugins [[lein-parent "0.3.9"]
+            [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]

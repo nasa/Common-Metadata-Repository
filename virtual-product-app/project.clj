@@ -4,8 +4,7 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[commons-logging "1.2"]
-                 [compojure "1.6.1"
-                  :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
@@ -14,7 +13,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure]
-                 [org.clojure/tools.nrepl "0.2.13"]
+                 [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
