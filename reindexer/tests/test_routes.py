@@ -106,25 +106,25 @@ class TestConceptEndpoint:
         assert args[0] == "V1234-PROV"
         assert args[1] == 7
 
-    def test_not_found_returns_404(self, client):
+    def test_not_found_concept_returns_404(self, client):
         # autouse mock_deps default: get_concept_by_id returns None
         r = client.post("/reindexer/reindex/concept/V9999-MISSING")
         assert r.status_code == 404
 
-    def test_not_found_does_not_publish(self, client):
+    def test_not_found_concept_does_not_publish(self, client):
         import app.routers.reindex as _r
         client.post("/reindexer/reindex/concept/V9999-MISSING")
         _r.publish_concept_update.assert_not_called()
 
-    def test_invalid_format_returns_400(self, client):
+    def test_invalid_concept_format_returns_400(self, client):
         r = client.post("/reindexer/reindex/concept/not-a-concept-id")
         assert r.status_code == 400
 
-    def test_invalid_format_detail_includes_bad_id(self, client):
+    def test_invalid_concept_format_detail_includes_bad_id(self, client):
         r = client.post("/reindexer/reindex/concept/BADFORMAT")
         assert "BADFORMAT" in r.json()["detail"]
 
-    def test_invalid_format_does_not_touch_db(self, client):
+    def test_invalid_concept_format_does_not_touch_db(self, client):
         import app.routers.reindex as _r
         client.post("/reindexer/reindex/concept/lowercase-id")
         _r.db_client.get_concept_by_id.assert_not_called()
@@ -177,9 +177,10 @@ class TestJobTracking:
         client.post("/reindexer/reindex/concept/V1-P")
         _r.job_store.create_job.assert_called_once()
 
-    def test_reindex_concept_not_found_still_creates_job(self, client):
+    def test_reindex_concept_not_found_creates_job_then_marks_failed(self, client):
         import app.routers.reindex as _r
-        # default mock: get_concept_by_id returns None
+        # A job record is always created first so the caller gets a request_id,
+        # then immediately marked failed when the concept is not found.
         client.post("/reindexer/reindex/concept/V9-MISSING")
         _r.job_store.create_job.assert_called_once()
         _r.job_store.mark_job.assert_called_once_with(
@@ -360,12 +361,16 @@ class TestJobsEndpoint:
         _s.job_store.get_job.return_value = {"job_id": "active-job", "status": "running"}
         r = client.delete("/reindexer/jobs/active-job")
         assert r.status_code == 200
+        assert r.json()["status"] == "cancelled"
+        _s.job_store.try_cancel_job.assert_called_once_with("active-job")
 
     def test_delete_job_allows_cancel_of_dispatching_job(self, client):
         import app.routers.status as _s
         _s.job_store.get_job.return_value = {"job_id": "active-job", "status": "dispatching"}
         r = client.delete("/reindexer/jobs/active-job")
         assert r.status_code == 200
+        assert r.json()["status"] == "cancelled"
+        _s.job_store.try_cancel_job.assert_called_once_with("active-job")
 
 
 # ---------------------------------------------------------------------------
@@ -490,17 +495,29 @@ class TestListJobsEndpoint:
         client.get("/reindexer/jobs?limit=10")
         _s.job_store.list_jobs.assert_called_with(status_filter=None, limit=10)
 
-    def test_limit_capped_at_200(self, client):
+    def test_limit_above_200_rejected(self, client):
         import app.routers.status as _s
         _s.job_store.list_jobs.return_value = []
         r = client.get("/reindexer/jobs?limit=999")
         assert r.status_code == 422
 
-    def test_limit_minimum_is_1(self, client):
+    def test_limit_equal_to_200_accepted(self, client):
+        import app.routers.status as _s
+        _s.job_store.list_jobs.return_value = []
+        r = client.get("/reindexer/jobs?limit=200")
+        assert r.status_code == 200
+
+    def test_limit_below_minimum_rejected(self, client):
         import app.routers.status as _s
         _s.job_store.list_jobs.return_value = []
         r = client.get("/reindexer/jobs?limit=0")
         assert r.status_code == 422
+
+    def test_limit_equal_to_1_accepted(self, client):
+        import app.routers.status as _s
+        _s.job_store.list_jobs.return_value = []
+        r = client.get("/reindexer/jobs?limit=1")
+        assert r.status_code == 200
 
 
 class TestSnapshotBeforeTimestamp:
