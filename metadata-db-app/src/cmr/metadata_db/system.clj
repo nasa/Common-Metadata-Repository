@@ -5,8 +5,6 @@
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.services.cache-info :as cache-info]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -24,7 +22,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :queue-broker :scheduler :unclustered-scheduler :web :nrepl])
+  [:log :caches :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -50,9 +48,6 @@
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        common-health/health-cache-key (common-health/create-health-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
-              :unclustered-scheduler (jobs/create-scheduler
-                                      `system-holder [jvm-info/log-jvm-statistics-job
-                                                      (cache-info/create-log-cache-info-job "metadata-db")])
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:access-control :echo-rest]))))

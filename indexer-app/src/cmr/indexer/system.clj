@@ -8,8 +8,6 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as augmenter]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-   [cmr.common-app.services.cache-info :as cache-info]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common.api.web-server :as web]
@@ -99,9 +97,7 @@
              :caches application-caches
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job
-                          (cache-info/create-log-cache-info-job "indexer")])
+                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :access-control :echo-rest :kms :search])))
