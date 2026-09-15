@@ -21,14 +21,6 @@ This will un-index all concepts within the given provider.
 These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
 permission.
 
-### Reset elastic and cache
-
-*WARNING - this endpoint drops all data from the index.*
-
-Every CMR application has a reset function to reset it back to it's initial state. This will reset the indexes back to their initial state and also clear the cache.
-
-    curl -i -XPOST http://localhost:3004/reset?token=XXXX
-
 ### Clear the cache cache
 
     curl -i -XPOST http://localhost:3004/caches/clear-cache?token=XXXX
@@ -268,11 +260,6 @@ Rollback will be allowed IF the reshard has not been finalized, else it will not
 
 
     curl -XPOST http://localhost:3004/index-sets/1/reshard/1_small_collections/rollback?elastic_name=gran-elastic
-
-
-### Reset for dev purposes
-
-    curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3004/reset"
 
 ### See indices listing
 

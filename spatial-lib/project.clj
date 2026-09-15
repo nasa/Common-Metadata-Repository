@@ -26,7 +26,7 @@
              :dev {:dependencies [[criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl "1.1.0"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]]
                    :injections [(require 'pjstadig.humane-test-output)

@@ -51,12 +51,6 @@
       (acl/verify-ingest-management-permission request-context :read)
       (r/response (index-set-util/get-all-index-sets request-context)))
 
-    (POST "/reset" {request-context :request-context}
-      (acl/verify-ingest-management-permission request-context :update)
-      (cache/reset-caches request-context)
-      (index-set-svc/reset request-context)
-      {:status 204})
-
     (POST "/sync-with-database" {request-context :request-context}
       (acl/verify-ingest-management-permission request-context :update)
       (index-set-svc/sync-index-sets-from-db request-context)
@@ -146,7 +140,7 @@
           {:status 200})))))
 
 ;; Note for future. We should cleanup this API. It's not very well layed out.
-(defn- build-routes [system]
+(defn build-routes [system]
   (routes
    (context (:relative-root-url system) []
 
@@ -167,13 +161,6 @@
          (r/created (index-svc/index-concept-by-concept-id-revision-id
                      context concept-id revision-id (assoc options :all-revisions-index? false)))))
 
-     ;; reset operation available just for development purposes
-     ;; delete configured elastic indexes and create them back
-     (POST "/reset" {:keys [request-context]}
-       (acl/verify-ingest-management-permission request-context :update)
-       (cache/reset-caches request-context)
-       (index-svc/reset request-context)
-       {:status 204})
 
      ;; Sends an update to the index set to update mappings and index settings.
      (POST "/update-indexes" {:keys [request-context params]}
@@ -222,10 +209,11 @@
 
    (route/not-found "Not Found")))
 
-(defn make-api [system]
-  (-> (build-routes system)
+;; Add this new public function to apply the middleware to ANY routes
+(defn apply-middleware [raw-routes system]
+  (-> raw-routes
       common-routes/add-request-id-response-handler
-      req-log/log-ring-request ;; Must be after request id
+      req-log/log-ring-request  ;; Must be after request id
       augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
@@ -238,3 +226,6 @@
       req-log/add-body-hashes
       ;; Last in line, but really first for request as they process in reverse
       req-log/add-time-stamp))
+
+(defn make-api [system]
+  (apply-middleware (build-routes system) system))

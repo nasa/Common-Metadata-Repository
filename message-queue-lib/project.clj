@@ -15,9 +15,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[cheshire
-                  :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "2.3.0"] ;;behind other cmr projects
+  :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [clj-http] ;;behind other cmr projects - was 2.3.0
                  [clj-time]
                  [io.netty/netty-handler ~netty-version]
                  [io.netty/netty-codec-http ~netty-version]
@@ -50,7 +49,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
@@ -71,7 +70,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]

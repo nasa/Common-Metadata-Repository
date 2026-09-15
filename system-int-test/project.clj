@@ -9,7 +9,7 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-http "2.3.0"]
-                 [clj-time "0.15.1"]
+                 [clj-time]
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
@@ -36,7 +36,7 @@
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
                  [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.logging "0.4.0"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/tools.reader "1.4.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                  [org.jsoup/jsoup "1.23.2"]
                  [potemkin "0.4.5"]
@@ -45,9 +45,9 @@
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
-                 [org.eclipse.jetty/jetty-http "12.1.8"]
-                 [org.eclipse.jetty/jetty-util "12.1.8"]
-                 [org.eclipse.jetty/jetty-io "12.1.8"]]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
+                 [org.eclipse.jetty/jetty-io]]
   :plugins [[lein-parent "0.3.9"]
             [lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
@@ -60,7 +60,7 @@
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [nrepl/nrepl "1.1.0"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [ring/ring-jetty-adapter "1.15.4"

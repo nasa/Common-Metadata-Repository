@@ -5,11 +5,11 @@
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
   :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "3.11.0"]
-                 [clj-time "0.15.1"]
+                 [clj-http]
+                 [clj-time]
                  [com.fasterxml.jackson.core/jackson-core]
                  [commons-io "2.18.0"] ;; used by migration
-                 [compojure "1.6.1" :exclusions [commons-fileupload]]
+                 [compojure :exclusions [commons-fileupload]]
                  [inflections "0.13.0"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
@@ -22,12 +22,12 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
-                 [org.clojure/tools.nrepl "0.2.13"]
-                 [org.clojure/tools.reader "1.3.2"]
+                 [org.clojure/clojure]
+                 [nrepl/nrepl]
+                 [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                 [org.eclipse.jetty/jetty-http "12.1.8"]
-                 [org.eclipse.jetty/jetty-util "12.1.8"]
+                 [org.eclipse.jetty/jetty-http]
+                 [org.eclipse.jetty/jetty-util]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
                  [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
