@@ -12,8 +12,6 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.services.cache-info :as cache-info]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -119,9 +117,7 @@
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job
-                          (cache-info/create-log-cache-info-job "access-control")])}]
+                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start

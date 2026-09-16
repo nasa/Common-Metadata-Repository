@@ -9,8 +9,6 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
-   [cmr.common-app.services.cache-info :as cache-info]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common.api.web-server :as web]
@@ -128,9 +126,7 @@
               :scheduler (jobs/create-clustered-scheduler
                           `system-holder :db
                           (conj (ingest-jobs/jobs)
-                                (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                jvm-info/log-jvm-statistics-job
-                                (cache-info/create-log-cache-info-job "ingest")))
+                                (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches application-caches
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
