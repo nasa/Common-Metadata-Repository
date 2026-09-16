@@ -7,8 +7,6 @@
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-gran-acls-caches]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
-   [cmr.common-app.services.cache-info :as cache-info]
-   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
@@ -158,9 +156,7 @@
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           hgrf/refresh-has-granules-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
-                          (metadata-cache/update-collections-metadata-cache-job)
-                          (cache-info/create-log-cache-info-job "search")
-                          jvm-info/log-jvm-statistics-job])}]
+                          (metadata-cache/update-collections-metadata-cache-job)])}]
     (transmit-config/system-with-connections
      sys
      [:indexer :echo-rest :metadata-db :kms :access-control :urs])))
