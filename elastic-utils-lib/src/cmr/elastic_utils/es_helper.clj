@@ -181,7 +181,8 @@
   [conn source-index target-index]
   (let [body {"source" {:index source-index}
               "dest" {:index target-index
-                      :version_type "external_gte"}}
+                      :version_type "external_gte"}
+              "conflicts" "proceed"}
         url (str (es-util/url-with-path conn "_reindex") "?wait_for_completion=false")]
     (es-util/decode-response
      (http/post url
