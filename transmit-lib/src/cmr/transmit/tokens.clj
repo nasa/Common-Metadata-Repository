@@ -114,10 +114,10 @@
     429 (errors/throw-service-errors :too-many-requests ["Rate limit exceeded, please try your request again later."])
 
     ;; Service Temporarily Unavailable
-    503 (errors/throw-service-errors :service-unavailable ["Service temporarily unavailable, please try your request again later."])
+    503 (errors/throw-service-errors :dependency-failed ["Service temporarily unavailable, please try your request again later."])
 
     ;; Gateway Timeout
-    504 (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."])
+    504 (errors/throw-service-errors :dependency-failed ["A gateway timeout occurred, please try your request again later."])
 
     ;; default
     (unexpected-status-error! status body)))

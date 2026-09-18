@@ -23,7 +23,8 @@
    :internal-server-error 500
    :bad-gateway 502
    :service-unavailable 503
-   :gateway-timeout 504})
+   :gateway-timeout 504
+   :dependency-failed 528})
 
 (def CONTENT_TYPE_HEADER "An HTTP Header" "Content-Type")
 (def CORS_ORIGIN_HEADER "An HTTP HEADER" "Access-Control-Allow-Origin")
