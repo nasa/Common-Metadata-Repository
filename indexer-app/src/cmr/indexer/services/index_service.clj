@@ -576,10 +576,9 @@
   [context concept-id revision-id options]
   (let [concept (if revision-id
                   (meta-db/get-concept context concept-id revision-id)
-                  (meta-db/get-latest-concept context concept-id))]
-    (when-not (:deleted concept)
-      (let [parsed-concept (cp/parse-concept context concept)]
-        (index-concept context concept parsed-concept options)))))
+                  (meta-db/get-latest-concept context concept-id))
+        parsed-concept (cp/parse-concept context concept)]
+    (index-concept context concept parsed-concept options)))
 
 (defn- index-associated-generic-source
   "Index the associated source concept of the given generic association concept."
