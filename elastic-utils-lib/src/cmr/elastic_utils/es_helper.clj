@@ -127,7 +127,9 @@
                                               "Confirm-delete-action" "true"
                                               :client-id t-config/cmr-client-id}
                                     :content-type :json
-                                    :body (json/generate-string {:query query})
+                                    :body (json/generate-string {:query query
+                                                                 :slices 1
+                                                                 :scroll_size 500})
                                     :throw-exceptions false}))
         status (:status response)]
     (if (#{200 201} status)
