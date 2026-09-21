@@ -1,0 +1,22 @@
+[
+  {
+    "name": "express",
+    "permits": 200,
+    "overflow": "standard",
+    "cache_ttl": 10,
+    "retry_after": 5,
+    "default": true
+  },
+  {
+    "name": "standard",
+    "permits": 150,
+    "cache_ttl": 15,
+    "retry_after": 5
+  },
+  {
+    "name": "heavy",
+    "permits": 50,
+    "cache_ttl": 30,
+    "retry_after": 10
+  }
+]

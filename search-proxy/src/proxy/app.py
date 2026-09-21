@@ -1,0 +1,549 @@
+import hashlib
+import logging
+import time
+import uuid
+from contextlib import asynccontextmanager
+from urllib.parse import parse_qs
+
+import httpx
+import redis.asyncio
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, Response
+from pythonjsonlogger import json as jsonlogger
+
+from proxy.cache import ResponseCache
+from proxy.classifier import classify_request
+from proxy.config import ProxySettings, load_lanes_config, parse_lanes_config
+from proxy.lanes import LoadSheddingError, RequestLanes
+
+logger = logging.getLogger(__name__)
+
+# Hop-by-hop headers per RFC 2616 §13.5.1
+HOP_HEADERS = frozenset(
+    {
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+        # httpx decompresses transparently; these headers reflect the
+        # compressed transport and must not be forwarded as-is
+        "content-encoding",
+        "content-length",
+    }
+)
+
+DEFAULT_TOGGLES = {
+    "bypass_enabled": False,
+    "cache_enabled": True,
+    "load_shedding_enabled": True,
+    "classification_enabled": True,
+}
+
+
+class _PrefixedJsonFormatter(jsonlogger.JsonFormatter):
+    """Prepend a plain-text timestamp so awslogs-datetime-format can parse it."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return f"{self.formatTime(record)} {super().format(record)}"
+
+
+def setup_logging(level: str = "INFO"):
+    handler = logging.StreamHandler()
+    handler.setFormatter(
+        _PrefixedJsonFormatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+    )
+    proxy_log = logging.getLogger("proxy")
+    proxy_log.setLevel(level.upper())
+    proxy_log.addHandler(handler)
+    proxy_log.propagate = False
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize shared resources on startup, clean up on shutdown."""
+    settings = ProxySettings()
+    setup_logging(settings.log_level)
+    if settings.lanes_json is not None:
+        lanes_config = parse_lanes_config(settings.lanes_json)
+        logger.info("lanes_config_source", extra={"source": "env"})
+    else:
+        lanes_config = load_lanes_config(settings.lanes_config)
+        logger.info("lanes_config_source", extra={"source": settings.lanes_config})
+
+    app.state.settings = settings
+    app.state.lanes_config = lanes_config
+    app.state.toggles = {
+        "bypass_enabled": settings.bypass_enabled,
+        "cache_enabled": settings.cache_enabled,
+        "load_shedding_enabled": settings.load_shedding_enabled,
+        "classification_enabled": settings.classification_enabled,
+    }
+
+    logger.info("toggles_loaded", extra={"toggles": app.state.toggles})
+    logger.info(
+        "settings_loaded",
+        extra={
+            "backend_url": settings.backend_url,
+            "lanes_config_source": "env" if settings.lanes_json is not None else settings.lanes_config,
+            "lanes": [{"name": l.name, "permits": l.permits, "overflow": l.overflow, "cache_ttl": l.cache_ttl} for l in lanes_config.lanes],
+            "cache_enabled": settings.cache_enabled,
+            "load_shedding_enabled": settings.load_shedding_enabled,
+            "bypass_enabled": settings.bypass_enabled,
+            "redis_max_connections": settings.redis_max_connections or (sum(l.permits for l in lanes_config.lanes) + 100),
+            "backend_timeout_seconds": settings.backend_timeout_seconds,
+        },
+    )
+
+    # Connection-pooled httpx client for forwarding requests to the backend
+    app.state.backend = httpx.AsyncClient(
+        base_url=settings.backend_url,
+        timeout=settings.backend_timeout_seconds,
+        limits=httpx.Limits(
+            max_connections=settings.backend_max_connections,
+            max_keepalive_connections=settings.backend_max_keepalive,
+        ),
+    )
+    # Redis connection for distributed lane semaphores and response cache.
+    # Pool size defaults to total lane permits + 100. Each acquire involves 4
+    # sequential Redis ops (TIME, ZREMRANGEBYSCORE, ZCARD, ZADD) plus a ZREM
+    # on release and a GET/SET for cache. Connections are released between ops
+    # so peak concurrent demand tracks concurrent requests, not ops per request.
+    # The +100 provides headroom for health checks and reconnect storms.
+    # Override with CMR_PROXY_REDIS_MAX_CONNECTIONS if permits change without
+    # a redeploy or if additional headroom is needed.
+    redis_max_connections = settings.redis_max_connections or (
+        sum(lane.permits for lane in lanes_config.lanes) + 100
+    )
+    app.state.redis = redis.asyncio.from_url(
+        settings.redis_url,
+        retry_on_timeout=True,
+        socket_connect_timeout=settings.redis_socket_connect_timeout,
+        socket_timeout=settings.redis_socket_timeout,
+        health_check_interval=settings.redis_health_check_interval,
+        max_connections=redis_max_connections,
+    )
+    app.state.lanes = RequestLanes(
+        lanes_config,
+        app.state.redis,
+        permit_ttl=int(settings.backend_timeout_seconds),
+    )
+    app.state.cache = ResponseCache(app.state.redis, settings.max_cache_response_bytes)
+    yield
+    await app.state.backend.aclose()
+    await app.state.redis.aclose()
+
+
+app = FastAPI(title="CMR Search Priority Proxy", lifespan=lifespan)
+
+
+def _extract_auth_token(request: Request) -> str:
+    """Extract and hash the auth token for cache key segmentation.
+
+    Returns a SHA-256 hash so the plaintext token never appears in
+    cache keys, logs, or memory beyond this function."""
+    token = request.headers.get("Echo-Token") or request.headers.get(
+        "Authorization", ""
+    )
+    if token:
+        return hashlib.sha256(token.encode()).hexdigest()
+    return "guest"
+
+
+def filter_hop_headers(headers: httpx.Headers) -> dict:
+    """Remove hop-by-hop headers that must not be forwarded."""
+    return {
+        name: value
+        for name, value in headers.items()
+        if name.lower() not in HOP_HEADERS
+    }
+
+
+async def forward_to_backend(
+    request: Request,
+    path: str,
+    request_id: str = "",
+) -> httpx.Response:
+    """Forward request to the backend, preserving headers, body, and query
+    string verbatim. Injects cmr-request-id for log correlation."""
+    backend: httpx.AsyncClient = request.app.state.backend
+
+    # Forward all headers except host and content-length, which httpx
+    # sets from the base_url and body respectively
+    headers = {
+        name: value
+        for name, value in request.headers.items()
+        if name.lower() not in ("host", "content-length")
+    }
+    if request_id:
+        headers["cmr-request-id"] = request_id
+    headers["x-cmr-proxy-request"] = "1"
+
+    # Append raw query string directly to avoid double-encoding
+    query = str(request.url.query)
+    url = f"/{path}?{query}" if query else f"/{path}"
+
+    if request.method == "GET":
+        response = await backend.get(url, headers=headers)
+    else:
+        body = await request.body()
+        response = await backend.request(
+            request.method,
+            url,
+            headers=headers,
+            content=body,
+        )
+
+    logger.debug(
+        "backend_response_headers",
+        extra={
+            "request_id": request_id,
+            "url": url,
+            "status_code": response.status_code,
+            "content_encoding": response.headers.get("content-encoding"),
+            "content_length_header": response.headers.get("content-length"),
+            "actual_content_bytes": len(response.content),
+        },
+    )
+    return response
+
+
+@app.get("/health/shallow")
+async def health_shallow():
+    return JSONResponse(status_code=200, content={"ok?": True})
+
+
+@app.get("/health")
+async def health(request: Request):
+    """Health check matching CMR's {:ok? bool :dependencies {...}} format.
+
+    Informational only and not cached — nothing automated polls this
+    (ALB/ECS use /health/shallow). It exists so an operator can see
+    dependency and lane-utilization status in one place."""
+    dependencies = {}
+
+    # Redis
+    try:
+        await request.app.state.redis.ping()
+        dependencies["redis"] = {"ok?": True}
+    except Exception as exc:
+        dependencies["redis"] = {"ok?": True, "problem": str(exc)}  # informational
+
+    # Backend search service
+    try:
+        resp = await request.app.state.backend.get("/search/health")
+        backend_ok = resp.status_code < 500
+        dependencies["search"] = {
+            "ok?": True,  # informational
+            "reachable": backend_ok,
+        }
+        if not backend_ok:
+            dependencies["search"]["problem"] = f"status {resp.status_code}"
+    except Exception as exc:
+        dependencies["search"] = {"ok?": True, "problem": str(exc)}  # informational
+
+    # Lane utilization — count only non-expired entries (score > wall clock now)
+    lanes_config = request.app.state.lanes_config
+    redis_client = request.app.state.redis
+    wall_now = time.time()
+    for lane in lanes_config.lanes:
+        key = f"lane:{lane.name}:active"
+        try:
+            active = await redis_client.zcount(key, wall_now, "+inf")
+            at_capacity = active >= lane.permits
+            dep = {
+                "ok?": True,
+                "active": active,
+                "permits": lane.permits,
+                "at_capacity": at_capacity,
+            }
+            if at_capacity:
+                dep["note"] = "at capacity"
+        except Exception as exc:
+            dep = {"ok?": True, "problem": str(exc)}  # informational
+        dependencies[f"lane-{lane.name}"] = dep
+
+    ok = all(dep["ok?"] for dep in dependencies.values())
+    status_code = 200 if ok else 503
+    content = {"ok?": ok, "dependencies": dependencies}
+
+    return JSONResponse(status_code=status_code, content=content)
+
+
+def _extract_request_id(request: Request) -> str:
+    """Extract or generate a request ID."""
+    return (
+        request.headers.get("cmr-request-id")
+        or request.headers.get("x-request-id")
+        or str(uuid.uuid4())
+    )
+
+
+@app.api_route("/{path:path}", methods=["GET", "POST"])
+async def proxy(request: Request, path: str):
+    """Main proxy handler: classify, cache check, acquire lane, forward."""
+    t0 = time.monotonic()
+    full_path = f"/{path}"
+    toggles = request.app.state.toggles
+
+    # Read POST body once; reused for size check, form param extraction, and cache key
+    content_type = request.headers.get("content-type", "")
+    body = b""
+    body_hash = ""
+    if request.method == "POST":
+        content_length = request.headers.get("content-length")
+        try:
+            claimed_size = int(content_length) if content_length else 0
+        except ValueError:
+            claimed_size = 0
+        if claimed_size > request.app.state.settings.max_request_body_bytes:
+            return JSONResponse(
+                status_code=413,
+                content={"errors": ["Request body too large"]},
+                headers={"CMR-Request-Id": _extract_request_id(request)},
+            )
+        body = await request.body()
+        if len(body) > request.app.state.settings.max_request_body_bytes:
+            return JSONResponse(
+                status_code=413,
+                content={"errors": ["Request body too large"]},
+                headers={"CMR-Request-Id": _extract_request_id(request)},
+            )
+        body_hash = hashlib.sha256(body).hexdigest()
+
+    params = dict(request.query_params)
+    if request.method == "POST" and "application/x-www-form-urlencoded" in content_type:
+        try:
+            body_params = parse_qs(body.decode(), keep_blank_values=True)
+            for param_name, param_values in body_params.items():
+                # Query string params take precedence over body params
+                if param_name not in params:
+                    params[param_name] = (
+                        param_values[0] if len(param_values) == 1 else param_values
+                    )
+        except UnicodeDecodeError:
+            logger.warning(
+                "Could not decode POST body as UTF-8, skipping body param extraction"
+            )
+
+    request_id = _extract_request_id(request)
+    auth_token = _extract_auth_token(request)
+    query_string = str(request.url.query)
+    search_after = request.headers.get("cmr-search-after", "")
+    accept = request.headers.get("accept", "")
+
+    # Bypass: skip classification, cache, and lanes — pure transparent proxy
+    if toggles["bypass_enabled"]:
+        try:
+            backend_response = await forward_to_backend(request, path, request_id)
+        except httpx.TimeoutException:
+            logger.error(
+                "Backend timeout: %s %s [bypass]", request.method, full_path
+            )
+            return JSONResponse(
+                status_code=504,
+                content={"errors": ["Backend timed out"]},
+                headers={"CMR-Request-Id": request_id},
+            )
+        except httpx.ConnectError:
+            logger.error(
+                "Backend unavailable: %s %s [bypass]", request.method, full_path
+            )
+            return JSONResponse(
+                status_code=502,
+                content={"errors": ["Backend unavailable"]},
+                headers={"CMR-Request-Id": request_id},
+            )
+        resp_headers = filter_hop_headers(backend_response.headers)
+        resp_headers["CMR-Request-Id"] = request_id
+        logger.info(
+            "request_completed",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": full_path,
+                "bypass": True,
+                "cache_hit": False,
+                "status_code": backend_response.status_code,
+                "response_bytes": len(backend_response.content),
+                "duration_ms": round((time.monotonic() - t0) * 1000),
+                "provider": params.get("provider"),
+            },
+        )
+        return Response(
+            content=backend_response.content,
+            status_code=backend_response.status_code,
+            headers=resp_headers,
+        )
+
+    # Classify the request into a traffic lane based on query parameters
+    lanes_config = request.app.state.lanes_config
+    if toggles["classification_enabled"]:
+        lane_name = classify_request(params, content_type)
+    else:
+        lane_name = lanes_config.default_lane
+
+    logger.info(
+        "request_classified",
+        extra={
+            "request_id": request_id,
+            "lane": lane_name,
+            "method": request.method,
+            "path": full_path,
+            "provider": params.get("provider"),
+            "has_spatial": any(
+                k in params
+                for k in ("polygon", "bounding_box", "circle[]", "point")
+            ),
+            "classification_enabled": toggles["classification_enabled"],
+        },
+    )
+
+    lanes: RequestLanes = request.app.state.lanes
+    lane = lanes_config.get(lane_name)
+    cache: ResponseCache = request.app.state.cache
+
+    # Check cache before acquiring a lane permit
+    if toggles["cache_enabled"] and lane.cache_ttl > 0:
+        try:
+            cached = await cache.get(
+                request.method, full_path, query_string, auth_token, search_after, accept, body_hash
+            )
+            if cached:
+                logger.info(
+                    "request_completed",
+                    extra={
+                        "request_id": request_id,
+                        "method": request.method,
+                        "path": full_path,
+                        "lane": lane_name,
+                        "cache_hit": True,
+                        "status_code": cached["status_code"],
+                        "duration_ms": round((time.monotonic() - t0) * 1000),
+                        "provider": params.get("provider"),
+                    },
+                )
+                response = Response(
+                    content=cached["body"],
+                    status_code=cached["status_code"],
+                    headers=cached.get("headers", {}),
+                )
+                response.headers["CMR-Request-Id"] = request_id
+                return response
+        except Exception:
+            logger.warning("cache_read_failed", extra={"request_id": request_id}, exc_info=True)
+
+    # Acquire a distributed semaphore permit for this lane, then forward
+    try:
+        async with lanes.acquire(lane_name, toggles["load_shedding_enabled"]) as actual_lane:
+            try:
+                backend_response = await forward_to_backend(request, path, request_id)
+            except httpx.TimeoutException:
+                logger.error(
+                    "Backend timeout: %s %s tier=%s",
+                    request.method,
+                    full_path,
+                    actual_lane,
+                )
+                return JSONResponse(
+                    status_code=504,
+                    content={"errors": ["Backend timed out"]},
+                    headers={"CMR-Request-Id": request_id},
+                )
+            except httpx.ConnectError:
+                logger.error(
+                    "Backend unavailable: %s %s tier=%s",
+                    request.method,
+                    full_path,
+                    actual_lane,
+                )
+                return JSONResponse(
+                    status_code=502,
+                    content={"errors": ["Backend unavailable"]},
+                    headers={"CMR-Request-Id": request_id},
+                )
+
+            # Cache successful responses if this lane has a TTL
+            cache_stored = False
+            if toggles["cache_enabled"] and lane.cache_ttl > 0 and 200 <= backend_response.status_code < 300:
+                response_data = {
+                    "status_code": backend_response.status_code,
+                    "body": backend_response.text,
+                    "headers": filter_hop_headers(backend_response.headers),
+                }
+                try:
+                    await cache.set(
+                        request.method,
+                        full_path,
+                        query_string,
+                        auth_token,
+                        response_data,
+                        len(backend_response.content),
+                        lane.cache_ttl,
+                        search_after,
+                        accept,
+                        body_hash,
+                    )
+                    cache_stored = True
+                except Exception:
+                    logger.warning("cache_write_failed", extra={"request_id": request_id}, exc_info=True)
+
+            # Strip hop-by-hop headers and attach the request ID
+            resp_headers = filter_hop_headers(backend_response.headers)
+            resp_headers["CMR-Request-Id"] = request_id
+
+            logger.info(
+                "request_completed",
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": full_path,
+                    "lane": lane_name,
+                    "actual_lane": actual_lane,
+                    "overflow": actual_lane != lane_name,
+                    "cache_hit": False,
+                    "cache_stored": cache_stored,
+                    "status_code": backend_response.status_code,
+                    "response_bytes": len(backend_response.content),
+                    "duration_ms": round((time.monotonic() - t0) * 1000),
+                    "provider": params.get("provider"),
+                },
+            )
+
+            return Response(
+                content=backend_response.content,
+                status_code=backend_response.status_code,
+                headers=resp_headers,
+            )
+
+    # Lane is full — no permit available
+    except LoadSheddingError as shed_error:
+        logger.warning(
+            "load_shed",
+            extra={
+                "request_id": request_id,
+                "requested_lane": lane_name,
+                "shed_lane": shed_error.lane_name,
+                "method": request.method,
+                "path": full_path,
+                "provider": params.get("provider"),
+                "retry_after": shed_error.retry_after,
+            },
+        )
+        return JSONResponse(
+            status_code=429,
+            content={
+                "errors": [
+                    f"Service temporarily overloaded for "
+                    f"{shed_error.lane_name}-tier queries"
+                ]
+            },
+            headers={
+                "Retry-After": str(shed_error.retry_after),
+                "CMR-Request-Id": request_id,
+            },
+        )
