@@ -191,7 +191,7 @@
           ;; Retry on scroll context errors
           (do
             (println (format "Scroll context error on attempt %d. Retrying..." attempt))
-            (Thread/sleep (* 1000 attempt)) ; Increasing delay by attempt num
+            (Thread/sleep 100)
             (recur (inc attempt)))
           ;; Throw on other errors or max retries
           (throw e))))))
