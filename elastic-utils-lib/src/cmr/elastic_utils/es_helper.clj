@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as http]
    [clojure.string :as string]
+   [cmr.common.log :as log :refer [debug info infof report warn]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-util :as es-util]
@@ -114,28 +115,86 @@
                            :accept :json
                            :throw-exceptions false}))))))
 
+(defn- has-scroll-context-error?
+  "Checks if the response contains a 'too many scroll contexts' error."
+  [response-body]
+  (try
+    (let [parsed (json/parse-string response-body true)
+          error-map (:error parsed)]
+      (and (some? error-map)
+           (string/includes? (str error-map) "too many scroll contexts")))
+    (catch Exception e
+      false)))
+
+;(defn delete-by-query
+;  "Performs a delete-by-query operation over one or more indexes and types.
+;  Multiple indexes and types can be specified by passing in a seq of strings,
+;  otherwise specifying a string suffices."
+;  [conn index _mapping-type query]
+;  (let [admin-token (es-config/elastic-admin-token)
+;        url (es-util/url-with-path conn index "_delete_by_query")
+;        response (http/post url
+;                            (merge (:http-opts conn)
+;                                   {:headers {"Authorization" admin-token
+;                                              "Confirm-delete-action" "true"
+;                                              :client-id t-config/cmr-client-id}
+;                                    :content-type :json
+;                                    :body (json/generate-string {:query query
+;                                                                 :slices 1
+;                                                                 :scroll_size 500})
+;                                    :throw-exceptions false}))
+;        _ (info "response to delete-by-query for index " index " is " response)
+;        _ (info "error message is " (:body response))
+;        status (:status response)]
+;    (if (#{200 201} status)
+;      (es-util/decode-response response)
+;      (throw (ex-info (str "Delete by query failed with status " status)
+;                      {:status status :body (:body response)})))))
+
 (defn delete-by-query
   "Performs a delete-by-query operation over one or more indexes and types.
   Multiple indexes and types can be specified by passing in a seq of strings,
-  otherwise specifying a string suffices."
+  otherwise specifying a string suffices.
+  If an error occurs due to too many scroll contexts, it will retry max 3 times before throwing exception."
   [conn index _mapping-type query]
-  (let [admin-token (es-config/elastic-admin-token)
-        url (es-util/url-with-path conn index "_delete_by_query")
-        response (http/post url
-                            (merge (:http-opts conn)
-                                   {:headers {"Authorization" admin-token
-                                              "Confirm-delete-action" "true"
-                                              :client-id t-config/cmr-client-id}
-                                    :content-type :json
-                                    :body (json/generate-string {:query query
-                                                                 :slices 1
-                                                                 :scroll_size 500})
-                                    :throw-exceptions false}))
-        status (:status response)]
-    (if (#{200 201} status)
-      (es-util/decode-response response)
-      (throw (ex-info (str "Delete by query failed with status " status)
-                      {:status status :body (:body response)})))))
+  (loop [attempt 1]
+    (try
+      (let [admin-token (es-config/elastic-admin-token)
+            url (es-util/url-with-path conn index "_delete_by_query")
+            response (http/post url
+                                (merge (:http-opts conn)
+                                       {:headers {"Authorization" admin-token
+                                                  "Confirm-delete-action" "true"
+                                                  :client-id t-config/cmr-client-id}
+                                        :content-type :json
+                                        :body (json/generate-string {:query query
+                                                                     :slices 1
+                                                                     :scroll_size 500})
+                                        :throw-exceptions false}))
+            resp-body (:body response)
+            _ (info "response to delete-by-query for index " index " is " response)
+            status (:status response)]
+
+        (when (has-scroll-context-error? resp-body)
+          (throw (ex-info "Scroll context error detected"
+                          {:type :scroll-context-error
+                           :body resp-body})))
+
+        (if (#{200 201} status)
+          (es-util/decode-response response)
+          (throw (ex-info (str "Delete by query failed with status " status)
+                          {:status status :body (:body response)}))))
+
+      (catch Exception e
+        (if (and (< attempt 3)
+                 (= :scroll-context-error (:type (ex-data e))))
+          ;; Retry on scroll context errors
+          (do
+            (println (format "Scroll context error on attempt %d. Retrying..." attempt))
+            (Thread/sleep (* 1000 attempt)) ; Increasing delay by attempt num
+            (recur (inc attempt)))
+          ;; Throw on other errors or max retries
+          (throw e))))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
