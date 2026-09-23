@@ -68,6 +68,7 @@ All write endpoints require an `echo-token` or `Authorization` header with a tok
 |--------|------|-------------|
 | POST | `/reindex/granules` | Reindex all granules across all providers |
 | POST | `/reindex/granules/provider/{provider_id}` | Reindex all granules for one provider |
+| POST | `/reindex/granules/providers` | Reindex all granules for a list of providers (JSON body) |
 | POST | `/reindex/granules/collection/{collection_id}` | Reindex all granules for one collection |
 | POST | `/reindex/concept/{concept_id}` | Reindex a single concept by CMR concept ID |
 | POST | `/reindex/{concept_type}` | Reindex all concepts of a type |
@@ -95,6 +96,15 @@ curl -X POST http://localhost:8080/reindexer/reindex/citations \
 
 ```json
 {"request_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "message": "Reindex started for concept type citations"}
+```
+
+`/reindex/granules/providers` takes the provider list as a JSON body:
+
+```bash
+curl -X POST "http://localhost:8080/reindexer/reindex/granules/providers?after=2026-07-25T00:00:00Z" \
+  -H "Authorization: $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"provider_ids": ["PROV_A", "PROV_B"]}'
 ```
 
 ### Job management
