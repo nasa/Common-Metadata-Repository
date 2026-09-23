@@ -35,6 +35,10 @@ def mock_deps(monkeypatch):
     monkeypatch.setattr("app.routers.reindex.enqueue_collection_item", MagicMock())
     monkeypatch.setattr("app.routers.reindex.publish_concept_update", MagicMock())
     monkeypatch.setattr("app.routers.reindex.publish_concept_updates_batch", MagicMock())
+    monkeypatch.setattr(
+        "app.routers.reindex.check_all_es_health",
+        MagicMock(return_value={"overall": "green", "collections": "green", "granules": "green"}),
+    )
 
     mock_db = MagicMock()
     mock_db.stream_concept_ids_by_type.return_value = []
@@ -295,6 +299,137 @@ class TestGranuleJobStatusTransitions:
         assert r.status_code == 202
         statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
         assert "completed" in statuses
+
+
+# ---------------------------------------------------------------------------
+# POST /reindex/granules/providers
+# ---------------------------------------------------------------------------
+
+class TestProviderListEndpoint:
+
+    def test_returns_202(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_B"]})
+        assert r.status_code == 202
+
+    def test_empty_list_returns_400(self, client):
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": []})
+        assert r.status_code == 400
+
+    def test_invalid_provider_id_returns_400(self, client):
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "lowercase"]})
+        assert r.status_code == 400
+
+    def test_invalid_provider_id_no_db_call(self, client):
+        import app.routers.reindex as _r
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["bad.provider!"]})
+        _r.db_client.get_collection_ids_for_provider.assert_not_called()
+
+    def test_creates_job_with_granules_by_providers_type(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        args = _r.job_store.create_job.call_args.args
+        assert args[1] == "granules-by-providers"
+
+    def test_sets_providers_to_process(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_B"]})
+        calls = _r.job_store.update_progress.call_args_list
+        ptp_calls = [c for c in calls if c.kwargs.get("providers_to_process")]
+        assert ptp_calls, "expected update_progress(providers_to_process=...) call"
+        assert ptp_calls[0].kwargs["providers_to_process"] == ["PROV_A", "PROV_B"]
+
+    def test_enqueues_collections_for_each_provider(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = ["C1-P"]
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_B"]})
+        assert _r.db_client.get_collection_ids_for_provider.call_count == 2
+        assert _r.enqueue_collection_item.call_count == 2
+
+    def test_duplicate_provider_ids_are_deduped(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = ["C1-P"]
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_A"]})
+        _r.db_client.get_collection_ids_for_provider.assert_called_once_with("PROV_A")
+        _r.enqueue_collection_item.assert_called_once()
+
+    def test_marks_dispatching_not_completed(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        assert r.status_code == 202
+        statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
+        assert "dispatching" in statuses
+        assert "completed" not in statuses
+
+    def test_before_defaults_when_not_supplied(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        kw = _r.job_store.create_job.call_args.kwargs
+        assert kw["before"] is not None
+
+    def test_source_url_includes_path(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        kw = _r.job_store.create_job.call_args.kwargs
+        assert "granules/providers" in kw["source_url"]
+
+
+# ---------------------------------------------------------------------------
+# ES health gating on the two dispatch paths that don't go through the
+# granule throttler (which gates on ES health itself)
+# ---------------------------------------------------------------------------
+
+class TestEsHealthGating:
+
+    def test_concept_type_reindex_marks_failed_when_es_not_green(self, client):
+        import app.routers.reindex as _r
+        _r.check_all_es_health.return_value = {"overall": "red", "collections": "red", "granules": "green"}
+        r = client.post("/reindexer/reindex/variables")
+        assert r.status_code == 202  # background task fails, not the HTTP response
+        statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
+        assert statuses == ["failed"]
+
+    def test_concept_type_reindex_does_not_dispatch_when_es_not_green(self, client):
+        import app.routers.reindex as _r
+        _r.check_all_es_health.return_value = {"overall": "yellow", "collections": "yellow", "granules": "green"}
+        client.post("/reindexer/reindex/citations")
+        _r.publish_concept_updates_batch.assert_not_called()
+
+    def test_single_concept_reindex_returns_503_when_es_not_green(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
+        _r.check_all_es_health.return_value = {"overall": "red", "collections": "red", "granules": "red"}
+        r = client.post("/reindexer/reindex/concept/V1-P")
+        assert r.status_code == 503
+
+    def test_single_concept_reindex_does_not_publish_when_es_not_green(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
+        _r.check_all_es_health.return_value = {"overall": "red", "collections": "red", "granules": "red"}
+        client.post("/reindexer/reindex/concept/V1-P")
+        _r.publish_concept_update.assert_not_called()
+
+    def test_single_concept_reindex_marks_job_failed_when_es_not_green(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
+        _r.check_all_es_health.return_value = {"overall": "red", "collections": "red", "granules": "red"}
+        client.post("/reindexer/reindex/concept/V1-P")
+        _r.job_store.mark_job.assert_called_once_with(
+            _r.job_store.create_job.call_args.args[0], "failed"
+        )
+
+    def test_single_concept_reindex_still_works_when_es_green(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
+        r = client.post("/reindexer/reindex/concept/V1-P")
+        assert r.status_code == 202
+        _r.publish_concept_update.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
