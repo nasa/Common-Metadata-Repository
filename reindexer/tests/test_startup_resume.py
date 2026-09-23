@@ -77,6 +77,27 @@ class TestResumeStalledJobs:
             request_id="job-1", collection_id="C1-P", after=None, before=None
         )
 
+    def test_granules_by_providers_re_enqueues_remaining_providers(self):
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-providers",
+                 providers_to_process=["PROV_A", "PROV_B"],
+                 providers_enqueued=["PROV_A"])
+        ])
+        db.get_collection_ids_for_provider.return_value = ["C1-P"]
+        resume_stalled_jobs(db, js, enqueue)
+        # Only PROV_B is remaining
+        db.get_collection_ids_for_provider.assert_called_once_with("PROV_B")
+        enqueue.assert_called_once_with(
+            request_id="job-1", collection_id="C1-P", after=None, before=None
+        )
+
+    def test_granules_by_providers_marked_dispatching_after_resume(self):
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-providers", providers_to_process=["PROV_A"], providers_enqueued=["PROV_A"])
+        ])
+        resume_stalled_jobs(db, js, enqueue)
+        js.mark_job.assert_called_with("job-1", "dispatching")
+
     def test_granule_job_skips_already_enqueued_providers(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
             _job("granules",

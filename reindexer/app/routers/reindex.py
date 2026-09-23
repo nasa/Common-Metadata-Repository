@@ -11,10 +11,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
+from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from app.auth import require_auth
 from app.db import db_client
 from app.db.dynamo import job_store
+from app.es.health import check_all_es_health
 from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_concept_updates_batch
 from app.throttler.worker import throttler
 
@@ -89,13 +92,21 @@ def _override_flag(x_cmr_override_date_limit: Optional[str] = Header(None)) -> b
     return (x_cmr_override_date_limit or "").lower() == "true"
 
 
+class ProviderListRequest(BaseModel):
+    provider_ids: list[str]
+
+
 # ---------------------------------------------------------------------------
 # Background helpers
 # ---------------------------------------------------------------------------
 
-def _enqueue_all_providers(request_id: str, after: Optional[str], before: Optional[str]) -> None:
+def _enqueue_providers(
+    request_id: str, provider_ids: list[str], after: Optional[str], before: Optional[str]
+) -> None:
+    """Shared enqueue loop for both /reindex/granules (all providers) and
+    /reindex/granules/providers (an explicit list)."""
+    provider_ids = list(dict.fromkeys(provider_ids))  # de-dupe, preserve order
     try:
-        provider_ids = db_client.get_all_provider_ids()
         job_store.update_progress(request_id, providers_to_process=provider_ids)
         for provider_id in provider_ids:
             if throttler.is_job_cancelled(request_id):
@@ -117,13 +128,23 @@ def _enqueue_all_providers(request_id: str, after: Optional[str], before: Option
         job_store.mark_job(request_id, "dispatching")
         job_store.try_complete_job(request_id)
         logger.info({
-            "event": "all_granules_enqueued",
+            "event": "providers_granules_enqueued",
             "request_id": request_id,
             "provider_count": len(provider_ids),
         })
     except Exception as exc:
+        logger.error({"event": "providers_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
+        job_store.mark_job(request_id, "failed")
+
+
+def _enqueue_all_providers(request_id: str, after: Optional[str], before: Optional[str]) -> None:
+    try:
+        provider_ids = db_client.get_all_provider_ids()
+    except Exception as exc:
         logger.error({"event": "all_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
         job_store.mark_job(request_id, "failed")
+        return
+    _enqueue_providers(request_id, provider_ids, after, before)
 
 
 def _enqueue_provider(
@@ -171,6 +192,15 @@ _CONCEPT_TYPE_BATCH_SIZE = 500
 
 def _publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     try:
+        if check_all_es_health()["overall"] != "green":
+            logger.warning({
+                "event": "concept_type_reindex_es_not_green",
+                "request_id": request_id,
+                "concept_type": internal_type,
+            })
+            job_store.mark_job(request_id, "failed")
+            return
+
         dispatched = 0
         batch: list[tuple[str, int]] = []
 
@@ -262,6 +292,39 @@ async def reindex_granules_by_provider(
     return {"request_id": request_id, "message": f"Reindex started for provider {provider_id}"}
 
 
+@router.post("/reindex/granules/providers", status_code=202)
+async def reindex_granules_by_providers(
+    body: ProviderListRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    after: Optional[str] = None,
+    before: Optional[str] = None,
+    override: bool = Depends(_override_flag),
+    _token: str = Depends(require_auth),
+):
+    if not body.provider_ids:
+        raise HTTPException(status_code=400, detail="provider_ids must not be empty")
+    invalid = [p for p in body.provider_ids if not _PROVIDER_ID_RE.match(p)]
+    if invalid:
+        raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {invalid!r}")
+    _validate_date_params(after, before, override)
+    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    request_id = str(uuid.uuid4())
+    job_store.create_job(
+        request_id, "granules-by-providers", after=after, before=before,
+        source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
+    )
+    logger.info({
+        "event": "reindex_providers_requested",
+        "request_id": request_id,
+        "provider_ids": body.provider_ids,
+        "after": after,
+        "before": before,
+    })
+    background_tasks.add_task(_enqueue_providers, request_id, body.provider_ids, after, before)
+    return {"request_id": request_id, "message": f"Reindex started for {len(body.provider_ids)} providers"}
+
+
 @router.post("/reindex/granules/collection/{collection_id:path}", status_code=202)
 async def reindex_granules_by_collection(
     collection_id: str,
@@ -322,6 +385,16 @@ async def reindex_concept(
     if concept is None:
         job_store.mark_job(request_id, "failed")
         raise HTTPException(status_code=404, detail=f"Concept not found: {concept_id}")
+
+    es_health = await run_in_threadpool(check_all_es_health)
+    if es_health["overall"] != "green":
+        logger.warning({
+            "event": "reindex_concept_es_not_green",
+            "request_id": request_id,
+            "concept_id": concept_id,
+        })
+        job_store.mark_job(request_id, "failed")
+        raise HTTPException(status_code=503, detail="Elasticsearch cluster is not green; retry later")
 
     try:
         publish_concept_update(concept["concept-id"], concept["revision-id"], request_id)

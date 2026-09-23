@@ -35,7 +35,7 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
         logger.info({"event": "resuming_stalled_job", "job_id": job_id, "concept_type": concept_type})
 
         try:
-            if concept_type == "granules":
+            if concept_type in ("granules", "granules-by-providers"):
                 providers_to_process = set(job.get("providers_to_process") or [])
                 providers_enqueued = set(job.get("providers_enqueued") or [])
                 remaining = providers_to_process - providers_enqueued
