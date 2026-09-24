@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from starlette.concurrency import run_in_threadpool
 
 from app.auth import require_auth
 from app.config import config
@@ -62,7 +63,7 @@ def _enrich_job(job: dict) -> dict:
 
 @router.get("/status")
 async def status():
-    es_health = check_all_es_health()
+    es_health = await run_in_threadpool(check_all_es_health)
 
     try:
         collection_queue_depth = get_queue_depth(config.collection_queue_url)
