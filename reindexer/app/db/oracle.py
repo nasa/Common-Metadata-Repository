@@ -32,7 +32,7 @@ _BATCH_SIZE = 500
 _STREAM_IDS_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
 FROM METADATA_DB.{table}
-WHERE PARENT_COLLECTION_ID = :collection_id
+WHERE PARENT_COLLECTION_ID = '{collection_id}'
 {after_clause}
 {before_clause}
 {keyset_clause}
@@ -58,9 +58,13 @@ WHERE owner = 'METADATA_DB'
   AND table_name LIKE '%_GRANULES'
 ORDER BY 1"""
 
-# Used inline in granule SQL (must include the AND prefix)
-_AFTER_CLAUSE  = "AND REVISION_DATE >= TO_TIMESTAMP_TZ(:after,  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
-_BEFORE_CLAUSE = "AND REVISION_DATE <= TO_TIMESTAMP_TZ(:before, 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
+# Used inline in granule SQL (must include the AND prefix). Literal, not bound — see
+# stream_granule_ids: bind-variable peeking on these was confirmed to cause Oracle to
+# reuse a cached plan from an earlier collection's selectivity for wildly different
+# collections, hanging indefinitely on some while the identical query with literal
+# values ran in seconds.
+_AFTER_CLAUSE  = "AND REVISION_DATE >= TO_TIMESTAMP_TZ('{after}',  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
+_BEFORE_CLAUSE = "AND REVISION_DATE <= TO_TIMESTAMP_TZ('{before}', 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 
 # ---------------------------------------------------------------------------
 # Shared / generic concept type SQL
@@ -253,17 +257,19 @@ class OracleClient:
         table = f"{provider}_GRANULES"
 
         use_keyset = bool(start_after_concept_id)
+        # collection_id/after/before are literal, not bound: bind-variable peeking
+        # caused Oracle to reuse a plan cached from one collection's selectivity for
+        # unrelated collections, hanging on some. collection_id is already
+        # regex-validated (API boundary) or DB-sourced before it reaches here; after/
+        # before are ISO8601-validated before _oracle_ts — safe to embed as literals.
         sql = _STREAM_IDS_SQL.format(
             table=table,
-            after_clause=_AFTER_CLAUSE if after else "",
-            before_clause=_BEFORE_CLAUSE if before else "",
+            collection_id=collection_id,
+            after_clause=_AFTER_CLAUSE.format(after=_oracle_ts(after)) if after else "",
+            before_clause=_BEFORE_CLAUSE.format(before=_oracle_ts(before)) if before else "",
             keyset_clause=_KEYSET_CLAUSE if use_keyset else "",
         )
-        bind: dict = {"collection_id": collection_id}
-        if after:
-            bind["after"] = _oracle_ts(after)
-        if before:
-            bind["before"] = _oracle_ts(before)
+        bind: dict = {}
         if use_keyset:
             bind["start_after"] = start_after_concept_id
 
