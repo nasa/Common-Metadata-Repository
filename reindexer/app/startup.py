@@ -40,7 +40,9 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                 providers_enqueued = set(job.get("providers_enqueued") or [])
                 remaining = providers_requested - providers_enqueued
                 for provider_id in remaining:
-                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    collection_ids = db_client.get_collection_ids_for_provider(
+                        provider_id, after=job.get("after"), before=job.get("before")
+                    )
                     for cid in collection_ids:
                         enqueue_fn(
                             request_id=job_id,
@@ -61,7 +63,9 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
                 provider_id = job.get("provider_id")
                 providers_enqueued = set(job.get("providers_enqueued") or [])
                 if provider_id and provider_id not in providers_enqueued:
-                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
+                    collection_ids = db_client.get_collection_ids_for_provider(
+                        provider_id, after=job.get("after"), before=job.get("before")
+                    )
                     for cid in collection_ids:
                         enqueue_fn(
                             request_id=job_id,
