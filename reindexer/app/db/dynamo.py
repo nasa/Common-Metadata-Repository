@@ -41,16 +41,17 @@ def _checkpoint_table():
     return dynamodb.Table(config.dynamodb_checkpoint_table)
 
 
-def _deserialize(item: dict) -> dict:
-    result = {}
-    for k, v in item.items():
-        if isinstance(v, decimal.Decimal):
-            result[k] = int(v) if v == int(v) else float(v)
-        elif isinstance(v, set):
-            result[k] = list(v)
-        else:
-            result[k] = v
-    return result
+def _deserialize(value):
+    """Recursively convert Decimal -> int/float and set -> list, including inside nested maps."""
+    if isinstance(value, decimal.Decimal):
+        return int(value) if value == int(value) else float(value)
+    if isinstance(value, set):
+        return list(value)
+    if isinstance(value, dict):
+        return {k: _deserialize(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_deserialize(v) for v in value]
+    return value
 
 
 class JobStore:
@@ -80,6 +81,8 @@ class JobStore:
             "work_items_enqueued": 0,
             "collections_split": 0,
             "total_dispatched": 0,
+            "providers_work_items": {},
+            "providers_collections_split": {},
             "ttl": ttl,
         }
         if provider_id is not None:
@@ -109,17 +112,18 @@ class JobStore:
         job_id: str,
         *,
         provider_enqueued: Optional[str] = None,
-        providers_to_process: Optional[list] = None,
+        providers_requested: Optional[list] = None,
         work_items_delta: int = 0,
     ) -> None:
         now = _now_iso()
         set_parts = ["last_heartbeat = :ts"]
         add_parts: list = []
         values: dict = {":ts": now}
+        names: dict = {}
 
-        if providers_to_process:
-            set_parts.append("providers_to_process = :ptp")
-            values[":ptp"] = set(providers_to_process)
+        if providers_requested:
+            set_parts.append("providers_requested = :ptp")
+            values[":ptp"] = set(providers_requested)
 
         if provider_enqueued:
             add_parts.append("providers_enqueued :pe")
@@ -129,22 +133,73 @@ class JobStore:
             add_parts.append("work_items_enqueued :wi")
             values[":wi"] = work_items_delta
 
+            # Per-provider breakdown alongside the flat total, so a job's status can
+            # tell providers apart (e.g. after a cancel, which ones still have
+            # un-split collections) without cross-referencing the checkpoint table.
+            if provider_enqueued:
+                names["#pid"] = provider_enqueued
+                values[":zero"] = 0
+                set_parts.append(
+                    "providers_work_items.#pid = if_not_exists(providers_work_items.#pid, :zero) + :wi"
+                )
+
         expression = "SET " + ", ".join(set_parts)
         if add_parts:
             expression += " ADD " + ", ".join(add_parts)
 
-        self._table().update_item(
+        kwargs: dict = dict(
             Key={"job_id": job_id},
             UpdateExpression=expression,
             ExpressionAttributeValues=values,
         )
+        if names:
+            kwargs["ExpressionAttributeNames"] = names
 
-    def increment_collections_split(self, job_id: str) -> None:
-        self._table().update_item(
+        self._update_with_provider_map_backfill(job_id, kwargs)
+
+    def increment_collections_split(self, job_id: str, provider_id: Optional[str] = None) -> None:
+        update_expr = "ADD collections_split :one SET last_heartbeat = :ts"
+        values: dict = {":one": 1, ":ts": _now_iso()}
+        names: dict = {}
+
+        if provider_id:
+            names["#pid"] = provider_id
+            values[":zero"] = 0
+            update_expr += (
+                ", providers_collections_split.#pid = if_not_exists(providers_collections_split.#pid, :zero) + :one"
+            )
+
+        kwargs: dict = dict(
             Key={"job_id": job_id},
-            UpdateExpression="ADD collections_split :one SET last_heartbeat = :ts",
-            ExpressionAttributeValues={":one": 1, ":ts": _now_iso()},
+            UpdateExpression=update_expr,
+            ExpressionAttributeValues=values,
         )
+        if names:
+            kwargs["ExpressionAttributeNames"] = names
+
+        self._update_with_provider_map_backfill(job_id, kwargs)
+
+    def _update_with_provider_map_backfill(self, job_id: str, kwargs: dict) -> None:
+        """Run an update_item that may reference providers_work_items/providers_collections_split
+        as a nested path. DynamoDB's SET does not auto-vivify a missing parent map, so a job
+        created before this schema existed (still running/dispatching/interrupted across a
+        deploy) would otherwise fail here permanently. On that specific failure, backfill both
+        maps as empty (idempotent, a no-op if they already exist) and retry once.
+        """
+        try:
+            self._table().update_item(**kwargs)
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "ValidationException":
+                raise
+            self._table().update_item(
+                Key={"job_id": job_id},
+                UpdateExpression=(
+                    "SET providers_work_items = if_not_exists(providers_work_items, :empty), "
+                    "providers_collections_split = if_not_exists(providers_collections_split, :empty)"
+                ),
+                ExpressionAttributeValues={":empty": {}},
+            )
+            self._table().update_item(**kwargs)
 
     def update_dispatched(self, job_id: str, count: int) -> None:
         self._table().update_item(

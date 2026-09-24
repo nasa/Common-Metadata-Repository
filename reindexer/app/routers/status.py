@@ -44,6 +44,19 @@ def _enrich_job(job: dict) -> dict:
     if dispatched > 0 and elapsed > 0:
         result["dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
 
+    # providers_remaining: providers that still have work outstanding — either never
+    # enqueued at all, or enqueued but not every one of their collections has finished
+    # streaming yet. Lets a caller resubmit exactly the right subset after a cancel
+    # without cross-referencing the checkpoint table.
+    if "providers_requested" in job:
+        to_process = set(job.get("providers_requested") or [])
+        enqueued = set(job.get("providers_enqueued") or [])
+        work_items = job.get("providers_work_items") or {}
+        split = job.get("providers_collections_split") or {}
+        never_enqueued = to_process - enqueued
+        still_splitting = {p for p in enqueued if split.get(p, 0) < work_items.get(p, 0)}
+        result["providers_remaining"] = sorted(never_enqueued | still_splitting)
+
     return result
 
 

@@ -66,7 +66,7 @@ class TestResumeStalledJobs:
     def test_granule_job_re_enqueues_remaining_providers(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
             _job("granules",
-                 providers_to_process=["PROV_A", "PROV_B"],
+                 providers_requested=["PROV_A", "PROV_B"],
                  providers_enqueued=["PROV_A"])
         ])
         db.get_collection_ids_for_provider.return_value = ["C1-P"]
@@ -80,7 +80,7 @@ class TestResumeStalledJobs:
     def test_granules_by_providers_re_enqueues_remaining_providers(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
             _job("granules-by-providers",
-                 providers_to_process=["PROV_A", "PROV_B"],
+                 providers_requested=["PROV_A", "PROV_B"],
                  providers_enqueued=["PROV_A"])
         ])
         db.get_collection_ids_for_provider.return_value = ["C1-P"]
@@ -93,15 +93,32 @@ class TestResumeStalledJobs:
 
     def test_granules_by_providers_marked_dispatching_after_resume(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
-            _job("granules-by-providers", providers_to_process=["PROV_A"], providers_enqueued=["PROV_A"])
+            _job("granules-by-providers", providers_requested=["PROV_A"], providers_enqueued=["PROV_A"])
         ])
         resume_stalled_jobs(db, js, enqueue)
         js.mark_job.assert_called_with("job-1", "dispatching")
 
+    def test_resume_passes_provider_enqueued_alongside_work_items_delta(self):
+        """update_progress only populates the per-provider providers_work_items map
+        (see dynamo.py) when both provider_enqueued and work_items_delta are passed
+        together — the resume path must supply both, exactly like the primary
+        enqueue loop in reindex.py, or a resumed provider's per-provider progress
+        silently stops accumulating and providers_remaining goes stale."""
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-providers",
+                 providers_requested=["PROV_A", "PROV_B"],
+                 providers_enqueued=["PROV_A"])
+        ])
+        db.get_collection_ids_for_provider.return_value = ["C1-P", "C2-P"]
+        resume_stalled_jobs(db, js, enqueue)
+        js.update_progress.assert_called_once_with(
+            "job-1", provider_enqueued="PROV_B", work_items_delta=2
+        )
+
     def test_granule_job_skips_already_enqueued_providers(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
             _job("granules",
-                 providers_to_process=["PROV_A"],
+                 providers_requested=["PROV_A"],
                  providers_enqueued=["PROV_A"])
         ])
         resume_stalled_jobs(db, js, enqueue)

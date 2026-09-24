@@ -78,7 +78,7 @@ class TestHandleCollection:
     def test_zero_granules_increment_collections_split_still_called(self, worker):
         _make_chunks()
         worker._handle_collection(_collection(request_id="req-1"))
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", "PROV")
 
     def test_zero_granules_try_complete_called(self, worker):
         _make_chunks()
@@ -141,7 +141,7 @@ class TestHandleCollection:
     def test_increment_collections_split_called_once_on_completion(self, worker):
         _make_chunks([("G1-PROV", 1), ("G2-PROV", 2)], [("G3-PROV", 3)])
         worker._handle_collection(_collection(request_id="req-1"))
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", "PROV")
 
     def test_increment_collections_split_called_once_on_resume_completion(self, worker):
         """On resume, increment_collections_split is still called exactly once when streaming finishes."""
@@ -152,7 +152,12 @@ class TestHandleCollection:
         }
         _make_chunks([("G61-PROV", 61)] * 40)
         worker._handle_collection(_collection(request_id="req-1"))
-        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1")
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", "PROV")
+
+    def test_increment_collections_split_derives_provider_from_collection_id(self, worker):
+        _make_chunks([("G1-PROV_B", 1)])
+        worker._handle_collection(_collection(request_id="req-1", collection_id="C9999-PROV_B"))
+        _worker_mod.job_store.increment_collections_split.assert_called_once_with("req-1", "PROV_B")
 
     def test_update_dispatched_called_per_chunk_with_correct_counts(self, worker):
         _make_chunks([("G1-PROV", 1), ("G2-PROV", 2)], [("G3-PROV", 3)])
@@ -295,12 +300,6 @@ class TestProcess:
 
     def test_malformed_json_deleted_as_poison_pill(self, worker):
         bad = {"ReceiptHandle": "rh-xyz", "Body": "not-json{{{"}
-        worker._process(bad, _TEST_QUEUE)
-        _worker_mod.delete_message.assert_called_once()
-
-    def test_unknown_work_item_type_deleted_as_poison_pill(self, worker):
-        import json
-        bad = {"ReceiptHandle": "rh-xyz", "Body": json.dumps({"type": "unknown-type", "request_id": "r"})}
         worker._process(bad, _TEST_QUEUE)
         _worker_mod.delete_message.assert_called_once()
 

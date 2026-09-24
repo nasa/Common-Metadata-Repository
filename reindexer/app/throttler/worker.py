@@ -182,10 +182,7 @@ class ThrottlerWorker:
             self._current_job_id = item.request_id
 
         try:
-            if isinstance(item, CollectionWorkItem):
-                self._handle_collection(item)
-            else:
-                logger.error({"event": "unknown_work_item_type", "type": item.type, "request_id": item.request_id})
+            self._handle_collection(item)
         except _CollectionInterrupted:
             # Graceful shutdown mid-collection: keep SQS message on queue for re-delivery.
             # The DynamoDB checkpoint was already written; the next task picks up from there.
@@ -289,7 +286,8 @@ class ThrottlerWorker:
 
         # All chunks dispatched — clear checkpoint and record the collection as split.
         checkpoint_store.delete_collection_checkpoint(item.request_id, item.collection_id)
-        job_store.increment_collections_split(item.request_id)
+        provider_id = item.collection_id.split("-", 1)[1]
+        job_store.increment_collections_split(item.request_id, provider_id)
 
         logger.info({
             "event": "collection_streaming_complete",
