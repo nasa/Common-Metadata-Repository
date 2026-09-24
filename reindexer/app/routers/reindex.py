@@ -112,7 +112,7 @@ def _enqueue_providers(
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
                 return
-            collection_ids = db_client.get_collection_ids_for_provider(provider_id, after=after, before=before)
+            collection_ids = db_client.get_collection_ids_for_provider(provider_id)
             for cid in collection_ids:
                 enqueue_collection_item(
                     request_id=request_id, collection_id=cid, after=after, before=before
@@ -154,7 +154,7 @@ def _enqueue_provider(
         if throttler.is_job_cancelled(request_id):
             logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
             return
-        collection_ids = db_client.get_collection_ids_for_provider(provider_id, after=after, before=before)
+        collection_ids = db_client.get_collection_ids_for_provider(provider_id)
         for cid in collection_ids:
             enqueue_collection_item(
                 request_id=request_id, collection_id=cid, after=after, before=before
