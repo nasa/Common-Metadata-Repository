@@ -86,11 +86,6 @@ POST /reindex/granules?after=2026-07-25T00:00:00Z&before=2026-08-24T00:00:00Z
 - `after` cannot be more than 30 days in the past (returns 400)
 - Send `X-CMR-Override-Date-Limit: true` to bypass the 30-day limit
 - `after` must be earlier than `before` (returns 400 if not)
-- When `after` is given, collection enumeration itself is prefiltered to collections with
-  at least one granule revision in `[after, before]` (an `INTERSECT` against the granules
-  table) — collections with no chance of matching are never enqueued at all, not just
-  skipped once queried. `before` alone doesn't trigger this (it's always ~now by default,
-  so it never meaningfully narrows anything on its own).
 
 All reindex endpoints return `202 Accepted` with a `request_id`:
 
