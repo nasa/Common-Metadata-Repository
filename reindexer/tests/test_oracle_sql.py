@@ -44,6 +44,37 @@ def oracle():
 
 
 # ---------------------------------------------------------------------------
+# Connection pool sizing and per-call timeout
+# ---------------------------------------------------------------------------
+
+class TestPoolAndTimeout:
+
+    def test_pool_created_with_configured_sizing(self, oracle):
+        client, cur = oracle
+        from app.config import config
+        client.get_all_provider_ids()  # any call forces pool creation
+        import oracledb
+        call = oracledb.create_pool.call_args.kwargs
+        assert call["min"] == config.oracle_pool_min
+        assert call["max"] == config.oracle_pool_max
+        assert call["increment"] == config.oracle_pool_increment
+
+    def test_timeout_error_propagates_not_swallowed(self, oracle):
+        """A plain exception, not oracledb.DatabaseError — oracledb may be mocked in
+        this environment, so its own exception classes aren't reliable types here."""
+        client, cur = oracle
+        cur.execute.side_effect = RuntimeError("DPI-1067: call timeout exceeded")
+        with pytest.raises(RuntimeError):
+            client.get_collection_ids_for_provider("MYPROV")
+
+    def test_timeout_error_propagates_from_stream_granule_ids(self, oracle):
+        client, cur = oracle
+        cur.execute.side_effect = RuntimeError("DPI-1067: call timeout exceeded")
+        with pytest.raises(RuntimeError):
+            list(client.stream_granule_ids("C1-MYPROV", chunk_size=500))
+
+
+# ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
 

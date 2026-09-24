@@ -12,6 +12,7 @@ rather than OFFSET/FETCH, so cost is O(page_size) not O(n^2).
 import logging
 import re
 import threading
+from contextlib import contextmanager
 from typing import Iterator, Optional
 
 import oracledb
@@ -179,19 +180,36 @@ class OracleClient:
                         user=config.db_user,
                         password=config.db_password,
                         dsn=dsn,
-                        min=1,
-                        max=5,
-                        increment=1,
+                        min=config.oracle_pool_min,
+                        max=config.oracle_pool_max,
+                        increment=config.oracle_pool_increment,
                     )
-                    logger.info({"event": "oracle_pool_created", "dsn": dsn})
+                    logger.info({
+                        "event": "oracle_pool_created",
+                        "dsn": dsn,
+                        "min": config.oracle_pool_min,
+                        "max": config.oracle_pool_max,
+                        "call_timeout_seconds": config.oracle_call_timeout_seconds,
+                    })
         return self._pool
+
+    @contextmanager
+    def _acquire_cursor(self):
+        """Acquire a pooled connection, yield a cursor. Shared by every query method
+        so there's one place to add things like call_timeout later, once we actually
+        know it's warranted — not wired in yet (see reindexer-work session notes:
+        an untested timeout could mask whether a slow query would've completed on
+        its own, which is exactly what's under investigation right now)."""
+        with self._get_pool().acquire() as conn:
+            with conn.cursor() as cur:
+                yield cur
 
     # ------------------------------------------------------------------
     # Provider / collection / granule (per-provider tables)
     # ------------------------------------------------------------------
 
     def get_all_provider_ids(self) -> list[str]:
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.execute(_PROVIDERS_SQL)
             return [row[0] for row in cur.fetchall()]
 
@@ -199,10 +217,17 @@ class OracleClient:
         _validate_provider_id(provider_id)
         table = f"{provider_id}_COLLECTIONS"
         sql = _COLLECTIONS_SQL.format(table=table)
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.arraysize = _BATCH_SIZE
+            logger.info({"event": "get_collection_ids_for_provider_execute_start", "provider_id": provider_id})
             cur.execute(sql)
-            return [row[0] for row in cur.fetchall()]
+            result = [row[0] for row in cur.fetchall()]
+            logger.info({
+                "event": "get_collection_ids_for_provider_done",
+                "provider_id": provider_id,
+                "collection_count": len(result),
+            })
+            return result
 
     def stream_granule_ids(
         self,
@@ -242,11 +267,33 @@ class OracleClient:
         if use_keyset:
             bind["start_after"] = start_after_concept_id
 
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.arraysize = chunk_size
+            logger.info({
+                "event": "stream_granule_ids_execute_start",
+                "collection_id": collection_id,
+                "table": table,
+                "after": after,
+                "before": before,
+                "resume_after": start_after_concept_id,
+            })
             cur.execute(sql, bind)
+            logger.info({
+                "event": "stream_granule_ids_execute_done",
+                "collection_id": collection_id,
+            })
+            first_fetch = True
             while True:
+                if first_fetch:
+                    logger.info({"event": "stream_granule_ids_first_fetch_start", "collection_id": collection_id})
                 rows = cur.fetchmany(chunk_size)
+                if first_fetch:
+                    logger.info({
+                        "event": "stream_granule_ids_first_fetch_done",
+                        "collection_id": collection_id,
+                        "row_count": len(rows),
+                    })
+                    first_fetch = False
                 if not rows:
                     break
                 yield [(row[0], row[1]) for row in rows]
@@ -303,7 +350,7 @@ class OracleClient:
         sql = _SINGLE_CONCEPT_SQL.format(table=table, extra_cond="")
         bind: dict = {"concept_id": concept_id}
 
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.execute(sql, bind)
             row = cur.fetchone()
             if row is None:
@@ -359,7 +406,7 @@ class OracleClient:
             page_sql = _PAGE_IDS_SQL.format(
                 table=table, where_clause=page_where, page_size=_BATCH_SIZE
             )
-            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+            with self._acquire_cursor() as cur:
                 cur.execute(page_sql, page_bind)
                 page_ids = cur.fetchall()
 
@@ -390,7 +437,7 @@ class OracleClient:
             agg_sql = _SHARED_IDS_SQL.format(
                 table=table, where_clause="WHERE " + " AND ".join(agg_conds)
             )
-            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+            with self._acquire_cursor() as cur:
                 cur.execute(agg_sql, agg_bind)
                 rows = cur.fetchall()
 
