@@ -9,7 +9,7 @@ Covers:
 
 Auth is bypassed via dependency_overrides; see test_auth.py for full auth coverage.
 """
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -398,7 +398,7 @@ class TestProviderListEndpoint:
         import app.routers.reindex as _r
         _r.db_client.get_collection_ids_for_provider.return_value = ["C1-P"]
         client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_A"]})
-        _r.db_client.get_collection_ids_for_provider.assert_called_once_with("PROV_A")
+        _r.db_client.get_collection_ids_for_provider.assert_called_once_with("PROV_A", after=None, before=ANY)
         _r.enqueue_collection_item.assert_called_once()
 
     def test_marks_dispatching_not_completed(self, client):
@@ -416,6 +416,43 @@ class TestProviderListEndpoint:
         client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
         kw = _r.job_store.create_job.call_args.kwargs
         assert kw["before"] is not None
+
+    def test_real_after_value_reaches_get_collection_ids_for_provider(self, client):
+        """End-to-end: a real (non-None) after query param must actually arrive at the
+        db call unmodified — the None case and the SQL-shape are each tested in
+        isolation elsewhere, but nothing previously connected the two."""
+        from datetime import datetime, timedelta, timezone
+        import app.routers.reindex as _r
+        after = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        before = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post(
+            f"/reindexer/reindex/granules/providers?after={after}&before={before}",
+            json={"provider_ids": ["PROV_A"]},
+        )
+        _r.db_client.get_collection_ids_for_provider.assert_called_once_with(
+            "PROV_A", after=after, before=before
+        )
+
+    def test_mixed_results_across_providers_stay_consistent(self, client):
+        """A date-filtered request can legitimately yield different-sized collection
+        lists per provider (one has recent activity, another doesn't) — confirms
+        providers_work_items tracking doesn't assume a uniform result across providers."""
+        from datetime import datetime, timedelta, timezone
+        import app.routers.reindex as _r
+        after = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        _r.db_client.get_collection_ids_for_provider.side_effect = [
+            ["C1-A", "C2-A", "C3-A"],  # PROV_A: 3 active collections in range
+            [],                        # PROV_B: nothing in range
+        ]
+        client.post(
+            f"/reindexer/reindex/granules/providers?after={after}",
+            json={"provider_ids": ["PROV_A", "PROV_B"]},
+        )
+        calls = [c for c in _r.job_store.update_progress.call_args_list if "work_items_delta" in c.kwargs]
+        deltas_by_provider = {c.kwargs["provider_enqueued"]: c.kwargs["work_items_delta"] for c in calls}
+        assert deltas_by_provider == {"PROV_A": 3, "PROV_B": 0}
+        assert _r.enqueue_collection_item.call_count == 3
 
     def test_source_url_includes_path(self, client):
         import app.routers.reindex as _r

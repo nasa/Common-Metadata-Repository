@@ -50,6 +50,28 @@ GROUP BY concept_id
 HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
 ORDER BY concept_id"""
 
+# Prefilter used only when after/before is given: live collections INTERSECTed with
+# collections that have at least one granule revision in [after, before]. This can only
+# ever be over-inclusive (a collection with a matching row but nothing ultimately live
+# still passes and gets the full per-collection check downstream), never under-inclusive
+# — a collection with real live matching granules is guaranteed a DISTINCT row here — so
+# skipping everything NOT in this result is safe. Avoids enqueuing (and running the full
+# per-collection stream_granule_ids query against) collections with zero chance of
+# matching, which is most of them when the window is narrow relative to total history.
+_ACTIVE_COLLECTIONS_SQL = """\
+SELECT concept_id FROM (
+  SELECT concept_id
+  FROM METADATA_DB.{collections_table}
+  GROUP BY concept_id
+  HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
+  INTERSECT
+  SELECT PARENT_COLLECTION_ID AS concept_id
+  FROM METADATA_DB.{granules_table}
+  WHERE REVISION_DATE >= TO_TIMESTAMP_TZ(:after, 'YYYY-MM-DD"T"HH24:MI:SS TZH:TZM')
+  {before_clause}
+)
+ORDER BY concept_id"""
+
 _PROVIDERS_SQL = """\
 SELECT DISTINCT REGEXP_REPLACE(table_name, '_GRANULES$', '')
 FROM all_tables
@@ -195,13 +217,30 @@ class OracleClient:
             cur.execute(_PROVIDERS_SQL)
             return [row[0] for row in cur.fetchall()]
 
-    def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
+    def get_collection_ids_for_provider(
+        self, provider_id: str, after: Optional[str] = None, before: Optional[str] = None
+    ) -> list[str]:
+        """Live collections for a provider. When `after` is given, prefiltered down to
+        collections with at least one granule revision in [after, before] — see
+        _ACTIVE_COLLECTIONS_SQL. Without `after`, unfiltered (all live collections), same
+        as always — `before` alone doesn't narrow anything since it's always ~now anyway.
+        """
         _validate_provider_id(provider_id)
-        table = f"{provider_id}_COLLECTIONS"
-        sql = _COLLECTIONS_SQL.format(table=table)
+        bind: dict = {}
+        if after:
+            sql = _ACTIVE_COLLECTIONS_SQL.format(
+                collections_table=f"{provider_id}_COLLECTIONS",
+                granules_table=f"{provider_id}_GRANULES",
+                before_clause=_BEFORE_CLAUSE if before else "",
+            )
+            bind["after"] = _oracle_ts(after)
+            if before:
+                bind["before"] = _oracle_ts(before)
+        else:
+            sql = _COLLECTIONS_SQL.format(table=f"{provider_id}_COLLECTIONS")
         with self._get_pool().acquire() as conn, conn.cursor() as cur:
             cur.arraysize = _BATCH_SIZE
-            cur.execute(sql)
+            cur.execute(sql, bind)
             return [row[0] for row in cur.fetchall()]
 
     def stream_granule_ids(

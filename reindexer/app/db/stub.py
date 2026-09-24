@@ -38,7 +38,9 @@ class StubOracleClient:
     def get_all_provider_ids(self) -> list[str]:
         return list(self._providers)
 
-    def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
+    def get_collection_ids_for_provider(
+        self, provider_id: str, after: Optional[str] = None, before: Optional[str] = None
+    ) -> list[str]:
         return list(self._collections.get(provider_id, []))
 
     def stream_granule_ids(
