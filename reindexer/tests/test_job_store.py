@@ -73,6 +73,12 @@ class TestCreateJob:
         assert item["before"] == "2024-12-31T23:59:59Z"
         assert item["source_url"] == "/reindexer/reindex/granules/provider/PROV"
 
+    def test_initializes_empty_per_provider_maps(self, store, mock_table):
+        store.create_job("job-1", "granules")
+        item = mock_table.put_item.call_args[1]["Item"]
+        assert item["providers_work_items"] == {}
+        assert item["providers_collections_split"] == {}
+
     def test_optional_fields_absent_when_not_provided(self, store, mock_table):
         store.create_job("job-1", "granules")
         item = mock_table.put_item.call_args[1]["Item"]
@@ -116,8 +122,8 @@ class TestUpdateHeartbeat:
 
 class TestUpdateProgress:
 
-    def test_sets_providers_to_process(self, store, mock_table):
-        store.update_progress("job-1", providers_to_process=["PROV1", "PROV2"])
+    def test_sets_providers_requested(self, store, mock_table):
+        store.update_progress("job-1", providers_requested=["PROV1", "PROV2"])
         values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
         assert ":ptp" in values
         assert values[":ptp"] == {"PROV1", "PROV2"}
@@ -138,6 +144,22 @@ class TestUpdateProgress:
         store.update_progress("job-1")
         values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
         assert ":ts" in values
+
+    def test_provider_enqueued_with_work_items_delta_updates_per_provider_map(self, store, mock_table):
+        store.update_progress("job-1", provider_enqueued="PROV1", work_items_delta=15)
+        call = mock_table.update_item.call_args[1]
+        assert "providers_work_items.#pid = if_not_exists(providers_work_items.#pid, :zero) + :wi" in call["UpdateExpression"]
+        assert call["ExpressionAttributeNames"] == {"#pid": "PROV1"}
+        assert call["ExpressionAttributeValues"][":zero"] == 0
+        assert call["ExpressionAttributeValues"][":wi"] == 15
+
+    def test_work_items_delta_without_provider_enqueued_skips_per_provider_map(self, store, mock_table):
+        """work_items_delta can legitimately arrive with no provider context (e.g. none of the
+        current call sites do this today, but the method shouldn't assume one always exists)."""
+        store.update_progress("job-1", work_items_delta=15)
+        call = mock_table.update_item.call_args[1]
+        assert "providers_work_items" not in call["UpdateExpression"]
+        assert "ExpressionAttributeNames" not in call
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +196,78 @@ class TestIncrementCollectionsSplit:
         store.increment_collections_split("job-xyz")
         key = mock_table.update_item.call_args[1]["Key"]
         assert key == {"job_id": "job-xyz"}
+
+    def test_no_provider_id_skips_per_provider_map(self, store, mock_table):
+        store.increment_collections_split("job-1")
+        call = mock_table.update_item.call_args[1]
+        assert "providers_collections_split" not in call["UpdateExpression"]
+        assert "ExpressionAttributeNames" not in call
+
+    def test_provider_id_updates_per_provider_map(self, store, mock_table):
+        store.increment_collections_split("job-1", "PROV_A")
+        call = mock_table.update_item.call_args[1]
+        assert "providers_collections_split.#pid = if_not_exists(providers_collections_split.#pid, :zero) + :one" in call["UpdateExpression"]
+        assert call["ExpressionAttributeNames"] == {"#pid": "PROV_A"}
+        assert call["ExpressionAttributeValues"][":zero"] == 0
+
+
+# ---------------------------------------------------------------------------
+# _update_with_provider_map_backfill
+#
+# DynamoDB's SET does not auto-vivify a missing parent map, so a job created
+# before providers_work_items/providers_collections_split existed on the schema
+# (still running/dispatching/interrupted across a deploy) fails on the first
+# nested-map write with ValidationException. These simulate that exact error —
+# a plain MagicMock table can't produce it on its own since it doesn't validate
+# expressions against item state, which is exactly how the original bug (an
+# extra unconditional update_item call on every single write, not just the
+# backfill path) shipped without any test noticing.
+# ---------------------------------------------------------------------------
+
+def _validation_exception():
+    return ClientError(
+        {"Error": {"Code": "ValidationException", "Message": "The document path provided in the update expression is invalid for update"}},
+        "UpdateItem",
+    )
+
+
+class TestProviderMapBackfill:
+
+    def test_normal_call_hits_update_item_exactly_once(self, store, mock_table):
+        """Regression test: an earlier version of this method called update_item a
+        second, unconditional time after the try/except, doubling every write."""
+        store.update_progress("job-1", provider_enqueued="PROV_A", work_items_delta=12)
+        assert mock_table.update_item.call_count == 1
+
+    def test_increment_collections_split_normal_call_hits_update_item_exactly_once(self, store, mock_table):
+        store.increment_collections_split("job-1", "PROV_A")
+        assert mock_table.update_item.call_count == 1
+
+    def test_backfills_and_retries_on_validation_exception(self, store, mock_table):
+        mock_table.update_item.side_effect = [_validation_exception(), None, None]
+        store.update_progress("job-1", provider_enqueued="PROV_A", work_items_delta=12)
+        assert mock_table.update_item.call_count == 3
+
+        backfill_call = mock_table.update_item.call_args_list[1][1]
+        assert "providers_work_items = if_not_exists(providers_work_items, :empty)" in backfill_call["UpdateExpression"]
+        assert "providers_collections_split = if_not_exists(providers_collections_split, :empty)" in backfill_call["UpdateExpression"]
+
+        retry_call = mock_table.update_item.call_args_list[2][1]
+        original_call = mock_table.update_item.call_args_list[0][1]
+        assert retry_call == original_call
+
+    def test_increment_collections_split_backfills_and_retries(self, store, mock_table):
+        mock_table.update_item.side_effect = [_validation_exception(), None, None]
+        store.increment_collections_split("job-1", "PROV_A")
+        assert mock_table.update_item.call_count == 3
+
+    def test_non_validation_client_error_propagates_without_retry(self, store, mock_table):
+        mock_table.update_item.side_effect = ClientError(
+            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "..."}}, "UpdateItem",
+        )
+        with pytest.raises(ClientError):
+            store.update_progress("job-1", provider_enqueued="PROV_A", work_items_delta=12)
+        assert mock_table.update_item.call_count == 1
 
 
 # ---------------------------------------------------------------------------
@@ -247,6 +341,18 @@ class TestGetJob:
         job = store.get_job("j1")
         assert job["job_id"] == "j1"
         assert job["status"] == "running"
+
+    def test_deserializes_decimals_nested_inside_maps(self, store, mock_table):
+        import decimal
+        mock_table.get_item.return_value = {"Item": {
+            "job_id": "j1",
+            "providers_work_items": {"PROV_A": decimal.Decimal(15), "PROV_B": decimal.Decimal(25)},
+            "providers_collections_split": {"PROV_A": decimal.Decimal(15)},
+        }}
+        job = store.get_job("j1")
+        assert job["providers_work_items"] == {"PROV_A": 15, "PROV_B": 25}
+        assert isinstance(job["providers_work_items"]["PROV_A"], int)
+        assert job["providers_collections_split"]["PROV_A"] == 15
 
 
 # ---------------------------------------------------------------------------

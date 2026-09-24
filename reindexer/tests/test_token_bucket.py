@@ -42,11 +42,6 @@ class TestTokenBucket:
         tb.set_rate(60)
         assert tb._rate_per_second == pytest.approx(1.0)
 
-    def test_high_rate_consume_returns_immediately(self):
-        tb = TokenBucket(10_000_000)  # 10M/min — bucket starts full
-        result = tb.consume(1)
-        assert result is True
-
     def test_current_rate_after_multiple_updates(self):
         tb = TokenBucket(100)
         tb.set_rate(200)

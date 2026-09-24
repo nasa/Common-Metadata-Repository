@@ -107,7 +107,7 @@ def _enqueue_providers(
     /reindex/granules/providers (an explicit list)."""
     provider_ids = list(dict.fromkeys(provider_ids))  # de-dupe, preserve order
     try:
-        job_store.update_progress(request_id, providers_to_process=provider_ids)
+        job_store.update_progress(request_id, providers_requested=provider_ids)
         for provider_id in provider_ids:
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
@@ -308,6 +308,14 @@ async def reindex_granules_by_providers(
     if invalid:
         raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {invalid!r}")
     _validate_date_params(after, before, override)
+    try:
+        known_providers = db_client.get_all_provider_ids()
+    except Exception as exc:
+        logger.error({"event": "provider_existence_check_failed", "error": str(exc)})
+        raise HTTPException(status_code=503, detail="Unable to validate provider IDs; database unavailable") from exc
+    unknown = [p for p in body.provider_ids if p not in known_providers]
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Unknown provider ID(s): {unknown!r}")
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
     job_store.create_job(
