@@ -11,6 +11,13 @@ class Config:
     db_service: str = field(default_factory=lambda: os.environ.get("DB_SERVICE", "cmr"))
     db_user: str = field(default_factory=lambda: os.environ.get("DB_USER", "cmr"))
     db_password: str = field(default_factory=lambda: os.environ.get("DB_PASSWORD", ""))
+    # Per-round-trip timeout on pooled connections, so one hung query can't block
+    # the single-threaded throttler forever (see OracleClient._acquire_cursor).
+    oracle_call_timeout_seconds: int = field(default_factory=lambda: int(os.environ.get("ORACLE_CALL_TIMEOUT_SECONDS", "180")))
+    # Pool sizing. Shared with synchronous API requests, not just the throttler.
+    oracle_pool_min: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MIN", "2")))
+    oracle_pool_max: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MAX", "15")))
+    oracle_pool_increment: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_INCREMENT", "1")))
 
     # Elasticsearch — two clusters: collections on 9211, granules on 9210
     es_host: str = field(default_factory=lambda: os.environ.get("CMR_ELASTIC_HOST", "localhost"))
