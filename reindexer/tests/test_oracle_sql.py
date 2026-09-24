@@ -377,51 +377,6 @@ def test_get_collection_ids_for_provider_rejects_invalid_provider_id(oracle):
         client.get_collection_ids_for_provider("bad-provider!")
 
 
-def test_get_collection_ids_for_provider_with_after_uses_active_intersect(oracle):
-    client, cur = oracle
-    cur.fetchall.return_value = [("C1-MYPROV",)]
-
-    result = client.get_collection_ids_for_provider("MYPROV", after="2024-01-01T00:00:00Z")
-
-    assert result == ["C1-MYPROV"]
-    sql, bind = _last_execute(cur)
-    assert "METADATA_DB.MYPROV_COLLECTIONS" in sql
-    assert "METADATA_DB.MYPROV_GRANULES" in sql
-    assert "INTERSECT" in sql
-    assert "PARENT_COLLECTION_ID" in sql
-    assert "REVISION_DATE >=" in sql
-    assert bind["after"] == "2024-01-01T00:00:00 +00:00"
-    assert "before" not in bind
-
-
-def test_get_collection_ids_for_provider_with_after_and_before(oracle):
-    client, cur = oracle
-    cur.fetchall.return_value = []
-
-    client.get_collection_ids_for_provider(
-        "MYPROV", after="2024-01-01T00:00:00Z", before="2024-12-31T23:59:59Z"
-    )
-
-    sql, bind = _last_execute(cur)
-    assert "REVISION_DATE >=" in sql
-    assert "REVISION_DATE <=" in sql
-    assert bind["before"] == "2024-12-31T23:59:59 +00:00"
-
-
-def test_get_collection_ids_for_provider_before_alone_stays_unfiltered(oracle):
-    """before alone (no after) doesn't trigger the prefilter — before is always ~now
-    by the time it reaches here, so it never meaningfully narrows anything on its own."""
-    client, cur = oracle
-    cur.fetchall.return_value = []
-
-    client.get_collection_ids_for_provider("MYPROV", before="2024-12-31T23:59:59Z")
-
-    sql, bind = _last_execute(cur)
-    assert "INTERSECT" not in sql
-    assert "REVISION_DATE" not in sql
-    assert bind == {}
-
-
 # ---------------------------------------------------------------------------
 # stream_granule_ids — SQL and keyset clause verification
 # ---------------------------------------------------------------------------

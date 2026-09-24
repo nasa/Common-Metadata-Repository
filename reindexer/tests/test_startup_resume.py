@@ -72,7 +72,7 @@ class TestResumeStalledJobs:
         db.get_collection_ids_for_provider.return_value = ["C1-P"]
         resume_stalled_jobs(db, js, enqueue)
         # Only PROV_B is remaining
-        db.get_collection_ids_for_provider.assert_called_once_with("PROV_B", after=None, before=None)
+        db.get_collection_ids_for_provider.assert_called_once_with("PROV_B")
         enqueue.assert_called_once_with(
             request_id="job-1", collection_id="C1-P", after=None, before=None
         )
@@ -86,26 +86,9 @@ class TestResumeStalledJobs:
         db.get_collection_ids_for_provider.return_value = ["C1-P"]
         resume_stalled_jobs(db, js, enqueue)
         # Only PROV_B is remaining
-        db.get_collection_ids_for_provider.assert_called_once_with("PROV_B", after=None, before=None)
+        db.get_collection_ids_for_provider.assert_called_once_with("PROV_B")
         enqueue.assert_called_once_with(
             request_id="job-1", collection_id="C1-P", after=None, before=None
-        )
-
-    def test_granules_by_providers_resume_passes_real_after_to_db(self):
-        """The None case is covered elsewhere (e.g. test_granules_by_providers_re_enqueues_
-        remaining_providers) — this confirms a real, active date filter on the job actually
-        reaches get_collection_ids_for_provider on resume, not just that None is handled."""
-        db, js, enqueue = _make_deps(stalled_jobs=[
-            _job("granules-by-providers",
-                 providers_requested=["PROV_A", "PROV_B"],
-                 providers_enqueued=["PROV_A"],
-                 after="2024-06-01T00:00:00Z",
-                 before="2024-06-08T00:00:00Z")
-        ])
-        db.get_collection_ids_for_provider.return_value = ["C1-P"]
-        resume_stalled_jobs(db, js, enqueue)
-        db.get_collection_ids_for_provider.assert_called_once_with(
-            "PROV_B", after="2024-06-01T00:00:00Z", before="2024-06-08T00:00:00Z"
         )
 
     def test_granules_by_providers_marked_dispatching_after_resume(self):
@@ -159,7 +142,7 @@ class TestResumeStalledJobs:
         ])
         db.get_collection_ids_for_provider.return_value = ["C1-P"]
         resume_stalled_jobs(db, js, enqueue)
-        db.get_collection_ids_for_provider.assert_called_once_with("MYPROV", after=None, before=None)
+        db.get_collection_ids_for_provider.assert_called_once_with("MYPROV")
         enqueue.assert_called()
 
     def test_granules_by_collection_re_enqueues_collection(self):
