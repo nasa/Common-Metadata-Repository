@@ -478,7 +478,9 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (seq (filter opendap-util/opendap-url? related-urls))
+            :has-opendap-url (if (seq (filter opendap-util/opendap-url? related-urls))
+                               true
+                               false)
             :cloud-hosted (cloud-hosted? collection tags)
             :standard-product (standard-product? collection tags)
             :publication-references opendata-references
