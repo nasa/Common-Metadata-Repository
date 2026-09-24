@@ -137,8 +137,10 @@ Job record example:
   "status": "running",
   "concept_type": "granules",
   "source_url": "/reindexer/reindex/granules?after=2026-08-01T00:00:00Z",
-  "providers_to_process": ["PROV_A", "PROV_B"],
+  "providers_requested": ["PROV_A", "PROV_B"],
   "providers_enqueued": ["PROV_A"],
+  "providers_work_items": {"PROV_A": 300},
+  "providers_collections_split": {"PROV_A": 210},
   "work_items_enqueued": 450,
   "total_dispatched": 12000,
   "last_heartbeat": "2026-08-24T10:30:15Z",
@@ -147,11 +149,14 @@ Job record example:
   "elapsed_seconds": 1815,
   "heartbeat_age_seconds": 12,
   "heartbeat_stale": false,
-  "dispatch_rate_per_minute": 397
+  "dispatch_rate_per_minute": 397,
+  "providers_remaining": ["PROV_A", "PROV_B"]
 }
 ```
 
-The `elapsed_seconds`, `heartbeat_age_seconds`, `heartbeat_stale`, and `dispatch_rate_per_minute` fields are computed at query time and not stored in DynamoDB.
+The `elapsed_seconds`, `heartbeat_age_seconds`, `heartbeat_stale`, `dispatch_rate_per_minute`, and `providers_remaining` fields are computed at query time and not stored in DynamoDB.
+
+`providers_remaining` (only present on `granules`/`granules-by-providers` jobs, which track `providers_requested`) lists every provider that still has outstanding work — either never enqueued at all, or enqueued but not every one of its collections has finished streaming yet (`providers_collections_split[p] < providers_work_items[p]`). This is the safe set to resubmit via `POST /reindex/granules/providers` after cancelling a job, without needing to inspect the checkpoint table.
 
 Job statuses: `running`, `dispatching`, `completed`, `failed`, `interrupted`, `cancelled`
 

@@ -36,9 +36,9 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
 
         try:
             if concept_type in ("granules", "granules-by-providers"):
-                providers_to_process = set(job.get("providers_to_process") or [])
+                providers_requested = set(job.get("providers_requested") or [])
                 providers_enqueued = set(job.get("providers_enqueued") or [])
-                remaining = providers_to_process - providers_enqueued
+                remaining = providers_requested - providers_enqueued
                 for provider_id in remaining:
                     collection_ids = db_client.get_collection_ids_for_provider(provider_id)
                     for cid in collection_ids:

@@ -43,7 +43,7 @@ def mock_deps(monkeypatch):
     mock_db = MagicMock()
     mock_db.stream_concept_ids_by_type.return_value = []
     mock_db.get_concept_by_id.return_value = None
-    mock_db.get_all_provider_ids.return_value = []
+    mock_db.get_all_provider_ids.return_value = ["PROV_A", "PROV_B", "PROV_C"]
     mock_db.get_collection_ids_for_provider.return_value = []
     monkeypatch.setattr("app.routers.reindex.db_client", mock_db)
 
@@ -326,6 +326,51 @@ class TestProviderListEndpoint:
         client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["bad.provider!"]})
         _r.db_client.get_collection_ids_for_provider.assert_not_called()
 
+    def test_unknown_provider_id_returns_400(self, client):
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["NOT_A_REAL_PROVIDER"]})
+        assert r.status_code == 400
+        assert "NOT_A_REAL_PROVIDER" in r.json()["detail"]
+
+    def test_one_unknown_provider_rejects_whole_request(self, client):
+        """A single bad provider ID must reject the whole request up front rather than
+        enqueue the good providers and silently drop/strand the rest mid-job."""
+        import app.routers.reindex as _r
+        r = client.post(
+            "/reindexer/reindex/granules/providers",
+            json={"provider_ids": ["PROV_A", "NOT_A_REAL_PROVIDER", "PROV_B"]},
+        )
+        assert r.status_code == 400
+        _r.job_store.create_job.assert_not_called()
+        _r.enqueue_collection_item.assert_not_called()
+
+    def test_unknown_provider_no_db_collection_call(self, client):
+        import app.routers.reindex as _r
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["NOT_A_REAL_PROVIDER"]})
+        _r.db_client.get_collection_ids_for_provider.assert_not_called()
+
+    def test_provider_existence_check_failure_returns_503(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
+        r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        assert r.status_code == 503
+
+    def test_provider_existence_check_failure_creates_no_job(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
+        _r.job_store.create_job.assert_not_called()
+
+    def test_bad_date_rejected_before_provider_existence_check(self, client):
+        """Date validation is local/cheap and should short-circuit before paying for
+        an Oracle round-trip to validate provider existence."""
+        import app.routers.reindex as _r
+        r = client.post(
+            "/reindexer/reindex/granules/providers?after=not-a-date",
+            json={"provider_ids": ["PROV_A"]},
+        )
+        assert r.status_code == 400
+        _r.db_client.get_all_provider_ids.assert_not_called()
+
     def test_creates_job_with_granules_by_providers_type(self, client):
         import app.routers.reindex as _r
         _r.db_client.get_collection_ids_for_provider.return_value = []
@@ -333,14 +378,14 @@ class TestProviderListEndpoint:
         args = _r.job_store.create_job.call_args.args
         assert args[1] == "granules-by-providers"
 
-    def test_sets_providers_to_process(self, client):
+    def test_sets_providers_requested(self, client):
         import app.routers.reindex as _r
         _r.db_client.get_collection_ids_for_provider.return_value = []
         client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_B"]})
         calls = _r.job_store.update_progress.call_args_list
-        ptp_calls = [c for c in calls if c.kwargs.get("providers_to_process")]
-        assert ptp_calls, "expected update_progress(providers_to_process=...) call"
-        assert ptp_calls[0].kwargs["providers_to_process"] == ["PROV_A", "PROV_B"]
+        ptp_calls = [c for c in calls if c.kwargs.get("providers_requested")]
+        assert ptp_calls, "expected update_progress(providers_requested=...) call"
+        assert ptp_calls[0].kwargs["providers_requested"] == ["PROV_A", "PROV_B"]
 
     def test_enqueues_collections_for_each_provider(self, client):
         import app.routers.reindex as _r
@@ -378,6 +423,40 @@ class TestProviderListEndpoint:
         client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
         kw = _r.job_store.create_job.call_args.kwargs
         assert "granules/providers" in kw["source_url"]
+
+    def test_calls_try_complete_job_after_dispatching(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = []
+        client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "PROV_B"]})
+        _r.job_store.try_complete_job.assert_called_once()
+
+
+class TestAllProvidersErrorPath:
+    """_enqueue_all_providers resolves the provider list itself before delegating to
+    the shared _enqueue_providers loop; a failure at that resolution step must not
+    fall through into the shared loop with an undefined provider list."""
+
+    def test_get_all_provider_ids_failure_marks_job_failed(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
+        r = client.post("/reindexer/reindex/granules")
+        assert r.status_code == 202
+        _r.job_store.mark_job.assert_called_once_with(
+            _r.job_store.create_job.call_args.args[0], "failed"
+        )
+
+    def test_get_all_provider_ids_failure_never_enqueues_collections(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
+        client.post("/reindexer/reindex/granules")
+        _r.db_client.get_collection_ids_for_provider.assert_not_called()
+        _r.enqueue_collection_item.assert_not_called()
+
+    def test_get_all_provider_ids_failure_does_not_set_providers_requested(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
+        client.post("/reindexer/reindex/granules")
+        _r.job_store.update_progress.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -586,6 +665,52 @@ class TestJobEnrichment:
         assert result["job_id"] == "j1"
         assert result["status"] == "running"
         assert result["concept_type"] == "granules"
+
+    def test_providers_remaining_absent_for_non_provider_list_jobs(self):
+        result = self._enrich({"job_id": "j1", "status": "running", "concept_type": "concept"})
+        assert "providers_remaining" not in result
+
+    def test_providers_remaining_includes_never_enqueued_providers(self):
+        result = self._enrich({
+            "job_id": "j1", "status": "cancelled",
+            "providers_requested": ["PROV_A", "PROV_B", "PROV_C"],
+            "providers_enqueued": ["PROV_A"],
+            "providers_work_items": {"PROV_A": 10},
+            "providers_collections_split": {"PROV_A": 10},
+        })
+        assert result["providers_remaining"] == ["PROV_B", "PROV_C"]
+
+    def test_providers_remaining_includes_partially_split_enqueued_providers(self):
+        """A provider can be fully enqueued but still have un-split collections —
+        it must show up as remaining even though it's already in providers_enqueued."""
+        result = self._enrich({
+            "job_id": "j1", "status": "cancelled",
+            "providers_requested": ["PROV_A", "PROV_B"],
+            "providers_enqueued": ["PROV_A", "PROV_B"],
+            "providers_work_items": {"PROV_A": 10, "PROV_B": 25},
+            "providers_collections_split": {"PROV_A": 10, "PROV_B": 18},
+        })
+        assert result["providers_remaining"] == ["PROV_B"]
+
+    def test_providers_remaining_empty_when_fully_complete(self):
+        result = self._enrich({
+            "job_id": "j1", "status": "completed",
+            "providers_requested": ["PROV_A", "PROV_B"],
+            "providers_enqueued": ["PROV_A", "PROV_B"],
+            "providers_work_items": {"PROV_A": 10, "PROV_B": 25},
+            "providers_collections_split": {"PROV_A": 10, "PROV_B": 25},
+        })
+        assert result["providers_remaining"] == []
+
+    def test_providers_remaining_handles_missing_per_provider_maps(self):
+        """Jobs created before this field existed won't have providers_work_items/
+        providers_collections_split at all — must not raise."""
+        result = self._enrich({
+            "job_id": "j1", "status": "cancelled",
+            "providers_requested": ["PROV_A", "PROV_B"],
+            "providers_enqueued": ["PROV_A"],
+        })
+        assert result["providers_remaining"] == ["PROV_B"]
 
     def test_missing_timestamps_do_not_raise(self):
         result = self._enrich({"job_id": "j1", "status": "running"})
