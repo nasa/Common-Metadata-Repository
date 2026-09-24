@@ -204,40 +204,168 @@
 ;            ;; Not retryable: throw the original exception.
 ;            (throw e)))))))
 
-(defn delete-by-query
-  "A simplified delete-by-query for debugging the HTML response issue."
-  [conn index _mapping-type query]
-  (let [admin-token (es-config/elastic-admin-token)
-        url (es-util/url-with-path conn index "_delete_by_query")
-        ;; The correctly formed request options
-        request-opts {:headers {"Authorization" admin-token
-                                "Confirm-delete-action" "true"
-                                :client-id t-config/cmr-client-id}
-                      :content-type :json
-                      ;; These are now correctly placed as query parameters
-                      :query-params {:slices 1
-                                     :scroll_size 500
-                                     :conflicts "proceed"}
-                      :body (json/generate-string {:query query})
-                      :throw-exceptions false}
-        response (http/post url (merge (:http-opts conn) request-opts))
-        status (:status response)]
+;(defn delete-by-query
+;  "Performs a delete-by-query operation, blocking until completion.
+;  Internally, it uses an async task and polling to prevent network timeouts
+;  on long-running deletions, while maintaining a synchronous API contract."
+;  [conn index _mapping-type query]
+;  (let [polling-interval-ms 5000 ;; Poll every 5 seconds
+;        max-wait-ms (* 10 60 1000) ;; Max wait time: 10 minutes
+;        admin-token (es-config/elastic-admin-token)
+;        start-time (System/currentTimeMillis)]
+;
+;    ;; --- Step 1: Start the deletion as a background task ---
+;    (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
+;          start-task-response (http/post start-task-url
+;                                         (merge (:http-opts conn)
+;                                                {:headers {"Authorization" admin-token}
+;                                                 :content-type :json
+;                                                 :query-params {:wait_for_completion false
+;                                                                :slices 1
+;                                                                :scroll_size 500
+;                                                                :conflicts "proceed"}
+;                                                 :body (json/generate-string {:query query})
+;                                                 :throw-exceptions false}))
+;          start-task-status (:status start-task-response)]
+;
+;      (if-not (#{200 201} start-task-status)
+;        ;; If we can't even START the task, fail immediately.
+;        (throw (ex-info "Failed to start delete-by-query task"
+;                        {:status start-task-status :body (:body start-task-response)}))
+;
+;        ;; --- Step 2: Poll the Task API until the task is complete ---
+;        (let [task-id (-> start-task-response es-util/decode-response :task)]
+;          (info (str "Started delete-by-query task " task-id ". Polling for completion..."))
+;          (loop []
+;            (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
+;                  task-status-response (http/get check-task-url
+;                                                 (merge (:http-opts conn)
+;                                                        {:headers {"Authorization" admin-token}
+;                                                         :throw-exceptions false}))
+;                  task-status-body (es-util/decode-response task-status-response)]
+;
+;              (cond
+;                ;; Condition 1: Task is successfully completed
+;                (true? (:completed task-status-body))
+;                (do
+;                  (info (str "Task " task-id " completed successfully."))
+;                  ;; The final result is in the :response field of the task status
+;                  (:response (:task task-status-body)))
+;
+;                ;; Condition 2: The entire process has timed out
+;                (> (- (System/currentTimeMillis) start-time) max-wait-ms)
+;                (throw (ex-info (str "Timed out waiting for delete-by-query task " task-id " to complete after " (/ max-wait-ms 1000) " seconds.")
+;                                {:task-id task-id}))
+;
+;                ;; Condition 3: The task itself reported an error
+;                (some? (get-in task-status-body [:task :error]))
+;                (throw (ex-info (str "Delete-by-query task " task-id " failed with an error.")
+;                                {:task-id task-id
+;                                 :error-details (get-in task-status-body [:task :error])}))
+;
+;                ;; Condition 4: Still running, continue polling
+;                :else
+;                (do
+;                  (let [status (get-in task-status-body [:task :status])]
+;                    (info (format "Task %s progress: %d deleted / %d total."
+;                                  task-id
+;                                  (:deleted status)
+;                                  (:total status))))
+;                  (Thread/sleep polling-interval-ms)
+;                  (recur))))))))))
 
-    ;; CRITICAL: Log the entire response when it's not what we expect.
+(defn- attempt-to-start-task
+  "Makes a single attempt to start the delete-by-query task.
+  Throws an exception on any failure, returns a task-id on success."
+  [conn index query]
+  (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
+        response (http/post start-task-url
+                            (merge (:http-opts conn)
+                                   {:headers {"Authorization" (es-config/elastic-admin-token)}
+                                    :content-type :json
+                                    :query-params {:wait_for_completion false
+                                                   :slices 1
+                                                   :scroll_size 500
+                                                   :conflicts "proceed"}
+                                    :body (json/generate-string {:query query})
+                                    :throw-exceptions false}))
+        _ (info "CMR-11405 - Response for starting delete query task is " response)
+        status (:status response)
+        body (:body response)]
+    (when (has-scroll-context-error? body)
+      (throw (ex-info "CMR-11405 - Scroll context error on task start" {:type :scroll-context-error :body body})))
+
     (when-not (#{200 201} status)
-      (info "!!!!!!!! DEBUG: DELETE-BY-QUERY FAILED !!!!!!!!")
-      (info "Request URL:" url)
-      (info "Request Opts:" (dissoc request-opts :body)) ;; Don't log the potentially huge body
-      (info "Response Status:" status)
-      (info "Response Headers:" (:headers response))
-      (info "Response Body:" (:body response)) ;; This is the HTML you need to see
-      (info "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
+      (throw (ex-info "CMR-11405 - Failed to start delete-by-query task" {:status status :body body})))
 
-    (if (#{200 201} status)
-      (es-util/decode-response response)
-      ;; This is where the error that the caller sees is generated
-      (throw (ex-info (str "Delete by query failed with status " status)
-                      {:status status :body (:body response)})))))
+    (-> response es-util/decode-response :task)))
+
+(defn- start-task-with-retry
+  "Wraps the task start attempt with retry logic for scroll-context errors."
+  [conn index query]
+  (loop [attempt 1]
+    ;; Step 1: Run the action and capture the result as either [:ok val] or [:error ex].
+    (let [result (try
+                   [:ok (attempt-to-start-task conn index query)]
+                   (catch Exception e
+                     [:error e]))]
+
+      ;; Step 2: Check the result and decide what to do.
+      (if (= :ok (first result))
+        ;; Success: return the actual value.
+        (second result)
+
+        ;; Failure: check if we should retry.
+        (let [e (second result)]
+          (if (and (< attempt 3) (= :scroll-context-error (:type (ex-data e))))
+            ;; Retryable error: This `recur` is now in a simple `if` branch,
+            ;; completely outside the `try/catch`, and is guaranteed to be in a tail position.
+            (do
+              (info (format "CMR-11405 - Scroll context error on attempt %d to start task. Retrying..." attempt))
+              (Thread/sleep 100)
+              (recur (inc attempt)))
+            ;; Not retryable: re-throw the original exception.
+            (throw e)))))))
+
+(defn- poll-task-for-completion
+  "Polls a given task-id until it completes, fails, or times out."
+  [conn task-id]
+  (let [polling-interval-ms 5000
+        max-wait-ms (* 10 60 1000)
+        start-time (System/currentTimeMillis)]
+    (info (str "CMR-11405 - Polling task " task-id " for completion..."))
+    (loop []
+      (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
+            task-status-response (http/get check-task-url
+                                           (merge (:http-opts conn)
+                                                  {:headers {"Authorization" (es-config/elastic-admin-token)}
+                                                   :throw-exceptions false}))
+            task-status-body (es-util/decode-response task-status-response)]
+        (cond
+          (true? (:completed task-status-body))
+          (do (info (str "CMR-11405 - Task " task-id " completed successfully."))
+              (:response (:task task-status-body)))
+
+          (> (- (System/currentTimeMillis) start-time) max-wait-ms)
+          (throw (ex-info (str "CMR-11405 - Timed out waiting for task " task-id) {:task-id task-id}))
+
+          (some? (get-in task-status-body [:task :error]))
+          (throw (ex-info (str "CMR-11405 - Task " task-id " failed with an error.")
+                          {:task-id task-id :error-details (get-in task-status-body [:task :error])}))
+
+          :else
+          (do
+            (let [status (get-in task-status-body [:task :status])]
+              (info (format "CMR-11405 - Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
+            (Thread/sleep polling-interval-ms)
+            (recur)))))))
+
+(defn delete-by-query
+  "Performs a delete-by-query operation, blocking until completion."
+  [conn index _mapping-type query]
+  (info "CMR-11405 - delete-by-query started for index : " index)
+  (let [task-id (start-task-with-retry conn index query)]
+    (poll-task-for-completion conn task-id)))
 
 (defn delete-index
   "Deletes an index from the elastic store"
