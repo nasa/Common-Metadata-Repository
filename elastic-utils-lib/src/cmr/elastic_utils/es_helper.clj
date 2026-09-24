@@ -151,58 +151,93 @@
 ;      (throw (ex-info (str "Delete by query failed with status " status)
 ;                      {:status status :body (:body response)})))))
 
+;(defn delete-by-query
+;  "Performs a delete-by-query operation over one or more indexes and types.
+;  Multiple indexes and types can be specified by passing in a seq of strings,
+;  otherwise specifying a string suffices."
+;  [conn index _mapping-type query]
+;  (loop [attempt 1]
+;    (let [result (try
+;                   [:result (let [admin-token (es-config/elastic-admin-token)
+;                                  url (es-util/url-with-path conn index "_delete_by_query")
+;                                  response (http/post url
+;                                                      (merge (:http-opts conn)
+;                                                             {:headers {"Authorization" admin-token
+;                                                                        "Confirm-delete-action" "true"
+;                                                                        :client-id t-config/cmr-client-id}
+;                                                              :content-type :json
+;                                                              :query-params {:slices 1
+;                                                                             :scroll_size 500
+;                                                                             :conflicts "proceed"}
+;                                                              :body (json/generate-string {:query query})
+;                                                              :throw-exceptions false}))
+;                                  resp-body (:body response)
+;                                  status (:status response)]
+;
+;                              (when (has-scroll-context-error? resp-body)
+;                                (throw (ex-info "Scroll context error detected"
+;                                                {:type :scroll-context-error
+;                                                 :body resp-body})))
+;
+;                              (if (#{200 201} status)
+;                                (es-util/decode-response response)
+;                                (throw (ex-info (str "Delete by query failed with status " status)
+;                                                {:status status :body (:body response)}))))]
+;                   (catch Exception e
+;                     ;; The :error vector indicates failure.
+;                     [:error e]))]
+;
+;      ;; Make a decision based on the result.
+;      (if (= :result (first result))
+;        ;; Success: return the actual result.
+;        (second result)
+;
+;        ;; Failure: check if we should retry.
+;        (let [e (second result)]
+;          (if (and (< attempt 3)
+;                   (= :scroll-context-error (:type (ex-data e))))
+;            (do
+;              (info (format "Scroll context error on attempt %d. Retrying..." attempt))
+;              (Thread/sleep 100)
+;              (recur (inc attempt)))
+;
+;            ;; Not retryable: throw the original exception.
+;            (throw e)))))))
+
 (defn delete-by-query
-  "Performs a delete-by-query operation over one or more indexes and types.
-  Multiple indexes and types can be specified by passing in a seq of strings,
-  otherwise specifying a string suffices."
+  "A simplified delete-by-query for debugging the HTML response issue."
   [conn index _mapping-type query]
-  (loop [attempt 1]
-    (let [result (try
-                   [:result (let [admin-token (es-config/elastic-admin-token)
-                                  url (es-util/url-with-path conn index "_delete_by_query")
-                                  response (http/post url
-                                                      (merge (:http-opts conn)
-                                                             {:headers {"Authorization" admin-token
-                                                                        "Confirm-delete-action" "true"
-                                                                        :client-id t-config/cmr-client-id}
-                                                              :content-type :json
-                                                              :query-params {:slices 1
-                                                                             :scroll_size 500
-                                                                             :conflicts "proceed"}
-                                                              :body (json/generate-string {:query query})
-                                                              :throw-exceptions false}))
-                                  resp-body (:body response)
-                                  status (:status response)]
+  (let [admin-token (es-config/elastic-admin-token)
+        url (es-util/url-with-path conn index "_delete_by_query")
+        ;; The correctly formed request options
+        request-opts {:headers {"Authorization" admin-token
+                                "Confirm-delete-action" "true"
+                                :client-id t-config/cmr-client-id}
+                      :content-type :json
+                      ;; These are now correctly placed as query parameters
+                      :query-params {:slices 1
+                                     :scroll_size 500
+                                     :conflicts "proceed"}
+                      :body (json/generate-string {:query query})
+                      :throw-exceptions false}
+        response (http/post url (merge (:http-opts conn) request-opts))
+        status (:status response)]
 
-                              (when (has-scroll-context-error? resp-body)
-                                (throw (ex-info "Scroll context error detected"
-                                                {:type :scroll-context-error
-                                                 :body resp-body})))
+    ;; CRITICAL: Log the entire response when it's not what we expect.
+    (when-not (#{200 201} status)
+      (info "!!!!!!!! DEBUG: DELETE-BY-QUERY FAILED !!!!!!!!")
+      (info "Request URL:" url)
+      (info "Request Opts:" (dissoc request-opts :body)) ;; Don't log the potentially huge body
+      (info "Response Status:" status)
+      (info "Response Headers:" (:headers response))
+      (info "Response Body:" (:body response)) ;; This is the HTML you need to see
+      (info "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
 
-                              (if (#{200 201} status)
-                                (es-util/decode-response response)
-                                (throw (ex-info (str "Delete by query failed with status " status)
-                                                {:status status :body (:body response)}))))]
-                   (catch Exception e
-                     ;; The :error vector indicates failure.
-                     [:error e]))]
-
-      ;; Make a decision based on the result.
-      (if (= :result (first result))
-        ;; Success: return the actual result.
-        (second result)
-
-        ;; Failure: check if we should retry.
-        (let [e (second result)]
-          (if (and (< attempt 3)
-                   (= :scroll-context-error (:type (ex-data e))))
-            (do
-              (info (format "Scroll context error on attempt %d. Retrying..." attempt))
-              (Thread/sleep 100)
-              (recur (inc attempt)))
-
-            ;; Not retryable: throw the original exception.
-            (throw e)))))))
+    (if (#{200 201} status)
+      (es-util/decode-response response)
+      ;; This is where the error that the caller sees is generated
+      (throw (ex-info (str "Delete by query failed with status " status)
+                      {:status status :body (:body response)})))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
