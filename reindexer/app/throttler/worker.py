@@ -175,7 +175,10 @@ class ThrottlerWorker:
 
         if self._cancel_cache and self._cancel_cache.is_cancelled(item.request_id):
             logger.info({"event": "work_item_skipped_cancelled", "request_id": item.request_id})
-            delete_message(queue_url, receipt)
+            try:
+                delete_message(queue_url, receipt)
+            except Exception as exc:
+                logger.warning({"event": "delete_message_failed", "error": str(exc)})
             return
 
         with self._job_lock:
