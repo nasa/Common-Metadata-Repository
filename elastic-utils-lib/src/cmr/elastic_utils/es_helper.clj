@@ -161,7 +161,9 @@
   (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
         response (http/post start-task-url
                             (merge (:http-opts conn)
-                                   {:headers {"Authorization" (es-config/elastic-admin-token)}
+                                   {:headers {"Authorization" (es-config/elastic-admin-token)
+                                              "Confirm-delete-action" "true"
+                                              :client-id t-config/cmr-client-id}
                                     :content-type :json
                                     :query-params {:wait_for_completion false
                                                    :slices 1
@@ -209,7 +211,9 @@
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
                                            (merge (:http-opts conn)
-                                                  {:headers {"Authorization" (es-config/elastic-admin-token)}
+                                                  {:headers {"Authorization" (es-config/elastic-admin-token)
+                                                             "Confirm-delete-action" "true"
+                                                             :client-id t-config/cmr-client-id}
                                                    :throw-exceptions false}))
             task-status-body (es-util/decode-response task-status-response)]
         (cond

@@ -116,4 +116,5 @@
 (defn delete-collection
   "Delete the collection with the given provider id and native id."
   [provider-id native-id request]
+  (info "CMR-11405 - Version 4")
   (api-core/delete-concept :collection provider-id native-id request))

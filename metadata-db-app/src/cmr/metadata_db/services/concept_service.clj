@@ -779,6 +779,7 @@
 ;; true implies creation of tombstone for the revision - delete
 (defmethod save-concept-revision true
   [context concept]
+  (info "CMR-11405 - INSIDE save-concept-revision for concept : " concept)
   (cv/validate-tombstone-request concept)
   (let [{:keys [concept-id revision-id skip-publication]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
@@ -842,6 +843,7 @@
                       (= concept-type :generic-association)
                       (= concept-type :service-association)
                       (= concept-type :tool-association))
+              (info "CMR-11405 - publishing delete event for concept here")
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
             revisioned-tombstone)))
