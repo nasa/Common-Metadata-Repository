@@ -669,11 +669,13 @@
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
   [context concept-mapping-types concept-id revision-id]
+  (info "CMR-11405 - Starting cascade collection delete for concept-id " concept-id)
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
                                          (:granule)
                                          (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
+      (info "CMR-11405 - deleting within index : " index)
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
                     (indexer-util/context->conn context es-config/gran-elastic-name)
