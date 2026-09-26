@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
-   [cmr.common.log :as log :refer [info warn error]]
    [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -552,6 +551,7 @@
           ;; Keyword2 below was meant to 'replace' it.
           ;; analyzed field for keyword searches
           :keyword2 m/text-field-keyword-mapping
+          :keyword2-wildcard m/wildcard-field-mapping
           :long-name-lowercase m/string-field-mapping
           :project-ln-lowercase m/string-field-mapping
           :platform-ln-lowercase m/string-field-mapping

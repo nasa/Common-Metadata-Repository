@@ -306,6 +306,10 @@
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
+(defmethod q2e/field->wildcard-field-mappings :collection
+  [_]
+  {:keyword :keyword2-wildcard})
+
 (defmethod q2e/field->wildcard-field-mappings :granule
   [_]
   {:granule-ur :granule-ur-wildcard
@@ -421,25 +425,26 @@
                                   #(map remove-quotes-from-keyword-query-string %))
         boosts (:boosts unquoted-query)
         {:keys [concept-type condition]} (query-expense/order-conditions unquoted-query)
-        core-query (q2e/condition->elastic condition concept-type)]
+        core-query (q2e/condition->elastic condition concept-type)
+        keywords (keywords-in-query query)]
+
     ;;Need the original query here because when the query-str is quoted, it's processed differently.
-    (let [keywords (keywords-in-query query)]
-      (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]
-        (do
-          (validate-keyword-wildcards all-keywords)
+    (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]
+      (do
+        (validate-keyword-wildcards all-keywords)
         ;; Forces score to be returned even if not sorting by score.
-          {:track_scores true
+        {:track_scores true
          ;; function_score query allows us to compute a custom relevance score for each document
          ;; matched by the primary query. The final document relevance is given by multiplying
          ;; a boosting term for each matching filter in a set of filters.
-           :query {:function_score {:score_mode :multiply
-                                    :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                    :query {:bool {:must (eq/match-all)
-                                                   :filter core-query}}}}})
-        (if boosts
-          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-          {:query {:bool {:must (eq/match-all)
-                          :filter core-query}}})))))
+         :query {:function_score {:score_mode :multiply
+                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                  :query {:bool {:must (eq/match-all)
+                                                 :filter core-query}}}}})
+      (if boosts
+        (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
+        {:query {:bool {:must (eq/match-all)
+                        :filter core-query}}}))))
 
 ;; this only needs to map overrides, defaults to one-to-one mappings
 (defmethod q2e/concept-type->sort-key-map :collection
