@@ -293,7 +293,7 @@
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id]
   (let [polling-interval-ms 5000
-        max-wait-ms (* 10 60 1000)
+        max-wait-ms (* 60 60 1000) ;; 60 min enforced timeout
         start-time (System/currentTimeMillis)]
     (info (str "CMR-11405 - Polling task " task-id " for completion..."))
     (loop []
