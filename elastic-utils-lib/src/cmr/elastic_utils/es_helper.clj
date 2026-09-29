@@ -115,32 +115,6 @@
                            :accept :json
                            :throw-exceptions false}))))))
 
-;; Original func
-;(defn delete-by-query
-;  "Performs a delete-by-query operation over one or more indexes and types.
-;  Multiple indexes and types can be specified by passing in a seq of strings,
-;  otherwise specifying a string suffices."
-;  [conn index _mapping-type query]
-;  (let [admin-token (es-config/elastic-admin-token)
-;        url (es-util/url-with-path conn index "_delete_by_query")
-;        response (http/post url
-;                            (merge (:http-opts conn)
-;                                   {:headers {"Authorization" admin-token
-;                                              "Confirm-delete-action" "true"
-;                                              :client-id t-config/cmr-client-id}
-;                                    :content-type :json
-;                                    :body (json/generate-string {:query query
-;                                                                 :slices 1
-;                                                                 :scroll_size 500})
-;                                    :throw-exceptions false}))
-;        _ (info "response to delete-by-query for index " index " is " response)
-;        _ (info "error message is " (:body response))
-;        status (:status response)]
-;    (if (#{200 201} status)
-;      (es-util/decode-response response)
-;      (throw (ex-info (str "Delete by query failed with status " status)
-;                      {:status status :body (:body response)})))))
-
 (defn- has-scroll-context-error?
   "Checks if the response contains a 'too many scroll contexts' error.
    Accepts either a raw JSON string or an already-parsed Clojure map."
@@ -148,7 +122,7 @@
   (try
     (let [parsed (if (string? response-body)
                    (json/parse-string response-body true)
-                   response-body) ;; If it's already a map, just use it
+                   response-body)
           error-map (:error parsed)]
       (and (some? error-map)
            (string/includes? (str error-map) "too many scroll contexts")))
@@ -236,9 +210,9 @@
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
             (warn (format "CMR-11405 - Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
-            ;; explicitly kill the task on the cluster!
+            ;; End the task on the cluster to prevent overlapping tasks when SQS retries this failed msg
             (cancel-task! conn task-id)
-            ;; Now throw the error so the queue broker handles the retry
+            ;; Throw the error so the queue broker handles the retry
             (throw (ex-info (str "CMR-11405 - Timed out waiting for task " task-id) {:task-id task-id})))
 
           ;; Continue polling
@@ -267,7 +241,7 @@
 
           (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
             (do
-              ;; 1. Log the exact ex-info message and data that triggered the retry
+              ;; Log the exact ex-info message and data that triggered the retry
               (warn (format "CMR-11405 - Caught exception: %s | Data: %s"
                             (ex-message e)
                             (pr-str ex-data-map)))
@@ -276,7 +250,7 @@
               (recur (inc attempt)))
 
             (do
-              ;; 2. Log the exact ex-info message and data right before permanently failing
+              ;; Log the exact ex-info message and data right before permanently failing
               (error (format "CMR-11405 - Task permanently failed or max retries reached. Exception: %s | Data: %s"
                              (ex-message e)
                              (pr-str ex-data-map)))
