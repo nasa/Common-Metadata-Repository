@@ -293,7 +293,7 @@
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id]
   (let [polling-interval-ms 5000
-        max-wait-ms (* 60 60 1000) ;; 60 min enforced timeout
+        max-wait-ms (* 4.5 60 1000) ;; 4.5 min enforced timeout due to sqs visibility timeout being set to 5 min ;; TODO need to create separate delete collection queue with 65 min timeout
         start-time (System/currentTimeMillis)]
     (info (str "CMR-11405 - Polling task " task-id " for completion..."))
     (loop []
