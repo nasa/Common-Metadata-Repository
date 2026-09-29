@@ -141,114 +141,6 @@
 ;      (throw (ex-info (str "Delete by query failed with status " status)
 ;                      {:status status :body (:body response)})))))
 
-;; Current working func
-
-;(defn- has-scroll-context-error?
-;  "Checks if the response contains a 'too many scroll contexts' error."
-;  [response-body]
-;  (try
-;    (let [parsed (json/parse-string response-body true)
-;          error-map (:error parsed)]
-;      (and (some? error-map)
-;           (string/includes? (str error-map) "too many scroll contexts")))
-;    (catch Exception e
-;      false)))
-;
-;(defn- attempt-to-start-task
-;  "Makes a single attempt to start the delete-by-query task.
-;  Throws an exception on any failure, returns a task-id on success."
-;  [conn index query]
-;  (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
-;        response (http/post start-task-url
-;                            (merge (:http-opts conn)
-;                                   {:headers {"Authorization" (es-config/elastic-admin-token)
-;                                              "Confirm-delete-action" "true"
-;                                              :client-id t-config/cmr-client-id}
-;                                    :content-type :json
-;                                    :query-params {:wait_for_completion false
-;                                                   :slices 1
-;                                                   :scroll_size 500
-;                                                   :conflicts "proceed"}
-;                                    :body (json/generate-string {:query query})
-;                                    :throw-exceptions false}))
-;        _ (info "CMR-11405 - Response for starting delete query task is " response)
-;        status (:status response)
-;        body (:body response)]
-;    (when (has-scroll-context-error? body)
-;      (throw (ex-info "CMR-11405 - Scroll context error on task start" {:type :scroll-context-error :body body})))
-;
-;    (when-not (#{200 201} status)
-;      (throw (ex-info "CMR-11405 - Failed to start delete-by-query task" {:status status :body body})))
-;
-;    (-> response es-util/decode-response :task)))
-;
-;(defn- start-task-with-retry
-;  "Wraps the task start attempt with retry logic for scroll-context errors."
-;  [conn index query]
-;  (loop [attempt 1]
-;    (let [result (try
-;                   [:ok (attempt-to-start-task conn index query)]
-;                   (catch Exception e
-;                     [:error e]))]
-;      (if (= :ok (first result))
-;        (second result)
-;        (let [e (second result)]
-;          (if (and (< attempt 3) (= :scroll-context-error (:type (ex-data e))))
-;            (do
-;              (info (format "CMR-11405 - Scroll context error on attempt %d to start task. Retrying..." attempt))
-;              (Thread/sleep 100)
-;              (recur (inc attempt)))
-;            (throw e)))))))
-;
-;(defn- poll-task-for-completion
-;  "Polls a given task-id until it completes, fails, or times out."
-;  [conn task-id]
-;  (let [polling-interval-ms 5000
-;        max-wait-ms (* 10 60 1000)
-;        start-time (System/currentTimeMillis)]
-;    (info (str "CMR-11405 - Polling task " task-id " for completion..."))
-;    (loop []
-;      (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
-;            task-status-response (http/get check-task-url
-;                                           (merge (:http-opts conn)
-;                                                  {:headers {"Authorization" (es-config/elastic-admin-token)
-;                                                             "Confirm-delete-action" "true"
-;                                                             :client-id t-config/cmr-client-id}
-;                                                   :throw-exceptions false}))
-;            task-status-body (es-util/decode-response task-status-response)]
-;        (cond
-;          (true? (:completed task-status-body))
-;          ;; :response is a SIBLING of :task, not nested inside it.
-;          (let [final-response (or (:response task-status-body)
-;                                   {:deleted 0, :total 0, :timed_out false})]
-;            (info (format "CMR-11405 - Task %s completed. Final result: %s"
-;                          task-id
-;                          final-response))
-;            {:status 200
-;             :body final-response})
-;
-;          (> (- (System/currentTimeMillis) start-time) max-wait-ms)
-;          (throw (ex-info (str "CMR-11405 - Timed out waiting for task " task-id) {:task-id task-id}))
-;
-;          (some? (get-in task-status-body [:task :error]))
-;          (throw (ex-info (str "CMR-11405 - Task " task-id " failed with an error.")
-;                          {:task-id task-id :error-details (get-in task-status-body [:task :error])}))
-;
-;          :else
-;          (do
-;            (let [status (get-in task-status-body [:task :status])]
-;              (info (format "CMR-11405 - Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
-;            (Thread/sleep polling-interval-ms)
-;            (recur)))))))
-;
-;(defn delete-by-query
-;  "Performs a delete-by-query operation, blocking until completion."
-;  [conn index _mapping-type query]
-;  (info "CMR-11405 - delete-by-query started for index : " index)
-;  (let [task-id (start-task-with-retry conn index query)]
-;    (poll-task-for-completion conn task-id)))
-
-
 (defn- has-scroll-context-error?
   "Checks if the response contains a 'too many scroll contexts' error.
    Accepts either a raw JSON string or an already-parsed Clojure map."
@@ -289,12 +181,29 @@
 
     (-> response es-util/decode-response :task)))
 
+(defn- cancel-task!
+  "Attempts to explicitly cancel a running Elasticsearch task."
+  [conn task-id]
+  (try
+    (info (str "CMR-11405 - Sending cancellation request for task " task-id))
+    (let [cancel-url (es-util/url-with-path conn (str "_tasks/" task-id "/_cancel"))]
+      (http/post cancel-url
+                 (merge (:http-opts conn)
+                        {:headers {"Authorization" (es-config/elastic-admin-token)
+                                   :client-id t-config/cmr-client-id}
+                         :throw-exceptions false})))
+    (info (str "CMR-11405 - Successfully sent cancellation command for task " task-id))
+    (catch Exception e
+      (warn (str "CMR-11405 - Failed to cancel task " task-id ". It may keep running in the background. Exception: " (ex-message e))))))
+
 (defn- poll-task-for-completion
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id]
   (let [polling-interval-ms 5000
-        max-wait-ms (* 4.5 60 1000) ;; 4.5 min enforced timeout due to sqs visibility timeout being set to 5 min ;; TODO need to create separate delete collection queue with 65 min timeout
+        ;; Hard limit set to 4.5 minutes to safely fit inside the 5-minute SQS window
+        max-wait-ms (* 4.5 60 1000)
         start-time (System/currentTimeMillis)]
+
     (info (str "CMR-11405 - Polling task " task-id " for completion..."))
     (loop []
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
@@ -306,7 +215,7 @@
                                                    :throw-exceptions false}))
             task-status-body (es-util/decode-response task-status-response)]
         (cond
-          ;; 1. Check for errors FIRST using your helper function
+          ;; Check for errors
           (some? (:error task-status-body))
           (if (has-scroll-context-error? task-status-body)
             (throw (ex-info "CMR-11405 - Scroll context error during task execution"
@@ -314,21 +223,25 @@
             (throw (ex-info (str "CMR-11405 - Task " task-id " failed with an error.")
                             {:task-id task-id :error-details (:error task-status-body)})))
 
-          ;; 2. Check for completion ONLY IF there are no errors
+          ;; Check for successful completion
           (true? (:completed task-status-body))
           (let [final-response (or (:response task-status-body)
                                    {:deleted 0, :total 0, :timed_out false})]
             (info (format "CMR-11405 - Task %s completed. Final result: %s"
-                          task-id
-                          final-response))
+                          task-id final-response))
             {:status 200
              :body final-response})
 
-          ;; 3. Check for timeout
+          ;; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
-          (throw (ex-info (str "CMR-11405 - Timed out waiting for task " task-id) {:task-id task-id}))
+          (do
+            (warn (format "CMR-11405 - Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
+            ;; explicitly kill the task on the cluster!
+            (cancel-task! conn task-id)
+            ;; Now throw the error so the queue broker handles the retry
+            (throw (ex-info (str "CMR-11405 - Timed out waiting for task " task-id) {:task-id task-id})))
 
-          ;; 4. Continue polling
+          ;; Continue polling
           :else
           (do
             (let [status (get-in task-status-body [:task :status])]
