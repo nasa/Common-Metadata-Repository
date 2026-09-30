@@ -410,36 +410,40 @@
           tool-association2))
 
       (testing "search on PROV1 finds nothing"
-        (is (d/refs-match?
-             []
-             (search/find-refs :collection {:provider-id "PROV1"})))
-        (is (d/refs-match?
-             []
-             (search/find-refs :granule {:provider-id "PROV1"}))))
+        (search/assert-eventually-deleted :collection {:provider-id "PROV1"})
+        (search/assert-eventually-deleted :granule {:provider-id "PROV1"}))
 
-      (testing "search on PROV2 finds the concepts")
-      (is (d/refs-match?
-           [coll3]
-           (search/find-refs :collection {:provider-id "PROV2"})))
-      (is (d/refs-match?
-           [gran4]
-           (search/find-refs :granule {:provider-id "PROV2"})))
-      (testing "Variable on PROV1 is not found in search")
-      (d/refs-match? [] (search/find-refs :variable {:name "Variable1"}))
-      (testing "Variable on PROV2 is still found in search")
-      (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"}))
-      (testing "Tool on PROV1 is not found in search")
-      (d/refs-match? [] (search/find-refs :tool {:name "tool1"}))
-      (testing "Tool on PROV2 is still found in search")
-      (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"}))
-      (testing "Subscription on PROV1 is not found in search")
-      (d/refs-match? [] (search/find-refs :subscription {:name "sub1"}))
-      (testing "Subscription on PROV2 is still found in search")
-      (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"}))
-      (testing "Service on PROV1 is not found in search")
-      (d/refs-match? [] (search/find-refs :service {:name "service1"}))
-      (testing "Service on PROV2 is still found in search")
-      (d/refs-match? [service2] (search/find-refs :service {:name "service2"}))))
+      (testing "search on PROV2 finds the concepts"
+        (is (d/refs-match?
+             [coll3]
+             (search/find-refs :collection {:provider-id "PROV2"})))
+        (is (d/refs-match?
+             [gran4]
+             (search/find-refs :granule {:provider-id "PROV2"}))))
+
+      (testing "Variable on PROV1 is not found in search"
+        (search/assert-eventually-deleted :variable {:name "Variable1"}))
+
+      (testing "Variable on PROV2 is still found in search"
+        (d/refs-match? [variable2] (search/find-refs :variable {:name "Variable2"})))
+
+      (testing "Tool on PROV1 is not found in search"
+        (search/assert-eventually-deleted :tool {:name "tool1"}))
+
+      (testing "Tool on PROV2 is still found in search"
+        (d/refs-match? [tool2] (search/find-refs :tool {:name "tool2"})))
+
+      (testing "Subscription on PROV1 is not found in search"
+        (search/assert-eventually-deleted :subscription {:name "sub1"}))
+
+      (testing "Subscription on PROV2 is still found in search"
+        (d/refs-match? [sub2] (search/find-refs :subscription {:name "sub2"})))
+
+      (testing "Service on PROV1 is not found in search"
+        (search/assert-eventually-deleted :service {:name "service1"}))
+
+      (testing "Service on PROV2 is still found in search"
+        (d/refs-match? [service2] (search/find-refs :service {:name "service2"})))))
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]

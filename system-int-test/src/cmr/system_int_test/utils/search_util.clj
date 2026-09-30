@@ -1,39 +1,40 @@
 (ns cmr.system-int-test.utils.search-util
   "provides search related utilities."
   (:require
-   [camel-snake-kebab.core :as csk]
-   [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clj-time.coerce :as tc]
-   [clojure.string :as string]
-   [clojure.test :refer [deftest is]]
-   [clojure.walk]
-   [cmr.common-app.api.routes :as routes]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.common.concepts :as cs]
-   [cmr.common.mime-types :as mime-types]
-   [cmr.common.test.time-util :as tu]
-   [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as util]
-   [cmr.common.xml :as cx]
-   [cmr.spatial.point :as point]
-   [cmr.spatial.points-validation-helpers :as pv]
-   [cmr.system-int-test.data2.aql :as aql]
-   [cmr.system-int-test.data2.aql-additional-attribute]
-   [cmr.system-int-test.data2.atom :as da]
-   [cmr.system-int-test.data2.atom-json :as dj]
-   [cmr.system-int-test.data2.facets :as facets]
-   [cmr.system-int-test.data2.kml :as dk]
-   [cmr.system-int-test.data2.opendata :as od]
-   [cmr.system-int-test.data2.provider-holdings :as ph]
-   [cmr.system-int-test.system :as system]
-   [cmr.system-int-test.utils.dev-system-util :as dev-util]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.umm.dif.dif-collection]
-   [cmr.umm.iso-mends.iso-mends-collection]
-   [cmr.umm.iso-smap.iso-smap-collection]
-   [ring.util.codec :as codec]))
+    [camel-snake-kebab.core :as csk]
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clj-time.coerce :as tc]
+    [clojure.string :as string]
+    [clojure.test :refer [deftest is]]
+    [clojure.walk]
+    [cmr.common-app.api.routes :as routes]
+    [cmr.common-app.test.side-api :as side]
+    [cmr.common.concepts :as cs]
+    [cmr.common.mime-types :as mime-types]
+    [cmr.common.test.time-util :as tu]
+    [cmr.common.time-keeper :as tk]
+    [cmr.common.util :as util]
+    [cmr.common.xml :as cx]
+    [cmr.spatial.point :as point]
+    [cmr.spatial.points-validation-helpers :as pv]
+    [cmr.system-int-test.data2.aql :as aql]
+    [cmr.system-int-test.data2.aql-additional-attribute]
+    [cmr.system-int-test.data2.atom :as da]
+    [cmr.system-int-test.data2.atom-json :as dj]
+    [cmr.system-int-test.data2.facets :as facets]
+    [cmr.system-int-test.data2.kml :as dk]
+    [cmr.system-int-test.data2.opendata :as od]
+    [cmr.system-int-test.data2.provider-holdings :as ph]
+    [cmr.system-int-test.system :as system]
+    [cmr.system-int-test.utils.dev-system-util :as dev-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.umm.dif.dif-collection]
+    [cmr.umm.iso-mends.iso-mends-collection]
+    [cmr.umm.iso-smap.iso-smap-collection]
+    [ring.util.codec :as codec]))
 
 (defn enable-writes
   "Enables writes for tags / tag associations."
@@ -888,3 +889,36 @@
    ","
    (interleave (repeatedly n #(first (shuffle (range -180 180))))
                (repeatedly n #(first (shuffle (range -90 90)))))))
+
+(defn assert-eventually-deleted
+  "Polls Elasticsearch every 500ms until the concept is gone.
+  Polling is required due to async nature of concept deletes."
+  [concept-type params]
+  (let [timeout-ms 60000
+        start-time (System/currentTimeMillis)]
+
+    (index/wait-until-indexed)
+
+    (loop [attempt 1]
+      (let [search-results (find-refs (keyword concept-type) params)
+            ;; Extract the actual number of hits from the map!
+            hits (:hits search-results)]
+
+        (cond
+          ;; The ES task finished and the data is gone!
+          (= 0 hits)
+          (is (= 0 hits))
+
+          ;; The ES task is taking too long. Fail the test.
+          (> (- (System/currentTimeMillis) start-time) timeout-ms)
+          (do
+            (println "ERROR: Concept was not deleted in time. ES task might still be running.")
+            ;; This will print a much cleaner failure message
+            (is (= 0 hits)))
+
+          ;; The task is STILL running on the cluster. Wait half a second and check again.
+          :else
+          (do
+            (println "TEST: Attempt" attempt "- Concept still found (Hits: " hits "). Waiting 500ms...")
+            (Thread/sleep 500)
+            (recur (inc attempt))))))))
