@@ -226,7 +226,7 @@
 (defn delete-by-query
   "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts."
   [conn index _mapping-type query]
-  (debug "Delete-By-Query: Delete-by-query started for index : " index)
+  (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
 
   (loop [attempt 1]
     (let [result (try
