@@ -146,12 +146,12 @@
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
-        _ (debug "Response for starting delete query task is " response)
+        _ (debug "Delete-By-Query: Response for starting delete query task is " response)
         status (:status response)
         body (:body response)]
 
     (when-not (#{200 201} status)
-      (throw (ex-info "Failed to start delete-by-query task" {:status status :body body})))
+      (throw (ex-info "Delete-By-Query: Failed to start delete-by-query task" {:status status :body body})))
 
     (-> response es-util/decode-response :task)))
 
@@ -159,16 +159,16 @@
   "Attempts to explicitly cancel a running Elasticsearch task."
   [conn task-id]
   (try
-    (debug (str "Sending cancellation request for task " task-id))
+    (debug (str "Delete-By-Query: Sending cancellation request for task " task-id))
     (let [cancel-url (es-util/url-with-path conn (str "_tasks/" task-id "/_cancel"))]
       (http/post cancel-url
                  (merge (:http-opts conn)
                         {:headers {"Authorization" (es-config/elastic-admin-token)
                                    :client-id t-config/cmr-client-id}
                          :throw-exceptions false})))
-    (debug (str "Successfully sent cancellation command for task " task-id))
+    (debug (str "Delete-By-Query: Successfully sent cancellation command for task " task-id))
     (catch Exception e
-      (warn (str "Failed to cancel task " task-id ". It may keep running in the background. Exception: " (ex-message e))))))
+      (warn (str "Delete-By-Query: Failed to cancel task " task-id ". It may keep running in the background. Exception: " (ex-message e))))))
 
 (defn- poll-task-for-completion
   "Polls a given task-id until it completes, fails, or times out."
@@ -178,7 +178,7 @@
         max-wait-ms (* 4.5 60 1000)
         start-time (System/currentTimeMillis)]
 
-    (info (str "Polling task " task-id " for completion..."))
+    (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
     (loop []
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
@@ -192,7 +192,7 @@
           ;; Check for errors
           (some? (:error task-status-body))
           (if (has-scroll-context-error? task-status-body)
-            (throw (ex-info "Scroll context error during task execution"
+            (throw (ex-info "Delete-By-Query: Scroll context error during task execution"
                             {:type :scroll-context-error :task-id task-id :error-details (:error task-status-body)}))
             (throw (ex-info (str "Task " task-id " failed with an error.")
                             {:task-id task-id :error-details (:error task-status-body)})))
@@ -201,7 +201,7 @@
           (true? (:completed task-status-body))
           (let [final-response (or (:response task-status-body)
                                    {:deleted 0, :total 0, :timed_out false})]
-            (info (format "Task %s completed. Final result: %s"
+            (info (format "Delete-By-Query: Task %s completed. Final result: %s"
                           task-id final-response))
             {:status 200
              :body final-response})
@@ -209,24 +209,24 @@
           ;; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
-            (warn (format "Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
+            (warn (format "Delete-By-Query: Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
             ;; End the task on the cluster to prevent overlapping tasks when SQS retries this failed msg
             (cancel-task! conn task-id)
             ;; Throw the error so the queue broker handles the retry
-            (throw (ex-info (str "Timed out waiting for task " task-id) {:task-id task-id})))
+            (throw (ex-info (str "Delete-By-Query: Timed out waiting for task " task-id) {:task-id task-id})))
 
           ;; Continue polling
           :else
           (do
             (let [status (get-in task-status-body [:task :status])]
-              (info (format "Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
+              (info (format "Delete-By-Query: Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
             (Thread/sleep polling-interval-ms)
             (recur)))))))
 
 (defn delete-by-query
   "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts."
   [conn index _mapping-type query]
-  (info "CMR-11405 - delete-by-query started for index : " index)
+  (debug "Delete-By-Query: Delete-by-query started for index : " index)
 
   (loop [attempt 1]
     (let [result (try
