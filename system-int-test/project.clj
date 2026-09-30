@@ -34,7 +34,7 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
-                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojure]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.4.0"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
