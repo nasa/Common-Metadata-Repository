@@ -246,47 +246,77 @@
      :LicenseText (value-of use-constraints "LicenseText")}))
 
 (defn- parse-collection-doi
-  "Parse the XML collection DOI into the UMM-C counterparts.
-   There could be multiple DOIs under Collection, just take the first one for now."
-  [doc]
-  (let [doi (first (select doc "Collection/DOI"))
-        previous-version (first (select doc "Collection/DOI/PreviousVersion"))]
-    (if doi
-      (let [doi-value (value-of doi "DOI")
-            authority (value-of doi "Authority")
-            previous-version (when (seq previous-version)
-                               (let [pv (fields-from previous-version :Version :Description :DOI :Published)]
-                                 (if (:Published pv)
-                                   (assoc pv :Published (dtp/parse-datetime (:Published pv)))
-                                   pv)))
-            missing-reason (value-of doi "MissingReason")
-            explanation (value-of doi "Explanation")]
-        (if (or doi-value authority)
-          {:DOI (when doi-value
-                  doi-value)
-           :Authority (when authority
-                        authority)
-           :PreviousVersion (when (seq previous-version)
-                              (cmn/map->PreviousVersionType
-                                (util/remove-nil-keys previous-version)))}
-          {:MissingReason (when missing-reason
-                            missing-reason)
-           :Explanation (when explanation
-                          explanation)}))
-      {:MissingReason "Unknown"
-       :Explanation "It is unknown if this record has a DOI."})))
+  "Parse the XML collection DOI into the UMM-C counterparts, including PreviousVersion fields."
+  ([doc]
+   (parse-collection-doi doc true))
+  ([doc sanitize?]
+   (let [doi (first (select doc "Collection/DOI"))]
+     (if doi
+       (let [doi-value (value-of doi "DOI")
+             authority (value-of doi "Authority")
+             missing-reason (value-of doi "MissingReason")
+             explanation (value-of doi "Explanation")
+             previous-versions (for [pv-node (select doi "PreviousVersion")
+                                     :let [pv-progress (value-of pv-node "CollectionProgress")
+                                           pv-map {:Version (value-of pv-node "Version")
+                                                   :Description (value-of pv-node "Description")
+                                                   :DOI (value-of pv-node "DOI")
+                                                   :Published (when-let [pub (value-of pv-node "Published")]
+                                                                (dtp/try-parse-datetime pub))
+                                                   :BeginningDateTime (when-let [bdt (value-of pv-node "BeginningDateTime")]
+                                                                        (dtp/try-parse-datetime bdt))
+                                                   :EndingDateTime (when-let [edt (value-of pv-node "EndingDateTime")]
+                                                                     (dtp/try-parse-datetime edt))
+                                                   :DeprecatedDateTime (when-let [ddt (value-of pv-node "DeprecatedDateTime")]
+                                                                         (dtp/try-parse-datetime ddt))
+                                                   :CollectionProgress (or pv-progress "NOT PROVIDED")}
+                                           cleaned-pv (util/remove-nil-keys pv-map)]
+                                     :when (seq cleaned-pv)]
+                                 (cmn/map->PreviousVersionType cleaned-pv))]
+         (cond
+           (or doi-value authority)
+           (util/remove-nil-keys
+            {:DOI doi-value
+             :Authority authority
+             :PreviousVersion (when (seq previous-versions)
+                                (vec previous-versions))})
+
+           (or missing-reason explanation)
+           (util/remove-nil-keys
+            {:MissingReason missing-reason
+             :Explanation explanation})
+
+           :else
+           {:MissingReason "Unknown"
+            :Explanation "It is unknown if this record has a DOI."}))
+       ;; Default fallback when <Collection/DOI> element is missing entirely
+       {:MissingReason "Unknown"
+        :Explanation "It is unknown if this record has a DOI."}))))
 
 (defn- parse-associated-dois
   "Parse the XML associated DOIs into the UMM-C counterparts."
   [doc]
   (when-let [assoc-dois (select doc "Collection/AssociatedDOIs/AssociatedDOI")]
     (into []
-      (for [assoc-doi assoc-dois]
-        {:DOI (value-of assoc-doi "DOI")
-         :Title (value-of assoc-doi "Title")
-         :Authority (value-of assoc-doi "Authority")
-         :Type (value-of assoc-doi "Type")
-         :DescriptionOfOtherType (value-of assoc-doi "DescriptionOfOtherType")}))))
+          (for [assoc-doi assoc-dois
+                :let [raw-type (value-of assoc-doi "Type")
+                      raw-desc (value-of assoc-doi "DescriptionOfOtherType")
+                      extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
+                      extracted-type (when (and (= "Other" raw-type) raw-desc)
+                                       (some #(when (string/starts-with? raw-desc %) %) extended-types))
+                      final-type (if extracted-type extracted-type raw-type)
+                      final-desc (if extracted-type
+                                   (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
+                                     (if (string/starts-with? stripped "- ")
+                                       (string/trim (subs stripped 2))
+                                       (when-not (string/blank? stripped) stripped)))
+                                   raw-desc)]]
+            (util/remove-nil-keys
+             {:DOI (value-of assoc-doi "DOI")
+              :Title (value-of assoc-doi "Title")
+              :Authority (value-of assoc-doi "Authority")
+              :Type final-type
+              :DescriptionOfOtherType final-desc})))))
 
 (defn- parse-other-identifiers
   "Parse the XML other identifiers into the UMM-C counterparts."
@@ -340,7 +370,7 @@
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :DOI (util/remove-nil-keys (parse-collection-doi doc))
+   :DOI (parse-collection-doi doc sanitize?)
    :AssociatedDOIs (parse-associated-dois doc)
    :DataMaturity (value-of doc "/Collection/DataMaturity")
    :FileNamingConvention (parse-file-naming-convention doc)

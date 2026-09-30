@@ -3,6 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.spatial.mbr :as m]
    [cmr.umm-spec.date-util :as date-util]

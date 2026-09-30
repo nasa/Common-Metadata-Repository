@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.test.echo10-expected-conversion
  "ECHO 10 specific expected conversion functionality"
  (:require
+  [cmr.common.date-time-parser :as dtp]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -167,16 +168,48 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
+;;(defn- expected-echo10-doi
+;;  "Returns the expected ECHO10 DOI for comparison with the umm model."
+;;  [doi]
+;;    (cmn/map->DoiType
+;;      (if (:PreviousVersion doi)
+;;        (-> doi
+;;            (update-in [:PreviousVersion] util/remove-nil-keys)
+;;            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
+;;            util/remove-nil-keys)
+;;        (util/remove-nil-keys doi))))
+
+(defn- fix-previous-version-fields
+  "Converts string date fields into Joda DateTime objects and normalizes CollectionProgress."
+  [previous-versions]
+  (when (seq previous-versions)
+    (mapv (fn [pv]
+            (let [pv-map (util/remove-nil-keys (into {} pv))]
+              (cmn/map->PreviousVersionType
+               (-> pv-map
+                   (update :CollectionProgress #(or % "NOT PROVIDED"))
+                   (cond->
+                    (string? (:Published pv-map))          (update :Published dtp/parse-datetime)
+                    (string? (:BeginningDateTime pv-map)) (update :BeginningDateTime dtp/parse-datetime)
+                    (string? (:EndingDateTime pv-map))    (update :EndingDateTime dtp/parse-datetime)
+                    (string? (:DeprecatedDateTime pv-map)) (update :DeprecatedDateTime dtp/parse-datetime))))))
+          previous-versions)))
+
 (defn- expected-echo10-doi
-  "Returns the expected ECHO10 DOI for comparison with the umm model."
-  [doi]
-    (cmn/map->DoiType
-      (if (:PreviousVersion doi)
-        (-> doi
-            (update-in [:PreviousVersion] util/remove-nil-keys)
-            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
-            util/remove-nil-keys)
-        (util/remove-nil-keys doi))))
+  "Normalizes DOI data structure for ECHO10 roundtrip conversions."
+  ([doi]
+   (expected-echo10-doi doi true))
+  ([doi sanitize?]
+   (if (and doi (or (:DOI doi) (:MissingReason doi)))
+     (let [cleaned (util/remove-nil-keys (into {} doi))
+           updated (if (seq (:PreviousVersion cleaned))
+                     (assoc cleaned :PreviousVersion
+                            (fix-previous-version-fields (:PreviousVersion cleaned)))
+                     (dissoc cleaned :PreviousVersion))]
+       (cmn/map->DoiType updated))
+     (cmn/map->DoiType
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."}))))
 
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."

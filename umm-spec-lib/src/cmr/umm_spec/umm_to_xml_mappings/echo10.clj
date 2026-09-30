@@ -158,52 +158,67 @@
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
   (xml
-    [:Collection
-     [:ShortName (:ShortName c)]
-     [:VersionId (:Version c)]
-     (when-let [other-ids (get c :OtherIdentifiers)]
-       [:OtherIdentifiers
-         (for [other-id other-ids]
-           [:OtherIdentifier
-             [:Identifier (:Identifier other-id)]
-             (when (:Type other-id)
-               [:Type (:Type other-id)])
-             (when (= "Other" (:Type other-id))
-               [:DescriptionOfOtherType (:DescriptionOfOtherType other-id)])])]) 
-     [:InsertTime (dates/with-current (dates/data-create-date c))]
-     [:LastUpdate (dates/with-current (dates/data-update-date c))]
-     [:DeleteTime (dates/data-delete-date c)]
-     [:LongName spec-util/not-provided]
-     [:DataSetId (:EntryTitle c)]
-     (when-let [data-maturity (:DataMaturity c)]
-       [:DataMaturity data-maturity])
-     [:Description (if-let [abstract (:Abstract c)]
-                     (util/trunc abstract 12000)
-                     spec-util/not-provided)]
-     (when-let [doi (get c :DOI)]
-       (if (:DOI doi)
-         [:DOI
-          [:DOI (:DOI doi)]
-          (when (:Authority doi)
-            [:Authority (:Authority doi)])
-          (when (:PreviousVersion doi)
-            [:PreviousVersion (elements-from (:PreviousVersion doi) :Version :Description :DOI :Published)])]
-         (when (:MissingReason doi)
-           [:DOI
-            [:MissingReason (:MissingReason doi)]
-            (when (:Explanation doi)
-              [:Explanation (:Explanation doi)])])))
-     (when-let [assoc-dois (get c :AssociatedDOIs)]
-       [:AssociatedDOIs
-         (for [assoc-doi assoc-dois]
-           [:AssociatedDOI
-             [:DOI (:DOI assoc-doi)]
-             [:Title (:Title assoc-doi)]
-             [:Authority (:Authority assoc-doi)]
-             (when (:Type assoc-doi)
-               [:Type (:Type assoc-doi)])
-              (when (= "Other" (:Type assoc-doi))
-                [:DescriptionOfOtherType (:DescriptionOfOtherType assoc-doi)])])])
+   [:Collection
+    [:ShortName (:ShortName c)]
+    [:VersionId (:Version c)]
+    (when-let [other-ids (get c :OtherIdentifiers)]
+      [:OtherIdentifiers
+       (for [other-id other-ids]
+         [:OtherIdentifier
+          [:Identifier (:Identifier other-id)]
+          (when (:Type other-id)
+            [:Type (:Type other-id)])
+          (when (= "Other" (:Type other-id))
+            [:DescriptionOfOtherType (:DescriptionOfOtherType other-id)])])])
+    [:InsertTime (dates/with-current (dates/data-create-date c))]
+    [:LastUpdate (dates/with-current (dates/data-update-date c))]
+    [:DeleteTime (dates/data-delete-date c)]
+    [:LongName spec-util/not-provided]
+    [:DataSetId (:EntryTitle c)]
+    (when-let [data-maturity (:DataMaturity c)]
+      [:DataMaturity data-maturity])
+    [:Description (if-let [abstract (:Abstract c)]
+                    (util/trunc abstract 12000)
+                    spec-util/not-provided)]
+    (when-let [doi (get c :DOI)]
+      (if (:DOI doi)
+        [:DOI
+         [:DOI (:DOI doi)]
+         (when (:Authority doi)
+           [:Authority (:Authority doi)])
+         (for [pv (:PreviousVersion doi)]
+           [:PreviousVersion (elements-from pv :Version :Description :DOI :Published :BeginningDateTime :EndingDateTime :DeprecatedDateTime :CollectionProgress (or (:CollectionProgress pv) "NOT PROVIDED"))])]
+        (when (:MissingReason doi)
+          [:DOI
+           [:MissingReason (:MissingReason doi)]
+           (when (:Explanation doi)
+             [:Explanation (:Explanation doi)])])))
+    (when-let [assoc-dois (get c :AssociatedDOIs)]
+      [:AssociatedDOIs
+       (for [assoc-doi assoc-dois
+             :let [original-type (:Type assoc-doi)
+                   valid-echo10-types #{"Child Dataset" "Collaborative/Other Agency"
+                                        "Field Campaign" "Parent Dataset"
+                                        "Related Dataset" "Other"}
+                   echo10-type (when original-type
+                                 (if (valid-echo10-types original-type)
+                                   original-type
+                                   "Other"))]]
+         [:AssociatedDOI
+          [:DOI (:DOI assoc-doi)]
+          [:Title (:Title assoc-doi)]
+          [:Authority (:Authority assoc-doi)]
+          (when echo10-type
+            [:Type echo10-type])
+          (when (= "Other" echo10-type)
+            (if (= original-type "Other")
+              ;; If it was natively "Other", keep the original description
+              [:DescriptionOfOtherType (:DescriptionOfOtherType assoc-doi)]
+              ;; If it was forced to "Other" as a fallback, record the original unsupported type
+              [:DescriptionOfOtherType
+               (if-let [desc (:DescriptionOfOtherType assoc-doi)]
+                 (str original-type " - " desc)
+                 original-type)]))])])
      [:CollectionDataType (:CollectionDataType c)]
      [:StandardProduct (:StandardProduct c)]
      (when-let [revision-date (dates/metadata-update-date c)]

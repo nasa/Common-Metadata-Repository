@@ -113,6 +113,7 @@
     },
     "ContactPersonType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "Roles": {
           "description": "This is the roles of the data contact.",

@@ -431,6 +431,24 @@
 
    ;; Describes the pubished date for the previous version.
    Published
+
+   ;; Start date and time of the previous version availability.
+   BeginningDateTime
+
+   ;; End date and time of the previous version availability.
+   EndingDateTime
+
+   ;; Date and time the previous version was deprecated.
+   DeprecatedDateTime
+
+   ;; Describes the production status of the data set. There are three choices: PLANNED refers to
+   ;; data sets to be collected in the future and are thus unavailable at the present time. For
+   ;; Example: The Hydro spacecraft has not been launched, but information on planned data sets may
+   ;; be available. IN WORK refers to data sets currently in production or data that is continuously
+   ;; being collected or updated. For Example: data from the AIRS instrument on Aqua is being
+   ;; collected continuously. COMPLETE refers to data sets in which no updates or further data
+   ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
+   CollectionProgress
   ])
 (record-pretty-printer/enable-record-pretty-printing PreviousVersionType)
 

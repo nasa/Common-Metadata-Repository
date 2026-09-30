@@ -227,6 +227,22 @@
         (update-in [:Coordinate2 :MinimumValue] util/str->num)
         (update-in [:Coordinate2 :MaximumValue] util/str->num))))
 
+(defn- get-most-recent-previous-version
+  "Gets the most recent version item from an array."
+  [items]
+  (let [valid-items (filter map? items) ;; Ensure we are only sorting map objects
+        items-with-index (map-indexed (fn [idx item] (assoc item ::original-index idx)) valid-items)
+        sort-key-fn (fn [item]
+                      (let [best-date (or (:Published item)
+                                          (:BeginningDateTime item)
+                                          "0000-00-00T00:00:00Z")]
+                        [(str best-date) ;; Convert to string to prevent ClassCastException between String and Joda objects
+                         (::original-index item)]))]
+    (when (seq items-with-index)
+      (-> (sort-by sort-key-fn items-with-index)
+          last
+          (dissoc ::original-index)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
 
@@ -877,3 +893,37 @@
         (assoc :Quality {:Summary quality-string})
         (m-spec/update-version :collection "1.18.6"))
     (m-spec/update-version c :collection "1.18.6")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.6" "1.18.7"]
+  [_context c & _]
+  ;; 1.18.7 changes PreviousVersion from an object to an array and adds optional fields
+  (let [c (m-spec/update-version c :collection "1.18.7")]
+    (if-let [pv (get-in c [:DOI :PreviousVersion])]
+      (if (sequential? pv)
+        c
+        (assoc-in c [:DOI :PreviousVersion] [pv]))
+      c)))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.7" "1.18.6"]
+  [_context c & _]
+  (let [previous-versions (get-in c [:DOI :PreviousVersion])
+        ;; Coerce to sequence to gracefully handle tests/data that might pass a single map
+        pv-list (if (sequential? previous-versions) previous-versions [previous-versions])
+        valid-pvs (remove nil? pv-list)]
+    (if (seq valid-pvs)
+      (let [most-recent (get-most-recent-previous-version valid-pvs)
+            cleaned-item (dissoc most-recent
+                                 :BeginningDateTime
+                                 :EndingDateTime
+                                 :DeprecatedDateTime
+                                 :CollectionProgress)]
+        (-> c
+            (assoc-in [:DOI :PreviousVersion] cleaned-item)
+            (m-spec/update-version :collection "1.18.6")
+            util/remove-nils-empty-maps-seqs))
+      (-> c
+          (m-spec/update-version :collection "1.18.6")
+          (as-> coll (if (contains? coll :DOI)
+                       (update coll :DOI dissoc :PreviousVersion)
+                       coll))
+          util/remove-nils-empty-maps-seqs))))

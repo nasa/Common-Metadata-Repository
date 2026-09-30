@@ -490,5 +490,6 @@
                   coerced)
         previous-version (get-in coerced [:DOI :PreviousVersion])]
     (if previous-version
-      (assoc-in coerced [:DOI :PreviousVersion] (umm-cmn/map->PreviousVersionType previous-version))
+      ;; THIS IS THE CRITICAL FIX: mapv must be used so it stays a vector (JSONArray)
+      (assoc-in coerced [:DOI :PreviousVersion] (mapv umm-cmn/map->PreviousVersionType previous-version))
       coerced)))

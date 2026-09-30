@@ -2,6 +2,7 @@
  "DIF 10 specific expected conversion functionality"
  (:require
   [clojure.string :as string]
+  [cmr.common.date-time-parser :as dtp]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
@@ -237,15 +238,15 @@
   "When converting, the creation date and last revision date will be persisted. Both dates are
   required in DIF10, so use a default date if not present."
   [umm-coll]
-  (remove nil? 
-    [(conversion-util/create-date-type
-     (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
-    (conversion-util/create-date-type
-     (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")
-    (when (date/metadata-delete-date umm-coll)
-      (conversion-util/create-date-type (date/metadata-delete-date umm-coll) "DELETE"))
-    (when (date/metadata-review-date umm-coll)
-      (conversion-util/create-date-type (date/metadata-review-date umm-coll) "REVIEW"))]))
+  (remove nil?
+          [(conversion-util/create-date-type
+            (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
+           (conversion-util/create-date-type
+            (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")
+           (when (date/metadata-delete-date umm-coll)
+             (conversion-util/create-date-type (date/metadata-delete-date umm-coll) "DELETE"))
+           (when (date/metadata-review-date umm-coll)
+             (conversion-util/create-date-type (date/metadata-review-date umm-coll) "REVIEW"))]))
 
 (defn- expected-related-url-get-service
   "Returns related-url with the expected values in GetService"
@@ -360,10 +361,45 @@
         (assoc-in [:LicenseURL :ApplicationProfile] nil))
     use-constraints))
 
+(defn- fix-doi-published-dates
+  "Converts string date fields in PreviousVersion into Joda DateTime objects to match DIF10 parsing."
+  [previous-versions]
+  (when (seq previous-versions)
+    (mapv (fn [pv]
+            (cond-> pv
+              (string? (:Published pv))
+              (update :Published dtp/parse-datetime)
+
+              (string? (:BeginningDateTime pv))
+              (update :BeginningDateTime dtp/parse-datetime)
+
+              (string? (:EndingDateTime pv))
+              (update :EndingDateTime dtp/parse-datetime)
+
+              (string? (:DeprecatedDateTime pv))
+              (update :DeprecatedDateTime dtp/parse-datetime)))
+          previous-versions)))
+
+(defn- expected-dif10-doi
+  "DIF10 does not have several DOI fields so remove them, but keep PreviousVersion."
+  [doi]
+  (if doi
+    (let [updated-doi (util/remove-nil-keys
+                       (dissoc (into {} doi) :Authority :MissingReason :Explanation))
+          updated-doi (if (:PreviousVersion updated-doi)
+                        (update updated-doi :PreviousVersion fix-doi-published-dates)
+                        updated-doi)]
+      (if (seq updated-doi)
+        updated-doi
+        {:Explanation "It is unknown if this record has a DOI."
+         :MissingReason "Unknown"}))
+    {:Explanation "It is unknown if this record has a DOI."
+     :MissingReason "Unknown"}))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
-  (-> umm-coll
-      (update :DOI conversion-util/expected-dif-doi)
+    (-> umm-coll
+      (update :DOI expected-dif10-doi)
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (update-in [:DataCenters] expected-dif10-data-centers)
@@ -376,8 +412,8 @@
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress
-                                   umm-coll
-                                   coll-progress-enum-list))
+                                  umm-coll
+                                  coll-progress-enum-list))
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)

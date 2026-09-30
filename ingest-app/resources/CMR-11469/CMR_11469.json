@@ -1,0 +1,309 @@
+{
+  "DataLanguage" : "English",
+  "CollectionCitations" : [ {
+    "Creator" : "Schwartz, M., Livesey, N. and Read, W.",
+    "DataPresentationForm" : "Digital Science Data",
+    "OnlineResource" : {
+      "Linkage" : "https://disc.gsfc.nasa.gov/datacollection/ML2T_005.html"
+    },
+    "Publisher" : "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+    "Title" : "MLS/Aura Level 2 Temperature V005",
+    "SeriesName" : "ML2T",
+    "ReleaseDate" : "2020-06-11T00:00:00.000Z",
+    "Version" : "005",
+    "ReleasePlace" : "Greenbelt, MD, USA"
+  } ],
+  "SpatialExtent" : {
+    "GranuleSpatialRepresentation" : "CARTESIAN",
+    "HorizontalSpatialDomain" : {
+      "Geometry" : {
+        "CoordinateSystem" : "CARTESIAN",
+        "BoundingRectangles" : [ {
+          "WestBoundingCoordinate" : -180,
+          "NorthBoundingCoordinate" : 82,
+          "EastBoundingCoordinate" : 180,
+          "SouthBoundingCoordinate" : -82
+        } ]
+      }
+    }
+  },
+  "CollectionProgress" : "ACTIVE",
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "ATMOSPHERE",
+    "Term" : "ATMOSPHERIC TEMPERATURE",
+    "VariableLevel1" : "UPPER AIR TEMPERATURE"
+  } ],
+  "TemporalExtents" : [ {
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "2004-08-02T00:00:00.000Z"
+    } ],
+    "EndsAtPresentFlag" : true
+  } ],
+  "ProcessingLevel" : {
+    "Id" : "2"
+  },
+  "DOI": {
+    "DOI": "10.5067/AURA/MLS/DATA2520",
+    "Authority": "https://doi.org",
+    "PreviousVersion": [
+      {
+        "DOI": "10.5067/AURA/MLS/DATA2520",
+        "Version": "005",
+        "Description": "Operational version of the Aura MLS dataset MLS/Aura Level 2 Temperature V005 (ML2T).",
+        "CollectionProgress": "ACTIVE",
+        "Published": "2020-02-04T00:00:00Z",
+        "BeginningDateTime": "2004-08-02T00:00:00Z"
+      },
+      {
+        "DOI": "10.5067/AURA/MLS/DATA2021",
+        "Version": "004",
+        "Description": "Operational version of the Aura MLS dataset MLS/Aura Level 2 Temperature V004 (ML2T).",
+        "CollectionProgress": "ACTIVE",
+        "Published": "2018-04-23T00:00:00Z",
+        "BeginningDateTime": "2004-08-02T00:00:00Z"
+      },
+      {
+        "DOI": "Not Applicable",
+        "Version": "003",
+        "Description": "Deprecated version of the Aura MLS dataset MLS/Aura Level 2 Temperature (ML2T).",
+        "CollectionProgress": "DEPRECATED",
+        "Published": "2011-12-01T00:00:00Z",
+        "BeginningDateTime": "2004-08-02T00:00:00Z",
+        "EndingDateTime": "2015-03-31T23:59:59Z",
+        "DeprecatedDateTime": "2015-03-31T23:59:59Z"
+      }
+    ]
+  },
+  "ShortName" : "ML2T",
+  "EntryTitle" : "MLS/Aura Level 2 Temperature V005 (ML2T) at GES DISC",
+  "ISOTopicCategories" : [ "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" ],
+  "DirectDistributionInformation" : {
+    "Region" : "us-west-2",
+    "S3CredentialsAPIEndpoint" : "https://data.gesdisc.earthdata.nasa.gov/s3credentials",
+    "S3CredentialsAPIDocumentationURL" : "https://data.gesdisc.earthdata.nasa.gov/s3credentialsREADME",
+    "S3BucketAndObjectPrefixNames" : [ "s3://gesdisc-cumulus-prod-protected/Aura_MLS_Level2/ML2T.005/" ]
+  },
+  "RelatedUrls" : [ {
+    "Description" : "Access the visualization from the GES DISC website.",
+    "URL" : "https://docserver.gesdisc.eosdis.nasa.gov/public/project/Images/ML2T_005.png",
+    "URLContentType" : "VisualizationURL",
+    "Type" : "GET RELATED VISUALIZATION"
+  }, {
+    "Description" : "Access the dataset landing page from the GES DISC website.",
+    "URL" : "https://disc.gsfc.nasa.gov/datacollection/ML2T_005.html",
+    "Type" : "DATA SET LANDING PAGE",
+    "URLContentType" : "CollectionURL"
+  }, {
+    "Description" : "Access the data via HTTP.",
+    "URL" : "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_MLS_Level2/ML2T.005/",
+    "Subtype" : "DATA TREE",
+    "Type" : "GET DATA",
+    "URLContentType" : "DistributionURL"
+  }, {
+    "Description" : "Access the data via the OPeNDAP protocol.",
+    "URL" : "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/HDF-EOS5/Aura_MLS_Level2/ML2T.005/contents.html",
+    "Subtype" : "OPENDAP DATA",
+    "Type" : "USE SERVICE API",
+    "URLContentType" : "DistributionURL"
+  }, {
+    "Description" : "Use the Earthdata Search to find and retrieve data sets across multiple data centers.",
+    "URL" : "https://search.earthdata.nasa.gov/search/granules?p=C1729926922-GES_DISC",
+    "Subtype" : "Earthdata Search",
+    "Type" : "GET DATA",
+    "URLContentType" : "DistributionURL"
+  }, {
+    "Description" : "Data Quality and Description Document",
+    "URL" : "https://mls.jpl.nasa.gov/data/v5-0_data_quality_document.pdf",
+    "Subtype" : "USER'S GUIDE",
+    "Type" : "VIEW RELATED INFORMATION",
+    "URLContentType" : "PublicationURL"
+  }, {
+    "Description" : "List of publications.",
+    "URL" : "https://mls.jpl.nasa.gov/publications/",
+    "Subtype" : "PUBLICATIONS",
+    "Type" : "VIEW RELATED INFORMATION",
+    "URLContentType" : "PublicationURL"
+  }, {
+    "Description" : "Users are encouraged to register with the MLS science team to obtain updates and information about this data product.",
+    "URL" : "https://mls.jpl.nasa.gov/eos-aura-mls/data.php",
+    "Type" : "VIEW RELATED INFORMATION",
+    "URLContentType" : "PublicationURL"
+  }, {
+    "Description" : "EOS MLS Retrieval Process Algorithm Theoretical Basis",
+    "URL" : "https://mls.jpl.nasa.gov/data/eos_algorithm_atbd.pdf",
+    "Subtype" : "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
+    "Type" : "VIEW RELATED INFORMATION",
+    "URLContentType" : "PublicationURL"
+  }, {
+    "Description" : "MLS Science Team Home Page.",
+    "URL" : "https://mls.jpl.nasa.gov/",
+    "Type" : "PROJECT HOME PAGE",
+    "URLContentType" : "CollectionURL"
+  } ],
+  "ContactGroups" : [ {
+    "Roles" : [ "Technical Contact" ],
+    "GroupName" : "MLS SCIENCE TEAM",
+    "ContactInformation" : {
+      "Addresses" : [ {
+        "StreetAddresses" : [ "Mail Stop 183-701, Jet Propulsion Laboratory", "4800 Oak Grove Drive" ],
+        "City" : "Pasadena",
+        "StateProvince" : "CA",
+        "PostalCode" : "91109-8099",
+        "Country" : "USA"
+      } ],
+      "ContactMechanisms" : [ {
+        "Type" : "Telephone",
+        "Value" : "818-354-6716"
+      }, {
+        "Type" : "Email",
+        "Value" : "data@mls.jpl.nasa.gov"
+      } ]
+    }
+  } ],
+  "DataDates" : [ {
+    "Date" : "2020-02-04T00:00:00.000Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2020-02-04T00:00:00.000Z",
+    "Type" : "UPDATE"
+  } ],
+  "Abstract" : "ML2T is the EOS Aura Microwave Limb Sounder (MLS) standard product for temperature derived from radiances measured by the 118 and 240 GHz radiometers. The data version is 5.0. Spatial coverage is near-global (-82 degrees to +82 degrees latitude), with each profile spaced 1.5 degrees or ~165 km along the orbit track (roughly 15 orbits per day). The recommended useful vertical range is from 261 to 0.001 hPa, and the vertical resolution is between 3 and 6 km. Users of the ML2T data product should read section 3.22 of the EOS MLS Level 2 Version 5 Quality Document for more information.\n\nThe data are stored in the version 5 EOS Hierarchical Data Format (HDF-EOS5), which is based on the version 5 Hierarchical Data Format, or HDF-5. Each file contains two swath objects (profile and column data), each with a set of data and geolocation fields, swath attributes, and metadata.",
+  "LocationKeywords" : [ {
+    "Category" : "GEOGRAPHIC REGION",
+    "Type" : "GLOBAL"
+  }, {
+    "Category" : "VERTICAL LOCATION",
+    "Type" : "TROPOSPHERE"
+  }, {
+    "Category" : "VERTICAL LOCATION",
+    "Type" : "STRATOSPHERE"
+  }, {
+    "Category" : "VERTICAL LOCATION",
+    "Type" : "MESOSPHERE"
+  }, {
+    "Category" : "VERTICAL LOCATION",
+    "Type" : "THERMOSPHERE"
+  } ],
+  "MetadataDates" : [ {
+    "Date" : "2020-04-30T00:00:00.000Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2020-06-12T00:00:00.000Z",
+    "Type" : "UPDATE"
+  } ],
+  "Version" : "005",
+  "Projects" : [ {
+    "ShortName" : "Aura",
+    "LongName" : "Earth Observing System (EOS), Aura"
+  } ],
+  "UseConstraints" : {
+    "Description" : "The Earth Observing System Data and Information System (EOSDIS) data use and citation guidance for NASA data can be accessed at https://earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance. For information on how to properly cite and acknowledge data from the NASA GES DISC, refer to https://disc.gsfc.nasa.gov/data-guidelines."
+  },
+  "ContactPersons" : [ {
+    "Roles" : [ "Investigator" ],
+    "FirstName" : "NATHANIEL",
+    "LastName" : "LIVESEY",
+    "ContactInformation" : {
+      "Addresses" : [ {
+        "StreetAddresses" : [ "Mail Stop 183-701, Jet Propulsion Laboratory, 4800 Oak Grove Drive" ],
+        "City" : "Pasadena",
+        "StateProvince" : "CA",
+        "PostalCode" : "91109-8099",
+        "Country" : "USA"
+      } ],
+      "ContactMechanisms" : [ {
+        "Type" : "Email",
+        "Value" : "livesey@mls.jpl.nasa.gov"
+      } ]
+    }
+  }, {
+    "Roles" : [ "Metadata Author" ],
+    "FirstName" : "JAMES",
+    "MiddleName" : "EDWARD",
+    "LastName" : "JOHNSON",
+    "ContactInformation" : {
+      "Addresses" : [ {
+        "StreetAddresses" : [ "NASA Goddard Space Flight Center", "Code 610.2" ],
+        "City" : "Greenbelt",
+        "StateProvince" : "MD",
+        "PostalCode" : "20771",
+        "Country" : "USA"
+      } ],
+      "ContactMechanisms" : [ {
+        "Type" : "Telephone",
+        "Value" : "301-614-5121"
+      }, {
+        "Type" : "Email",
+        "Value" : "James.Johnson@nasa.gov"
+      } ]
+    }
+  } ],
+  "DataCenters" : [ {
+    "Roles" : [ "ARCHIVER" ],
+    "ShortName" : "NASA/GSFC/SED/ESD/TISL/GESDISC",
+    "LongName" : "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Terrestrial Information Systems Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+    "ContactInformation" : {
+      "RelatedUrls" : [ {
+        "URLContentType" : "DataCenterURL",
+        "Type" : "HOME PAGE",
+        "URL" : "https://disc.gsfc.nasa.gov/",
+        "Description" : "NASA GES DISC Website"
+      } ]
+    },
+    "ContactGroups" : [ {
+      "Roles" : [ "Data Center Contact" ],
+      "GroupName" : "GES DISC HELP DESK SUPPORT GROUP",
+      "ContactInformation" : {
+        "Addresses" : [ {
+          "StreetAddresses" : [ "Goddard Earth Sciences Data and Information Services Center", "Code 610.2", "NASA Goddard Space Flight Center" ],
+          "City" : "Greenbelt",
+          "StateProvince" : "MD",
+          "PostalCode" : "20771",
+          "Country" : "USA"
+        } ],
+        "ContactMechanisms" : [ {
+          "Type" : "Telephone",
+          "Value" : "301-614-5224"
+        }, {
+          "Type" : "Fax",
+          "Value" : "301-614-5268"
+        }, {
+          "Type" : "Email",
+          "Value" : "gsfc-dl-help-disc@mail.nasa.gov"
+        } ]
+      }
+    } ]
+  } ],
+  "Platforms" : [ {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "Aura",
+    "LongName" : "Earth Observing System, Aura",
+    "Instruments" : [ {
+      "ShortName" : "MLS",
+      "LongName" : "Microwave Limb Sounder"
+    } ]
+  } ],
+  "Quality": {
+    "Summary": "ML2T is the EOS Aura Microwave Limb Sounder (MLS) standard product for temperature derived from radiances measured by the 118 and 240 GHz radiometers (Data version 5.0). Refer to reference document for full descriptions and screening criteria.",
+    "QualityContentDetails": {
+      "Strengths": "Provides reliable, near-global vertical temperature profiles from the upper troposphere into the mesosphere with a vertical resolution between 3 and 6 km.",
+      "Limitations": "The recommended useful vertical range is constrained between 261 hPa and 0.001 hPa.",
+      "KnownIssues": "Data points must be screened using standard MLS status, quality, precision, and convergence metrics.",
+      "Other": "Archived and distributed in version 5 EOS Hierarchical Data Format (HDF-EOS5)."
+    }
+  },
+  "MetadataSpecification" : {
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.7",
+    "Name" : "UMM-C",
+    "Version" : "1.18.7"
+  },
+  "ArchiveAndDistributionInformation" : {
+    "FileArchiveInformation" : [ {
+      "AverageFileSize" : 1.6,
+      "AverageFileSizeUnit" : "MB",
+      "Format" : "HDF-EOS5",
+      "FormatType" : "Native"
+    } ]
+  }
+}
