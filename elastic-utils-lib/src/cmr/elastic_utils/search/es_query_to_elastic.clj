@@ -202,6 +202,11 @@
        :else
        (errors/internal-error! (es-msg/nil-min-max-msg))))))
 
+(defn first-non-space-is-asterisk?
+  "Returns true if the first non space is asterisk."
+  [s]
+  (some? (re-find #"^\s*\*" s)))
+
 (extend-protocol ConditionToElastic
   cmr.common.services.search.query_model.ConditionGroup
   (condition->elastic
@@ -217,24 +222,31 @@
     [{:keys [path condition]} concept-type]
     {:nested {:path path
               :query {:bool {:filter (condition->elastic condition concept-type)}}}})
-
+  
   cmr.common.services.search.query_model.TextCondition
   (condition->elastic
-    [{:keys [field query-str]} concept-type]
-    (let [elastic-field (query-field->elastic-field field concept-type)]
-     ;; For keyword phrase search with wildcard, we have to use span query.
-      (if (and (= :keyword-phrase field) (= :collection concept-type))
-        {:span_near
-         {:clauses [{:span_multi
-                     {:match
-                      {:wildcard
-                       {elastic-field (escape-query-string query-str)}}}}]
-          :slop 0
-          :in_order true}}
-        {:query_string {:query (escape-query-string query-str)
-                        :analyzer :whitespace
-                        :default_field elastic-field
-                        :default_operator :and}})))
+   [{:keys [field query-str]} concept-type]
+   (if (and (config/enable-collection-keyword2-wildcard-searches)
+            (= concept-type :collection)
+            (= field :keyword)
+            (first-non-space-is-asterisk? query-str))
+     (let [elastic-field (field->wildcard-field concept-type field)] ;:keyword2-wildcard
+       {:wildcard {elastic-field {:value (escape-query-string query-str)}}})
+     (let [elastic-field (query-field->elastic-field field concept-type)]
+       ;; For keyword phrase search with wildcard, we have to use span query.
+       (if (and (= :keyword-phrase field) (= :collection concept-type))
+         {:span_near
+          {:clauses [{:span_multi
+                      {:match
+                       {:wildcard
+                        {elastic-field (escape-query-string query-str)}}}}]
+           :slop 0
+           :in_order true}}
+         {:query_string {:query (escape-query-string query-str)
+                         :analyzer :whitespace
+                         :default_field elastic-field
+                         :default_operator :and}}))))
+                         
 
   cmr.common.services.search.query_model.StringCondition
   (condition->elastic

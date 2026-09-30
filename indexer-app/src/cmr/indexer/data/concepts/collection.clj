@@ -352,7 +352,31 @@
                                               :HorizontalSpatialDomain
                                               :ResolutionAndCoordinateSystem
                                               :HorizontalDataResolution]))
-        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+        keyword2 (k/create-keywords-field concept-id collection
+                                          {:platform-long-names platform-long-names
+                                           :instrument-long-names instrument-long-names
+                                           :entry-id entry-id
+                                           :kms-uuids (let [concept-uuids (keep :uuid (map #(kms-util/concept->elastic-doc context %) (:DirectoryNames collection)))
+                                                            granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
+                                                            iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
+                                                            ;; Location and spatial-keywords are used somewhat interchangably in the system
+                                                            location-uuids (keep :uuid (map #(kms-util/spatial-keyword-by-map->elastic-doc context %) (:LocationKeywords collection)))
+                                                            ;; The mimetypes being validated are from the `GETDATA` field
+                                                            mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (keep :GetData related-urls))))
+                                                            processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))
+                                                            project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
+                                                            related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
+                                                            temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
+                                                            science-keyword-uuids (keep :uuid (map #(kms-util/science-keyword->elastic-doc context %) (:ScienceKeywords collection)))
+                                                            platform-uuids (keep :uuid (map #(kms-util/platform->elastic-doc context %) platform-short-names))
+                                                            provider-uuids (keep :uuid (map #(kms-util/provider->elastic-doc context %) data-center-names))
+                                                            instrument-uuids (keep :uuid (map #(kms-util/instrument->elastic-doc context %) instrument-short-names))
+                                                            uuids (distinct (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids provider-uuids))]
+                                                        ;; Uniquely this can only be a single value
+                                                        (if processing-level-uuid
+                                                          (conj uuids processing-level-uuid)
+                                                          uuids))})]
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
@@ -454,7 +478,9 @@
             :summary summary
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
+            :has-opendap-url (if (seq (filter opendap-util/opendap-url? related-urls))
+                               true
+                               false)
             :cloud-hosted (cloud-hosted? collection tags)
             :standard-product (standard-product? collection tags)
             :publication-references opendata-references
@@ -465,30 +491,8 @@
             :created-at created-at
             :coordinate-system coordinate-system
             ;; fields added to support keyword searches including the quoted string case.
-            :keyword2 (k/create-keywords-field concept-id collection
-                                               {:platform-long-names platform-long-names
-                                                :instrument-long-names instrument-long-names
-                                                :entry-id entry-id
-                                                :kms-uuids (let [concept-uuids (keep :uuid (map #(kms-util/concept->elastic-doc context %) (:DirectoryNames collection)))
-                                                                 granule-data-format-uuids (keep :uuid (map #(kms-util/granule-data-format->elastic-doc context %) granule-data-format))
-                                                                 iso-topic-uuids (keep :uuid (map #(kms-util/iso-topic-category->elastic-doc context %) (:ISOTopicCategories collection)))
-                                                                 ;; Location and spatial-keywords are used somewhat interchangably in the system
-                                                                 location-uuids (keep :uuid (map #(kms-util/spatial-keyword-by-map->elastic-doc context %) (:LocationKeywords collection)))
-                                                                 ;; The mimetypes being validated are from the `GETDATA` field
-                                                                 mime-type-uuids (keep :uuid (map #(kms-util/mime-type->elastic-doc context %) (keep :MimeType (keep :GetData related-urls))))
-                                                                 processing-level-uuid (:uuid (kms-util/processing-level-id->elastic-doc context processing-level-id))
-                                                                 project-uuids (keep :uuid (map #(kms-util/project-short-name->elastic-doc context %) project-short-names))
-                                                                 related-url-uuids (keep :uuid (map #(kms-util/related-url->elastic-doc context %) related-urls))
-                                                                 temporal-uuids (keep :uuid (map #(kms-util/temporal-keyword->elastic-doc context %) temporal-keywords))
-                                                                 science-keyword-uuids (keep :uuid (map #(kms-util/science-keyword->elastic-doc context %) (:ScienceKeywords collection)))
-                                                                 platform-uuids (keep :uuid (map #(kms-util/platform->elastic-doc context %) platform-short-names))
-                                                                 provider-uuids (keep :uuid (map #(kms-util/provider->elastic-doc context %) data-center-names))
-                                                                 instrument-uuids (keep :uuid (map #(kms-util/instrument->elastic-doc context %) instrument-short-names))
-                                                                 uuids (distinct (concat concept-uuids granule-data-format-uuids iso-topic-uuids location-uuids mime-type-uuids project-uuids related-url-uuids temporal-uuids science-keyword-uuids platform-uuids instrument-uuids provider-uuids))]
-                                                             ;; Uniquely this can only be a single value
-                                                             (if processing-level-uuid
-                                                               (conj uuids processing-level-uuid)
-                                                               uuids))})
+            :keyword2 keyword2
+            :keyword2-wildcard keyword2
             :platform-ln-lowercase (map string/lower-case platform-long-names)
             :instrument-ln-lowercase (map string/lower-case instrument-long-names)
             :sensor-ln-lowercase (map string/lower-case sensor-long-names)

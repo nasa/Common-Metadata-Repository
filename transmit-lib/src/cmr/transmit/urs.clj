@@ -106,25 +106,25 @@
                      (pr-str body)))
 
         500 (errors/throw-service-error
-             :internal-server-error
+             :dependency-failed
              (format "EDL or Launchpad internal server error. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
                      (common-util/scrub-token token)
                      (pr-str body)))
 
         502 (errors/throw-service-error
-             :bad-gateway
+             :dependency-failed
              (format "EDL cannot reach Launchpad (bad gateway). Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
                      (common-util/scrub-token token)
                      (pr-str body)))
 
         503 (errors/throw-service-error
-             :service-unavailable
+             :dependency-failed
              (format "EDL or Launchpad service unavailable. Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
                      (common-util/scrub-token token)
                      (pr-str body)))
 
         504 (errors/throw-service-error
-             :gateway-timeout
+             :dependency-failed
              (format "Launchpad service temporarily unavailable (gateway timeout). Please try again later. Token (partially redacted): [%s]. EDL error message: [%s]"
                      (common-util/scrub-token token)
                      (pr-str body)))

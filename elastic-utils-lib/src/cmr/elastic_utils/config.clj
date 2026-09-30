@@ -103,6 +103,15 @@
   {:type Boolean
    :default false})
 
+(declare enable-collection-keyword2-wildcard-searches)
+(defconfig enable-collection-keyword2-wildcard-searches
+  "When true, keyword searches that start with * will use dedicated Elasticsearch
+   wildcard-type field for improved performance. When false, searches
+   will use the standard keyword2 field. This should be enabled only after all
+   indices have been reindexed to populate the wildcard fields."
+  {:default true
+   :type Boolean})
+
 (declare enable-wildcard-field-searches)
 (defconfig enable-wildcard-field-searches
   "When true, pattern searches (wildcards) will use dedicated Elasticsearch
