@@ -20,7 +20,7 @@
    :managed-dependencies [[at.yawk.lz4/lz4-java "1.11.1"]
                           [cheshire "6.2.0"]
                           [clj-http "3.11.0"] ;; latest is 3.13.1
-                          [clj-time "0.15.2"] ;; latest is 0.15.2
+                          [clj-time "0.15.1"] ;; latest is 0.15.2 will break acl_matches_test.clj
                           [com.fasterxml.jackson.core/jackson-annotations "2.21"]
                           [com.fasterxml.jackson.core/jackson-core "2.21.7"]
                           [com.fasterxml.jackson.core/jackson-databind "2.21.7"]
