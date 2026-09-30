@@ -102,7 +102,7 @@
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
            (format "Source file %s is not valid %s XML" example-file metadata-format)))
-
+     
       ;; Parsed UMM is valid against the JSON schema
       (check-failure
        (is (empty? (js/validate-umm-json (umm-json/umm->json umm) :collection))

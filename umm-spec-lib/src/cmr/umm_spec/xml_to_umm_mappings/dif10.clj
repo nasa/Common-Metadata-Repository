@@ -23,12 +23,14 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.versioning :as umm-spec-versioning]
-   [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+   [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+   [cmr.common.dev.util :as d]))
 
 (def coll-progress-mapping
-  "Mapping from values supported for DIF10 Data_Set_Progress to UMM CollectionProgress."
+  "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"COMPLETE" "COMPLETE"
-   "IN WORK"  "ACTIVE"
+   "ACTIVE" "ACTIVE"
+   "IN WORK" "ACTIVE"
    "PLANNED" "PLANNED"
    "DEPRECATED" "DEPRECATED"
    "NOT PROVIDED" "NOT PROVIDED"
@@ -279,36 +281,69 @@
       {:FileDistributionInformation distributions})))
 
 (defn- parse-doi
-  "Parse the DOI from the data citation section.  If the DOI does not exist then set the DOIs
-   MissingReason and Explanation since it is required as of UMM-C 1.16.1."
-  [doc]
-  (let [first-doi
-         (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
-                               (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
-                                 {:DOI (value-of dsc "Persistent_Identifier/Identifier")
-                                  :PreviousVersion
-                                  (let [pv (util/remove-nil-keys
-                                            {:Version (value-of dsc "Persistent_Identifier/Previous_Version/Version")
-                                             :Description (value-of dsc "Persistent_Identifier/Previous_Version/Description")
-                                             :DOI (value-of dsc "Persistent_Identifier/Previous_Version/DOI")
-                                             :Published (date-at dsc "Persistent_Identifier/Previous_Version/Published")})]
-                                    (when-not (empty? pv) (cmn/map->PreviousVersionType pv)))}))))]
-    (if first-doi
-      first-doi
-      {:MissingReason "Unknown"
-       :Explanation "It is unknown if this record has a DOI."})))
+  "Parse the DOI from the data citation section."
+  ([doc]
+   (parse-doi doc true))
+  ([doc sanitize?]
+   (let [first-doi (first (remove nil?
+                                  (for [dsc (select doc "/DIF/Dataset_Citation")]
+                                    (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
+                                      (let [pvs (seq (keep (fn [pv]
+                                                             (let [pv-map (util/remove-nil-keys
+                                                                           {:Version (value-of pv "Version")
+                                                                            :Description (value-of pv "Description")
+                                                                            :DOI (value-of pv "DOI")
+                                                                            :Published (when-let [pub (value-of pv "Published")]
+                                                                                         (dtp/try-parse-datetime pub))
+                                                                            :BeginningDateTime (when-let [bdt (value-of pv "BeginningDateTime")]
+                                                                                                 (dtp/try-parse-datetime bdt))
+                                                                            :EndingDateTime (when-let [edt (value-of pv "EndingDateTime")]
+                                                                                              (dtp/try-parse-datetime edt))
+                                                                            :DeprecatedDateTime (when-let [ddt (value-of pv "DeprecatedDateTime")]
+                                                                                                  (dtp/try-parse-datetime ddt))
+                                                                            :CollectionProgress (or (value-of pv "CollectionProgress") "NOT PROVIDED")})]
+                                                               (when (seq pv-map)
+                                                                 (cmn/map->PreviousVersionType pv-map))))
+                                                           (select dsc "Persistent_Identifier/Previous_Version")))]
+                                        (util/remove-nil-keys
+                                         {:DOI (value-of dsc "Persistent_Identifier/Identifier")
+                                          :PreviousVersion pvs}))))))]
+     (if first-doi
+       first-doi
+       {:MissingReason "Unknown"
+        :Explanation "It is unknown if this record has a DOI."}))))
 
-(defn- parse-associated-dois
-  "Parse the associated DOIs."
+(defn parse-associated-dois
+  "Parses out the associated DOIs from the DIF 10 XML."
   [doc]
-  (when-let [assoc-dois (select doc "DIF/Associated_DOIs")]
-    (into []
-      (for [assoc-doi assoc-dois]
-        {:DOI (value-of assoc-doi "DOI")
-         :Title (value-of assoc-doi "Title")
-         :Authority (value-of assoc-doi "Authority")
-         :Type (value-of assoc-doi "Type")
-         :DescriptionOfOtherType (value-of assoc-doi "Description_Of_Other_Type")}))))
+  (when-let [assoc-dois (seq (select doc "/DIF/Associated_DOIs"))]
+    (for [assoc-doi assoc-dois
+          :let [raw-type (value-of assoc-doi "Type")
+                raw-desc (value-of assoc-doi "Description_Of_Other_Type")
+
+                ;; The types DIF10 doesn't support that are forced into "Other"
+                extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
+
+                ;; Extract the hidden type from the description if it exists
+                extracted-type (when (and (= "Other" raw-type) raw-desc)
+                                 (some #(when (string/starts-with? raw-desc %) %) extended-types))
+
+                ;; Applies the extracted type, or fallback to raw
+                final-type (if extracted-type extracted-type raw-type)
+
+                ;; Cleans up the description by removing the extracted type and separator
+                final-desc (if extracted-type
+                             (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
+                               (if (string/starts-with? stripped "- ")
+                                 (string/trim (subs stripped 2))
+                                 (when (not (string/blank? stripped)) stripped)))
+                             raw-desc)]]
+      (util/remove-nil-keys
+       {:DOI (value-of assoc-doi "DOI")
+        :Title (value-of assoc-doi "Title")
+        :Authority (value-of assoc-doi "Authority")
+        :Type final-type
+        :DescriptionOfOtherType final-desc}))))
 
 (defn- parse-other-identifiers
   "Parse the other identifiers."
@@ -356,7 +391,7 @@
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :DOI (parse-doi doc)
+   :DOI (parse-doi doc sanitize?)
    :OtherIdentifiers (parse-other-identifiers doc)
    :AssociatedDOIs (parse-associated-dois doc)
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")

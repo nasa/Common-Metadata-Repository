@@ -689,7 +689,7 @@
 							</xs:restriction>
 						</xs:simpleType>
 					</xs:element>
-					<xs:element name="PreviousVersion" type="PreviousVersionType" minOccurs="0"/>
+					<xs:element name="PreviousVersion" type="PreviousVersionType" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 				<xs:sequence>
 					<xs:element name="MissingReason">
@@ -737,7 +737,19 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
-                        <xs:element name="Published" type="xs:dateTime" minOccurs="0"/>
+			<xs:element name="Published" type="xs:string" minOccurs="0"/>
+			<xs:element name="BeginningDateTime" type="xs:dateTime" minOccurs="0"/>
+			<xs:element name="EndingDateTime" type="xs:dateTime" minOccurs="0"/>
+			<xs:element name="DeprecatedDateTime" type="xs:dateTime" minOccurs="0"/>
+			<!-- CollectionProgress should use CMR code CollectionState configuration -->
+			<xs:element minOccurs="0" name="CollectionProgress">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1" />
+						<xs:maxLength value="80" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- #mark Associated Doi -->
@@ -817,9 +829,6 @@
 						<xs:enumeration value="Parent Dataset"/>
 						<xs:enumeration value="Related Dataset"/>
 						<xs:enumeration value="Other"/>
-						<xs:enumeration value="IsPreviousVersionOf"/>
-						<xs:enumeration value="IsNewVersionOf"/>
-						<xs:enumeration value="IsDescribedBy"/>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>

@@ -31,7 +31,8 @@ History:
     2021-03-03 : 10.2 d - CMR-7035 Adding AssociatedDOIs and DirectDistributionInformation
     2021-11-11 : 10.2 e - ECSE-1122 Adding Free_And_Open_Data
     2024-02-13 : 10.2 f - patch, adding ECSE-1474 - CMR landing pages
-    2026-01-30 : 10.2 g - ECSE-2267 add new sub-fields to Quality field
+    2026-01-30 : 10.2 g - ECSE-2267 added new sub-fields to Quality field
+    2026-06-30 : 10.2 h - ECSE-2259 added new sub-fields to DOI/Previous_Versions
 
 -->
 

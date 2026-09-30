@@ -3,6 +3,7 @@
  (:require
   [clj-time.format :as f]
   [clojure.string :as string]
+  [cmr.common.date-time-parser :as dtp]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.dif-util :as dif-util]
   [cmr.umm-spec.location-keywords :as lk]
@@ -200,28 +201,42 @@
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
 
+(defn fix-doi-published-dates
+  "Converts string timestamps in :PreviousVersion maps to Joda DateTime objects."
+  [previous-versions]
+  (when (seq previous-versions)
+    (mapv (fn [pv]
+            (if-let [published (:Published pv)]
+              (assoc pv :Published (if (string? published)
+                                     (dtp/parse-datetime published)
+                                     published))
+              pv))
+          previous-versions)))
+
 (defn expected-dif-doi
-  "DIF9 and DIF10 do not have several DOI fields so remove them."
+  "DIF9 and DIF10 do not have several DOI fields so remove them, but preserve and normalize PreviousVersion."
   [doi]
-  (let [updated-doi (util/remove-nil-keys
-                     (dissoc doi :Authority :MissingReason :Explanation))]
-    (if (seq updated-doi)
-      (if (:PreviousVersion updated-doi)
-        (-> updated-doi
-            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
-            cmn/map->DoiDoiType)
-        (cmn/map->DoiDoiType updated-doi))
-      {:Explanation "It is unknown if this record has a DOI.",
-       :MissingReason "Unknown"})))
+  (if doi
+    (let [updated-doi (util/remove-nil-keys
+                       (dissoc (into {} doi) :Authority :MissingReason :Explanation))
+          updated-doi (if (:PreviousVersion updated-doi)
+                        (update updated-doi :PreviousVersion fix-doi-published-dates)
+                        updated-doi)]
+      (if (seq updated-doi)
+        updated-doi
+        {:Explanation "It is unknown if this record has a DOI."
+         :MissingReason "Unknown"}))
+    {:Explanation "It is unknown if this record has a DOI."
+     :MissingReason "Unknown"}))
 
 (defn expected-dif-pub-doi
   "DIF9 and DIF10 do not have several DOI fields so remove them."
   [doi]
-  (let [updated-doi (util/remove-nil-keys
-                     (dissoc doi :Authority :MissingReason :Explanation))]
-    (when (seq updated-doi)
-      (util/remove-nil-keys
-        (cmn/map->DoiDoiType updated-doi)))))
+  (when doi
+    (let [updated-doi (util/remove-nil-keys
+                       (dissoc (into {} doi) :Authority :MissingReason :Explanation))]
+      (when (seq updated-doi)
+        updated-doi))))
 
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 or DIF10 publication reference"

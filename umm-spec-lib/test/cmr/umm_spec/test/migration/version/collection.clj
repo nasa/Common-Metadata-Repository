@@ -4179,3 +4179,48 @@
                                  :Name "UMM-C" :Version "1.18.5"}}
         {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
                                  :Name "UMM-C" :Version "1.18.6"}}))
+(deftest migrate-1-18-6-to-1-18-7
+  (testing "Migrating up to 1.18.7 updates MetadataSpecification"
+    (is (= {:DOI
+            {:DOI "10.5067/fake.record.01"
+             :PreviousVersion
+             [{:Version "1.0"
+               :Description "Desc"
+               :DOI "10.5067/fake.record.00"
+               :Published "2024-01-01T00:00:00Z"}]}
+            :MetadataSpecification
+            {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.7"
+             :Name "UMM-C"
+             :Version "1.18.7"}}
+           (vm/migrate-umm {} :collection "1.18.6" "1.18.7"
+                           {:DOI
+                            {:DOI "10.5067/fake.record.01"
+                             :PreviousVersion
+                             {:Version "1.0"
+                              :Description "Desc"
+                              :DOI "10.5067/fake.record.00"
+                              :Published "2024-01-01T00:00:00Z"}}})))))
+
+(deftest migrate-1-18-7-to-1-18-6
+  (are3 [expected sample-collection]
+        (is (= expected (vm/migrate-umm {} :collection "1.18.7" "1.18.6" sample-collection)))
+
+        "Migrating down to 1.18.6 removes new PreviousVersionType fields"
+        {:DOI {:DOI "10.5067/fake.record.01"
+               :PreviousVersion {:Version "1.0"
+                                 :Description "Desc"
+                                 :DOI "10.5067/fake.record.00"
+                                 :Published "2024-01-01T00:00:00Z"}}
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.6"
+                                 :Name "UMM-C" :Version "1.18.6"}}
+        {:DOI {:DOI "10.5067/fake.record.01"
+               :PreviousVersion {:Version "1.0"
+                                 :Description "Desc"
+                                 :DOI "10.5067/fake.record.00"
+                                 :Published "2024-01-01T00:00:00Z"
+                                 :BeginningDateTime "2023-01-01T00:00:00Z"
+                                 :EndingDateTime "2023-12-31T23:59:59Z"
+                                 :DeprecatedDateTime "2024-02-01T00:00:00Z"
+                                 :CollectionProgress "COMPLETE"}}
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.7"
+                                 :Name "UMM-C" :Version "1.18.7"}}))
