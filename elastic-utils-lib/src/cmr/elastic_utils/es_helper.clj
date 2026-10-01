@@ -122,11 +122,9 @@
   (try
     (let [parsed (if (string? response-body)
                    (json/parse-string response-body true)
-                   response-body)
-          error-map (:error parsed)]
-      (and (some? error-map)
-           (string/includes? (str error-map) "too many scroll contexts")))
-    (catch Exception e
+                   response-body)]
+      (string/includes? (str (:error parsed)) "too many scroll contexts"))
+    (catch Exception _
       false)))
 
 (defn- attempt-to-start-task
@@ -149,6 +147,9 @@
         _ (debug "Delete-By-Query: Response for starting delete query task is " response)
         status (:status response)
         body (:body response)]
+
+    (when (has-scroll-context-error? body)
+      (throw (ex-info "Delete-By-Query: Scroll context error on task start" {:type :scroll-context-error :body body})))
 
     (when-not (#{200 201} status)
       (throw (ex-info "Delete-By-Query: Failed to start delete-by-query task" {:status status :body body})))
@@ -189,7 +190,7 @@
                                                    :throw-exceptions false}))
             task-status-body (es-util/decode-response task-status-response)]
         (cond
-          ;; Check for errors
+          ;; Check for root errors (Task failed to even start correctly)
           (some? (:error task-status-body))
           (if (has-scroll-context-error? task-status-body)
             (throw (ex-info "Delete-By-Query: Scroll context error during task execution"
@@ -197,14 +198,36 @@
             (throw (ex-info (str "Task " task-id " failed with an error.")
                             {:task-id task-id :error-details (:error task-status-body)})))
 
-          ;; Check for successful completion
+          ;; Check for completion AND verify there are no partial shard failures
           (true? (:completed task-status-body))
           (let [final-response (or (:response task-status-body)
-                                   {:deleted 0, :total 0, :timed_out false})]
-            (info (format "Delete-By-Query: Task %s completed. Final result: %s"
-                          task-id final-response))
-            {:status 200
-             :body final-response})
+                                   {:deleted 0, :total 0, :timed_out false, :failures []})
+                failures (:failures final-response)
+                conflicts (:version_conflicts final-response)]
+
+            (cond
+              (not-empty failures)
+              ;; Task finished, but had failures
+              (if (has-scroll-context-error? {:error failures})
+                (throw (ex-info "Delete-By-Query: Scroll context error during task execution (Partial Shard Failure)"
+                                {:type :scroll-context-error :task-id task-id :failures failures}))
+                (throw (ex-info (str "Task " task-id " completed but had shard failures.")
+                                {:task-id task-id :failures failures})))
+
+              ;; Task ran into version conflicts
+              (> conflicts 0)
+              (do
+                (error (format "Delete-By-Query: Task %s finished, but skipped %d documents due to version conflicts!" task-id conflicts))
+                (warn (ex-info (str "Delete-By-Query: Task " task-id " had version conflicts. Manual cleanup may be required.")
+                                {:task-id task-id :conflicts conflicts})))
+
+              ;; True success! No failures, no conflicts.
+              :else
+              (do
+                (info (format "Delete-By-Query: Task %s completed successfully. Final result: %s"
+                              task-id final-response))
+                {:status 200
+                 :body final-response})))
 
           ;; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
@@ -234,6 +257,8 @@
                      [:ok (poll-task-for-completion conn task-id)])
                    (catch Exception e
                      [:error e]))]
+
+      ;; Attempt Retries if failed due to Elastic's scroll context errors
       (if (= :ok (first result))
         (second result)
         (let [e (second result)
@@ -242,16 +267,16 @@
           (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
             (do
               ;; Log the exact ex-info message and data that triggered the retry
-              (warn (format "CMR-11405 - Caught exception: %s | Data: %s"
+              (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
                             (ex-message e)
                             (pr-str ex-data-map)))
-              (info (format "CMR-11405 - Scroll context error on attempt %d. Retrying in 1 second..." attempt))
+              (info (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
               (Thread/sleep 1000)
               (recur (inc attempt)))
 
             (do
               ;; Log the exact ex-info message and data right before permanently failing
-              (error (format "CMR-11405 - Task permanently failed or max retries reached. Exception: %s | Data: %s"
+              (error (format "Delete-By-Query: Task permanently failed or max retries reached. Exception: %s | Data: %s"
                              (ex-message e)
                              (pr-str ex-data-map)))
               ;; Pass the exception up the chain
