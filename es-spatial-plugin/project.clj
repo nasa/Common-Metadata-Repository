@@ -75,7 +75,7 @@
                                                     [org.slf4j/slf4j-api]
                                                     [gov.nasa.earthdata/quartzite]]]
                                       [org.clojure/tools.reader "1.4.0"]
-                                      [org.clojure/clojure "1.11.2"]]
+                                      [org.clojure/clojure "1.11.4"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
                        :uberjar-exclusions [#"(?i)^org/apache/commons/io/.*"]
