@@ -217,9 +217,9 @@
               ;; Task ran into version conflicts
               (> conflicts 0)
               (do
-                (error (format "Delete-By-Query: Task %s finished, but skipped %d documents due to version conflicts!" task-id conflicts))
-                (warn (ex-info (str "Delete-By-Query: Task " task-id " had version conflicts. Manual cleanup may be required.")
-                                {:task-id task-id :conflicts conflicts})))
+                (warn (format "Delete-By-Query: Task %s finished, but skipped %d documents due to version conflicts." task-id conflicts))
+                {:status 200
+                 :body final-response})
 
               ;; True success! No failures, no conflicts.
               :else
