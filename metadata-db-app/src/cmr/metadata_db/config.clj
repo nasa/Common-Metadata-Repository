@@ -54,6 +54,10 @@
   "The ingest exchange to which concept update/save messages are published."
   {:default "cmr_ingest.exchange"})
 
+(defconfig ingest-delete-exchange-name
+  "The exchange to which ingest delete event messages are published."
+  {:default "cmr_ingest_delete.exchange"})
+
 (defconfig access-control-exchange-name
   "The access control exchange to which update/save messages are published for access control data."
   {:default "cmr_access_control.exchange"})
@@ -78,6 +82,26 @@
     :generic-association ingest-exchange-name}
    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-exchange-name))))
 
+(def concept-type->exchange-delete-name-fn
+  "Maps concept types to a function that returns the name of the delete exchange to publish the message to."
+  (merge
+    {:granule ingest-delete-exchange-name
+     :collection ingest-delete-exchange-name
+     :tag ingest-delete-exchange-name
+     :tag-association ingest-delete-exchange-name
+     :service ingest-delete-exchange-name
+     :service-association ingest-delete-exchange-name
+     :access-group access-control-exchange-name
+     :acl access-control-exchange-name
+     :humanizer ingest-delete-exchange-name
+     :variable ingest-delete-exchange-name
+     :variable-association ingest-delete-exchange-name
+     :tool ingest-delete-exchange-name
+     :tool-association ingest-delete-exchange-name
+     :subscription ingest-delete-exchange-name
+     :generic-association ingest-delete-exchange-name}
+    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-delete-exchange-name))))
+
 (defconfig deleted-concept-revision-exchange-name
   "An exchange that will have messages passed to it whenever a concept revision is removed from
   metadata db. This was originally only intended for collections and it is messy to change the
@@ -99,5 +123,6 @@
   (assoc (rmq-conf/default-config)
          :exchanges [(deleted-concept-revision-exchange-name)
                      (ingest-exchange-name)
+                     (ingest-delete-exchange-name)
                      (access-control-exchange-name)
                      (deleted-granule-exchange-name)]))

@@ -4,10 +4,11 @@
    [cmr.message-queue.config :as rmq-conf]))
 
 ;; This is here to remove linter unresolved variable error.
-(declare index-queue-name index-queue-listener-count all-revisions-index-queue-name
+(declare index-queue-name index-queue-listener-count index-delete-queue-name index-delete-queue-listener-count
+         all-revisions-index-queue-name
          all-revisions-index-queue-listener-count deleted-granule-index-queue-name
          deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
-         ingest-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
+         ingest-exchange-name ingest-delete-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
          deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
 
 
@@ -33,6 +34,15 @@
 
 (defconfig index-queue-listener-count
   "Number of worker threads to use for the queue listener"
+  {:default 5
+   :type Long})
+
+(defconfig index-delete-queue-name
+  "The queue containing ingest delete events for the indexer"
+  {:default "cmr_index_delete.queue"})
+
+(defconfig index-delete-queue-listener-count
+  "Number of worker threads to use for the index delete queue listener"
   {:default 5
    :type Long})
 
@@ -74,6 +84,10 @@
   "The ingest exchange to which ingest event messages are published."
   {:default "cmr_ingest.exchange"})
 
+(defconfig ingest-delete-exchange-name
+  "The exchange to which ingest delete event messages are published."
+  {:default "cmr_ingest_delete.exchange"})
+
 (defconfig provider-exchange-name
   "The ingest exchange to which provider change and non-ingest messages are published."
   {:default "cmr_ingest_provider.exchange"})
@@ -94,15 +108,18 @@
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
+                  (index-delete-queue-name)
                   (all-revisions-index-queue-name)
                   (deleted-granule-index-queue-name)
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
+                     (ingest-delete-exchange-name)
                      (deleted-concept-revision-exchange-name)
                      (deleted-granule-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)]
+          (index-delete-queue-name) [(ingest-delete-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
           (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
