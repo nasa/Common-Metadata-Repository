@@ -85,21 +85,21 @@
 (def concept-type->exchange-delete-name-fn
   "Maps concept types to a function that returns the name of the delete exchange to publish the message to."
   (merge
-    {:granule ingest-delete-exchange-name
-     :collection ingest-delete-exchange-name
-     :tag ingest-delete-exchange-name
-     :tag-association ingest-delete-exchange-name
-     :service ingest-delete-exchange-name
-     :service-association ingest-delete-exchange-name
+    {:granule ingest-exchange-name
+     :collection ingest-delete-exchange-name ;; only have collection delete go to the delete exchange for now
+     :tag ingest-exchange-name
+     :tag-association ingest-exchange-name
+     :service ingest-exchange-name
+     :service-association ingest-exchange-name
      :access-group access-control-exchange-name
      :acl access-control-exchange-name
-     :humanizer ingest-delete-exchange-name
-     :variable ingest-delete-exchange-name
-     :variable-association ingest-delete-exchange-name
-     :tool ingest-delete-exchange-name
-     :tool-association ingest-delete-exchange-name
-     :subscription ingest-delete-exchange-name
-     :generic-association ingest-delete-exchange-name}
+     :humanizer ingest-exchange-name
+     :variable ingest-exchange-name
+     :variable-association ingest-exchange-name
+     :tool ingest-exchange-name
+     :tool-association ingest-exchange-name
+     :subscription ingest-exchange-name
+     :generic-association ingest-exchange-name}
     (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-delete-exchange-name))))
 
 (defconfig deleted-concept-revision-exchange-name
