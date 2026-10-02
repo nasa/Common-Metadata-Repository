@@ -57,7 +57,13 @@ def _parse_utc_z(value: str, param_name: str) -> datetime:
             status_code=400,
             detail=f"{param_name} must be ISO8601 UTC with Z suffix (e.g. 2024-01-01T00:00:00Z)",
         )
-    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    try:
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{param_name} must be a valid UTC date and time",
+        ) from exc
 
 
 def _validate_date_params(
