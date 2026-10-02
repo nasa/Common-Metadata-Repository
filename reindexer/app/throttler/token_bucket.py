@@ -29,6 +29,8 @@ class TokenBucket:
 
     def update_rate(self, rate_per_minute: float) -> None:
         with self._lock:
+            # Credit elapsed time at the old rate before changing the bucket.
+            self._refill()
             self._rate_per_second = rate_per_minute / 60.0
             self._max_tokens = float(rate_per_minute)
             self._tokens = min(self._tokens, self._max_tokens)
