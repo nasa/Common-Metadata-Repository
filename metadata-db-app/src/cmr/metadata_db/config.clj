@@ -63,7 +63,7 @@
   {:default "cmr_access_control.exchange"})
 
 (def concept-type->exchange-name-fn
-  "Maps concept types to a function that returns the name of the exchange to publish the message to."
+  "Maps concept types to a function that returns the name of the ingest exchange (for create/updates) to publish the message to."
   (merge
    {:granule ingest-exchange-name 
     :collection ingest-exchange-name
