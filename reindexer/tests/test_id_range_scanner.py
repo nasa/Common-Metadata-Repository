@@ -16,7 +16,6 @@ from app.throttler.id_range_scanner import (
     _dedup_latest_revision,
     _run,
     _wait_for_green_or_signal,
-    mark_active_scans_interrupted,
     start_id_range_scan,
 )
 
@@ -51,7 +50,7 @@ def deps(monkeypatch):
     monkeypatch.setattr(_scanner_mod, "job_store", job_store)
     monkeypatch.setattr(_scanner_mod, "throttler", throttler)
     monkeypatch.setattr(_scanner_mod, "check_all_es_health", MagicMock(return_value={"overall": "green"}))
-    monkeypatch.setattr(_scanner_mod, "_active_scans", set())
+    monkeypatch.setattr(_scanner_mod.leases, "_held", set())
 
     return db, job_store, throttler
 
@@ -151,7 +150,6 @@ class TestRunLoop:
         _run("req-1", "PROV", None, None, 0)
         db.find_next_granule_id_in_range.assert_not_called()
         job_store.mark_job.assert_not_called()
-        assert job_store.try_mark_interrupted.called is stopped
 
     def test_cancelled_mid_chunk_dispatch_stops_without_completing(self, deps):
         db, job_store, throttler = deps
@@ -161,7 +159,6 @@ class TestRunLoop:
         _run("req-1", "PROV", None, None, 0)
         job_store.mark_job.assert_not_called()
         job_store.update_id_range_progress.assert_not_called()
-        job_store.try_mark_interrupted.assert_not_called()
 
     def test_cancelled_between_empty_windows_stops_before_next_probe(self, deps):
         db, job_store, throttler = deps
@@ -170,21 +167,6 @@ class TestRunLoop:
         throttler.is_job_cancelled.side_effect = [False, True]
         _run("req-1", "PROV", None, None, 0)
         assert db.find_next_granule_id_in_range.call_count == 1
-        job_store.mark_job.assert_not_called()
-
-    def test_stopped_mid_chunk_dispatch_marks_interrupted(self, deps):
-        """stop_event is set DURING dispatch, so the top-of-loop check doesn't catch it first."""
-        db, job_store, throttler = deps
-        db.find_next_granule_id_in_range.side_effect = [1, None]
-        db.fetch_granule_id_range_chunk.return_value = [("G1-PROV", 1)]
-
-        def _set_stop_and_fail(*args, **kwargs):
-            throttler.stop_event.set()
-            return False
-
-        throttler.dispatch_in_batches.side_effect = _set_stop_and_fail
-        _run("req-1", "PROV", None, None, 0)
-        job_store.try_mark_interrupted.assert_called_once_with("req-1")
         job_store.mark_job.assert_not_called()
 
     def test_waits_for_green_before_probing(self, deps):
@@ -214,7 +196,7 @@ class TestRunLoop:
 
 
 # ---------------------------------------------------------------------------
-# start_id_range_scan / mark_active_scans_interrupted
+# start_id_range_scan
 # ---------------------------------------------------------------------------
 
 class TestStartIdRangeScan:
@@ -235,22 +217,11 @@ class TestStartIdRangeScan:
         run_mock.assert_called_once_with("req-1", "PROV", _AFTER, _BEFORE, 0)
 
 
-class TestMarkActiveScansInterrupted:
-
-    def test_marks_started_scans_until_they_finish(self, deps, monkeypatch):
-        db, job_store, throttler = deps
-        monkeypatch.setattr(_scanner_mod, "_run", MagicMock())  # never finishes → stays active
+    def test_holds_lease_until_run_releases_it(self, deps, monkeypatch):
+        """Held from the start, so a scan still waiting for a slot isn't restarted elsewhere."""
+        monkeypatch.setattr(_scanner_mod, "_run", MagicMock())  # never releases
         start_id_range_scan("req-1", "PROV", None, None).join(timeout=2)
-        mark_active_scans_interrupted()
-        job_store.try_mark_interrupted.assert_called_once_with("req-1")
-
-    def test_one_failure_does_not_skip_the_rest(self, deps):
-        db, job_store, throttler = deps
-        _scanner_mod._active_scans.update({"req-1", "req-2"})
-        job_store.try_mark_interrupted.side_effect = [RuntimeError("DynamoDB unreachable"), True]
-        mark_active_scans_interrupted()
-        assert job_store.try_mark_interrupted.call_count == 2
-
+        assert _scanner_mod.leases.held_jobs() == {"req-1"}
 
 # ---------------------------------------------------------------------------
 # _wait_for_green_or_signal — ES-health gate
@@ -317,18 +288,18 @@ class TestAcquireScanSlot:
 
 class TestScanSlotLifecycle:
 
-    def test_run_acquires_and_releases_slot_and_leaves_active_set(self, deps, monkeypatch):
+    def test_run_acquires_and_releases_slot_and_lease(self, deps, monkeypatch):
         db, job_store, throttler = deps
         db.find_next_granule_id_in_range.return_value = None
         acquire_mock = MagicMock(return_value=True)
         release_mock = MagicMock()
         monkeypatch.setattr(_scanner_mod, "_acquire_scan_slot", acquire_mock)
         monkeypatch.setattr(_scanner_mod._scan_slots, "release", release_mock)
-        _scanner_mod._active_scans.add("req-1")
+        _scanner_mod.leases.hold("req-1")
         _run("req-1", "PROV", None, None, 0)
         acquire_mock.assert_called_once_with("req-1")
         release_mock.assert_called_once()
-        assert "req-1" not in _scanner_mod._active_scans
+        assert _scanner_mod.leases.held_jobs() == set()
 
     def test_run_releases_slot_even_on_exception(self, deps, monkeypatch):
         db, job_store, throttler = deps

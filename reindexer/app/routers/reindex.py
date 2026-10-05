@@ -4,7 +4,8 @@ Handles reindex requests by concept type, single concept, and granule subsets
 (all providers, by provider, or by collection). Long-running work is offloaded
 either to FastAPI background tasks or, for the id-range provider scan
 (app.throttler.id_range_scanner), a plain daemon thread. Progress is tracked in
-DynamoDB via job_store.
+DynamoDB via job_store. The background helpers are public because the lease keeper
+also calls them, to restart a job whose owner died.
 """
 import logging
 import re
@@ -16,6 +17,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, 
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
+from app import leases
 from app.auth import require_auth
 from app.db import db_client
 from app.db.dynamo import job_store
@@ -32,7 +34,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # URL path segment → internal concept type used by db_client
-_ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
+ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
     "variables":             "variable",
     "services":              "service",
     "tools":                 "tool",
@@ -103,15 +105,19 @@ class ProviderListRequest(BaseModel):
 # Background helpers
 # ---------------------------------------------------------------------------
 
-def _enqueue_providers(
-    request_id: str, provider_ids: list[str], after: Optional[str], before: Optional[str]
+@leases.holding
+def enqueue_providers(
+    request_id: str, provider_ids: list[str], after: Optional[str], before: Optional[str], skip=(),
 ) -> None:
     """Shared enqueue loop for both /reindex/granules (all providers) and
-    /reindex/granules/providers (an explicit list)."""
+    /reindex/granules/providers (an explicit list). skip: providers a previous run
+    already enqueued."""
     provider_ids = list(dict.fromkeys(provider_ids))  # de-dupe, preserve order
     try:
         job_store.update_progress(request_id, providers_requested=provider_ids)
         for provider_id in provider_ids:
+            if provider_id in skip:
+                continue
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
                 return
@@ -140,27 +146,29 @@ def _enqueue_providers(
         job_store.mark_job(request_id, "failed")
 
 
-def _enqueue_all_providers(request_id: str, after: Optional[str], before: Optional[str]) -> None:
+def enqueue_all_providers(request_id: str, after: Optional[str], before: Optional[str]) -> None:
     try:
-        provider_ids = db_client.get_all_provider_ids()
+        with leases.held(request_id):
+            provider_ids = db_client.get_all_provider_ids()
     except Exception as exc:
         logger.error({"event": "all_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
         job_store.mark_job(request_id, "failed")
         return
-    _enqueue_providers(request_id, provider_ids, after, before)
+    enqueue_providers(request_id, provider_ids, after, before)
 
 
-def _enqueue_provider(
-    request_id: str, provider_id: str, after: Optional[str], before: Optional[str],
+def enqueue_provider(
+    request_id: str, provider_id: str, after: Optional[str], before: Optional[str], start_id: int = 0,
 ) -> None:
     try:
         if throttler.is_job_cancelled(request_id):
             logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
             return
-        # Before spawning, so this can't overwrite the scan's own interrupted status.
         # False means the job was cancelled meanwhile.
         if job_store.mark_job(request_id, "dispatching"):
-            start_id_range_scan(request_id=request_id, provider_id=provider_id, after=after, before=before)
+            start_id_range_scan(
+                request_id=request_id, provider_id=provider_id, after=after, before=before, start_id=start_id,
+            )
     except Exception as exc:
         logger.error({
             "event": "provider_granules_enqueue_error",
@@ -176,7 +184,8 @@ def _enqueue_provider(
 _CONCEPT_TYPE_BATCH_SIZE = 500
 
 
-def _publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
+@leases.holding
+def publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     try:
         if check_all_es_health()["overall"] != "green":
             logger.warning({
@@ -247,7 +256,7 @@ async def reindex_granules(
     request_id = str(uuid.uuid4())
     job_store.create_job(request_id, "granules", after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({"event": "reindex_granules_requested", "request_id": request_id, "after": after, "before": before})
-    background_tasks.add_task(_enqueue_all_providers, request_id, after, before)
+    background_tasks.add_task(enqueue_all_providers, request_id, after, before)
     return {"request_id": request_id, "message": "Reindex started for all providers"}
 
 
@@ -277,7 +286,7 @@ async def reindex_granules_by_provider(
         "after": after,
         "before": before,
     })
-    background_tasks.add_task(_enqueue_provider, request_id, provider_id, after, before)
+    background_tasks.add_task(enqueue_provider, request_id, provider_id, after, before)
     return {"request_id": request_id, "message": f"Reindex started for provider {provider_id}"}
 
 
@@ -318,7 +327,7 @@ async def reindex_granules_by_providers(
         "after": after,
         "before": before,
     })
-    background_tasks.add_task(_enqueue_providers, request_id, body.provider_ids, after, before)
+    background_tasks.add_task(enqueue_providers, request_id, body.provider_ids, after, before)
     return {"request_id": request_id, "message": f"Reindex started for {len(body.provider_ids)} providers"}
 
 
@@ -378,29 +387,30 @@ async def reindex_concept(
         "concept_id": concept_id,
     })
 
-    concept = db_client.get_concept_by_id(concept_id)
-    if concept is None:
-        job_store.mark_job(request_id, "failed")
-        raise HTTPException(status_code=404, detail=f"Concept not found: {concept_id}")
+    with leases.held(request_id):
+        concept = db_client.get_concept_by_id(concept_id)
+        if concept is None:
+            job_store.mark_job(request_id, "failed")
+            raise HTTPException(status_code=404, detail=f"Concept not found: {concept_id}")
 
-    es_health = await run_in_threadpool(check_all_es_health)
-    if es_health["overall"] != "green":
-        logger.warning({
-            "event": "reindex_concept_es_not_green",
-            "request_id": request_id,
-            "concept_id": concept_id,
-        })
-        job_store.mark_job(request_id, "failed")
-        raise HTTPException(status_code=503, detail="Elasticsearch cluster is not green; retry later")
+        es_health = await run_in_threadpool(check_all_es_health)
+        if es_health["overall"] != "green":
+            logger.warning({
+                "event": "reindex_concept_es_not_green",
+                "request_id": request_id,
+                "concept_id": concept_id,
+            })
+            job_store.mark_job(request_id, "failed")
+            raise HTTPException(status_code=503, detail="Elasticsearch cluster is not green; retry later")
 
-    try:
-        publish_concept_update(concept["concept-id"], concept["revision-id"], request_id)
-        job_store.update_dispatched(request_id, 1)
-        job_store.mark_job(request_id, "completed")
-    except Exception as exc:
-        logger.error({"event": "concept_publish_error", "request_id": request_id, "error": str(exc)})
-        job_store.mark_job(request_id, "failed")
-        raise
+        try:
+            publish_concept_update(concept["concept-id"], concept["revision-id"], request_id)
+            job_store.update_dispatched(request_id, 1)
+            job_store.mark_job(request_id, "completed")
+        except Exception as exc:
+            logger.error({"event": "concept_publish_error", "request_id": request_id, "error": str(exc)})
+            job_store.mark_job(request_id, "failed")
+            raise
 
     return {"request_id": request_id, "message": f"Reindex queued for concept {concept_id}"}
 
@@ -416,7 +426,7 @@ async def reindex_by_concept_type(
     background_tasks: BackgroundTasks,
     _token: str = Depends(require_auth),
 ):
-    internal_type = _ROUTE_TO_INTERNAL_TYPE.get(concept_type)
+    internal_type = ROUTE_TO_INTERNAL_TYPE.get(concept_type)
     if internal_type is None:
         raise HTTPException(status_code=404, detail=f"Unknown concept type: {concept_type!r}")
 
@@ -429,5 +439,5 @@ async def reindex_by_concept_type(
         "concept_type": concept_type,
         "internal_type": internal_type,
     })
-    background_tasks.add_task(_publish_concept_type, request_id, internal_type, before)
+    background_tasks.add_task(publish_concept_type, request_id, internal_type, before)
     return {"request_id": request_id, "message": f"Reindex started for concept type {concept_type}"}

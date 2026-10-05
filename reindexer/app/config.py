@@ -68,8 +68,9 @@ class Config:
     # Cancellation cache refresh interval
     cancel_check_interval_seconds: int = field(default_factory=lambda: int(os.environ.get("CANCEL_CHECK_INTERVAL_SECONDS", "5")))
 
-    # Stall detection threshold — must exceed ES wait timeout (300s = 5 min)
-    stall_minutes: int = field(default_factory=lambda: int(os.environ.get("STALL_MINUTES", "20")))
+    # Lease length for in-progress work: the collection message's SQS visibility, and how
+    # old a job's heartbeat gets before another task restarts it (see app.lease_keeper).
+    lease_minutes: int = field(default_factory=lambda: int(os.environ.get("LEASE_MINUTES", "5")))
 
     service_name: str = "cmr-reindexer"
     service_version: str = "0.1.0"
@@ -78,6 +79,7 @@ class Config:
         for env_var, value in (
             ("STREAM_CHUNK_SIZE", self.stream_chunk_size),
             ("ID_RANGE_CHUNK_SIZE", self.id_range_chunk_size),
+            ("LEASE_MINUTES", self.lease_minutes),
         ):
             if value < 1:
                 raise ValueError(f"{env_var} must be a positive integer, got {value}")

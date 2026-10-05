@@ -583,3 +583,27 @@ class TestStreamGranuleIdsPaged:
         result = list(client.stream_granule_ids_paged("C1-PROV", chunk_size=2))
         assert result == [("G2-PROV", []), ("G3-PROV", [("G3-PROV", 4)])]
         assert cur.execute.call_args_list[2].args[1] == {"start_after": "G2-PROV"}
+
+
+# ---------------------------------------------------------------------------
+# Call tracking — a hung call is logged while it hangs
+# ---------------------------------------------------------------------------
+
+class TestCallTracking:
+
+    def test_call_tracked_only_while_in_flight(self, oracle):
+        import app.db.call_tracker as tracker
+        client, cur = oracle
+        in_flight = []
+        cur.execute.side_effect = lambda *a: in_flight.append(dict(tracker._in_flight))
+        client.get_all_provider_ids()
+        assert [list(calls.values())[0][0] for calls in in_flight] == ["MainThread"]
+        assert tracker._in_flight == {}
+
+    def test_logs_only_calls_past_the_threshold(self, monkeypatch, caplog):
+        import app.db.call_tracker as tracker
+        monkeypatch.setattr(tracker, "_in_flight", {1: ("id-range-scan-req-1", 0.0), 2: ("throttler", 250.0)})
+        monkeypatch.setattr(tracker.time, "monotonic", lambda: 301.0)
+        tracker.log_slow_calls(300)
+        slow = [r.msg for r in caplog.records if isinstance(r.msg, dict) and r.msg.get("event") == "oracle_call_slow"]
+        assert slow == [{"event": "oracle_call_slow", "thread": "id-range-scan-req-1", "elapsed_seconds": 301}]

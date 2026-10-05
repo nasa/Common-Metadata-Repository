@@ -231,7 +231,7 @@ class TestIncrementCollectionsSplit:
 #
 # DynamoDB's SET does not auto-vivify a missing parent map, so a job created
 # before providers_work_items/providers_collections_split existed on the schema
-# (still running/dispatching/interrupted across a deploy) fails on the first
+# (still running/dispatching across a deploy) fails on the first
 # nested-map write with ValidationException. These simulate that exact error —
 # a plain MagicMock table can't produce it on its own since it doesn't validate
 # expressions against item state, which is exactly how the original bug (an
@@ -297,7 +297,7 @@ class TestMarkJob:
         assert values[":s"] == "completed"
 
     def test_terminal_status_sets_completed_at(self, store, mock_table):
-        for status in ("completed", "failed", "interrupted", "cancelled"):
+        for status in ("completed", "failed", "cancelled"):
             mock_table.reset_mock()
             store.mark_job("job-1", status)
             expr = mock_table.update_item.call_args[1]["UpdateExpression"]
@@ -315,7 +315,7 @@ class TestMarkJob:
 
     def test_always_includes_condition_expression_to_protect_terminal_statuses(self, store, mock_table):
         """mark_job must never overwrite a terminal status — condition expression required on all paths."""
-        for status in ("dispatching", "running", "completed", "failed", "cancelled", "interrupted"):
+        for status in ("dispatching", "running", "completed", "failed", "cancelled"):
             mock_table.reset_mock()
             store.mark_job("job-1", status)
             kwargs = mock_table.update_item.call_args[1]
@@ -325,12 +325,10 @@ class TestMarkJob:
             values = kwargs["ExpressionAttributeValues"]
             assert ":cancelled" in values, "condition must guard against overwriting 'cancelled'"
 
-    def test_condition_guards_completed_failed_cancelled_but_not_interrupted(self, store, mock_table):
-        """No :interrupted value either — DynamoDB rejects unreferenced ExpressionAttributeValues."""
+    def test_condition_guards_completed_failed_cancelled(self, store, mock_table):
         store.mark_job("job-1", "dispatching")
         call = mock_table.update_item.call_args[1]
         assert call["ConditionExpression"] == "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
-        assert ":interrupted" not in call["ExpressionAttributeValues"]
 
     def test_returns_false_when_already_in_terminal_status(self, store, mock_table):
         """mark_job returns False (no-op) when DynamoDB rejects the condition."""
@@ -378,34 +376,7 @@ class TestGetJob:
 
 
 # ---------------------------------------------------------------------------
-# find_stalled_jobs
-# ---------------------------------------------------------------------------
-
-class TestFindStalledJobs:
-
-    def test_scans_for_running_status(self, store, mock_table):
-        store.find_stalled_jobs()
-        values = mock_table.scan.call_args[1]["ExpressionAttributeValues"]
-        assert values[":running"] == "running"
-
-    def test_scans_for_dispatching_status(self, store, mock_table):
-        store.find_stalled_jobs()
-        values = mock_table.scan.call_args[1]["ExpressionAttributeValues"]
-        assert values[":dispatching"] == "dispatching"
-
-    def test_returns_empty_list_when_no_stalled(self, store, mock_table):
-        mock_table.scan.return_value = {"Items": []}
-        assert store.find_stalled_jobs() == []
-
-    def test_returns_items_from_scan(self, store, mock_table):
-        mock_table.scan.return_value = {"Items": [{"job_id": "stalled-1", "status": "running"}]}
-        jobs = store.find_stalled_jobs()
-        assert len(jobs) == 1
-        assert jobs[0]["job_id"] == "stalled-1"
-
-
-# ---------------------------------------------------------------------------
-# claim_stalled_job
+# claim_lapsed_job
 # ---------------------------------------------------------------------------
 
 class TestListJobs:
@@ -486,98 +457,30 @@ class TestTryCompleteJob:
         assert key == {"job_id": "job-xyz"}
 
 
-class TestFindInterruptedJobs:
+class TestFindLapsedJobs:
 
-    def test_filter_targets_interrupted_status(self, store, mock_table):
-        store.find_interrupted_jobs()
+    def test_filter_targets_running_jobs_and_dispatching_scans_past_the_lease(self, store, mock_table):
+        from datetime import datetime, timedelta, timezone
+        store.find_lapsed_jobs(5)
         call = mock_table.scan.call_args[1]
-        assert call["ExpressionAttributeValues"][":interrupted"] == "interrupted"
-
-    def test_filter_expression_references_status_attribute(self, store, mock_table):
-        store.find_interrupted_jobs()
-        call = mock_table.scan.call_args[1]
-        assert "#st" in call["ExpressionAttributeNames"]
-        assert call["ExpressionAttributeNames"]["#st"] == "status"
-
-    def test_returns_empty_list_when_none_found(self, store, mock_table):
-        assert store.find_interrupted_jobs() == []
+        assert call["FilterExpression"] == (
+            "(#st = :running OR (#st = :dispatching AND concept_type = :scan))"
+            " AND last_heartbeat < :cutoff"
+        )
+        values = call["ExpressionAttributeValues"]
+        assert (values[":running"], values[":dispatching"], values[":scan"]) == (
+            "running", "dispatching", "granules-by-provider",
+        )
+        cutoff = datetime.strptime(values[":cutoff"], "%Y-%m-%dT%H:%M:%SZ")
+        expected = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=5)
+        assert abs((cutoff - expected).total_seconds()) < 5
 
     def test_returns_deserialized_items(self, store, mock_table):
         import decimal
         mock_table.scan.return_value = {"Items": [{"job_id": "j1", "total_dispatched": decimal.Decimal(5)}]}
-        results = store.find_interrupted_jobs()
+        results = store.find_lapsed_jobs(5)
         assert results[0]["total_dispatched"] == 5
         assert isinstance(results[0]["total_dispatched"], int)
-
-
-class TestTryMarkInterrupted:
-
-    def test_returns_true_on_success(self, store, mock_table):
-        assert store.try_mark_interrupted("job-1") is True
-
-    def test_returns_false_on_conditional_check_failure(self, store, mock_table):
-        mock_table.update_item.side_effect = ClientError(
-            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "..."}},
-            "UpdateItem",
-        )
-        assert store.try_mark_interrupted("job-1") is False
-
-    def test_reraises_unexpected_errors(self, store, mock_table):
-        mock_table.update_item.side_effect = ClientError(
-            {"Error": {"Code": "InternalServerError", "Message": "boom"}},
-            "UpdateItem",
-        )
-        with pytest.raises(ClientError):
-            store.try_mark_interrupted("job-1")
-
-    def test_sets_status_to_interrupted(self, store, mock_table):
-        store.try_mark_interrupted("job-1")
-        values = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert values[":interrupted"] == "interrupted"
-
-    def test_sets_completed_at_in_expression(self, store, mock_table):
-        store.try_mark_interrupted("job-1")
-        expr = mock_table.update_item.call_args[1]["UpdateExpression"]
-        assert "completed_at" in expr
-
-    def test_condition_excludes_completed(self, store, mock_table):
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :completed" in cond
-
-    def test_condition_excludes_failed(self, store, mock_table):
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :failed" in cond
-
-    def test_condition_excludes_already_interrupted(self, store, mock_table):
-        # idempotent — already interrupted should not overwrite itself
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :interrupted" in cond
-
-    def test_condition_excludes_cancelled(self, store, mock_table):
-        # a cancelled job must never be overwritten with interrupted
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :cancelled" in cond
-
-    def test_condition_allows_running(self, store, mock_table):
-        # running jobs are the primary target of this call
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :running" not in cond
-
-    def test_condition_allows_dispatching(self, store, mock_table):
-        # dispatching is the normal granule-job state during dispatch
-        store.try_mark_interrupted("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :dispatching" not in cond
-
-    def test_uses_correct_job_id_as_key(self, store, mock_table):
-        store.try_mark_interrupted("job-xyz")
-        key = mock_table.update_item.call_args[1]["Key"]
-        assert key == {"job_id": "job-xyz"}
 
 
 class TestTryCancelJob:
@@ -620,12 +523,6 @@ class TestTryCancelJob:
         cond = mock_table.update_item.call_args[1]["ConditionExpression"]
         assert "<> :failed" in cond
 
-    def test_condition_allows_interrupted(self, store, mock_table):
-        # interrupted jobs can be cancelled — they must NOT be excluded by the condition
-        store.try_cancel_job("job-1")
-        cond = mock_table.update_item.call_args[1]["ConditionExpression"]
-        assert "<> :interrupted" not in cond
-
     def test_condition_excludes_already_cancelled(self, store, mock_table):
         store.try_cancel_job("job-1")
         cond = mock_table.update_item.call_args[1]["ConditionExpression"]
@@ -637,17 +534,17 @@ class TestTryCancelJob:
         assert key == {"job_id": "job-xyz"}
 
 
-class TestClaimStalledJob:
+class TestClaimLapsedJob:
 
     def test_returns_true_on_success(self, store, mock_table):
-        assert store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z") is True
+        assert store.claim_lapsed_job("job-1", "2026-08-24T00:00:00Z") is True
 
     def test_returns_false_on_conditional_check_failure(self, store, mock_table):
         mock_table.update_item.side_effect = ClientError(
             {"Error": {"Code": "ConditionalCheckFailedException", "Message": "..."}},
             "UpdateItem",
         )
-        assert store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z") is False
+        assert store.claim_lapsed_job("job-1", "2026-08-24T00:00:00Z") is False
 
     def test_reraises_unexpected_errors(self, store, mock_table):
         mock_table.update_item.side_effect = ClientError(
@@ -655,11 +552,11 @@ class TestClaimStalledJob:
             "UpdateItem",
         )
         with pytest.raises(ClientError):
-            store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z")
+            store.claim_lapsed_job("job-1", "2026-08-24T00:00:00Z")
 
     def test_condition_expression_uses_last_heartbeat_for_atomic_claim(self, store, mock_table):
         """The optimistic lock: only the caller that saw this exact heartbeat can claim the job."""
-        store.claim_stalled_job("job-1", "2026-08-24T00:00:00Z")
+        store.claim_lapsed_job("job-1", "2026-08-24T00:00:00Z")
         call = mock_table.update_item.call_args[1]
         assert "ConditionExpression" in call
         assert "last_heartbeat" in call["ConditionExpression"]

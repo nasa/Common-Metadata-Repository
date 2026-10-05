@@ -134,13 +134,20 @@ def get_queue_depth(queue_url: str) -> int:
     return int(attrs.get("ApproximateNumberOfMessages", 0)) + int(attrs.get("ApproximateNumberOfMessagesNotVisible", 0))
 
 
-def receive_messages(queue_url: str, max_messages: int = 10, wait_seconds: int = 5) -> list[dict]:
+def receive_messages(
+    queue_url: str, visibility_timeout: int, max_messages: int = 10, wait_seconds: int = 5,
+) -> list[dict]:
     return _sqs().receive_message(
         QueueUrl=queue_url,
         MaxNumberOfMessages=max_messages,
         WaitTimeSeconds=wait_seconds,
+        VisibilityTimeout=visibility_timeout,
         AttributeNames=["SentTimestamp"],
     ).get("Messages", [])
+
+
+def change_message_visibility(queue_url: str, receipt_handle: str, seconds: int) -> None:
+    _sqs().change_message_visibility(QueueUrl=queue_url, ReceiptHandle=receipt_handle, VisibilityTimeout=seconds)
 
 
 def delete_message(queue_url: str, receipt_handle: str) -> None:
