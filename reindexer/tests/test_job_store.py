@@ -176,6 +176,21 @@ class TestUpdateDispatched:
 
 
 # ---------------------------------------------------------------------------
+# update_id_range_progress
+# ---------------------------------------------------------------------------
+
+class TestUpdateIdRangeProgress:
+
+    def test_sets_next_start_id_and_heartbeat_on_job(self, store, mock_table):
+        store.update_id_range_progress("job-xyz", 40000)
+        call = mock_table.update_item.call_args[1]
+        assert call["Key"] == {"job_id": "job-xyz"}
+        assert "SET next_start_id = :v, last_heartbeat = :ts" in call["UpdateExpression"]
+        assert call["ExpressionAttributeValues"][":v"] == 40000
+        assert ":ts" in call["ExpressionAttributeValues"]
+
+
+# ---------------------------------------------------------------------------
 # increment_collections_split
 # ---------------------------------------------------------------------------
 
@@ -309,6 +324,13 @@ class TestMarkJob:
             )
             values = kwargs["ExpressionAttributeValues"]
             assert ":cancelled" in values, "condition must guard against overwriting 'cancelled'"
+
+    def test_condition_guards_completed_failed_cancelled_but_not_interrupted(self, store, mock_table):
+        """No :interrupted value either — DynamoDB rejects unreferenced ExpressionAttributeValues."""
+        store.mark_job("job-1", "dispatching")
+        call = mock_table.update_item.call_args[1]
+        assert call["ConditionExpression"] == "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
+        assert ":interrupted" not in call["ExpressionAttributeValues"]
 
     def test_returns_false_when_already_in_terminal_status(self, store, mock_table):
         """mark_job returns False (no-op) when DynamoDB rejects the condition."""

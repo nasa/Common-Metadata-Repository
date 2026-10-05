@@ -35,6 +35,7 @@ services:
       # Throttler
       STREAM_CHUNK_SIZE: "${STREAM_CHUNK_SIZE:-10000}"
       RATE_PER_MINUTE: "${RATE_PER_MINUTE:-600}"
+      ID_RANGE_CHUNK_SIZE: "${ID_RANGE_CHUNK_SIZE:-20000}"
 
       # DynamoDB (job tracking)
       DYNAMODB_ENDPOINT_URL: "${DYNAMODB_ENDPOINT_URL:-http://dynamodb-local:8000}"

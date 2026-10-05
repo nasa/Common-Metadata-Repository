@@ -1,8 +1,9 @@
 """
 Unit tests for resume_stalled_jobs().
 
-All dependencies (db_client, job_store, enqueue_fn) are passed in as mocks —
-no real DynamoDB or SQS connections are made.
+All dependencies (db_client, job_store, enqueue_fn) are passed in as mocks, and
+start_id_range_scan is monkeypatched module-wide — no real DynamoDB, SQS, or scan
+threads.
 
 Run with:
     cd reindexer
@@ -12,12 +13,20 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
+import app.startup as _startup_mod
 from app.startup import resume_stalled_jobs
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def id_range_scan(monkeypatch):
+    scan = MagicMock()
+    monkeypatch.setattr(_startup_mod, "start_id_range_scan", scan)
+    return scan
+
 
 def _make_deps(stalled_jobs=None, interrupted_jobs=None):
     db = MagicMock()
@@ -136,16 +145,7 @@ class TestResumeStalledJobs:
         js.mark_job.assert_not_called()
         enqueue.assert_not_called()
 
-    def test_granules_by_provider_re_enqueues_provider(self):
-        db, js, enqueue = _make_deps(stalled_jobs=[
-            _job("granules-by-provider", provider_id="MYPROV")
-        ])
-        db.get_collection_ids_for_provider.return_value = ["C1-P"]
-        resume_stalled_jobs(db, js, enqueue)
-        db.get_collection_ids_for_provider.assert_called_once_with("MYPROV")
-        enqueue.assert_called()
-
-    def test_granules_by_collection_re_enqueues_collection(self):
+    def test_granules_by_collection_re_enqueues_collection(self, id_range_scan):
         db, js, enqueue = _make_deps(stalled_jobs=[
             _job("granules-by-collection", collection_id="C42-PROV")
         ])
@@ -153,6 +153,7 @@ class TestResumeStalledJobs:
         enqueue.assert_called_once_with(
             request_id="job-1", collection_id="C42-PROV", after=None, before=None
         )
+        id_range_scan.assert_not_called()
 
     def test_passes_date_params_when_present(self):
         db, js, enqueue = _make_deps(stalled_jobs=[
@@ -205,3 +206,45 @@ class TestResumeStalledJobs:
         resume_stalled_jobs(db, js, enqueue)
         js.mark_job.assert_called_once_with("job-1", "failed")
         enqueue.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # granules-by-provider resume (id-range scan)
+    # ------------------------------------------------------------------
+
+    @pytest.mark.parametrize("persisted, expected_start_id", [({"next_start_id": 123456}, 123456), ({}, 0)])
+    def test_provider_job_resumes_id_range_scan_from_persisted_cursor(
+        self, id_range_scan, persisted, expected_start_id,
+    ):
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-provider", provider_id="BIGPROV",
+                 after="2024-01-01T00:00:00Z", before="2024-12-31T23:59:59Z", **persisted)
+        ])
+        resume_stalled_jobs(db, js, enqueue)
+        id_range_scan.assert_called_once_with(
+            request_id="job-1", provider_id="BIGPROV",
+            after="2024-01-01T00:00:00Z", before="2024-12-31T23:59:59Z", start_id=expected_start_id,
+        )
+        enqueue.assert_not_called()
+        db.get_collection_ids_for_provider.assert_not_called()
+
+    def test_provider_job_marked_dispatching_before_scan_spawns(self, id_range_scan):
+        """The status write must happen-before the scan thread exists, or it can
+        overwrite the scan's own interrupted write."""
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-provider", provider_id="BIGPROV")
+        ])
+        js.mark_job.return_value = True
+        order = MagicMock()
+        order.attach_mock(js.mark_job, "mark_job")
+        order.attach_mock(id_range_scan, "scan")
+        resume_stalled_jobs(db, js, enqueue)
+        assert [c[0] for c in order.mock_calls] == ["mark_job", "scan"]
+        js.mark_job.assert_called_once_with("job-1", "dispatching")
+
+    def test_provider_job_cancelled_meanwhile_starts_no_scan(self, id_range_scan):
+        db, js, enqueue = _make_deps(stalled_jobs=[
+            _job("granules-by-provider", provider_id="BIGPROV")
+        ])
+        js.mark_job.return_value = False
+        resume_stalled_jobs(db, js, enqueue)
+        id_range_scan.assert_not_called()

@@ -11,9 +11,6 @@ class Config:
     db_service: str = field(default_factory=lambda: os.environ.get("DB_SERVICE", "cmr"))
     db_user: str = field(default_factory=lambda: os.environ.get("DB_USER", "cmr"))
     db_password: str = field(default_factory=lambda: os.environ.get("DB_PASSWORD", ""))
-    # Per-round-trip timeout on pooled connections, so one hung query can't block
-    # the single-threaded throttler forever (see OracleClient._acquire_cursor).
-    oracle_call_timeout_seconds: int = field(default_factory=lambda: int(os.environ.get("ORACLE_CALL_TIMEOUT_SECONDS", "180")))
     # Pool sizing. Shared with synchronous API requests, not just the throttler.
     oracle_pool_min: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MIN", "2")))
     oracle_pool_max: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MAX", "15")))
@@ -45,10 +42,13 @@ class Config:
 
     # Throttler
     rate_per_minute: int = field(default_factory=lambda: int(os.environ.get("RATE_PER_MINUTE", "600")))
-    # Stream chunk size (rows per fetchmany / checkpoint interval).
-    # Must be <= rate_per_minute; startup asserts this.  At production rates
-    # (60k/min) 1000 granules/chunk ≈ one checkpoint per second.
+    # Concepts per page of the per-collection scan, and the checkpoint interval. May
+    # exceed rate_per_minute — dispatch_in_batches sub-slices each chunk to the current rate.
     stream_chunk_size: int = field(default_factory=lambda: int(os.environ.get("STREAM_CHUNK_SIZE", "1000")))
+
+    # Rows per id-range window (POST /reindex/granules/provider/{id}). Larger windows
+    # mean fewer, longer Oracle fetches.
+    id_range_chunk_size: int = field(default_factory=lambda: int(os.environ.get("ID_RANGE_CHUNK_SIZE", "20000")))
     # Parallel worker threads for publish_concept_updates_batch SQS sends.
     sqs_send_workers: int = field(default_factory=lambda: int(os.environ.get("SQS_SEND_WORKERS", "20")))
 
@@ -73,6 +73,14 @@ class Config:
 
     service_name: str = "cmr-reindexer"
     service_version: str = "0.1.0"
+
+    def __post_init__(self) -> None:
+        for env_var, value in (
+            ("STREAM_CHUNK_SIZE", self.stream_chunk_size),
+            ("ID_RANGE_CHUNK_SIZE", self.id_range_chunk_size),
+        ):
+            if value < 1:
+                raise ValueError(f"{env_var} must be a positive integer, got {value}")
 
 
 config = Config()

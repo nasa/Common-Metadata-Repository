@@ -52,7 +52,7 @@ Operator (VPN / VPC only)
 
 **Processing flow for granules:**
 1. API enqueues one `CollectionWorkItem` per collection onto the collection queue (`COLLECTION_QUEUE_URL`)
-2. Throttler reads each `CollectionWorkItem`, opens an Oracle cursor for the collection, and streams granule IDs in chunks via keyset pagination (`fetchmany`)
+2. Throttler reads each `CollectionWorkItem` and pages the collection's granule IDs from Oracle via keyset pagination on `concept_id`
 3. Each chunk is published directly to the indexer queue, rate-limited by a token bucket and gated on ES cluster health
 4. A DynamoDB checkpoint is written after each successfully dispatched chunk; SIGTERM or task replacement resumes from the last checkpoint rather than restarting from offset 0
 
@@ -235,7 +235,8 @@ All config is via environment variables.
 | `CMR_ELASTIC_PORT` | `9211` | Collections ES port |
 | `CMR_GRAN_ELASTIC_HOST` | `localhost` | Granules ES host |
 | `CMR_GRAN_ELASTIC_PORT` | `9210` | Granules ES port |
-| `STREAM_CHUNK_SIZE` | `1000` | Granule IDs per Oracle fetchmany call and checkpoint interval |
+| `STREAM_CHUNK_SIZE` | `1000` | Concepts per page of the per-collection granule scan, and the checkpoint interval |
+| `ID_RANGE_CHUNK_SIZE` | `20000` | Rows per id-range scan window for `POST /reindex/granules/provider/{id}` |
 | `SQS_SEND_WORKERS` | `20` | Parallel threads for batched SQS sends |
 | `RATE_PER_MINUTE` | `600` | Indexer queue rate limit (also adjustable live via `PUT /throttle`) |
 | `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often the cancellation cache refreshes from DynamoDB |

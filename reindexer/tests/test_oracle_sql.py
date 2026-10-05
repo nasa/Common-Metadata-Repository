@@ -34,20 +34,17 @@ def oracle():
         mock_conn.cursor.return_value.__enter__.return_value = mock_cur
         pool.acquire.return_value.__enter__.return_value = mock_conn
 
-        # fetchall: used by get_all_provider_ids and _stream_concept_ids (keyset pages).
-        # fetchmany: used by stream_granule_ids (single open cursor for a full collection).
         mock_cur.fetchall.return_value = []
-        mock_cur.fetchmany.return_value = []
         mock_cur.fetchone.return_value = None
 
         yield client, mock_cur
 
 
 # ---------------------------------------------------------------------------
-# Connection pool sizing and per-call timeout
+# Connection pool sizing and error propagation
 # ---------------------------------------------------------------------------
 
-class TestPoolAndTimeout:
+class TestPoolAndErrorPropagation:
 
     def test_pool_created_with_configured_sizing(self, oracle):
         client, cur = oracle
@@ -59,19 +56,19 @@ class TestPoolAndTimeout:
         assert call["max"] == config.oracle_pool_max
         assert call["increment"] == config.oracle_pool_increment
 
-    def test_timeout_error_propagates_not_swallowed(self, oracle):
+    def test_db_error_propagates_not_swallowed(self, oracle):
         """A plain exception, not oracledb.DatabaseError — oracledb may be mocked in
         this environment, so its own exception classes aren't reliable types here."""
         client, cur = oracle
-        cur.execute.side_effect = RuntimeError("DPI-1067: call timeout exceeded")
+        cur.execute.side_effect = RuntimeError("ORA-03113: end-of-file on communication channel")
         with pytest.raises(RuntimeError):
             client.get_collection_ids_for_provider("MYPROV")
 
-    def test_timeout_error_propagates_from_stream_granule_ids(self, oracle):
+    def test_db_error_propagates_from_stream_granule_ids_paged(self, oracle):
         client, cur = oracle
-        cur.execute.side_effect = RuntimeError("DPI-1067: call timeout exceeded")
+        cur.execute.side_effect = RuntimeError("ORA-03113: end-of-file on communication channel")
         with pytest.raises(RuntimeError):
-            list(client.stream_granule_ids("C1-MYPROV", chunk_size=500))
+            list(client.stream_granule_ids_paged("C1-MYPROV", chunk_size=500))
 
 
 # ---------------------------------------------------------------------------
@@ -309,6 +306,36 @@ def test_stream_concept_ids_issues_second_query_with_keyset_when_page_is_full(or
     assert second_page_bind["start_after"] == f"V{_BATCH_SIZE - 1:04d}-PROV"
 
 
+def test_stream_concept_ids_full_page_with_sparse_agg_advances_keyset(oracle):
+    """Full page_ids triggers a second page even when the agg returns fewer rows.
+
+    When page_ids returns exactly _BATCH_SIZE concept_ids (is_last_page=False)
+    but the HAVING filter deletes most of them, the keyset cursor must advance
+    to the last boundary from page_ids (page_end), not the last agg result.
+    """
+    from app.db.oracle import _BATCH_SIZE
+    client, cur = oracle
+
+    full_page_ids = [(f"V{i:04d}-PROV",) for i in range(_BATCH_SIZE)]
+    # Only 3 of the _BATCH_SIZE concepts survived the HAVING filter
+    sparse_agg = [("V0010-PROV", 2), ("V0200-PROV", 5), ("V0499-PROV", 1)]
+    # Second page_ids returns empty → stop
+    cur.fetchall.side_effect = [full_page_ids, sparse_agg, []]
+
+    result = client.get_concept_ids_by_type("variable")
+
+    # Result contains only the live concepts from the agg query, not all page_ids rows
+    assert result == sparse_agg
+    # Three execute calls: page_ids(1), agg(1), page_ids(2)
+    assert cur.execute.call_count == 3
+
+    # The second page_ids call must use page_end = page_ids[-1][0] (the full-page boundary),
+    # not the last concept_id from the sparse agg result
+    second_page_sql, second_page_bind = cur.execute.call_args_list[2].args[:2]
+    assert "concept_id > :start_after" in second_page_sql
+    assert second_page_bind["start_after"] == f"V{_BATCH_SIZE - 1:04d}-PROV"
+
+
 # ---------------------------------------------------------------------------
 # get_concept_by_id — prefix → table routing (all 11 prefixes)
 # ---------------------------------------------------------------------------
@@ -402,133 +429,143 @@ def test_get_collection_ids_for_provider_queries_correct_table(oracle):
     assert "PARENT_COLLECTION_ID" not in sql
 
 
-def test_get_collection_ids_for_provider_rejects_invalid_provider_id(oracle):
-    client, _ = oracle
+@pytest.mark.parametrize("provider_id", ["bad-provider!", "PROV\n"])
+@pytest.mark.parametrize("query", [
+    lambda client, p: client.get_collection_ids_for_provider(p),
+    lambda client, p: client.find_next_granule_id_in_range(p, 0),
+    lambda client, p: client.fetch_granule_id_range_chunk(p, 0, 100),
+], ids=["collections", "find_next_id", "fetch_id_range_chunk"])
+def test_invalid_provider_id_rejected_before_any_query(oracle, query, provider_id):
+    """provider_id becomes part of a table name, so it is validated, never bound."""
+    client, cur = oracle
     with pytest.raises(ValueError, match="Invalid provider ID"):
-        client.get_collection_ids_for_provider("bad-provider!")
+        query(client, provider_id)
+    cur.execute.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
-# stream_granule_ids — SQL and keyset clause verification
+# find_next_granule_id_in_range
 # ---------------------------------------------------------------------------
 
-def _drain_stream(gen):
-    """Exhaust the stream_granule_ids generator so cursor.execute() is called."""
-    return list(gen)
+class TestFindNextGranuleIdInRange:
+
+    def test_sql_shape(self, oracle):
+        client, cur = oracle
+        cur.fetchone.return_value = (42,)
+        client.find_next_granule_id_in_range("MYPROV", 12345)
+        sql, bind = _last_execute(cur)
+        assert "METADATA_DB.MYPROV_GRANULES" in sql
+        assert "deleted = 0" in sql
+        assert "REVISION_DATE" not in sql
+        assert "12345" not in sql
+        assert bind == {"min_id": 12345}
+
+    @pytest.mark.parametrize("row, expected", [((999,), 999), ((None,), None), (None, None)])
+    def test_returns_found_id_or_none(self, oracle, row, expected):
+        client, cur = oracle
+        cur.fetchone.return_value = row
+        assert client.find_next_granule_id_in_range("MYPROV", 0) == expected
+
+    def test_date_window_embedded_as_literals(self, oracle):
+        client, cur = oracle
+        cur.fetchone.return_value = (1,)
+        client.find_next_granule_id_in_range(
+            "MYPROV", 0, after="2024-01-01T00:00:00Z", before="2024-12-31T23:59:59Z"
+        )
+        sql, bind = _last_execute(cur)
+        assert "REVISION_DATE >= TO_TIMESTAMP_TZ('2024-01-01T00:00:00 +00:00'" in sql
+        assert "REVISION_DATE <= TO_TIMESTAMP_TZ('2024-12-31T23:59:59 +00:00'" in sql
+        assert bind == {"min_id": 0}
 
 
-def test_stream_granule_ids_queries_correct_granule_table(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
+# ---------------------------------------------------------------------------
+# fetch_granule_id_range_chunk
+# ---------------------------------------------------------------------------
 
-    _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=500))
+class TestFetchGranuleIdRangeChunk:
 
-    sql, bind = _last_execute(cur)
-    assert "METADATA_DB.PROV_GRANULES" in sql
-    assert bind["collection_id"] == "C1234-PROV"
+    def test_sql_shape(self, oracle):
+        client, cur = oracle
+        cur.fetchall.return_value = []
+        client.fetch_granule_id_range_chunk("MYPROV", 500, 1000, after="2024-01-01T00:00:00Z")
+        sql, bind = _last_execute(cur)
+        assert "METADATA_DB.MYPROV_GRANULES" in sql
+        assert "id >= :start_id" in sql
+        assert "id < :end_id" in sql
+        assert "deleted = 0" in sql
+        assert "GROUP BY" not in sql
+        assert "2024-01-01T00:00:00 +00:00" in sql
+        assert bind == {"start_id": 500, "end_id": 1000}
 
-
-def test_stream_granule_ids_filters_by_collection_id(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
-
-    _drain_stream(client.stream_granule_ids("C99-TESTPROV", chunk_size=500))
-
-    sql, bind = _last_execute(cur)
-    assert "PARENT_COLLECTION_ID = :collection_id" in sql
-    assert bind["collection_id"] == "C99-TESTPROV"
-
-
-def test_stream_granule_ids_keyset_clause_present_when_start_after_given(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
-
-    _drain_stream(client.stream_granule_ids(
-        "C1234-PROV", chunk_size=500, start_after_concept_id="G100-PROV"
-    ))
-
-    sql, bind = _last_execute(cur)
-    assert "concept_id > :start_after" in sql
-    assert bind["start_after"] == "G100-PROV"
+    def test_returns_concept_id_revision_id_tuples(self, oracle):
+        client, cur = oracle
+        cur.fetchall.return_value = [("G1-PROV", 1), ("G2-PROV", 3)]
+        assert client.fetch_granule_id_range_chunk("MYPROV", 0, 100) == [("G1-PROV", 1), ("G2-PROV", 3)]
 
 
-def test_stream_granule_ids_no_keyset_clause_when_start_after_is_none(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
+# ---------------------------------------------------------------------------
+# stream_granule_ids_paged
+# ---------------------------------------------------------------------------
 
-    _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=500))
+class TestStreamGranuleIdsPaged:
 
-    sql, _ = _last_execute(cur)
-    assert "start_after" not in sql
+    def test_page_query_shape(self, oracle):
+        client, cur = oracle
+        cur.fetchall.return_value = []
+        result = list(client.stream_granule_ids_paged(
+            "C1-MYPROV", chunk_size="500", after="2024-01-01T00:00:00Z",
+        ))
+        assert result == []
+        assert cur.execute.call_count == 1  # no aggregation query for an empty page
+        sql, bind = _last_execute(cur)
+        assert "METADATA_DB.MYPROV_GRANULES" in sql
+        assert "'C1-MYPROV'" in sql
+        assert "SELECT DISTINCT concept_id" in sql
+        assert "ORDER BY concept_id" in sql
+        assert "FETCH FIRST 500 ROWS ONLY" in sql
+        assert "REVISION_DATE" not in sql
+        assert "start_after" not in sql
+        assert bind == {}
 
+    def test_aggregation_query_shape(self, oracle):
+        client, cur = oracle
+        cur.fetchall.side_effect = [
+            [("G1-PROV",), ("G2-PROV",), ("G3-PROV",)],  # page (short → last page)
+            [("G1-PROV", 2), ("G2-PROV", 1)],            # aggregation
+        ]
+        result = list(client.stream_granule_ids_paged(
+            "C1-PROV", chunk_size=500, after="2024-01-01T00:00:00Z", before="2024-06-30T23:59:59Z",
+        ))
+        assert result == [("G3-PROV", [("G1-PROV", 2), ("G2-PROV", 1)])]
+        agg_sql, agg_bind = cur.execute.call_args_list[1].args[:2]
+        assert "'C1-PROV'" in agg_sql
+        assert "concept_id <= :page_end" in agg_sql
+        assert "GROUP BY concept_id" in agg_sql
+        assert "HAVING MAX(deleted)" in agg_sql
+        assert "2024-01-01T00:00:00 +00:00" in agg_sql
+        assert "2024-06-30T23:59:59 +00:00" in agg_sql
+        assert agg_bind == {"page_end": "G3-PROV"}
 
-def test_stream_granule_ids_after_injects_revision_date_ge(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
+    def test_resume_cursor_applied_to_both_queries(self, oracle):
+        client, cur = oracle
+        cur.fetchall.side_effect = [[("G0101-PROV",), ("G0102-PROV",)], [("G0101-PROV", 1)]]
+        list(client.stream_granule_ids_paged("C1-PROV", chunk_size=500, start_after_concept_id="G0100-PROV"))
+        (page_sql, page_bind), (agg_sql, agg_bind) = [c.args[:2] for c in cur.execute.call_args_list]
+        assert "concept_id > :start_after" in page_sql
+        assert "concept_id > :start_after" in agg_sql
+        assert page_bind == {"start_after": "G0100-PROV"}
+        assert agg_bind == {"start_after": "G0100-PROV", "page_end": "G0102-PROV"}
 
-    _drain_stream(client.stream_granule_ids(
-        "C1-PROV", chunk_size=500, after="2024-01-01T00:00:00Z"
-    ))
-
-    sql, bind = _last_execute(cur)
-    assert "REVISION_DATE >=" in sql
-    assert bind["after"] == "2024-01-01T00:00:00 +00:00"
-
-
-def test_stream_granule_ids_before_injects_revision_date_le(oracle):
-    client, cur = oracle
-    cur.fetchmany.return_value = []
-
-    _drain_stream(client.stream_granule_ids(
-        "C1-PROV", chunk_size=500, before="2024-12-31T23:59:59Z"
-    ))
-
-    sql, bind = _last_execute(cur)
-    assert "REVISION_DATE <=" in sql
-    assert bind["before"] == "2024-12-31T23:59:59 +00:00"
-
-
-def test_stream_concept_ids_full_page_with_sparse_agg_advances_keyset(oracle):
-    """Full page_ids triggers a second page even when the agg returns fewer rows.
-
-    When page_ids returns exactly _BATCH_SIZE concept_ids (is_last_page=False)
-    but the HAVING filter deletes most of them, the keyset cursor must advance
-    to the last boundary from page_ids (page_end), not the last agg result.
-    """
-    from app.db.oracle import _BATCH_SIZE
-    client, cur = oracle
-
-    full_page_ids = [(f"V{i:04d}-PROV",) for i in range(_BATCH_SIZE)]
-    # Only 3 of the _BATCH_SIZE concepts survived the HAVING filter
-    sparse_agg = [("V0010-PROV", 2), ("V0200-PROV", 5), ("V0499-PROV", 1)]
-    # Second page_ids returns empty → stop
-    cur.fetchall.side_effect = [full_page_ids, sparse_agg, []]
-
-    result = client.get_concept_ids_by_type("variable")
-
-    # Result contains only the live concepts from the agg query, not all page_ids rows
-    assert result == sparse_agg
-    # Three execute calls: page_ids(1), agg(1), page_ids(2)
-    assert cur.execute.call_count == 3
-
-    # The second page_ids call must use page_end = page_ids[-1][0] (the full-page boundary),
-    # not the last concept_id from the sparse agg result
-    second_page_sql, second_page_bind = cur.execute.call_args_list[2].args[:2]
-    assert "concept_id > :start_after" in second_page_sql
-    assert second_page_bind["start_after"] == f"V{_BATCH_SIZE - 1:04d}-PROV"
-
-
-def test_stream_granule_ids_yields_multiple_chunks(oracle):
-    """stream_granule_ids yields one list per fetchmany batch, not individual rows."""
-    client, cur = oracle
-    cur.fetchmany.side_effect = [
-        [("G1-PROV", 1), ("G2-PROV", 2)],
-        [("G3-PROV", 3)],
-        [],
-    ]
-
-    chunks = _drain_stream(client.stream_granule_ids("C1234-PROV", chunk_size=2))
-
-    assert len(chunks) == 2
-    assert chunks[0] == [("G1-PROV", 1), ("G2-PROV", 2)]
-    assert chunks[1] == [("G3-PROV", 3)]
+    def test_yields_every_page_including_filtered_ones(self, oracle):
+        """A fully date-filtered page still yields (page_end, []) so the caller can
+        checkpoint and check cancellation; the next page starts after its page_end."""
+        client, cur = oracle
+        cur.fetchall.side_effect = [
+            [("G1-PROV",), ("G2-PROV",)],  # page 1 (full at chunk_size=2)
+            [],                            # agg 1: all filtered out
+            [("G3-PROV",)],                # page 2 (short → last page)
+            [("G3-PROV", 4)],              # agg 2
+        ]
+        result = list(client.stream_granule_ids_paged("C1-PROV", chunk_size=2))
+        assert result == [("G2-PROV", []), ("G3-PROV", [("G3-PROV", 4)])]
+        assert cur.execute.call_args_list[2].args[1] == {"start_after": "G2-PROV"}

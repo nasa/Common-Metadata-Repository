@@ -11,13 +11,9 @@ logger = logging.getLogger(__name__)
 
 _STATUS_PRIORITY = {"red": 0, "yellow": 1, "green": 2}
 
-# Five independent call sites use ES health (the throttler's dispatch loop, GET /status,
-# and the ES-gating checks on non-granule and single-concept reindex) — each used to poll
-# _cluster/health on both clusters completely independently, with no shared state. Under
-# a prolonged non-green cluster (wait_for_green alone polls every 10s) or several of
-# these being hit around the same time, that's redundant real traffic against ES for no
-# added freshness. Cache the combined result for a short TTL so all consumers share one
-# set of checks per window instead of each polling on its own schedule.
+# Several call sites gate work on ES health (dispatch loops, GET /status, the
+# reindex endpoints). Cache the combined result for a short TTL so they share one
+# set of checks per window instead of each polling _cluster/health independently.
 _CACHE_TTL_SECONDS = 10.0
 _cache_lock = threading.Lock()
 _cached_health: Optional[dict] = None
