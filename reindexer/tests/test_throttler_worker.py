@@ -26,6 +26,7 @@ def worker(monkeypatch):
     monkeypatch.setattr(_worker_mod, "db_client", MagicMock())
     monkeypatch.setattr(_worker_mod, "publish_concept_updates_batch", MagicMock())
     monkeypatch.setattr(_worker_mod, "delete_message", MagicMock())
+    monkeypatch.setattr(_worker_mod, "change_message_visibility", MagicMock())
     monkeypatch.setattr(_worker_mod, "receive_messages", MagicMock(return_value=[]))
     monkeypatch.setattr(_worker_mod, "check_all_es_health", MagicMock(return_value={"overall": "green"}))
     monkeypatch.setattr(_worker_mod, "job_store", MagicMock())
@@ -369,10 +370,11 @@ class TestProcess:
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         _worker_mod.delete_message.assert_called_once()
 
-    def test_processing_error_does_not_delete(self, worker):
+    def test_processing_error_leaves_message_to_its_lease(self, worker):
         _worker_mod.db_client.stream_granule_ids_paged.side_effect = RuntimeError("db down")
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         _worker_mod.delete_message.assert_not_called()
+        _worker_mod.change_message_visibility.assert_not_called()
 
     def test_malformed_json_deleted_as_poison_pill(self, worker):
         bad = {"ReceiptHandle": "rh-xyz", "Body": "not-json{{{"}
@@ -401,51 +403,65 @@ class TestProcess:
         worker._process(_sqs_msg(_collection()), source)
         assert _worker_mod.delete_message.call_args.args[0] == source
 
-    def test_collection_interrupted_does_not_delete_message(self, worker):
-        """When _CollectionInterrupted is raised, SQS message is kept for re-delivery."""
-        from app.throttler.worker import _CollectionInterrupted
+    def test_collection_interrupted_releases_message_instead_of_deleting(self, worker):
+        """Visibility 0 hands the message straight back for re-delivery."""
         _make_chunks([("G1-PROV", 1)])
         worker._token_bucket.consume.return_value = False
         worker._stop_event.set()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         _worker_mod.delete_message.assert_not_called()
+        _worker_mod.change_message_visibility.assert_called_once_with(_TEST_QUEUE, "rh-test", 0)
+        assert worker.current_job_id is None
 
 
 # ---------------------------------------------------------------------------
-# Graceful shutdown — stop() and SIGTERM behaviour
+# Message lease — SQS visibility renewal
 # ---------------------------------------------------------------------------
 
-class TestGracefulShutdown:
+class TestMessageLease:
 
-    def test_stop_event_not_set_on_creation(self, worker):
-        assert not worker._stop_event.is_set()
+    @pytest.fixture
+    def lease(self, worker):
+        worker._lease = _worker_mod._MessageLease(_TEST_QUEUE, "rh-test", "req-1")
+        return worker._lease
 
-    def test_stop_sets_stop_event(self, worker):
-        worker.stop()
-        assert worker._stop_event.is_set()
+    def test_receives_one_message_leased_for_lease_minutes(self, worker, monkeypatch):
+        monkeypatch.setattr(_worker_mod.config, "lease_minutes", 5)
 
-    def test_stop_marks_interrupted_even_when_thread_clears_job_id_during_join(self, worker):
-        """Verify job_id is captured before thread.join(), not after."""
-        worker._current_job_id = "job-123"
+        def _stop(*args, **kwargs):
+            worker._stop_event.set()
+            return []
 
-        def fake_join(timeout):
-            with worker._job_lock:
-                worker._current_job_id = None  # simulates thread's finally block
+        _worker_mod.receive_messages.side_effect = _stop
+        worker._run()
+        kwargs = _worker_mod.receive_messages.call_args.kwargs
+        assert (kwargs["max_messages"], kwargs["visibility_timeout"]) == (1, 300)
 
-        worker._thread = MagicMock()
-        worker._thread.is_alive.return_value = True
-        worker._thread.join.side_effect = fake_join
+    def test_renew_extends_visibility_by_one_lease(self, worker, lease, monkeypatch):
+        monkeypatch.setattr(_worker_mod.config, "lease_minutes", 5)
+        worker.renew_message_lease()
+        _worker_mod.change_message_visibility.assert_called_once_with(_TEST_QUEUE, "rh-test", 300)
+        assert not lease.lost
 
-        worker.stop()
+    def test_failed_renewal_loses_the_lease_but_keeps_renewing(self, worker, lease):
+        _worker_mod.change_message_visibility.side_effect = [RuntimeError("throttled"), None]
+        worker.renew_message_lease()
+        worker.renew_message_lease()
+        assert lease.lost
+        assert _worker_mod.change_message_visibility.call_count == 2
 
-        _worker_mod.job_store.try_mark_interrupted.assert_called_with("job-123")
+    def test_lease_lost_near_sqs_12_hour_cap_but_still_renewed(self, worker, lease):
+        lease.received_at -= _worker_mod._MAX_MESSAGE_HOLD_SECONDS + 1
+        worker.renew_message_lease()
+        assert lease.lost
+        _worker_mod.change_message_visibility.assert_called_once()
 
-    def test_stop_does_not_mark_interrupted_when_no_job_in_flight(self, worker):
-        worker._current_job_id = None
-        worker._thread = MagicMock()
-        worker._thread.is_alive.return_value = False
-        worker.stop()
-        _worker_mod.job_store.try_mark_interrupted.assert_not_called()
+    def test_lost_lease_interrupts_at_page_boundary(self, worker, lease):
+        lease.lost = True
+        _make_chunks([("G1-PROV", 1)])
+        with pytest.raises(_worker_mod._CollectionInterrupted):
+            worker._handle_collection(_collection())
+        _worker_mod.publish_concept_updates_batch.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -517,18 +533,13 @@ class TestJobCompletionDetection:
     def test_current_job_id_is_none_initially(self, worker):
         assert worker.current_job_id is None
 
-    def test_stop_marks_current_job_as_interrupted(self, worker):
-        worker._current_job_id = "active-job-123"
-        worker.stop()
-        _worker_mod.job_store.try_mark_interrupted.assert_called_once_with("active-job-123")
-
     def test_current_job_id_cleared_after_successful_process(self, worker):
         _make_chunks()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         assert worker.current_job_id is None
 
     def test_current_job_id_set_during_streaming(self, worker):
-        """_current_job_id is set to item.request_id while _handle_collection runs."""
+        """current_job_id is item.request_id while _handle_collection runs."""
         captured = []
 
         def _capture(*args, **kwargs):

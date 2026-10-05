@@ -18,6 +18,7 @@ from typing import Iterator, Optional
 import oracledb
 
 from app.config import config
+from app.db.call_tracker import tracked_call
 
 logger = logging.getLogger(__name__)
 
@@ -260,8 +261,9 @@ class OracleClient:
 
     @contextmanager
     def _acquire_cursor(self):
-        """Acquire a pooled connection and yield a cursor. Sets no call timeout."""
-        with self._get_pool().acquire() as conn:
+        """Acquire a pooled connection and yield a cursor. Sets no call timeout;
+        tracked_call flags a call that hangs instead."""
+        with tracked_call(), self._get_pool().acquire() as conn:
             with conn.cursor() as cur:
                 yield cur
 

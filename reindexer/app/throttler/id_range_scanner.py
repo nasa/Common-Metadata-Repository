@@ -7,13 +7,14 @@ Walks the provider's *_GRANULES table in bounded id windows, since no index
 covers PARENT_COLLECTION_ID + REVISION_DATE. Resume cursor: next_start_id on the
 job record.
 
-Runs on its own daemon thread: startup resume has no BackgroundTasks instance,
-and a scan can run for hours.
+Runs on its own daemon thread: the lease keeper's restart has no BackgroundTasks
+instance, and a scan can run for hours. Holds the job's lease from start to finish.
 """
 import logging
 import threading
 from typing import Optional
 
+from app import leases
 from app.config import config
 from app.db import db_client
 from app.db.dynamo import job_store
@@ -22,13 +23,10 @@ from app.throttler.worker import throttler
 
 logger = logging.getLogger(__name__)
 
-# Caps concurrent scan threads so a burst of resumes/requests can't flood the
+# Caps concurrent scan threads so a burst of restarts/requests can't flood the
 # shared Oracle pool (oracle_pool_max) that ordinary API traffic also depends on.
 _MAX_CONCURRENT_SCANS = 5
 _scan_slots = threading.Semaphore(_MAX_CONCURRENT_SCANS)
-
-# request_ids of started scans (queued or running), for shutdown bookkeeping.
-_active_scans: set[str] = set()
 
 
 def _should_stop(request_id: str) -> bool:
@@ -72,14 +70,11 @@ def _wait_for_green_or_signal(request_id: str) -> bool:
     return False
 
 
-def _mark_stopped_or_cancelled(request_id: str) -> None:
-    """Record why a scan stopped: interrupted (SIGTERM, picked up on next resume)
-    or cancelled (operator action, not resumed)."""
-    if throttler.stop_event.is_set():
-        logger.info({"event": "id_range_scan_interrupted", "request_id": request_id})
-        job_store.try_mark_interrupted(request_id)
-    else:
-        logger.info({"event": "id_range_scan_cancelled", "request_id": request_id})
+def _log_stopped(request_id: str) -> None:
+    """Log why a scan stopped: interrupted (SIGTERM; its lease lapses and another
+    task restarts it) or cancelled (operator action, not restarted)."""
+    event = "id_range_scan_interrupted" if throttler.stop_event.is_set() else "id_range_scan_cancelled"
+    logger.info({"event": event, "request_id": request_id})
 
 
 def _run(
@@ -93,7 +88,7 @@ def _run(
     try:
         acquired = _acquire_scan_slot(request_id)
         if not acquired:
-            _mark_stopped_or_cancelled(request_id)
+            _log_stopped(request_id)
             return
 
         # The probe is the expensive query (it walks the id index evaluating the
@@ -125,7 +120,7 @@ def _run(
                 probe_from, next_id = end_id, None
             job_store.update_id_range_progress(request_id, end_id)
 
-        _mark_stopped_or_cancelled(request_id)
+        _log_stopped(request_id)
     except Exception as exc:
         logger.error({"event": "id_range_scan_error", "request_id": request_id, "provider_id": provider_id, "error": str(exc)})
         try:
@@ -135,7 +130,7 @@ def _run(
     finally:
         if acquired:
             _scan_slots.release()
-        _active_scans.discard(request_id)
+        leases.release(request_id)
 
 
 def start_id_range_scan(
@@ -145,9 +140,9 @@ def start_id_range_scan(
     before: Optional[str],
     start_id: int = 0,
 ) -> threading.Thread:
-    """Spawn the id-range scan on a dedicated daemon thread. Called from both
-    _enqueue_provider (initial run) and resume_stalled_jobs (resume)."""
-    _active_scans.add(request_id)
+    """Spawn the id-range scan on a dedicated daemon thread. Called from
+    enqueue_provider, for both the initial run and a lease keeper restart."""
+    leases.hold(request_id)
     thread = threading.Thread(
         target=_run,
         args=(request_id, provider_id, after, before, start_id),
@@ -163,12 +158,3 @@ def start_id_range_scan(
     })
     return thread
 
-
-def mark_active_scans_interrupted() -> None:
-    """Mark every started scan interrupted on shutdown — a daemon thread blocked in
-    an Oracle call is killed at exit before it can record that itself."""
-    for request_id in list(_active_scans):
-        try:
-            job_store.try_mark_interrupted(request_id)
-        except Exception as exc:
-            logger.warning({"event": "interrupted_job_mark_failed", "request_id": request_id, "error": str(exc)})

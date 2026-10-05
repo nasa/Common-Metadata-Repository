@@ -9,6 +9,7 @@ rather than restarting from offset 0.
 import logging
 import threading
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, Optional
 
@@ -16,21 +17,40 @@ from app.config import config
 from app.db import db_client
 from app.db.dynamo import checkpoint_store, job_store
 from app.es.health import check_all_es_health, wait_for_green
-from app.sqs.client import delete_message, publish_concept_updates_batch, receive_messages
+from app.sqs.client import (
+    change_message_visibility, delete_message, publish_concept_updates_batch, receive_messages,
+)
 from app.sqs.schemas import CollectionWorkItem, parse_work_item
 from app.throttler.token_bucket import TokenBucket
 
 logger = logging.getLogger(__name__)
 
 
-class _CollectionInterrupted(Exception):
-    """Raised mid-collection when stop_event fires (SIGTERM / graceful shutdown).
+# SQS rejects extending a message's visibility past 12 hours from its receive, so
+# hand it back a little before that and pick it up again with a fresh receive.
+_MAX_MESSAGE_HOLD_SECONDS = 11.5 * 3600
 
-    _process() skips delete_message on any exception, so raising this keeps the
-    SQS collection message on the queue for re-delivery after the task restarts.
-    The DynamoDB checkpoint persists, allowing the new task to resume from the
-    last successfully dispatched concept_id.
+
+class _CollectionInterrupted(Exception):
+    """Raised at a page boundary when stop_event fires (SIGTERM / graceful shutdown)
+    or the message's lease is lost.
+
+    _process() then hands the SQS collection message back instead of deleting it,
+    so it is redelivered (to this task or another) and resumes from the DynamoDB
+    checkpoint of the last successfully dispatched page.
     """
+
+
+@dataclass
+class _MessageLease:
+    """The collection message being processed. Its visibility is the work item's
+    lease, renewed by the lease keeper. lost: a renewal failed or SQS's 12-hour cap
+    is near, so hand the message back at the next page boundary."""
+    queue_url: str
+    receipt: str
+    job_id: str
+    received_at: float = field(default_factory=time.monotonic)
+    lost: bool = False
 
 
 class ThrottlerWorker:
@@ -47,7 +67,7 @@ class ThrottlerWorker:
         self._stop_event = threading.Event()
         self._token_bucket = TokenBucket(config.rate_per_minute)
         self._thread: Optional[threading.Thread] = None
-        self._current_job_id: Optional[str] = None
+        self._lease: Optional[_MessageLease] = None
         self._job_lock = threading.Lock()
         self._cancel_cache = None  # set by main.py via set_cancel_cache()
         self._last_active: Optional[str] = None
@@ -62,8 +82,8 @@ class ThrottlerWorker:
 
     @property
     def current_job_id(self) -> Optional[str]:
-        with self._job_lock:
-            return self._current_job_id
+        lease = self._lease  # no lock: renewal holds _job_lock across an SQS call
+        return lease.job_id if lease else None
 
     def set_rate(self, rate_per_minute: float) -> None:
         self._token_bucket.update_rate(rate_per_minute)
@@ -104,6 +124,23 @@ class ThrottlerWorker:
             i += len(sub)
         return True
 
+    def renew_message_lease(self) -> None:
+        """Extend the current message's visibility by another lease. Holds _job_lock
+        across the call, so it can't land after _process releases the message.
+        A lost lease is still renewed, to keep the message hidden until handed back."""
+        with self._job_lock:
+            lease = self._lease
+            if lease is None:
+                return
+            if not lease.lost and time.monotonic() - lease.received_at > _MAX_MESSAGE_HOLD_SECONDS:
+                lease.lost = True
+                logger.info({"event": "message_lease_max_hold", "request_id": lease.job_id})
+            try:
+                change_message_visibility(lease.queue_url, lease.receipt, config.lease_minutes * 60)
+            except Exception as exc:
+                lease.lost = True
+                logger.warning({"event": "message_lease_lost", "request_id": lease.job_id, "error": str(exc)})
+
     def liveness(self) -> dict:
         return {
             "alive": bool(self._thread and self._thread.is_alive()),
@@ -130,17 +167,10 @@ class ThrottlerWorker:
         """Signal the worker to stop and wait for it to finish its current batch."""
         logger.info({"event": "throttler_stopping"})
         self._stop_event.set()
-        with self._job_lock:
-            job_id = self._current_job_id
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=30)
             if self._thread.is_alive():
                 logger.warning({"event": "throttler_thread_did_not_exit"})
-        if job_id:
-            try:
-                job_store.try_mark_interrupted(job_id)
-            except Exception as exc:
-                logger.warning({"event": "interrupted_job_mark_failed", "error": str(exc)})
         logger.info({"event": "throttler_stopped"})
 
     # ------------------------------------------------------------------
@@ -181,18 +211,16 @@ class ThrottlerWorker:
 
             try:
                 source_queue = config.collection_queue_url
-                messages = receive_messages(source_queue, max_messages=10, wait_seconds=5)
+                # One at a time, so no received message waits hidden behind the current one.
+                messages = receive_messages(
+                    source_queue, visibility_timeout=config.lease_minutes * 60, max_messages=1, wait_seconds=5,
+                )
             except Exception as exc:
                 logger.error({"event": "sqs_receive_error", "error": str(exc)})
                 continue
 
-            if not messages:
-                continue
-
-            for msg in messages:
-                if self._stop_event.is_set():
-                    break
-                self._process(msg, source_queue)
+            if messages:
+                self._process(messages[0], source_queue)
 
     def _process(self, msg: dict, queue_url: str) -> None:
         receipt = msg["ReceiptHandle"]
@@ -212,21 +240,22 @@ class ThrottlerWorker:
             return
 
         with self._job_lock:
-            self._current_job_id = item.request_id
+            self._lease = _MessageLease(queue_url, receipt, item.request_id)
 
         sent_ms = msg.get("Attributes", {}).get("SentTimestamp")
         queue_wait_seconds = round(time.time() - int(sent_ms) / 1000, 1) if sent_ms else None
+        interrupted = False
         try:
             self._handle_collection(item, queue_wait_seconds)
         except _CollectionInterrupted:
-            # Graceful shutdown mid-collection: keep SQS message on queue for re-delivery.
-            # The DynamoDB checkpoint was already written; the next task picks up from there.
+            # The DynamoDB checkpoint was already written; whoever receives the
+            # message next picks up from there.
             logger.info({
                 "event": "collection_interrupted",
                 "request_id": item.request_id,
                 "collection_id": getattr(item, "collection_id", None),
             })
-            return  # skip delete_message
+            interrupted = True
         except Exception as exc:
             logger.error({
                 "event": "work_item_processing_error",
@@ -234,15 +263,19 @@ class ThrottlerWorker:
                 "request_id": item.request_id,
                 "type": item.type,
             })
-            return  # leave message on queue so it can be retried / go to DLQ
+            return  # leave message on queue; retried once its lease lapses, or goes to DLQ
         finally:
             with self._job_lock:
-                self._current_job_id = None
+                self._lease = None
 
         try:
-            delete_message(queue_url, receipt)
+            if interrupted:
+                # Hand the message back now rather than when its lease lapses.
+                change_message_visibility(queue_url, receipt, 0)
+            else:
+                delete_message(queue_url, receipt)
         except Exception as exc:
-            logger.warning({"event": "delete_message_failed", "error": str(exc)})
+            logger.warning({"event": "settle_message_failed", "interrupted": interrupted, "error": str(exc)})
 
     def _handle_collection(self, item: CollectionWorkItem, queue_wait_seconds: Optional[float] = None) -> None:
         """Stream all granule IDs for a collection and dispatch them directly to the indexer queue.
@@ -252,8 +285,8 @@ class ThrottlerWorker:
         all filtered out by after/before — so a SIGTERM/restart resumes from the last
         page boundary rather than offset 0.
 
-        Raises _CollectionInterrupted when stop_event fires mid-stream so that _process()
-        skips delete_message, leaving the SQS collection message for re-delivery.
+        Raises _CollectionInterrupted when stop_event fires or the message's lease is
+        lost, so that _process() hands the message back for re-delivery.
         """
         # Resume from checkpoint if one exists (previous run was interrupted mid-collection)
         ckpt = checkpoint_store.get_collection_checkpoint(item.request_id, item.collection_id)
@@ -281,13 +314,11 @@ class ThrottlerWorker:
             before=item.before,
             start_after_concept_id=start_after,
         ):
-            if (
-                self._stop_event.is_set()
-                or self.is_job_cancelled(item.request_id)
-                or not self.dispatch_in_batches(
-                    chunk, item.request_id,
-                    on_progress=lambda n: job_store.update_dispatched(item.request_id, n),
-                )
+            if self._stop_event.is_set() or (self._lease and self._lease.lost):
+                raise _CollectionInterrupted()
+            if self.is_job_cancelled(item.request_id) or not self.dispatch_in_batches(
+                chunk, item.request_id,
+                on_progress=lambda n: job_store.update_dispatched(item.request_id, n),
             ):
                 if self._stop_event.is_set():
                     raise _CollectionInterrupted()

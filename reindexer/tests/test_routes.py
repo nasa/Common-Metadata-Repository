@@ -381,6 +381,16 @@ class TestProviderListEndpoint:
         _r.db_client.get_collection_ids_for_provider.assert_called_once_with("PROV_A")
         _r.enqueue_collection_item.assert_called_once()
 
+    def test_restart_skips_providers_already_enqueued_and_holds_lease(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_collection_ids_for_provider.return_value = ["C1-P"]
+        held = []
+        _r.enqueue_collection_item.side_effect = lambda **kw: held.extend(_r.leases.held_jobs())
+        _r.enqueue_providers("job-1", ["PROV_A", "PROV_B"], None, None, skip={"PROV_A"})
+        _r.db_client.get_collection_ids_for_provider.assert_called_once_with("PROV_B")
+        assert held == ["job-1"]
+        assert _r.leases.held_jobs() == set()
+
     def test_marks_dispatching_not_completed(self, client):
         import app.routers.reindex as _r
         _r.db_client.get_collection_ids_for_provider.return_value = []
@@ -412,8 +422,8 @@ class TestProviderListEndpoint:
 
 
 class TestAllProvidersErrorPath:
-    """_enqueue_all_providers resolves the provider list itself before delegating to
-    the shared _enqueue_providers loop; a failure at that resolution step must not
+    """enqueue_all_providers resolves the provider list itself before delegating to
+    the shared enqueue_providers loop; a failure at that resolution step must not
     fall through into the shared loop with an undefined provider list."""
 
     def test_get_all_provider_ids_failure_marks_job_failed(self, client):
@@ -638,16 +648,6 @@ class TestJobEnrichment:
         })
         assert result["elapsed_seconds"] == 60
         assert result["dispatch_rate_per_minute"] == 6000
-
-    def test_resumed_job_ignores_completed_at_left_by_its_interruption(self):
-        from datetime import datetime, timedelta, timezone
-        started = datetime.now(timezone.utc) - timedelta(seconds=120)
-        result = self._enrich({
-            "job_id": "j1", "status": "dispatching",
-            "started_at": started.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "completed_at": (started + timedelta(seconds=30)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        })
-        assert 118 <= result["elapsed_seconds"] <= 122
 
     def test_dispatch_rate_absent_when_nothing_dispatched(self):
         from datetime import datetime, timedelta, timezone
@@ -888,8 +888,6 @@ class TestCollectionDispatchUsesCollectionQueue:
 class TestProviderDispatchUsesIdRangeScan:
 
     def test_marks_dispatching_then_starts_scan(self, client):
-        """The status write must happen-before the scan thread exists, or it can
-        overwrite the scan's own interrupted write."""
         import app.routers.reindex as _r
         _r.job_store.mark_job.return_value = True
         order = MagicMock()
@@ -900,7 +898,7 @@ class TestProviderDispatchUsesIdRangeScan:
         before = _r.job_store.create_job.call_args.kwargs["before"]
         assert order.mock_calls == [
             call.mark_job(request_id, "dispatching"),
-            call.scan(request_id=request_id, provider_id="BIGPROV", after=None, before=before),
+            call.scan(request_id=request_id, provider_id="BIGPROV", after=None, before=before, start_id=0),
         ]
         _r.db_client.get_collection_ids_for_provider.assert_not_called()
         _r.enqueue_collection_item.assert_not_called()
@@ -920,7 +918,7 @@ class TestProviderDispatchUsesIdRangeScan:
 
 
 # ---------------------------------------------------------------------------
-# _publish_concept_type — periodic update_dispatched visibility
+# publish_concept_type — periodic update_dispatched visibility
 # ---------------------------------------------------------------------------
 
 def _fake_concepts(n):

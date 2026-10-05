@@ -56,7 +56,7 @@ Operator (VPN / VPC only)
 3. Each chunk is published directly to the indexer queue, rate-limited by a token bucket and gated on ES cluster health
 4. A DynamoDB checkpoint is written after each successfully dispatched chunk; SIGTERM or task replacement resumes from the last checkpoint rather than restarting from offset 0
 
-**Job state** is persisted in DynamoDB. If an ECS task is replaced or crashes, the new task resumes any interrupted granule jobs from the last checkpoint on startup.
+**Job state** is persisted in DynamoDB. In-progress work is leased by the task doing it: a collection work item by its SQS message visibility, any other job by its `last_heartbeat`. Each task keeps renewing its leases, however long the work takes. If a task dies, its leases lapse after `LEASE_MINUTES` and another task resumes the work from its checkpoint or saved progress. A graceful shutdown hands the collection message back right away. An Oracle call running longer than 5 minutes is logged as `oracle_call_slow` until it returns.
 
 ## API
 
@@ -158,7 +158,7 @@ The `elapsed_seconds`, `heartbeat_age_seconds`, `heartbeat_stale`, `dispatch_rat
 
 `providers_remaining` (only present on `granules`/`granules-by-providers` jobs, which track `providers_requested`) lists every provider that still has outstanding work — either never enqueued at all, or enqueued but not every one of its collections has finished streaming yet (`providers_collections_split[p] < providers_work_items[p]`). This is the safe set to resubmit via `POST /reindex/granules/providers` after cancelling a job, without needing to inspect the checkpoint table.
 
-Job statuses: `running`, `dispatching`, `completed`, `failed`, `interrupted`, `cancelled`
+Job statuses: `running`, `dispatching`, `completed`, `failed`, `cancelled`
 
 ### Throttle control
 
@@ -240,7 +240,7 @@ All config is via environment variables.
 | `SQS_SEND_WORKERS` | `20` | Parallel threads for batched SQS sends |
 | `RATE_PER_MINUTE` | `600` | Indexer queue rate limit (also adjustable live via `PUT /throttle`) |
 | `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often the cancellation cache refreshes from DynamoDB |
-| `STALL_MINUTES` | `20` | Heartbeat age threshold before a job is considered stalled |
+| `LEASE_MINUTES` | `5` | Lease on in-progress work: the collection message's visibility, and how stale a job's heartbeat gets before another task restarts it (and `/jobs` reports `heartbeat_stale`) |
 | `CMR_ECHO_SYSTEM_TOKEN` | `mock-echo-system-token` | Echo system token used for ACL validation |
 | `AWS_DEFAULT_REGION` | `us-east-1` | AWS region |
 | `AWS_ACCESS_KEY_ID` | `None` | Explicit AWS key (omit to use IAM task role) |

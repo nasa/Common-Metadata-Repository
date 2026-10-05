@@ -16,8 +16,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 _TS_FMT = "%Y-%m-%dT%H:%M:%SZ"
-# Statuses in which the job isn't running, so completed_at marks where it stopped.
-_STOPPED_STATUSES = ("completed", "failed", "cancelled", "interrupted")
 
 
 def _parse_ts(value: str) -> datetime:
@@ -31,11 +29,8 @@ def _enrich_job(job: dict) -> dict:
     if "started_at" in job:
         try:
             # A stopped job is measured up to completed_at, so elapsed (and the rate
-            # below) don't keep changing afterwards. Gated on status because a resumed
-            # job still carries the completed_at from its interruption.
-            end = now
-            if job.get("status") in _STOPPED_STATUSES and job.get("completed_at"):
-                end = _parse_ts(job["completed_at"])
+            # below) don't keep changing afterwards.
+            end = _parse_ts(job["completed_at"]) if job.get("completed_at") else now
             result["elapsed_seconds"] = int((end - _parse_ts(job["started_at"])).total_seconds())
         except Exception:
             pass
@@ -45,7 +40,7 @@ def _enrich_job(job: dict) -> dict:
             hb = _parse_ts(job["last_heartbeat"])
             age = int((now - hb).total_seconds())
             result["heartbeat_age_seconds"] = age
-            result["heartbeat_stale"] = age > config.stall_minutes * 60
+            result["heartbeat_stale"] = age > config.lease_minutes * 60
         except Exception:
             pass
 

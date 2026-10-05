@@ -182,9 +182,9 @@ class JobStore:
     def _update_with_provider_map_backfill(self, job_id: str, kwargs: dict) -> None:
         """Run an update_item that may reference providers_work_items/providers_collections_split
         as a nested path. DynamoDB's SET does not auto-vivify a missing parent map, so a job
-        created before this schema existed (still running/dispatching/interrupted across a
-        deploy) would otherwise fail here permanently. On that specific failure, backfill both
-        maps as empty (idempotent, a no-op if they already exist) and retry once.
+        created before this schema existed (still running/dispatching across a deploy) would
+        otherwise fail here permanently. On that specific failure, backfill both maps as
+        empty (idempotent, a no-op if they already exist) and retry once.
         """
         try:
             self._table().update_item(**kwargs)
@@ -223,10 +223,10 @@ class JobStore:
         """Set job status.  Returns False (no-op) if the job is already completed/failed/cancelled.
 
         That guard stops a background task still running after a cancel from
-        resurrecting the job. 'interrupted' isn't guarded; resume moves the job past it.
+        resurrecting the job.
         """
         now = _now_iso()
-        terminal = status in ("completed", "failed", "interrupted", "cancelled")
+        terminal = status in ("completed", "failed", "cancelled")
         update_expr = "SET #st = :s, last_heartbeat = :ts"
         if terminal:
             update_expr += ", completed_at = :ts"
@@ -298,17 +298,6 @@ class JobStore:
             kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
         return [_deserialize(item) for item in items[:limit]]
 
-    def find_stalled_jobs(self, stale_minutes: int = 10) -> list:
-        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=stale_minutes)).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-        items = self._scan_all(
-            FilterExpression="(#st = :running OR #st = :dispatching) AND last_heartbeat < :cutoff",
-            ExpressionAttributeNames={"#st": "status"},
-            ExpressionAttributeValues={":running": "running", ":dispatching": "dispatching", ":cutoff": cutoff},
-        )
-        return [_deserialize(item) for item in items]
-
     def find_cancelled_jobs(self) -> list:
         items = self._scan_all(
             FilterExpression="#st = :cancelled",
@@ -317,16 +306,25 @@ class JobStore:
         )
         return [_deserialize(item) for item in items]
 
-    def find_interrupted_jobs(self) -> list:
-        """Return all jobs in the interrupted status (set by graceful shutdown handler).
-
-        These jobs were mid-run when the ECS task received SIGTERM and need to be
-        re-enqueued by the next task's startup resume pass.
-        """
+    def find_lapsed_jobs(self, lease_minutes: int) -> list:
+        """Return jobs whose lease (last_heartbeat) is older than lease_minutes: any
+        running job, or a dispatching id-range scan. Other dispatching jobs are
+        collection-queue work, leased by their SQS messages instead."""
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=lease_minutes)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
         items = self._scan_all(
-            FilterExpression="#st = :interrupted",
+            FilterExpression=(
+                "(#st = :running OR (#st = :dispatching AND concept_type = :scan))"
+                " AND last_heartbeat < :cutoff"
+            ),
             ExpressionAttributeNames={"#st": "status"},
-            ExpressionAttributeValues={":interrupted": "interrupted"},
+            ExpressionAttributeValues={
+                ":running": "running",
+                ":dispatching": "dispatching",
+                ":scan": "granules-by-provider",
+                ":cutoff": cutoff,
+            },
         )
         return [_deserialize(item) for item in items]
 
@@ -351,37 +349,6 @@ class JobStore:
                 },
             )
             logger.info({"event": "job_completed", "job_id": job_id})
-            return True
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                return False
-            raise
-
-    def try_mark_interrupted(self, job_id: str) -> bool:
-        """Atomically mark a job interrupted only if it is not already in a terminal status.
-
-        Prevents a task shutdown from overwriting a cancelled/completed status with interrupted,
-        which would cause resume logic to incorrectly re-enqueue the job on next startup.
-        Returns True if marked interrupted, False if already terminal.
-        """
-        try:
-            self._table().update_item(
-                Key={"job_id": job_id},
-                UpdateExpression="SET #st = :interrupted, completed_at = :now, last_heartbeat = :now",
-                ConditionExpression=(
-                    "#st <> :completed AND #st <> :failed"
-                    " AND #st <> :interrupted AND #st <> :cancelled"
-                ),
-                ExpressionAttributeNames={"#st": "status"},
-                ExpressionAttributeValues={
-                    ":interrupted": "interrupted",
-                    ":completed": "completed",
-                    ":failed": "failed",
-                    ":cancelled": "cancelled",
-                    ":now": _now_iso(),
-                },
-            )
-            logger.info({"event": "job_interrupted", "job_id": job_id})
             return True
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
@@ -415,7 +382,7 @@ class JobStore:
                 return False
             raise
 
-    def claim_stalled_job(self, job_id: str, last_heartbeat: str) -> bool:
+    def claim_lapsed_job(self, job_id: str, last_heartbeat: str) -> bool:
         try:
             self._table().update_item(
                 Key={"job_id": job_id},
