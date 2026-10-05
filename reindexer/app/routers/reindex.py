@@ -1,8 +1,10 @@
 """FastAPI router for /reindex/* endpoints.
 
 Handles reindex requests by concept type, single concept, and granule subsets
-(all providers, by provider, or by collection).  Long-running work is offloaded
-to FastAPI background tasks; progress is tracked in DynamoDB via job_store.
+(all providers, by provider, or by collection). Long-running work is offloaded
+either to FastAPI background tasks or, for the id-range provider scan
+(app.throttler.id_range_scanner), a plain daemon thread. Progress is tracked in
+DynamoDB via job_store.
 """
 import logging
 import re
@@ -19,6 +21,7 @@ from app.db import db_client
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
 from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_concept_updates_batch
+from app.throttler.id_range_scanner import start_id_range_scan
 from app.throttler.worker import throttler
 
 router = APIRouter()
@@ -148,33 +151,16 @@ def _enqueue_all_providers(request_id: str, after: Optional[str], before: Option
 
 
 def _enqueue_provider(
-    request_id: str, provider_id: str, after: Optional[str], before: Optional[str]
+    request_id: str, provider_id: str, after: Optional[str], before: Optional[str],
 ) -> None:
     try:
         if throttler.is_job_cancelled(request_id):
             logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
             return
-        collection_ids = db_client.get_collection_ids_for_provider(provider_id)
-        for cid in collection_ids:
-            enqueue_collection_item(
-                request_id=request_id, collection_id=cid, after=after, before=before
-            )
-        job_store.update_progress(
-            request_id,
-            provider_enqueued=provider_id,
-            work_items_delta=len(collection_ids),
-        )
-        if throttler.is_job_cancelled(request_id):
-            logger.info({"event": "enqueue_cancelled_before_dispatching", "request_id": request_id, "provider_id": provider_id})
-            return
-        job_store.mark_job(request_id, "dispatching")
-        job_store.try_complete_job(request_id)
-        logger.info({
-            "event": "provider_granules_enqueued",
-            "request_id": request_id,
-            "provider_id": provider_id,
-            "collection_count": len(collection_ids),
-        })
+        # Before spawning, so this can't overwrite the scan's own interrupted status.
+        # False means the job was cancelled meanwhile.
+        if job_store.mark_job(request_id, "dispatching"):
+            start_id_range_scan(request_id=request_id, provider_id=provider_id, after=after, before=before)
     except Exception as exc:
         logger.error({
             "event": "provider_granules_enqueue_error",
@@ -280,7 +266,10 @@ async def reindex_granules_by_provider(
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
+    job_store.create_job(
+        request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before,
+        source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
+    )
     logger.info({
         "event": "reindex_provider_requested",
         "request_id": request_id,

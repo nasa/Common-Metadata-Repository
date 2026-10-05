@@ -14,6 +14,7 @@ from app.routers import throttle as throttle_router
 from app.startup import resume_stalled_jobs
 from app.sqs.client import enqueue_collection_item
 from app.throttler.cancel_cache import CancelledJobCache
+from app.throttler.id_range_scanner import mark_active_scans_interrupted
 from app.throttler.worker import throttler
 
 
@@ -48,6 +49,7 @@ async def lifespan(app: FastAPI):
         logger.info({"event": "sigterm_received"})
         cancel_cache.stop()
         throttler.stop()
+        mark_active_scans_interrupted()
         if callable(_orig_sigterm):
             _orig_sigterm(signum, frame)
 
@@ -62,18 +64,23 @@ async def lifespan(app: FastAPI):
         "db_backend": config.db_backend,
         "rate_per_minute": config.rate_per_minute,
         "stream_chunk_size": config.stream_chunk_size,
+        "id_range_chunk_size": config.id_range_chunk_size,
     })
+
+    # cancel_cache must be wired up before resume spawns any scan thread, so a
+    # resumed job's is_job_cancelled() check never evaluates against a None cache.
+    cancel_cache.start()
+    throttler.set_cancel_cache(cancel_cache)
 
     resume_stalled_jobs(db_client, job_store, enqueue_collection_item)
 
-    cancel_cache.start()
-    throttler.set_cancel_cache(cancel_cache)
     throttler.start()
 
     yield
 
     cancel_cache.stop()
     throttler.stop()
+    mark_active_scans_interrupted()
 
 
 app = FastAPI(

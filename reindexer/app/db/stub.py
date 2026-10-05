@@ -41,15 +41,42 @@ class StubOracleClient:
     def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
         return list(self._collections.get(provider_id, []))
 
-    def stream_granule_ids(
+    def find_next_granule_id_in_range(
+        self,
+        provider_id: str,
+        min_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> Optional[int]:
+        """Fake provider-wide id space: a dense range [0, total) with no gaps —
+        good enough to exercise the id-range dispatch strategy locally."""
+        total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
+        return min_id if min_id < total else None
+
+    def fetch_granule_id_range_chunk(
+        self,
+        provider_id: str,
+        start_id: int,
+        end_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> list[tuple[str, int]]:
+        total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
+        return [
+            (f"G{1000000000 + i}-{provider_id}", 1)
+            for i in range(max(0, start_id), min(end_id, total))
+        ]
+
+    def stream_granule_ids_paged(
         self,
         collection_id: str,
         chunk_size: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
-    ) -> Iterator[list[tuple[str, int]]]:
-        """Yield chunks of fake granule IDs, respecting keyset resume and chunk_size.
+    ) -> Iterator[tuple[str, list[tuple[str, int]]]]:
+        """Yield (page_end, chunk) pages of fake granule IDs, respecting keyset resume
+        and chunk_size. Ignores after/before, so chunks are never empty here.
 
         start_after_concept_id mirrors the Oracle keyset cursor: only IDs that sort
         after that value are returned.  The stub uses a sequential integer suffix so
@@ -58,14 +85,13 @@ class StubOracleClient:
         count = self._granule_counts.get(collection_id, 0)
         provider = collection_id.split("-", 1)[1] if "-" in collection_id else "UNKNOWN"
 
-        # Build all IDs for this collection and apply the keyset filter
         all_ids = [(f"G{1000000000 + i}-{provider}", 1) for i in range(count)]
         if start_after_concept_id:
             all_ids = [(cid, rev) for cid, rev in all_ids if cid > start_after_concept_id]
 
-        # Yield in chunk_size batches
         for i in range(0, len(all_ids), chunk_size):
-            yield all_ids[i:i + chunk_size]
+            chunk = all_ids[i:i + chunk_size]
+            yield chunk[-1][0], chunk
 
     def get_concept_ids_by_type(
         self,

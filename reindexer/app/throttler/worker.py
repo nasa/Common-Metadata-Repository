@@ -1,6 +1,6 @@
 """Throttler worker for the cmr-reindexer service.
 
-Reads CollectionWorkItems from the collection SQS queue, streams granule IDs
+Reads CollectionWorkItems from the collection SQS queue, pages granule IDs
 from Oracle using keyset pagination, and dispatches concept-update messages to
 the CMR indexer queue at a configurable rate via TokenBucket.  A DynamoDB
 checkpoint is written after each chunk so a SIGTERM/restart resumes mid-collection
@@ -10,7 +10,7 @@ import logging
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Callable, Optional
 
 from app.config import config
 from app.db import db_client
@@ -37,9 +37,9 @@ class ThrottlerWorker:
     """Streams granule IDs from Oracle and dispatches concept-update messages to the indexer queue.
 
     Dequeues CollectionWorkItems from the collection SQS queue.  For each collection,
-    opens a single Oracle cursor and streams granule IDs in chunks (keyset pagination),
-    writing them directly to the CMR indexer SQS queue in parallel batches.
-    A DynamoDB checkpoint is written after each chunk so a SIGTERM/restart resumes
+    pages granule IDs from Oracle (keyset pagination by concept_id), writing them
+    directly to the CMR indexer SQS queue in parallel batches.
+    A DynamoDB checkpoint is written after each page so a SIGTERM/restart resumes
     mid-collection rather than restarting from offset 0.
     """
 
@@ -70,6 +70,39 @@ class ThrottlerWorker:
 
     def get_rate(self) -> float:
         return self._token_bucket.current_rate
+
+    @property
+    def stop_event(self) -> threading.Event:
+        """Shutdown signal, shared with other dispatch loops (the id-range scan)."""
+        return self._stop_event
+
+    def dispatch_in_batches(
+        self,
+        records: list[tuple[str, int]],
+        request_id: str,
+        on_progress: Optional[Callable[[int], None]] = None,
+    ) -> bool:
+        """Publish records in sub-batches, consuming tokens for each. Sub-batches are
+        capped at the current rate (re-read each iteration, so a mid-chunk PUT
+        /throttle is honored), since consume(N) can never succeed when N exceeds
+        the bucket's capacity.
+
+        on_progress(n) is called after each sub-batch publishes. Returns False as
+        soon as consume() reports shutdown or cancellation, else True.
+        """
+        i = 0
+        while i < len(records):
+            sub_size = max(1, int(self._token_bucket.current_rate))
+            sub = records[i:i + sub_size]
+            if not self._token_bucket.consume(
+                len(sub), stop_event=self._stop_event, cancel_fn=lambda: self.is_job_cancelled(request_id),
+            ):
+                return False
+            publish_concept_updates_batch(sub, request_id)
+            if on_progress is not None:
+                on_progress(len(sub))
+            i += len(sub)
+        return True
 
     def liveness(self) -> dict:
         return {
@@ -181,8 +214,10 @@ class ThrottlerWorker:
         with self._job_lock:
             self._current_job_id = item.request_id
 
+        sent_ms = msg.get("Attributes", {}).get("SentTimestamp")
+        queue_wait_seconds = round(time.time() - int(sent_ms) / 1000, 1) if sent_ms else None
         try:
-            self._handle_collection(item)
+            self._handle_collection(item, queue_wait_seconds)
         except _CollectionInterrupted:
             # Graceful shutdown mid-collection: keep SQS message on queue for re-delivery.
             # The DynamoDB checkpoint was already written; the next task picks up from there.
@@ -209,12 +244,13 @@ class ThrottlerWorker:
         except Exception as exc:
             logger.warning({"event": "delete_message_failed", "error": str(exc)})
 
-    def _handle_collection(self, item: CollectionWorkItem) -> None:
+    def _handle_collection(self, item: CollectionWorkItem, queue_wait_seconds: Optional[float] = None) -> None:
         """Stream all granule IDs for a collection and dispatch them directly to the indexer queue.
 
-        Uses keyset pagination (stream_granule_ids) so Oracle cost is O(chunk) not O(n^2).
-        Writes a DynamoDB checkpoint after each successfully dispatched chunk so a
-        SIGTERM/restart resumes from the last concept_id rather than offset 0.
+        Uses keyset pagination (stream_granule_ids_paged) so Oracle cost is O(page) not O(n^2).
+        Writes a DynamoDB checkpoint after each page — including pages whose rows were
+        all filtered out by after/before — so a SIGTERM/restart resumes from the last
+        page boundary rather than offset 0.
 
         Raises _CollectionInterrupted when stop_event fires mid-stream so that _process()
         skips delete_message, leaving the SQS collection message for re-delivery.
@@ -226,63 +262,52 @@ class ThrottlerWorker:
         chunks_dispatched = ckpt["chunks_dispatched"] if ckpt else 0
         collection_total = 0  # granules dispatched in this run (post-checkpoint)
 
-        logger.info({
+        start_event = {
             "event": "collection_streaming_start",
             "request_id": item.request_id,
             "collection_id": item.collection_id,
             "resume_after": start_after,
             "prior_dispatched": total_dispatched,
-        })
+        }
+        if not ckpt:
+            # Time this work item spent on the collection queue before its first run.
+            start_event["queue_wait_seconds"] = queue_wait_seconds
+        logger.info(start_event)
 
-        for chunk in db_client.stream_granule_ids(
+        for page_end, chunk in db_client.stream_granule_ids_paged(
             item.collection_id,
             chunk_size=config.stream_chunk_size,
             after=item.after,
             before=item.before,
             start_after_concept_id=start_after,
         ):
-            if self.is_job_cancelled(item.request_id):
+            if (
+                self._stop_event.is_set()
+                or self.is_job_cancelled(item.request_id)
+                or not self.dispatch_in_batches(
+                    chunk, item.request_id,
+                    on_progress=lambda n: job_store.update_dispatched(item.request_id, n),
+                )
+            ):
+                if self._stop_event.is_set():
+                    raise _CollectionInterrupted()
                 # Cancelled: return normally → SQS message deleted, checkpoint left for cleanup
                 logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
                 return
 
-            # Consume tokens and send in sub-batches of at most rate_per_minute so that
-            # STREAM_CHUNK_SIZE can exceed RATE_PER_MINUTE without deadlocking the bucket.
-            # (consume(N) deadlocks when N > max_tokens because the bucket can never hold
-            # more than rate_per_minute tokens at once.)
-            # sub_size is re-evaluated each iteration so a mid-chunk rate decrease via
-            # PUT /throttle can never leave us asking for more tokens than the bucket holds.
-            i = 0
-            while i < len(chunk):
-                sub_size = max(1, int(self._token_bucket.current_rate))
-                sub = chunk[i:i + sub_size]
-                if not self._token_bucket.consume(
-                    len(sub),
-                    stop_event=self._stop_event,
-                    cancel_fn=lambda: self.is_job_cancelled(item.request_id),
-                ):
-                    if self._stop_event.is_set():
-                        raise _CollectionInterrupted()
-                    logger.info({"event": "collection_streaming_cancelled", "request_id": item.request_id})
-                    return
-                publish_concept_updates_batch(sub, item.request_id)
-                i += len(sub)
-
             collection_total += len(chunk)
             total_dispatched += len(chunk)
             chunks_dispatched += 1
-            last_concept_id = chunk[-1][0]
 
             # Checkpoint AFTER a successful send so a crash-before-checkpoint just
-            # re-dispatches one chunk (indexer idempotency handles duplicates).
+            # re-dispatches one page (indexer idempotency handles duplicates).
             checkpoint_store.write_collection_checkpoint(
                 item.request_id,
                 item.collection_id,
-                last_concept_id,
+                page_end,
                 total_dispatched,
                 chunks_dispatched,
             )
-            job_store.update_dispatched(item.request_id, len(chunk))
 
         # All chunks dispatched — clear checkpoint and record the collection as split.
         checkpoint_store.delete_collection_checkpoint(item.request_id, item.collection_id)

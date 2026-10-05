@@ -158,6 +158,8 @@ def client():
 def mock_sqs(monkeypatch):
     monkeypatch.setattr("app.routers.reindex.enqueue_collection_item", MagicMock())
     monkeypatch.setattr("app.routers.reindex.job_store", MagicMock())
+    # Don't spawn real id-range scan threads.
+    monkeypatch.setattr("app.routers.reindex.start_id_range_scan", MagicMock())
 
 
 class TestOverrideHeaderWiring:

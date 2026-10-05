@@ -139,6 +139,7 @@ def receive_messages(queue_url: str, max_messages: int = 10, wait_seconds: int =
         QueueUrl=queue_url,
         MaxNumberOfMessages=max_messages,
         WaitTimeSeconds=wait_seconds,
+        AttributeNames=["SentTimestamp"],
     ).get("Messages", [])
 
 

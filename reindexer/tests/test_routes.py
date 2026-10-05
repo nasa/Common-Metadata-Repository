@@ -9,7 +9,7 @@ Covers:
 
 Auth is bypassed via dependency_overrides; see test_auth.py for full auth coverage.
 """
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 from fastapi.testclient import TestClient
@@ -39,6 +39,8 @@ def mock_deps(monkeypatch):
         "app.routers.reindex.check_all_es_health",
         MagicMock(return_value={"overall": "green", "collections": "green", "granules": "green"}),
     )
+    # Don't spawn real id-range scan threads.
+    monkeypatch.setattr("app.routers.reindex.start_id_range_scan", MagicMock())
 
     mock_db = MagicMock()
     mock_db.stream_concept_ids_by_type.return_value = []
@@ -244,26 +246,10 @@ class TestGranuleJobStatusTransitions:
         r = client.post("/reindexer/reindex/granules/provider/lowercase-prov")
         assert r.status_code == 400
 
-    def test_invalid_provider_id_no_db_call(self, client):
+    def test_invalid_provider_id_starts_no_scan(self, client):
         import app.routers.reindex as _r
         client.post("/reindexer/reindex/granules/provider/bad.provider!")
-        _r.db_client.get_collection_ids_for_provider.assert_not_called()
-
-    def test_reindex_provider_granules_marks_dispatching(self, client):
-        import app.routers.reindex as _r
-        _r.db_client.get_collection_ids_for_provider.return_value = []
-        r = client.post("/reindexer/reindex/granules/provider/TESTPROV")
-        assert r.status_code == 202
-        statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
-        assert "dispatching" in statuses
-
-    def test_reindex_provider_granules_does_not_mark_completed(self, client):
-        import app.routers.reindex as _r
-        _r.db_client.get_collection_ids_for_provider.return_value = []
-        r = client.post("/reindexer/reindex/granules/provider/TESTPROV")
-        assert r.status_code == 202
-        statuses = [c.args[1] for c in _r.job_store.mark_job.call_args_list]
-        assert "completed" not in statuses
+        _r.start_id_range_scan.assert_not_called()
 
     def test_reindex_collection_granules_marks_dispatching(self, client):
         import app.routers.reindex as _r
@@ -285,12 +271,6 @@ class TestGranuleJobStatusTransitions:
         _r.job_store.update_progress.assert_called_once_with(
             _r.job_store.create_job.call_args.args[0], work_items_delta=1
         )
-
-    def test_empty_provider_calls_try_complete_job_after_dispatching(self, client):
-        import app.routers.reindex as _r
-        _r.db_client.get_collection_ids_for_provider.return_value = []
-        client.post("/reindexer/reindex/granules/provider/EMPTYPROV")
-        _r.job_store.try_complete_job.assert_called_once()
 
     def test_concept_type_reindex_still_marks_completed(self, client):
         import app.routers.reindex as _r
@@ -797,7 +777,7 @@ class TestListJobsEndpoint:
 
 class TestSnapshotBeforeTimestamp:
     """When no explicit before param is given, granule endpoints snapshot now as
-    the implicit before bound to stabilise offset-based Oracle pagination."""
+    the implicit before bound, so a long-running job's window doesn't move."""
 
     _ISO_RE = __import__("re").compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 
@@ -837,16 +817,6 @@ class TestSnapshotBeforeTimestamp:
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
 
-    def test_by_provider_before_forwarded_to_enqueue(self, client):
-        """before snapshot must be passed to each enqueue_collection_item call in _enqueue_provider."""
-        import app.routers.reindex as _r
-        _r.db_client.get_collection_ids_for_provider.return_value = ["C1-PROV", "C2-PROV"]
-        client.post("/reindexer/reindex/granules/provider/TESTPROV")
-        # Both collections enqueued — check the before on the last call
-        kw = _r.enqueue_collection_item.call_args[1]
-        assert kw.get("before") is not None
-        assert self._ISO_RE.match(kw["before"])
-
     def test_concept_type_reindex_sets_before_in_job(self, client):
         import app.routers.reindex as _r
         _r.db_client.stream_concept_ids_by_type.return_value = []
@@ -862,6 +832,69 @@ class TestSnapshotBeforeTimestamp:
         kw = _r.db_client.stream_concept_ids_by_type.call_args[1]
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
+
+
+# ---------------------------------------------------------------------------
+# POST /reindex/granules/collection/{id} — collection-queue dispatch
+# ---------------------------------------------------------------------------
+
+class TestCollectionDispatchUsesCollectionQueue:
+
+    def test_enqueues_one_work_item_for_the_job(self, client):
+        import app.routers.reindex as _r
+        client.post("/reindexer/reindex/granules/collection/C1-PROV")
+        kw = _r.enqueue_collection_item.call_args.kwargs
+        _r.enqueue_collection_item.assert_called_once()
+        assert kw["collection_id"] == "C1-PROV"
+        assert kw["request_id"] == _r.job_store.create_job.call_args.args[0]
+        _r.start_id_range_scan.assert_not_called()
+
+    def test_enqueue_failure_marks_job_failed(self, client):
+        import app.routers.reindex as _r
+        _r.enqueue_collection_item.side_effect = RuntimeError("SQS down")
+        r = client.post("/reindexer/reindex/granules/collection/C1-PROV")
+        assert r.status_code == 500
+        _r.job_store.mark_job.assert_called_once_with(
+            _r.job_store.create_job.call_args.args[0], "failed"
+        )
+
+
+# ---------------------------------------------------------------------------
+# POST /reindex/granules/provider/{id} — id-range dispatch
+# ---------------------------------------------------------------------------
+
+class TestProviderDispatchUsesIdRangeScan:
+
+    def test_marks_dispatching_then_starts_scan(self, client):
+        """The status write must happen-before the scan thread exists, or it can
+        overwrite the scan's own interrupted write."""
+        import app.routers.reindex as _r
+        _r.job_store.mark_job.return_value = True
+        order = MagicMock()
+        order.attach_mock(_r.job_store.mark_job, "mark_job")
+        order.attach_mock(_r.start_id_range_scan, "scan")
+        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        request_id, _ = _r.job_store.create_job.call_args.args
+        before = _r.job_store.create_job.call_args.kwargs["before"]
+        assert order.mock_calls == [
+            call.mark_job(request_id, "dispatching"),
+            call.scan(request_id=request_id, provider_id="BIGPROV", after=None, before=before),
+        ]
+        _r.db_client.get_collection_ids_for_provider.assert_not_called()
+        _r.enqueue_collection_item.assert_not_called()
+        _r.job_store.try_complete_job.assert_not_called()
+
+    def test_job_cancelled_before_dispatching_starts_no_scan(self, client):
+        import app.routers.reindex as _r
+        _r.job_store.mark_job.return_value = False
+        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        _r.start_id_range_scan.assert_not_called()
+
+    def test_scan_start_failure_marks_job_failed(self, client):
+        import app.routers.reindex as _r
+        _r.start_id_range_scan.side_effect = RuntimeError("can't start new thread")
+        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        assert _r.job_store.mark_job.call_args_list[-1].args[1] == "failed"
 
 
 # ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 import logging
 
 from app.config import config
+from app.throttler.id_range_scanner import start_id_range_scan
 
 logger = logging.getLogger(__name__)
 
@@ -59,22 +60,15 @@ def resume_stalled_jobs(db_client, job_store, enqueue_fn) -> None:
 
             elif concept_type == "granules-by-provider":
                 provider_id = job.get("provider_id")
-                providers_enqueued = set(job.get("providers_enqueued") or [])
-                if provider_id and provider_id not in providers_enqueued:
-                    collection_ids = db_client.get_collection_ids_for_provider(provider_id)
-                    for cid in collection_ids:
-                        enqueue_fn(
-                            request_id=job_id,
-                            collection_id=cid,
-                            after=job.get("after"),
-                            before=job.get("before"),
-                        )
-                    job_store.update_progress(
-                        job_id,
-                        provider_enqueued=provider_id,
-                        work_items_delta=len(collection_ids),
+                # Before spawning, so this can't overwrite the scan's own interrupted status.
+                if job_store.mark_job(job_id, "dispatching") and provider_id:
+                    start_id_range_scan(
+                        request_id=job_id,
+                        provider_id=provider_id,
+                        after=job.get("after"),
+                        before=job.get("before"),
+                        start_id=job.get("next_start_id") or 0,
                     )
-                job_store.mark_job(job_id, "dispatching")
 
             elif concept_type == "granules-by-collection":
                 collection_id = job.get("collection_id")

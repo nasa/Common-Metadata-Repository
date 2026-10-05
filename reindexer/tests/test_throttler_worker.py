@@ -60,8 +60,14 @@ def _sqs_msg(item):
 
 
 def _make_chunks(*chunks):
-    """Configure stream_granule_ids to yield the given chunks."""
-    _worker_mod.db_client.stream_granule_ids.return_value = iter(chunks)
+    """Configure stream_granule_ids_paged to yield one page per chunk, with
+    page_end = the chunk's last concept_id."""
+    _make_pages(*[(chunk[-1][0], chunk) for chunk in chunks])
+
+
+def _make_pages(*pages):
+    """Configure stream_granule_ids_paged to yield the given (page_end, chunk) pages."""
+    _worker_mod.db_client.stream_granule_ids_paged.return_value = iter(pages)
 
 
 # ---------------------------------------------------------------------------
@@ -125,13 +131,24 @@ class TestHandleCollection:
         worker._handle_collection(_collection())
         assert _worker_mod.checkpoint_store.write_collection_checkpoint.call_count == 2
 
-    def test_checkpoint_last_concept_id_is_last_in_chunk(self, worker):
-        chunk = [("G1-PROV", 1), ("G5-PROV", 5)]
-        _make_chunks(chunk)
+    def test_checkpoint_cursor_is_page_end_not_last_dispatched_row(self, worker):
+        """The date filter can drop a page's tail; resume must not re-scan it."""
+        _make_pages(("G9-PROV", [("G1-PROV", 1), ("G5-PROV", 5)]))
         worker._handle_collection(_collection(request_id="req-1", collection_id="C1-PROV"))
         args = _worker_mod.checkpoint_store.write_collection_checkpoint.call_args.args
         # signature: (job_id, collection_id, last_concept_id, granules_dispatched, chunks_dispatched)
-        assert args[2] == "G5-PROV"
+        assert args[2] == "G9-PROV"
+
+    def test_empty_page_checkpoints_without_publishing(self, worker):
+        _make_pages(("G5-PROV", []), ("G9-PROV", [("G7-PROV", 1)]))
+        worker._handle_collection(_collection(request_id="req-1", collection_id="C1-PROV"))
+        ckpts = _worker_mod.checkpoint_store.write_collection_checkpoint.call_args_list
+        assert [c.args for c in ckpts] == [
+            ("req-1", "C1-PROV", "G5-PROV", 0, 1),
+            ("req-1", "C1-PROV", "G9-PROV", 1, 2),
+        ]
+        _worker_mod.publish_concept_updates_batch.assert_called_once_with([("G7-PROV", 1)], "req-1")
+        _worker_mod.job_store.update_dispatched.assert_called_once_with("req-1", 1)
 
     def test_checkpoint_deleted_on_full_completion(self, worker):
         _make_chunks([("G1-PROV", 1)])
@@ -176,20 +193,20 @@ class TestHandleCollection:
         from app.config import config
         _make_chunks()
         worker._handle_collection(_collection())
-        kw = _worker_mod.db_client.stream_granule_ids.call_args.kwargs
+        kw = _worker_mod.db_client.stream_granule_ids_paged.call_args.kwargs
         assert kw.get("chunk_size") == config.stream_chunk_size
 
     def test_after_and_before_forwarded_to_db(self, worker):
         _make_chunks()
         worker._handle_collection(_collection(after="2024-01-01T00:00:00Z", before="2024-06-30T23:59:59Z"))
-        kw = _worker_mod.db_client.stream_granule_ids.call_args.kwargs
+        kw = _worker_mod.db_client.stream_granule_ids_paged.call_args.kwargs
         assert kw.get("after") == "2024-01-01T00:00:00Z"
         assert kw.get("before") == "2024-06-30T23:59:59Z"
 
     def test_collection_id_forwarded_to_db(self, worker):
         _make_chunks()
         worker._handle_collection(_collection(collection_id="C9999-TESTPROV"))
-        kw = _worker_mod.db_client.stream_granule_ids.call_args
+        kw = _worker_mod.db_client.stream_granule_ids_paged.call_args
         assert kw.args[0] == "C9999-TESTPROV"
 
     # ------------------------------------------------------------------
@@ -204,14 +221,14 @@ class TestHandleCollection:
         }
         _make_chunks([("G51-PROV", 51)])
         worker._handle_collection(_collection())
-        kw = _worker_mod.db_client.stream_granule_ids.call_args.kwargs
+        kw = _worker_mod.db_client.stream_granule_ids_paged.call_args.kwargs
         assert kw.get("start_after_concept_id") == "G50-PROV"
 
     def test_no_checkpoint_passes_none_start_after(self, worker):
         _worker_mod.checkpoint_store.get_collection_checkpoint.return_value = None
         _make_chunks()
         worker._handle_collection(_collection())
-        kw = _worker_mod.db_client.stream_granule_ids.call_args.kwargs
+        kw = _worker_mod.db_client.stream_granule_ids_paged.call_args.kwargs
         assert kw.get("start_after_concept_id") is None
 
     def test_resume_adds_to_checkpoint_granule_count(self, worker):
@@ -231,30 +248,19 @@ class TestHandleCollection:
     # Interrupt / cancel mid-stream
     # ------------------------------------------------------------------
 
-    def test_stop_event_mid_stream_raises_collection_interrupted(self, worker):
+    def test_stop_during_dispatch_raises_collection_interrupted(self, worker):
         from app.throttler.worker import _CollectionInterrupted
         _make_chunks([("G1-PROV", 1)])
-        worker._token_bucket.consume.return_value = False
-        worker._stop_event.set()
-        with pytest.raises(_CollectionInterrupted):
-            worker._handle_collection(_collection())
 
-    def test_stop_event_mid_stream_does_not_delete_checkpoint(self, worker):
-        from app.throttler.worker import _CollectionInterrupted
-        _make_chunks([("G1-PROV", 1)])
-        worker._token_bucket.consume.return_value = False
-        worker._stop_event.set()
+        def _stop_and_fail(*args, **kwargs):
+            worker._stop_event.set()
+            return False
+
+        worker._token_bucket.consume.side_effect = _stop_and_fail
         with pytest.raises(_CollectionInterrupted):
             worker._handle_collection(_collection())
+        _worker_mod.checkpoint_store.write_collection_checkpoint.assert_not_called()
         _worker_mod.checkpoint_store.delete_collection_checkpoint.assert_not_called()
-
-    def test_stop_event_mid_stream_does_not_try_complete(self, worker):
-        from app.throttler.worker import _CollectionInterrupted
-        _make_chunks([("G1-PROV", 1)])
-        worker._token_bucket.consume.return_value = False
-        worker._stop_event.set()
-        with pytest.raises(_CollectionInterrupted):
-            worker._handle_collection(_collection())
         _worker_mod.job_store.try_complete_job.assert_not_called()
 
     def test_cancel_fn_fires_returns_normally_no_raise(self, worker):
@@ -264,21 +270,91 @@ class TestHandleCollection:
         # stop_event NOT set → cancel_fn path
         worker._handle_collection(_collection())  # should not raise
 
-    def test_cancellation_check_before_consume_skips_token_wait(self, worker):
-        """is_job_cancelled checked before consume() so a cancelled job skips the token wait."""
+    def test_cancelled_job_skips_token_wait_and_publish(self, worker):
         cache = MagicMock()
         cache.is_cancelled.return_value = True
         worker.set_cancel_cache(cache)
         _make_chunks([("G1-PROV", 1)])
         worker._handle_collection(_collection())
         worker._token_bucket.consume.assert_not_called()
+        _worker_mod.publish_concept_updates_batch.assert_not_called()
 
-    def test_cancel_mid_stream_does_not_publish(self, worker):
+    def test_cancel_observed_on_empty_page(self, worker):
         cache = MagicMock()
-        cache.is_cancelled.return_value = True
+        cache.is_cancelled.side_effect = [False, True]
         worker.set_cancel_cache(cache)
-        _make_chunks([("G1-PROV", 1)])
+        _make_pages(("G5-PROV", []), ("G9-PROV", []), ("G12-PROV", []))
         worker._handle_collection(_collection())
+        assert _worker_mod.checkpoint_store.write_collection_checkpoint.call_count == 1
+        _worker_mod.job_store.try_complete_job.assert_not_called()
+
+    def test_stop_event_on_empty_page_raises_collection_interrupted(self, worker):
+        from app.throttler.worker import _CollectionInterrupted
+        _make_pages(("G5-PROV", []))
+        worker._stop_event.set()
+        with pytest.raises(_CollectionInterrupted):
+            worker._handle_collection(_collection())
+        _worker_mod.checkpoint_store.write_collection_checkpoint.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # queue_wait_seconds on collection_streaming_start
+    # ------------------------------------------------------------------
+
+    def _start_event(self, logger):
+        return next(
+            c.args[0] for c in logger.info.call_args_list
+            if c.args[0].get("event") == "collection_streaming_start"
+        )
+
+    def test_queue_wait_computed_from_sqs_sent_timestamp(self, worker, monkeypatch):
+        import time
+        logger = MagicMock()
+        monkeypatch.setattr(_worker_mod, "logger", logger)
+        _make_chunks()
+        msg = {**_sqs_msg(_collection()), "Attributes": {"SentTimestamp": str(int((time.time() - 90) * 1000))}}
+        worker._process(msg, _TEST_QUEUE)
+        assert 89 <= self._start_event(logger)["queue_wait_seconds"] <= 95
+
+    def test_resumed_collection_omits_queue_wait(self, worker, monkeypatch):
+        logger = MagicMock()
+        monkeypatch.setattr(_worker_mod, "logger", logger)
+        _worker_mod.checkpoint_store.get_collection_checkpoint.return_value = {
+            "last_concept_id": "G50-PROV", "granules_dispatched": 50, "chunks_dispatched": 1,
+        }
+        _make_chunks()
+        worker._handle_collection(_collection(), queue_wait_seconds=5.0)
+        assert "queue_wait_seconds" not in self._start_event(logger)
+
+
+# ---------------------------------------------------------------------------
+# dispatch_in_batches
+# ---------------------------------------------------------------------------
+
+class TestDispatchInBatches:
+
+    def test_slices_by_current_rate_with_shared_stop_and_cancel(self, worker):
+        worker._token_bucket.current_rate = 2
+        records = [("G%d-P" % i, i) for i in range(5)]
+        progress = []
+        assert worker.dispatch_in_batches(records, "req-1", on_progress=progress.append) is True
+        calls = _worker_mod.publish_concept_updates_batch.call_args_list
+        assert [len(c.args[0]) for c in calls] == [2, 2, 1]
+        assert progress == [2, 2, 1]
+        assert worker._token_bucket.consume.call_count == 3
+        kwargs = worker._token_bucket.consume.call_args.kwargs
+        assert kwargs["stop_event"] is worker._stop_event
+        worker.set_cancel_cache(MagicMock(**{"is_cancelled.return_value": True}))
+        assert kwargs["cancel_fn"]() is True
+
+    def test_stops_and_returns_false_when_consume_fails(self, worker):
+        worker._token_bucket.consume.return_value = False
+        progress = MagicMock()
+        assert worker.dispatch_in_batches([("G1-P", 1)], "req-1", on_progress=progress) is False
+        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        progress.assert_not_called()
+
+    def test_empty_records_returns_true_without_publishing(self, worker):
+        assert worker.dispatch_in_batches([], "req-1") is True
         _worker_mod.publish_concept_updates_batch.assert_not_called()
 
 
@@ -294,7 +370,7 @@ class TestProcess:
         _worker_mod.delete_message.assert_called_once()
 
     def test_processing_error_does_not_delete(self, worker):
-        _worker_mod.db_client.stream_granule_ids.side_effect = RuntimeError("db down")
+        _worker_mod.db_client.stream_granule_ids_paged.side_effect = RuntimeError("db down")
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         _worker_mod.delete_message.assert_not_called()
 
@@ -311,7 +387,7 @@ class TestProcess:
     def test_collection_item_routes_to_handle_collection(self, worker):
         _make_chunks()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
-        _worker_mod.db_client.stream_granule_ids.assert_called_once()
+        _worker_mod.db_client.stream_granule_ids_paged.assert_called_once()
 
     def test_delete_uses_correct_receipt_handle(self, worker):
         _make_chunks()
@@ -328,7 +404,7 @@ class TestProcess:
     def test_collection_interrupted_does_not_delete_message(self, worker):
         """When _CollectionInterrupted is raised, SQS message is kept for re-delivery."""
         from app.throttler.worker import _CollectionInterrupted
-        _worker_mod.db_client.stream_granule_ids.return_value = iter([[("G1-PROV", 1)]])
+        _make_chunks([("G1-PROV", 1)])
         worker._token_bucket.consume.return_value = False
         worker._stop_event.set()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
@@ -459,7 +535,7 @@ class TestJobCompletionDetection:
             captured.append(worker.current_job_id)
             return iter([])
 
-        _worker_mod.db_client.stream_granule_ids.side_effect = _capture
+        _worker_mod.db_client.stream_granule_ids_paged.side_effect = _capture
         worker._process(_sqs_msg(_collection(request_id="req-capture")), _TEST_QUEUE)
         assert captured == ["req-capture"]
 
@@ -510,19 +586,19 @@ class TestCancellation:
         _make_chunks()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
         _worker_mod.delete_message.assert_called_once()
-        _worker_mod.db_client.stream_granule_ids.assert_not_called()
+        _worker_mod.db_client.stream_granule_ids_paged.assert_not_called()
 
     def test_non_cancelled_item_processes_normally(self, worker):
         self._with_cancel_cache(worker, cancelled=False)
         _make_chunks()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
-        _worker_mod.db_client.stream_granule_ids.assert_called_once()
+        _worker_mod.db_client.stream_granule_ids_paged.assert_called_once()
 
     def test_no_cancel_cache_processes_normally(self, worker):
         # _cancel_cache is None by default — should not crash
         _make_chunks()
         worker._process(_sqs_msg(_collection()), _TEST_QUEUE)
-        _worker_mod.db_client.stream_granule_ids.assert_called_once()
+        _worker_mod.db_client.stream_granule_ids_paged.assert_called_once()
 
     def test_granule_streaming_dispatched_count_reported_to_job_store(self, worker):
         _make_chunks([("G1-P", 1), ("G2-P", 2)])

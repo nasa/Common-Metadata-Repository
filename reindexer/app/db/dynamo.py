@@ -208,12 +208,22 @@ class JobStore:
             ExpressionAttributeValues={":n": count, ":ts": _now_iso()},
         )
 
-    def mark_job(self, job_id: str, status: str) -> bool:
-        """Set job status.  Returns False (no-op) if the job is already in a terminal status.
+    def _update_cursor_field(self, job_id: str, field: str, value) -> None:
+        """Keeps raw field names out of call sites; see update_id_range_progress."""
+        self._table().update_item(
+            Key={"job_id": job_id},
+            UpdateExpression=f"SET {field} = :v, last_heartbeat = :ts",
+            ExpressionAttributeValues={":v": value, ":ts": _now_iso()},
+        )
 
-        Terminal statuses (completed, failed, interrupted, cancelled) cannot be overwritten.
-        This prevents a background task — still running after the user cancelled a job — from
-        silently resurrecting it by calling mark_job('dispatching') or mark_job('completed').
+    def update_id_range_progress(self, job_id: str, next_start_id: int) -> None:
+        self._update_cursor_field(job_id, "next_start_id", next_start_id)
+
+    def mark_job(self, job_id: str, status: str) -> bool:
+        """Set job status.  Returns False (no-op) if the job is already completed/failed/cancelled.
+
+        That guard stops a background task still running after a cancel from
+        resurrecting the job. 'interrupted' isn't guarded; resume moves the job past it.
         """
         now = _now_iso()
         terminal = status in ("completed", "failed", "interrupted", "cancelled")
@@ -225,8 +235,7 @@ class JobStore:
                 Key={"job_id": job_id},
                 UpdateExpression=update_expr,
                 ConditionExpression=(
-                    "#st <> :completed AND #st <> :failed"
-                    " AND #st <> :cancelled AND #st <> :interrupted"
+                    "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
                 ),
                 ExpressionAttributeNames={"#st": "status"},
                 ExpressionAttributeValues={
@@ -235,7 +244,6 @@ class JobStore:
                     ":completed": "completed",
                     ":failed": "failed",
                     ":cancelled": "cancelled",
-                    ":interrupted": "interrupted",
                 },
             )
             logger.info({"event": "job_status_updated", "job_id": job_id, "status": status})
