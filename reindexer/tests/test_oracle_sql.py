@@ -520,8 +520,8 @@ class TestStreamGranuleIdsPaged:
         sql, bind = _last_execute(cur)
         assert "METADATA_DB.MYPROV_GRANULES" in sql
         assert "'C1-MYPROV'" in sql
-        assert "SELECT DISTINCT concept_id" in sql
-        assert "ORDER BY concept_id" in sql
+        assert "DISTINCT" not in sql  # would hash+sort the whole collection every page
+        assert "ORDER BY concept_id, revision_id" in sql  # *_PCR index order → stops at the page
         assert "FETCH FIRST 500 ROWS ONLY" in sql
         assert "REVISION_DATE" not in sql
         assert "start_after" not in sql
@@ -540,6 +540,7 @@ class TestStreamGranuleIdsPaged:
         agg_sql, agg_bind = cur.execute.call_args_list[1].args[:2]
         assert "'C1-PROV'" in agg_sql
         assert "concept_id <= :page_end" in agg_sql
+        assert "deleted IN (0, 1)" in agg_sql  # lets *_PDCR seek by concept_id range
         assert "GROUP BY concept_id" in agg_sql
         assert "HAVING MAX(deleted)" in agg_sql
         assert "2024-01-01T00:00:00 +00:00" in agg_sql
@@ -555,6 +556,19 @@ class TestStreamGranuleIdsPaged:
         assert "concept_id > :start_after" in agg_sql
         assert page_bind == {"start_after": "G0100-PROV"}
         assert agg_bind == {"start_after": "G0100-PROV", "page_end": "G0102-PROV"}
+
+    def test_page_ending_mid_concept_resumes_after_that_concept(self, oracle):
+        """The row limit can land partway through a concept's revisions; the
+        aggregation still covers all of them (concept_id <= page_end)."""
+        client, cur = oracle
+        cur.fetchall.side_effect = [
+            [("G1-PROV",), ("G1-PROV",)],  # page 1: full at chunk_size=2, both rows G1
+            [("G1-PROV", 3)],              # agg 1
+            [],                            # page 2: empty → stop
+        ]
+        result = list(client.stream_granule_ids_paged("C1-PROV", chunk_size=2))
+        assert result == [("G1-PROV", [("G1-PROV", 3)])]
+        assert cur.execute.call_args_list[2].args[1] == {"start_after": "G1-PROV"}
 
     def test_yields_every_page_including_filtered_ones(self, oracle):
         """A fully date-filtered page still yields (page_end, []) so the caller can
