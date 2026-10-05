@@ -202,8 +202,9 @@
           (true? (:completed task-status-body))
           (let [final-response (or (:response task-status-body)
                                    {:deleted 0, :total 0, :timed_out false, :failures []})
-                failures (:failures final-response)
-                conflicts (:version_conflicts final-response)]
+                ;; Extract with defaults to prevent NullPointerExceptions
+                failures (get final-response :failures [])
+                conflicts (get final-response :version_conflicts 0)]
 
             (cond
               (not-empty failures)
