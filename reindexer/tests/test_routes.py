@@ -627,6 +627,28 @@ class TestJobEnrichment:
         })
         assert result["dispatch_rate_per_minute"] == 6000
 
+    def test_completed_job_measured_to_completed_at_so_rate_does_not_decay(self):
+        from datetime import datetime, timedelta, timezone
+        started = datetime.now(timezone.utc) - timedelta(hours=2)
+        result = self._enrich({
+            "job_id": "j1", "status": "completed",
+            "started_at": started.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "completed_at": (started + timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "total_dispatched": 6000,
+        })
+        assert result["elapsed_seconds"] == 60
+        assert result["dispatch_rate_per_minute"] == 6000
+
+    def test_resumed_job_ignores_completed_at_left_by_its_interruption(self):
+        from datetime import datetime, timedelta, timezone
+        started = datetime.now(timezone.utc) - timedelta(seconds=120)
+        result = self._enrich({
+            "job_id": "j1", "status": "dispatching",
+            "started_at": started.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "completed_at": (started + timedelta(seconds=30)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        })
+        assert 118 <= result["elapsed_seconds"] <= 122
+
     def test_dispatch_rate_absent_when_nothing_dispatched(self):
         from datetime import datetime, timedelta, timezone
         result = self._enrich({
