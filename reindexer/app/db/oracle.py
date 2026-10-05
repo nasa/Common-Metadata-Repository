@@ -86,27 +86,32 @@ WHERE id >= :start_id
 # Per-collection granule scan
 # ---------------------------------------------------------------------------
 
-# Same two-query shape as _stream_concept_ids below: an index-only concept_id
-# boundary scan, then an aggregation bounded to that batch, with date/tombstone
-# filtering applied only there. Paging and aggregating by the SAME key
-# (concept_id) is load-bearing — a concept's revision history can never split
-# across a page boundary, so the HAVING tombstone check always sees it whole.
+# Same two-query shape as _stream_concept_ids below: an index-only scan for the
+# page boundary, then an aggregation bounded to that page, which alone applies
+# the date/tombstone filters. Paging and aggregating by the SAME key (concept_id)
+# is load-bearing — concept_id <= page_end takes every revision of the boundary
+# concept, so the HAVING tombstone check always sees a concept's history whole.
 # collection_id is a literal, not bound — same reasoning as _AFTER_CLAUSE.
 
 _COLLECTION_KEYSET_CLAUSE = "AND concept_id > :start_after"
 
+# No DISTINCT, and ordered exactly like *_GRANULES_PCR, so Oracle stops after
+# page_size index entries instead of sorting the whole collection.
 _COLLECTION_PAGE_IDS_SQL = """\
-SELECT DISTINCT concept_id
+SELECT concept_id
 FROM METADATA_DB.{table}
 WHERE parent_collection_id = '{collection_id}'
 {keyset_clause}
-ORDER BY concept_id
+ORDER BY concept_id, revision_id
 FETCH FIRST {page_size} ROWS ONLY"""
 
+# deleted IN (0, 1) is always true, but it lets Oracle seek *_GRANULES_PDCR
+# (parent_collection_id, deleted, concept_id, ...) by the page's concept_id range.
 _COLLECTION_CHUNK_SQL = """\
 SELECT concept_id, MAX(revision_id) AS revision_id
 FROM METADATA_DB.{table}
 WHERE parent_collection_id = '{collection_id}'
+  AND deleted IN (0, 1)
   AND concept_id <= :page_end
 {keyset_clause}
 {after_clause}
@@ -354,13 +359,13 @@ class OracleClient:
             )
             with self._acquire_cursor() as cur:
                 cur.execute(page_sql, keyset_bind)
-                page_ids = cur.fetchall()
+                page_rows = cur.fetchall()
 
-            if not page_ids:
+            if not page_rows:
                 break
 
-            page_end = page_ids[-1][0]
-            is_last_page = len(page_ids) < page_size
+            page_end = page_rows[-1][0]
+            is_last_page = len(page_rows) < page_size
 
             chunk_sql = _COLLECTION_CHUNK_SQL.format(
                 table=table, collection_id=collection_id, keyset_clause=keyset_clause, **date_clauses,
