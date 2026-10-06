@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as http]
    [clojure.string :as string]
+   [cmr.common.log :refer [debug info error warn]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-util :as es-util]
@@ -114,26 +115,173 @@
                            :accept :json
                            :throw-exceptions false}))))))
 
-(defn delete-by-query
-  "Performs a delete-by-query operation over one or more indexes and types.
-  Multiple indexes and types can be specified by passing in a seq of strings,
-  otherwise specifying a string suffices."
-  [conn index _mapping-type query]
-  (let [admin-token (es-config/elastic-admin-token)
-        url (es-util/url-with-path conn index "_delete_by_query")
-        response (http/post url
+(defn- has-scroll-context-error?
+  "Checks if the response contains a 'too many scroll contexts' error.
+   Accepts either a raw JSON string or an already-parsed Clojure map."
+  [response-body]
+  (try
+    (let [parsed (if (string? response-body)
+                   (json/parse-string response-body true)
+                   response-body)]
+      (string/includes? (str (:error parsed)) "too many scroll contexts"))
+    (catch Exception _
+      false)))
+
+(defn- attempt-to-start-task
+  "Makes a single attempt to start the delete-by-query task.
+  Throws an exception on any failure, returns a task-id on success."
+  [conn index query]
+  (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
+        response (http/post start-task-url
                             (merge (:http-opts conn)
-                                   {:headers {"Authorization" admin-token
+                                   {:headers {"Authorization" (es-config/elastic-admin-token)
                                               "Confirm-delete-action" "true"
                                               :client-id t-config/cmr-client-id}
                                     :content-type :json
+                                    :query-params {:wait_for_completion false
+                                                   :slices 1
+                                                   :scroll_size 500
+                                                   :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
-        status (:status response)]
-    (if (#{200 201} status)
-      (es-util/decode-response response)
-      (throw (ex-info (str "Delete by query failed with status " status)
-                      {:status status :body (:body response)})))))
+        _ (debug "Delete-By-Query: Response for starting delete query task is " response)
+        status (:status response)
+        body (:body response)]
+
+    (when (has-scroll-context-error? body)
+      (throw (ex-info "Delete-By-Query: Scroll context error on task start" {:type :scroll-context-error :body body})))
+
+    (when-not (#{200 201} status)
+      (throw (ex-info "Delete-By-Query: Failed to start delete-by-query task" {:status status :body body})))
+
+    (-> response es-util/decode-response :task)))
+
+(defn- cancel-task!
+  "Attempts to explicitly cancel a running Elasticsearch task."
+  [conn task-id]
+  (try
+    (debug (str "Delete-By-Query: Sending cancellation request for task " task-id))
+    (let [cancel-url (es-util/url-with-path conn (str "_tasks/" task-id "/_cancel"))]
+      (http/post cancel-url
+                 (merge (:http-opts conn)
+                        {:headers {"Authorization" (es-config/elastic-admin-token)
+                                   :client-id t-config/cmr-client-id}
+                         :throw-exceptions false})))
+    (debug (str "Delete-By-Query: Successfully sent cancellation command for task " task-id))
+    (catch Exception e
+      (warn (str "Delete-By-Query: Failed to cancel task " task-id ". It may keep running in the background. Exception: " (ex-message e))))))
+
+(defn- poll-task-for-completion
+  "Polls a given task-id until it completes, fails, or times out."
+  [conn task-id]
+  (let [polling-interval-ms 5000
+        ;; Hard limit set to 4.5 minutes to safely fit inside the 5-minute SQS window
+        max-wait-ms (* 4.5 60 1000)
+        start-time (System/currentTimeMillis)]
+
+    (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
+    (loop []
+      (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
+            task-status-response (http/get check-task-url
+                                           (merge (:http-opts conn)
+                                                  {:headers {"Authorization" (es-config/elastic-admin-token)
+                                                             "Confirm-delete-action" "true"
+                                                             :client-id t-config/cmr-client-id}
+                                                   :throw-exceptions false}))
+            task-status-body (es-util/decode-response task-status-response)]
+        (cond
+          ;; Check for root errors (Task failed to even start correctly)
+          (some? (:error task-status-body))
+          (if (has-scroll-context-error? task-status-body)
+            (throw (ex-info "Delete-By-Query: Scroll context error during task execution"
+                            {:type :scroll-context-error :task-id task-id :error-details (:error task-status-body)}))
+            (throw (ex-info (str "Task " task-id " failed with an error.")
+                            {:task-id task-id :error-details (:error task-status-body)})))
+
+          ;; Check for completion AND verify there are no partial shard failures
+          (true? (:completed task-status-body))
+          (let [final-response (or (:response task-status-body)
+                                   {:deleted 0, :total 0, :timed_out false, :failures []})
+                ;; Extract with defaults to prevent NullPointerExceptions
+                failures (get final-response :failures [])
+                conflicts (get final-response :version_conflicts 0)]
+
+            (cond
+              (not-empty failures)
+              ;; Task finished, but had failures
+              (if (has-scroll-context-error? {:error failures})
+                (throw (ex-info "Delete-By-Query: Scroll context error during task execution (Partial Shard Failure)"
+                                {:type :scroll-context-error :task-id task-id :failures failures}))
+                (throw (ex-info (str "Task " task-id " completed but had shard failures.")
+                                {:task-id task-id :failures failures})))
+
+              ;; Task ran into version conflicts
+              (> conflicts 0)
+              (do
+                (warn (format "Delete-By-Query: Task %s finished, but skipped %d documents due to version conflicts." task-id conflicts))
+                {:status 200
+                 :body final-response})
+
+              ;; True success! No failures, no conflicts.
+              :else
+              (do
+                (info (format "Delete-By-Query: Task %s completed successfully. Final result: %s"
+                              task-id final-response))
+                {:status 200
+                 :body final-response})))
+
+          ;; Check for timeout
+          (> (- (System/currentTimeMillis) start-time) max-wait-ms)
+          (do
+            (warn (format "Delete-By-Query: Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
+            ;; End the task on the cluster to prevent overlapping tasks when SQS retries this failed msg
+            (cancel-task! conn task-id)
+            ;; Throw the error so the queue broker handles the retry
+            (throw (ex-info (str "Delete-By-Query: Timed out waiting for task " task-id) {:task-id task-id})))
+
+          ;; Continue polling
+          :else
+          (do
+            (let [status (get-in task-status-body [:task :status])]
+              (info (format "Delete-By-Query: Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
+            (Thread/sleep polling-interval-ms)
+            (recur)))))))
+
+(defn delete-by-query
+  "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts."
+  [conn index _mapping-type query]
+  (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
+
+  (loop [attempt 1]
+    (let [result (try
+                   (let [task-id (attempt-to-start-task conn index query)]
+                     [:ok (poll-task-for-completion conn task-id)])
+                   (catch Exception e
+                     [:error e]))]
+
+      ;; Attempt Retries if failed due to Elastic's scroll context errors
+      (if (= :ok (first result))
+        (second result)
+        (let [e (second result)
+              ex-data-map (ex-data e)]
+
+          (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
+            (do
+              ;; Log the exact ex-info message and data that triggered the retry
+              (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
+                            (ex-message e)
+                            (pr-str ex-data-map)))
+              (info (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
+              (Thread/sleep 1000)
+              (recur (inc attempt)))
+
+            (do
+              ;; Log the exact ex-info message and data right before permanently failing
+              (error (format "Delete-By-Query: Task permanently failed or max retries reached. Exception: %s | Data: %s"
+                             (ex-message e)
+                             (pr-str ex-data-map)))
+              ;; Pass the exception up the chain
+              (throw e))))))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
