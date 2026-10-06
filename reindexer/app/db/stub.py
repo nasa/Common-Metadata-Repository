@@ -46,7 +46,6 @@ class StubOracleClient:
         provider_id: str,
         min_id: int,
         after: Optional[str] = None,
-        before: Optional[str] = None,
     ) -> Optional[int]:
         """Fake provider-wide id space: a dense range [0, total) with no gaps —
         good enough to exercise the id-range dispatch strategy locally."""

@@ -80,7 +80,7 @@ class TestRunLoop:
         db, job_store, throttler = deps
         db.find_next_granule_id_in_range.return_value = None
         _run("req-1", "PROV", None, None, start_id)
-        db.find_next_granule_id_in_range.assert_called_once_with("PROV", start_id, None, None)
+        db.find_next_granule_id_in_range.assert_called_once_with("PROV", start_id, None)
         db.fetch_granule_id_range_chunk.assert_not_called()
         job_store.mark_job.assert_called_once_with("req-1", "completed")
 
@@ -108,7 +108,7 @@ class TestRunLoop:
         db.fetch_granule_id_range_chunk.return_value = []
         _run("req-1", "PROV", _AFTER, _BEFORE, 0)
         assert [c.args for c in db.find_next_granule_id_in_range.call_args_list] == [
-            ("PROV", 0, _AFTER, _BEFORE), ("PROV", 1500, _AFTER, _BEFORE), ("PROV", 3000, _AFTER, _BEFORE),
+            ("PROV", 0, _AFTER), ("PROV", 1500, _AFTER), ("PROV", 3000, _AFTER),
         ]
         assert db.fetch_granule_id_range_chunk.call_args_list[0].args == ("PROV", 500, 1500, _AFTER, _BEFORE)
         assert job_store.update_id_range_progress.call_args_list == [call("req-1", 1500), call("req-1", 3000)]
