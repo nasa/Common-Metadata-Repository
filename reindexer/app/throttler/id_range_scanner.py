@@ -42,20 +42,20 @@ def _acquire_scan_slot(request_id: str) -> bool:
     return True
 
 
-def _dedup_latest_revision(rows: list[tuple[str, int]]) -> list[tuple[str, int]]:
-    """Keep only the max revision_id per concept_id within one fetched chunk.
+def _dedup_latest_revision(rows: list[tuple]) -> list[tuple]:
+    """Keep only the max-revision row per concept_id within one fetched chunk.
 
-    fetch_granule_id_range_chunk filters deleted=0 per-row, not aggregated per
-    concept_id, so the same concept can appear more than once in a chunk if it was
+    fetch_granule_id_range_chunk returns rows, not aggregated per concept_id,
+    so the same concept can appear more than once in a chunk if it was
     revised more than once inside this id window. This doesn't catch revisions far
     apart in id-space, but kills the common case of revisions clustered close
     together, at zero extra DB cost.
     """
-    latest: dict[str, int] = {}
-    for concept_id, revision_id in rows:
-        if revision_id > latest.get(concept_id, -1):
-            latest[concept_id] = revision_id
-    return list(latest.items())
+    latest: dict[str, tuple] = {}
+    for row in rows:
+        if row[0] not in latest or row[1] > latest[row[0]][1]:
+            latest[row[0]] = row
+    return list(latest.values())
 
 
 def _wait_for_green_or_signal(request_id: str) -> bool:
@@ -83,6 +83,7 @@ def _run(
     after: Optional[str],
     before: Optional[str],
     start_id: int,
+    include_deleted: bool = False,
 ) -> None:
     acquired = False
     try:
@@ -92,8 +93,9 @@ def _run(
             return
 
         # Probe only at the start and after an empty window; after a window with
-        # data, just advance by one window. With `after` set, the probe can't use the
-        # PK min/max path and reads every matching row.
+        # data, just advance by one window. With `after` or a small provider's
+        # provider_id filter, the probe can't use the PK min/max path and reads every
+        # matching row.
         next_id: Optional[int] = None  # None → probe from probe_from first
         probe_from = start_id
         while _wait_for_green_or_signal(request_id):
@@ -106,7 +108,9 @@ def _run(
                     return
 
             end_id = next_id + config.id_range_chunk_size
-            rows = db_client.fetch_granule_id_range_chunk(provider_id, next_id, end_id, after, before)
+            rows = db_client.fetch_granule_id_range_chunk(
+                provider_id, next_id, end_id, after, before, include_deleted=include_deleted,
+            )
             if rows:
                 if not throttler.dispatch_in_batches(
                     _dedup_latest_revision(rows),
@@ -138,13 +142,14 @@ def start_id_range_scan(
     after: Optional[str],
     before: Optional[str],
     start_id: int = 0,
+    include_deleted: bool = False,
 ) -> threading.Thread:
     """Spawn the id-range scan on a dedicated daemon thread. Called from
     enqueue_provider, for both the initial run and a lease keeper restart."""
     leases.hold(request_id)
     thread = threading.Thread(
         target=_run,
-        args=(request_id, provider_id, after, before, start_id),
+        args=(request_id, provider_id, after, before, start_id, include_deleted),
         name=f"id-range-scan-{request_id}",
         daemon=True,
     )

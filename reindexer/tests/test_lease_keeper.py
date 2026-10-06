@@ -71,18 +71,22 @@ class TestRestartLapsedJobs:
     def test_enqueue_loop_restarted_skipping_enqueued_providers(self, deps, concept_type):
         reindex, _ = deps
         restart_lapsed_jobs(_job_store(_job(concept_type, providers_requested=["P1", "P2"], providers_enqueued=["P1"])))
-        reindex.enqueue_providers.assert_called_once_with("job-1", ["P1", "P2"], "A", "B", skip={"P1"})
+        reindex.enqueue_providers.assert_called_once_with(
+            "job-1", ["P1", "P2"], "A", "B", skip={"P1"}, include_deleted=False,
+        )
 
     def test_all_providers_job_that_never_listed_providers_lists_them(self, deps):
         reindex, _ = deps
         restart_lapsed_jobs(_job_store(_job("granules")))
-        reindex.enqueue_all_providers.assert_called_once_with("job-1", "A", "B")
+        reindex.enqueue_all_providers.assert_called_once_with("job-1", "A", "B", False)
 
     @pytest.mark.parametrize("persisted, start_id", [({"next_start_id": 123456}, 123456), ({}, 0)])
     def test_provider_scan_restarted_from_persisted_cursor(self, deps, persisted, start_id):
         reindex, _ = deps
         restart_lapsed_jobs(_job_store(_job("granules-by-provider", status="dispatching", provider_id="P", **persisted)))
-        reindex.enqueue_provider.assert_called_once_with("job-1", "P", "A", "B", start_id=start_id)
+        reindex.enqueue_provider.assert_called_once_with(
+            "job-1", "P", "A", "B", start_id=start_id, include_deleted=False,
+        )
 
     def test_concept_type_republished(self, deps):
         reindex, _ = deps

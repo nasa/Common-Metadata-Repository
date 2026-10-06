@@ -69,6 +69,7 @@ class JobStore:
         after: Optional[str] = None,
         before: Optional[str] = None,
         source_url: Optional[str] = None,
+        include_deleted: bool = False,
     ) -> None:
         now = _now_iso()
         ttl = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
@@ -97,6 +98,8 @@ class JobStore:
             item["before"] = before
         if source_url is not None:
             item["source_url"] = source_url
+        if include_deleted:
+            item["include_deleted"] = True
         self._table().put_item(Item=item)
         logger.info({"event": "job_created", "job_id": job_id, "concept_type": concept_type})
 

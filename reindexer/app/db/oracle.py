@@ -4,7 +4,8 @@ SQL patterns used:
   - HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
   - REVISION_DATE filtered with TO_TIMESTAMP_TZ()
   - Provider derived from concept-id suffix: C1234-PROV → PROV
-  - Tables: METADATA_DB.{PROVIDER}_GRANULES / _COLLECTIONS
+  - Tables: METADATA_DB.{PROVIDER}_GRANULES / _COLLECTIONS, or the shared
+    SMALL_PROV_* tables filtered by provider_id for small providers
 
 Per-collection granule dispatch uses stream_granule_ids_paged() (two-query keyset
 paging by concept_id) rather than OFFSET/FETCH, so cost is O(page_size) not O(n^2).
@@ -31,16 +32,19 @@ _BATCH_SIZE = 500
 _COLLECTIONS_SQL = """\
 SELECT concept_id
 FROM METADATA_DB.{table}
+WHERE 1 = 1 {provider_clause}
 GROUP BY concept_id
 HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
 ORDER BY concept_id"""
 
 _PROVIDERS_SQL = """\
-SELECT DISTINCT REGEXP_REPLACE(table_name, '_GRANULES$', '')
-FROM all_tables
-WHERE owner = 'METADATA_DB'
-  AND table_name LIKE '%_GRANULES'
-ORDER BY 1"""
+SELECT provider_id, small
+FROM METADATA_DB.providers
+ORDER BY provider_id"""
+
+# Providers flagged small share these tables, which carry a provider_id column
+# (metadata-db's get-table-name).
+_SMALL_PROVIDER_TABLE_PREFIX = "SMALL_PROV"
 
 # Used inline in granule SQL (must include the AND prefix). Literal, not bound:
 # bind-variable peeking on these was confirmed to cause Oracle to reuse a cached
@@ -66,18 +70,20 @@ _FIND_NEXT_ID_SQL = """\
 SELECT MIN(id)
 FROM METADATA_DB.{table}
 WHERE id >= :min_id
+{provider_clause}
 {after_clause}"""
 
 # deleted=0 is per-row here, not aggregated per-concept_id like every other query
 # in this module — a concept created and deleted within the same scan window can
-# have its live revision dispatched before its tombstone is ever seen. Known,
-# accepted gap.
+# have its live revision dispatched before its tombstone is ever seen, unless
+# tombstones are included.
 _FETCH_ID_RANGE_CHUNK_SQL = """\
-SELECT concept_id, revision_id
+SELECT concept_id, revision_id, deleted
 FROM METADATA_DB.{table}
 WHERE id >= :start_id
   AND id < :end_id
-  AND deleted = 0
+{live_only_clause}
+{provider_clause}
 {after_clause}
 {before_clause}"""
 
@@ -107,7 +113,8 @@ FETCH FIRST {page_size} ROWS ONLY"""
 # deleted IN (0, 1) is always true, but it lets Oracle seek *_GRANULES_PDCR
 # (parent_collection_id, deleted, concept_id, ...) by the page's concept_id range.
 _COLLECTION_CHUNK_SQL = """\
-SELECT concept_id, MAX(revision_id) AS revision_id
+SELECT concept_id, MAX(revision_id) AS revision_id,
+       MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) AS deleted
 FROM METADATA_DB.{table}
 WHERE parent_collection_id = '{collection_id}'
   AND deleted IN (0, 1)
@@ -116,8 +123,10 @@ WHERE parent_collection_id = '{collection_id}'
 {after_clause}
 {before_clause}
 GROUP BY concept_id
-HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
+{live_only_clause}
 ORDER BY concept_id"""
+
+_LIVE_ONLY_HAVING = "HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0"
 
 # ---------------------------------------------------------------------------
 # Shared / generic concept type SQL
@@ -235,6 +244,7 @@ class OracleClient:
     def __init__(self) -> None:
         self._pool = None
         self._pool_lock = threading.Lock()
+        self._providers: dict[str, bool] = {}  # provider_id → small; see _table
 
     def _get_pool(self):
         if self._pool is None:
@@ -267,12 +277,26 @@ class OracleClient:
     def get_all_provider_ids(self) -> list[str]:
         with self._acquire_cursor() as cur:
             cur.execute(_PROVIDERS_SQL)
-            return [row[0] for row in cur.fetchall()]
+            rows = cur.fetchall()
+        self._providers = {provider_id: bool(small) for provider_id, small in rows}
+        return list(self._providers)
+
+    def _is_small(self, provider_id: str) -> bool:
+        if provider_id not in self._providers:
+            self.get_all_provider_ids()  # first use, or a provider added since the last load
+        return self._providers.get(provider_id, False)
+
+    def _table(self, provider_id: str, suffix: str) -> tuple[str, str]:
+        """(table, provider_clause) for a per-provider concept table. The clause is only
+        needed where rows aren't already scoped by a collection or concept id."""
+        _validate_provider_id(provider_id)
+        if self._is_small(provider_id):
+            return f"{_SMALL_PROVIDER_TABLE_PREFIX}{suffix}", f"AND provider_id = '{provider_id}'"
+        return f"{provider_id}{suffix}", ""
 
     def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
-        _validate_provider_id(provider_id)
-        table = f"{provider_id}_COLLECTIONS"
-        sql = _COLLECTIONS_SQL.format(table=table)
+        table, provider_clause = self._table(provider_id, "_COLLECTIONS")
+        sql = _COLLECTIONS_SQL.format(table=table, provider_clause=provider_clause)
         with self._acquire_cursor() as cur:
             cur.arraysize = _BATCH_SIZE
             cur.execute(sql)
@@ -290,10 +314,10 @@ class OracleClient:
     ) -> Optional[int]:
         """Return the smallest granule `id` >= min_id revised at or after `after`,
         or None if there is none. No `before`: the window query applies it, and
-        without a date bound this is a single PK index lookup."""
-        _validate_provider_id(provider_id)
+        without a date or provider filter this is a single PK index lookup."""
+        table, provider_clause = self._table(provider_id, "_GRANULES")
         sql = _FIND_NEXT_ID_SQL.format(
-            table=f"{provider_id}_GRANULES", after_clause=_date_clauses(after, None)["after_clause"],
+            table=table, provider_clause=provider_clause, after_clause=_date_clauses(after, None)["after_clause"],
         )
         with self._acquire_cursor() as cur:
             cur.execute(sql, {"min_id": min_id})
@@ -307,16 +331,22 @@ class OracleClient:
         end_id: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        """Return (concept_id, revision_id) for live granule rows in the half-open
+        include_deleted: bool = False,
+    ) -> list[tuple[str, int, int]]:
+        """Return (concept_id, revision_id, deleted) for granule rows in the half-open
         id range [start_id, end_id) — matches bootstrap's convention, avoiding
-        boundary duplicates when successive windows chain together.
+        boundary duplicates when successive windows chain together. Tombstone rows
+        only with include_deleted.
         """
-        _validate_provider_id(provider_id)
-        sql = _FETCH_ID_RANGE_CHUNK_SQL.format(table=f"{provider_id}_GRANULES", **_date_clauses(after, before))
+        table, provider_clause = self._table(provider_id, "_GRANULES")
+        sql = _FETCH_ID_RANGE_CHUNK_SQL.format(
+            table=table, provider_clause=provider_clause,
+            live_only_clause="" if include_deleted else "AND deleted = 0",
+            **_date_clauses(after, before),
+        )
         with self._acquire_cursor() as cur:
             cur.execute(sql, {"start_id": start_id, "end_id": end_id})
-            return [(row[0], row[1]) for row in cur.fetchall()]
+            return cur.fetchall()
 
     # ------------------------------------------------------------------
     # Per-collection granule scan
@@ -329,10 +359,12 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
-    ) -> Iterator[tuple[str, list[tuple[str, int]]]]:
+        include_deleted: bool = False,
+    ) -> Iterator[tuple[str, list[tuple[str, int, int]]]]:
         """Yield (page_end, chunk) per page for one collection, in ascending
-        concept_id order. chunk is the page's live (concept_id, revision_id) rows
-        matching after/before, and may be empty when the date filter excludes the
+        concept_id order. chunk is the page's (concept_id, revision_id, deleted) rows
+        for each concept's latest revision matching after/before; live ones only
+        unless include_deleted. It may be empty when the date filter excludes the
         whole page — still yielded, so the caller gets a turn to check
         cancellation and can checkpoint on page_end.
 
@@ -340,8 +372,7 @@ class OracleClient:
         ID (typically a previous page_end). None (or empty) starts from the
         beginning.
         """
-        provider = _provider_from_collection(collection_id)
-        table = f"{provider}_GRANULES"
+        table, _ = self._table(_provider_from_collection(collection_id), "_GRANULES")
         page_size = int(chunk_size)  # interpolated into FETCH FIRST, so force an int
         date_clauses = _date_clauses(after, before)
         start_after = start_after_concept_id
@@ -365,13 +396,14 @@ class OracleClient:
             is_last_page = len(page_rows) < page_size
 
             chunk_sql = _COLLECTION_CHUNK_SQL.format(
-                table=table, collection_id=collection_id, keyset_clause=keyset_clause, **date_clauses,
+                table=table, collection_id=collection_id, keyset_clause=keyset_clause,
+                live_only_clause="" if include_deleted else _LIVE_ONLY_HAVING, **date_clauses,
             )
             with self._acquire_cursor() as cur:
                 cur.execute(chunk_sql, {**keyset_bind, "page_end": page_end})
                 rows = cur.fetchall()
 
-            yield page_end, [(row[0], row[1]) for row in rows]
+            yield page_end, rows
 
             if is_last_page:
                 break
@@ -421,9 +453,7 @@ class OracleClient:
         table_name, table_suffix = lookup
 
         if table_name is None:
-            # Per-provider table; table_suffix is the table name suffix
-            provider = _provider_from_collection(concept_id)
-            table = f"{provider}{table_suffix}"
+            table, _ = self._table(_provider_from_collection(concept_id), table_suffix)
         else:
             table = table_name
 
@@ -446,9 +476,9 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        for provider_id in self.get_all_provider_ids():
-            _validate_provider_id(provider_id)
-            table = f"{provider_id}_COLLECTIONS"
+        # Small providers share one table, streamed once for all of them.
+        tables = dict.fromkeys(self._table(p, "_COLLECTIONS")[0] for p in self.get_all_provider_ids())
+        for table in tables:
             yield from self._stream_concept_ids(table, prefix=None, after=after, before=before)
 
     def _stream_concept_ids(

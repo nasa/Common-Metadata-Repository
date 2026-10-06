@@ -40,17 +40,20 @@ def restart_lapsed_jobs(job_store) -> None:
         logger.info({
             "event": "restarting_lapsed_job", "job_id": job_id, "concept_type": concept_type, "status": job.get("status"),
         })
-        after, before = job.get("after"), job.get("before")
+        after, before, include_deleted = job.get("after"), job.get("before"), job.get("include_deleted", False)
         try:
             if concept_type in ("granules", "granules-by-providers") and job.get("providers_requested"):
                 _start_thread(
                     reindex.enqueue_providers, job_id, job["providers_requested"], after, before,
-                    skip=set(job.get("providers_enqueued") or []),
+                    skip=set(job.get("providers_enqueued") or []), include_deleted=include_deleted,
                 )
             elif concept_type == "granules":  # died before it listed the providers
-                _start_thread(reindex.enqueue_all_providers, job_id, after, before)
+                _start_thread(reindex.enqueue_all_providers, job_id, after, before, include_deleted)
             elif concept_type == "granules-by-provider":
-                reindex.enqueue_provider(job_id, job["provider_id"], after, before, start_id=job.get("next_start_id") or 0)
+                reindex.enqueue_provider(
+                    job_id, job["provider_id"], after, before,
+                    start_id=job.get("next_start_id") or 0, include_deleted=include_deleted,
+                )
             elif concept_type in reindex.ROUTE_TO_INTERNAL_TYPE:
                 _start_thread(reindex.publish_concept_type, job_id, reindex.ROUTE_TO_INTERNAL_TYPE[concept_type], before)
             else:

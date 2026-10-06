@@ -14,6 +14,7 @@ class CollectionWorkItem:
     collection_id: str
     after: Optional[str] = None
     before: Optional[str] = None
+    include_deleted: bool = False
     type: str = "collection"
 
     def to_json(self) -> str:
@@ -23,6 +24,7 @@ class CollectionWorkItem:
             "collection_id": self.collection_id,
             "after": self.after,
             "before": self.before,
+            "include_deleted": self.include_deleted,
         })
 
 
@@ -35,5 +37,6 @@ def parse_work_item(body: str) -> CollectionWorkItem:
             collection_id=data["collection_id"],
             after=data.get("after"),
             before=data.get("before"),
+            include_deleted=data.get("include_deleted", False),
         )
     raise ValueError(f"Unknown work item type: {t!r}")

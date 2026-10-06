@@ -2,7 +2,7 @@
 Unit tests for SQS client message body and queue routing.
 
 Verifies the JSON shape sent by enqueue_collection_item, publish_concept_update,
-and publish_concept_updates_batch — in particular that publish_concept_update uses
+and publish_indexer_events_batch — in particular that publish_concept_update uses
 hyphenated keys ("concept-id", "revision-id") matching the CMR indexer contract.
 
 _sqs() is replaced with a lambda returning a mock boto3 client so that
@@ -19,7 +19,7 @@ import pytest
 
 import app.sqs.client as _sqs_mod
 from app.config import config
-from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_concept_updates_batch
+from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_indexer_events_batch
 
 
 # ---------------------------------------------------------------------------
@@ -145,60 +145,60 @@ class TestPublishConceptUpdate:
 
 
 # ---------------------------------------------------------------------------
-# publish_concept_updates_batch
+# publish_indexer_events_batch
 # ---------------------------------------------------------------------------
 
 class TestPublishConceptUpdatesBatch:
 
     def test_targets_indexer_queue(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
         assert _batch_queue(sqs) == config.indexer_queue_url
 
     def test_action_is_concept_update(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
         body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
         assert body["action"] == "concept-update"
 
     def test_concept_id_key_is_hyphenated(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
         body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
         assert "concept-id" in body, "key must be 'concept-id' (hyphenated) to match CMR indexer contract"
         assert "concept_id" not in body
 
     def test_revision_id_key_is_hyphenated(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
         body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
         assert "revision-id" in body, "key must be 'revision-id' (hyphenated) to match CMR indexer contract"
         assert "revision_id" not in body
 
     def test_concept_id_and_revision_id_values_correct(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G9876-TESTPROV", 42)], "req-1")
+        publish_indexer_events_batch([("G9876-TESTPROV", 42)], "req-1")
         body = json.loads(_batch_entries(sqs)[0]["MessageBody"])
         assert body["concept-id"] == "G9876-TESTPROV"
         assert body["revision-id"] == 42
 
     def test_entry_id_is_string(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1), ("G2-PROV", 2)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1), ("G2-PROV", 2)], "req-1")
         for entry in _batch_entries(sqs):
             assert isinstance(entry["Id"], str), "SQS requires Id to be a string"
 
     def test_ten_records_sends_one_batch(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         records = [("G%d-P" % i, i) for i in range(10)]
-        publish_concept_updates_batch(records, "req-1")
+        publish_indexer_events_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 1
         assert len(_batch_entries(sqs)) == 10
 
     def test_eleven_records_sends_two_batches(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         records = [("G%d-P" % i, i) for i in range(11)]
-        publish_concept_updates_batch(records, "req-1")
+        publish_indexer_events_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 2
         # Batches run concurrently; sort sizes to avoid non-deterministic ordering
         assert _all_batch_sizes(sqs) == [1, 10]
@@ -206,13 +206,13 @@ class TestPublishConceptUpdatesBatch:
     def test_twenty_records_sends_two_batches(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         records = [("G%d-P" % i, i) for i in range(20)]
-        publish_concept_updates_batch(records, "req-1")
+        publish_indexer_events_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 2
 
     def test_twenty_one_records_sends_three_batches(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         records = [("G%d-P" % i, i) for i in range(21)]
-        publish_concept_updates_batch(records, "req-1")
+        publish_indexer_events_batch(records, "req-1")
         assert sqs.send_message_batch.call_count == 3
         # Batches run concurrently; sort sizes to avoid non-deterministic ordering
         assert _all_batch_sizes(sqs) == [1, 10, 10]
@@ -223,15 +223,15 @@ class TestPublishConceptUpdatesBatch:
             "Failed": [{"Id": "0", "Code": "InternalError", "Message": "SQS blew up"}],
         }
         with pytest.raises(RuntimeError, match="partial failure"):
-            publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+            publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
 
     def test_no_error_on_empty_failed_list(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [{"Id": "0"}], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")  # must not raise
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")  # must not raise
 
     def test_uses_send_message_batch_not_send_message(self, sqs):
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
-        publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
+        publish_indexer_events_batch([("G1-PROV", 1)], "req-1")
         sqs.send_message.assert_not_called()
 
 
@@ -240,3 +240,10 @@ def test_get_queue_counts_splits_available_and_in_flight(sqs):
         "ApproximateNumberOfMessages": "7", "ApproximateNumberOfMessagesNotVisible": "2",
     }}
     assert _sqs_mod.get_queue_counts("http://sqs/q") == {"available": 7, "in_flight": 2}
+
+
+def test_deleted_records_publish_concept_delete(sqs):
+    sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
+    publish_indexer_events_batch([("G1-PROV", 3, 1), ("G2-PROV", 1, 0), ("G3-PROV", 2)], "req-1")
+    actions = [json.loads(e["MessageBody"])["action"] for e in sqs.send_message_batch.call_args.kwargs["Entries"]]
+    assert actions == ["concept-delete", "concept-update", "concept-update"]
