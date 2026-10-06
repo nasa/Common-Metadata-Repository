@@ -66,8 +66,7 @@ _FIND_NEXT_ID_SQL = """\
 SELECT MIN(id)
 FROM METADATA_DB.{table}
 WHERE id >= :min_id
-{after_clause}
-{before_clause}"""
+{after_clause}"""
 
 # deleted=0 is per-row here, not aggregated per-concept_id like every other query
 # in this module — a concept created and deleted within the same scan window can
@@ -293,12 +292,14 @@ class OracleClient:
         provider_id: str,
         min_id: int,
         after: Optional[str] = None,
-        before: Optional[str] = None,
     ) -> Optional[int]:
-        """Return the smallest granule `id` >= min_id within the date window,
-        or None if there is none."""
+        """Return the smallest granule `id` >= min_id revised at or after `after`,
+        or None if there is none. No `before`: the window query applies it, and
+        without a date bound this is a single PK index lookup."""
         _validate_provider_id(provider_id)
-        sql = _FIND_NEXT_ID_SQL.format(table=f"{provider_id}_GRANULES", **_date_clauses(after, before))
+        sql = _FIND_NEXT_ID_SQL.format(
+            table=f"{provider_id}_GRANULES", after_clause=_date_clauses(after, None)["after_clause"],
+        )
         with self._acquire_cursor() as cur:
             cur.execute(sql, {"min_id": min_id})
             row = cur.fetchone()

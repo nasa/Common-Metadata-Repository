@@ -466,15 +466,12 @@ class TestFindNextGranuleIdInRange:
         cur.fetchone.return_value = row
         assert client.find_next_granule_id_in_range("MYPROV", 0) == expected
 
-    def test_date_window_embedded_as_literals(self, oracle):
+    def test_after_embedded_as_literal(self, oracle):
         client, cur = oracle
         cur.fetchone.return_value = (1,)
-        client.find_next_granule_id_in_range(
-            "MYPROV", 0, after="2024-01-01T00:00:00Z", before="2024-12-31T23:59:59Z"
-        )
+        client.find_next_granule_id_in_range("MYPROV", 0, after="2024-01-01T00:00:00Z")
         sql, bind = _last_execute(cur)
         assert "REVISION_DATE >= TO_TIMESTAMP_TZ('2024-01-01T00:00:00 +00:00'" in sql
-        assert "REVISION_DATE <= TO_TIMESTAMP_TZ('2024-12-31T23:59:59 +00:00'" in sql
         assert bind == {"min_id": 0}
 
 

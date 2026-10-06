@@ -99,7 +99,7 @@ def _run(
         probe_from = start_id
         while _wait_for_green_or_signal(request_id):
             if next_id is None:
-                next_id = db_client.find_next_granule_id_in_range(provider_id, probe_from, after, before)
+                next_id = db_client.find_next_granule_id_in_range(provider_id, probe_from, after)
                 if next_id is None:
                     # try_complete_job relies on counters this scan never increments.
                     job_store.mark_job(request_id, "completed")
