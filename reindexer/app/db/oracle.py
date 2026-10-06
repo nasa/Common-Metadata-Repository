@@ -66,7 +66,6 @@ _FIND_NEXT_ID_SQL = """\
 SELECT MIN(id)
 FROM METADATA_DB.{table}
 WHERE id >= :min_id
-  AND deleted = 0
 {after_clause}
 {before_clause}"""
 
@@ -296,7 +295,7 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Optional[int]:
-        """Return the smallest live granule `id` >= min_id within the date window,
+        """Return the smallest granule `id` >= min_id within the date window,
         or None if there is none."""
         _validate_provider_id(provider_id)
         sql = _FIND_NEXT_ID_SQL.format(table=f"{provider_id}_GRANULES", **_date_clauses(after, before))
