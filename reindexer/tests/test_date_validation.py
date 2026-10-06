@@ -222,7 +222,7 @@ class TestOverrideHeaderWiring:
 
     def test_date_validation_applied_to_provider_endpoint(self, client):
         r = client.post(
-            "/reindexer/reindex/granules/provider/MYPROV",
+            "/reindexer/reindex/granules/provider/PROV_A",
             params={"after": _days_ago(31)},
         )
         assert r.status_code == 400
@@ -236,7 +236,7 @@ class TestOverrideHeaderWiring:
 
     def test_override_header_applied_to_provider_endpoint(self, client):
         r = client.post(
-            "/reindexer/reindex/granules/provider/MYPROV",
+            "/reindexer/reindex/granules/provider/PROV_A",
             params={"after": _days_ago(31)},
             headers={"X-CMR-Override-Date-Limit": "true"},
         )

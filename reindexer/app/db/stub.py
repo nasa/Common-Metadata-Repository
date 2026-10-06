@@ -59,6 +59,7 @@ class StubOracleClient:
         end_id: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
+        include_deleted: bool = False,
     ) -> list[tuple[str, int]]:
         total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
         return [
@@ -73,9 +74,11 @@ class StubOracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
+        include_deleted: bool = False,
     ) -> Iterator[tuple[str, list[tuple[str, int]]]]:
         """Yield (page_end, chunk) pages of fake granule IDs, respecting keyset resume
-        and chunk_size. Ignores after/before, so chunks are never empty here.
+        and chunk_size. Ignores after/before and include_deleted (no tombstones), so
+        chunks are never empty here.
 
         start_after_concept_id mirrors the Oracle keyset cursor: only IDs that sort
         after that value are returned.  The stub uses a sequential integer suffix so

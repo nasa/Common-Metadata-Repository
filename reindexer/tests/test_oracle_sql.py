@@ -36,6 +36,8 @@ def oracle():
 
         mock_cur.fetchall.return_value = []
         mock_cur.fetchone.return_value = None
+        # Per-provider tables, without a providers lookup; small-provider tests opt out.
+        client._is_small = lambda provider_id: False
 
         yield client, mock_cur
 
@@ -239,31 +241,32 @@ def test_generic_no_subtype_filter_with_after(oracle):
 # get_concept_ids_by_type — collection (per-provider tables)
 # ---------------------------------------------------------------------------
 
-def test_collection_type_queries_each_provider_table(oracle):
+def test_collection_type_queries_each_table_once(oracle):
+    """Small providers share SMALL_PROV_COLLECTIONS, streamed once for all of them."""
     client, cur = oracle
-    # Two queries per provider (page_ids + agg); each returns 1 row → last page.
+    del client._is_small
+    # Two queries per table (page_ids + agg); each returns 1 row → last page.
     cur.fetchall.side_effect = [
-        [("PROV_A",), ("PROV_B",)],  # get_all_provider_ids
+        [("PROV_A", 0), ("SMALL_A", 1), ("SMALL_B", 1)],  # get_all_provider_ids
         [("C1-PROV_A",)],             # PROV_A page_ids (boundary)
         [("C1-PROV_A", 1)],           # PROV_A agg
-        [("C2-PROV_B",)],             # PROV_B page_ids (boundary)
-        [("C2-PROV_B", 2)],           # PROV_B agg
+        [("C2-SMALL_A",)],            # SMALL_PROV page_ids (boundary)
+        [("C2-SMALL_A", 2)],          # SMALL_PROV agg
     ]
 
     result = client.get_concept_ids_by_type("collection")
 
-    assert result == [("C1-PROV_A", 1), ("C2-PROV_B", 2)]
-    assert cur.execute.call_count == 5
-
+    assert result == [("C1-PROV_A", 1), ("C2-SMALL_A", 2)]
     executed_sqls = [c.args[0] for c in cur.execute.call_args_list]
-    assert any("PROV_A_COLLECTIONS" in s for s in executed_sqls), "missing PROV_A_COLLECTIONS query"
-    assert any("PROV_B_COLLECTIONS" in s for s in executed_sqls), "missing PROV_B_COLLECTIONS query"
+    assert len(executed_sqls) == 5
+    assert "PROV_A_COLLECTIONS" in executed_sqls[1]
+    assert "SMALL_PROV_COLLECTIONS" in executed_sqls[3]
 
 
 def test_collection_type_with_after_passes_bind_to_each_provider(oracle):
     client, cur = oracle
     # providers + PROV_X page_ids + PROV_X agg
-    cur.fetchall.side_effect = [[("PROV_X",)], [("C1-PROV_X",)], [("C1-PROV_X", 1)]]
+    cur.fetchall.side_effect = [[("PROV_X", 0)], [("C1-PROV_X",)], [("C1-PROV_X", 1)]]
 
     client.get_concept_ids_by_type("collection", after="2024-06-01T00:00:00Z")
 
@@ -544,6 +547,15 @@ class TestStreamGranuleIdsPaged:
         assert "2024-06-30T23:59:59 +00:00" in agg_sql
         assert agg_bind == {"page_end": "G3-PROV"}
 
+    def test_include_deleted_drops_only_the_live_filters(self, oracle):
+        client, cur = oracle
+        cur.fetchall.side_effect = [[("G1-PROV",)], [], []]
+        list(client.stream_granule_ids_paged("C1-PROV", chunk_size=500, include_deleted=True))
+        client.fetch_granule_id_range_chunk("PROV", 0, 10, include_deleted=True)
+        chunk_sql, window_sql = cur.execute.call_args_list[1].args[0], cur.execute.call_args_list[2].args[0]
+        assert "HAVING" not in chunk_sql and "deleted IN (0, 1)" in chunk_sql
+        assert "deleted = 0" not in window_sql
+
     def test_resume_cursor_applied_to_both_queries(self, oracle):
         client, cur = oracle
         cur.fetchall.side_effect = [[("G0101-PROV",), ("G0102-PROV",)], [("G0101-PROV", 1)]]
@@ -604,3 +616,50 @@ class TestCallTracking:
         tracker.log_slow_calls(300)
         slow = [r.msg for r in caplog.records if isinstance(r.msg, dict) and r.msg.get("event") == "oracle_call_slow"]
         assert slow == [{"event": "oracle_call_slow", "thread": "id-range-scan-req-1", "elapsed_seconds": 301}]
+
+
+# ---------------------------------------------------------------------------
+# Small providers — shared SMALL_PROV_* tables
+# ---------------------------------------------------------------------------
+
+class TestSmallProviders:
+
+    @pytest.fixture
+    def small(self, oracle):
+        client, cur = oracle
+        del client._is_small
+        client._providers = {"SMALLP": True}
+        return client, cur
+
+    def test_provider_list_reads_providers_table(self, oracle):
+        client, cur = oracle
+        cur.fetchall.return_value = [("NORMAL", 0), ("SMALLP", 1)]
+        assert client.get_all_provider_ids() == ["NORMAL", "SMALLP"]
+        sql = cur.execute.call_args.args[0]
+        assert "METADATA_DB.providers" in sql
+        assert client._providers == {"NORMAL": False, "SMALLP": True}
+
+    def test_unknown_provider_reloads_the_list(self, small):
+        client, cur = small
+        cur.fetchall.return_value = [("SMALLP", 1), ("NEWP", 1)]
+        client.get_collection_ids_for_provider("NEWP")
+        assert "SMALL_PROV_COLLECTIONS" in cur.execute.call_args.args[0]
+
+    def test_provider_wide_queries_filter_by_provider(self, small):
+        client, cur = small
+        client.get_collection_ids_for_provider("SMALLP")
+        client.find_next_granule_id_in_range("SMALLP", 0)
+        client.fetch_granule_id_range_chunk("SMALLP", 0, 10)
+        sqls = [c.args[0] for c in cur.execute.call_args_list]
+        assert "SMALL_PROV_COLLECTIONS" in sqls[0]
+        assert all("SMALL_PROV_GRANULES" in s for s in sqls[1:])
+        assert all("provider_id = 'SMALLP'" in s for s in sqls)
+
+    def test_collection_and_concept_queries_use_shared_table_unfiltered(self, small):
+        """Already scoped by collection or concept id."""
+        client, cur = small
+        cur.fetchall.side_effect = [[("G1-SMALLP",)], [("G1-SMALLP", 1)]]
+        list(client.stream_granule_ids_paged("C1-SMALLP", chunk_size=10))
+        client.get_concept_by_id("G1-SMALLP")
+        sqls = [c.args[0] for c in cur.execute.call_args_list]
+        assert all("SMALL_PROV_GRANULES" in s and "provider_id =" not in s for s in sqls)

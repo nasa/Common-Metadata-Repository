@@ -49,7 +49,7 @@ class Config:
     # Ids per id-range window (POST /reindex/granules/provider/{id}). Larger windows
     # mean fewer, longer Oracle fetches.
     id_range_chunk_size: int = field(default_factory=lambda: int(os.environ.get("ID_RANGE_CHUNK_SIZE", "20000")))
-    # Parallel worker threads for publish_concept_updates_batch SQS sends.
+    # Parallel worker threads for publish_indexer_events_batch SQS sends.
     sqs_send_workers: int = field(default_factory=lambda: int(os.environ.get("SQS_SEND_WORKERS", "20")))
 
     # DB backend: "oracle" (default) or "stub" (hardcoded fake data, for unit tests)

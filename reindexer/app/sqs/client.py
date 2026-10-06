@@ -43,9 +43,11 @@ def enqueue_collection_item(
     collection_id: str,
     after: Optional[str] = None,
     before: Optional[str] = None,
+    include_deleted: bool = False,
 ) -> None:
     item = CollectionWorkItem(
-        request_id=request_id, collection_id=collection_id, after=after, before=before
+        request_id=request_id, collection_id=collection_id, after=after, before=before,
+        include_deleted=include_deleted,
     )
     _sqs().send_message(QueueUrl=config.collection_queue_url, MessageBody=item.to_json())
     logger.info({
@@ -56,14 +58,14 @@ def enqueue_collection_item(
 
 
 
+def _indexer_event(concept_id: str, revision_id: int, deleted: int = 0) -> str:
+    action = "concept-delete" if deleted else "concept-update"
+    return json.dumps({"action": action, "concept-id": concept_id, "revision-id": revision_id})
+
+
 def publish_concept_update(concept_id: str, revision_id: int, request_id: str) -> None:
     """Send a single concept-update message to the CMR indexer queue."""
-    msg = json.dumps({
-        "action": "concept-update",
-        "concept-id": concept_id,
-        "revision-id": revision_id,
-    })
-    _sqs().send_message(QueueUrl=config.indexer_queue_url, MessageBody=msg)
+    _sqs().send_message(QueueUrl=config.indexer_queue_url, MessageBody=_indexer_event(concept_id, revision_id))
     logger.debug({
         "event": "concept_update_published",
         "request_id": request_id,
@@ -89,22 +91,15 @@ def _send_one_sqs_batch(entries: list[dict]) -> None:
         )
 
 
-def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: str) -> None:
-    """Send concept-update messages to the CMR indexer queue in parallel batches of 10
-    (the send_message_batch limit), on the shared send pool. Raises RuntimeError if
-    any batch fails.
+def publish_indexer_events_batch(records: list[tuple], request_id: str) -> None:
+    """Send an indexer event per (concept_id, revision_id[, deleted]) record, in parallel
+    batches of 10 (the send_message_batch limit) on the shared send pool: concept-delete
+    for deleted records, else concept-update. Raises RuntimeError if any batch fails.
     """
     batches = [
         [
-            {
-                "Id": str(j),
-                "MessageBody": json.dumps({
-                    "action": "concept-update",
-                    "concept-id": concept_id,
-                    "revision-id": revision_id,
-                }),
-            }
-            for j, (concept_id, revision_id) in enumerate(records[i:i + _BATCH_SIZE])
+            {"Id": str(j), "MessageBody": _indexer_event(*record)}
+            for j, record in enumerate(records[i:i + _BATCH_SIZE])
         ]
         for i in range(0, len(records), _BATCH_SIZE)
     ]
@@ -123,7 +118,7 @@ def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: st
         )
 
     logger.debug({
-        "event": "concept_updates_batch_published",
+        "event": "indexer_events_batch_published",
         "request_id": request_id,
         "count": len(records),
     })

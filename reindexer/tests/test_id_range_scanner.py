@@ -214,7 +214,7 @@ class TestStartIdRangeScan:
         monkeypatch.setattr(_scanner_mod, "_run", run_mock)
         thread = start_id_range_scan("req-1", "PROV", _AFTER, _BEFORE)
         thread.join(timeout=2)
-        run_mock.assert_called_once_with("req-1", "PROV", _AFTER, _BEFORE, 0)
+        run_mock.assert_called_once_with("req-1", "PROV", _AFTER, _BEFORE, 0, False)
 
 
     def test_holds_lease_until_run_releases_it(self, deps, monkeypatch):

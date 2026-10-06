@@ -34,7 +34,7 @@ def mock_deps(monkeypatch):
     """Replace all external I/O in the reindex/status routers with safe no-op mocks."""
     monkeypatch.setattr("app.routers.reindex.enqueue_collection_item", MagicMock())
     monkeypatch.setattr("app.routers.reindex.publish_concept_update", MagicMock())
-    monkeypatch.setattr("app.routers.reindex.publish_concept_updates_batch", MagicMock())
+    monkeypatch.setattr("app.routers.reindex.publish_indexer_events_batch", MagicMock())
     monkeypatch.setattr(
         "app.routers.reindex.check_all_es_health",
         MagicMock(return_value={"overall": "green", "collections": "green", "granules": "green"}),
@@ -250,6 +250,17 @@ class TestGranuleJobStatusTransitions:
         import app.routers.reindex as _r
         client.post("/reindexer/reindex/granules/provider/bad.provider!")
         _r.start_id_range_scan.assert_not_called()
+
+    def test_unknown_provider_returns_400_without_creating_job(self, client):
+        import app.routers.reindex as _r
+        r = client.post("/reindexer/reindex/granules/provider/NOT_A_PROV")
+        assert r.status_code == 400
+        _r.job_store.create_job.assert_not_called()
+
+    def test_provider_check_failure_returns_503(self, client):
+        import app.routers.reindex as _r
+        _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541")
+        assert client.post("/reindexer/reindex/granules/provider/PROV_A").status_code == 503
 
     def test_reindex_collection_granules_marks_dispatching(self, client):
         import app.routers.reindex as _r
@@ -468,7 +479,7 @@ class TestEsHealthGating:
         import app.routers.reindex as _r
         _r.check_all_es_health.return_value = {"overall": "yellow", "collections": "yellow", "granules": "green"}
         client.post("/reindexer/reindex/citations")
-        _r.publish_concept_updates_batch.assert_not_called()
+        _r.publish_indexer_events_batch.assert_not_called()
 
     def test_single_concept_reindex_returns_503_when_es_not_green(self, client):
         import app.routers.reindex as _r
@@ -826,7 +837,7 @@ class TestSnapshotBeforeTimestamp:
 
     def test_by_provider_sets_before_in_job(self, client):
         import app.routers.reindex as _r
-        client.post("/reindexer/reindex/granules/provider/TESTPROV")
+        client.post("/reindexer/reindex/granules/provider/PROV_B")
         kw = _r.job_store.create_job.call_args[1]
         assert kw.get("before") is not None
         assert self._ISO_RE.match(kw["before"])
@@ -877,6 +888,12 @@ class TestCollectionDispatchUsesCollectionQueue:
         assert kw["request_id"] == _r.job_store.create_job.call_args.args[0]
         _r.start_id_range_scan.assert_not_called()
 
+    def test_include_deleted_reaches_job_and_work_item(self, client):
+        import app.routers.reindex as _r
+        client.post("/reindexer/reindex/granules/collection/C1-PROV?include_deleted=true")
+        assert _r.job_store.create_job.call_args.kwargs["include_deleted"] is True
+        assert _r.enqueue_collection_item.call_args.kwargs["include_deleted"] is True
+
     def test_enqueue_failure_marks_job_failed(self, client):
         import app.routers.reindex as _r
         _r.enqueue_collection_item.side_effect = RuntimeError("SQS down")
@@ -899,12 +916,12 @@ class TestProviderDispatchUsesIdRangeScan:
         order = MagicMock()
         order.attach_mock(_r.job_store.mark_job, "mark_job")
         order.attach_mock(_r.start_id_range_scan, "scan")
-        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        client.post("/reindexer/reindex/granules/provider/PROV_A")
         request_id, _ = _r.job_store.create_job.call_args.args
         before = _r.job_store.create_job.call_args.kwargs["before"]
         assert order.mock_calls == [
             call.mark_job(request_id, "dispatching"),
-            call.scan(request_id=request_id, provider_id="BIGPROV", after=None, before=before, start_id=0),
+            call.scan(request_id=request_id, provider_id="PROV_A", after=None, before=before, start_id=0, include_deleted=False),
         ]
         _r.db_client.get_collection_ids_for_provider.assert_not_called()
         _r.enqueue_collection_item.assert_not_called()
@@ -913,13 +930,13 @@ class TestProviderDispatchUsesIdRangeScan:
     def test_job_cancelled_before_dispatching_starts_no_scan(self, client):
         import app.routers.reindex as _r
         _r.job_store.mark_job.return_value = False
-        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        client.post("/reindexer/reindex/granules/provider/PROV_A")
         _r.start_id_range_scan.assert_not_called()
 
     def test_scan_start_failure_marks_job_failed(self, client):
         import app.routers.reindex as _r
         _r.start_id_range_scan.side_effect = RuntimeError("can't start new thread")
-        client.post("/reindexer/reindex/granules/provider/BIGPROV")
+        client.post("/reindexer/reindex/granules/provider/PROV_A")
         assert _r.job_store.mark_job.call_args_list[-1].args[1] == "failed"
 
 
@@ -932,7 +949,7 @@ def _fake_concepts(n):
 
 
 class TestConceptTypePeriodicDispatch:
-    """Concepts are collected into batches and sent via publish_concept_updates_batch.
+    """Concepts are collected into batches and sent via publish_indexer_events_batch.
     update_dispatched is called once per batch so total_dispatched rises incrementally."""
 
     def test_empty_stream_no_update_dispatched(self, client):
@@ -945,7 +962,7 @@ class TestConceptTypePeriodicDispatch:
         import app.routers.reindex as _r
         _r.db_client.stream_concept_ids_by_type.return_value = _fake_concepts(10)
         client.post("/reindexer/reindex/variables")
-        _r.publish_concept_updates_batch.assert_called_once()
+        _r.publish_indexer_events_batch.assert_called_once()
         _r.publish_concept_update.assert_not_called()
 
     def test_partial_page_flushes_remainder_once(self, client):

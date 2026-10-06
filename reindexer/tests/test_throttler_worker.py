@@ -24,7 +24,7 @@ def worker(monkeypatch):
     The background thread is NOT started.
     """
     monkeypatch.setattr(_worker_mod, "db_client", MagicMock())
-    monkeypatch.setattr(_worker_mod, "publish_concept_updates_batch", MagicMock())
+    monkeypatch.setattr(_worker_mod, "publish_indexer_events_batch", MagicMock())
     monkeypatch.setattr(_worker_mod, "delete_message", MagicMock())
     monkeypatch.setattr(_worker_mod, "change_message_visibility", MagicMock())
     monkeypatch.setattr(_worker_mod, "receive_messages", MagicMock(return_value=[]))
@@ -80,7 +80,7 @@ class TestHandleCollection:
     def test_zero_granules_no_dispatch(self, worker):
         _make_chunks()
         worker._handle_collection(_collection())
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
 
     def test_zero_granules_increment_collections_split_still_called(self, worker):
         _make_chunks()
@@ -101,14 +101,14 @@ class TestHandleCollection:
         granules = [("G1-PROV", 1), ("G2-PROV", 2)]
         _make_chunks(granules)
         worker._handle_collection(_collection())
-        _worker_mod.publish_concept_updates_batch.assert_called_once_with(granules, "req-1")
+        _worker_mod.publish_indexer_events_batch.assert_called_once_with(granules, "req-1")
 
     def test_multiple_chunks_all_dispatched(self, worker):
         c1 = [("G1-PROV", 1), ("G2-PROV", 2)]
         c2 = [("G3-PROV", 3)]
         _make_chunks(c1, c2)
         worker._handle_collection(_collection())
-        assert _worker_mod.publish_concept_updates_batch.call_count == 2
+        assert _worker_mod.publish_indexer_events_batch.call_count == 2
 
     def test_token_bucket_consumed_once_per_chunk(self, worker):
         c1 = [("G1-PROV", 1), ("G2-PROV", 2)]
@@ -148,7 +148,7 @@ class TestHandleCollection:
             ("req-1", "C1-PROV", "G5-PROV", 0, 1),
             ("req-1", "C1-PROV", "G9-PROV", 1, 2),
         ]
-        _worker_mod.publish_concept_updates_batch.assert_called_once_with([("G7-PROV", 1)], "req-1")
+        _worker_mod.publish_indexer_events_batch.assert_called_once_with([("G7-PROV", 1)], "req-1")
         _worker_mod.job_store.update_dispatched.assert_called_once_with("req-1", 1)
 
     def test_checkpoint_deleted_on_full_completion(self, worker):
@@ -278,7 +278,7 @@ class TestHandleCollection:
         _make_chunks([("G1-PROV", 1)])
         worker._handle_collection(_collection())
         worker._token_bucket.consume.assert_not_called()
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
 
     def test_cancel_observed_on_empty_page(self, worker):
         cache = MagicMock()
@@ -338,7 +338,7 @@ class TestDispatchInBatches:
         records = [("G%d-P" % i, i) for i in range(5)]
         progress = []
         assert worker.dispatch_in_batches(records, "req-1", on_progress=progress.append) is True
-        calls = _worker_mod.publish_concept_updates_batch.call_args_list
+        calls = _worker_mod.publish_indexer_events_batch.call_args_list
         assert [len(c.args[0]) for c in calls] == [2, 2, 1]
         assert progress == [2, 2, 1]
         assert worker._token_bucket.consume.call_count == 3
@@ -351,12 +351,12 @@ class TestDispatchInBatches:
         worker._token_bucket.consume.return_value = False
         progress = MagicMock()
         assert worker.dispatch_in_batches([("G1-P", 1)], "req-1", on_progress=progress) is False
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
         progress.assert_not_called()
 
     def test_empty_records_returns_true_without_publishing(self, worker):
         assert worker.dispatch_in_batches([], "req-1") is True
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +384,7 @@ class TestProcess:
     def test_parse_error_dispatches_no_work(self, worker):
         bad = {"ReceiptHandle": "rh-xyz", "Body": "not-json{{{"}
         worker._process(bad, _TEST_QUEUE)
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
 
     def test_collection_item_routes_to_handle_collection(self, worker):
         _make_chunks()
@@ -461,7 +461,7 @@ class TestMessageLease:
         _make_chunks([("G1-PROV", 1)])
         with pytest.raises(_worker_mod._CollectionInterrupted):
             worker._handle_collection(_collection())
-        _worker_mod.publish_concept_updates_batch.assert_not_called()
+        _worker_mod.publish_indexer_events_batch.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

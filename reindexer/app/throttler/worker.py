@@ -17,7 +17,7 @@ from app.db import db_client
 from app.db.dynamo import checkpoint_store, job_store
 from app.es.health import check_all_es_health, wait_for_green
 from app.sqs.client import (
-    change_message_visibility, delete_message, publish_concept_updates_batch, receive_messages,
+    change_message_visibility, delete_message, publish_indexer_events_batch, receive_messages,
 )
 from app.sqs.schemas import CollectionWorkItem, parse_work_item
 from app.throttler.token_bucket import TokenBucket
@@ -96,7 +96,7 @@ class ThrottlerWorker:
 
     def dispatch_in_batches(
         self,
-        records: list[tuple[str, int]],
+        records: list[tuple],
         request_id: str,
         on_progress: Optional[Callable[[int], None]] = None,
     ) -> bool:
@@ -116,7 +116,7 @@ class ThrottlerWorker:
                 len(sub), stop_event=self._stop_event, cancel_fn=lambda: self.is_job_cancelled(request_id),
             ):
                 return False
-            publish_concept_updates_batch(sub, request_id)
+            publish_indexer_events_batch(sub, request_id)
             if on_progress is not None:
                 on_progress(len(sub))
             i += len(sub)
@@ -297,6 +297,7 @@ class ThrottlerWorker:
             after=item.after,
             before=item.before,
             start_after_concept_id=start_after,
+            include_deleted=item.include_deleted,
         ):
             if self._stop_event.is_set() or (self._lease and self._lease.lost):
                 raise _CollectionInterrupted()

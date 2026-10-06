@@ -24,7 +24,7 @@ from app.auth import require_auth
 from app.db import db_client
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
-from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_concept_updates_batch
+from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_indexer_events_batch
 from app.throttler.id_range_scanner import start_id_range_scan
 from app.throttler.worker import throttler
 
@@ -99,6 +99,17 @@ def _override_flag(x_cmr_override_date_limit: Optional[str] = Header(None)) -> b
     return (x_cmr_override_date_limit or "").lower() == "true"
 
 
+def _validate_known_providers(provider_ids: list[str]) -> None:
+    try:
+        known_providers = db_client.get_all_provider_ids()
+    except Exception as exc:
+        logger.error({"event": "provider_existence_check_failed", "error": str(exc)})
+        raise HTTPException(status_code=503, detail="Unable to validate provider IDs; database unavailable") from exc
+    unknown = [p for p in provider_ids if p not in known_providers]
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Unknown provider ID(s): {unknown!r}")
+
+
 class ProviderListRequest(BaseModel):
     provider_ids: list[str]
 
@@ -110,6 +121,7 @@ class ProviderListRequest(BaseModel):
 @leases.holding
 def enqueue_providers(
     request_id: str, provider_ids: list[str], after: Optional[str], before: Optional[str], skip=(),
+    include_deleted: bool = False,
 ) -> None:
     """Shared enqueue loop for both /reindex/granules (all providers) and
     /reindex/granules/providers (an explicit list). skip: providers a previous run
@@ -126,7 +138,8 @@ def enqueue_providers(
             collection_ids = db_client.get_collection_ids_for_provider(provider_id)
             for cid in collection_ids:
                 enqueue_collection_item(
-                    request_id=request_id, collection_id=cid, after=after, before=before
+                    request_id=request_id, collection_id=cid, after=after, before=before,
+                    include_deleted=include_deleted,
                 )
             job_store.update_progress(
                 request_id,
@@ -148,7 +161,9 @@ def enqueue_providers(
         job_store.mark_job(request_id, "failed")
 
 
-def enqueue_all_providers(request_id: str, after: Optional[str], before: Optional[str]) -> None:
+def enqueue_all_providers(
+    request_id: str, after: Optional[str], before: Optional[str], include_deleted: bool = False,
+) -> None:
     try:
         with leases.held(request_id):
             provider_ids = db_client.get_all_provider_ids()
@@ -156,11 +171,12 @@ def enqueue_all_providers(request_id: str, after: Optional[str], before: Optiona
         logger.error({"event": "all_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
         job_store.mark_job(request_id, "failed")
         return
-    enqueue_providers(request_id, provider_ids, after, before)
+    enqueue_providers(request_id, provider_ids, after, before, include_deleted=include_deleted)
 
 
 def enqueue_provider(
     request_id: str, provider_id: str, after: Optional[str], before: Optional[str], start_id: int = 0,
+    include_deleted: bool = False,
 ) -> None:
     try:
         if throttler.is_job_cancelled(request_id):
@@ -170,6 +186,7 @@ def enqueue_provider(
         if job_store.mark_job(request_id, "dispatching"):
             start_id_range_scan(
                 request_id=request_id, provider_id=provider_id, after=after, before=before, start_id=start_id,
+                include_deleted=include_deleted,
             )
     except Exception as exc:
         logger.error({
@@ -207,7 +224,7 @@ def publish_concept_type(request_id: str, internal_type: str, before: Optional[s
                 if throttler.is_job_cancelled(request_id):
                     logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
                     return
-                publish_concept_updates_batch(batch, request_id)
+                publish_indexer_events_batch(batch, request_id)
                 dispatched += len(batch)
                 job_store.update_dispatched(request_id, len(batch))
                 batch = []
@@ -216,7 +233,7 @@ def publish_concept_type(request_id: str, internal_type: str, before: Optional[s
             if throttler.is_job_cancelled(request_id):
                 logger.info({"event": "concept_type_reindex_cancelled", "request_id": request_id})
                 return
-            publish_concept_updates_batch(batch, request_id)
+            publish_indexer_events_batch(batch, request_id)
             dispatched += len(batch)
             job_store.update_dispatched(request_id, len(batch))
 
@@ -250,15 +267,16 @@ def reindex_granules(
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
+    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules", after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
+    job_store.create_job(request_id, "granules", after=after, before=before, include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
     logger.info({"event": "reindex_granules_requested", "request_id": request_id, "after": after, "before": before})
-    background_tasks.add_task(enqueue_all_providers, request_id, after, before)
+    background_tasks.add_task(enqueue_all_providers, request_id, after, before, include_deleted)
     return {"request_id": request_id, "message": "Reindex started for all providers"}
 
 
@@ -269,17 +287,19 @@ def reindex_granules_by_provider(
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
+    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
     if not _PROVIDER_ID_RE.match(provider_id):
         raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {provider_id!r}")
     _validate_date_params(after, before, override)
+    _validate_known_providers([provider_id])
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
     job_store.create_job(
         request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before,
-        source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
+        include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
     )
     logger.info({
         "event": "reindex_provider_requested",
@@ -288,7 +308,7 @@ def reindex_granules_by_provider(
         "after": after,
         "before": before,
     })
-    background_tasks.add_task(enqueue_provider, request_id, provider_id, after, before)
+    background_tasks.add_task(enqueue_provider, request_id, provider_id, after, before, include_deleted=include_deleted)
     return {"request_id": request_id, "message": f"Reindex started for provider {provider_id}"}
 
 
@@ -299,6 +319,7 @@ def reindex_granules_by_providers(
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
+    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
@@ -308,18 +329,11 @@ def reindex_granules_by_providers(
     if invalid:
         raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {invalid!r}")
     _validate_date_params(after, before, override)
-    try:
-        known_providers = db_client.get_all_provider_ids()
-    except Exception as exc:
-        logger.error({"event": "provider_existence_check_failed", "error": str(exc)})
-        raise HTTPException(status_code=503, detail="Unable to validate provider IDs; database unavailable") from exc
-    unknown = [p for p in body.provider_ids if p not in known_providers]
-    if unknown:
-        raise HTTPException(status_code=400, detail=f"Unknown provider ID(s): {unknown!r}")
+    _validate_known_providers(body.provider_ids)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
     job_store.create_job(
-        request_id, "granules-by-providers", after=after, before=before,
+        request_id, "granules-by-providers", after=after, before=before, include_deleted=include_deleted,
         source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
     )
     logger.info({
@@ -329,7 +343,9 @@ def reindex_granules_by_providers(
         "after": after,
         "before": before,
     })
-    background_tasks.add_task(enqueue_providers, request_id, body.provider_ids, after, before)
+    background_tasks.add_task(
+        enqueue_providers, request_id, body.provider_ids, after, before, include_deleted=include_deleted,
+    )
     return {"request_id": request_id, "message": f"Reindex started for {len(body.provider_ids)} providers"}
 
 
@@ -339,6 +355,7 @@ def reindex_granules_by_collection(
     request: Request,
     after: Optional[str] = None,
     before: Optional[str] = None,
+    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
@@ -347,7 +364,10 @@ def reindex_granules_by_collection(
     _validate_date_params(after, before, override)
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules-by-collection", collection_id=collection_id, after=after, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
+    job_store.create_job(
+        request_id, "granules-by-collection", collection_id=collection_id, after=after, before=before,
+        include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
+    )
     logger.info({
         "event": "reindex_collection_requested",
         "request_id": request_id,
@@ -357,7 +377,8 @@ def reindex_granules_by_collection(
     })
     try:
         enqueue_collection_item(
-            request_id=request_id, collection_id=collection_id, after=after, before=before
+            request_id=request_id, collection_id=collection_id, after=after, before=before,
+            include_deleted=include_deleted,
         )
         job_store.update_progress(request_id, work_items_delta=1)
         job_store.mark_job(request_id, "dispatching")

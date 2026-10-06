@@ -1,6 +1,6 @@
 # CMR Reindexer
 
-A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` messages to the CMR indexer's SQS queue. Each task is a single process with background threads for the collection worker, id-range provider scans, lease renewal, and the cancellation cache.
+A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` (and optionally `concept-delete`) events to the CMR indexer's SQS queue. Each task is a single process with background threads for the collection worker, id-range provider scans, lease renewal, and the cancellation cache.
 
 ## How it works
 
@@ -39,7 +39,7 @@ Operator (VPN / VPC only)
 |  - rate limit output    |
 +-------------------------+
          |
-         | concept-update messages
+         | indexer events
          |    (rate limited, ES-green-gated)
          v
 +-------------------------+
@@ -59,6 +59,8 @@ Operator (VPN / VPC only)
 **Provider runs** (`/reindex/granules/provider/{id}`) skip the collection queue. A scan thread walks the provider's granule table in windows of `ID_RANGE_CHUNK_SIZE` ids and dispatches through the same rate limit; `next_start_id` on the job is its resume point. A granule revised far apart in id space may be dispatched more than once, so `total_dispatched` can exceed the live granule count. At most 5 scans run at once per task.
 
 **Concept-type runs** (`/reindex/{concept_type}`) stream the type's table in a background task.
+
+Providers flagged `small` in `METADATA_DB.providers` have no tables of their own; their concepts live in the shared `SMALL_PROV_*` tables, filtered by `provider_id`.
 
 **Job state** is persisted in DynamoDB. In-progress work is leased by the task doing it: a collection work item by its SQS message visibility, any other job by its `last_heartbeat`. Each task keeps renewing its leases, however long the work takes. If a task dies, its leases lapse after `LEASE_MINUTES` and another task resumes the work from its checkpoint or saved progress. A graceful shutdown hands the collection message back right away. An Oracle call running longer than 5 minutes is logged as `oracle_call_slow` until it returns.
 
@@ -90,6 +92,9 @@ POST /reindex/granules?after=2026-07-25T00:00:00Z&before=2026-08-24T00:00:00Z
 - `after` cannot be more than 30 days in the past (returns 400)
 - Send `X-CMR-Override-Date-Limit: true` to bypass the 30-day limit
 - `after` must be earlier than `before` (returns 400 if not)
+- `before` defaults to the request time, so granules revised during the run are left to normal ingest indexing
+
+**Deleted granules** (`?include_deleted=true`, granule endpoints only): granules with a tombstone revision in range also get a `concept-delete`, which removes ES documents left behind by a missed delete. Like bootstrap, this relies on ES versioning: a delete for a granule re-ingested since is ignored. metadata-db keeps tombstones for a year by default, so prefer a provider or collection plus `after`.
 
 All reindex endpoints return `202 Accepted` with a `request_id`:
 
@@ -163,11 +168,11 @@ The `elapsed_seconds`, `heartbeat_age_seconds`, `lease_lapsed`, `avg_dispatch_ra
 
 - `collections_split` / `work_items_enqueued`: collections fully streamed out of those enqueued (collection-queue jobs).
 - `next_start_id`: resume point of a provider run.
-- `lease_lapsed`: only on jobs leased by their heartbeat (`running` jobs and `dispatching` provider runs). `true` means the heartbeat is older than `LEASE_MINUTES`; on its next pass the lease keeper restarts the job, or fails it if it can't be restarted (e.g. a single-concept request). Collection-queue jobs are leased by their SQS messages instead.
-- `heartbeat_age_seconds`: for a collection-queue job, it's only refreshed while one of its work items is being streamed, so it grows while the job waits in the queue.
-- `avg_dispatch_rate_per_minute`: averaged over the job's lifetime, so it includes any time spent queued or waiting.
-
-`providers_remaining` (only present on `granules`/`granules-by-providers` jobs, which track `providers_requested`) lists every provider that still has outstanding work — either never enqueued at all, or enqueued but not every one of its collections has finished streaming yet (`providers_collections_split[p] < providers_work_items[p]`). This is the safe set to resubmit via `POST /reindex/granules/providers` after cancelling a job, without needing to inspect the checkpoint table.
+- `lease_lapsed`: only on heartbeat-leased jobs (`running` jobs and `dispatching` provider runs). `true` means no task has renewed it for `LEASE_MINUTES`; the lease keeper restarts it, or fails it if it can't be restarted (e.g. a single-concept request).
+- `heartbeat_age_seconds`: on a collection-queue job, only refreshed while one of its work items is streaming, so it grows while the job waits in the queue.
+- `avg_dispatch_rate_per_minute`: averaged over the job's lifetime, including time spent queued.
+- `providers_remaining` (`granules` / `granules-by-providers` jobs): providers never enqueued, or with collections not yet streamed. The set to resubmit after a cancel.
+- `include_deleted`: present on jobs started with that flag.
 
 Job statuses: `running`, `dispatching`, `completed`, `failed`, `cancelled`
 
