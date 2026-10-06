@@ -448,6 +448,7 @@
   concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the
   concept if successful, otherwise throws an exception."
   [db provider context concept]
+  (info (format "CMR-11560 - INSIDE try-to-save (cmr.metadata-db.services.concept-service) with provider %s and concept-id %s" provider {:concept-id concept}))
   {:pre [(:revision-id concept)]}
   (let [result (c/save-concept db provider concept)
         ;; When there are constraint violations we send in a rollback function to delete the

@@ -108,6 +108,12 @@
   (fn [db provider concept]
     (:concept-type concept)))
 
+(defmulti post-commit-step
+          "Executes non-transactional operations after a concept is successfully committed to the database.
+           Useful for heavy batch-deletions that require auto-commit to prevent UNDO tablespace exhaustion."
+          (fn [db provider concept]
+            (:concept-type concept)))
+
 ;; Multimethod defaults
 
 (defmethod db-result->concept-map :default
@@ -134,6 +140,12 @@
                                            (oracle/oracle-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
+
+
+(defmethod post-commit-step :default
+  [db provider concept]
+  ;; does nothing
+  nil)
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
@@ -411,37 +423,88 @@
                          :transaction-id (long (:transaction_id result))})
            (su/query conn stmt)))))
 
+;; ORIG FUNC
+;(defn save-concept
+;  [db provider concept]
+;  (info (format "CMR-11560 - INSIDE save-concept in metadata db oracle/concepts.clj with provider %s and concept-id %s" provider {:concept-id concept}))
+;  (try
+;    (j/with-db-transaction
+;     [conn db]
+;     (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
+;                        (when (= :variable-association (:concept-type concept))
+;                          (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]
+;       ;; There was a concept id, native id mismatch with earlier concepts
+;       error
+;       ;; Concept id native id pair was valid
+;       (let [{:keys [concept-type]} concept
+;             table (tables/get-table-name provider concept-type)
+;             seq-name (str table "_seq")
+;             [cols values] (concept->insert-args concept (:small provider))
+;             stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+;                               "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
+;                          table
+;                          (string/join "," cols)
+;                          seq-name
+;                          (string/join "," (repeat (count values) "?")))]
+;         (trace "Executing" stmt "with values" (pr-str values))
+;         (j/db-do-prepared db stmt values)
+;         (after-save conn provider concept)
+;         nil)))
+;    (catch Exception e
+;      (let [error-message (.getMessage e)
+;            error-code (if (re-find #"unique constraint.* violated" error-message)
+;                         :revision-id-conflict
+;                         :unknown-error)]
+;        {:error error-code :error-message error-message :throwable e}))))
+
 (defn save-concept
   [db provider concept]
-  (try
-    (j/with-db-transaction
-     [conn db]
-     (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
-                        (when (= :variable-association (:concept-type concept))
-                          (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]
-       ;; There was a concept id, native id mismatch with earlier concepts
-       error
-       ;; Concept id native id pair was valid
-       (let [{:keys [concept-type]} concept
-             table (tables/get-table-name provider concept-type)
-             seq-name (str table "_seq")
-             [cols values] (concept->insert-args concept (:small provider))
-             stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
-                               "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
-                          table
-                          (string/join "," cols)
-                          seq-name
-                          (string/join "," (repeat (count values) "?")))]
-         (trace "Executing" stmt "with values" (pr-str values))
-         (j/db-do-prepared db stmt values)
-         (after-save conn provider concept)
-         nil)))
-    (catch Exception e
-      (let [error-message (.getMessage e)
-            error-code (if (re-find #"unique constraint.* violated" error-message)
-                         :revision-id-conflict
-                         :unknown-error)]
-        {:error error-code :error-message error-message :throwable e}))))
+  (info (format "CMR-11560 - INSIDE save-concept in metadata db oracle/concepts.clj with provider %s and concept-id %s" provider {:concept-id concept}))
+
+  ;; Run the exact original logic and store whatever it returns
+  (let [save-result
+        (try
+          (j/with-db-transaction
+            [conn db]
+            (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
+                               (when (= :variable-association (:concept-type concept))
+                                 (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]
+              ;; There was a concept id, native id mismatch with earlier concepts
+              error
+
+              ;; Concept id native id pair was valid
+              (let [{:keys [concept-type]} concept
+                    table (tables/get-table-name provider concept-type)
+                    seq-name (str table "_seq")
+                    [cols values] (concept->insert-args concept (:small provider))
+                    stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                      "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
+                                 table
+                                 (string/join "," cols)
+                                 seq-name
+                                 (string/join "," (repeat (count values) "?")))]
+                (trace "Executing" stmt "with values" (pr-str values))
+                (j/db-do-prepared db stmt values)
+
+                ;; Keep other transactional after-save operations here
+                (after-save conn provider concept)
+
+                ;; Explicitly return nil on success
+                nil)))
+
+          (catch Exception e
+            (let [error-message (.getMessage e)
+                  error-code (if (re-find #"unique constraint.* violated" error-message)
+                               :revision-id-conflict
+                               :unknown-error)]
+              {:error error-code :error-message error-message :throwable e})))]
+
+    ;; Only run the heavy batch delete if the save was 100% successful (returned nil)
+    (when (nil? save-result)
+      (post-commit-step db provider concept))
+
+    ;; Return the exact same result (nil or error) to the caller
+    save-result))
 
 (defn force-delete
   [this concept-type provider concept-id revision-id]
@@ -462,6 +525,7 @@
   [db provider params]
   (sh/force-delete-concept-by-params db provider params))
 
+;; TODO JYNA do I need to change this too?
 (defn force-delete-concepts
   [db provider concept-type concept-id-revision-id-tuples]
   (let [table (tables/get-table-name provider concept-type)]

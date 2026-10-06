@@ -3,6 +3,7 @@
   (:require
    [clj-time.coerce :as cr]
    [cmr.common.date-time-parser :as p]
+   [cmr.common.log :refer [info]]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.util :as data-util]
@@ -38,12 +39,27 @@
     [(concat cols ["provider_id"])
      (concat values [provider-id])]))
 
-(defmethod c/after-save :collection
-  [db provider coll]
-  (when (:deleted coll)
+(defmethod c/post-commit-step :collection
+  [db provider concept]
+  (info (format "CMR-11560 - INSIDE post-commit-step :collection with provider %s and coll-id %s" provider {:concept-id concept}))
+  ;; If this is a tombstone (deletion), run your batch-delete loop
+  (when (:deleted concept)
+    (info "CMR-11560 - Running batched granule deletion for collection" (:concept-id concept))
     ;; Cascade deletion to real deletes of granules
     (concepts/force-delete-by-params db
                                      provider
                                      {:concept-type :granule
-                                      :provider-id (:provider-id coll)
-                                      :parent-collection-id (:concept-id coll)})))
+                                      :provider-id (:provider-id concept)
+                                      :parent-collection-id (:concept-id concept)})))
+
+;;REMOVED and REPLACED with post-commit-step
+;(defmethod c/after-save :collection
+;  [db provider coll]
+;  (info (format "CMR-11560 - INSIDE after-save :collection with provider %s and coll-id %s" provider {:concept-id coll}))
+;  (when (:deleted coll)
+;    ;; Cascade deletion to real deletes of granules
+;    (concepts/force-delete-by-params db
+;                                     provider
+;                                     {:concept-type :granule
+;                                      :provider-id (:provider-id coll)
+;                                      :parent-collection-id (:concept-id coll)})))

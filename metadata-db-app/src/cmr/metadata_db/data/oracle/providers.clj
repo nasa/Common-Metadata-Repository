@@ -26,6 +26,7 @@
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
   [db provider]
+  (info (format "INSIDE delete-small-provider-concepts..."))
   {:pre [(:small provider)]}
   (let [provider-id (:provider-id provider)]
     (sh/force-delete-concept-by-params db provider {:concept-type :granule

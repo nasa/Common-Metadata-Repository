@@ -3,6 +3,7 @@
   (:require
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
@@ -43,15 +44,67 @@
          (cons `and comparisons))
        (first comparisons)))))
 
+;; ORIG FUNC
+;(defn force-delete-concept-by-params
+;  "Delete the concepts based on params. concept-type and provider-id must be one of the params.
+;  This function is moved from the concepts namespace to avoid cyclic inclusion issue."
+;  [db provider params]
+;  (let [{:keys [concept-type]} params
+;        params (if (:small provider)
+;                 (dissoc params :concept-type)
+;                 (dissoc params :concept-type :provider-id))
+;        table (ct/get-table-name provider concept-type)
+;        sql-query (delete table
+;                          (where (find-params->sql-clause params)))
+;        ;; TODO we need to batch these deletes instead of one large chunk
+;        stmt (su/build sql-query)]
+;    (info (format "CMR-11560 - INSIDE force-delete-concept-by-params with provider %s and params %s and and table %s and sql-query %s statement %s"
+;                  provider params table sql-query stmt))
+;    (j/execute! db stmt)))
+
 (defn force-delete-concept-by-params
-  "Delete the concepts based on params. concept-type and provider-id must be one of the params.
-  This function is moved from the concepts namespace to avoid cyclic inclusion issue."
+  "Delete the concepts based on params in batches to prevent overwhelming db.
+  concept-type and provider-id must be one of the params.
+  This function is moved from the concepts namespace to avoid cyclic inclusion issue.
+  To make sure it properly auto-commits between batches, do not wrap this func in a with-db-transaction func (which will disable auto-commit)"
   [db provider params]
   (let [{:keys [concept-type]} params
         params (if (:small provider)
                  (dissoc params :concept-type)
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
-        stmt (su/build (delete table
-                         (where (find-params->sql-clause params))))]
-    (j/execute! db stmt)))
+
+        ;; Build the base query
+        sql-query (delete table
+                          (where (find-params->sql-clause params)))
+        built-stmt (su/build sql-query)
+
+        ;; Extract the SQL string and the values from the built statement
+        sql-str (first built-stmt)
+        sql-vals (rest built-stmt)
+        batch-size 10000
+
+        ;; Append ROWNUM <= ? to the SQL string, and add batch-size to the values array.
+        ;; This transforms ["DELETE FROM t WHERE col = ?" "val"]
+        ;; into ["DELETE FROM t WHERE col = ? AND ROWNUM <= ?" "val" 10000]
+        stmt (into [(str sql-str " AND ROWNUM <= ?")]
+                   (concat sql-vals [batch-size]))]
+
+    (info (format "CMR-11560 - INSIDE force-delete-concept-by-params. Batching query: %s" stmt))
+
+    ;; Loop and execute until 0 rows are deleted
+    (loop [total-deleted 0
+           attempt 1]
+      (let [;; jdbc/execute! returns a sequence containing the update count, e.g., (10000)
+            rows-deleted (first (j/execute! db stmt))]
+        (if (> rows-deleted 0)
+          (do
+            ;; Pause for 10ms to let Oracle safely flush the Undo Tablespace to disk
+            (Thread/sleep 10)
+            (recur (+ total-deleted rows-deleted) (inc attempt)))
+
+          ;; Loop finished!
+          (do
+            (info (format "CMR-11560 - Finished deleting %d %s(s) in %d batches from table %s."
+                          total-deleted concept-type attempt table))
+            total-deleted))))))

@@ -2,7 +2,7 @@
   "Allows broadcast of ingest events via the message queue"
   (:require
    [cmr.common.concepts :as cc]
-   [cmr.common.log :as log :refer [debug error info warn]]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.services.queue :as queue]
    [cmr.metadata-db.config :as config]))

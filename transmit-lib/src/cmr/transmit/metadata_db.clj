@@ -486,6 +486,7 @@
 (defn-timed save-concept
   "Saves a concept in metadata db"
   [context concept]
+  (info (format "CMR-11560 - INSIDE save-concept in trasmit/metadata_db.clj with concept-id %s" {:concept-id concept}))
   (let [conn (config/context->app-connection context :metadata-db)
         url (str (conn/root-url conn) "/concepts")
         concept-json-str (json/generate-string concept)

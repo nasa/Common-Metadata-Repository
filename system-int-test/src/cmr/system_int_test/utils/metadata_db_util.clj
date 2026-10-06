@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as json]
+            [cmr.common.log :refer [info]]
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.transmit.config :as transmit-config]
@@ -10,6 +11,7 @@
 (defn save-concept
   "Save a concept to the metadata db and return a map with status, concept-id, and revision-id"
   [concept]
+  (info (format "CMR-11560 - INSIDE save-concept in metadata_db_util.clj with concept-id %s" {:concept-id concept}))
   (let [response (client/request
                    {:method :post
                     :url (url/mdb-concepts-url)

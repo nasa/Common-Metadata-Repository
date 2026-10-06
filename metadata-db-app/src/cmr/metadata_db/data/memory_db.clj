@@ -5,6 +5,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
    [cmr.common.generics :as common-generic]
+   [cmr.common.log :refer [info]]
    [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
@@ -499,6 +500,7 @@
 
 (defn save-concept
   [db provider concept]
+  (info (format "CMR-11560 - INSIDE save-concept for memory_db with provider %s and concept-id %s" provider {:concept-id concept}))
   {:pre [(:revision-id concept)]}
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                      (when (= :variable-association (:concept-type concept))
