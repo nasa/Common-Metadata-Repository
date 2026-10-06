@@ -12,7 +12,6 @@
 (defn publish-event
   "Put an ingest event on the message queue."
   [context msg]
-  (info (format "CMR-11560 - INSIDE publish-event with msg = %s" msg))
   (when-not (:concept-id msg)
     (errors/internal-error! (str "Expecting every message to contain a concept-id. msg: " (pr-str msg))))
   (when (config/publish-messages)
@@ -26,7 +25,7 @@
                                (cc/concept-id->type (:concept-id msg))))]
       (when exchange-name-fn
         (let [queue-broker (get-in context [:system :queue-broker])]
-          (info (format "CMR-11560 - exchange-name-fun = %s and queue-broker = %s" exchange-name-fn queue-broker))
+          (info (format "CMR-11560 - INSIDE publish-event with msg = %s exchange-name-fun = %s and queue-broker = %s" msg exchange-name-fn queue-broker))
           (when queue-broker
             (queue/publish-message queue-broker (exchange-name-fn) msg))))
       )))
