@@ -233,3 +233,10 @@ class TestPublishConceptUpdatesBatch:
         sqs.send_message_batch.return_value = {"Successful": [], "Failed": []}
         publish_concept_updates_batch([("G1-PROV", 1)], "req-1")
         sqs.send_message.assert_not_called()
+
+
+def test_get_queue_counts_splits_available_and_in_flight(sqs):
+    sqs.get_queue_attributes.return_value = {"Attributes": {
+        "ApproximateNumberOfMessages": "7", "ApproximateNumberOfMessagesNotVisible": "2",
+    }}
+    assert _sqs_mod.get_queue_counts("http://sqs/q") == {"available": 7, "in_flight": 2}

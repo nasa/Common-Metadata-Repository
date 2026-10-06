@@ -46,7 +46,7 @@ class Config:
     # exceed rate_per_minute — dispatch_in_batches sub-slices each chunk to the current rate.
     stream_chunk_size: int = field(default_factory=lambda: int(os.environ.get("STREAM_CHUNK_SIZE", "1000")))
 
-    # Rows per id-range window (POST /reindex/granules/provider/{id}). Larger windows
+    # Ids per id-range window (POST /reindex/granules/provider/{id}). Larger windows
     # mean fewer, longer Oracle fetches.
     id_range_chunk_size: int = field(default_factory=lambda: int(os.environ.get("ID_RANGE_CHUNK_SIZE", "20000")))
     # Parallel worker threads for publish_concept_updates_batch SQS sends.

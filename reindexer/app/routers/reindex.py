@@ -6,6 +6,9 @@ either to FastAPI background tasks or, for the id-range provider scan
 (app.throttler.id_range_scanner), a plain daemon thread. Progress is tracked in
 DynamoDB via job_store. The background helpers are public because the lease keeper
 also calls them, to restart a job whose owner died.
+
+Handlers are plain def, so their blocking DB/SQS calls run in FastAPI's threadpool
+rather than on the event loop that serves /health.
 """
 import logging
 import re
@@ -15,7 +18,6 @@ from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
-from starlette.concurrency import run_in_threadpool
 
 from app import leases
 from app.auth import require_auth
@@ -243,7 +245,7 @@ def publish_concept_type(request_id: str, internal_type: str, before: Optional[s
 # ---------------------------------------------------------------------------
 
 @router.post("/reindex/granules", status_code=202)
-async def reindex_granules(
+def reindex_granules(
     request: Request,
     background_tasks: BackgroundTasks,
     after: Optional[str] = None,
@@ -261,7 +263,7 @@ async def reindex_granules(
 
 
 @router.post("/reindex/granules/provider/{provider_id}", status_code=202)
-async def reindex_granules_by_provider(
+def reindex_granules_by_provider(
     provider_id: str,
     request: Request,
     background_tasks: BackgroundTasks,
@@ -291,7 +293,7 @@ async def reindex_granules_by_provider(
 
 
 @router.post("/reindex/granules/providers", status_code=202)
-async def reindex_granules_by_providers(
+def reindex_granules_by_providers(
     body: ProviderListRequest,
     request: Request,
     background_tasks: BackgroundTasks,
@@ -332,7 +334,7 @@ async def reindex_granules_by_providers(
 
 
 @router.post("/reindex/granules/collection/{collection_id:path}", status_code=202)
-async def reindex_granules_by_collection(
+def reindex_granules_by_collection(
     collection_id: str,
     request: Request,
     after: Optional[str] = None,
@@ -371,7 +373,7 @@ async def reindex_granules_by_collection(
 # ---------------------------------------------------------------------------
 
 @router.post("/reindex/concept/{concept_id}", status_code=202)
-async def reindex_concept(
+def reindex_concept(
     concept_id: str,
     request: Request,
     _token: str = Depends(require_auth),
@@ -393,7 +395,7 @@ async def reindex_concept(
             job_store.mark_job(request_id, "failed")
             raise HTTPException(status_code=404, detail=f"Concept not found: {concept_id}")
 
-        es_health = await run_in_threadpool(check_all_es_health)
+        es_health = check_all_es_health()
         if es_health["overall"] != "green":
             logger.warning({
                 "event": "reindex_concept_es_not_green",
@@ -420,7 +422,7 @@ async def reindex_concept(
 # ---------------------------------------------------------------------------
 
 @router.post("/reindex/{concept_type}", status_code=202)
-async def reindex_by_concept_type(
+def reindex_by_concept_type(
     concept_type: str,
     request: Request,
     background_tasks: BackgroundTasks,

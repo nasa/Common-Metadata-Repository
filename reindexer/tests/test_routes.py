@@ -615,17 +615,23 @@ class TestJobEnrichment:
         result = self._enrich({"job_id": "j1", "status": "running", "last_heartbeat": hb})
         assert 43 <= result["heartbeat_age_seconds"] <= 47
 
-    def test_heartbeat_stale_false_when_recent(self):
-        from datetime import datetime, timezone
-        hb = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        result = self._enrich({"job_id": "j1", "status": "running", "last_heartbeat": hb})
-        assert result["heartbeat_stale"] is False
-
-    def test_heartbeat_stale_true_when_old(self):
+    @pytest.mark.parametrize("minutes_ago, lapsed", [(0, False), (25, True)])
+    def test_lease_lapsed_once_heartbeat_older_than_lease(self, minutes_ago, lapsed):
         from datetime import datetime, timedelta, timezone
-        hb = (datetime.now(timezone.utc) - timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        hb = (datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
         result = self._enrich({"job_id": "j1", "status": "running", "last_heartbeat": hb})
-        assert result["heartbeat_stale"] is True
+        assert result["lease_lapsed"] is lapsed
+
+    @pytest.mark.parametrize("status, concept_type", [
+        ("completed", "granules-by-provider"), ("dispatching", "granules-by-collection"),
+    ])
+    def test_lease_lapsed_absent_for_jobs_not_leased_by_heartbeat(self, status, concept_type):
+        result = self._enrich({
+            "job_id": "j1", "status": status, "concept_type": concept_type, "ttl": 123,
+            "last_heartbeat": "2020-01-01T00:00:00Z",
+        })
+        assert "lease_lapsed" not in result
+        assert "ttl" not in result
 
     def test_dispatch_rate_computed_from_dispatched_and_elapsed(self):
         from datetime import datetime, timedelta, timezone
@@ -635,7 +641,7 @@ class TestJobEnrichment:
             "started_at": (datetime.now(timezone.utc) - timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "total_dispatched": 6000,
         })
-        assert result["dispatch_rate_per_minute"] == 6000
+        assert result["avg_dispatch_rate_per_minute"] == 6000
 
     def test_completed_job_measured_to_completed_at_so_rate_does_not_decay(self):
         from datetime import datetime, timedelta, timezone
@@ -647,7 +653,7 @@ class TestJobEnrichment:
             "total_dispatched": 6000,
         })
         assert result["elapsed_seconds"] == 60
-        assert result["dispatch_rate_per_minute"] == 6000
+        assert result["avg_dispatch_rate_per_minute"] == 6000
 
     def test_dispatch_rate_absent_when_nothing_dispatched(self):
         from datetime import datetime, timedelta, timezone
@@ -656,11 +662,11 @@ class TestJobEnrichment:
             "started_at": (datetime.now(timezone.utc) - timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "total_dispatched": 0,
         })
-        assert "dispatch_rate_per_minute" not in result
+        assert "avg_dispatch_rate_per_minute" not in result
 
     def test_dispatch_rate_absent_when_no_timestamps(self):
         result = self._enrich({"job_id": "j1", "status": "running", "total_dispatched": 1000})
-        assert "dispatch_rate_per_minute" not in result
+        assert "avg_dispatch_rate_per_minute" not in result
 
     def test_original_fields_preserved(self):
         result = self._enrich({"job_id": "j1", "status": "running", "concept_type": "granules"})
@@ -730,8 +736,8 @@ class TestJobEnrichment:
         body = client.get("/reindexer/jobs/j1").json()
         assert "elapsed_seconds" in body
         assert "heartbeat_age_seconds" in body
-        assert "heartbeat_stale" in body
-        assert "dispatch_rate_per_minute" in body
+        assert "lease_lapsed" in body
+        assert "avg_dispatch_rate_per_minute" in body
 
 
 class TestListJobsEndpoint:

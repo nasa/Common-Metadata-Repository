@@ -61,6 +61,11 @@ def restart_lapsed_jobs(job_store) -> None:
             job_store.mark_job(job_id, "failed")
 
 
+def jobs_in_progress() -> set[str]:
+    """Jobs this task is working on: held leases plus the collection being streamed."""
+    return (leases.held_jobs() | {throttler.current_job_id}) - {None}
+
+
 def _tick(job_store, stop_event: threading.Event) -> None:
     # Separate try blocks, so one failing step doesn't skip the others.
     try:
@@ -68,9 +73,9 @@ def _tick(job_store, stop_event: threading.Event) -> None:
     except Exception as exc:
         logger.warning({"event": "message_lease_renew_error", "error": str(exc)})
 
-    # The throttler's current job is leased by its message; renewing its heartbeat
-    # too only keeps /jobs heartbeat_stale accurate for it.
-    for job_id in (leases.held_jobs() | {throttler.current_job_id}) - {None}:
+    # The current collection job is leased by its message; its heartbeat is renewed
+    # too only so /jobs heartbeat_age_seconds stays meaningful for it.
+    for job_id in jobs_in_progress():
         try:
             job_store.update_heartbeat(job_id)
         except Exception as exc:
@@ -98,4 +103,5 @@ def start_lease_keeper(job_store, stop_event: threading.Event) -> threading.Thre
 
     thread = threading.Thread(target=_run, name="lease-keeper", daemon=True)
     thread.start()
+    logger.info({"event": "lease_keeper_started"})
     return thread

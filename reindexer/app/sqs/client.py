@@ -27,8 +27,15 @@ def _sqs():
         endpoint_url=config.sqs_endpoint_url,        # None → real AWS SQS
         aws_access_key_id=config.aws_access_key_id,  # None → credential chain (IAM task role)
         aws_secret_access_key=config.aws_secret_access_key,
-        config=Config(max_pool_connections=config.sqs_send_workers),
+        # The shared send pool, plus headroom for receives, lease renewals and /status.
+        config=Config(max_pool_connections=config.sqs_send_workers + 10),
     )
+
+
+@functools.lru_cache(maxsize=1)
+def _send_pool() -> ThreadPoolExecutor:
+    """Shared by every dispatcher, so concurrent sends never exceed sqs_send_workers."""
+    return ThreadPoolExecutor(max_workers=config.sqs_send_workers, thread_name_prefix="sqs-send")
 
 
 def enqueue_collection_item(
@@ -83,11 +90,9 @@ def _send_one_sqs_batch(entries: list[dict]) -> None:
 
 
 def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: str) -> None:
-    """Send concept-update messages to the CMR indexer queue in parallel batches of 10.
-
-    SQS send_message_batch accepts up to 10 messages per call.  Batches are sent
-    concurrently via a thread pool so the HTTP round-trip cost is O(1 pool round)
-    rather than O(N serial calls).  Raises RuntimeError if any batch fails.
+    """Send concept-update messages to the CMR indexer queue in parallel batches of 10
+    (the send_message_batch limit), on the shared send pool. Raises RuntimeError if
+    any batch fails.
     """
     batches = [
         [
@@ -104,10 +109,8 @@ def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: st
         for i in range(0, len(records), _BATCH_SIZE)
     ]
 
-    with ThreadPoolExecutor(max_workers=config.sqs_send_workers) as pool:
-        futures = [pool.submit(_send_one_sqs_batch, batch) for batch in batches]
-    # Executor has shut down — all futures are done. Collect every error so none are silently
-    # dropped (raising inside as_completed would exit the loop early, swallowing later failures).
+    futures = [_send_pool().submit(_send_one_sqs_batch, batch) for batch in batches]
+    # Wait on every future, so one failure doesn't hide the others.
     errors = []
     for fut in futures:
         try:
@@ -126,12 +129,15 @@ def publish_concept_updates_batch(records: list[tuple[str, int]], request_id: st
     })
 
 
-def get_queue_depth(queue_url: str) -> int:
+def get_queue_counts(queue_url: str) -> dict:
     attrs = _sqs().get_queue_attributes(
         QueueUrl=queue_url,
         AttributeNames=["ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"],
     ).get("Attributes", {})
-    return int(attrs.get("ApproximateNumberOfMessages", 0)) + int(attrs.get("ApproximateNumberOfMessagesNotVisible", 0))
+    return {
+        "available": int(attrs.get("ApproximateNumberOfMessages", 0)),
+        "in_flight": int(attrs.get("ApproximateNumberOfMessagesNotVisible", 0)),
+    }
 
 
 def receive_messages(
