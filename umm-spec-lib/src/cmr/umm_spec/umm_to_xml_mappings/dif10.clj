@@ -270,7 +270,9 @@
                (when-let [d (:BeginningDateTime v)] [:BeginningDateTime (str d)])
                (when-let [d (:EndingDateTime v)] [:EndingDateTime (str d)])
                (when-let [d (:DeprecatedDateTime v)] [:DeprecatedDateTime (str d)])
-               (when-let [cp (:CollectionProgress v)] [:CollectionProgress cp])])))]
+               (when-let [cp (when-let [coll-progress (:CollectionProgress v)]
+                                (get coll-progress-mapping (string/upper-case coll-progress)))]
+                  [:CollectionProgress cp])])))]
     (if (empty? (:CollectionCitations c))
       (when (seq doi)
         [:Dataset_Citation

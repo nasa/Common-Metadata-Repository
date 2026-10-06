@@ -140,12 +140,12 @@
                              [:gmd:date
                               [:gmd:CI_Date
                                [:gmd:date [:gco:DateTime (if (string? beginning) beginning (date-time-parser/clj-time->date-time-str beginning))]]
-                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "creation"} "creation"]]]])
+                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "validityBegins"} "validityBegins"]]]])
                            (when ending
                              [:gmd:date
                               [:gmd:CI_Date
                                [:gmd:date [:gco:DateTime (if (string? ending) ending (date-time-parser/clj-time->date-time-str ending))]]
-                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "revision"} "revision"]]]])
+                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "validityExpires"} "validityExpires"]]]])
                            (when deprecated
                              [:gmd:date
                               [:gmd:CI_Date
