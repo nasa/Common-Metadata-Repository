@@ -668,21 +668,22 @@
 (defn- cascade-collection-delete
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
-  [context concept-mapping-types concept-id revision-id]
-  (debug "Starting cascade collection delete for concept-id " concept-id)
+  [context concept-id revision-id]
+  (debug "CMR-11560 - Starting cascade collection delete for concept-id " concept-id)
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
                                          (:granule)
                                          (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
-      (debug "Deleting within index : " index)
+      (debug "CMR-11560 - Deleting within index : " index)
       (if (= index small-collections-index-name)
         (let [resp (es-helper/delete-by-query
-                    (indexer-util/context->conn context es-config/gran-elastic-name)
-                    index
-                    (concept-mapping-types :granule)
-                    {:term {(query-field->elastic-field :collection-concept-id :granule)
-                            concept-id}})]
+                     (indexer-util/context->conn context es-config/gran-elastic-name)
+                     index
+                     {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
+                     {:slices "auto"
+                      :scroll-size 5000
+                      :max-wait-ms (* 60 60 1000)})]
           (when (not= (get resp :status) 200)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp))))
         ;; Instead of running a delete-by-query to remove all granules from
@@ -761,7 +762,7 @@
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (let [[tm result] (util/time-execution
-                                 (cascade-collection-delete context concept-mapping-types concept-id revision-id))]
+                                 (cascade-collection-delete context concept-id revision-id))]
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result))))))))
 
@@ -855,14 +856,12 @@
   ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
-        concept-mapping-types (idx-set/get-concept-mapping-types context)
-        ccmt (concept-mapping-types :collection)]
+        concept-mapping-types (idx-set/get-concept-mapping-types context)]
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es-helper/delete-by-query
        (indexer-util/context->conn context es-config/elastic-name)
        index
-       ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
@@ -870,7 +869,6 @@
       (es-helper/delete-by-query
        (indexer-util/context->conn context es-config/gran-elastic-name)
        index-name
-       (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
 
     ;; delete the variable,service,tool and subscription
@@ -879,7 +877,6 @@
         (es-helper/delete-by-query
          (indexer-util/context->conn context es-config/elastic-name)
          index
-         (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
 (defn publish-provider-event

@@ -130,8 +130,10 @@
 (defn- attempt-to-start-task
   "Makes a single attempt to start the delete-by-query task.
   Throws an exception on any failure, returns a task-id on success."
-  [conn index query]
-  (let [start-task-url (es-util/url-with-path conn index "_delete_by_query")
+  [conn index query options]
+  (let [slices (get options :slices 1)               ;; Default to 1
+        scroll-size (get options :scroll-size 500)   ;; Default to 500
+        start-task-url (es-util/url-with-path conn index "_delete_by_query")
         response (http/post start-task-url
                             (merge (:http-opts conn)
                                    {:headers {"Authorization" (es-config/elastic-admin-token)
@@ -139,8 +141,8 @@
                                               :client-id t-config/cmr-client-id}
                                     :content-type :json
                                     :query-params {:wait_for_completion false
-                                                   :slices 1
-                                                   :scroll_size 500
+                                                   :slices slices
+                                                   :scroll_size scroll-size
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
@@ -173,10 +175,10 @@
 
 (defn- poll-task-for-completion
   "Polls a given task-id until it completes, fails, or times out."
-  [conn task-id]
+  [conn task-id options]
   (let [polling-interval-ms 5000
-        ;; Hard limit set to 4.5 minutes to safely fit inside the 5-minute SQS window
-        max-wait-ms (* 4.5 60 1000)
+        ;; Extract max-wait-ms, default to 4.5 minutes if not provided
+        max-wait-ms (get options :max-wait-ms (* 4.5 60 1000))
         start-time (System/currentTimeMillis)]
 
     (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
@@ -248,40 +250,45 @@
             (recur)))))))
 
 (defn delete-by-query
-  "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts."
-  [conn index _mapping-type query]
-  (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
+  "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts.
+  Accepts an optional map of tuning parameters: {:slices, :scroll-size, :max-wait-ms}"
+  ([conn index query]
+   (delete-by-query conn index query {}))
 
-  (loop [attempt 1]
-    (let [result (try
-                   (let [task-id (attempt-to-start-task conn index query)]
-                     [:ok (poll-task-for-completion conn task-id)])
-                   (catch Exception e
-                     [:error e]))]
+  ([conn index query options]
+   (info "Delete-By-Query: delete-by-query started for index : " index)
+    (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
 
-      ;; Attempt Retries if failed due to Elastic's scroll context errors
-      (if (= :ok (first result))
-        (second result)
-        (let [e (second result)
-              ex-data-map (ex-data e)]
+    (loop [attempt 1]
+      (let [result (try
+                     (let [task-id (attempt-to-start-task conn index query options)]
+                       [:ok (poll-task-for-completion conn task-id options)])
+                     (catch Exception e
+                       [:error e]))]
 
-          (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
-            (do
-              ;; Log the exact ex-info message and data that triggered the retry
-              (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
-                            (ex-message e)
-                            (pr-str ex-data-map)))
-              (info (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
-              (Thread/sleep 1000)
-              (recur (inc attempt)))
+        ;; Attempt Retries if failed due to Elastic's scroll context errors
+        (if (= :ok (first result))
+          (second result)
+          (let [e (second result)
+                ex-data-map (ex-data e)]
 
-            (do
-              ;; Log the exact ex-info message and data right before permanently failing
-              (error (format "Delete-By-Query: Task permanently failed or max retries reached. Exception: %s | Data: %s"
-                             (ex-message e)
-                             (pr-str ex-data-map)))
-              ;; Pass the exception up the chain
-              (throw e))))))))
+            (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
+              (do
+                ;; Log the exact ex-info message and data that triggered the retry
+                (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
+                              (ex-message e)
+                              (pr-str ex-data-map)))
+                (info (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
+                (Thread/sleep 1000)
+                (recur (inc attempt)))
+
+              (do
+                ;; Log the exact ex-info message and data right before permanently failing
+                (error (format "Delete-By-Query: Task permanently failed or max retries reached. Exception: %s | Data: %s"
+                               (ex-message e)
+                               (pr-str ex-data-map)))
+                ;; Pass the exception up the chain
+                (throw e)))))))))
 
 (defn delete-index
   "Deletes an index from the elastic store"

@@ -118,7 +118,6 @@
   (info "Unindexing all groups for" provider-id)
   (es-helper/delete-by-query (esi/context->conn context es-config/elastic-name)
                      group-index-name
-                     group-type-name
                      ;; only :provider-id-lowercase is indexed, so to find the access group by
                      ;; provider-id we need to compare the lowercased version
                      {:term {:provider-id-lowercase (.toLowerCase provider-id)}}))
@@ -433,7 +432,6 @@
   [context provider-id]
   (es-helper/delete-by-query (esi/context->conn context es-config/elastic-name)
                      acl-index-name
-                     acl-type-name
                      {:term {:target-provider-id-lowercase (string/lower-case provider-id)}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
