@@ -1,6 +1,6 @@
 # CMR Reindexer
 
-A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` messages to the CMR indexer's SQS queue. It runs as a single process with a background throttler thread and a background cancellation-cache thread.
+A FastAPI service that drives bulk reindexing of CMR metadata by publishing `concept-update` messages to the CMR indexer's SQS queue. Each task is a single process with background threads for the collection worker, id-range provider scans, lease renewal, and the cancellation cache.
 
 ## How it works
 
@@ -32,7 +32,7 @@ Operator (VPN / VPC only)
          | 4. poll            |
          v                    |
 +-------------------------+   |
-|   Throttler Worker      |---+
+|   Collection Worker     |---+
 |                         |
 |  - check ES health      |-----> [Elasticsearch _cluster/health]
 |  - stream granule IDs   |-----> [Oracle DB] (keyset pagination)
@@ -50,11 +50,15 @@ Operator (VPN / VPC only)
     [CMR Indexer App] --> [Elasticsearch]
 ```
 
-**Processing flow for granules:**
+**Processing flow for granules** (`/reindex/granules`, `/reindex/granules/providers`, `/reindex/granules/collection/{id}`):
 1. API enqueues one `CollectionWorkItem` per collection onto the collection queue (`COLLECTION_QUEUE_URL`)
-2. Throttler reads each `CollectionWorkItem` and pages the collection's granule IDs from Oracle via keyset pagination on `concept_id`
-3. Each chunk is published directly to the indexer queue, rate-limited by a token bucket and gated on ES cluster health
-4. A DynamoDB checkpoint is written after each successfully dispatched chunk; SIGTERM or task replacement resumes from the last checkpoint rather than restarting from offset 0
+2. The collection worker receives one work item at a time and pages the collection's granule IDs from Oracle via keyset pagination on `concept_id`
+3. Each page is published directly to the indexer queue, rate-limited by a token bucket and gated on ES cluster health
+4. A DynamoDB checkpoint is written after each page, so a restarted or redelivered work item resumes from the last checkpoint
+
+**Provider runs** (`/reindex/granules/provider/{id}`) skip the collection queue. A scan thread walks the provider's granule table in windows of `ID_RANGE_CHUNK_SIZE` ids and dispatches through the same rate limit; `next_start_id` on the job is its resume point. A granule revised far apart in id space may be dispatched more than once, so `total_dispatched` can exceed the live granule count. At most 5 scans run at once per task.
+
+**Concept-type runs** (`/reindex/{concept_type}`) stream the type's table in a background task.
 
 **Job state** is persisted in DynamoDB. In-progress work is leased by the task doing it: a collection work item by its SQS message visibility, any other job by its `last_heartbeat`. Each task keeps renewing its leases, however long the work takes. If a task dies, its leases lapse after `LEASE_MINUTES` and another task resumes the work from its checkpoint or saved progress. A graceful shutdown hands the collection message back right away. An Oracle call running longer than 5 minutes is logged as `oracle_call_slow` until it returns.
 
@@ -113,7 +117,7 @@ curl -X POST "http://localhost:8080/reindexer/reindex/granules/providers?after=2
 |--------|------|------|-------------|
 | GET | `/jobs` | none | List jobs; optional `?status=<status>` filter and `?limit=<1–200>` (default 50) |
 | GET | `/jobs/{job_id}` | none | Get job status and progress |
-| DELETE | `/jobs/{job_id}` | required | Cancel a running job |
+| DELETE | `/jobs/{job_id}` | required | Cancel any unfinished job (409 if it already finished) |
 
 Examples:
 
@@ -142,19 +146,26 @@ Job record example:
   "providers_work_items": {"PROV_A": 300},
   "providers_collections_split": {"PROV_A": 210},
   "work_items_enqueued": 450,
+  "collections_split": 210,
   "total_dispatched": 12000,
   "last_heartbeat": "2026-08-24T10:30:15Z",
   "started_at": "2026-08-24T10:00:00Z",
   "completed_at": null,
   "elapsed_seconds": 1815,
   "heartbeat_age_seconds": 12,
-  "heartbeat_stale": false,
-  "dispatch_rate_per_minute": 397,
+  "lease_lapsed": false,
+  "avg_dispatch_rate_per_minute": 397,
   "providers_remaining": ["PROV_A", "PROV_B"]
 }
 ```
 
-The `elapsed_seconds`, `heartbeat_age_seconds`, `heartbeat_stale`, `dispatch_rate_per_minute`, and `providers_remaining` fields are computed at query time and not stored in DynamoDB.
+The `elapsed_seconds`, `heartbeat_age_seconds`, `lease_lapsed`, `avg_dispatch_rate_per_minute`, and `providers_remaining` fields are computed at query time and not stored in DynamoDB.
+
+- `collections_split` / `work_items_enqueued`: collections fully streamed out of those enqueued (collection-queue jobs).
+- `next_start_id`: resume point of a provider run.
+- `lease_lapsed`: only on jobs leased by their heartbeat (`running` jobs and `dispatching` provider runs). `true` means the heartbeat is older than `LEASE_MINUTES`; on its next pass the lease keeper restarts the job, or fails it if it can't be restarted (e.g. a single-concept request). Collection-queue jobs are leased by their SQS messages instead.
+- `heartbeat_age_seconds`: for a collection-queue job, it's only refreshed while one of its work items is being streamed, so it grows while the job waits in the queue.
+- `avg_dispatch_rate_per_minute`: averaged over the job's lifetime, so it includes any time spent queued or waiting.
 
 `providers_remaining` (only present on `granules`/`granules-by-providers` jobs, which track `providers_requested`) lists every provider that still has outstanding work — either never enqueued at all, or enqueued but not every one of its collections has finished streaming yet (`providers_collections_split[p] < providers_work_items[p]`). This is the safe set to resubmit via `POST /reindex/granules/providers` after cancelling a job, without needing to inspect the checkpoint table.
 
@@ -166,6 +177,8 @@ Job statuses: `running`, `dispatching`, `completed`, `failed`, `cancelled`
 |--------|------|------|-------------|
 | GET | `/throttle` | none | Get current rate limit |
 | PUT | `/throttle` | required | Update rate limit without restart |
+
+The rate limit is per task and shared by every job on that task. `PUT /throttle` changes only the task the request reaches, and only until that task restarts; set `RATE_PER_MINUTE` for a lasting change.
 
 ```bash
 # Get current rate
@@ -183,7 +196,7 @@ curl -X PUT http://localhost:8080/reindexer/throttle \
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/health` | none | Liveness check (used by ALB — no dependency checks) |
-| GET | `/status` | none | ES cluster health, queue depths, throttler state |
+| GET | `/status` | none | What the answering task is working on, ES cluster health, queue counts |
 
 ```bash
 curl -s http://localhost:8080/reindexer/health
@@ -194,16 +207,24 @@ curl -s http://localhost:8080/reindexer/status
 
 ```json
 {
+  "task": {
+    "id": "ip-10-4-210-36.ec2.internal",
+    "jobs_in_progress": ["3fa85f64-5717-4562-b3fc-2c963f66afa6", "9aeb1a64-2379-497c-8f91-69fb0b72600b"],
+    "collection_worker": {"alive": true, "current_job": "3fa85f64-5717-4562-b3fc-2c963f66afa6"},
+    "rate_limit_per_minute": 600
+  },
   "es_health": {"collections": "green", "granules": "green", "overall": "green"},
-  "collection_queue_depth": 14230,
-  "indexer_queue_depth": 0,
-  "throttler_alive": true,
-  "throttler_last_active": "2026-08-24T10:30:00Z",
-  "throttler_current_job": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "rate_per_minute": 600,
-  "tokens_available": 584.3
+  "queues": {
+    "collection": {"available": 14229, "in_flight": 1},
+    "indexer": {"available": 0, "in_flight": 0}
+  }
 }
 ```
+
+- `task` describes only the task that answered. With more than one task (e.g. during a deploy), successive calls can reach different tasks.
+- `jobs_in_progress`: every job this task is working on, including provider runs and concept-type runs, which don't use the collection worker.
+- `collection_worker.current_job`: the collection-queue job being streamed, or `null` when idle.
+- `queues`: SQS approximate counts. `in_flight` messages are received but not yet finished; a queue SQS can't report is `null`.
 
 ## Configuration
 
@@ -236,13 +257,14 @@ All config is via environment variables.
 | `CMR_GRAN_ELASTIC_HOST` | `localhost` | Granules ES host |
 | `CMR_GRAN_ELASTIC_PORT` | `9210` | Granules ES port |
 | `STREAM_CHUNK_SIZE` | `1000` | Concepts per page of the per-collection granule scan, and the checkpoint interval |
-| `ID_RANGE_CHUNK_SIZE` | `20000` | Rows per id-range scan window for `POST /reindex/granules/provider/{id}` |
+| `ID_RANGE_CHUNK_SIZE` | `20000` | Ids per id-range scan window for `POST /reindex/granules/provider/{id}` |
 | `SQS_SEND_WORKERS` | `20` | Parallel threads for batched SQS sends |
-| `RATE_PER_MINUTE` | `600` | Indexer queue rate limit (also adjustable live via `PUT /throttle`) |
+| `RATE_PER_MINUTE` | `600` | Indexer queue rate limit per task (adjustable live via `PUT /throttle`) |
 | `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often the cancellation cache refreshes from DynamoDB |
-| `LEASE_MINUTES` | `5` | Lease on in-progress work: the collection message's visibility, and how stale a job's heartbeat gets before another task restarts it (and `/jobs` reports `heartbeat_stale`) |
+| `LEASE_MINUTES` | `5` | Lease on in-progress work: the collection message's visibility, and how stale a job's heartbeat gets before another task restarts it (and `/jobs` reports `lease_lapsed`) |
 | `CMR_ECHO_SYSTEM_TOKEN` | `mock-echo-system-token` | Echo system token used for ACL validation |
-| `AWS_DEFAULT_REGION` | `us-east-1` | AWS region |
+| `ORACLE_POOL_MIN` / `ORACLE_POOL_MAX` / `ORACLE_POOL_INCREMENT` | `2` / `15` / `1` | Oracle connection pool sizing, shared by API requests and background work |
+| `AWS_DEFAULT_REGION` | `us-east-1` | AWS region (falls back to `AWS_REGION`) |
 | `AWS_ACCESS_KEY_ID` | `None` | Explicit AWS key (omit to use IAM task role) |
 | `AWS_SECRET_ACCESS_KEY` | `None` | Explicit AWS secret (omit to use IAM task role) |
 
@@ -275,7 +297,7 @@ pytest tests/ -v
 
 ```bash
 pytest tests/test_job_store.py -v
-pytest tests/test_routes.py::test_reindex_granules_returns_job_id -v
+pytest tests/test_routes.py::TestJobEnrichment -v
 ```
 
 ### Integration test
@@ -283,7 +305,7 @@ pytest tests/test_routes.py::test_reindex_granules_returns_job_id -v
 `tests/integration_test.py` tests the full end-to-end flow against a live local CMR instance. It requires all services running (metadata-db, ingest, search, Elasticsearch, ElasticMQ, DynamoDB Local, and the reindexer itself).
 
 ```bash
-pytest tests/integration_test.py -v -s
+PYTHONPATH=. python3 tests/integration_test.py
 ```
 
 Read the test file for required setup steps (provider creation, queue creation, etc.) before running.

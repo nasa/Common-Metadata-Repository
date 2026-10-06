@@ -307,9 +307,8 @@ class JobStore:
         return [_deserialize(item) for item in items]
 
     def find_lapsed_jobs(self, lease_minutes: int) -> list:
-        """Return jobs whose lease (last_heartbeat) is older than lease_minutes: any
-        running job, or a dispatching id-range scan. Other dispatching jobs are
-        collection-queue work, leased by their SQS messages instead."""
+        """Return heartbeat-leased jobs (see leases.is_heartbeat_leased) whose
+        last_heartbeat is older than lease_minutes."""
         cutoff = (datetime.now(timezone.utc) - timedelta(minutes=lease_minutes)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )

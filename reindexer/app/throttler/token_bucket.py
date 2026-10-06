@@ -8,6 +8,7 @@ class TokenBucket:
 
     def __init__(self, rate_per_minute: float):
         self._lock = threading.Lock()
+        self._rate_per_minute = rate_per_minute
         self._rate_per_second = rate_per_minute / 60.0
         self._max_tokens = float(rate_per_minute)
         self._tokens = self._max_tokens
@@ -16,7 +17,7 @@ class TokenBucket:
     @property
     def current_rate(self) -> float:
         with self._lock:
-            return self._rate_per_second * 60.0
+            return self._rate_per_minute
 
     @property
     def tokens_available(self) -> float:
@@ -29,6 +30,7 @@ class TokenBucket:
 
     def update_rate(self, rate_per_minute: float) -> None:
         with self._lock:
+            self._rate_per_minute = rate_per_minute
             self._rate_per_second = rate_per_minute / 60.0
             self._max_tokens = float(rate_per_minute)
             self._tokens = min(self._tokens, self._max_tokens)

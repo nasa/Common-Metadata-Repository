@@ -1,15 +1,17 @@
 import logging
+import socket
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from starlette.concurrency import run_in_threadpool
 
+from app import leases
 from app.auth import require_auth
 from app.config import config
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
-from app.sqs.client import get_queue_depth
+from app.lease_keeper import jobs_in_progress
+from app.sqs.client import get_queue_counts
 from app.throttler.worker import throttler
 
 router = APIRouter()
@@ -25,6 +27,7 @@ def _parse_ts(value: str) -> datetime:
 def _enrich_job(job: dict) -> dict:
     now = datetime.now(timezone.utc)
     result = dict(job)
+    result.pop("ttl", None)
 
     if "started_at" in job:
         try:
@@ -40,21 +43,18 @@ def _enrich_job(job: dict) -> dict:
             hb = _parse_ts(job["last_heartbeat"])
             age = int((now - hb).total_seconds())
             result["heartbeat_age_seconds"] = age
-            result["heartbeat_stale"] = age > config.lease_minutes * 60
+            if leases.is_heartbeat_leased(job):
+                result["lease_lapsed"] = age > config.lease_minutes * 60
         except Exception:
             pass
 
-    # dispatch_rate_per_minute: granules sent per minute averaged over the job lifetime.
-    # Works for any concept type; comparable directly against rate_per_minute from /status.
     dispatched = job.get("total_dispatched", 0)
     elapsed = result.get("elapsed_seconds", 0)
     if dispatched > 0 and elapsed > 0:
-        result["dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
+        result["avg_dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
 
-    # providers_remaining: providers that still have work outstanding — either never
-    # enqueued at all, or enqueued but not every one of their collections has finished
-    # streaming yet. Lets a caller resubmit exactly the right subset after a cancel
-    # without cross-referencing the checkpoint table.
+    # Providers never enqueued, or with collections not yet streamed: the set to
+    # resubmit after a cancel.
     if "providers_requested" in job:
         to_process = set(job.get("providers_requested") or [])
         enqueued = set(job.get("providers_enqueued") or [])
@@ -67,45 +67,44 @@ def _enrich_job(job: dict) -> dict:
     return result
 
 
+def _queue_counts(name: str, url: str) -> Optional[dict]:
+    try:
+        return get_queue_counts(url)
+    except Exception as exc:
+        logger.warning({"event": "queue_counts_check_failed", "queue": name, "error": str(exc)})
+        return None
+
+
+# The handlers below are plain def, so FastAPI runs their blocking SQS/DynamoDB calls
+# in its threadpool instead of on the event loop that also serves /health.
+
 @router.get("/status")
-async def status():
-    es_health = await run_in_threadpool(check_all_es_health)
-
-    try:
-        collection_queue_depth = get_queue_depth(config.collection_queue_url)
-    except Exception as exc:
-        logger.warning({"event": "queue_depth_check_failed", "queue": "collection", "error": str(exc)})
-        collection_queue_depth = -1
-
-    try:
-        indexer_queue_depth = get_queue_depth(config.indexer_queue_url)
-    except Exception as exc:
-        logger.warning({"event": "queue_depth_check_failed", "queue": "indexer", "error": str(exc)})
-        indexer_queue_depth = -1
-
-    liveness = throttler.liveness()
-    tokens = throttler.token_state()
-
+def status():
+    """Shared dependencies, plus what the answering task is doing. Fields under
+    "task" are per task: during a deploy, calls can reach different tasks."""
     return {
-        "es_health": es_health,
-        "collection_queue_depth": collection_queue_depth,
-        "indexer_queue_depth": indexer_queue_depth,
-        "throttler_alive": liveness["alive"],
-        "throttler_last_active": liveness["last_active"],
-        "throttler_current_job": throttler.current_job_id,
-        "rate_per_minute": tokens["rate_per_minute"],
-        "tokens_available": tokens["tokens_available"],
+        "task": {
+            "id": socket.gethostname(),
+            "jobs_in_progress": sorted(jobs_in_progress()),
+            "collection_worker": {"alive": throttler.is_alive(), "current_job": throttler.current_job_id},
+            "rate_limit_per_minute": throttler.get_rate(),
+        },
+        "es_health": check_all_es_health(),
+        "queues": {
+            "collection": _queue_counts("collection", config.collection_queue_url),
+            "indexer": _queue_counts("indexer", config.indexer_queue_url),
+        },
     }
 
 
 @router.get("/jobs")
-async def list_jobs(status: Optional[str] = Query(None), limit: int = Query(50, ge=1, le=200)):
+def list_jobs(status: Optional[str] = Query(None), limit: int = Query(50, ge=1, le=200)):
     jobs = job_store.list_jobs(status_filter=status, limit=limit)
     return {"jobs": [_enrich_job(j) for j in jobs], "count": len(jobs)}
 
 
 @router.get("/jobs/{job_id}")
-async def get_job(job_id: str):
+def get_job(job_id: str):
     job = job_store.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
@@ -113,7 +112,7 @@ async def get_job(job_id: str):
 
 
 @router.delete("/jobs/{job_id}")
-async def cancel_job(job_id: str, _token: str = Depends(require_auth)):
+def cancel_job(job_id: str, _token: str = Depends(require_auth)):
     job = job_store.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")

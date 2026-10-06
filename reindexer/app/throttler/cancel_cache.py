@@ -21,9 +21,11 @@ class CancelledJobCache:
         self._refresh()
         self._thread = threading.Thread(target=self._run, name="cancel-cache", daemon=True)
         self._thread.start()
-        logger.info({"event": "cancel_cache_started", "interval_seconds": self._interval})
+        logger.info({"event": "cancel_cache_started"})
 
     def stop(self) -> None:
+        if self._stop_event.is_set():
+            return
         self._stop_event.set()
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=10)

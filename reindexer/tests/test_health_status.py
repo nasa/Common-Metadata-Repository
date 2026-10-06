@@ -2,8 +2,8 @@
 Unit tests for GET /health, GET /status, and the ES health utility.
 
 /health must return 200 with zero dependency checks (ALB probe requirement).
-/status is unauthenticated and returns live ES health + queue depths (collection, indexer).
-  - If SQS is unreachable, queue_depth is -1 (not a 5xx).
+/status is unauthenticated: the answering task's jobs and worker, ES health, and
+  queue counts (null for a queue SQS can't report, not a 5xx).
 ES health utility: correct status aggregation across two clusters, red fallback
   on connection failure, and wait_for_green polling behaviour.
 
@@ -65,90 +65,47 @@ def _es_resp(status: str) -> MagicMock:
 
 class TestStatus:
 
-    def test_returns_200(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                r = client.get("/reindexer/status")
+    @pytest.fixture(autouse=True)
+    def no_jobs(self, monkeypatch):
+        import app.leases as leases
+        monkeypatch.setattr(leases, "_held", set())
+
+    def _get(self, counts=None, side_effect=None, es=None):
+        with patch("app.es.health.httpx.get", return_value=_es_resp("green"), side_effect=es):
+            with patch("app.routers.status.get_queue_counts", return_value=counts, side_effect=side_effect):
+                return client.get("/reindexer/status")
+
+    def test_shape_without_auth(self):
+        counts = {"available": 3, "in_flight": 1}
+        r = self._get(counts)
         assert r.status_code == 200
+        body = r.json()
+        assert body["es_health"]["overall"] == "green"
+        assert body["queues"] == {"collection": counts, "indexer": counts}
+        task = body["task"]
+        assert task["id"]
+        assert task["jobs_in_progress"] == []
+        assert task["collection_worker"] == {"alive": False, "current_job": None}
+        assert task["rate_limit_per_minute"] > 0
 
-    def test_requires_no_auth(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                r = client.get("/reindexer/status")
+    def test_jobs_in_progress_lists_held_jobs_and_current_collection(self, monkeypatch):
+        import app.leases as leases
+        from app.throttler.worker import _MessageLease, throttler
+        leases.hold("scan-job")
+        monkeypatch.setattr(throttler, "_lease", _MessageLease("q", "rh", "collection-job"))
+        task = self._get({"available": 0, "in_flight": 0}).json()["task"]
+        assert task["jobs_in_progress"] == ["collection-job", "scan-job"]
+        assert task["collection_worker"]["current_job"] == "collection-job"
+
+    def test_sqs_unreachable_reports_null_queues_not_5xx(self):
+        r = self._get(side_effect=Exception("no sqs"))
         assert r.status_code == 200
+        assert r.json()["queues"] == {"collection": None, "indexer": None}
 
-    def test_response_contains_es_health(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert "es_health" in body
-
-    def test_response_contains_collection_queue_depth(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=7):
-                body = client.get("/reindexer/status").json()
-        assert body["collection_queue_depth"] == 7
-
-    def test_collection_sqs_unreachable_returns_minus_one_not_5xx(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", side_effect=Exception("no sqs")):
-                r = client.get("/reindexer/status")
+    def test_es_down_still_returns_200(self):
+        r = self._get({"available": 0, "in_flight": 0}, es=Exception("es down"))
         assert r.status_code == 200
-        assert r.json()["collection_queue_depth"] == -1
-
-    def test_es_red_still_returns_200(self):
-        with patch("app.es.health.httpx.get", side_effect=Exception("es down")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                r = client.get("/reindexer/status")
-        assert r.status_code == 200
-
-    def test_response_contains_throttler_alive(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert "throttler_alive" in body
-
-    def test_response_contains_throttler_last_active(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert "throttler_last_active" in body
-
-    def test_throttler_alive_false_when_not_started(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert body["throttler_alive"] is False
-
-    def test_throttler_last_active_none_when_not_started(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert body["throttler_last_active"] is None
-
-    def test_response_contains_rate_per_minute(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert "rate_per_minute" in body
-
-    def test_response_contains_tokens_available(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=0):
-                body = client.get("/reindexer/status").json()
-        assert "tokens_available" in body
-
-    def test_response_contains_indexer_queue_depth(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", return_value=5):
-                body = client.get("/reindexer/status").json()
-        assert body["indexer_queue_depth"] == 5
-
-    def test_indexer_sqs_unreachable_returns_minus_one(self):
-        with patch("app.es.health.httpx.get", return_value=_es_resp("green")):
-            with patch("app.routers.status.get_queue_depth", side_effect=Exception("no sqs")):
-                body = client.get("/reindexer/status").json()
-        assert body["indexer_queue_depth"] == -1
+        assert r.json()["es_health"]["overall"] == "red"
 
 
 # ---------------------------------------------------------------------------

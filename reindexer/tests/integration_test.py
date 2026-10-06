@@ -266,7 +266,8 @@ def step_verify_reindexer(collection_id: str, granule_ids: list[str], request_id
     deadline = time.monotonic() + 15
     while time.monotonic() < deadline:
         status = httpx.get(f"{REINDEXER_URL}/status", timeout=5.0).json()
-        depth = status.get("indexer_queue_depth", -1)
+        indexer = status["queues"]["indexer"] or {}
+        depth = indexer.get("available", -1) + indexer.get("in_flight", 0)
         print(f"  Indexer queue depth: {depth}  (waiting for 0)")
         if depth == 0:
             break

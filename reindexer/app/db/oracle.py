@@ -249,12 +249,7 @@ class OracleClient:
                         max=config.oracle_pool_max,
                         increment=config.oracle_pool_increment,
                     )
-                    logger.info({
-                        "event": "oracle_pool_created",
-                        "dsn": dsn,
-                        "min": config.oracle_pool_min,
-                        "max": config.oracle_pool_max,
-                    })
+                    logger.info({"event": "oracle_pool_created"})
         return self._pool
 
     @contextmanager

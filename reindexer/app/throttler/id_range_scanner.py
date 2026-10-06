@@ -91,10 +91,9 @@ def _run(
             _log_stopped(request_id)
             return
 
-        # The probe is the expensive query (it walks the id index evaluating the
-        # date predicate until a hit), so it only runs at the start and after an
-        # empty window — after a window with data, just advance by one window.
-        # Mirrors bootstrap's find-batch-starting-id-between-date-times.
+        # Probe only at the start and after an empty window; after a window with
+        # data, just advance by one window. With `after` set, the probe can't use the
+        # PK min/max path and reads every matching row.
         next_id: Optional[int] = None  # None → probe from probe_from first
         probe_from = start_id
         while _wait_for_green_or_signal(request_id):

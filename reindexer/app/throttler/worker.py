@@ -10,7 +10,6 @@ import logging
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Callable, Optional
 
 from app.config import config
@@ -70,7 +69,6 @@ class ThrottlerWorker:
         self._lease: Optional[_MessageLease] = None
         self._job_lock = threading.Lock()
         self._cancel_cache = None  # set by main.py via set_cancel_cache()
-        self._last_active: Optional[str] = None
         self._last_es_check: float = 0.0
         self._last_es_health: dict = {"overall": "green", "collections": "green", "granules": "green"}
 
@@ -141,30 +139,18 @@ class ThrottlerWorker:
                 lease.lost = True
                 logger.warning({"event": "message_lease_lost", "request_id": lease.job_id, "error": str(exc)})
 
-    def liveness(self) -> dict:
-        return {
-            "alive": bool(self._thread and self._thread.is_alive()),
-            "last_active": self._last_active,
-        }
-
-    def token_state(self) -> dict:
-        return {
-            "rate_per_minute": self._token_bucket.current_rate,
-            "tokens_available": self._token_bucket.tokens_available,
-        }
+    def is_alive(self) -> bool:
+        return bool(self._thread and self._thread.is_alive())
 
     def start(self) -> None:
         self._thread = threading.Thread(target=self._run, name="throttler", daemon=True)
         self._thread.start()
-        logger.info({
-            "event": "throttler_started",
-            "rate_per_minute": config.rate_per_minute,
-            "stream_chunk_size": config.stream_chunk_size,
-            "sqs_send_workers": config.sqs_send_workers,
-        })
+        logger.info({"event": "throttler_started"})
 
     def stop(self) -> None:
         """Signal the worker to stop and wait for it to finish its current batch."""
+        if self._stop_event.is_set():
+            return
         logger.info({"event": "throttler_stopping"})
         self._stop_event.set()
         if self._thread and self._thread.is_alive():
@@ -179,8 +165,6 @@ class ThrottlerWorker:
 
     def _run(self) -> None:
         while not self._stop_event.is_set():
-            self._last_active = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
             # Gate: check ES at most once per 30s to avoid hammering the clusters at idle
             now = time.monotonic()
             if now - self._last_es_check >= 30.0:
