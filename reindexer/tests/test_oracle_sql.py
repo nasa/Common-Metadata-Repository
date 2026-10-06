@@ -455,7 +455,7 @@ class TestFindNextGranuleIdInRange:
         client.find_next_granule_id_in_range("MYPROV", 12345)
         sql, bind = _last_execute(cur)
         assert "METADATA_DB.MYPROV_GRANULES" in sql
-        assert "deleted = 0" in sql
+        assert "deleted" not in sql
         assert "REVISION_DATE" not in sql
         assert "12345" not in sql
         assert bind == {"min_id": 12345}
