@@ -75,8 +75,8 @@
        :Published (date-time-parser/try-parse-datetime
                    (or (value-of citation "gmd:editionDate/gco:Date")
                        (value-of citation "gmd:editionDate/gco:DateTime")))
-       :BeginningDateTime (date-time-parser/try-parse-datetime (get-date "creation"))
-       :EndingDateTime (date-time-parser/try-parse-datetime (get-date "revision"))
+       :BeginningDateTime (date-time-parser/try-parse-datetime (get-date "validityBegins"))
+       :EndingDateTime (date-time-parser/try-parse-datetime (get-date "validityExpires"))
        :DeprecatedDateTime (date-time-parser/try-parse-datetime (get-date "deprecated"))
        :CollectionProgress (or (iso-util/char-string-value citation "gmd:title")
                                "NOT PROVIDED")}))))

@@ -301,7 +301,9 @@
                                                                                               (dtp/try-parse-datetime edt))
                                                                             :DeprecatedDateTime (when-let [ddt (value-of pv "DeprecatedDateTime")]
                                                                                                   (dtp/try-parse-datetime ddt))
-                                                                            :CollectionProgress (or (value-of pv "CollectionProgress") "NOT PROVIDED")})]
+                                                                            :CollectionProgress (if-let [cp (value-of pv "CollectionProgress")]
+                                                                                                  (get coll-progress-mapping (string/upper-case cp) "NOT PROVIDED")
+                                                                                                  "NOT PROVIDED")})]
                                                                (when (seq pv-map)
                                                                  (cmn/map->PreviousVersionType pv-map))))
                                                            (select dsc "Persistent_Identifier/Previous_Version")))]
