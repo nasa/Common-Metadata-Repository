@@ -668,7 +668,7 @@
 (defn- cascade-collection-delete
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
-  [context concept-id revision-id]
+  [context concept-id revision-id delete-request-timestamp]
   (debug "CMR-11560 - Starting cascade collection delete for concept-id " concept-id)
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
@@ -677,13 +677,30 @@
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (debug "CMR-11560 - Deleting within index : " index)
       (if (= index small-collections-index-name)
-        (let [resp (es-helper/delete-by-query
+        (let [;; This is your original term query
+              concept-id-clause {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
+
+              ;; This is the new time boundary clause
+              ;; (Assuming 'delete-request-timestamp' is passed in from the SQS message)
+              ;; "revision-date": "2025-02-05T05:33:45.743Z",
+              revision-date-clause {:range {(query-field->elastic-field :revision-date :granule)
+                                            {:lte delete-request-timestamp}}}
+
+              ;; Combine them into a boolean "MUST" query
+              query {:bool
+                     {:must [concept-id-clause
+                             revision-date-clause]}}
+
+              query-options {:slices "auto"
+                             :scroll-size 5000
+                             ;; wait 60 mins per task retry
+                             :max-wait-ms (* 60 60 1000)}
+
+              resp (es-helper/delete-by-query
                      (indexer-util/context->conn context es-config/gran-elastic-name)
                      index
-                     {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
-                     {:slices "auto"
-                      :scroll-size 5000
-                      :max-wait-ms (* 60 60 1000)})]
+                     query
+                     query-options)]
           (when (not= (get resp :status) 200)
             (warn (format "Cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp))))
         ;; Instead of running a delete-by-query to remove all granules from
@@ -724,12 +741,13 @@
 (defn- delete-concept-default-helper
   "A private func that deletes concept indexes in elastic"
   [context concept concept-id revision-id options]
+  (info (format "CMR-11560 - INSIDE delete-concept-default-helper with concept %s and option %s" concept-id options))
   (when (nil? concept)
     (errors/throw-service-error
      :not-found
      (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
 
-  (let [{:keys [all-revisions-index?]} options
+  (let [{:keys [all-revisions-index? delete-request-timestamp]} options
         concept-type (cs/concept-id->type concept-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
@@ -762,7 +780,7 @@
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (let [[tm result] (util/time-execution
-                                 (cascade-collection-delete context concept-id revision-id))]
+                                 (cascade-collection-delete context concept-id revision-id delete-request-timestamp))]
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result))))))))
 

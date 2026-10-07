@@ -1,6 +1,8 @@
 (ns cmr.metadata-db.data.ingest-events
   "Allows broadcast of ingest events via the message queue"
   (:require
+   [clj-time.core :as t]
+   [clj-time.format :as f]
    [cmr.common.concepts :as cc]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.services.errors :as errors]
@@ -70,7 +72,8 @@
   [{:keys [concept-id revision-id]}]
   {:action :concept-delete
    :concept-id concept-id
-   :revision-id revision-id})
+   :revision-id revision-id
+   :delete-request-timestamp (f/unparse (f/formatters :date-time) (t/now))})
 
 (defn concept-expire-event
   "Creates an event representing a concept being expired"
