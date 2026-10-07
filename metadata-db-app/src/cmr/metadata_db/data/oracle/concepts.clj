@@ -499,14 +499,20 @@
                                :unknown-error)]
               {:error error-code :error-message error-message :throwable e})))]
 
-    ;; Only run the heavy batch delete if the save was 100% successful (returned nil)
+    ;; Only run the post-commit-step if the above save was 100% successful aka returned nil
     (when (nil? save-result)
+      ;; start a separate thread to do the post-commit-step db actions
       (future
         (try
+          (info (format "CMR-11560 - Starting background async post-commit-step for concept %s" (:concept-id concept)))
           ;; run the post-commit sql statements (like large granule deletes) asynchronously
           (post-commit-step db provider concept)
+
+          (info (format "CMR-11560 - Successfully finished background post-commit-step for concept %s" (:concept-id concept)))
+
           (catch Exception e
-            (error e "Background Oracle deletion failed in post-commit-step")))))
+            ;; TODO setup a Log Alert for this msg to know that a collection delete failed
+            (error e (format "ERROR - Background Oracle background process save-concept failed in post-commit-step for concept %s" (:concept-id concept)))))))
 
     ;; Return the exact same result (nil or error) to the caller
     save-result))

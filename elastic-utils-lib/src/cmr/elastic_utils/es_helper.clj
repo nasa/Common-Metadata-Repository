@@ -173,6 +173,22 @@
     (catch Exception e
       (warn (str "Delete-By-Query: Failed to cancel task " task-id ". It may keep running in the background. Exception: " (ex-message e))))))
 
+(defn- cleanup-task-record!
+  "Deletes the permanent record of the task from the ES .tasks index
+   to prevent it from silently eating up disk space over time."
+  [conn task-id]
+  (try
+    (info (str "Delete-By-Query: Cleaning up task record for " task-id " from .tasks index."))
+    ;; The standard ES API for removing a stored task result
+    (let [delete-url (es-util/url-with-path conn (str ".tasks/_doc/" task-id))]
+      (http/delete delete-url
+                   (merge (:http-opts conn)
+                          {:headers {"Authorization" (es-config/elastic-admin-token)
+                                     :client-id t-config/cmr-client-id}
+                           :throw-exceptions false})))
+    (catch Exception e
+      (warn (str "Delete-By-Query: Failed to clean up task record " task-id ". Exception: " (ex-message e))))))
+
 (defn- poll-task-for-completion
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id options]
@@ -229,6 +245,9 @@
               (do
                 (info (format "Delete-By-Query: Task %s completed successfully. Final result: %s"
                               task-id final-response))
+
+                (cleanup-task-record! conn task-id)
+
                 {:status 200
                  :body final-response})))
 
