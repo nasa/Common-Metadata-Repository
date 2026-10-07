@@ -99,6 +99,8 @@
             rows-deleted (j/with-db-transaction [batch-conn db]
                                                 (first (j/execute! batch-conn stmt)))]
 
+        (info (format "CMR-11560 - INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
+
         (if (> rows-deleted 0)
           (do
             ;; Pause for 10ms to let Oracle safely flush the Undo Tablespace to disk
