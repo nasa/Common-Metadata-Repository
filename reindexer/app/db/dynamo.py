@@ -17,6 +17,11 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _expiry() -> int:
+    """Set only when a job finishes, so a long-running job never expires."""
+    return int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
+
+
 @functools.lru_cache(maxsize=1)
 def _dynamo_table():
     dynamodb = boto3.resource(
@@ -29,20 +34,8 @@ def _dynamo_table():
     return dynamodb.Table(config.dynamodb_table_name)
 
 
-@functools.lru_cache(maxsize=1)
-def _checkpoint_table():
-    dynamodb = boto3.resource(
-        "dynamodb",
-        region_name=config.aws_region,
-        endpoint_url=config.dynamodb_endpoint_url,
-        aws_access_key_id=config.aws_access_key_id,
-        aws_secret_access_key=config.aws_secret_access_key,
-    )
-    return dynamodb.Table(config.dynamodb_checkpoint_table)
-
-
 def _deserialize(value):
-    """Recursively convert Decimal -> int/float and set -> list, including inside nested maps."""
+    """Decimal -> int/float and set -> list, recursively."""
     if isinstance(value, decimal.Decimal):
         return int(value) if value == int(value) else float(value)
     if isinstance(value, set):
@@ -63,31 +56,24 @@ class JobStore:
         job_id: str,
         concept_type: str,
         *,
-        provider_id: Optional[str] = None,
+        providers: Optional[list[str]] = None,
         collection_id: Optional[str] = None,
         concept_id: Optional[str] = None,
         after: Optional[str] = None,
         before: Optional[str] = None,
         source_url: Optional[str] = None,
-        include_deleted: bool = False,
     ) -> None:
         now = _now_iso()
-        ttl = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
         item: dict = {
             "job_id": job_id,
             "status": "running",
             "concept_type": concept_type,
             "last_heartbeat": now,
             "started_at": now,
-            "work_items_enqueued": 0,
-            "collections_split": 0,
             "total_dispatched": 0,
-            "providers_work_items": {},
-            "providers_collections_split": {},
-            "ttl": ttl,
         }
-        if provider_id is not None:
-            item["provider_id"] = provider_id
+        if providers is not None:
+            item["providers_requested"] = providers  # a list: providers are scanned in this order
         if collection_id is not None:
             item["collection_id"] = collection_id
         if concept_id is not None:
@@ -98,8 +84,6 @@ class JobStore:
             item["before"] = before
         if source_url is not None:
             item["source_url"] = source_url
-        if include_deleted:
-            item["include_deleted"] = True
         self._table().put_item(Item=item)
         logger.info({"event": "job_created", "job_id": job_id, "concept_type": concept_type})
 
@@ -110,100 +94,6 @@ class JobStore:
             ExpressionAttributeValues={":ts": _now_iso()},
         )
 
-    def update_progress(
-        self,
-        job_id: str,
-        *,
-        provider_enqueued: Optional[str] = None,
-        providers_requested: Optional[list] = None,
-        work_items_delta: int = 0,
-    ) -> None:
-        now = _now_iso()
-        set_parts = ["last_heartbeat = :ts"]
-        add_parts: list = []
-        values: dict = {":ts": now}
-        names: dict = {}
-
-        if providers_requested:
-            set_parts.append("providers_requested = :ptp")
-            values[":ptp"] = set(providers_requested)
-
-        if provider_enqueued:
-            add_parts.append("providers_enqueued :pe")
-            values[":pe"] = {provider_enqueued}
-
-        if work_items_delta > 0:
-            add_parts.append("work_items_enqueued :wi")
-            values[":wi"] = work_items_delta
-
-            # Per-provider breakdown alongside the flat total, so a job's status can
-            # tell providers apart (e.g. after a cancel, which ones still have
-            # un-split collections) without cross-referencing the checkpoint table.
-            if provider_enqueued:
-                names["#pid"] = provider_enqueued
-                values[":zero"] = 0
-                set_parts.append(
-                    "providers_work_items.#pid = if_not_exists(providers_work_items.#pid, :zero) + :wi"
-                )
-
-        expression = "SET " + ", ".join(set_parts)
-        if add_parts:
-            expression += " ADD " + ", ".join(add_parts)
-
-        kwargs: dict = dict(
-            Key={"job_id": job_id},
-            UpdateExpression=expression,
-            ExpressionAttributeValues=values,
-        )
-        if names:
-            kwargs["ExpressionAttributeNames"] = names
-
-        self._update_with_provider_map_backfill(job_id, kwargs)
-
-    def increment_collections_split(self, job_id: str, provider_id: Optional[str] = None) -> None:
-        update_expr = "ADD collections_split :one SET last_heartbeat = :ts"
-        values: dict = {":one": 1, ":ts": _now_iso()}
-        names: dict = {}
-
-        if provider_id:
-            names["#pid"] = provider_id
-            values[":zero"] = 0
-            update_expr += (
-                ", providers_collections_split.#pid = if_not_exists(providers_collections_split.#pid, :zero) + :one"
-            )
-
-        kwargs: dict = dict(
-            Key={"job_id": job_id},
-            UpdateExpression=update_expr,
-            ExpressionAttributeValues=values,
-        )
-        if names:
-            kwargs["ExpressionAttributeNames"] = names
-
-        self._update_with_provider_map_backfill(job_id, kwargs)
-
-    def _update_with_provider_map_backfill(self, job_id: str, kwargs: dict) -> None:
-        """Run an update_item that may reference providers_work_items/providers_collections_split
-        as a nested path. DynamoDB's SET does not auto-vivify a missing parent map, so a job
-        created before this schema existed (still running/dispatching across a deploy) would
-        otherwise fail here permanently. On that specific failure, backfill both maps as
-        empty (idempotent, a no-op if they already exist) and retry once.
-        """
-        try:
-            self._table().update_item(**kwargs)
-        except ClientError as e:
-            if e.response["Error"]["Code"] != "ValidationException":
-                raise
-            self._table().update_item(
-                Key={"job_id": job_id},
-                UpdateExpression=(
-                    "SET providers_work_items = if_not_exists(providers_work_items, :empty), "
-                    "providers_collections_split = if_not_exists(providers_collections_split, :empty)"
-                ),
-                ExpressionAttributeValues={":empty": {}},
-            )
-            self._table().update_item(**kwargs)
-
     def update_dispatched(self, job_id: str, count: int) -> None:
         self._table().update_item(
             Key={"job_id": job_id},
@@ -211,43 +101,43 @@ class JobStore:
             ExpressionAttributeValues={":n": count, ":ts": _now_iso()},
         )
 
-    def _update_cursor_field(self, job_id: str, field: str, value) -> None:
-        """Keeps raw field names out of call sites; see update_id_range_progress."""
+    def update_scan_cursor(self, job_id: str, cursor, provider_id: Optional[str] = None) -> None:
+        sets, values = ["scan_cursor = :c", "last_heartbeat = :ts"], {":c": cursor, ":ts": _now_iso()}
+        if provider_id is not None:
+            sets.append("scan_provider = :p")
+            values[":p"] = provider_id
         self._table().update_item(
-            Key={"job_id": job_id},
-            UpdateExpression=f"SET {field} = :v, last_heartbeat = :ts",
-            ExpressionAttributeValues={":v": value, ":ts": _now_iso()},
+            Key={"job_id": job_id}, UpdateExpression="SET " + ", ".join(sets), ExpressionAttributeValues=values,
         )
 
-    def update_id_range_progress(self, job_id: str, next_start_id: int) -> None:
-        self._update_cursor_field(job_id, "next_start_id", next_start_id)
+    def finish_provider(self, job_id: str, provider_id: str) -> None:
+        """Mark a provider done and clear its cursor in one write, so a restart can't
+        apply it to the next provider."""
+        self._table().update_item(
+            Key={"job_id": job_id},
+            UpdateExpression="ADD providers_done :p SET last_heartbeat = :ts REMOVE scan_cursor, scan_provider",
+            ExpressionAttributeValues={":p": {provider_id}, ":ts": _now_iso()},
+        )
 
     def mark_job(self, job_id: str, status: str) -> bool:
-        """Set job status.  Returns False (no-op) if the job is already completed/failed/cancelled.
-
-        That guard stops a background task still running after a cancel from
-        resurrecting the job.
-        """
+        """False (no-op) if the job already finished, so work still running after a cancel
+        can't resurrect it."""
         now = _now_iso()
         terminal = status in ("completed", "failed", "cancelled")
         update_expr = "SET #st = :s, last_heartbeat = :ts"
+        names = {"#st": "status"}
+        values = {":s": status, ":ts": now, ":completed": "completed", ":failed": "failed", ":cancelled": "cancelled"}
         if terminal:
-            update_expr += ", completed_at = :ts"
+            update_expr += ", completed_at = :ts, #ttl = :ttl"
+            names["#ttl"] = "ttl"
+            values[":ttl"] = _expiry()
         try:
             self._table().update_item(
                 Key={"job_id": job_id},
                 UpdateExpression=update_expr,
-                ConditionExpression=(
-                    "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
-                ),
-                ExpressionAttributeNames={"#st": "status"},
-                ExpressionAttributeValues={
-                    ":s": status,
-                    ":ts": now,
-                    ":completed": "completed",
-                    ":failed": "failed",
-                    ":cancelled": "cancelled",
-                },
+                ConditionExpression="#st <> :completed AND #st <> :failed AND #st <> :cancelled",
+                ExpressionAttributeNames=names,
+                ExpressionAttributeValues=values,
             )
             logger.info({"event": "job_status_updated", "job_id": job_id, "status": status})
             return True
@@ -279,12 +169,7 @@ class JobStore:
         return items
 
     def list_jobs(self, status_filter: Optional[str] = None, limit: int = 50) -> list:
-        """Return up to `limit` jobs, scanning DynamoDB pages until enough are found.
-
-        Uses page-by-page scanning rather than _scan_all so it stops as soon as
-        `limit` filtered results are accumulated — avoids reading the entire table
-        for small result sets when no status filter is applied.
-        """
+        """Up to `limit` jobs, unsorted, reading pages only until `limit` are found."""
         table = self._table()
         kwargs: dict = {}
         if status_filter:
@@ -310,71 +195,30 @@ class JobStore:
         return [_deserialize(item) for item in items]
 
     def find_lapsed_jobs(self, lease_minutes: int) -> list:
-        """Return heartbeat-leased jobs (see leases.is_heartbeat_leased) whose
-        last_heartbeat is older than lease_minutes."""
         cutoff = (datetime.now(timezone.utc) - timedelta(minutes=lease_minutes)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
         items = self._scan_all(
-            FilterExpression=(
-                "(#st = :running OR (#st = :dispatching AND concept_type = :scan))"
-                " AND last_heartbeat < :cutoff"
-            ),
+            FilterExpression="#st = :running AND last_heartbeat < :cutoff",
             ExpressionAttributeNames={"#st": "status"},
-            ExpressionAttributeValues={
-                ":running": "running",
-                ":dispatching": "dispatching",
-                ":scan": "granules-by-provider",
-                ":cutoff": cutoff,
-            },
+            ExpressionAttributeValues={":running": "running", ":cutoff": cutoff},
         )
         return [_deserialize(item) for item in items]
 
-    def try_complete_job(self, job_id: str) -> bool:
-        """Conditionally mark a granule job completed if all collections split and all granules dispatched.
-
-        Returns True if the job was marked completed, False if the condition wasn't met.
-        """
-        try:
-            self._table().update_item(
-                Key={"job_id": job_id},
-                UpdateExpression="SET #st = :completed, completed_at = :now, last_heartbeat = :now",
-                ConditionExpression=(
-                    "#st = :dispatching"
-                    " AND collections_split = work_items_enqueued"
-                ),
-                ExpressionAttributeNames={"#st": "status"},
-                ExpressionAttributeValues={
-                    ":completed": "completed",
-                    ":dispatching": "dispatching",
-                    ":now": _now_iso(),
-                },
-            )
-            logger.info({"event": "job_completed", "job_id": job_id})
-            return True
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                return False
-            raise
-
     def try_cancel_job(self, job_id: str) -> bool:
-        """Atomically cancel a job unless it is already in a terminal status.
-
-        Returns True if cancelled, False if condition failed (already terminal).
-        """
+        """False if the job already finished."""
         try:
             self._table().update_item(
                 Key={"job_id": job_id},
-                UpdateExpression="SET #st = :cancelled, completed_at = :now, last_heartbeat = :now",
-                ConditionExpression=(
-                    "#st <> :completed AND #st <> :failed AND #st <> :cancelled"
-                ),
-                ExpressionAttributeNames={"#st": "status"},
+                UpdateExpression="SET #st = :cancelled, completed_at = :now, last_heartbeat = :now, #ttl = :ttl",
+                ConditionExpression="#st <> :completed AND #st <> :failed AND #st <> :cancelled",
+                ExpressionAttributeNames={"#st": "status", "#ttl": "ttl"},
                 ExpressionAttributeValues={
                     ":cancelled": "cancelled",
                     ":completed": "completed",
                     ":failed": "failed",
                     ":now": _now_iso(),
+                    ":ttl": _expiry(),
                 },
             )
             logger.info({"event": "job_cancelled", "job_id": job_id})
@@ -385,6 +229,8 @@ class JobStore:
             raise
 
     def claim_lapsed_job(self, job_id: str, last_heartbeat: str) -> bool:
+        """Bump the heartbeat only if it is still the one we saw; False if another task
+        claimed the job first."""
         try:
             self._table().update_item(
                 Key={"job_id": job_id},
@@ -404,51 +250,3 @@ class JobStore:
 
 job_store = JobStore()
 
-
-class CheckpointStore:
-    """Per-collection keyset resume cursors for in-progress granule reindex jobs.
-
-    Each record tracks how far a collection has been streamed so a SIGTERM/restart
-    can resume mid-collection rather than restarting from offset 0.
-
-    Table schema (partition key: job_id, sort key: collection_id):
-      job_id            String  PK
-      collection_id     String  SK
-      last_concept_id   String  keyset cursor (resume after this concept_id)
-      chunks_dispatched Number  diagnostic
-      granules_dispatched Number cumulative granules dispatched for this collection
-      updated_at        String  ISO timestamp
-    """
-
-    def _table(self):
-        return _checkpoint_table()
-
-    def write_collection_checkpoint(
-        self,
-        job_id: str,
-        collection_id: str,
-        last_concept_id: str,
-        granules_dispatched: int,
-        chunks_dispatched: int,
-    ) -> None:
-        ttl = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
-        self._table().put_item(Item={
-            "job_id": job_id,
-            "collection_id": collection_id,
-            "last_concept_id": last_concept_id,
-            "chunks_dispatched": chunks_dispatched,
-            "granules_dispatched": granules_dispatched,
-            "updated_at": _now_iso(),
-            "ttl": ttl,
-        })
-
-    def get_collection_checkpoint(self, job_id: str, collection_id: str) -> Optional[dict]:
-        resp = self._table().get_item(Key={"job_id": job_id, "collection_id": collection_id})
-        item = resp.get("Item")
-        return _deserialize(item) if item is not None else None
-
-    def delete_collection_checkpoint(self, job_id: str, collection_id: str) -> None:
-        self._table().delete_item(Key={"job_id": job_id, "collection_id": collection_id})
-
-
-checkpoint_store = CheckpointStore()

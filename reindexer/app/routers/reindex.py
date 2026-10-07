@@ -1,11 +1,5 @@
-"""FastAPI router for /reindex/* endpoints.
-
-Handles reindex requests by concept type, single concept, and granule subsets
-(all providers, by provider, or by collection). Long-running work is offloaded
-either to FastAPI background tasks or, for the id-range provider scan
-(app.throttler.id_range_scanner), a plain daemon thread. Progress is tracked in
-DynamoDB via job_store. The background helpers are public because the lease keeper
-also calls them, to restart a job whose owner died.
+"""/reindex/* endpoints. Granule jobs run as scans (app.throttler.scanner), concept-type
+jobs as background tasks.
 
 Handlers are plain def, so their blocking DB/SQS calls run in FastAPI's threadpool
 rather than on the event loop that serves /health.
@@ -24,18 +18,14 @@ from app.auth import require_auth
 from app.db import db_client
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
-from app.sqs.client import enqueue_collection_item, publish_concept_update, publish_indexer_events_batch
-from app.throttler.id_range_scanner import start_id_range_scan
+from app.sqs.client import publish_concept_update, publish_indexer_events_batch
+from app.throttler.scanner import start_scan
 from app.throttler.worker import throttler
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Concept type routing
-# ---------------------------------------------------------------------------
-
-# URL path segment → internal concept type used by db_client
+# URL path segment → db_client concept type
 ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
     "variables":             "variable",
     "services":              "service",
@@ -50,13 +40,8 @@ ROUTE_TO_INTERNAL_TYPE: dict[str, str] = {
     "citations":             "citation",
 }
 
-# CMR concept-id format: one or more uppercase letters, digits, hyphen, provider (uppercase letters/digits/underscores)
 _CONCEPT_ID_RE = re.compile(r'^[A-Z]+\d+-[A-Z0-9_]+\Z')
 _PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+\Z')
-
-# ---------------------------------------------------------------------------
-# Date validation helpers
-# ---------------------------------------------------------------------------
 
 _ISO8601_Z_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 
@@ -99,112 +84,73 @@ def _override_flag(x_cmr_override_date_limit: Optional[str] = Header(None)) -> b
     return (x_cmr_override_date_limit or "").lower() == "true"
 
 
-def _validate_known_providers(provider_ids: list[str]) -> None:
+def _provider_of(concept_id: str) -> str:
+    return concept_id.split("-", 1)[1]
+
+
+def _reject_small_providers(provider_ids: list[str]) -> None:
+    """Disabled until paging their shared SMALL_PROV_GRANULES table is fixed."""
+    small = [p for p in provider_ids if db_client.is_small_provider(p)]
+    if small:
+        raise HTTPException(status_code=400, detail=f"Granule reindexing is disabled for small providers: {small!r}")
+
+
+def _known_providers() -> list[str]:
     try:
-        known_providers = db_client.get_all_provider_ids()
+        return db_client.get_all_provider_ids()
     except Exception as exc:
         logger.error({"event": "provider_existence_check_failed", "error": str(exc)})
         raise HTTPException(status_code=503, detail="Unable to validate provider IDs; database unavailable") from exc
+
+
+def _validate_providers(provider_ids: list[str]) -> None:
+    known_providers = _known_providers()
     unknown = [p for p in provider_ids if p not in known_providers]
     if unknown:
         raise HTTPException(status_code=400, detail=f"Unknown provider ID(s): {unknown!r}")
+    _reject_small_providers(provider_ids)
 
 
 class ProviderListRequest(BaseModel):
     provider_ids: list[str]
 
 
-# ---------------------------------------------------------------------------
-# Background helpers
-# ---------------------------------------------------------------------------
-
-@leases.holding
-def enqueue_providers(
-    request_id: str, provider_ids: list[str], after: Optional[str], before: Optional[str], skip=(),
-    include_deleted: bool = False,
-) -> None:
-    """Shared enqueue loop for both /reindex/granules (all providers) and
-    /reindex/granules/providers (an explicit list). skip: providers a previous run
-    already enqueued."""
-    provider_ids = list(dict.fromkeys(provider_ids))  # de-dupe, preserve order
-    try:
-        job_store.update_progress(request_id, providers_requested=provider_ids)
-        for provider_id in provider_ids:
-            if provider_id in skip:
-                continue
-            if throttler.is_job_cancelled(request_id):
-                logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
-                return
-            collection_ids = db_client.get_collection_ids_for_provider(provider_id)
-            for cid in collection_ids:
-                enqueue_collection_item(
-                    request_id=request_id, collection_id=cid, after=after, before=before,
-                    include_deleted=include_deleted,
-                )
-            job_store.update_progress(
-                request_id,
-                provider_enqueued=provider_id,
-                work_items_delta=len(collection_ids),
-            )
-        if throttler.is_job_cancelled(request_id):
-            logger.info({"event": "enqueue_cancelled_before_dispatching", "request_id": request_id})
-            return
-        job_store.mark_job(request_id, "dispatching")
-        job_store.try_complete_job(request_id)
-        logger.info({
-            "event": "providers_granules_enqueued",
-            "request_id": request_id,
-            "provider_count": len(provider_ids),
-        })
-    except Exception as exc:
-        logger.error({"event": "providers_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
-        job_store.mark_job(request_id, "failed")
+def _source_url(request: Request) -> str:
+    return f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path
 
 
-def enqueue_all_providers(
-    request_id: str, after: Optional[str], before: Optional[str], include_deleted: bool = False,
-) -> None:
-    try:
-        with leases.held(request_id):
-            provider_ids = db_client.get_all_provider_ids()
-    except Exception as exc:
-        logger.error({"event": "all_granules_enqueue_error", "request_id": request_id, "error": str(exc)})
-        job_store.mark_job(request_id, "failed")
-        return
-    enqueue_providers(request_id, provider_ids, after, before, include_deleted=include_deleted)
+def _start_granule_job(
+    request: Request, concept_type: str, after: Optional[str], before: Optional[str],
+    *, providers: Optional[list[str]] = None, collection_id: Optional[str] = None,
+) -> str:
+    """before defaults to now, so a run leaves granules ingested meanwhile to normal indexing."""
+    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    request_id = str(uuid.uuid4())
+    job_store.create_job(
+        request_id, concept_type, providers=providers, collection_id=collection_id,
+        after=after, before=before, source_url=_source_url(request),
+    )
+    logger.info({
+        "event": "reindex_granules_requested",
+        "request_id": request_id,
+        "concept_type": concept_type,
+        "providers": providers,
+        "collection_id": collection_id,
+        "after": after,
+        "before": before,
+    })
+    start_scan(request_id)
+    return request_id
 
 
-def enqueue_provider(
-    request_id: str, provider_id: str, after: Optional[str], before: Optional[str], start_id: int = 0,
-    include_deleted: bool = False,
-) -> None:
-    try:
-        if throttler.is_job_cancelled(request_id):
-            logger.info({"event": "enqueue_cancelled", "request_id": request_id, "provider_id": provider_id})
-            return
-        # False means the job was cancelled meanwhile.
-        if job_store.mark_job(request_id, "dispatching"):
-            start_id_range_scan(
-                request_id=request_id, provider_id=provider_id, after=after, before=before, start_id=start_id,
-                include_deleted=include_deleted,
-            )
-    except Exception as exc:
-        logger.error({
-            "event": "provider_granules_enqueue_error",
-            "request_id": request_id,
-            "provider_id": provider_id,
-            "error": str(exc),
-        })
-        job_store.mark_job(request_id, "failed")
-
-
-# Records are collected into batches of this size before a single parallel SQS send.
-# update_dispatched is called once per batch so total_dispatched rises incrementally.
+# Concepts per SQS send and per total_dispatched update.
 _CONCEPT_TYPE_BATCH_SIZE = 500
 
 
 @leases.holding
 def publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
+    """Not rate limited; fails the job if ES isn't green at the start. Also called by the
+    lease keeper to restart a job whose owner died."""
     try:
         if check_all_es_health()["overall"] != "green":
             logger.warning({
@@ -257,26 +203,20 @@ def publish_concept_type(request_id: str, internal_type: str, before: Optional[s
         job_store.mark_job(request_id, "failed")
 
 
-# ---------------------------------------------------------------------------
-# Granule endpoints (must be registered before the wildcard {concept_type})
-# ---------------------------------------------------------------------------
-
 @router.post("/reindex/granules", status_code=202)
 def reindex_granules(
     request: Request,
-    background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
-    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
     _validate_date_params(after, before, override)
-    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "granules", after=after, before=before, include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
-    logger.info({"event": "reindex_granules_requested", "request_id": request_id, "after": after, "before": before})
-    background_tasks.add_task(enqueue_all_providers, request_id, after, before, include_deleted)
+    providers = _known_providers()
+    small = [p for p in providers if db_client.is_small_provider(p)]
+    if small:
+        logger.warning({"event": "small_providers_skipped", "provider_ids": small})
+    request_id = _start_granule_job(request, "granules", after, before, providers=[p for p in providers if p not in small])
     return {"request_id": request_id, "message": "Reindex started for all providers"}
 
 
@@ -284,31 +224,16 @@ def reindex_granules(
 def reindex_granules_by_provider(
     provider_id: str,
     request: Request,
-    background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
-    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
     if not _PROVIDER_ID_RE.match(provider_id):
         raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {provider_id!r}")
     _validate_date_params(after, before, override)
-    _validate_known_providers([provider_id])
-    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    request_id = str(uuid.uuid4())
-    job_store.create_job(
-        request_id, "granules-by-provider", provider_id=provider_id, after=after, before=before,
-        include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
-    )
-    logger.info({
-        "event": "reindex_provider_requested",
-        "request_id": request_id,
-        "provider_id": provider_id,
-        "after": after,
-        "before": before,
-    })
-    background_tasks.add_task(enqueue_provider, request_id, provider_id, after, before, include_deleted=include_deleted)
+    _validate_providers([provider_id])
+    request_id = _start_granule_job(request, "granules-by-provider", after, before, providers=[provider_id])
     return {"request_id": request_id, "message": f"Reindex started for provider {provider_id}"}
 
 
@@ -316,10 +241,8 @@ def reindex_granules_by_provider(
 def reindex_granules_by_providers(
     body: ProviderListRequest,
     request: Request,
-    background_tasks: BackgroundTasks,
     after: Optional[str] = None,
     before: Optional[str] = None,
-    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
@@ -329,24 +252,10 @@ def reindex_granules_by_providers(
     if invalid:
         raise HTTPException(status_code=400, detail=f"Invalid provider ID format: {invalid!r}")
     _validate_date_params(after, before, override)
-    _validate_known_providers(body.provider_ids)
-    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    request_id = str(uuid.uuid4())
-    job_store.create_job(
-        request_id, "granules-by-providers", after=after, before=before, include_deleted=include_deleted,
-        source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
-    )
-    logger.info({
-        "event": "reindex_providers_requested",
-        "request_id": request_id,
-        "provider_ids": body.provider_ids,
-        "after": after,
-        "before": before,
-    })
-    background_tasks.add_task(
-        enqueue_providers, request_id, body.provider_ids, after, before, include_deleted=include_deleted,
-    )
-    return {"request_id": request_id, "message": f"Reindex started for {len(body.provider_ids)} providers"}
+    _validate_providers(body.provider_ids)
+    providers = list(dict.fromkeys(body.provider_ids))  # de-dupe, preserve order
+    request_id = _start_granule_job(request, "granules-by-providers", after, before, providers=providers)
+    return {"request_id": request_id, "message": f"Reindex started for {len(providers)} providers"}
 
 
 @router.post("/reindex/granules/collection/{collection_id:path}", status_code=202)
@@ -355,43 +264,16 @@ def reindex_granules_by_collection(
     request: Request,
     after: Optional[str] = None,
     before: Optional[str] = None,
-    include_deleted: bool = False,
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
     if not _CONCEPT_ID_RE.match(collection_id):
         raise HTTPException(status_code=400, detail=f"Invalid collection ID format: {collection_id!r}")
     _validate_date_params(after, before, override)
-    before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    request_id = str(uuid.uuid4())
-    job_store.create_job(
-        request_id, "granules-by-collection", collection_id=collection_id, after=after, before=before,
-        include_deleted=include_deleted, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path),
-    )
-    logger.info({
-        "event": "reindex_collection_requested",
-        "request_id": request_id,
-        "collection_id": collection_id,
-        "after": after,
-        "before": before,
-    })
-    try:
-        enqueue_collection_item(
-            request_id=request_id, collection_id=collection_id, after=after, before=before,
-            include_deleted=include_deleted,
-        )
-        job_store.update_progress(request_id, work_items_delta=1)
-        job_store.mark_job(request_id, "dispatching")
-    except Exception as exc:
-        logger.error({"event": "collection_enqueue_error", "request_id": request_id, "error": str(exc)})
-        job_store.mark_job(request_id, "failed")
-        raise
+    _reject_small_providers([_provider_of(collection_id)])
+    request_id = _start_granule_job(request, "granules-by-collection", after, before, collection_id=collection_id)
     return {"request_id": request_id, "message": f"Reindex started for collection {collection_id}"}
 
-
-# ---------------------------------------------------------------------------
-# Single-concept endpoint (registered before wildcard {concept_type})
-# ---------------------------------------------------------------------------
 
 @router.post("/reindex/concept/{concept_id}", status_code=202)
 def reindex_concept(
@@ -401,9 +283,11 @@ def reindex_concept(
 ):
     if not _CONCEPT_ID_RE.match(concept_id):
         raise HTTPException(status_code=400, detail=f"Invalid CMR concept ID format: {concept_id!r}")
+    if re.match(r"G\d", concept_id):  # granule; not GRD (grids)
+        _reject_small_providers([_provider_of(concept_id)])
 
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, "concept", concept_id=concept_id, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
+    job_store.create_job(request_id, "concept", concept_id=concept_id, source_url=_source_url(request))
     logger.info({
         "event": "reindex_concept_requested",
         "request_id": request_id,
@@ -438,10 +322,7 @@ def reindex_concept(
     return {"request_id": request_id, "message": f"Reindex queued for concept {concept_id}"}
 
 
-# ---------------------------------------------------------------------------
-# Non-granule concept type endpoint (wildcard — must come last)
-# ---------------------------------------------------------------------------
-
+# Registered last, so it doesn't capture /reindex/granules.
 @router.post("/reindex/{concept_type}", status_code=202)
 def reindex_by_concept_type(
     concept_type: str,
@@ -455,7 +336,7 @@ def reindex_by_concept_type(
 
     before = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
-    job_store.create_job(request_id, concept_type, before=before, source_url=(f"{request.url.path}?{request.url.query}" if request.url.query else request.url.path))
+    job_store.create_job(request_id, concept_type, before=before, source_url=_source_url(request))
     logger.info({
         "event": "reindex_concept_type_requested",
         "request_id": request_id,

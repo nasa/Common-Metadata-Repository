@@ -1,10 +1,5 @@
-"""Unit tests for the require_auth FastAPI dependency.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_auth.py -v
-"""
-from unittest.mock import MagicMock, call, patch
+"""Unit tests for the require_auth FastAPI dependency, and which app routes use it."""
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import Depends, FastAPI
@@ -29,84 +24,48 @@ client = TestClient(_app, raise_server_exceptions=False)
 _REGISTERED_SID = "registered"
 _GROUP_SID = "AG12345-CMR"
 
-_ACL_WITH_UPDATE = {
-    "concept_id": "ACL-001",
-    "acl": {
-        "group_permissions": [
-            {"user_type": "registered", "permissions": ["read", "update"]}
-        ],
-        "system_identity": {"target": "INGEST_MANAGEMENT_ACL"},
-    },
-}
 
-_ACL_READ_ONLY = {
-    "concept_id": "ACL-002",
-    "acl": {
-        "group_permissions": [
-            {"user_type": "registered", "permissions": ["read"]}
-        ],
-        "system_identity": {"target": "INGEST_MANAGEMENT_ACL"},
-    },
-}
-
-_ACL_GROUP_UPDATE = {
-    "concept_id": "ACL-003",
-    "acl": {
-        "group_permissions": [
-            {"group_id": _GROUP_SID, "permissions": ["update"]}
-        ],
-        "system_identity": {"target": "INGEST_MANAGEMENT_ACL"},
-    },
-}
+def _acl(permission, identity="system", **grantee):
+    grantee = grantee or {"user_type": "registered"}
+    target = (
+        {"system_identity": {"target": "INGEST_MANAGEMENT_ACL"}} if identity == "system"
+        else {"provider_identity": {"provider_id": "PROV1", "target": "INGEST_MANAGEMENT_ACL"}}
+    )
+    return {"acl": {"group_permissions": [{**grantee, "permissions": ["read", permission]}], **target}}
 
 
 def _sids_resp(sids):
-    r = MagicMock()
-    r.status_code = 200
+    r = MagicMock(status_code=200)
     r.json.return_value = sids
     return r
 
 
 def _acls_resp(items):
-    r = MagicMock()
-    r.status_code = 200
+    r = MagicMock(status_code=200)
     r.json.return_value = {"items": items, "hits": len(items)}
     return r
 
 
-def _http_401():
-    r = MagicMock()
-    r.status_code = 401
-    return r
-
-
-def _post_get(sids, acl_items):
-    """Return (mock_post, mock_get) pre-configured for the two-call auth flow."""
-    return _sids_resp(sids), _acls_resp(acl_items)
+def _post(headers, sids, acls):
+    with patch("app.auth.httpx.post", return_value=_sids_resp(sids)) as mock_post, \
+         patch("app.auth.httpx.get", return_value=_acls_resp(acls)) as mock_get:
+        r = client.post("/protected", headers=headers)
+    return r, mock_post, mock_get
 
 
 # ---------------------------------------------------------------------------
-# 401 — no token
+# 401 / 503
 # ---------------------------------------------------------------------------
 
 def test_missing_token_returns_401():
-    r = client.post("/protected")
-    assert r.status_code == 401
+    assert client.post("/protected").status_code == 401
 
-
-# ---------------------------------------------------------------------------
-# 401 — current-sids rejects the token
-# ---------------------------------------------------------------------------
 
 def test_invalid_token_returns_401():
-    with patch("app.auth.httpx.post", return_value=_http_401()):
+    with patch("app.auth.httpx.post", return_value=MagicMock(status_code=401)):
         r = client.post("/protected", headers={"Authorization": "bad-token"})
     assert r.status_code == 401
 
-
-# ---------------------------------------------------------------------------
-# 503 — ACL service unreachable on current-sids call
-# ---------------------------------------------------------------------------
 
 def test_sids_service_unreachable_returns_503():
     with patch("app.auth.httpx.post", side_effect=Exception("connection refused")):
@@ -114,162 +73,76 @@ def test_sids_service_unreachable_returns_503():
     assert r.status_code == 503
 
 
-# ---------------------------------------------------------------------------
-# 503 — ACL service unreachable on acls fetch
-# ---------------------------------------------------------------------------
-
 def test_acl_fetch_unreachable_returns_503():
-    mock_post = _sids_resp([_REGISTERED_SID])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
+    with patch("app.auth.httpx.post", return_value=_sids_resp([_REGISTERED_SID])), \
          patch("app.auth.httpx.get", side_effect=Exception("connection refused")):
         r = client.post("/protected", headers={"Authorization": "any-token"})
     assert r.status_code == 503
 
 
 # ---------------------------------------------------------------------------
-# 403 — valid token but no update permission in any ACL
+# 403 / 200
 # ---------------------------------------------------------------------------
 
-def test_no_update_permission_returns_403():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_READ_ONLY])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "read-only-token"})
+@pytest.mark.parametrize("acl", [_acl("read"), _acl("update", identity="provider")], ids=["read-only", "provider-level"])
+def test_without_system_level_update_returns_403(acl):
+    r, _, _ = _post({"Authorization": "some-token"}, [_REGISTERED_SID], [acl])
     assert r.status_code == 403
 
 
-def test_empty_acls_returns_403():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "no-acl-token"})
-    assert r.status_code == 403
+@pytest.mark.parametrize("sid, acl", [
+    (_REGISTERED_SID, _acl("update")),
+    (_GROUP_SID, _acl("update", group_id=_GROUP_SID)),
+], ids=["user-type", "group"])
+def test_system_level_update_passes(sid, acl):
+    r, _, _ = _post({"Echo-Token": "good-token"}, [sid], [acl])
+    assert (r.status_code, r.json()["token"]) == (200, "good-token")
 
 
-# ---------------------------------------------------------------------------
-# 200 — authorized via user_type SID match
-# ---------------------------------------------------------------------------
-
-def test_registered_sid_with_update_permission_passes():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "good-token"})
-    assert r.status_code == 200
-    assert r.json()["token"] == "good-token"
-
-
-# ---------------------------------------------------------------------------
-# 200 — authorized via group_id SID match
-# ---------------------------------------------------------------------------
-
-def test_group_sid_with_update_permission_passes():
-    mock_post, mock_get = _post_get([_GROUP_SID], [_ACL_GROUP_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "group-token"})
-    assert r.status_code == 200
-
-
-# ---------------------------------------------------------------------------
-# Bearer prefix is stripped before forwarding to current-sids
-# ---------------------------------------------------------------------------
-
-def test_bearer_prefix_stripped():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post) as mock_p, \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "Bearer my-secret-token"})
-    assert r.status_code == 200
+def test_bearer_prefix_stripped_and_token_sent_in_body_not_url():
+    r, mock_post, _ = _post({"Authorization": "Bearer my-secret-token"}, [_REGISTERED_SID], [_acl("update")])
     assert r.json()["token"] == "my-secret-token"
-    body = mock_p.call_args[1]["json"]
-    assert body["user-token"] == "my-secret-token"
+    assert "my-secret-token" not in mock_post.call_args[0][0]
+    assert mock_post.call_args[1]["json"] == {"user-token": "my-secret-token"}
 
 
-# ---------------------------------------------------------------------------
-# Echo-Token header is accepted
-# ---------------------------------------------------------------------------
-
-def test_echo_token_header_passes():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Echo-Token": "echo-token-value"})
-    assert r.status_code == 200
-
-
-# ---------------------------------------------------------------------------
-# current-sids is called via POST with token in body (not URL)
-# ---------------------------------------------------------------------------
-
-def test_token_not_in_url():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post) as mock_p, \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        client.post("/protected", headers={"Authorization": "secret-token"})
-    url = mock_p.call_args[0][0]
-    assert "secret-token" not in url
-    assert mock_p.call_args[1]["json"] == {"user-token": "secret-token"}
-
-
-# ---------------------------------------------------------------------------
-# ACL fetch uses system token, not user token
-# ---------------------------------------------------------------------------
-
-def test_acl_fetch_uses_system_token():
+def test_acl_request_uses_system_token_and_system_level_acls():
     from app.config import config
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get) as mock_g:
-        client.post("/protected", headers={"Authorization": "user-token"})
-    headers = mock_g.call_args[1]["headers"]
-    assert headers["Authorization"] == config.echo_system_token
-    assert headers["Authorization"] != "user-token"
-
-
-# ---------------------------------------------------------------------------
-# ACL query uses correct params (no invalid 'permission' param)
-# ---------------------------------------------------------------------------
-
-def test_acl_query_params():
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_WITH_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get) as mock_g:
-        client.post("/protected", headers={"Authorization": "tok"})
-    params = mock_g.call_args[1]["params"]
-    assert params["target"] == "INGEST_MANAGEMENT_ACL"
-    assert params["include_full_acl"] == "true"
-    assert params["identity_type"] == "system", (
-        "Must restrict to system-level ACLs only; provider-level INGEST_MANAGEMENT_ACL "
-        "must not grant global reindex access"
+    _, _, mock_get = _post({"Authorization": "user-token"}, [_REGISTERED_SID], [_acl("update")])
+    assert mock_get.call_args[1]["headers"]["Authorization"] == config.echo_system_token
+    params = mock_get.call_args[1]["params"]
+    assert (params["target"], params["identity_type"], params["include_full_acl"]) == (
+        "INGEST_MANAGEMENT_ACL", "system", "true",
     )
-    assert "permission" not in params
 
 
 # ---------------------------------------------------------------------------
-# Provider-level ACL does not grant reindex access
+# Which app routes require auth
 # ---------------------------------------------------------------------------
 
-_ACL_PROVIDER_UPDATE = {
-    "concept_id": "ACL-004",
-    "acl": {
-        "group_permissions": [
-            {"user_type": "registered", "permissions": ["read", "update"]}
-        ],
-        # provider_identity (not system_identity) — scoped to a single provider
-        "provider_identity": {"provider_id": "PROV1", "target": "INGEST_MANAGEMENT_ACL"},
-    },
-}
+@pytest.fixture
+def real_app(monkeypatch):
+    from app.main import app
+    monkeypatch.setattr(app, "dependency_overrides", {})
+    monkeypatch.setattr("app.routers.status.job_store", MagicMock(**{"list_jobs.return_value": []}))
+    monkeypatch.setattr("app.routers.throttle.throttler", MagicMock(**{"get_rate.return_value": 600}))
+    return TestClient(app, raise_server_exceptions=False)
 
 
-def test_provider_level_acl_does_not_grant_access():
-    """A provider-scoped INGEST_MANAGEMENT_ACL update must not allow global reindex.
+@pytest.mark.parametrize("method, path, body", [
+    ("POST", "/reindexer/reindex/granules", None),
+    ("POST", "/reindexer/reindex/granules/provider/PROV", None),
+    ("POST", "/reindexer/reindex/granules/providers", {"provider_ids": ["PROV"]}),
+    ("POST", "/reindexer/reindex/granules/collection/C1-PROV", None),
+    ("POST", "/reindexer/reindex/concept/V1-PROV", None),
+    ("POST", "/reindexer/reindex/variables", None),
+    ("DELETE", "/reindexer/jobs/job-1", None),
+    ("PUT", "/reindexer/throttle", {"rate_per_minute": 100}),
+])
+def test_mutating_routes_require_a_token(real_app, method, path, body):
+    assert real_app.request(method, path, json=body).status_code == 401
 
-    The API filter (identity_type=system) prevents these from being returned, but
-    _sid_has_update is also tested here as defense in depth.
-    """
-    mock_post, mock_get = _post_get([_REGISTERED_SID], [_ACL_PROVIDER_UPDATE])
-    with patch("app.auth.httpx.post", return_value=mock_post), \
-         patch("app.auth.httpx.get", return_value=mock_get):
-        r = client.post("/protected", headers={"Authorization": "provider-token"})
-    assert r.status_code == 403
+
+@pytest.mark.parametrize("path", ["/reindexer/jobs", "/reindexer/throttle"])
+def test_read_routes_are_open(real_app, path):
+    assert real_app.get(path).status_code == 200

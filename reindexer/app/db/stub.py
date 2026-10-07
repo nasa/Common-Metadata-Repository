@@ -38,8 +38,8 @@ class StubOracleClient:
     def get_all_provider_ids(self) -> list[str]:
         return list(self._providers)
 
-    def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
-        return list(self._collections.get(provider_id, []))
+    def is_small_provider(self, provider_id: str) -> bool:
+        return False
 
     def find_next_granule_id_in_range(
         self,
@@ -47,8 +47,7 @@ class StubOracleClient:
         min_id: int,
         after: Optional[str] = None,
     ) -> Optional[int]:
-        """Fake provider-wide id space: a dense range [0, total) with no gaps —
-        good enough to exercise the id-range dispatch strategy locally."""
+        """Fake dense id space [0, total)."""
         total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
         return min_id if min_id < total else None
 
@@ -59,7 +58,6 @@ class StubOracleClient:
         end_id: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
-        include_deleted: bool = False,
     ) -> list[tuple[str, int]]:
         total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
         return [
@@ -74,16 +72,9 @@ class StubOracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
-        include_deleted: bool = False,
     ) -> Iterator[tuple[str, list[tuple[str, int]]]]:
-        """Yield (page_end, chunk) pages of fake granule IDs, respecting keyset resume
-        and chunk_size. Ignores after/before and include_deleted (no tombstones), so
-        chunks are never empty here.
-
-        start_after_concept_id mirrors the Oracle keyset cursor: only IDs that sort
-        after that value are returned.  The stub uses a sequential integer suffix so
-        lexicographic order matches the generation order.
-        """
+        """Ignores after/before and has no tombstones. Ids sort in generation order, so
+        the keyset cursor works as in Oracle."""
         count = self._granule_counts.get(collection_id, 0)
         provider = collection_id.split("-", 1)[1] if "-" in collection_id else "UNKNOWN"
 
@@ -95,13 +86,13 @@ class StubOracleClient:
             chunk = all_ids[i:i + chunk_size]
             yield chunk[-1][0], chunk
 
-    def get_concept_ids_by_type(
+    def stream_concept_ids_by_type(
         self,
         concept_type: str,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        return list(self._concept_type_ids.get(concept_type, []))
+    ) -> Iterator[tuple[str, int]]:
+        yield from self._concept_type_ids.get(concept_type, [])
 
     def get_concept_by_id(self, concept_id: str) -> Optional[dict]:
         return {"concept-id": concept_id, "revision-id": 1}

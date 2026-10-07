@@ -10,7 +10,6 @@ from app.auth import require_auth
 from app.config import config
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
-from app.lease_keeper import jobs_in_progress
 from app.sqs.client import get_queue_counts
 from app.throttler.worker import throttler
 
@@ -31,8 +30,7 @@ def _enrich_job(job: dict) -> dict:
 
     if "started_at" in job:
         try:
-            # A stopped job is measured up to completed_at, so elapsed (and the rate
-            # below) don't keep changing afterwards.
+            # A stopped job is measured to completed_at, so elapsed and rate stop changing.
             end = _parse_ts(job["completed_at"]) if job.get("completed_at") else now
             result["elapsed_seconds"] = int((end - _parse_ts(job["started_at"])).total_seconds())
         except Exception:
@@ -43,7 +41,7 @@ def _enrich_job(job: dict) -> dict:
             hb = _parse_ts(job["last_heartbeat"])
             age = int((now - hb).total_seconds())
             result["heartbeat_age_seconds"] = age
-            if leases.is_heartbeat_leased(job):
+            if job.get("status") == "running":
                 result["lease_lapsed"] = age > config.lease_minutes * 60
         except Exception:
             pass
@@ -53,47 +51,35 @@ def _enrich_job(job: dict) -> dict:
     if dispatched > 0 and elapsed > 0:
         result["avg_dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
 
-    # Providers never enqueued, or with collections not yet streamed: the set to
-    # resubmit after a cancel.
     if "providers_requested" in job:
-        to_process = set(job.get("providers_requested") or [])
-        enqueued = set(job.get("providers_enqueued") or [])
-        work_items = job.get("providers_work_items") or {}
-        split = job.get("providers_collections_split") or {}
-        never_enqueued = to_process - enqueued
-        still_splitting = {p for p in enqueued if split.get(p, 0) < work_items.get(p, 0)}
-        result["providers_remaining"] = sorted(never_enqueued | still_splitting)
+        done = set(job.get("providers_done") or [])
+        result["providers_remaining"] = [p for p in job["providers_requested"] if p not in done]
 
     return result
 
 
-def _queue_counts(name: str, url: str) -> Optional[dict]:
+def _indexer_queue_counts() -> Optional[dict]:
     try:
-        return get_queue_counts(url)
+        return get_queue_counts(config.indexer_queue_url)
     except Exception as exc:
-        logger.warning({"event": "queue_counts_check_failed", "queue": name, "error": str(exc)})
+        logger.warning({"event": "queue_counts_check_failed", "error": str(exc)})
         return None
 
 
-# The handlers below are plain def, so FastAPI runs their blocking SQS/DynamoDB calls
-# in its threadpool instead of on the event loop that also serves /health.
+# Plain def, so their blocking calls run in FastAPI's threadpool, off the event loop
+# that serves /health.
 
 @router.get("/status")
 def status():
-    """Shared dependencies, plus what the answering task is doing. Fields under
-    "task" are per task: during a deploy, calls can reach different tasks."""
+    """Fields under "task" describe only the task that answered."""
     return {
         "task": {
             "id": socket.gethostname(),
-            "jobs_in_progress": sorted(jobs_in_progress()),
-            "collection_worker": {"alive": throttler.is_alive(), "current_job": throttler.current_job_id},
+            "jobs_in_progress": sorted(leases.held_jobs()),
             "rate_limit_per_minute": throttler.get_rate(),
         },
         "es_health": check_all_es_health(),
-        "queues": {
-            "collection": _queue_counts("collection", config.collection_queue_url),
-            "indexer": _queue_counts("indexer", config.indexer_queue_url),
-        },
+        "indexer_queue": _indexer_queue_counts(),
     }
 
 
@@ -118,5 +104,4 @@ def cancel_job(job_id: str, _token: str = Depends(require_auth)):
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
     if not job_store.try_cancel_job(job_id):
         raise HTTPException(status_code=409, detail=f"Job {job_id} is already terminal")
-    logger.info({"event": "job_cancelled", "job_id": job_id})
     return {"job_id": job_id, "status": "cancelled"}
