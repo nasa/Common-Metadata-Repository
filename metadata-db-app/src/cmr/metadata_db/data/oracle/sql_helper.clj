@@ -95,8 +95,10 @@
     ;; Loop and execute until 0 rows are deleted
     (loop [total-deleted 0
            attempt 1]
-      (let [;; jdbc/execute! returns a sequence containing the update count, e.g., (10000)
-            rows-deleted (first (j/execute! db stmt))]
+      (let [;; Wrap JUST the batch execution in a transaction so it explicitly commits!
+            rows-deleted (j/with-db-transaction [batch-conn db]
+                                                (first (j/execute! batch-conn stmt)))]
+
         (if (> rows-deleted 0)
           (do
             ;; Pause for 10ms to let Oracle safely flush the Undo Tablespace to disk

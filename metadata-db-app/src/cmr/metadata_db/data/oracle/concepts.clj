@@ -483,7 +483,7 @@
                                  (string/join "," cols)
                                  seq-name
                                  (string/join "," (repeat (count values) "?")))]
-                (trace "Executing" stmt "with values" (pr-str values))
+                (info "CMR-11560 - Executing" stmt "with values" (pr-str values))
                 (j/db-do-prepared db stmt values)
 
                 ;; Keep other transactional after-save operations here
@@ -501,7 +501,12 @@
 
     ;; Only run the heavy batch delete if the save was 100% successful (returned nil)
     (when (nil? save-result)
-      (post-commit-step db provider concept))
+      (future
+        (try
+          ;; run the post-commit sql statements (like large granule deletes) asynchronously
+          (post-commit-step db provider concept)
+          (catch Exception e
+            (error e "Background Oracle deletion failed in post-commit-step")))))
 
     ;; Return the exact same result (nil or error) to the caller
     save-result))
