@@ -203,8 +203,7 @@
    (if (and doi (or (:DOI doi) (:MissingReason doi)))
      (let [cleaned (util/remove-nil-keys (into {} doi))
            updated (if (seq (:PreviousVersion cleaned))
-                     (assoc cleaned :PreviousVersion
-                            (fix-previous-version-fields (:PreviousVersion cleaned)))
+                     (update-in cleaned [:PreviousVersion] fix-previous-version-fields)
                      (dissoc cleaned :PreviousVersion))]
        (cmn/map->DoiType updated))
      (cmn/map->DoiType
