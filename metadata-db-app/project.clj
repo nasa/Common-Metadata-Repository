@@ -30,7 +30,7 @@
                  [org.eclipse.jetty/jetty-util]
                  [org.quartz-scheduler/quartz "2.3.2"]
                  [org.slf4j/slf4j-api "1.7.30"]
-                 [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]] ;; used by migration

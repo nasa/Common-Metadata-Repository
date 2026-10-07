@@ -51,7 +51,7 @@
                            [org.eclipse.jetty/jetty-util]
                            [ring/ring-core "1.15.4"]
 
-                           [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                           [ring/ring-codec "1.3.0"]
 
                            [ring/ring-jetty-adapter "1.15.4"
                             :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
@@ -76,8 +76,7 @@
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
-                                  [ring/ring-codec "1.3.0" :exclusions
-                                   [org.bouncycastle/bcpkix-jdk15on]]
+                                  [ring/ring-codec "1.3.0"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring-mock "0.1.5"]]

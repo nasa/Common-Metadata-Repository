@@ -41,7 +41,7 @@
                  [org.jsoup/jsoup "1.23.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
-                 [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]

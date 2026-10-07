@@ -43,7 +43,7 @@
                  [org.slf4j/slf4j-api "1.7.30"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
-                 [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                 [ring/ring-codec "1.3.0"]
                  [ring/ring-core "1.15.4"]
                  [ring/ring-jetty-adapter "1.15.4" :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]]
