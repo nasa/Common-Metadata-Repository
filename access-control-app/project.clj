@@ -43,7 +43,7 @@
                            [compojure :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
-                           [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                           [org.bouncycastle/bcpkix-jdk18on "1.86"]
                            [org.clojure/clojure]
                            [org.clojure/tools.reader]
                            [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
@@ -69,7 +69,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
-                                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                                  [org.bouncycastle/bcpkix-jdk18on "1.86"]
                                   [org.clojure/core.async "1.6.681"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nrepl/nrepl "1.1.0"]

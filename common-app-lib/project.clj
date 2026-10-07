@@ -31,7 +31,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on "1.85"]
+             :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on "1.86"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nrepl/nrepl]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]

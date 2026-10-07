@@ -21,7 +21,7 @@
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
-                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
                  [org.clojure/clojure]
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]

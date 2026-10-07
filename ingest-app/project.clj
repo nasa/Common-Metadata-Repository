@@ -31,7 +31,7 @@
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
                  [org.clojure/clojure]
                  [org.clojure/data.xml "0.0.8"]
                  [nrepl/nrepl]
