@@ -28,7 +28,7 @@
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.21.7"]
                           [compojure "1.6.3"]
                           [nrepl/nrepl "1.1.0"]
-                          [org.clojure/clojure "1.11.4"] ;; latest is 1.11.4 or 1.12.2
+                          [org.clojure/clojure "1.11.2"] ;; latest is 1.11.4 or 1.12.2
                           [org.clojure/core.cache "1.0.225"]
                           [org.clojure/test.check "1.1.1"]
                           [org.clojure/tools.reader "1.4.0"]
