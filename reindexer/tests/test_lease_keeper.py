@@ -1,14 +1,6 @@
-"""
-Unit tests for restart_lapsed_jobs() and the lease keeper's _tick().
-
-job_store, the reindex router helpers, and the throttler are mocks, and restart
-threads run inline — no real DynamoDB, SQS, or threads.
-
-Run with:
-    cd reindexer
-    PYTHONPATH=. python -m pytest tests/test_lease_keeper.py -v
-"""
+"""restart_lapsed_jobs() and _tick(), with dependencies mocked and restart threads run inline."""
 import threading
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -22,16 +14,24 @@ from app.lease_keeper import _tick, restart_lapsed_jobs
 # Helpers
 # ---------------------------------------------------------------------------
 
+class _InlineThread:
+    def __init__(self, target, args=(), **_):
+        self._run = lambda: target(*args)
+
+    def start(self):
+        self._run()
+
+
 @pytest.fixture(autouse=True)
 def deps(monkeypatch):
     reindex = MagicMock(ROUTE_TO_INTERNAL_TYPE={"variables": "variable"})
-    throttler = MagicMock(current_job_id=None)
+    start_scan = MagicMock()
     monkeypatch.setattr(_keeper_mod, "reindex", reindex)
-    monkeypatch.setattr(_keeper_mod, "throttler", throttler)
+    monkeypatch.setattr(_keeper_mod, "start_scan", start_scan)
     monkeypatch.setattr(_keeper_mod, "log_slow_calls", MagicMock())
-    monkeypatch.setattr(_keeper_mod, "_start_thread", lambda target, *args, **kwargs: target(*args, **kwargs))
+    monkeypatch.setattr(_keeper_mod, "threading", SimpleNamespace(Thread=_InlineThread, Event=threading.Event))
     monkeypatch.setattr(leases, "_held", set())
-    return reindex, throttler
+    return reindex, start_scan
 
 
 def _job_store(*jobs):
@@ -53,58 +53,42 @@ def _job(concept_type, **kwargs):
 class TestRestartLapsedJobs:
 
     def test_job_held_by_this_task_is_left_alone(self, deps):
-        reindex, _ = deps
+        _, start_scan = deps
         leases.hold("job-1")
-        js = _job_store(_job("granules-by-provider", provider_id="P"))
+        js = _job_store(_job("granules-by-provider"))
         restart_lapsed_jobs(js)
         js.claim_lapsed_job.assert_not_called()
-        reindex.enqueue_provider.assert_not_called()
+        start_scan.assert_not_called()
 
     def test_claim_lost_skips_job(self, deps):
-        reindex, _ = deps
-        js = _job_store(_job("granules-by-provider", provider_id="P"))
+        _, start_scan = deps
+        js = _job_store(_job("granules-by-provider"))
         js.claim_lapsed_job.return_value = False
         restart_lapsed_jobs(js)
-        reindex.enqueue_provider.assert_not_called()
+        start_scan.assert_not_called()
 
-    @pytest.mark.parametrize("concept_type", ["granules", "granules-by-providers"])
-    def test_enqueue_loop_restarted_skipping_enqueued_providers(self, deps, concept_type):
-        reindex, _ = deps
-        restart_lapsed_jobs(_job_store(_job(concept_type, providers_requested=["P1", "P2"], providers_enqueued=["P1"])))
-        reindex.enqueue_providers.assert_called_once_with(
-            "job-1", ["P1", "P2"], "A", "B", skip={"P1"}, include_deleted=False,
-        )
-
-    def test_all_providers_job_that_never_listed_providers_lists_them(self, deps):
-        reindex, _ = deps
-        restart_lapsed_jobs(_job_store(_job("granules")))
-        reindex.enqueue_all_providers.assert_called_once_with("job-1", "A", "B", False)
-
-    @pytest.mark.parametrize("persisted, start_id", [({"next_start_id": 123456}, 123456), ({}, 0)])
-    def test_provider_scan_restarted_from_persisted_cursor(self, deps, persisted, start_id):
-        reindex, _ = deps
-        restart_lapsed_jobs(_job_store(_job("granules-by-provider", status="dispatching", provider_id="P", **persisted)))
-        reindex.enqueue_provider.assert_called_once_with(
-            "job-1", "P", "A", "B", start_id=start_id, include_deleted=False,
-        )
+    @pytest.mark.parametrize("concept_type", ["granules", "granules-by-collection"])
+    def test_granule_job_claimed_and_rescanned_from_its_cursor(self, deps, concept_type):
+        _, start_scan = deps
+        js = _job_store(_job(concept_type))
+        restart_lapsed_jobs(js)
+        js.claim_lapsed_job.assert_called_once_with("job-1", "2026-08-24T00:00:00Z")
+        start_scan.assert_called_once_with("job-1")
 
     def test_concept_type_republished(self, deps):
         reindex, _ = deps
         restart_lapsed_jobs(_job_store(_job("variables")))
         reindex.publish_concept_type.assert_called_once_with("job-1", "variable", "B")
 
-    @pytest.mark.parametrize("job", [
-        _job("concept"), _job("granules-by-collection"), _job("granules-by-providers"),
-    ], ids=["concept", "granules-by-collection", "granules-by-providers-without-list"])
-    def test_unrestartable_job_marked_failed(self, job):
-        js = _job_store(job)
+    def test_single_concept_job_marked_failed(self):
+        js = _job_store(_job("concept"))
         restart_lapsed_jobs(js)
         js.mark_job.assert_called_once_with("job-1", "failed")
 
     def test_restart_error_marks_job_failed(self, deps):
-        reindex, _ = deps
-        reindex.enqueue_provider.side_effect = RuntimeError("boom")
-        js = _job_store(_job("granules-by-provider", provider_id="P"))
+        _, start_scan = deps
+        start_scan.side_effect = RuntimeError("can't start new thread")
+        js = _job_store(_job("granules-by-provider"))
         restart_lapsed_jobs(js)
         js.mark_job.assert_called_once_with("job-1", "failed")
 
@@ -115,31 +99,24 @@ class TestRestartLapsedJobs:
 
 class TestTick:
 
-    def test_renews_message_and_every_held_job_then_restarts(self, deps):
-        _, throttler = deps
-        throttler.current_job_id = "collection-job"
-        leases.hold("scan-job")
+    def test_renews_every_held_job_then_restarts(self):
+        leases.hold("job-a")
+        leases.hold("job-b")
         js = _job_store()
         _tick(js, threading.Event())
-        throttler.renew_message_lease.assert_called_once()
-        assert sorted(c.args[0] for c in js.update_heartbeat.call_args_list) == ["collection-job", "scan-job"]
-        _keeper_mod.log_slow_calls.assert_called_once_with(_keeper_mod._SLOW_CALL_SECONDS)
+        assert sorted(c.args[0] for c in js.update_heartbeat.call_args_list) == ["job-a", "job-b"]
         js.find_lapsed_jobs.assert_called_once_with(_keeper_mod.config.lease_minutes)
 
-    def test_shutting_down_keeps_renewing_but_restarts_nothing(self, deps):
-        _, throttler = deps
-        leases.hold("scan-job")
+    def test_shutting_down_keeps_renewing_but_restarts_nothing(self):
+        leases.hold("job-a")
         js = _job_store()
         stop = threading.Event()
         stop.set()
         _tick(js, stop)
-        throttler.renew_message_lease.assert_called_once()
-        js.update_heartbeat.assert_called_once_with("scan-job")
+        js.update_heartbeat.assert_called_once_with("job-a")
         js.find_lapsed_jobs.assert_not_called()
 
-    def test_failing_step_does_not_skip_the_rest(self, deps):
-        _, throttler = deps
-        throttler.renew_message_lease.side_effect = RuntimeError("SQS down")
+    def test_failing_renewal_does_not_skip_the_rest(self):
         leases.hold("job-a")
         leases.hold("job-b")
         js = _job_store()

@@ -36,14 +36,6 @@ def holding(fn):
     return wrapper
 
 
-def is_heartbeat_leased(job: dict) -> bool:
-    """Jobs leased by last_heartbeat (the rest are collection-queue work, leased by SQS).
-    Must match JobStore.find_lapsed_jobs."""
-    return job.get("status") == "running" or (
-        job.get("status") == "dispatching" and job.get("concept_type") == "granules-by-provider"
-    )
-
-
 def held_jobs() -> set[str]:
     with _lock:
         return set(_held)

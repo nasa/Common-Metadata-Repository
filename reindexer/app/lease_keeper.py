@@ -1,8 +1,4 @@
-"""Renews this task's leases, so slow-but-alive work never loses one, and restarts
-jobs whose lease lapsed because their owner is gone. Collection work items are
-leased by SQS visibility (a lapsed message is simply redelivered); other jobs by
-last_heartbeat (app.leases).
-"""
+"""Renews the leases this task holds (app.leases) and restarts jobs whose owner is gone."""
 import logging
 import threading
 import time
@@ -11,24 +7,17 @@ from app import leases
 from app.config import config
 from app.db.call_tracker import log_slow_calls
 from app.routers import reindex
-from app.throttler.worker import throttler
+from app.throttler.scanner import start_scan
 
 logger = logging.getLogger(__name__)
 
-# Log any Oracle call still running after this long, every tick until it returns.
+# Oracle calls running longer than this are logged every tick until they return.
 _SLOW_CALL_SECONDS = 300
 
 
-def _start_thread(target, job_id: str, *args, **kwargs) -> None:
-    thread = threading.Thread(target=target, args=(job_id, *args), kwargs=kwargs, name=f"restart-{job_id}", daemon=True)
-    thread.start()
-
-
 def restart_lapsed_jobs(job_store) -> None:
-    """Restart jobs whose lease lapsed. Each restart picks up from the job's
-    persisted progress: providers_enqueued for the enqueue loop, next_start_id for
-    an id-range scan. A concept type is republished from scratch (idempotent).
-    """
+    """Restart jobs whose lease lapsed: a granule job resumes at its cursor, a concept
+    type is republished from scratch (idempotent)."""
     held = leases.held_jobs()
     for job in job_store.find_lapsed_jobs(config.lease_minutes):
         job_id = job["job_id"]
@@ -40,45 +29,26 @@ def restart_lapsed_jobs(job_store) -> None:
         logger.info({
             "event": "restarting_lapsed_job", "job_id": job_id, "concept_type": concept_type, "status": job.get("status"),
         })
-        after, before, include_deleted = job.get("after"), job.get("before"), job.get("include_deleted", False)
         try:
-            if concept_type in ("granules", "granules-by-providers") and job.get("providers_requested"):
-                _start_thread(
-                    reindex.enqueue_providers, job_id, job["providers_requested"], after, before,
-                    skip=set(job.get("providers_enqueued") or []), include_deleted=include_deleted,
-                )
-            elif concept_type == "granules":  # died before it listed the providers
-                _start_thread(reindex.enqueue_all_providers, job_id, after, before, include_deleted)
-            elif concept_type == "granules-by-provider":
-                reindex.enqueue_provider(
-                    job_id, job["provider_id"], after, before,
-                    start_id=job.get("next_start_id") or 0, include_deleted=include_deleted,
-                )
+            if concept_type.startswith("granules"):
+                start_scan(job_id)
             elif concept_type in reindex.ROUTE_TO_INTERNAL_TYPE:
-                _start_thread(reindex.publish_concept_type, job_id, reindex.ROUTE_TO_INTERNAL_TYPE[concept_type], before)
+                threading.Thread(
+                    target=reindex.publish_concept_type,
+                    args=(job_id, reindex.ROUTE_TO_INTERNAL_TYPE[concept_type], job.get("before")),
+                    name=f"restart-{job_id}", daemon=True,
+                ).start()
             else:
-                # A synchronous request that died before finishing (single concept, collection enqueue)
+                # A single-concept request ran synchronously; there's nothing to resume.
                 job_store.mark_job(job_id, "failed")
         except Exception as exc:
             logger.error({"event": "lapsed_job_restart_error", "job_id": job_id, "error": str(exc)})
             job_store.mark_job(job_id, "failed")
 
 
-def jobs_in_progress() -> set[str]:
-    """Jobs this task is working on: held leases plus the collection being streamed."""
-    return (leases.held_jobs() | {throttler.current_job_id}) - {None}
-
-
 def _tick(job_store, stop_event: threading.Event) -> None:
     # Separate try blocks, so one failing step doesn't skip the others.
-    try:
-        throttler.renew_message_lease()
-    except Exception as exc:
-        logger.warning({"event": "message_lease_renew_error", "error": str(exc)})
-
-    # The current collection job is leased by its message; its heartbeat is renewed
-    # too only so /jobs heartbeat_age_seconds stays meaningful for it.
-    for job_id in jobs_in_progress():
+    for job_id in leases.held_jobs():
         try:
             job_store.update_heartbeat(job_id)
         except Exception as exc:
@@ -95,10 +65,9 @@ def _tick(job_store, stop_event: threading.Event) -> None:
 
 
 def start_lease_keeper(job_store, stop_event: threading.Event) -> threading.Thread:
-    """Run _tick now and then five times per lease, for the life of the process.
-    Renewal deliberately ignores stop_event: work can outlive SIGTERM (a worker
-    stuck past its join, a BackgroundTask uvicorn waits on), and must stay leased
-    until it actually ends."""
+    """Tick now and then five times per lease. Ignores stop_event: work can outlive SIGTERM
+    (a scan stuck in an Oracle call, a BackgroundTask uvicorn waits on) and must stay
+    leased until it ends."""
     def _run() -> None:
         while True:
             _tick(job_store, stop_event)

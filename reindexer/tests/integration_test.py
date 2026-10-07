@@ -1,44 +1,16 @@
 #!/usr/bin/env python3
 """
-Reindexer integration test against a live CMR dev-system backed by Oracle.
+Reindexer integration test against a live local CMR backed by Oracle.
 
-Prerequisites (all inside the cmr-dev container):
-  1. Oracle container running on the host (port 1521) and schema already set up.
-       docker start cmr-oracle   # on Windows host
-  2. CMR dev-system running with external Oracle:
-       export CMR_DEV_SYSTEM_DB_TYPE=external
-       export CMR_DEV_SYSTEM_ELASTIC_TYPE=external
-       export CMR_DEV_SYSTEM_REDIS_TYPE=external
-       export CMR_ELASTIC_HOST=host.docker.internal
-       export CMR_ELASTIC_PORT=9211
-       export CMR_GRAN_ELASTIC_HOST=host.docker.internal
-       export CMR_GRAN_ELASTIC_PORT=9210
-       export CMR_DB_URL='thin:@host.docker.internal:1521/FREEPDB1'
-       export CMR_METADATA_DB_PASSWORD='<password>'
-       redis-server --daemonize yes --logfile /tmp/redis.log
-       cd /root/Common-Metadata-Repository/dev-system
-       lein run -m cmr.dev-system.runner > /tmp/cmr-dev-system.log 2>&1 &
-  3. ES 8 running on host.docker.internal:9211 and :9210
-  4. ElasticMQ running on host.docker.internal:4100
-  5. Reindexer running with DB_BACKEND=oracle:
-       export DB_BACKEND=oracle
-       export DB_HOST=host.docker.internal
-       export DB_PORT=1521
-       export DB_SERVICE=FREEPDB1
-       export DB_USER=METADATA_DB
-       export DB_PASSWORD='<password>'
-       export CMR_ELASTIC_HOST=host.docker.internal
-       export CMR_GRAN_ELASTIC_HOST=host.docker.internal
-       export SQS_ENDPOINT_URL=http://host.docker.internal:4100
-       export INTERMEDIATE_QUEUE_URL=http://host.docker.internal:4100/queue/cmr-reindexer-jobs
-       export RATE_PER_MINUTE=600000
-       export CMR_ACL_BASE_URL=http://localhost:3011
-       PYTHONPATH=/root/Common-Metadata-Repository/reindexer \\
-       python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8001
+Ingests a collection and granules, reindexes the collection, and checks the job
+completes with every granule dispatched and still searchable.
 
-Run from inside the container:
-  cd /root/Common-Metadata-Repository/reindexer
-  PYTHONPATH=. python3 tests/integration_test.py
+Needs running: the CMR dev-system (ingest, search, metadata-db) on Oracle, ES on
+9210/9211, ElasticMQ with the indexer queue (scripts/create_queues.sh), DynamoDB Local
+with the job table, and the reindexer (DB_BACKEND=oracle, INDEXER_QUEUE_URL,
+DYNAMODB_ENDPOINT_URL). Set REINDEXER_URL if it isn't on localhost:8001/reindexer.
+
+    PYTHONPATH=. python3 tests/integration_test.py
 """
 import json
 import os
@@ -55,7 +27,7 @@ import httpx
 INGEST_URL       = os.environ.get("CMR_INGEST_URL",      "http://localhost:3002")
 SEARCH_URL       = os.environ.get("CMR_SEARCH_URL",      "http://localhost:3003")
 METADATA_DB_URL  = os.environ.get("CMR_METADATA_DB_URL", "http://localhost:3001")
-REINDEXER_URL    = os.environ.get("REINDEXER_URL",       "http://localhost:8001")
+REINDEXER_URL    = os.environ.get("REINDEXER_URL",       "http://localhost:8001/reindexer")
 TOKEN            = os.environ.get("CMR_TOKEN",            "mock-echo-system-token")
 
 PROVIDER_ID  = "RXIDXTEST"
@@ -136,7 +108,6 @@ def _concept_id_from_response(r: httpx.Response) -> str:
     ct = r.headers.get("Content-Type", "")
     if "json" in ct:
         return r.json()["concept-id"]
-    # XML default
     root = ET.fromstring(r.text)
     return root.findtext("concept-id") or ""
 
@@ -144,8 +115,7 @@ def _concept_id_from_response(r: httpx.Response) -> str:
 def _check(label: str, url: str) -> bool:
     try:
         r = httpx.get(url, timeout=5.0)
-        # Accept 5xx from CMR health — it reports 503 when Oracle health check fails
-        # even though the service itself is fully functional with in-memory DB.
+        # Any response counts as reachable; CMR /health can return 503 for a degraded dependency.
         reachable = r.status_code < 600
         print(f"  {'OK' if reachable else 'FAIL':4s}  {label}  ({r.status_code})")
         return reachable
@@ -207,7 +177,7 @@ def step_setup_provider() -> None:
 
 
 def step_ingest_collection() -> str:
-    print(f"\n[3] Ingesting collection")
+    print("\n[3] Ingesting collection")
     r = httpx.put(
         f"{INGEST_URL}/providers/{PROVIDER_ID}/collections/reindex-int-test-coll",
         params={"skip_umm_validation": "true"},
@@ -241,7 +211,7 @@ def step_ingest_granules() -> list[str]:
 
 
 def step_wait_initial_index(collection_id: str) -> bool:
-    print(f"\n[5] Waiting for initial CMR indexing (up to 30s)")
+    print("\n[5] Waiting for initial CMR indexing (up to 30s)")
     ok = _wait_for_hits(collection_id, NUM_GRANULES, timeout=30)
     if not ok:
         print("  ERROR: granules did not appear in ES within timeout")
@@ -262,27 +232,23 @@ def step_trigger_reindex(collection_id: str) -> str:
 
 
 def step_verify_reindexer(collection_id: str, granule_ids: list[str], request_id: str) -> bool:
-    print(f"\n[7] Verifying reindexer processed real concept IDs (up to 15s)")
-    deadline = time.monotonic() + 15
+    print("\n[7] Waiting for the job to finish and the indexer queue to drain (up to 30s)")
+    deadline = time.monotonic() + 30
+    job: dict = {}
     while time.monotonic() < deadline:
-        status = httpx.get(f"{REINDEXER_URL}/status", timeout=5.0).json()
-        indexer = status["queues"]["indexer"] or {}
+        job = httpx.get(f"{REINDEXER_URL}/jobs/{request_id}", timeout=5.0).json()
+        indexer = httpx.get(f"{REINDEXER_URL}/status", timeout=5.0).json()["indexer_queue"] or {}
         depth = indexer.get("available", -1) + indexer.get("in_flight", 0)
-        print(f"  Indexer queue depth: {depth}  (waiting for 0)")
-        if depth == 0:
+        print(f"  job {job.get('status')}, dispatched {job.get('total_dispatched')}, indexer queue depth {depth}")
+        if job.get("status") != "running" and depth == 0:
             break
         time.sleep(2)
+    print(f"  Job: {json.dumps(job)}")
 
-    # Pull what the reindexer logged — use its /status to confirm queue drained
-    # then spot-check that the ES search still returns our granules
     hits = _granule_hits(collection_id)
     print(f"  CMR search hits after reindex: {hits}/{NUM_GRANULES}")
 
-    reindexer_status = httpx.get(f"{REINDEXER_URL}/status", timeout=5.0).json()
-    print(f"  Reindexer status: {json.dumps(reindexer_status)}")
-
-    return hits >= NUM_GRANULES
-
+    return job.get("status") == "completed" and job.get("total_dispatched", 0) >= NUM_GRANULES and hits >= NUM_GRANULES
 
 # ---------------------------------------------------------------------------
 # Main
@@ -310,7 +276,7 @@ def run() -> int:
 
     print("\n" + "=" * 60)
     if ok:
-        print(f"PASS  —  {NUM_GRANULES} granules visible in ES; reindexer processed real concept IDs.")
+        print(f"PASS  —  {NUM_GRANULES} granules visible in ES; job completed with all granules dispatched.")
     else:
         print("FAIL  —  see output above.")
     print("=" * 60)

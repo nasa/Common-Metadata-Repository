@@ -11,48 +11,43 @@ class Config:
     db_service: str = field(default_factory=lambda: os.environ.get("DB_SERVICE", "cmr"))
     db_user: str = field(default_factory=lambda: os.environ.get("DB_USER", "cmr"))
     db_password: str = field(default_factory=lambda: os.environ.get("DB_PASSWORD", ""))
-    # Pool sizing. Shared with synchronous API requests, not just the throttler.
+    # Pool is shared by API requests and background jobs.
     oracle_pool_min: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MIN", "2")))
     oracle_pool_max: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_MAX", "15")))
     oracle_pool_increment: int = field(default_factory=lambda: int(os.environ.get("ORACLE_POOL_INCREMENT", "1")))
 
-    # Elasticsearch — two clusters: collections on 9211, granules on 9210
+    # Elasticsearch: collections and granules clusters
     es_host: str = field(default_factory=lambda: os.environ.get("CMR_ELASTIC_HOST", "localhost"))
     es_col_port: int = field(default_factory=lambda: int(os.environ.get("CMR_ELASTIC_PORT", "9211")))
     es_gran_host: str = field(default_factory=lambda: os.environ.get("CMR_GRAN_ELASTIC_HOST", "localhost"))
     es_gran_port: int = field(default_factory=lambda: int(os.environ.get("CMR_GRAN_ELASTIC_PORT", "9210")))
 
-    # AWS — region falls back through both standard env var spellings
+    # AWS
     aws_region: str = field(default_factory=lambda: (
         os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION") or "us-east-1"
     ))
-    # Credentials: None → boto3 uses the credential chain (IAM task role in ECS).
-    # Set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY for local ElasticMQ.
+    # None → boto3 credential chain (IAM task role); set for ElasticMQ / DynamoDB Local.
     aws_access_key_id: Optional[str] = field(default_factory=lambda: os.environ.get("AWS_ACCESS_KEY_ID"))
     aws_secret_access_key: Optional[str] = field(default_factory=lambda: os.environ.get("AWS_SECRET_ACCESS_KEY"))
 
-    # SQS — endpoint_url None means real AWS SQS; set SQS_ENDPOINT_URL for local ElasticMQ
+    # SQS; set SQS_ENDPOINT_URL for local ElasticMQ
     sqs_endpoint_url: Optional[str] = field(default_factory=lambda: os.environ.get("SQS_ENDPOINT_URL"))
-    collection_queue_url: str = field(default_factory=lambda: os.environ.get(
-        "COLLECTION_QUEUE_URL", "http://localhost:4100/queue/cmr-reindexer-collections"
-    ))
     indexer_queue_url: str = field(default_factory=lambda: os.environ.get(
         "INDEXER_QUEUE_URL", "http://localhost:4100/queue/cmr-indexer-jobs"
     ))
 
     # Throttler
     rate_per_minute: int = field(default_factory=lambda: int(os.environ.get("RATE_PER_MINUTE", "600")))
-    # Concepts per page of the per-collection scan, and the checkpoint interval. May
-    # exceed rate_per_minute — dispatch_in_batches sub-slices each chunk to the current rate.
+    # Granules per page of a collection job; the cursor is saved per page. May exceed
+    # rate_per_minute — dispatch_in_batches slices each page to the current rate.
     stream_chunk_size: int = field(default_factory=lambda: int(os.environ.get("STREAM_CHUNK_SIZE", "1000")))
 
-    # Ids per id-range window (POST /reindex/granules/provider/{id}). Larger windows
-    # mean fewer, longer Oracle fetches.
+    # Ids per window of a provider job.
     id_range_chunk_size: int = field(default_factory=lambda: int(os.environ.get("ID_RANGE_CHUNK_SIZE", "20000")))
-    # Parallel worker threads for publish_indexer_events_batch SQS sends.
+    # Parallel SQS send threads.
     sqs_send_workers: int = field(default_factory=lambda: int(os.environ.get("SQS_SEND_WORKERS", "20")))
 
-    # DB backend: "oracle" (default) or "stub" (hardcoded fake data, for unit tests)
+    # "oracle" or "stub" (fake data, for unit tests)
     db_backend: str = field(default_factory=lambda: os.environ.get("DB_BACKEND", "oracle"))
 
     # ACL service for auth validation
@@ -62,14 +57,10 @@ class Config:
     # DynamoDB job table
     dynamodb_table_name: str = field(default_factory=lambda: os.environ.get("DYNAMODB_JOB_TABLE", "cmr-reindexer-jobs"))
     dynamodb_endpoint_url: Optional[str] = field(default_factory=lambda: os.environ.get("DYNAMODB_ENDPOINT_URL"))
-    # DynamoDB collection checkpoint table (keyset resume cursor for mid-collection restarts)
-    dynamodb_checkpoint_table: str = field(default_factory=lambda: os.environ.get("DYNAMODB_CHECKPOINT_TABLE", "cmr-reindexer-checkpoints"))
 
-    # Cancellation cache refresh interval
     cancel_check_interval_seconds: int = field(default_factory=lambda: int(os.environ.get("CANCEL_CHECK_INTERVAL_SECONDS", "5")))
 
-    # Lease length for in-progress work: the collection message's SQS visibility, and how
-    # old a job's heartbeat gets before another task restarts it (see app.lease_keeper).
+    # How stale a running job's heartbeat (its lease) gets before it is restarted.
     lease_minutes: int = field(default_factory=lambda: int(os.environ.get("LEASE_MINUTES", "5")))
 
     service_name: str = "cmr-reindexer"

@@ -63,10 +63,8 @@ async def lifespan(app: FastAPI):
         "aws_region": config.aws_region,
         "sqs_endpoint_url": config.sqs_endpoint_url,
         "dynamodb_endpoint_url": config.dynamodb_endpoint_url,
-        "collection_queue_url": config.collection_queue_url,
         "indexer_queue_url": config.indexer_queue_url,
         "dynamodb_job_table": config.dynamodb_table_name,
-        "dynamodb_checkpoint_table": config.dynamodb_checkpoint_table,
         "es_collections": f"{config.es_host}:{config.es_col_port}",
         "es_granules": f"{config.es_gran_host}:{config.es_gran_port}",
         "acl_base_url": config.acl_base_url,
@@ -78,14 +76,11 @@ async def lifespan(app: FastAPI):
         "cancel_check_interval_seconds": config.cancel_check_interval_seconds,
     })
 
-    # cancel_cache must be wired up before the lease keeper restarts any job, so a
-    # restarted job's is_job_cancelled() check never evaluates against a None cache.
+    # Before the lease keeper, so jobs it restarts can see cancellations.
     cancel_cache.start()
     throttler.set_cancel_cache(cancel_cache)
 
     start_lease_keeper(job_store, throttler.stop_event)
-
-    throttler.start()
 
     yield
 
