@@ -310,8 +310,7 @@
                                         (util/remove-nil-keys
                                          {:DOI (value-of dsc "Persistent_Identifier/Identifier")
                                           :PreviousVersion pvs}))))))]
-     (if first-doi
-       first-doi
+     (or first-doi
        {:MissingReason "Unknown"
         :Explanation "It is unknown if this record has a DOI."}))))
 
@@ -322,23 +321,17 @@
     (for [assoc-doi assoc-dois
           :let [raw-type (value-of assoc-doi "Type")
                 raw-desc (value-of assoc-doi "Description_Of_Other_Type")
-
-                ;; The types DIF10 doesn't support that are forced into "Other"
                 extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
-
-                ;; Extract the hidden type from the description if it exists
                 extracted-type (when (and (= "Other" raw-type) raw-desc)
                                  (some #(when (string/starts-with? raw-desc %) %) extended-types))
 
-                ;; Applies the extracted type, or fallback to raw
-                final-type (if extracted-type extracted-type raw-type)
+                final-type (or extracted-type raw-type)
 
-                ;; Cleans up the description by removing the extracted type and separator
                 final-desc (if extracted-type
                              (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
                                (if (string/starts-with? stripped "- ")
                                  (string/trim (subs stripped 2))
-                                 (when (not (string/blank? stripped)) stripped)))
+                                 (when-not (string/blank? stripped) stripped)))
                              raw-desc)]]
       (util/remove-nil-keys
        {:DOI (value-of assoc-doi "DOI")

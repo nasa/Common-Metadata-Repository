@@ -297,26 +297,27 @@
   "Parse the XML associated DOIs into the UMM-C counterparts."
   [doc]
   (when-let [assoc-dois (select doc "Collection/AssociatedDOIs/AssociatedDOI")]
-    (into []
-          (for [assoc-doi assoc-dois
-                :let [raw-type (value-of assoc-doi "Type")
-                      raw-desc (value-of assoc-doi "DescriptionOfOtherType")
-                      extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
-                      extracted-type (when (and (= "Other" raw-type) raw-desc)
-                                       (some #(when (string/starts-with? raw-desc %) %) extended-types))
-                      final-type (if extracted-type extracted-type raw-type)
-                      final-desc (if extracted-type
-                                   (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
-                                     (if (string/starts-with? stripped "- ")
-                                       (string/trim (subs stripped 2))
-                                       (when-not (string/blank? stripped) stripped)))
-                                   raw-desc)]]
-            (util/remove-nil-keys
-             {:DOI (value-of assoc-doi "DOI")
-              :Title (value-of assoc-doi "Title")
-              :Authority (value-of assoc-doi "Authority")
-              :Type final-type
-              :DescriptionOfOtherType final-desc})))))
+    (vec
+     (for [assoc-doi assoc-dois
+           :let [raw-type (value-of assoc-doi "Type")
+                 raw-desc (value-of assoc-doi "DescriptionOfOtherType")
+                 extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
+                 extracted-type (when (and (= "Other" raw-type) raw-desc)
+                                  (some #(when (string/starts-with? raw-desc %) %) extended-types))
+                 ;; LINTER FIX: Use 'or' instead of 'if'
+                 final-type (or extracted-type raw-type)
+                 final-desc (if extracted-type
+                              (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
+                                (if (string/starts-with? stripped "- ")
+                                  (string/trim (subs stripped 2))
+                                  (when-not (string/blank? stripped) stripped)))
+                              raw-desc)]]
+       (util/remove-nil-keys
+        {:DOI (value-of assoc-doi "DOI")
+         :Title (value-of assoc-doi "Title")
+         :Authority (value-of assoc-doi "Authority")
+         :Type final-type
+         :DescriptionOfOtherType final-desc})))))
 
 (defn- parse-other-identifiers
   "Parse the XML other identifiers into the UMM-C counterparts."
