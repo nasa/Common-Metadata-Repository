@@ -31,13 +31,12 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on "1.85"]
+             :dev {:dependencies [[org.bouncycastle/bcpkix-jdk18on]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nrepl/nrepl]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                                  [ring/ring-codec "1.3.0"
-                                   :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                                  [ring/ring-codec "1.3.0"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring/ring-core "1.15.4"]]

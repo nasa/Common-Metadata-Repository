@@ -52,11 +52,11 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
-                           [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                           [org.bouncycastle/bcpkix-jdk18on]
                            [org.clojure/clojure]
                            [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                            [org.eclipse.jetty.websocket/jetty-websocket-core-common]
-                           [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                           [ring/ring-codec "1.3.0"]
                            [ring/ring-jetty-adapter "1.15.4"
                             :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                          project-dependencies)

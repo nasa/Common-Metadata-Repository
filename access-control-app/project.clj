@@ -43,7 +43,7 @@
                            [compojure :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
-                           [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                           [org.bouncycastle/bcpkix-jdk18on]
                            [org.clojure/clojure]
                            [org.clojure/tools.reader]
                            [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
@@ -51,7 +51,7 @@
                            [org.eclipse.jetty/jetty-util]
                            [ring/ring-core "1.15.4"]
 
-                           [ring/ring-codec "1.3.0" :exclusions [org.bouncycastle/bcpkix-jdk15on]]
+                           [ring/ring-codec "1.3.0"]
 
                            [ring/ring-jetty-adapter "1.15.4"
                             :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
@@ -69,15 +69,14 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
-                                  [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                                  [org.bouncycastle/bcpkix-jdk18on]
                                   [org.clojure/core.async "1.6.681"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nrepl/nrepl "1.1.0"]
                                   [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
-                                  [ring/ring-codec "1.3.0" :exclusions
-                                   [org.bouncycastle/bcpkix-jdk15on]]
+                                  [ring/ring-codec "1.3.0"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [ring-mock "0.1.5"]]

@@ -15,7 +15,7 @@
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  ;; replaces org.bouncycastle/bcprov-jdk18on
-                 [org.bouncycastle/bcpkix-jdk18on "1.85"]
+                 [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [org.clojure/data.csv "0.1.4"]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
