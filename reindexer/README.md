@@ -230,7 +230,7 @@ All config is via environment variables.
 | `ID_RANGE_CHUNK_SIZE` | `20000` | Ids per window of a provider run |
 | `SQS_SEND_WORKERS` | `20` | Parallel threads for batched SQS sends |
 | `RATE_PER_MINUTE` | `600` | Granule-run events per minute, per task (adjustable live via `PUT /throttle`) |
-| `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often the cancellation cache refreshes from DynamoDB |
+| `CANCEL_CHECK_INTERVAL_SECONDS` | `5` | How often a task with running jobs checks DynamoDB for cancellations |
 | `LEASE_MINUTES` | `5` | How stale a running job's heartbeat gets before another task restarts it (and `/jobs` reports `lease_lapsed`) |
 | `ORACLE_POOL_MIN` / `ORACLE_POOL_MAX` / `ORACLE_POOL_INCREMENT` | `2` / `15` / `1` | Oracle connection pool sizing, shared by API requests and background work |
 | `AWS_DEFAULT_REGION` | `us-east-1` | AWS region (falls back to `AWS_REGION`) |

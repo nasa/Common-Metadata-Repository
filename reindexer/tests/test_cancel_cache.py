@@ -30,3 +30,15 @@ def test_failed_refresh_keeps_the_previous_set():
     store.find_cancelled_jobs.side_effect = Exception("DynamoDB down")
     cache._refresh()
     assert cache.is_cancelled("j1")
+
+
+def test_refreshes_only_while_holding_a_job(monkeypatch):
+    import app.throttler.cancel_cache as mod
+    cache, store = _cache()
+    store.find_cancelled_jobs.return_value = []
+    held = [set(), {"j1"}]
+    monkeypatch.setattr(mod.leases, "held_jobs", lambda: held.pop(0))
+    waits = iter([False, False, True])  # two ticks, then stop
+    monkeypatch.setattr(cache._stop_event, "wait", lambda timeout: next(waits))
+    cache._run()
+    store.find_cancelled_jobs.assert_called_once()
