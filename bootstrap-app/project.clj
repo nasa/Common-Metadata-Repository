@@ -22,7 +22,7 @@
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
-                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
+                 [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]

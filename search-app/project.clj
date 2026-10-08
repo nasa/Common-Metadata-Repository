@@ -22,7 +22,7 @@
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
-                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
+                 [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [org.clojure/data.csv "0.1.4"]
                  [org.clojure/math.numeric-tower "0.0.4"]

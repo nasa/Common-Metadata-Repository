@@ -9,7 +9,7 @@
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
-                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
+                 [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [org.clojure/tools.reader]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]

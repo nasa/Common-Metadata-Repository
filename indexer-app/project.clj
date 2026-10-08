@@ -15,7 +15,7 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  ;; replaces org.bouncycastle/bcpkix-jdk15on
-                 [org.bouncycastle/bcpkix-jdk18on "1.86"]
+                 [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [nrepl/nrepl]
                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
