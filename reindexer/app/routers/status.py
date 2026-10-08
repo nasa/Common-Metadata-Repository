@@ -1,14 +1,16 @@
 import logging
+import socket
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app import leases
 from app.auth import require_auth
 from app.config import config
 from app.db.dynamo import job_store
 from app.es.health import check_all_es_health
-from app.sqs.client import get_queue_depth
+from app.sqs.client import get_queue_counts
 from app.throttler.worker import throttler
 
 router = APIRouter()
@@ -17,75 +19,78 @@ logger = logging.getLogger(__name__)
 _TS_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
 
+def _parse_ts(value: str) -> datetime:
+    return datetime.strptime(value, _TS_FMT).replace(tzinfo=timezone.utc)
+
+
 def _enrich_job(job: dict) -> dict:
     now = datetime.now(timezone.utc)
     result = dict(job)
+    result.pop("ttl", None)
 
     if "started_at" in job:
         try:
-            started = datetime.strptime(job["started_at"], _TS_FMT).replace(tzinfo=timezone.utc)
-            result["elapsed_seconds"] = int((now - started).total_seconds())
+            # A stopped job is measured to completed_at, so elapsed and rate stop changing.
+            end = _parse_ts(job["completed_at"]) if job.get("completed_at") else now
+            result["elapsed_seconds"] = int((end - _parse_ts(job["started_at"])).total_seconds())
         except Exception:
             pass
 
     if "last_heartbeat" in job:
         try:
-            hb = datetime.strptime(job["last_heartbeat"], _TS_FMT).replace(tzinfo=timezone.utc)
+            hb = _parse_ts(job["last_heartbeat"])
             age = int((now - hb).total_seconds())
             result["heartbeat_age_seconds"] = age
-            result["heartbeat_stale"] = age > config.stall_minutes * 60
+            if job.get("status") == "running":
+                result["lease_lapsed"] = age > config.lease_minutes * 60
         except Exception:
             pass
 
-    # dispatch_rate_per_minute: granules sent per minute averaged over the job lifetime.
-    # Works for any concept type; comparable directly against rate_per_minute from /status.
     dispatched = job.get("total_dispatched", 0)
     elapsed = result.get("elapsed_seconds", 0)
     if dispatched > 0 and elapsed > 0:
-        result["dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
+        result["avg_dispatch_rate_per_minute"] = round(dispatched / elapsed * 60)
+
+    if "providers_requested" in job:
+        done = set(job.get("providers_done") or [])
+        result["providers_remaining"] = [p for p in job["providers_requested"] if p not in done]
 
     return result
 
 
+def _indexer_queue_counts() -> Optional[dict]:
+    try:
+        return get_queue_counts(config.indexer_queue_url)
+    except Exception as exc:
+        logger.warning({"event": "queue_counts_check_failed", "error": str(exc)})
+        return None
+
+
+# Plain def, so their blocking calls run in FastAPI's threadpool, off the event loop
+# that serves /health.
+
 @router.get("/status")
-async def status():
-    es_health = check_all_es_health()
-
-    try:
-        collection_queue_depth = get_queue_depth(config.collection_queue_url)
-    except Exception as exc:
-        logger.warning({"event": "queue_depth_check_failed", "queue": "collection", "error": str(exc)})
-        collection_queue_depth = -1
-
-    try:
-        indexer_queue_depth = get_queue_depth(config.indexer_queue_url)
-    except Exception as exc:
-        logger.warning({"event": "queue_depth_check_failed", "queue": "indexer", "error": str(exc)})
-        indexer_queue_depth = -1
-
-    liveness = throttler.liveness()
-    tokens = throttler.token_state()
-
+def status():
+    """Fields under "task" describe only the task that answered."""
     return {
-        "es_health": es_health,
-        "collection_queue_depth": collection_queue_depth,
-        "indexer_queue_depth": indexer_queue_depth,
-        "throttler_alive": liveness["alive"],
-        "throttler_last_active": liveness["last_active"],
-        "throttler_current_job": throttler.current_job_id,
-        "rate_per_minute": tokens["rate_per_minute"],
-        "tokens_available": tokens["tokens_available"],
+        "task": {
+            "id": socket.gethostname(),
+            "jobs_in_progress": sorted(leases.held_jobs()),
+            "rate_limit_per_minute": throttler.get_rate(),
+        },
+        "es_health": check_all_es_health(),
+        "indexer_queue": _indexer_queue_counts(),
     }
 
 
 @router.get("/jobs")
-async def list_jobs(status: Optional[str] = Query(None), limit: int = Query(50, ge=1, le=200)):
+def list_jobs(status: Optional[str] = Query(None), limit: int = Query(50, ge=1, le=200)):
     jobs = job_store.list_jobs(status_filter=status, limit=limit)
     return {"jobs": [_enrich_job(j) for j in jobs], "count": len(jobs)}
 
 
 @router.get("/jobs/{job_id}")
-async def get_job(job_id: str):
+def get_job(job_id: str):
     job = job_store.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
@@ -93,11 +98,10 @@ async def get_job(job_id: str):
 
 
 @router.delete("/jobs/{job_id}")
-async def cancel_job(job_id: str, _token: str = Depends(require_auth)):
+def cancel_job(job_id: str, _token: str = Depends(require_auth)):
     job = job_store.get_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail=f"Job not found: {job_id}")
     if not job_store.try_cancel_job(job_id):
         raise HTTPException(status_code=409, detail=f"Job {job_id} is already terminal")
-    logger.info({"event": "job_cancelled", "job_id": job_id})
     return {"job_id": job_id, "status": "cancelled"}

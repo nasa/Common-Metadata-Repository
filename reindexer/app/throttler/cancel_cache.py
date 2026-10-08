@@ -1,8 +1,10 @@
-"""In-memory cache of cancelled job IDs, refreshed from DynamoDB in the background."""
+"""In-memory cache of cancelled job IDs, refreshed from DynamoDB in the background
+while this task holds a job, so running work can stop when it's cancelled."""
 import logging
 import threading
 from typing import Optional
 
+from app import leases
 from app.config import config
 
 logger = logging.getLogger(__name__)
@@ -18,12 +20,13 @@ class CancelledJobCache:
         self._thread: Optional[threading.Thread] = None
 
     def start(self) -> None:
-        self._refresh()
         self._thread = threading.Thread(target=self._run, name="cancel-cache", daemon=True)
         self._thread.start()
-        logger.info({"event": "cancel_cache_started", "interval_seconds": self._interval})
+        logger.info({"event": "cancel_cache_started"})
 
     def stop(self) -> None:
+        if self._stop_event.is_set():
+            return
         self._stop_event.set()
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=10)
@@ -35,7 +38,9 @@ class CancelledJobCache:
 
     def _run(self) -> None:
         while not self._stop_event.wait(timeout=self._interval):
-            self._refresh()
+            # Each refresh scans the job table; an idle task has nothing to check.
+            if leases.held_jobs():
+                self._refresh()
 
     def _refresh(self) -> None:
         try:

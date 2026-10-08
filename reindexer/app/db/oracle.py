@@ -1,22 +1,20 @@
-"""Oracle DB client using the oracledb thin driver.
+"""Oracle client (oracledb thin driver) for METADATA_DB.
 
-SQL patterns used:
-  - HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-  - REVISION_DATE filtered with TO_TIMESTAMP_TZ()
-  - Provider derived from concept-id suffix: C1234-PROV → PROV
-  - Tables: METADATA_DB.{PROVIDER}_GRANULES / _COLLECTIONS
-
-Granule dispatch uses stream_granule_ids() (keyset pagination via fetchmany)
-rather than OFFSET/FETCH, so cost is O(page_size) not O(n^2).
+Granules and collections live in per-provider tables ({PROVIDER}_GRANULES /
+_COLLECTIONS), or the shared SMALL_PROV_* tables filtered by provider_id for small
+providers; other concept types have one shared table each. All paging is keyset
+(by id or concept_id).
 """
 import logging
 import re
 import threading
+from contextlib import contextmanager
 from typing import Iterator, Optional
 
 import oracledb
 
 from app.config import config
+from app.db.call_tracker import tracked_call
 
 logger = logging.getLogger(__name__)
 
@@ -26,54 +24,94 @@ _BATCH_SIZE = 500
 # Per-provider granule / collection SQL
 # ---------------------------------------------------------------------------
 
-# Streaming keyset query: no OFFSET/FETCH — cursor.fetchmany() controls chunk size.
-# ORDER BY ASC is required for the keyset forward scan (concept_id > :start_after).
-_STREAM_IDS_SQL = """\
-SELECT concept_id, MAX(revision_id) AS revision_id
+_PROVIDERS_SQL = """\
+SELECT provider_id, small
+FROM METADATA_DB.providers
+ORDER BY provider_id"""
+
+# Providers flagged small share these tables, which carry a provider_id column
+# (metadata-db's get-table-name).
+_SMALL_PROVIDER_TABLE_PREFIX = "SMALL_PROV"
+
+# Literals, not binds: bind peeking would reuse one plan across collections and date
+# ranges of very different selectivity. after/before and collection_id are validated
+# at the API, so embedding them is safe.
+_AFTER_CLAUSE  = "AND REVISION_DATE >= TO_TIMESTAMP_TZ('{after}',  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
+_BEFORE_CLAUSE = "AND REVISION_DATE <= TO_TIMESTAMP_TZ('{before}', 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
+
+# ---------------------------------------------------------------------------
+# Id-range granule scan (bootstrap-style)
+# ---------------------------------------------------------------------------
+
+# Bounded by an `id` (PK) range and date-filtered within it, like bootstrap's
+# find-batch-starting-id-between-date-times. The ids are bound: every window has the
+# same selectivity, so plan reuse helps.
+
+_FIND_NEXT_ID_SQL = """\
+SELECT MIN(id)
 FROM METADATA_DB.{table}
-WHERE PARENT_COLLECTION_ID = :collection_id
+WHERE id >= :min_id
+{provider_clause}
 {after_clause}
-{before_clause}
-{keyset_clause}
-GROUP BY concept_id
-HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
-ORDER BY concept_id ASC"""
+{before_clause}"""
 
-# Keyset resume cursor: skip rows already dispatched ('' → all rows on first run, but
-# Oracle treats '' as NULL so we omit the clause entirely when start_after is falsy).
-_KEYSET_CLAUSE = "AND concept_id > :start_after"
+# Every revision row, tombstones included; the scanner keeps the latest per concept.
+_FETCH_ID_RANGE_CHUNK_SQL = """\
+SELECT concept_id, revision_id, deleted
+FROM METADATA_DB.{table}
+WHERE id >= :start_id
+  AND id < :end_id
+{provider_clause}
+{after_clause}
+{before_clause}"""
 
-_COLLECTIONS_SQL = """\
+# ---------------------------------------------------------------------------
+# Per-collection granule scan
+# ---------------------------------------------------------------------------
+
+# Same two-query shape as _stream_concept_ids: an index-only scan for the page
+# boundary, then an aggregation bounded to that page, which alone applies the date
+# filters. Paging and aggregating by the same key (concept_id) means the boundary
+# concept's latest revision is always seen. collection_id is a literal, like _AFTER_CLAUSE.
+
+_COLLECTION_KEYSET_CLAUSE = "AND concept_id > :start_after"
+
+# No DISTINCT, and ordered exactly like *_GRANULES_PCR, so Oracle stops after
+# page_size index entries instead of sorting the whole collection.
+_COLLECTION_PAGE_IDS_SQL = """\
 SELECT concept_id
 FROM METADATA_DB.{table}
+WHERE parent_collection_id = '{collection_id}'
+{keyset_clause}
+ORDER BY concept_id, revision_id
+FETCH FIRST {page_size} ROWS ONLY"""
+
+# deleted IN (0, 1) is always true, but it lets Oracle seek *_GRANULES_PDCR
+# (parent_collection_id, deleted, concept_id, ...) by the page's concept_id range.
+_COLLECTION_CHUNK_SQL = """\
+SELECT concept_id, MAX(revision_id) AS revision_id,
+       MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) AS deleted
+FROM METADATA_DB.{table}
+WHERE parent_collection_id = '{collection_id}'
+  AND deleted IN (0, 1)
+  AND concept_id <= :page_end
+{keyset_clause}
+{after_clause}
+{before_clause}
 GROUP BY concept_id
-HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0
 ORDER BY concept_id"""
-
-_PROVIDERS_SQL = """\
-SELECT DISTINCT REGEXP_REPLACE(table_name, '_GRANULES$', '')
-FROM all_tables
-WHERE owner = 'METADATA_DB'
-  AND table_name LIKE '%_GRANULES'
-ORDER BY 1"""
-
-# Used inline in granule SQL (must include the AND prefix)
-_AFTER_CLAUSE  = "AND REVISION_DATE >= TO_TIMESTAMP_TZ(:after,  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
-_BEFORE_CLAUSE = "AND REVISION_DATE <= TO_TIMESTAMP_TZ(:before, 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 
 # ---------------------------------------------------------------------------
 # Shared / generic concept type SQL
 # ---------------------------------------------------------------------------
 
-# Used as individual conditions joined by AND (no leading AND)
+# Joined by AND, so no leading AND.
 _AFTER_COND  = "REVISION_DATE >= TO_TIMESTAMP_TZ(:after,  'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 _BEFORE_COND = "REVISION_DATE <= TO_TIMESTAMP_TZ(:before, 'YYYY-MM-DD\"T\"HH24:MI:SS TZH:TZM')"
 
-# Two-query keyset strategy for non-granule types:
-#   1. _PAGE_IDS_SQL  — fast DISTINCT index scan to find the page boundary (no aggregation)
-#   2. _SHARED_IDS_SQL — bounded aggregation for only those concept_ids (concept_id <= page_end)
-# Separating them lets Oracle use the concept_id index for the boundary scan without
-# blocking on a full-table GROUP BY before FETCH FIRST can apply.
+# Two queries per page: an index scan for the page boundary, then an aggregation
+# bounded to it (concept_id <= page_end). One query would GROUP BY the whole table
+# before FETCH FIRST could apply.
 _PAGE_IDS_SQL = """\
 SELECT DISTINCT concept_id
 FROM METADATA_DB.{table}
@@ -100,11 +138,9 @@ HAVING MAX(deleted) KEEP (DENSE_RANK LAST ORDER BY revision_id) = 0"""
 # Type maps
 # ---------------------------------------------------------------------------
 
-# Internal concept type → (table_name, concept_id LIKE prefix or None)
-# Generic document subtypes share cmr_generic_documents; their concept_id prefix is
-# globally unique within that table so LIKE lets Oracle use the concept_id index
-# directly instead of filtering on the unindexed `schema` column.
-# "generic" (no prefix) targets all rows in the table regardless of subtype.
+# Internal concept type → (table, concept_id LIKE prefix). Generic subtypes are told
+# apart by concept_id prefix, which uses the concept_id index; `schema` is unindexed.
+# "generic" (no prefix) covers every subtype.
 _SHARED_TYPE_TABLES: dict[str, tuple[str, Optional[str]]] = {
     "variable":             ("cmr_variables",          None),
     "service":              ("cmr_services",            None),
@@ -118,10 +154,7 @@ _SHARED_TYPE_TABLES: dict[str, tuple[str, Optional[str]]] = {
     "visualization":        ("cmr_generic_documents",   "VIS%"),
 }
 
-# concept-id prefix → (shared_table_name or None, table_suffix or None)
-# None table_name means per-provider table; second element is the table name suffix.
-# Generic documents (DQS, OO, GRD, CIT, VIS) all share cmr_generic_documents; their
-# concept_id prefix is globally unique within that table so no extra filter is needed.
+# concept-id prefix → (shared table, or None with the per-provider table suffix)
 _PREFIX_TO_LOOKUP: dict[str, tuple[Optional[str], Optional[str]]] = {
     "C":   (None, "_COLLECTIONS"),
     "G":   (None, "_GRANULES"),
@@ -137,7 +170,7 @@ _PREFIX_TO_LOOKUP: dict[str, tuple[Optional[str], Optional[str]]] = {
 }
 
 _CONCEPT_ID_PREFIX_RE = re.compile(r'^([A-Z]+)')
-_PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+$')
+_PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+\Z')
 
 
 def _validate_provider_id(provider_id: str) -> None:
@@ -146,12 +179,16 @@ def _validate_provider_id(provider_id: str) -> None:
 
 
 def _oracle_ts(value: str) -> str:
-    """Convert ISO8601 Z-suffix to a string Oracle TO_TIMESTAMP_TZ accepts with TZH:TZM.
-
-    Oracle's TZH:TZM expects a numeric offset (+HH:MM), not the letter Z.
-    The format mask includes a space before TZH:TZM, so we replace Z with ' +00:00'.
-    """
+    """ISO8601 'Z' → ' +00:00', the form the 'TZH:TZM' format mask expects."""
     return value.replace("Z", " +00:00")
+
+
+def _date_clauses(after: Optional[str], before: Optional[str]) -> dict:
+    """after_clause/before_clause format args for granule SQL; empty when unset."""
+    return {
+        "after_clause": _AFTER_CLAUSE.format(after=_oracle_ts(after)) if after else "",
+        "before_clause": _BEFORE_CLAUSE.format(before=_oracle_ts(before)) if before else "",
+    }
 
 
 def _parse_concept_prefix(concept_id: str) -> str:
@@ -169,100 +206,135 @@ class OracleClient:
     def __init__(self) -> None:
         self._pool = None
         self._pool_lock = threading.Lock()
+        self._providers: dict[str, bool] = {}  # provider_id → small
 
     def _get_pool(self):
         if self._pool is None:
             with self._pool_lock:
-                if self._pool is None:  # double-checked locking
+                if self._pool is None:
                     dsn = f"{config.db_host}:{config.db_port}/{config.db_service}"
                     self._pool = oracledb.create_pool(
                         user=config.db_user,
                         password=config.db_password,
                         dsn=dsn,
-                        min=1,
-                        max=5,
-                        increment=1,
+                        min=config.oracle_pool_min,
+                        max=config.oracle_pool_max,
+                        increment=config.oracle_pool_increment,
                     )
-                    logger.info({"event": "oracle_pool_created", "dsn": dsn})
+                    logger.info({"event": "oracle_pool_created"})
         return self._pool
 
-    # ------------------------------------------------------------------
-    # Provider / collection / granule (per-provider tables)
-    # ------------------------------------------------------------------
+    @contextmanager
+    def _acquire_cursor(self):
+        """No call timeout; tracked_call logs a call that hangs instead."""
+        with tracked_call(), self._get_pool().acquire() as conn:
+            with conn.cursor() as cur:
+                yield cur
 
     def get_all_provider_ids(self) -> list[str]:
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.execute(_PROVIDERS_SQL)
-            return [row[0] for row in cur.fetchall()]
+            rows = cur.fetchall()
+        self._providers = {provider_id: bool(small) for provider_id, small in rows}
+        return list(self._providers)
 
-    def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
+    def is_small_provider(self, provider_id: str) -> bool:
+        if provider_id not in self._providers:
+            self.get_all_provider_ids()  # also picks up providers added since the last load
+        return self._providers.get(provider_id, False)
+
+    def _table(self, provider_id: str, suffix: str) -> tuple[str, str]:
+        """(table, provider_clause). The clause is only needed where rows aren't already
+        scoped by a collection or concept id."""
         _validate_provider_id(provider_id)
-        table = f"{provider_id}_COLLECTIONS"
-        sql = _COLLECTIONS_SQL.format(table=table)
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
-            cur.arraysize = _BATCH_SIZE
-            cur.execute(sql)
-            return [row[0] for row in cur.fetchall()]
+        if self.is_small_provider(provider_id):
+            return f"{_SMALL_PROVIDER_TABLE_PREFIX}{suffix}", f"AND provider_id = '{provider_id}'"
+        return f"{provider_id}{suffix}", ""
 
-    def stream_granule_ids(
+    def find_next_granule_id_in_range(
+        self,
+        provider_id: str,
+        min_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> Optional[int]:
+        """Smallest granule id >= min_id revised within [after, before], as bootstrap's
+        dated probe does. `before` only applies with `after`: every run has a `before`,
+        and an undated probe must stay a single PK index lookup."""
+        table, provider_clause = self._table(provider_id, "_GRANULES")
+        sql = _FIND_NEXT_ID_SQL.format(
+            table=table, provider_clause=provider_clause, **_date_clauses(after, before if after else None),
+        )
+        with self._acquire_cursor() as cur:
+            cur.execute(sql, {"min_id": min_id})
+            row = cur.fetchone()
+            return int(row[0]) if row and row[0] is not None else None
+
+    def fetch_granule_id_range_chunk(
+        self,
+        provider_id: str,
+        start_id: int,
+        end_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> list[tuple[str, int, int]]:
+        """(concept_id, revision_id, deleted) for every row in [start_id, end_id)."""
+        table, provider_clause = self._table(provider_id, "_GRANULES")
+        sql = _FETCH_ID_RANGE_CHUNK_SQL.format(
+            table=table, provider_clause=provider_clause, **_date_clauses(after, before),
+        )
+        with self._acquire_cursor() as cur:
+            cur.execute(sql, {"start_id": start_id, "end_id": end_id})
+            return cur.fetchall()
+
+    def stream_granule_ids_paged(
         self,
         collection_id: str,
         chunk_size: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
-    ) -> Iterator[list[tuple[str, int]]]:
-        """Yield successive chunks of (concept_id, revision_id) tuples using keyset pagination.
+    ) -> Iterator[tuple[str, list[tuple[str, int, int]]]]:
+        """Yield (page_end, rows) per page, resuming after start_after_concept_id. rows are
+        (concept_id, revision_id, deleted) at each concept's latest revision in range. A
+        page the date filter empties is still yielded, so the caller can save its cursor
+        and check cancellation."""
+        table, _ = self._table(_provider_from_collection(collection_id), "_GRANULES")
+        page_size = int(chunk_size)  # interpolated into FETCH FIRST, so force an int
+        date_clauses = _date_clauses(after, before)
+        start_after = start_after_concept_id
 
-        Opens one Oracle cursor for the full collection and streams via fetchmany()
-        rather than OFFSET/FETCH, so cost is O(chunk_size) per call instead of O(n^2).
+        while True:
+            keyset_clause = _COLLECTION_KEYSET_CLAUSE if start_after else ""
+            keyset_bind = {"start_after": start_after} if start_after else {}
 
-        start_after_concept_id: resume cursor — skip concepts at or before this ID.
-            Pass None (or empty string) to start from the beginning.
+            page_sql = _COLLECTION_PAGE_IDS_SQL.format(
+                table=table, collection_id=collection_id,
+                keyset_clause=keyset_clause, page_size=page_size,
+            )
+            with self._acquire_cursor() as cur:
+                cur.execute(page_sql, keyset_bind)
+                page_rows = cur.fetchall()
 
-        The Oracle connection is held for the full stream.  Callers should handle
-        ORA-03113/ORA-03114 (idle timeout) by catching OperationalError and retrying
-        from the last checkpoint.
-        """
-        provider = _provider_from_collection(collection_id)
-        table = f"{provider}_GRANULES"
+            if not page_rows:
+                break
 
-        use_keyset = bool(start_after_concept_id)
-        sql = _STREAM_IDS_SQL.format(
-            table=table,
-            after_clause=_AFTER_CLAUSE if after else "",
-            before_clause=_BEFORE_CLAUSE if before else "",
-            keyset_clause=_KEYSET_CLAUSE if use_keyset else "",
-        )
-        bind: dict = {"collection_id": collection_id}
-        if after:
-            bind["after"] = _oracle_ts(after)
-        if before:
-            bind["before"] = _oracle_ts(before)
-        if use_keyset:
-            bind["start_after"] = start_after_concept_id
+            page_end = page_rows[-1][0]
+            is_last_page = len(page_rows) < page_size
 
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
-            cur.arraysize = chunk_size
-            cur.execute(sql, bind)
-            while True:
-                rows = cur.fetchmany(chunk_size)
-                if not rows:
-                    break
-                yield [(row[0], row[1]) for row in rows]
+            chunk_sql = _COLLECTION_CHUNK_SQL.format(
+                table=table, collection_id=collection_id, keyset_clause=keyset_clause, **date_clauses,
+            )
+            with self._acquire_cursor() as cur:
+                cur.execute(chunk_sql, {**keyset_bind, "page_end": page_end})
+                rows = cur.fetchall()
 
-    # ------------------------------------------------------------------
-    # Shared concept type tables
-    # ------------------------------------------------------------------
+            yield page_end, rows
 
-    def get_concept_ids_by_type(
-        self,
-        concept_type: str,
-        after: Optional[str] = None,
-        before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        """Return (concept_id, revision_id) for all live concepts of the given type."""
-        return list(self.stream_concept_ids_by_type(concept_type, after=after, before=before))
+            if is_last_page:
+                break
+
+            start_after = page_end
 
     def stream_concept_ids_by_type(
         self,
@@ -294,34 +366,28 @@ class OracleClient:
         table_name, table_suffix = lookup
 
         if table_name is None:
-            # Per-provider table; table_suffix is the table name suffix
-            provider = _provider_from_collection(concept_id)
-            table = f"{provider}{table_suffix}"
+            table, _ = self._table(_provider_from_collection(concept_id), table_suffix)
         else:
             table = table_name
 
         sql = _SINGLE_CONCEPT_SQL.format(table=table, extra_cond="")
         bind: dict = {"concept_id": concept_id}
 
-        with self._get_pool().acquire() as conn, conn.cursor() as cur:
+        with self._acquire_cursor() as cur:
             cur.execute(sql, bind)
             row = cur.fetchone()
             if row is None:
                 return None
             return {"concept-id": row[0], "revision-id": row[1]}
 
-    # ------------------------------------------------------------------
-    # Private helpers
-    # ------------------------------------------------------------------
-
     def _stream_all_collection_ids(
         self,
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        for provider_id in self.get_all_provider_ids():
-            _validate_provider_id(provider_id)
-            table = f"{provider_id}_COLLECTIONS"
+        # Small providers share one table, streamed once for all of them.
+        tables = dict.fromkeys(self._table(p, "_COLLECTIONS")[0] for p in self.get_all_provider_ids())
+        for table in tables:
             yield from self._stream_concept_ids(table, prefix=None, after=after, before=before)
 
     def _stream_concept_ids(
@@ -331,21 +397,12 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        """Yield (concept_id, revision_id) using a two-query keyset strategy per page.
-
-        Query 1 (_PAGE_IDS_SQL): fast DISTINCT index scan with FETCH FIRST to locate
-        the page boundary — no aggregation, returns in milliseconds even for 300k rows.
-
-        Query 2 (_SHARED_IDS_SQL): GROUP BY + HAVING aggregation bounded to
-        concept_id <= page_end, so Oracle aggregates only ~page_size concepts' rows.
-
-        Date filters (after/before) apply only to Query 2 so the page boundary cursor
-        advances monotonically regardless of which revisions fall in the date range.
-        """
+        """Date filters apply only to the aggregation, so the page boundary advances
+        regardless of which revisions are in range."""
         start_after: Optional[str] = None
 
         while True:
-            # --- Query 1: locate page boundary (fast index scan, no aggregation) ---
+            # Page boundary
             page_conds: list[str] = []
             page_bind: dict = {}
             if start_after:
@@ -359,7 +416,7 @@ class OracleClient:
             page_sql = _PAGE_IDS_SQL.format(
                 table=table, where_clause=page_where, page_size=_BATCH_SIZE
             )
-            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+            with self._acquire_cursor() as cur:
                 cur.execute(page_sql, page_bind)
                 page_ids = cur.fetchall()
 
@@ -369,7 +426,7 @@ class OracleClient:
             page_end = page_ids[-1][0]
             is_last_page = len(page_ids) < _BATCH_SIZE
 
-            # --- Query 2: aggregate the bounded range ---
+            # Aggregate the page
             agg_conds: list[str] = []
             agg_bind: dict = {}
             if start_after:
@@ -390,7 +447,7 @@ class OracleClient:
             agg_sql = _SHARED_IDS_SQL.format(
                 table=table, where_clause="WHERE " + " AND ".join(agg_conds)
             )
-            with self._get_pool().acquire() as conn, conn.cursor() as cur:
+            with self._acquire_cursor() as cur:
                 cur.execute(agg_sql, agg_bind)
                 rows = cur.fetchall()
 
@@ -401,15 +458,3 @@ class OracleClient:
                 break
 
             start_after = page_end
-
-    def _query_concept_ids(
-        self,
-        table: str,
-        prefix: Optional[str] = None,
-        after: Optional[str] = None,
-        before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        """Return all (concept_id, revision_id) for a table as a list."""
-        return list(self._stream_concept_ids(
-            table, prefix=prefix, after=after, before=before
-        ))

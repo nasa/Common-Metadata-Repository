@@ -46,13 +46,7 @@ def _get_sids(token: str) -> list:
 
 
 def _get_ingest_mgmt_acls() -> list:
-    """Fetch system-level INGEST_MANAGEMENT_ACL ACLs with full ACL detail.
-
-    identity_type=system restricts results to system-object ACLs only.
-    Provider-level INGEST_MANAGEMENT_ACL entries (scoped to a single provider)
-    must NOT grant access here — a provider operator should not be able to
-    trigger a full reindex of all providers.
-    """
+    """System-level ACLs only: a provider-level grant must not allow reindexing every provider."""
     url = f"{config.acl_base_url}/acls"
     try:
         r = httpx.get(
@@ -82,17 +76,12 @@ def _get_ingest_mgmt_acls() -> list:
 
 
 def _sid_has_update(sids: list, acls: list) -> bool:
-    """Return True if any system-level ACL grants 'update' to any of the user's SIDs.
-
-    Only ACLs with system_identity are considered.  Provider-level
-    INGEST_MANAGEMENT_ACL entries (which have provider_identity) are skipped —
-    a provider operator must not gain global reindex access.
-    """
+    """True if any system-level ACL grants 'update' to one of the SIDs."""
     sid_set = set(sids)
     for item in acls:
         acl = item.get("acl", {})
         if "system_identity" not in acl:
-            continue  # skip provider-level and other non-system ACLs
+            continue
         for gp in acl.get("group_permissions", []):
             if "update" not in gp.get("permissions", []):
                 continue
