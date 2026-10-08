@@ -112,35 +112,58 @@
 (defn generate-previous-version
   "Generate from a UMM-C record the Previous Version into the ISO form."
   [c]
-  (let [doi (get-in c [:DOI :PreviousVersion :DOI])
-        description (get-in c [:DOI :PreviousVersion :Description])
-        version (get-in c [:DOI :PreviousVersion :Version])
-        published (get-in c [:DOI :PreviousVersion :Published])]
-    (when doi
-      [:gmd:aggregationInfo
-       [:gmd:MD_AggregateInformation
-        [:gmd:aggregateDataSetIdentifier
-         [:gmd:MD_Identifier
-          (when (or description version published)
-            [:gmd:authority
-             [:gmd:CI_Citation
-              [:gmd:title {:gco:nilReason "inapplicable"}]
-              [:gmd:date {:gco:nilReason "inapplicable"}]
-              [:gmd:edition
-               [:gco:CharacterString version]]
-              [:gmd:editionDate
-               [:gco:DateTime (if (string? published)
-                                published
-                                (date-time-parser/clj-time->date-time-str published))]]
-              [:gmd:otherCitationDetails
-               [:gco:CharacterString description]]]])
-          [:gmd:code
-           [:gco:CharacterString doi]]
-          [:gmd:codeSpace
-           [:gco:CharacterString "gov.nasa.esdis.umm.doi.previousversion"]]
-          [:gmd:description
-           [:gco:CharacterString "DOI Previous Version"]]]]
-        [:gmd:associationType
-         [:gmd:DS_AssociationTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#EOS_AssociationTypeCode")
-                                       :codeListValue "doiPreviousVersion"}
-          "DOI_Previous_Version"]]]])))
+  (for [prev-version (get-in c [:DOI :PreviousVersion])
+        :let [doi (:DOI prev-version)
+              description (:Description prev-version)
+              version (:Version prev-version)
+              published (:Published prev-version)
+              beginning (:BeginningDateTime prev-version)
+              ending (:EndingDateTime prev-version)
+              deprecated (:DeprecatedDateTime prev-version)
+              coll-progress (:CollectionProgress prev-version)]
+        :when doi]
+    [:gmd:aggregationInfo
+     [:gmd:MD_AggregateInformation
+      [:gmd:aggregateDataSetIdentifier
+       [:gmd:MD_Identifier
+        (when (or description version published coll-progress beginning ending deprecated)
+          [:gmd:authority
+           [:gmd:CI_Citation
+            (if coll-progress
+              [:gmd:title [:gco:CharacterString coll-progress]]
+              [:gmd:title {:gco:nilReason "inapplicable"}])
+
+            ;; Map the new dates as CI_Date elements safely
+            (let [date-elements
+                  (remove nil?
+                          [(when beginning
+                             [:gmd:date
+                              [:gmd:CI_Date
+                               [:gmd:date [:gco:DateTime (if (string? beginning) beginning (date-time-parser/clj-time->date-time-str beginning))]]
+                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "validityBegins"} "validityBegins"]]]])
+                           (when ending
+                             [:gmd:date
+                              [:gmd:CI_Date
+                               [:gmd:date [:gco:DateTime (if (string? ending) ending (date-time-parser/clj-time->date-time-str ending))]]
+                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "validityExpires"} "validityExpires"]]]])
+                           (when deprecated
+                             [:gmd:date
+                              [:gmd:CI_Date
+                               [:gmd:date [:gco:DateTime (if (string? deprecated) deprecated (date-time-parser/clj-time->date-time-str deprecated))]]
+                               [:gmd:dateType [:gmd:CI_DateTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#CI_DateTypeCode") :codeListValue "deprecated"} "deprecated"]]]])])]
+              (if (seq date-elements)
+                date-elements
+                [:gmd:date {:gco:nilReason "inapplicable"}]))
+
+            ;; Make sure edition, published, and description only generate if they exist!
+            (when version
+              [:gmd:edition [:gco:CharacterString version]])
+            (when published
+              [:gmd:editionDate [:gco:DateTime (if (string? published) published (date-time-parser/clj-time->date-time-str published))]])
+            (when description
+              [:gmd:otherCitationDetails [:gco:CharacterString description]])]])
+        [:gmd:code [:gco:CharacterString doi]]
+        [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi.previousversion"]]
+        [:gmd:description [:gco:CharacterString "DOI Previous Version"]]]]
+      [:gmd:associationType
+       [:gmd:DS_AssociationTypeCode {:codeList (str (:earthdata iso-util/code-lists) "#EOS_AssociationTypeCode") :codeListValue "doiPreviousVersion"} "DOI_Previous_Version"]]]]))

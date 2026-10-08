@@ -52,20 +52,34 @@
 (defn parse-previous-version
   "Parses out the first previous version from the ISO record."
   [doc]
-  (first
+  (seq
    (for [p-version (select doc previous-version-path)
          :let [assoc-type (value-of p-version "gmd:associationType/gmd:DS_AssociationTypeCode")
                assoc-type (when assoc-type
                             (string/lower-case (string/trim assoc-type)))
-               gmd-id (first (select p-version "gmd:aggregateDataSetIdentifier/"))]
+               gmd-id (first (select p-version "gmd:aggregateDataSetIdentifier/"))
+               citation (first (select p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:authority/gmd:CI_Citation"))
+               ;; Helper to extract the new dates
+               dates (select citation "gmd:date/gmd:CI_Date")
+               get-date (fn [dtype]
+                          (some #(when (= dtype (value-of % "gmd:dateType/gmd:CI_DateTypeCode"))
+                                   (or (value-of % "gmd:date/gco:DateTime")
+                                       (value-of % "gmd:date/gco:Date")))
+                                dates))]
          :when (and (is-doi-field? gmd-id (str doi-namespace ".previousversion"))
                     (= "doi_previous_version" assoc-type))]
-     {:DOI (iso-util/char-string-value p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:code")
-      :Version (iso-util/char-string-value p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:edition")
-      :Description (iso-util/char-string-value p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:otherCitationDetails")
-      :Published (date-time-parser/try-parse-datetime
-                  (or (value-of p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:editionDate/gco:Date")
-                      (value-of p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:editionDate/gco:DateTime")))})))
+     (util/remove-nil-keys
+      {:DOI (iso-util/char-string-value p-version "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:code")
+       :Version (iso-util/char-string-value citation "gmd:edition")
+       :Description (iso-util/char-string-value citation "gmd:otherCitationDetails")
+       :Published (date-time-parser/try-parse-datetime
+                   (or (value-of citation "gmd:editionDate/gco:Date")
+                       (value-of citation "gmd:editionDate/gco:DateTime")))
+       :BeginningDateTime (date-time-parser/try-parse-datetime (get-date "validityBegins"))
+       :EndingDateTime (date-time-parser/try-parse-datetime (get-date "validityExpires"))
+       :DeprecatedDateTime (date-time-parser/try-parse-datetime (get-date "deprecated"))
+       :CollectionProgress (or (iso-util/char-string-value citation "gmd:title")
+                               "NOT PROVIDED")}))))
 
 (defn parse-doi
   "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
@@ -106,12 +120,12 @@
 
                         :Explanation explanation})))]
     (if (first doi-list)
-      (if previous-version
-        (merge (first doi-list)
-               {:PreviousVersion previous-version})
-        (first doi-list))
-      {:MissingReason "Unknown"
-       :Explanation "It is unknown if this record has a DOI."})))
+    (if (seq previous-version)
+      (merge (first doi-list)
+             {:PreviousVersion (vec previous-version)})
+      (first doi-list))
+    {:MissingReason "Unknown"
+     :Explanation "It is unknown if this record has a DOI."})))
 
 (def associated-doi-types
   "A list of other associated Types other than associated-metadata used to find associated-metadata data."

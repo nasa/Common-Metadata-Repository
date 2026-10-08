@@ -535,7 +535,10 @@
             "$ref": "#/definitions/AuthorityType"
           },
           "PreviousVersion": {
+            "type": "array",
+            "items": {
             "$ref": "#/definitions/PreviousVersionType"
+            }
           }
         },
         "required": ["DOI"]
@@ -583,9 +586,32 @@
           "description": "Describes the pubished date for the previous version.",
           "format": "date-time",
           "type": "string"
+        },
+        "BeginningDateTime": {
+          "description": "Start date and time of the previous version availability.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndingDateTime": {
+          "description": "End date and time of the previous version availability.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "DeprecatedDateTime": {
+          "description": "Date and time the previous version was deprecated.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "CollectionProgress": {
+          "description": "Describes the production status of the data set. There are three choices: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. IN WORK refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.",
+          "type": "string",
+          "enum": ["ACTIVE", "PLANNED", "COMPLETE", "DEPRECATED", "NOT PROVIDED", "PREPRINT", "INREVIEW", "SUPERSEDED"]
         }
       },
-      "required": ["DOI"]
+      "required": [
+        "DOI",
+        "CollectionProgress"
+      ]
     },
     "DoiDoiType": {
       "type": "object",
@@ -1275,7 +1301,7 @@
       "additionalProperties": false,
       "description": "Information about quality of the collection data, including a summary, known issues, strengths, limitations, and other quality-related information.",
       "properties": {
-        "Summary": {
+        "Summary": { 
           "description": "Summary, a short description, of the quality element(s) of the data in the collection in the form of a text overview and can be itemized with hyperlinks.",
           "type": "string",
           "minLength": 1,
@@ -1287,7 +1313,7 @@
         }
       },
       "required": ["Summary"]
-    },
+    },     
     "QualityContentDetailsType": {
       "type": "object",
       "additionalProperties": false,
@@ -1301,8 +1327,8 @@
                 { "required": ["Limitations"] },
                 { "required": ["KnownIssues"] },
                 { "required": ["Other"]
-      }]
-    },
+      }]    
+    },    
     "QualityContentDetailStringType": {
       "type": "string",
       "minLength": 1,
