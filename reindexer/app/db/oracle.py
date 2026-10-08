@@ -52,7 +52,8 @@ SELECT MIN(id)
 FROM METADATA_DB.{table}
 WHERE id >= :min_id
 {provider_clause}
-{after_clause}"""
+{after_clause}
+{before_clause}"""
 
 # Every revision row, tombstones included; the scanner keeps the latest per concept.
 _FETCH_ID_RANGE_CHUNK_SQL = """\
@@ -255,12 +256,14 @@ class OracleClient:
         provider_id: str,
         min_id: int,
         after: Optional[str] = None,
+        before: Optional[str] = None,
     ) -> Optional[int]:
-        """Smallest granule id >= min_id revised at or after `after`. No `before`: the
-        window query applies it, and undated this is a single PK index lookup."""
+        """Smallest granule id >= min_id revised within [after, before], as bootstrap's
+        dated probe does. `before` only applies with `after`: every run has a `before`,
+        and an undated probe must stay a single PK index lookup."""
         table, provider_clause = self._table(provider_id, "_GRANULES")
         sql = _FIND_NEXT_ID_SQL.format(
-            table=table, provider_clause=provider_clause, after_clause=_date_clauses(after, None)["after_clause"],
+            table=table, provider_clause=provider_clause, **_date_clauses(after, before if after else None),
         )
         with self._acquire_cursor() as cur:
             cur.execute(sql, {"min_id": min_id})

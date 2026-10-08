@@ -83,7 +83,7 @@ def _scan_provider(request_id: str, provider_id: str, after: Optional[str], befo
     probe_from = start_id
     while _wait_for_green_or_signal(request_id):
         if next_id is None:
-            next_id = db_client.find_next_granule_id_in_range(provider_id, probe_from, after)
+            next_id = db_client.find_next_granule_id_in_range(provider_id, probe_from, after, before)
             if next_id is None:
                 logger.info({"event": "provider_scan_complete", "request_id": request_id, "provider_id": provider_id})
                 return True
