@@ -193,8 +193,10 @@
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id options]
   (let [polling-interval-ms 5000
-        ;; Extract max-wait-ms, default to 4.5 minutes if not provided
-        max-wait-ms (get options :max-wait-ms (* 4.5 60 1000))
+        ;; how long our app will wait for ES to finish deleting before giving up.
+        ;; This val is always < delete SQS timeout val to prevent SQS from picking up the same msg again and
+        ;; re-trying delete from the beginning causing 2+ parallel massive deletes on ES at the same time
+        max-wait-ms (get options :max-wait-ms (es-config/default-index-queue-max-wait-ms))
         start-time (System/currentTimeMillis)]
 
     (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
@@ -251,13 +253,18 @@
                 {:status 200
                  :body final-response})))
 
-          ;; Check for timeout
+          ; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
-            (warn (format "Delete-By-Query: Task %s exceeded the 4.5-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry." task-id))
+            (let [timeout-minutes (/ max-wait-ms 60000.0)]
+              (warn (format "Delete-By-Query: Task %s exceeded the %.1f-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry."
+                            task-id timeout-minutes)))
+
             ;; End the task on the cluster to prevent overlapping tasks when SQS retries this failed msg
             (cancel-task! conn task-id)
-            ;; Throw the error so the queue broker handles the retry
+
+            ;; Throw the error so SQS can pick up failed msg and re-try, picking up where the prev failed msg delete left off.
+            ;; Creates sequential deletes without duplicate delete attempts
             (throw (ex-info (str "Delete-By-Query: Timed out waiting for task " task-id) {:task-id task-id})))
 
           ;; Continue polling
