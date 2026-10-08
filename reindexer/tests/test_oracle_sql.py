@@ -185,13 +185,22 @@ class TestFindNextGranuleIdInRange:
         cur.fetchone.return_value = row
         assert client.find_next_granule_id_in_range("MYPROV", 0) == expected
 
-    def test_after_embedded_as_literal(self, oracle):
+    @pytest.mark.parametrize("before", [None, "2024-02-01T00:00:00Z"])
+    def test_dated_probe_embeds_both_bounds_as_literals(self, oracle, before):
         client, cur = oracle
         cur.fetchone.return_value = (1,)
-        client.find_next_granule_id_in_range("MYPROV", 0, after="2024-01-01T00:00:00Z")
+        client.find_next_granule_id_in_range("MYPROV", 0, after="2024-01-01T00:00:00Z", before=before)
         sql, bind = _last_execute(cur)
         assert "REVISION_DATE >= TO_TIMESTAMP_TZ('2024-01-01T00:00:00 +00:00'" in sql
+        assert ("REVISION_DATE <= TO_TIMESTAMP_TZ('2024-02-01T00:00:00 +00:00'" in sql) is bool(before)
         assert bind == {"min_id": 0}
+
+    def test_undated_probe_ignores_before(self, oracle):
+        """Every run has a `before`; the undated probe must stay a plain PK lookup."""
+        client, cur = oracle
+        cur.fetchone.return_value = (1,)
+        client.find_next_granule_id_in_range("MYPROV", 0, before="2024-02-01T00:00:00Z")
+        assert "REVISION_DATE" not in _last_execute(cur)[0]
 
 
 # ---------------------------------------------------------------------------

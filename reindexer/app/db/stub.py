@@ -46,6 +46,7 @@ class StubOracleClient:
         provider_id: str,
         min_id: int,
         after: Optional[str] = None,
+        before: Optional[str] = None,
     ) -> Optional[int]:
         """Fake dense id space [0, total)."""
         total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
