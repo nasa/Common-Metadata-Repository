@@ -51,7 +51,7 @@
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "5.33.0"]
-                 [metosin/ring-swagger "1.1.0"]
+                 [metosin/ring-swagger "0.22.14"] ;; 0.23.0 introduces a breaking change
                  [prismatic/schema "1.4.2"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
