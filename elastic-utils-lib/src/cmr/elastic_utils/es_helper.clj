@@ -146,7 +146,7 @@
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
-        _ (debug "Delete-By-Query: Response for starting delete query task is " response)
+        _ (debug (format "Delete-By-Query: Response for starting delete query task with slices %d and scroll size %d for index %s is %s" slices scroll-size index response))
         status (:status response)
         body (:body response)]
 
@@ -199,7 +199,7 @@
         max-wait-ms (get options :max-wait-ms (es-config/default-index-queue-max-wait-ms))
         start-time (System/currentTimeMillis)]
 
-    (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
+    (info (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %d..." task-id max-wait-ms))
     (loop []
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
