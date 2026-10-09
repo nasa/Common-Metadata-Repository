@@ -6,8 +6,8 @@
   :dependencies [[cheshire :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-time]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io/commons-io "2.18.0"]
+                 [commons-codec/commons-codec "1.22.1"]
+                 [commons-io/commons-io "2.22.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -19,16 +19,16 @@
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [net.sf.saxon/Saxon-HE "9.9.0-2"]
-                 [org.apache.httpcomponents/httpclient "4.5.13"]
+                 [net.sf.saxon/Saxon-HE "13.0"]
+                 [org.apache.httpcomponents/httpclient "4.5.14"]
                  ;; replacment for org.bouncycastle/bcpkix-jdk15on
                  [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
-                 [org.clojure/data.csv "0.1.4"]
-                 [org.clojure/math.numeric-tower "0.0.4"]
+                 [org.clojure/data.csv "1.1.1"]
+                 [org.clojure/math.numeric-tower "0.1.1"]
                  [org.clojure/tools.reader]
-                 [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
-                 [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
+                 [org.eclipse.emf/org.eclipse.emf.ecore "2.43.0"]
+                 [org.eclipse.emf/org.eclipse.emf.common "2.46.0"]
                  [org.geotools/gt-shapefile "29.1"
                   :exclusions [org.eclipse.emf/org.eclipse.emf.ecore
                                org.eclipse.emf/org.eclipse.emf.common]]
@@ -38,8 +38,8 @@
                  [org.geotools.xsd/gt-xsd-kml "29.1"
                   :exclusions [org.eclipse.emf/org.eclipse.emf.ecore
                                org.eclipse.emf/org.eclipse.emf.common]]
-                 [org.mozilla/rhino "1.7.15.1"]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.mozilla/rhino "1.9.1"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.14"]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
@@ -47,12 +47,12 @@
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                  [ring/ring-json "0.5.1"]
-                 [selmer "1.12.5"]
+                 [selmer "1.13.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
-                 [metosin/ring-swagger-ui "2.1.4-0"]
-                 [metosin/ring-swagger "0.22.14"]
-                 [prismatic/schema "1.1.9"]]
+                 [metosin/ring-swagger-ui "5.33.0"]
+                 [metosin/ring-swagger "1.1.0"]
+                 [prismatic/schema "1.4.2"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
                  ["geo-snapshot" "https://repo.osgeo.org/repository/snapshot"]]
@@ -66,15 +66,15 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.6"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                                  [ring/ring-jetty-adapter "1.15.4"
+                                  [org.clojure/tools.namespace "1.5.1"]
+                                  [nrepl/nrepl "1.8.0"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.14"]
+                                  [ring/ring-jetty-adapter "1.15.5"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [pjstadig/humane-test-output "0.11.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :resource-paths ["resources" "test/resources"]
@@ -98,17 +98,17 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "1.4.2"]
-                              [lein-ancient "0.7.0"]
-                              [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]
+                    :plugins [[jonase/eastwood "1.4.3"]
+                              [lein-ancient "1.0.0"]
+                              [lein-bikeshed "0.5.2"]
+                              [lein-kibit "0.1.11"]
                               [lein-shell "0.5.0"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
-                                     [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+             :kaocha {:dependencies [[lambdaisland/kaocha "1.91.1392"]
+                                     [lambdaisland/kaocha-cloverage "1.1.89"]
+                                     [lambdaisland/kaocha-junit-xml "1.17.101"]]}}
   :aliases {"generate-static" ["with-profile" "static"
                                "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
