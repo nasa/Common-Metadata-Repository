@@ -256,7 +256,6 @@
           ; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
-            ;; TODO JYNA this is hardcoded... needs to be fixed if max-wait-ms is diff value
             (let [timeout-minutes (/ max-wait-ms 60000.0)]
               (warn (format "Delete-By-Query: Task %s exceeded the %.1f-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry."
                             task-id timeout-minutes)))
