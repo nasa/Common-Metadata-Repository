@@ -33,7 +33,7 @@
 (defconfig default-queue-visibility-timeout
   "Default number of seconds SQS should wait after a message is read before making it visible to
   other queue readers."
-  {:default 300
+  {:default 300 ;; 5 mins
    :type Long})
 
 (declare provider-queue-visibility-timeout)

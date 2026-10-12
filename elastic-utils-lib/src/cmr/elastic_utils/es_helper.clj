@@ -146,7 +146,7 @@
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
-        _ (debug (format "Delete-By-Query: Response for starting delete query task with slices %d and scroll size %d for index %s is %s" slices scroll-size index response))
+        _ (debug (format "Delete-By-Query: Response for starting delete query task with slices %s and scroll size %s for index %s is %s" slices scroll-size index response))
         status (:status response)
         body (:body response)]
 
@@ -199,7 +199,7 @@
         max-wait-ms (get options :max-wait-ms (* (es-config/default-index-queue-max-wait-secs) 1000))
         start-time (System/currentTimeMillis)]
 
-    (info (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %d..." task-id max-wait-ms))
+    (info (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %s..." task-id max-wait-ms))
     (loop []
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
@@ -238,7 +238,7 @@
               ;; Task ran into version conflicts
               (> conflicts 0)
               (do
-                (warn (format "Delete-By-Query: Task %s finished, but skipped %d documents due to version conflicts." task-id conflicts))
+                (warn (format "Delete-By-Query: Task %s finished, but skipped %s documents due to version conflicts." task-id conflicts))
                 {:status 200
                  :body final-response})
 
@@ -256,6 +256,7 @@
           ; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
+            ;; TODO JYNA this is hardcoded... needs to be fixed if max-wait-ms is diff value
             (let [timeout-minutes (/ max-wait-ms 60000.0)]
               (warn (format "Delete-By-Query: Task %s exceeded the %.1f-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry."
                             task-id timeout-minutes)))
