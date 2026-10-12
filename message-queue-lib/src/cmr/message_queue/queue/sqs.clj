@@ -90,13 +90,14 @@
   "Number of seconds SQS should wait after a message is read from a queue before making
   it visible to other readers."
   [queue-name]
+  (info (format "CMR-11560 INSIDE queue-visibility-timeout queue-name is %s and indexer-config/index-delete-queue-name is %s" queue-name (indexer-config/index-delete-queue-name)))
   (cond
     ;; The Provider queue
     (string/includes? queue-name "provider")
     (provider-queue-visibility-timeout)
 
     ;; The Index Delete queue
-    (= queue-name indexer-config/index-delete-queue-name)
+    (= queue-name (indexer-config/index-delete-queue-name))
     (index-delete-queue-visibility-timeout-secs)
 
     :else
