@@ -5,7 +5,7 @@
 
 ;; This is here to remove linter unresolved variable error.
 (declare index-queue-name index-queue-listener-count index-delete-queue-name index-delete-queue-listener-count
-         index-delete-queue-max-wait-ms all-revisions-index-queue-name
+         index-delete-queue-max-wait-secs all-revisions-index-queue-name
          all-revisions-index-queue-listener-count deleted-granule-index-queue-name
          deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
          ingest-exchange-name ingest-delete-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
@@ -46,12 +46,12 @@
   {:default 5
    :type Long})
 
-(defconfig index-delete-queue-max-wait-ms
- "The maximum time (in milliseconds) the indexer will wait for an Elasticsearch
-  concept deletion to finish before cancelling it. This MUST be set to slightly
-  less than the SQS Delete Queue Visibility Timeout of the index delete queue."
-  {:default (* 60 60 1000) ;; 60 mins on a 65 min sqs visibility timeout
-   :type Long})
+(defconfig index-delete-queue-max-wait-secs
+           "The maximum time (in seconds) the indexer will wait for an Elasticsearch
+            concept deletion to finish before cancelling it. This MUST be set to slightly
+            less than the SQS Delete Queue Visibility Timeout of the index delete queue."
+           {:default 3600 ;; 60 mins on a 65 min sqs visibility timeout
+           :type Long})
 
 (defconfig all-revisions-index-queue-name
   "The queue containing ingest events for the indexer all revisions index. We use a

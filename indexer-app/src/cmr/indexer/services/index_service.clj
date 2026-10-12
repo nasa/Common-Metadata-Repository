@@ -693,7 +693,7 @@
 
               query-options {:slices "auto"
                              :scroll-size 5000
-                             :max-wait-ms (config/index-delete-queue-max-wait-ms)}
+                             :max-wait-ms (* (config/index-delete-queue-max-wait-secs) 1000)}
 
               resp (es-helper/delete-by-query
                      (indexer-util/context->conn context es-config/gran-elastic-name)

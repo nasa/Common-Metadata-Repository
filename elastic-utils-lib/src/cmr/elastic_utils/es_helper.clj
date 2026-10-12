@@ -196,7 +196,7 @@
         ;; how long our app will wait for ES to finish deleting before giving up.
         ;; This val is always < delete SQS timeout val to prevent SQS from picking up the same msg again and
         ;; re-trying delete from the beginning causing 2+ parallel massive deletes on ES at the same time
-        max-wait-ms (get options :max-wait-ms (es-config/default-index-queue-max-wait-ms))
+        max-wait-ms (get options :max-wait-ms (* (es-config/default-index-queue-max-wait-secs) 1000))
         start-time (System/currentTimeMillis)]
 
     (info (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %d..." task-id max-wait-ms))

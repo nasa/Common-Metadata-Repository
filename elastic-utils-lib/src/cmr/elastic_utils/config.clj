@@ -121,13 +121,13 @@
   {:default false
    :type Boolean})
 
-(declare default-index-queue-max-wait-ms)
-(defconfig default-index-queue-max-wait-ms
- "The default maximum time (in milliseconds) the indexer will wait for an Elasticsearch
-  concept deletion to finish before cancelling it. This MUST be set to slightly
-  less than the SQS Delete Queue Visibility Timeout of the index queue."
-  {:default (* 4.5 60 1000) ;; 4.5 mins on a 5 min sqs timeout
-   :type Double})
+(declare default-index-queue-max-wait-secs)
+(defconfig default-index-queue-max-wait-secs
+           "The default maximum time (in seconds) the indexer will wait for an Elasticsearch
+            concept deletion to finish before cancelling it. This MUST be set to slightly
+            less than the SQS Delete Queue Visibility Timeout of the index queue."
+           {:default 270 ;; 4.5 mins on a 5 min sqs timeout
+            :type Long})
 
 (defn gran-elastic-config
   "Returns the elastic config as a map"
