@@ -502,7 +502,6 @@
   [db provider params]
   (sh/force-delete-concept-by-params db provider params))
 
-;; TODO JYNA do I need to change this too?
 (defn force-delete-concepts
   [db provider concept-type concept-id-revision-id-tuples]
   (let [table (tables/get-table-name provider concept-type)]
