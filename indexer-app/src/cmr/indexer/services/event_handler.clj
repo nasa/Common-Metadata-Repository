@@ -78,10 +78,8 @@
                         "revision-id %s all-revisions-index? %s took %d ms.")
                    (str *ns*) (count all-concepts) concept-id revision-id all-revisions-index? tm))))
 
-;; TODO JYNA all other concept deletes should fall under this handler except for collections
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id delete-request-timestamp]}]
-  (info (format "CMR-11560 - INSIDE handle-ingest-event :concept-delete with concept-id %s and revision-id %s" concept-id revision-id))
   (when-not (= :humanizer (cc/concept-id->type concept-id))
     (let [[tm result] (util/time-execution
                         (indexer/delete-concept
@@ -142,7 +140,7 @@
   (info (format "CMR-11560 - INSIDE handle-ingest-delete-event :concept-delete with concept-id %s and revision-id %s" concept-id revision-id))
   (when-not (= :humanizer (cc/concept-id->type concept-id))
     (let [[tm result] (util/time-execution
-                        (indexer/delete-concept ;; TODO JYNA does this need to be a separate func too?
+                        (indexer/delete-concept
                           context concept-id revision-id {:ignore-conflict? true
                                                           :all-revisions-index? all-revisions-index?}))]
       (debug (format (str "Timed function %s handle-ingest-event concept-delete for concept-id %s "

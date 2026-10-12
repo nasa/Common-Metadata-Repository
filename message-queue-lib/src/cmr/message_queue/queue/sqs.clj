@@ -45,10 +45,10 @@
 
 (declare index-delete-queue-visibility-timeout-secs)
 (defconfig index-delete-queue-visibility-timeout-secs
-           "The SQS visibility timeout for the index delete queue to allow enough time for
-           massive concept deletes before sqs retries"
-           {:default 3900 ;; 65 mins
-            :type Long})
+  "The SQS visibility timeout for the index delete queue to allow enough time for
+  massive concept deletes before sqs retries"
+  {:default 3900 ;; 65 mins
+   :type Long})
 
 (declare default-num-tries)
 (defconfig default-num-tries

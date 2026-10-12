@@ -51,15 +51,3 @@
                                      {:concept-type :granule
                                       :provider-id (:provider-id concept)
                                       :parent-collection-id (:concept-id concept)})))
-
-;;REMOVED and REPLACED with post-commit-step
-;(defmethod c/after-save :collection
-;  [db provider coll]
-;  (info (format "CMR-11560 - INSIDE after-save :collection with provider %s and coll-id %s" provider {:concept-id coll}))
-;  (when (:deleted coll)
-;    ;; Cascade deletion to real deletes of granules
-;    (concepts/force-delete-by-params db
-;                                     provider
-;                                     {:concept-type :granule
-;                                      :provider-id (:provider-id coll)
-;                                      :parent-collection-id (:concept-id coll)})))

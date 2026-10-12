@@ -47,11 +47,11 @@
    :type Long})
 
 (defconfig index-delete-queue-max-wait-secs
-           "The maximum time (in seconds) the indexer will wait for an Elasticsearch
-            concept deletion to finish before cancelling it. This MUST be set to slightly
-            less than the SQS Delete Queue Visibility Timeout of the index delete queue."
-           {:default 3600 ;; 60 mins on a 65 min sqs visibility timeout
-           :type Long})
+  "The maximum time (in seconds) the indexer will wait for an Elasticsearch
+   concept deletion to finish before cancelling it. This MUST be set to slightly
+   less than the SQS Delete Queue Visibility Timeout of the index delete queue."
+  {:default 3600 ;; 60 mins on a 65 min sqs visibility timeout
+  :type Long})
 
 (defconfig all-revisions-index-queue-name
   "The queue containing ingest events for the indexer all revisions index. We use a

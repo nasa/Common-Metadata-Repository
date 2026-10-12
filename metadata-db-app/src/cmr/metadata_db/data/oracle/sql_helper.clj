@@ -44,24 +44,6 @@
          (cons `and comparisons))
        (first comparisons)))))
 
-;; ORIG FUNC
-;(defn force-delete-concept-by-params
-;  "Delete the concepts based on params. concept-type and provider-id must be one of the params.
-;  This function is moved from the concepts namespace to avoid cyclic inclusion issue."
-;  [db provider params]
-;  (let [{:keys [concept-type]} params
-;        params (if (:small provider)
-;                 (dissoc params :concept-type)
-;                 (dissoc params :concept-type :provider-id))
-;        table (ct/get-table-name provider concept-type)
-;        sql-query (delete table
-;                          (where (find-params->sql-clause params)))
-;        ;; TODO we need to batch these deletes instead of one large chunk
-;        stmt (su/build sql-query)]
-;    (info (format "CMR-11560 - INSIDE force-delete-concept-by-params with provider %s and params %s and and table %s and sql-query %s statement %s"
-;                  provider params table sql-query stmt))
-;    (j/execute! db stmt)))
-
 (defn force-delete-concept-by-params
   "Delete the concepts based on params in batches to prevent overwhelming db.
   concept-type and provider-id must be one of the params.

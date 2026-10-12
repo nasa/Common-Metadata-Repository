@@ -9,15 +9,12 @@
    [cmr.message-queue.services.queue :as queue]
    [cmr.metadata-db.config :as config]))
 
-;;TODO JYNA this is where we can check what type of message goes to which queue
-
 (defn publish-event
   "Put an ingest event on the message queue."
   [context msg]
   (when-not (:concept-id msg)
     (errors/internal-error! (str "Expecting every message to contain a concept-id. msg: " (pr-str msg))))
   (when (config/publish-messages)
-    ;; :action :concept-delete
     (let [exchange-name-fn (if (= (:action msg) :concept-delete)
                              ;; pick from delete exchange names
                              (config/concept-type->exchange-delete-name-fn
@@ -29,8 +26,7 @@
         (let [queue-broker (get-in context [:system :queue-broker])]
           (info (format "CMR-11560 - INSIDE publish-event with msg = %s exchange-name-fun = %s and queue-broker = %s" msg exchange-name-fn queue-broker))
           (when queue-broker
-            (queue/publish-message queue-broker (exchange-name-fn) msg))))
-      )))
+            (queue/publish-message queue-broker (exchange-name-fn) msg)))))))
 
 (defn associations-update-event
   "Create an event representing a list of collections that are associated
