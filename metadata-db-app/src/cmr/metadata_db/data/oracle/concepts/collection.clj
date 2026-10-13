@@ -3,7 +3,7 @@
   (:require
    [clj-time.coerce :as cr]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer [info]]
+   [cmr.common.log :refer [debug]]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.util :as data-util]
@@ -41,10 +41,10 @@
 
 (defmethod c/post-commit-step :collection
   [db provider concept]
-  (info (format "CMR-11560 - INSIDE post-commit-step :collection with provider %s and coll-id %s" provider {:concept-id concept}))
+  (debug (format "INSIDE post-commit-step :collection with provider %s and coll-id %s" provider {:concept-id concept}))
   ;; If this is a tombstone (deletion), run your batch-delete loop
   (when (:deleted concept)
-    (info "CMR-11560 - Running DB batched granule deletion for collection" (:concept-id concept))
+    (debug "Running DB batched granule deletion for collection" (:concept-id concept))
     ;; Cascade deletion to real deletes of granules
     (concepts/force-delete-by-params db
                                      provider

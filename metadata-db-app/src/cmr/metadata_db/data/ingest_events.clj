@@ -4,7 +4,7 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [cmr.common.concepts :as cc]
-   [cmr.common.log :as log :refer [info]]
+   [cmr.common.log :as log :refer [debug]]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.services.queue :as queue]
    [cmr.metadata-db.config :as config]))
@@ -24,7 +24,7 @@
                                (cc/concept-id->type (:concept-id msg))))]
       (when exchange-name-fn
         (let [queue-broker (get-in context [:system :queue-broker])]
-          (info (format "CMR-11560 - INSIDE publish-event with msg = %s exchange-name-fun = %s and queue-broker = %s" msg exchange-name-fn queue-broker))
+          (debug (format "INSIDE publish-event with msg = %s exchange-name-fun = %s and queue-broker = %s" msg exchange-name-fn queue-broker))
           (when queue-broker
             (queue/publish-message queue-broker (exchange-name-fn) msg)))))))
 

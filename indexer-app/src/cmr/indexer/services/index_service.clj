@@ -669,13 +669,11 @@
   "Performs the cascade actions of collection deletion,
   i.e. propagate collection deletion to granules and variables"
   [context concept-id revision-id delete-request-timestamp]
-  (debug "CMR-11560 - Starting cascade collection delete for concept-id " concept-id)
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
                                          (:granule)
                                          (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
-      (debug "CMR-11560 - Deleting within index : " index)
       (if (= index small-collections-index-name)
         (let [;; This is your original term query
               concept-id-clause {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
@@ -740,7 +738,6 @@
 (defn- delete-concept-default-helper
   "A private func that deletes concept indexes in elastic"
   [context concept concept-id revision-id options]
-  (info (format "CMR-11560 - INSIDE delete-concept-default-helper with concept %s and option %s" concept-id options))
   (when (nil? concept)
     (errors/throw-service-error
      :not-found

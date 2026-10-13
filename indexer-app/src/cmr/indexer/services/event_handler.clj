@@ -129,7 +129,7 @@
                      (str *ns*) concept-id revision-id all-revisions-index? tm))
       result)))
 
-;; CMR-11560 - DUPLICATE METHODS TO SEPARATE INGEST AND INGEST DELETES DURING TRANSITION TO PUTTING ALL CONCEPT DELETES IN THE SAME QUEUE
+;; SEPARATE INGEST AND INGEST DELETES BUT EVENTUALLY ALL CONCEPT DELETES WILL GO TO THE SAME QUEUE AND BE HANDLED BY THIS FUNC
 (defmulti handle-ingest-delete-event
   "Handle the various actions that can be requested via the indexing queue"
   (fn [_context _all-revisions-index? msg]
@@ -137,7 +137,6 @@
 
 (defmethod handle-ingest-delete-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (info (format "CMR-11560 - INSIDE handle-ingest-delete-event :concept-delete with concept-id %s and revision-id %s" concept-id revision-id))
   (when-not (= :humanizer (cc/concept-id->type concept-id))
     (let [[tm result] (util/time-execution
                         (indexer/delete-concept

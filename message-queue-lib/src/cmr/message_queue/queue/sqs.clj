@@ -90,7 +90,6 @@
   "Number of seconds SQS should wait after a message is read from a queue before making
   it visible to other readers."
   [queue-name]
-  (info (format "CMR-11560 INSIDE queue-visibility-timeout queue-name is %s and indexer-config/index-delete-queue-name is %s" queue-name (indexer-config/index-delete-queue-name)))
   (cond
     ;; The Provider queue
     (string/includes? queue-name "provider")
@@ -398,7 +397,6 @@
         (let [max-tries (get-in queues-to-policies [queue-name :max-tries] (default-num-tries))
               visibility-timeout (get-in queues-to-policies [queue-name :visibility-timeout-secs]
                                          (queue-visibility-timeout queue-name))]
-          (info (format "CMR-11560 - visibility timeout was %d for queue-name %s" visibility-timeout queue-name))
           (create-queue sqs-client queue-name max-tries visibility-timeout)))
       (doseq [exchange-name exchanges]
         (create-exchange sns-client exchange-name))

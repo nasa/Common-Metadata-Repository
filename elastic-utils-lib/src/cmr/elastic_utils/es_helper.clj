@@ -178,8 +178,8 @@
    to prevent it from silently eating up disk space over time."
   [conn task-id]
   (try
-    (info (str "Delete-By-Query: Cleaning up task record for " task-id " from .tasks index."))
-    ;; The standard ES API for removing a stored task result
+    (debug (str "Delete-By-Query: Cleaning up task record for " task-id " from .tasks index."))
+    ;; Remove a stored task result
     (let [delete-url (es-util/url-with-path conn (str ".tasks/_doc/" task-id))]
       (http/delete delete-url
                    (merge (:http-opts conn)
@@ -199,7 +199,7 @@
         max-wait-ms (get options :max-wait-ms (* (es-config/default-index-queue-max-wait-secs) 1000))
         start-time (System/currentTimeMillis)]
 
-    (info (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %s..." task-id max-wait-ms))
+    (debug (format "Delete-By-Query: Polling task %s for completion with max-wait-ms %s..." task-id max-wait-ms))
     (loop []
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
@@ -253,7 +253,7 @@
                 {:status 200
                  :body final-response})))
 
-          ; Check for timeout
+          ;; Check for timeout
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
             (let [timeout-minutes (/ max-wait-ms 60000.0)]
@@ -282,7 +282,6 @@
    (delete-by-query conn index query {}))
 
   ([conn index query options]
-   (info "Delete-By-Query: delete-by-query started for index : " index)
     (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
 
     (loop [attempt 1]
@@ -304,7 +303,7 @@
                 (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
                               (ex-message e)
                               (pr-str ex-data-map)))
-                (info (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
+                (debug (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
                 (Thread/sleep 1000)
                 (recur (inc attempt)))
 

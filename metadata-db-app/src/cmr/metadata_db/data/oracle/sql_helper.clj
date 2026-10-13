@@ -3,7 +3,7 @@
   (:require
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
-   [cmr.common.log :refer [info]]
+   [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
@@ -72,16 +72,14 @@
         stmt (into [(str sql-str " AND ROWNUM <= ?")]
                    (concat sql-vals [batch-size]))]
 
-    (info (format "CMR-11560 - INSIDE force-delete-concept-by-params. Batching query: %s" stmt))
-
     ;; Loop and execute until 0 rows are deleted
     (loop [total-deleted 0
            attempt 1]
-      (let [;; Wrap JUST the batch execution in a transaction so it explicitly commits!
+      (let [;; Wrap JUST the batch execution in a transaction so it explicitly commits
             rows-deleted (j/with-db-transaction [batch-conn db]
                                                 (first (j/execute! batch-conn stmt)))]
 
-        (info (format "CMR-11560 - INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
+        (debug (format "INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
 
         (if (> rows-deleted 0)
           (do
@@ -91,6 +89,6 @@
 
           ;; Loop finished!
           (do
-            (info (format "CMR-11560 - Finished deleting %d %s(s) in %d batches from table %s."
+            (info (format "Finished deleting %d %s(s) in %d batches from db table %s."
                           total-deleted concept-type attempt table))
             total-deleted))))))

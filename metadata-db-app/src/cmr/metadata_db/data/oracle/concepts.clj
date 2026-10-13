@@ -425,8 +425,6 @@
 
 (defn save-concept
   [db provider concept]
-  (info (format "CMR-11560 - INSIDE save-concept in metadata db oracle/concepts.clj with provider %s and concept-id %s" provider {:concept-id concept}))
-
   ;; Run the exact original logic and store whatever it returns
   (let [save-result
         (try
@@ -449,7 +447,6 @@
                                  (string/join "," cols)
                                  seq-name
                                  (string/join "," (repeat (count values) "?")))]
-                (info "CMR-11560 - Executing" stmt "with values" (pr-str values))
                 (j/db-do-prepared db stmt values)
 
                 ;; Keep other transactional after-save operations here
@@ -470,14 +467,12 @@
       ;; start a separate thread to do the post-commit-step db actions
       (future
         (try
-          (info (format "CMR-11560 - Starting background async post-commit-step for concept %s" (:concept-id concept)))
           ;; run the post-commit sql statements (like large granule deletes) asynchronously
           (post-commit-step db provider concept)
 
-          (info (format "CMR-11560 - Successfully finished background post-commit-step for concept %s" (:concept-id concept)))
+          (debug (format "Successfully finished background post-commit-step for concept %s" (:concept-id concept)))
 
           (catch Exception e
-            ;; TODO setup a Log Alert for this msg to know that a collection delete failed
             (error e (format "ERROR - Background Oracle background process save-concept failed in post-commit-step for concept %s" (:concept-id concept)))))))
 
     ;; Return the exact same result (nil or error) to the caller
