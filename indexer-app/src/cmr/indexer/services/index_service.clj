@@ -675,16 +675,11 @@
                                          (:small_collections))]
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
-        (let [;; This is your original term query
-              concept-id-clause {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
-
-              ;; This is the new time boundary clause
+        (let [concept-id-clause {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
               ;; (Assuming 'delete-request-timestamp' is passed in from the SQS message)
-              ;; "revision-date": "2025-02-05T05:33:45.743Z",
               revision-date-clause {:range {(query-field->elastic-field :revision-date :granule)
                                             {:lte delete-request-timestamp}}}
 
-              ;; Combine them into a boolean "MUST" query
               query {:bool
                      {:must [concept-id-clause
                              revision-date-clause]}}
