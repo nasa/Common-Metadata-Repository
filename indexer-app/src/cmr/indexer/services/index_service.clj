@@ -691,6 +691,7 @@
               resp (es-helper/delete-by-query
                      (indexer-util/context->conn context es-config/gran-elastic-name)
                      index
+                     nil
                      query
                      query-options)]
           (when (not= (get resp :status) 200)
@@ -864,12 +865,15 @@
   ;; may be unindexed in other places when a :provider-delete message is handled,
   ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
-  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)]
+  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
+        concept-mapping-types (idx-set/get-concept-mapping-types context)
+        ccmt (concept-mapping-types :collection)]
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es-helper/delete-by-query
        (indexer-util/context->conn context es-config/elastic-name)
        index
+       ccmt
        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
@@ -877,6 +881,7 @@
       (es-helper/delete-by-query
        (indexer-util/context->conn context es-config/gran-elastic-name)
        index-name
+       (concept-mapping-types :granule)
        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
 
     ;; delete the variable,service,tool and subscription
@@ -885,6 +890,7 @@
         (es-helper/delete-by-query
          (indexer-util/context->conn context es-config/elastic-name)
          index
+         (concept-mapping-types concept-type)
          {:term {(query-field->elastic-field :provider-id concept-type) provider-id}})))))
 
 (defn publish-provider-event

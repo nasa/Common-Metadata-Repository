@@ -259,5 +259,6 @@
     (es-helper/delete-by-query
      (indexer-util/context->conn context es-config/elastic-name)
      index
+     mapping-type
      {:range {(service/query-field->elastic-field :modified :suggestion) {:lt document-age}}})))
 

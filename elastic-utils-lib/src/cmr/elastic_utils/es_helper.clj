@@ -278,12 +278,10 @@
 (defn delete-by-query
   "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts.
   Accepts an optional map of tuning parameters: {:slices, :scroll-size, :max-wait-ms}"
-  ([conn index query]
-   (delete-by-query conn index query {}))
+  ([conn index mapping-type query]
+   (delete-by-query conn index mapping-type query {}))
 
-  ([conn index query options]
-    (debug (format "Delete-By-Query: Delete-by-query started for index : %s with query %s" index query))
-
+  ([conn index _mapping-type query options]
     (loop [attempt 1]
       (let [result (try
                      (let [task-id (attempt-to-start-task conn index query options)]
