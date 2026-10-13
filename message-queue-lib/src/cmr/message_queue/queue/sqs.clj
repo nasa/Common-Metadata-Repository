@@ -10,7 +10,6 @@
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.indexer.config :as indexer-config]
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol])
   (:import
@@ -96,7 +95,7 @@
     (provider-queue-visibility-timeout)
 
     ;; The Index Delete queue
-    (= queue-name (indexer-config/index-delete-queue-name))
+    (= queue-name "cmr_index_delete.queue")
     (index-delete-queue-visibility-timeout-secs)
 
     :else
