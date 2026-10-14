@@ -30,7 +30,7 @@ def deps(monkeypatch):
     throttler.stop_event.wait = MagicMock()  # never actually sleep between ES polls
     throttler.dispatch_in_batches.return_value = True
 
-    def _simulate_dispatch(records, request_id, on_progress=None):
+    def _simulate_dispatch(records, request_id, on_progress=None, gate=None):
         """Reports the whole chunk as one sub-batch."""
         result = throttler.dispatch_in_batches.return_value
         if result and on_progress is not None:
@@ -128,7 +128,7 @@ class TestProviderScan:
         db.find_next_granule_id_in_range.side_effect = [1, None]
         db.fetch_granule_id_range_chunk.side_effect = [[("G%d-PROV" % i, 1, 0) for i in range(5)], []]
 
-        def _sub_batched_dispatch(records, request_id, on_progress=None):
+        def _sub_batched_dispatch(records, request_id, on_progress=None, gate=None):
             on_progress(3)
             on_progress(2)
             return True

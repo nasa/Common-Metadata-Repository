@@ -42,3 +42,10 @@ class TestDispatchInBatches:
     def test_empty_records_returns_true_without_publishing(self, throttler):
         assert throttler.dispatch_in_batches([], "req-1") is True
         _worker_mod.publish_indexer_events_batch.assert_not_called()
+
+    def test_gate_checked_before_each_sub_batch(self, throttler):
+        throttler._token_bucket.current_rate = 2
+        gate = MagicMock(side_effect=[True, False])
+        assert throttler.dispatch_in_batches([("G%d-P" % i, i) for i in range(5)], "req-1", gate=gate) is False
+        assert [len(c.args[0]) for c in _worker_mod.publish_indexer_events_batch.call_args_list] == [2]
+        assert gate.call_count == 2

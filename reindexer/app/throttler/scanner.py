@@ -70,7 +70,9 @@ def _log_stopped(request_id: str) -> None:
 
 def _dispatch(request_id: str, records: list[tuple]) -> bool:
     return throttler.dispatch_in_batches(
-        records, request_id, on_progress=lambda n: job_store.update_dispatched(request_id, n),
+        records, request_id,
+        on_progress=lambda n: job_store.update_dispatched(request_id, n),
+        gate=lambda: _wait_for_green_or_signal(request_id),
     )
 
 

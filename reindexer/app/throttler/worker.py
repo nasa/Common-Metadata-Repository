@@ -44,11 +44,14 @@ class Throttler:
         records: list[tuple],
         request_id: str,
         on_progress: Optional[Callable[[int], None]] = None,
+        gate: Optional[Callable[[], bool]] = None,
     ) -> bool:
         """Publish in sub-batches of at most the current rate, re-read each time so PUT
         /throttle applies mid-page. False once shutdown or cancellation interrupts a wait."""
         i = 0
         while i < len(records):
+            if gate is not None and not gate():
+                return False
             sub_size = max(1, int(self._token_bucket.current_rate))
             sub = records[i:i + sub_size]
             if not self._token_bucket.consume(
