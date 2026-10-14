@@ -66,7 +66,7 @@ def mock_io(monkeypatch):
 ])
 @pytest.mark.parametrize("header, status", [(None, 400), ("true", 202), ("TRUE", 202), ("false", 400)])
 def test_override_header(client, path, header, status):
-    """When after is over 30 days old, then each granule endpoint returns 202 only with X-CMR-
-    Override-Date-Limit: true."""
+    """When after is over 30 days old, then each granule endpoint returns 202 only with
+    X-CMR-Override-Date-Limit: true."""
     headers = {"X-CMR-Override-Date-Limit": header} if header else {}
     assert client.post(path, params={"after": _days_ago(31)}, headers=headers).status_code == status

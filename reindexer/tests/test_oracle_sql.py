@@ -297,8 +297,7 @@ class TestStreamGranuleIdsPaged:
 
     def test_page_ending_mid_concept_resumes_after_that_concept(self, oracle):
         """When a page ends partway through a concept's revisions, then the aggregation still
-        covers
-        all of them and the next page starts after that concept."""
+        covers all of them and the next page starts after that concept."""
         client, cur = oracle
         cur.fetchall.side_effect = [
             [("G1-PROV",), ("G1-PROV",)],  # page 1: full at chunk_size=2, both rows G1

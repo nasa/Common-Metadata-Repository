@@ -22,7 +22,7 @@ def mock_http(monkeypatch):
     return mock_get
 
 
-class TestCheckAllEsHealthCaching:
+class TestGetAllEsHealthCaching:
 
     def test_calls_within_ttl_share_one_check(self, fake_clock, mock_http):
         """When ES health is asked for repeatedly within the TTL, then both clusters are checked

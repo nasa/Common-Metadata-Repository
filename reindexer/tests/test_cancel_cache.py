@@ -38,7 +38,8 @@ def test_failed_refresh_keeps_the_previous_set():
 
 @pytest.mark.parametrize("held, refreshes", [(set(), 0), ({"j1"}, 1)], ids=["idle", "holding-a-job"])
 def test_refreshes_only_while_holding_a_job(monkeypatch, held, refreshes):
-    """When the task holds no job, a tick doesn't query DynamoDB; when it holds one, it does."""
+    """When the task holds no job, then a tick doesn't query DynamoDB; when it holds one, then
+    it does."""
     import app.throttler.cancel_cache as mod
     cache, store = _cache()
     store.find_cancelled_jobs.return_value = []

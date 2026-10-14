@@ -6,10 +6,10 @@ import pytest
 
 import app.throttler.scanner as _scanner_mod
 from app.throttler.scanner import (
-    _wait_for_scan_slot,
     _dedup_latest_revision,
     _run,
     _wait_for_es_green,
+    _wait_for_scan_slot,
     start_scan,
 )
 
@@ -254,8 +254,7 @@ class TestStartScan:
 
     def test_runs_the_job_on_a_daemon_thread_holding_its_lease(self, deps, monkeypatch):
         """When a scan starts, then it runs on a daemon thread and holds the lease from the start,
-        so a
-        job still waiting for a slot isn't restarted elsewhere."""
+        so a job still waiting for a slot isn't restarted elsewhere."""
         run_mock = MagicMock()  # stands in for _run, so the lease is never released
         monkeypatch.setattr(_scanner_mod, "_run", run_mock)
         thread = start_scan("req-1")
@@ -326,13 +325,13 @@ class TestScanSlotLifecycle:
         db, job_store, throttler = deps
         _provider_job(job_store)
         db.find_next_granule_id_in_range.return_value = None
-        acquire_mock = MagicMock(return_value=True)
+        wait_mock = MagicMock(return_value=True)
         release_mock = MagicMock()
-        monkeypatch.setattr(_scanner_mod, "_wait_for_scan_slot", acquire_mock)
+        monkeypatch.setattr(_scanner_mod, "_wait_for_scan_slot", wait_mock)
         monkeypatch.setattr(_scanner_mod._scan_slots, "release", release_mock)
         _scanner_mod.leases.hold("req-1")
         _run("req-1")
-        acquire_mock.assert_called_once_with("req-1")
+        wait_mock.assert_called_once_with("req-1")
         release_mock.assert_called_once()
         assert _scanner_mod.leases.held_jobs() == set()
 

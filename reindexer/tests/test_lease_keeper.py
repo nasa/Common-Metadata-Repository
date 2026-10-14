@@ -104,7 +104,7 @@ class TestRestartLapsedJobs:
 # _renew_leases_and_restart_lapsed_jobs
 # ---------------------------------------------------------------------------
 
-class TestTick:
+class TestRenewLeasesAndRestartLapsedJobs:
 
     def test_renews_every_held_job_then_restarts(self):
         """When the keeper ticks, then it renews every held job's heartbeat, then looks for lapsed

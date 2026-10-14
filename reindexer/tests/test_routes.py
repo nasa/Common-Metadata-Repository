@@ -250,8 +250,7 @@ class TestGranuleEndpoints:
     @pytest.mark.parametrize("collection_id", ["c1-prov", "C1-PROV'--"])
     def test_invalid_collection_id_rejected(self, client, collection_id):
         """When a collection id is malformed, then 400 before anything else; it's embedded in SQL
-        as a
-        literal, so this check is the guard."""
+        as a literal, so this check is the guard."""
         assert client.post(f"/reindexer/reindex/granules/collection/{collection_id}").status_code == 400
         _r.db_client.is_small_provider.assert_not_called()
         _r.job_store.create_job.assert_not_called()
