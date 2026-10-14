@@ -174,6 +174,8 @@ _PROVIDER_ID_RE = re.compile(r'^[A-Z0-9_]+\Z')
 
 
 def _validate_provider_id(provider_id: str) -> None:
+    """Raise ValueError unless provider_id is safe to use in a table name, which can't be
+    a bind variable."""
     if not _PROVIDER_ID_RE.match(provider_id):
         raise ValueError(f"Invalid provider ID for Oracle table name: {provider_id!r}")
 
@@ -192,11 +194,14 @@ def _date_clauses(after: Optional[str], before: Optional[str]) -> dict:
 
 
 def _parse_concept_prefix(concept_id: str) -> str:
+    """The concept id's leading letters (C, G, V, GRD, ...), or "" if it has none."""
     m = _CONCEPT_ID_PREFIX_RE.match(concept_id)
     return m.group(1) if m else ""
 
 
 def _provider_from_collection(collection_id: str) -> str:
+    """The provider id after the "-" in a concept id (C123-PROV → PROV), validated for use
+    in a table name."""
     provider = collection_id.split("-", 1)[1] if "-" in collection_id else collection_id
     _validate_provider_id(provider)
     return provider
@@ -209,6 +214,7 @@ class OracleClient:
         self._providers: dict[str, bool] = {}  # provider_id → small
 
     def _get_pool(self):
+        """The shared connection pool, created on first use."""
         if self._pool is None:
             with self._pool_lock:
                 if self._pool is None:
@@ -233,6 +239,8 @@ class OracleClient:
                 yield cur
 
     def get_all_provider_ids(self) -> list[str]:
+        """Every provider id in METADATA_DB.providers, sorted. Also refreshes the cache of
+        which providers are small."""
         with self._acquire_cursor() as cur:
             cur.execute(_PROVIDERS_SQL)
             rows = cur.fetchall()
@@ -240,6 +248,8 @@ class OracleClient:
         return list(self._providers)
 
     def is_small_provider(self, provider_id: str) -> bool:
+        """True if the provider is flagged small, i.e. its concepts live in the shared
+        SMALL_PROV_* tables. Unknown providers reload the cache first, then count as not small."""
         if provider_id not in self._providers:
             self.get_all_provider_ids()  # also picks up providers added since the last load
         return self._providers.get(provider_id, False)
@@ -281,7 +291,8 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> list[tuple[str, int, int]]:
-        """(concept_id, revision_id, deleted) for every row in [start_id, end_id)."""
+        """(concept_id, revision_id, deleted) for every granule row with an id in
+        [start_id, end_id) and revised within [after, before], tombstones included."""
         table, provider_clause = self._get_table_name_and_provider_clause(provider_id, "_GRANULES")
         sql = _FETCH_ID_RANGE_CHUNK_SQL.format(
             table=table, provider_clause=provider_clause, **_date_clauses(after, before),
@@ -388,6 +399,8 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
+        """Yield (concept_id, revision_id) for every live collection, one provider's
+        collections table at a time."""
         # Small providers share one table, streamed once for all of them.
         tables = dict.fromkeys(self._get_table_name_and_provider_clause(p, "_COLLECTIONS")[0] for p in self.get_all_provider_ids())
         for table in tables:
@@ -400,8 +413,10 @@ class OracleClient:
         after: Optional[str] = None,
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
-        """Date filters apply only to the aggregation, so the page boundary advances
-        regardless of which revisions are in range."""
+        """Yield (concept_id, revision_id) for each live concept in a shared table (optionally
+        limited to a concept_id prefix), at its latest revision within [after, before], paging
+        by concept_id. Date filters apply only to the aggregation, so the page boundary
+        advances regardless of which revisions are in range."""
         start_after: Optional[str] = None
 
         while True:
