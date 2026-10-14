@@ -304,7 +304,6 @@
                  extended-types #{"IsPreviousVersionOf" "IsNewVersionOf" "IsDescribedBy"}
                  extracted-type (when (and (= "Other" raw-type) raw-desc)
                                   (some #(when (string/starts-with? raw-desc %) %) extended-types))
-                 ;; LINTER FIX: Use 'or' instead of 'if'
                  final-type (or extracted-type raw-type)
                  final-desc (if extracted-type
                               (let [stripped (string/trim (string/replace-first raw-desc extracted-type ""))]
