@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.data.oracle.sql-helper
   "Contains helper functions that are shared by providers and concepts."
   (:require
+   [clj-time.coerce :as tc]
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
    [cmr.common.log :refer [debug info]]
@@ -68,10 +69,11 @@
         sql-vals (rest built-stmt)
         batch-size 10000
 
-        ;; Append ROWNUM <= ? and conditionally append revision_date to the SQL string.
+        ;; Append ROWNUM <= ? for batch async calls and conditionally append revision_date to the SQL string
+        ;; so we can bound which concepts we are deleting during delete vs ingest race conditions
         stmt (if revision-date-boundary
                (into [(str sql-str " AND revision_date <= ? AND ROWNUM <= ?")]
-                     (concat sql-vals [(sq/to-sql-time revision-date-boundary) batch-size]))
+                     (concat sql-vals [(tc/to-sql-time revision-date-boundary) batch-size]))
                (into [(str sql-str " AND ROWNUM <= ?")]
                      (concat sql-vals [batch-size])))]
 
