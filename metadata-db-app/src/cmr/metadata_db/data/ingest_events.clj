@@ -65,11 +65,11 @@
 
 (defn concept-delete-event
   "Creates an event representing a concept being deleted."
-  [{:keys [concept-id revision-id]}]
+  [{:keys [concept-id revision-id revision-date]}]
   {:action :concept-delete
    :concept-id concept-id
    :revision-id revision-id
-   :delete-request-timestamp (f/unparse (f/formatters :date-time) (t/now))})
+   :delete-request-timestamp revision-date})
 
 (defn concept-expire-event
   "Creates an event representing a concept being expired"

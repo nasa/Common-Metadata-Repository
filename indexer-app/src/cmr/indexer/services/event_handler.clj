@@ -2,7 +2,7 @@
   "Provides functions for subscribing to and handling events."
   (:require
    [cmr.common.concepts :as cc]
-   [cmr.common.log :refer [debug info]]
+   [cmr.common.log :refer [debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.indexer.config :as config]

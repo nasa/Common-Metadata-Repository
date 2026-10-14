@@ -2,6 +2,7 @@
   "Implements multi-method variations for collections"
   (:require
    [clj-time.coerce :as cr]
+   [clj-time.core :as core]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug]]
    [cmr.metadata-db.data.concepts :as concepts]
@@ -50,4 +51,6 @@
                                      provider
                                      {:concept-type :granule
                                       :provider-id (:provider-id concept)
-                                      :parent-collection-id (:concept-id concept)})))
+                                      :parent-collection-id (:concept-id concept)
+                                      :revision-date-boundary (or (:revision-date concept)
+                                                                  (core/now))})))
