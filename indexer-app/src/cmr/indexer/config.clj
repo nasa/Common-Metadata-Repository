@@ -129,9 +129,8 @@
           (index-delete-queue-name) [(ingest-delete-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
           (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
-          ;; The all revisions index  queue will be bound to both the ingest exchange and the
-          ;; deleted concept revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)
+                                            (ingest-delete-exchange-name)
                                             (deleted-concept-revision-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
