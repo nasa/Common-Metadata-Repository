@@ -27,7 +27,7 @@ def mock_deps(monkeypatch):
     """Replace all external I/O in the reindex/status routers with safe no-op mocks."""
     monkeypatch.setattr(_r, "publish_concept_update", MagicMock())
     monkeypatch.setattr(_r, "publish_indexer_events_batch", MagicMock())
-    monkeypatch.setattr(_r, "check_all_es_health", MagicMock(return_value={"overall": "green"}))
+    monkeypatch.setattr(_r, "get_all_es_health", MagicMock(return_value={"overall": "green"}))
     monkeypatch.setattr(_r, "start_scan", MagicMock())
     monkeypatch.setattr(_r, "throttler", MagicMock(**{"is_job_cancelled.return_value": False}))
     monkeypatch.setattr(_r.leases, "_held", set())
@@ -109,7 +109,7 @@ class TestConceptTypeEndpoint:
         assert _statuses() == ["failed"]
 
     def test_es_not_green_fails_without_sending(self, client):
-        _r.check_all_es_health.return_value = {"overall": "red"}
+        _r.get_all_es_health.return_value = {"overall": "red"}
         assert client.post("/reindexer/reindex/variables").status_code == 202
         assert _statuses() == ["failed"]
         _r.publish_indexer_events_batch.assert_not_called()
@@ -151,7 +151,7 @@ class TestConceptEndpoint:
 
     def test_es_not_green_returns_503_without_publishing(self, client):
         _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
-        _r.check_all_es_health.return_value = {"overall": "red"}
+        _r.get_all_es_health.return_value = {"overall": "red"}
         assert client.post("/reindexer/reindex/concept/V1-P").status_code == 503
         _r.publish_concept_update.assert_not_called()
         assert _statuses() == ["failed"]

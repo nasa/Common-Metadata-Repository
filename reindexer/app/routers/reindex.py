@@ -17,7 +17,7 @@ from app import leases
 from app.auth import require_auth
 from app.db import db_client
 from app.db.dynamo import job_store
-from app.es.health import check_all_es_health
+from app.es.health import get_all_es_health
 from app.sqs.client import publish_concept_update, publish_indexer_events_batch
 from app.throttler.scanner import start_scan
 from app.throttler.worker import throttler
@@ -89,7 +89,8 @@ def _provider_of(concept_id: str) -> str:
 
 
 def _reject_small_providers(provider_ids: list[str]) -> None:
-    """Disabled until paging their shared SMALL_PROV_GRANULES table is fixed."""
+    """Raise 400 if any provider is small. Granule reindexing is disabled for small
+    providers until paging their shared SMALL_PROV_GRANULES table is fixed."""
     small = [p for p in provider_ids if db_client.is_small_provider(p)]
     if small:
         raise HTTPException(status_code=400, detail=f"Granule reindexing is disabled for small providers: {small!r}")
@@ -104,6 +105,7 @@ def _known_providers() -> list[str]:
 
 
 def _validate_providers(provider_ids: list[str]) -> None:
+    """Raise 400 if any provider is unknown or small, or 503 if the provider list can't be loaded."""
     known_providers = _known_providers()
     unknown = [p for p in provider_ids if p not in known_providers]
     if unknown:
@@ -123,7 +125,8 @@ def _start_granule_job(
     request: Request, concept_type: str, after: Optional[str], before: Optional[str],
     *, providers: Optional[list[str]] = None, collection_id: Optional[str] = None,
 ) -> str:
-    """before defaults to now, so a run leaves granules ingested meanwhile to normal indexing."""
+    """Create a granule job and start its scan in the background; returns the job id.
+    before defaults to now, so granules ingested during the run are left to normal indexing."""
     before = before or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request_id = str(uuid.uuid4())
     job_store.create_job(
@@ -149,10 +152,12 @@ _CONCEPT_TYPE_BATCH_SIZE = 500
 
 @leases.holding
 def publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
-    """Not rate limited; fails the job if ES isn't green at the start. Also called by the
-    lease keeper to restart a job whose owner died."""
+    """Send a concept-update for every live concept of internal_type revised before `before`,
+    then mark the job completed. Not rate limited. Fails the job if ES isn't green at the start,
+    and stops early if the job is cancelled. Also called by the lease keeper to restart a job
+    whose owner died."""
     try:
-        if check_all_es_health()["overall"] != "green":
+        if get_all_es_health()["overall"] != "green":
             logger.warning({
                 "event": "concept_type_reindex_es_not_green",
                 "request_id": request_id,
@@ -267,6 +272,8 @@ def reindex_granules_by_collection(
     override: bool = Depends(_override_flag),
     _token: str = Depends(require_auth),
 ):
+    """Reindex one collection's granules. Rejected for a small provider's collection, since
+    granule reindexing is disabled for small providers."""
     if not _CONCEPT_ID_RE.match(collection_id):
         raise HTTPException(status_code=400, detail=f"Invalid collection ID format: {collection_id!r}")
     _validate_date_params(after, before, override)
@@ -300,7 +307,7 @@ def reindex_concept(
             job_store.mark_job(request_id, "failed")
             raise HTTPException(status_code=404, detail=f"Concept not found: {concept_id}")
 
-        es_health = check_all_es_health()
+        es_health = get_all_es_health()
         if es_health["overall"] != "green":
             logger.warning({
                 "event": "reindex_concept_es_not_green",

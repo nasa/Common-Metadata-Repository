@@ -29,14 +29,14 @@ def check_es_health(host: str, port: int) -> Optional[str]:
     return status if status in _STATUS_PRIORITY else None
 
 
-def _check_all_es_health_uncached() -> dict:
+def _get_all_es_health_uncached() -> dict:
     col = check_es_health(config.es_host, config.es_col_port)
     gran = check_es_health(config.es_gran_host, config.es_gran_port)
     overall = None if None in (col, gran) else min(col, gran, key=_STATUS_PRIORITY.get)
     return {"collections": col, "granules": gran, "overall": overall}
 
 
-def check_all_es_health() -> dict:
+def get_all_es_health() -> dict:
     global _cached_health, _cached_at
     now = time.monotonic()
     with _cache_lock:
@@ -45,7 +45,7 @@ def check_all_es_health() -> dict:
 
     # Check outside the lock so a slow ES doesn't serialize callers; callers arriving
     # after expiry each check until one stores a fresh result.
-    health = _check_all_es_health_uncached()
+    health = _get_all_es_health_uncached()
     with _cache_lock:
         _cached_health = health
         _cached_at = time.monotonic()

@@ -14,7 +14,7 @@ def fake_clock(monkeypatch):
 
 @pytest.fixture
 def mock_http(monkeypatch):
-    """Two real ES calls per check_all_es_health: one per cluster."""
+    """Two real ES calls per get_all_es_health: one per cluster."""
     resp = MagicMock()
     resp.json.return_value = {"status": "green"}
     mock_get = MagicMock(return_value=resp)
@@ -25,12 +25,12 @@ def mock_http(monkeypatch):
 class TestCheckAllEsHealthCaching:
 
     def test_calls_within_ttl_share_one_check(self, fake_clock, mock_http):
-        results = [health_mod.check_all_es_health() for _ in range(5)]
+        results = [health_mod.get_all_es_health() for _ in range(5)]
         assert mock_http.call_count == 2
         assert all(r == {"collections": "green", "granules": "green", "overall": "green"} for r in results)
 
     def test_each_expired_window_checks_again(self, fake_clock, mock_http):
         for _ in range(3):
-            health_mod.check_all_es_health()
+            health_mod.get_all_es_health()
             fake_clock["now"] += health_mod._CACHE_TTL_SECONDS + 0.1
         assert mock_http.call_count == 6

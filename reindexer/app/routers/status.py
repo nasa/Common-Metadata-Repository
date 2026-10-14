@@ -9,7 +9,7 @@ from app import leases
 from app.auth import require_auth
 from app.config import config
 from app.db.dynamo import job_store
-from app.es.health import check_all_es_health
+from app.es.health import get_all_es_health
 from app.sqs.client import get_queue_counts
 from app.throttler.worker import throttler
 
@@ -78,7 +78,7 @@ def status():
             "jobs_in_progress": sorted(leases.held_jobs()),
             "rate_limit_per_minute": throttler.get_rate(),
         },
-        "es_health": check_all_es_health(),
+        "es_health": get_all_es_health(),
         "indexer_queue": _indexer_queue_counts(),
     }
 

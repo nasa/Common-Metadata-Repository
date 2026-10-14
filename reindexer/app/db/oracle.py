@@ -226,7 +226,8 @@ class OracleClient:
 
     @contextmanager
     def _acquire_cursor(self):
-        """No call timeout; tracked_call logs a call that hangs instead."""
+        """Yield a cursor on a pooled connection, returning the connection when done. There
+        is no call timeout; tracked_call logs a call that hangs instead."""
         with tracked_call(), self._get_pool().acquire() as conn:
             with conn.cursor() as cur:
                 yield cur
@@ -243,9 +244,11 @@ class OracleClient:
             self.get_all_provider_ids()  # also picks up providers added since the last load
         return self._providers.get(provider_id, False)
 
-    def _table(self, provider_id: str, suffix: str) -> tuple[str, str]:
-        """(table, provider_clause). The clause is only needed where rows aren't already
-        scoped by a collection or concept id."""
+    def _get_table_name_and_provider_clause(self, provider_id: str, suffix: str) -> tuple[str, str]:
+        """Return the table holding a provider's concepts for `suffix` ("_GRANULES" or
+        "_COLLECTIONS"), and the provider_id clause a small provider's shared SMALL_PROV_* table
+        needs. The clause is only needed where rows aren't already scoped by a collection or
+        concept id."""
         _validate_provider_id(provider_id)
         if self.is_small_provider(provider_id):
             return f"{_SMALL_PROVIDER_TABLE_PREFIX}{suffix}", f"AND provider_id = '{provider_id}'"
@@ -261,7 +264,7 @@ class OracleClient:
         """Smallest granule id >= min_id revised within [after, before], as bootstrap's
         dated probe does. `before` only applies with `after`: every run has a `before`,
         and an undated probe must stay a single PK index lookup."""
-        table, provider_clause = self._table(provider_id, "_GRANULES")
+        table, provider_clause = self._get_table_name_and_provider_clause(provider_id, "_GRANULES")
         sql = _FIND_NEXT_ID_SQL.format(
             table=table, provider_clause=provider_clause, **_date_clauses(after, before if after else None),
         )
@@ -279,7 +282,7 @@ class OracleClient:
         before: Optional[str] = None,
     ) -> list[tuple[str, int, int]]:
         """(concept_id, revision_id, deleted) for every row in [start_id, end_id)."""
-        table, provider_clause = self._table(provider_id, "_GRANULES")
+        table, provider_clause = self._get_table_name_and_provider_clause(provider_id, "_GRANULES")
         sql = _FETCH_ID_RANGE_CHUNK_SQL.format(
             table=table, provider_clause=provider_clause, **_date_clauses(after, before),
         )
@@ -299,7 +302,7 @@ class OracleClient:
         (concept_id, revision_id, deleted) at each concept's latest revision in range. A
         page the date filter empties is still yielded, so the caller can save its cursor
         and check cancellation."""
-        table, _ = self._table(_provider_from_collection(collection_id), "_GRANULES")
+        table, _ = self._get_table_name_and_provider_clause(_provider_from_collection(collection_id), "_GRANULES")
         page_size = int(chunk_size)  # interpolated into FETCH FIRST, so force an int
         date_clauses = _date_clauses(after, before)
         start_after = start_after_concept_id
@@ -366,7 +369,7 @@ class OracleClient:
         table_name, table_suffix = lookup
 
         if table_name is None:
-            table, _ = self._table(_provider_from_collection(concept_id), table_suffix)
+            table, _ = self._get_table_name_and_provider_clause(_provider_from_collection(concept_id), table_suffix)
         else:
             table = table_name
 
@@ -386,7 +389,7 @@ class OracleClient:
         before: Optional[str] = None,
     ) -> Iterator[tuple[str, int]]:
         # Small providers share one table, streamed once for all of them.
-        tables = dict.fromkeys(self._table(p, "_COLLECTIONS")[0] for p in self.get_all_provider_ids())
+        tables = dict.fromkeys(self._get_table_name_and_provider_clause(p, "_COLLECTIONS")[0] for p in self.get_all_provider_ids())
         for table in tables:
             yield from self._stream_concept_ids(table, prefix=None, after=after, before=before)
 

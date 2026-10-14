@@ -206,7 +206,8 @@ class JobStore:
         return [_deserialize(item) for item in items]
 
     def try_cancel_job(self, job_id: str) -> bool:
-        """False if the job already finished."""
+        """Set the job's status to cancelled. Returns True if it was cancelled, False if it
+        had already finished."""
         try:
             self._table().update_item(
                 Key={"job_id": job_id},
@@ -229,8 +230,8 @@ class JobStore:
             raise
 
     def claim_lapsed_job(self, job_id: str, last_heartbeat: str) -> bool:
-        """Bump the heartbeat only if it is still the one we saw; False if another task
-        claimed the job first."""
+        """Take over a lapsed job by bumping its heartbeat, only if the heartbeat is still the
+        one we saw. Returns True if claimed, False if another task claimed the job first."""
         try:
             self._table().update_item(
                 Key={"job_id": job_id},

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.es.health import check_all_es_health, check_es_health
+from app.es.health import get_all_es_health, check_es_health
 from app.main import app
 
 client = TestClient(app, raise_server_exceptions=False)
@@ -69,7 +69,7 @@ def test_check_es_health_is_none_when_unknown(resp):
     ("yellow", "red", "red"),
     ("green", None, None),
 ])
-def test_check_all_es_health_reports_the_worse_cluster(col, gran, overall):
+def test_get_all_es_health_reports_the_worse_cluster(col, gran, overall):
     resps = [_es_resp(s) if s else Exception("unreachable") for s in (col, gran)]
     with patch("app.es.health.httpx.get", side_effect=resps):
-        assert check_all_es_health() == {"collections": col, "granules": gran, "overall": overall}
+        assert get_all_es_health() == {"collections": col, "granules": gran, "overall": overall}

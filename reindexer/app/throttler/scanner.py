@@ -15,7 +15,7 @@ from app import leases
 from app.config import config
 from app.db import db_client
 from app.db.dynamo import job_store
-from app.es.health import check_all_es_health
+from app.es.health import get_all_es_health
 from app.throttler.worker import throttler
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def _wait_for_green_or_signal(request_id: str) -> bool:
     """True once both ES clusters are green; False if cancelled or shutting down."""
     paused = False
     while not _should_stop(request_id):
-        health = check_all_es_health()
+        health = get_all_es_health()
         if health["overall"] == "green":
             if paused:
                 logger.info({"event": "dispatch_resumed_es_green", "request_id": request_id})

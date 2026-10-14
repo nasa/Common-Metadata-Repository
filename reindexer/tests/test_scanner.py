@@ -42,7 +42,7 @@ def deps(monkeypatch):
     monkeypatch.setattr(_scanner_mod, "db_client", db)
     monkeypatch.setattr(_scanner_mod, "job_store", job_store)
     monkeypatch.setattr(_scanner_mod, "throttler", throttler)
-    monkeypatch.setattr(_scanner_mod, "check_all_es_health", MagicMock(return_value={"overall": "green"}))
+    monkeypatch.setattr(_scanner_mod, "get_all_es_health", MagicMock(return_value={"overall": "green"}))
     monkeypatch.setattr(_scanner_mod.leases, "_held", set())
 
     return db, job_store, throttler
@@ -260,7 +260,7 @@ class TestWaitForGreenOrSignal:
 
     def test_loops_until_green(self, deps):
         db, job_store, throttler = deps
-        _scanner_mod.check_all_es_health.side_effect = [
+        _scanner_mod.get_all_es_health.side_effect = [
             {"overall": "red"}, {"overall": "yellow"}, {"overall": "green"},
         ]
         assert _wait_for_green_or_signal("req-1") is True
@@ -268,7 +268,7 @@ class TestWaitForGreenOrSignal:
 
     def test_returns_false_when_cancelled_while_waiting(self, deps):
         db, job_store, throttler = deps
-        _scanner_mod.check_all_es_health.return_value = {"overall": "red"}
+        _scanner_mod.get_all_es_health.return_value = {"overall": "red"}
 
         def _cancel_during_wait(*args, **kwargs):
             throttler.is_job_cancelled.return_value = True
