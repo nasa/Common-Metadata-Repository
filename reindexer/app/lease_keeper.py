@@ -39,14 +39,17 @@ def restart_lapsed_jobs(job_store) -> None:
                     name=f"restart-{job_id}", daemon=True,
                 ).start()
             else:
-                # A single-concept request ran synchronously; there's nothing to resume.
+                # A single-concept request runs inside its HTTP call. If its task died, the caller
+                # got an error and the update may not have been sent, so it needs resubmitting.
                 job_store.mark_job(job_id, "failed")
         except Exception as exc:
             logger.error({"event": "lapsed_job_restart_error", "job_id": job_id, "error": str(exc)})
             job_store.mark_job(job_id, "failed")
 
 
-def _tick(job_store, stop_event: threading.Event) -> None:
+def _renew_leases_and_restart_lapsed_jobs(job_store, stop_event: threading.Event) -> None:
+    """One lease-keeper pass: renew the heartbeat of every job this task holds, log Oracle
+    calls running too long, then restart jobs whose lease lapsed (unless shutting down)."""
     # Separate try blocks, so one failing step doesn't skip the others.
     for job_id in leases.held_jobs():
         try:
@@ -70,7 +73,7 @@ def start_lease_keeper(job_store, stop_event: threading.Event) -> threading.Thre
     leased until it ends."""
     def _run() -> None:
         while True:
-            _tick(job_store, stop_event)
+            _renew_leases_and_restart_lapsed_jobs(job_store, stop_event)
             time.sleep(config.lease_minutes * 60 / 5)
 
     thread = threading.Thread(target=_run, name="lease-keeper", daemon=True)

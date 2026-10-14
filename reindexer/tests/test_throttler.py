@@ -20,6 +20,8 @@ def throttler(monkeypatch):
 class TestDispatchInBatches:
 
     def test_slices_by_current_rate_with_shared_stop_and_cancel(self, throttler):
+        """When records are dispatched, then they go out in sub-batches of the current rate, with
+        progress, stop and cancel wired in."""
         throttler._token_bucket.current_rate = 2
         records = [("G%d-P" % i, i) for i in range(5)]
         progress = []
@@ -33,6 +35,7 @@ class TestDispatchInBatches:
         assert kwargs["cancel_fn"]() is True
 
     def test_stops_and_returns_false_when_consume_fails(self, throttler):
+        """When waiting for tokens is interrupted, then nothing is sent and dispatch returns False."""
         throttler._token_bucket.consume.return_value = False
         progress = MagicMock()
         assert throttler.dispatch_in_batches([("G1-P", 1)], "req-1", on_progress=progress) is False
@@ -40,10 +43,12 @@ class TestDispatchInBatches:
         progress.assert_not_called()
 
     def test_empty_records_returns_true_without_publishing(self, throttler):
+        """When there are no records, then nothing is sent and dispatch returns True."""
         assert throttler.dispatch_in_batches([], "req-1") is True
         _worker_mod.publish_indexer_events_batch.assert_not_called()
 
     def test_gate_checked_before_each_sub_batch(self, throttler):
+        """When the gate fails before a sub-batch, then dispatch stops there and returns False."""
         throttler._token_bucket.current_rate = 2
         gate = MagicMock(side_effect=[True, False])
         assert throttler.dispatch_in_batches([("G%d-P" % i, i) for i in range(5)], "req-1", gate=gate) is False

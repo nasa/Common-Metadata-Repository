@@ -70,6 +70,8 @@ _ISO_RE = __import__("re").compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 class TestConceptTypeEndpoint:
 
     def test_concept_type_job(self, client):
+        """When a concept type is reindexed, then a job is created, the type streamed up to a
+        before of now, and the job completed."""
         r = client.post("/reindexer/reindex/data-quality-summaries")
         assert r.status_code == 202
         job_id, concept_type, kw = _created()
@@ -79,12 +81,15 @@ class TestConceptTypeEndpoint:
         assert _statuses() == ["completed"]
 
     def test_unknown_type_returns_404(self, client):
+        """When the concept type is unknown, then 404 naming it."""
         r = client.post("/reindexer/reindex/badtype")
         assert r.status_code == 404
         assert "badtype" in r.json()["detail"]
 
     @pytest.mark.parametrize("n, sends", [(0, []), (750, [500, 250]), (1000, [500, 500])])
     def test_sends_in_batches_counting_each(self, client, n, sends):
+        """When concepts are streamed, then they're sent in batches of 500, with each batch
+        counted."""
         _r.db_client.stream_concept_ids_by_type.return_value = [(f"V{i}-PROV", i) for i in range(n)]
         client.post("/reindexer/reindex/variables")
         assert [len(c.args[0]) for c in _r.publish_indexer_events_batch.call_args_list] == sends
@@ -92,6 +97,7 @@ class TestConceptTypeEndpoint:
 
     @pytest.mark.parametrize("n, published", [(10, False), (500, True)], ids=["before-first-send", "after-streaming"])
     def test_cancel_stops_without_completing(self, n, published):
+        """When a concept-type job is cancelled, then it stops sending and isn't marked completed."""
         _r.db_client.stream_concept_ids_by_type.return_value = [(f"V{i}-PROV", i) for i in range(n)]
         if published:
             # Cancelled only after the full batch went out.
@@ -104,11 +110,13 @@ class TestConceptTypeEndpoint:
         assert _statuses() == []
 
     def test_stream_error_marks_job_failed(self):
+        """When streaming concepts raises, then the job is marked failed."""
         _r.db_client.stream_concept_ids_by_type.side_effect = RuntimeError("ORA-03113")
         _r.publish_concept_type("job-1", "variable")
         assert _statuses() == ["failed"]
 
     def test_es_not_green_fails_without_sending(self, client):
+        """When ES isn't green at the start, then the concept-type job fails without sending."""
         _r.get_all_es_health.return_value = {"overall": "red"}
         assert client.post("/reindexer/reindex/variables").status_code == 202
         assert _statuses() == ["failed"]
@@ -122,6 +130,7 @@ class TestConceptTypeEndpoint:
 class TestConceptEndpoint:
 
     def test_found_concept_is_published(self, client):
+        """When a concept exists, then one update is sent, counted, and the job completed."""
         _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1234-PROV", "revision-id": 7}
         r = client.post("/reindexer/reindex/concept/V1234-PROV")
         job_id = _created()[0]
@@ -131,6 +140,7 @@ class TestConceptEndpoint:
         assert _statuses() == ["completed"]
 
     def test_missing_concept_returns_404_and_fails_the_job(self, client):
+        """When the concept doesn't exist, then 404, nothing is sent, and the job fails."""
         assert client.post("/reindexer/reindex/concept/V9999-MISSING").status_code == 404
         _r.publish_concept_update.assert_not_called()
         assert _statuses() == ["failed"]
@@ -139,17 +149,21 @@ class TestConceptEndpoint:
         ("TL99-PROV", 202), ("VIS1-PROV_01", 202), ("not-a-concept-id", 400),
     ])
     def test_concept_id_format(self, client, concept_id, status):
+        """When the concept id is malformed, then 400 without a database lookup; valid ids of any
+        type are accepted."""
         _r.db_client.get_concept_by_id.return_value = {"concept-id": concept_id, "revision-id": 1}
         assert client.post(f"/reindexer/reindex/concept/{concept_id}").status_code == status
         assert _r.db_client.get_concept_by_id.called is (status == 202)
 
     def test_publish_error_returns_500_and_fails_the_job(self, client):
+        """When sending the update fails, then 500 and the job fails."""
         _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
         _r.publish_concept_update.side_effect = RuntimeError("SQS down")
         assert client.post("/reindexer/reindex/concept/V1-P").status_code == 500
         assert _statuses() == ["failed"]
 
     def test_es_not_green_returns_503_without_publishing(self, client):
+        """When ES isn't green, then 503, nothing is sent, and the job fails."""
         _r.db_client.get_concept_by_id.return_value = {"concept-id": "V1-P", "revision-id": 1}
         _r.get_all_es_health.return_value = {"overall": "red"}
         assert client.post("/reindexer/reindex/concept/V1-P").status_code == 503
@@ -163,7 +177,8 @@ class TestConceptEndpoint:
 
 @pytest.mark.parametrize("kind", ["concept-type", "concept"])
 def test_lease_held_while_working_and_released_after(client, kind):
-    """Without it, the lease keeper wouldn't renew the job and another task would redo it."""
+    """When a concept or concept-type job runs, then its lease is held during the work and released
+    after; otherwise the lease keeper wouldn't renew it and another task would redo it."""
     held = []
     record = lambda *a, **kw: held.append(_r.job_store.create_job.call_args.args[0] in _r.leases.held_jobs())  # noqa: E731
     if kind == "concept-type":
@@ -177,6 +192,7 @@ def test_lease_held_while_working_and_released_after(client, kind):
 
 
 def test_source_url_includes_the_query(client):
+    """When a job is created, then its source_url keeps the query string."""
     client.post("/reindexer/reindex/granules/provider/PROV_A?before=2024-06-01T00:00:00Z")
     assert _created()[2]["source_url"] == "/reindexer/reindex/granules/provider/PROV_A?before=2024-06-01T00:00:00Z"
 
@@ -188,6 +204,7 @@ def test_source_url_includes_the_query(client):
 class TestGranuleEndpoints:
 
     def test_all_granules_scans_every_provider(self, client):
+        """When all granules are reindexed, then one job lists every provider and its scan starts."""
         r = client.post("/reindexer/reindex/granules")
         assert r.status_code == 202
         job_id, concept_type, kw = _created()
@@ -196,11 +213,14 @@ class TestGranuleEndpoints:
         _r.start_scan.assert_called_once_with(job_id)
 
     def test_all_granules_provider_lookup_failure_returns_503_without_a_job(self, client):
+        """When the provider list can't be loaded, then 503 and no job is created."""
         _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541")
         assert client.post("/reindexer/reindex/granules").status_code == 503
         _r.job_store.create_job.assert_not_called()
 
     def test_by_provider(self, client):
+        """When one provider is reindexed, then a granules-by-provider job is created and its scan
+        started."""
         r = client.post("/reindexer/reindex/granules/provider/PROV_A")
         assert r.status_code == 202
         job_id, concept_type, kw = _created()
@@ -208,15 +228,19 @@ class TestGranuleEndpoints:
         _r.start_scan.assert_called_once_with(job_id)
 
     def test_invalid_provider_id_rejected_before_any_db_call(self, client):
+        """When a provider id is malformed, then 400 before any database call."""
         assert client.post("/reindexer/reindex/granules/provider/bad.provider!").status_code == 400
         _r.db_client.get_all_provider_ids.assert_not_called()
         _r.start_scan.assert_not_called()
 
     def test_unknown_provider_returns_400_without_creating_job(self, client):
+        """When the provider doesn't exist, then 400 and no job."""
         assert client.post("/reindexer/reindex/granules/provider/NOT_A_PROV").status_code == 400
         _r.job_store.create_job.assert_not_called()
 
     def test_by_collection(self, client):
+        """When a collection is reindexed, then a granules-by-collection job is created and its
+        scan started."""
         r = client.post("/reindexer/reindex/granules/collection/C1234567890-MYPROV")
         assert r.status_code == 202
         job_id, concept_type, kw = _created()
@@ -225,12 +249,16 @@ class TestGranuleEndpoints:
 
     @pytest.mark.parametrize("collection_id", ["c1-prov", "C1-PROV'--"])
     def test_invalid_collection_id_rejected(self, client, collection_id):
-        """collection_id is embedded in SQL as a literal, so this check is the guard."""
+        """When a collection id is malformed, then 400 before anything else; it's embedded in SQL
+        as a
+        literal, so this check is the guard."""
         assert client.post(f"/reindexer/reindex/granules/collection/{collection_id}").status_code == 400
         _r.db_client.is_small_provider.assert_not_called()
         _r.job_store.create_job.assert_not_called()
 
     def test_explicit_before_is_kept_and_a_missing_one_is_now(self, client):
+        """When before is given, then it's kept; when it isn't, then it defaults to the request
+        time."""
         client.post("/reindexer/reindex/granules/provider/PROV_A?before=2024-06-01T00:00:00Z")
         assert _created()[2]["before"] == "2024-06-01T00:00:00Z"
         client.post("/reindexer/reindex/granules/provider/PROV_A")
@@ -240,6 +268,7 @@ class TestGranuleEndpoints:
 class TestProviderListEndpoint:
 
     def test_creates_one_job_for_the_providers_deduped(self, client):
+        """When a provider list is reindexed, then one job lists them in order, without duplicates."""
         r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_B", "PROV_A", "PROV_B"]})
         assert r.status_code == 202
         job_id, concept_type, kw = _created()
@@ -247,14 +276,18 @@ class TestProviderListEndpoint:
         _r.start_scan.assert_called_once_with(job_id)
 
     def test_empty_list_returns_400(self, client):
+        """When the provider list is empty, then 400."""
         assert client.post("/reindexer/reindex/granules/providers", json={"provider_ids": []}).status_code == 400
 
     def test_invalid_provider_id_rejected_before_any_db_call(self, client):
+        """When a provider id is malformed, then 400 before any database call."""
         r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A", "bad.provider!"]})
         assert r.status_code == 400
         _r.db_client.get_all_provider_ids.assert_not_called()
 
     def test_one_unknown_provider_rejects_whole_request(self, client):
+        """When any provider in the list is unknown, then the whole request is rejected and no job
+        is created."""
         r = client.post(
             "/reindexer/reindex/granules/providers",
             json={"provider_ids": ["PROV_A", "NOT_A_REAL_PROVIDER", "PROV_B"]},
@@ -265,12 +298,14 @@ class TestProviderListEndpoint:
         _r.start_scan.assert_not_called()
 
     def test_provider_existence_check_failure_returns_503_without_a_job(self, client):
+        """When the provider list can't be loaded, then 503 and no job."""
         _r.db_client.get_all_provider_ids.side_effect = Exception("ORA-12541: no listener")
         r = client.post("/reindexer/reindex/granules/providers", json={"provider_ids": ["PROV_A"]})
         assert r.status_code == 503
         _r.job_store.create_job.assert_not_called()
 
     def test_bad_date_rejected_before_provider_existence_check(self, client):
+        """When a date is malformed, then 400 before the providers are looked up."""
         r = client.post("/reindexer/reindex/granules/providers?after=not-a-date", json={"provider_ids": ["PROV_A"]})
         assert r.status_code == 400
         _r.db_client.get_all_provider_ids.assert_not_called()
@@ -289,14 +324,18 @@ class TestSmallProvidersDisabled:
         ("/reindexer/reindex/concept/G1-PROV_B", None),
     ])
     def test_rejected_without_creating_a_job(self, client, path, body):
+        """When a granule request targets a small provider, then 400 and no job."""
         assert client.post(path, json=body).status_code == 400
         _r.job_store.create_job.assert_not_called()
 
     def test_grids_are_not_granules(self, client):
+        """When a grid (GRD) of a small provider is reindexed, then it's allowed; only granules are
+        blocked."""
         _r.db_client.get_concept_by_id.return_value = {"concept-id": "GRD1-PROV_B", "revision-id": 1}
         assert client.post("/reindexer/reindex/concept/GRD1-PROV_B").status_code == 202
 
     def test_all_providers_run_skips_them(self, client):
+        """When all granules are reindexed, then small providers are left out of the job."""
         client.post("/reindexer/reindex/granules")
         assert _created()[2]["providers"] == ["PROV_A", "PROV_C"]
 
@@ -308,12 +347,14 @@ class TestSmallProvidersDisabled:
 class TestJobsEndpoints:
 
     def test_list_forwards_filter_and_limit(self, client):
+        """When jobs are listed, then the status filter and limit are passed to the store."""
         _s.job_store.list_jobs.return_value = [{"job_id": "j1", "status": "running"}]
         body = client.get("/reindexer/jobs?status=running&limit=10").json()
         assert [j["job_id"] for j in body["jobs"]] == ["j1"]
         _s.job_store.list_jobs.assert_called_once_with(status_filter="running", limit=10)
 
     def test_get_returns_the_enriched_job(self, client):
+        """When a job is fetched, then it's returned with its computed fields."""
         started = _ts(seconds=60)
         _s.job_store.get_job.return_value = {
             "job_id": "abc-123", "status": "running", "started_at": started, "last_heartbeat": started,
@@ -325,18 +366,22 @@ class TestJobsEndpoints:
         assert {"elapsed_seconds", "heartbeat_age_seconds", "lease_lapsed", "avg_dispatch_rate_per_minute"} <= body.keys()
 
     def test_get_missing_returns_404(self, client):
+        """When the job doesn't exist, then 404."""
         assert client.get("/reindexer/jobs/nonexistent").status_code == 404
 
     def test_delete_cancels(self, client):
+        """When an unfinished job is deleted, then it's cancelled."""
         _s.job_store.get_job.return_value = {"job_id": "del-job", "status": "running"}
         r = client.delete("/reindexer/jobs/del-job")
         assert (r.status_code, r.json()) == (200, {"job_id": "del-job", "status": "cancelled"})
         _s.job_store.try_cancel_job.assert_called_once_with("del-job")
 
     def test_delete_missing_returns_404(self, client):
+        """When deleting a job that doesn't exist, then 404."""
         assert client.delete("/reindexer/jobs/missing").status_code == 404
 
     def test_delete_finished_returns_409(self, client):
+        """When deleting a finished job, then 409."""
         _s.job_store.get_job.return_value = {"job_id": "done-job", "status": "completed"}
         _s.job_store.try_cancel_job.return_value = False
         assert client.delete("/reindexer/jobs/done-job").status_code == 409
@@ -353,11 +398,14 @@ class TestJobEnrichment:
         return _enrich_job(job)
 
     def test_elapsed_and_rate_for_a_running_job(self):
+        """When a running job is enriched, then elapsed time and dispatch rate are computed up to
+        now."""
         result = self._enrich({"job_id": "j1", "status": "running", "started_at": _ts(seconds=60), "total_dispatched": 6000})
         assert 58 <= result["elapsed_seconds"] <= 62
         assert 5800 <= result["avg_dispatch_rate_per_minute"] <= 6200
 
     def test_finished_job_measured_to_completed_at_so_rate_does_not_decay(self):
+        """When a finished job is enriched, then elapsed time and rate stop at completed_at."""
         started = datetime.now(timezone.utc) - timedelta(hours=2)
         result = self._enrich({
             "job_id": "j1", "status": "completed",
@@ -369,21 +417,26 @@ class TestJobEnrichment:
 
     @pytest.mark.parametrize("minutes_ago, lapsed", [(0, False), (25, True)])
     def test_heartbeat_age_and_lease_lapsed(self, minutes_ago, lapsed):
+        """When a running job's heartbeat is older than the lease, then lease_lapsed is true."""
         result = self._enrich({"job_id": "j1", "status": "running", "last_heartbeat": _ts(minutes=minutes_ago)})
         assert abs(result["heartbeat_age_seconds"] - minutes_ago * 60) <= 2
         assert result["lease_lapsed"] is lapsed
 
     def test_lease_lapsed_absent_for_stopped_jobs(self):
+        """When a job has finished, then lease_lapsed and the TTL aren't shown."""
         result = self._enrich({"job_id": "j1", "status": "completed", "ttl": 123, "last_heartbeat": "2020-01-01T00:00:00Z"})
         assert "lease_lapsed" not in result
         assert "ttl" not in result
 
     def test_missing_fields_do_not_raise(self):
+        """When timestamps are missing, then the computed fields are left out instead of raising."""
         result = self._enrich({"job_id": "j1", "status": "running", "total_dispatched": 1000})
         assert "elapsed_seconds" not in result
         assert "avg_dispatch_rate_per_minute" not in result
 
     def test_providers_remaining_lists_unfinished_providers_in_order(self):
+        """When a provider job is enriched, then providers_remaining lists the unfinished ones in
+        order."""
         result = self._enrich({
             "job_id": "j1", "status": "cancelled",
             "providers_requested": ["PROV_C", "PROV_A", "PROV_B"],

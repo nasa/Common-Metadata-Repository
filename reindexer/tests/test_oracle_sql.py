@@ -41,6 +41,7 @@ def _last_execute(cur):
 # ---------------------------------------------------------------------------
 
 def test_every_route_type_has_a_table():
+    """When a concept type is routable, then the Oracle client knows its table."""
     from app.db.oracle import _SHARED_TYPE_TABLES
     from app.routers.reindex import ROUTE_TO_INTERNAL_TYPE
     assert all(t in _SHARED_TYPE_TABLES or t == "collection" for t in ROUTE_TO_INTERNAL_TYPE.values())
@@ -59,6 +60,8 @@ def test_every_route_type_has_a_table():
     ("visualization",        "cmr_generic_documents", "VIS%"),
 ])
 def test_shared_type_table_and_prefix(oracle, concept_type, table, prefix):
+    """When a shared concept type is streamed, then it reads its table, filtered by concept_id
+    prefix where types share one."""
     client, cur = oracle
     list(client.stream_concept_ids_by_type(concept_type))
     sql, bind = _last_execute(cur)
@@ -73,7 +76,8 @@ def test_shared_type_table_and_prefix(oracle, concept_type, table, prefix):
     ("2024-01-01T00:00:00Z", "2024-12-31T23:59:59Z"),
 ])
 def test_date_filters_apply_to_the_aggregation_only(oracle, after, before):
-    """Keeping dates out of the page query keeps its keyset cursor monotonic."""
+    """When a concept type is streamed with dates, then they filter only the aggregation, so
+    the page query's keyset cursor keeps moving."""
     client, cur = oracle
     cur.fetchall.side_effect = [[("DQS1-PROV",)], []]
     list(client.stream_concept_ids_by_type("data-quality-summary", after=after, before=before))
@@ -87,7 +91,8 @@ def test_date_filters_apply_to_the_aggregation_only(oracle, after, before):
 
 
 def test_collection_type_queries_each_table_once(oracle):
-    """Small providers share SMALL_PROV_COLLECTIONS, streamed once for all of them."""
+    """When collections are streamed, then each provider table is read once, with all small
+    providers' shared table read once."""
     client, cur = oracle
     del client.is_small_provider
     cur.fetchall.side_effect = [
@@ -103,7 +108,8 @@ def test_collection_type_queries_each_table_once(oracle):
 
 
 def test_full_page_with_sparse_aggregation_advances_past_the_page(oracle):
-    """The next page starts after the page query's last concept, not the last live one."""
+    """When a full page has few live concepts, then the next page starts after the page query's
+    last concept, not the last live one."""
     from app.db.oracle import _BATCH_SIZE
     client, cur = oracle
     full_page_ids = [(f"V{i:04d}-PROV",) for i in range(_BATCH_SIZE)]
@@ -134,6 +140,8 @@ def test_full_page_with_sparse_aggregation_advances_past_the_page(oracle):
     ("VIS1234567890-MYPROV", "cmr_generic_documents"),
 ])
 def test_get_concept_by_id_table(oracle, concept_id, table):
+    """When a concept is looked up, then its concept_id prefix picks the table, and GRD isn't
+    mistaken for a granule."""
     client, cur = oracle
     cur.fetchone.return_value = (concept_id, 5)
     assert client.get_concept_by_id(concept_id) == {"concept-id": concept_id, "revision-id": 5}
@@ -143,11 +151,13 @@ def test_get_concept_by_id_table(oracle, concept_id, table):
 
 
 def test_get_concept_by_id_not_found_returns_none(oracle):
+    """When the concept isn't found, then None is returned."""
     client, cur = oracle
     assert client.get_concept_by_id("V1234-PROV") is None
 
 
 def test_get_concept_by_id_unknown_prefix_returns_none_without_querying(oracle):
+    """When the concept_id prefix is unknown, then None is returned without querying."""
     client, cur = oracle
     assert client.get_concept_by_id("BADPREFIX1234-PROV") is None
     cur.execute.assert_not_called()
@@ -155,7 +165,7 @@ def test_get_concept_by_id_unknown_prefix_returns_none_without_querying(oracle):
 
 @pytest.mark.parametrize("provider_id", ["PROV\n", "P'--"])
 def test_invalid_provider_id_rejected_before_any_query(oracle, provider_id):
-    """provider_id becomes part of a table name, so it is validated, never bound."""
+    """When a provider id isn't safe for a table name, then it's rejected before any query runs."""
     client, cur = oracle
     with pytest.raises(ValueError, match="Invalid provider ID"):
         client.fetch_granule_id_range_chunk(provider_id, 0, 100)
@@ -169,6 +179,7 @@ def test_invalid_provider_id_rejected_before_any_query(oracle, provider_id):
 class TestFindNextGranuleIdInRange:
 
     def test_sql_shape(self, oracle):
+        """When probing undated, then the query is a plain PK MIN(id) with min_id bound."""
         client, cur = oracle
         cur.fetchone.return_value = (42,)
         client.find_next_granule_id_in_range("MYPROV", 12345)
@@ -181,12 +192,14 @@ class TestFindNextGranuleIdInRange:
 
     @pytest.mark.parametrize("row, expected", [((999,), 999), ((None,), None)])
     def test_returns_found_id_or_none(self, oracle, row, expected):
+        """When the probe finds a row, then its id is returned; otherwise None."""
         client, cur = oracle
         cur.fetchone.return_value = row
         assert client.find_next_granule_id_in_range("MYPROV", 0) == expected
 
     @pytest.mark.parametrize("before", [None, "2024-02-01T00:00:00Z"])
     def test_dated_probe_embeds_both_bounds_as_literals(self, oracle, before):
+        """When probing with dates, then after and before are embedded as literals."""
         client, cur = oracle
         cur.fetchone.return_value = (1,)
         client.find_next_granule_id_in_range("MYPROV", 0, after="2024-01-01T00:00:00Z", before=before)
@@ -196,7 +209,8 @@ class TestFindNextGranuleIdInRange:
         assert bind == {"min_id": 0}
 
     def test_undated_probe_ignores_before(self, oracle):
-        """Every run has a `before`; the undated probe must stay a plain PK lookup."""
+        """When probing without after, then before is ignored, so the probe stays a plain PK
+        lookup."""
         client, cur = oracle
         cur.fetchone.return_value = (1,)
         client.find_next_granule_id_in_range("MYPROV", 0, before="2024-02-01T00:00:00Z")
@@ -208,6 +222,8 @@ class TestFindNextGranuleIdInRange:
 # ---------------------------------------------------------------------------
 
 def test_fetch_granule_id_range_chunk_sql_shape(oracle):
+    """When a window is fetched, then it reads one id range, tombstones included, with dates as
+    literals."""
     client, cur = oracle
     client.fetch_granule_id_range_chunk("MYPROV", 500, 1000, after="2024-01-01T00:00:00Z")
     sql, bind = _last_execute(cur)
@@ -227,6 +243,8 @@ def test_fetch_granule_id_range_chunk_sql_shape(oracle):
 class TestStreamGranuleIdsPaged:
 
     def test_page_query_shape(self, oracle):
+        """When a collection's first page is read, then the query follows the PCR index order with
+        no dates, and stops at the page size."""
         client, cur = oracle
         result = list(client.stream_granule_ids_paged(
             "C1-MYPROV", chunk_size="500", after="2024-01-01T00:00:00Z",
@@ -244,6 +262,8 @@ class TestStreamGranuleIdsPaged:
         assert bind == {}
 
     def test_aggregation_query_shape(self, oracle):
+        """When a page is aggregated, then it's bounded to the page, seeks via PDCR, applies dates,
+        and keeps tombstones."""
         client, cur = oracle
         cur.fetchall.side_effect = [
             [("G1-PROV",), ("G2-PROV",), ("G3-PROV",)],  # page (short → last page)
@@ -264,6 +284,8 @@ class TestStreamGranuleIdsPaged:
         assert agg_bind == {"page_end": "G3-PROV"}
 
     def test_resume_cursor_applied_to_both_queries(self, oracle):
+        """When resuming after a concept_id, then both the page and aggregation queries start after
+        it."""
         client, cur = oracle
         cur.fetchall.side_effect = [[("G0101-PROV",), ("G0102-PROV",)], [("G0101-PROV", 1)]]
         list(client.stream_granule_ids_paged("C1-PROV", chunk_size=500, start_after_concept_id="G0100-PROV"))
@@ -274,8 +296,9 @@ class TestStreamGranuleIdsPaged:
         assert agg_bind == {"start_after": "G0100-PROV", "page_end": "G0102-PROV"}
 
     def test_page_ending_mid_concept_resumes_after_that_concept(self, oracle):
-        """The row limit can land partway through a concept's revisions; the
-        aggregation still covers all of them (concept_id <= page_end)."""
+        """When a page ends partway through a concept's revisions, then the aggregation still
+        covers
+        all of them and the next page starts after that concept."""
         client, cur = oracle
         cur.fetchall.side_effect = [
             [("G1-PROV",), ("G1-PROV",)],  # page 1: full at chunk_size=2, both rows G1
@@ -287,8 +310,8 @@ class TestStreamGranuleIdsPaged:
         assert cur.execute.call_args_list[2].args[1] == {"start_after": "G1-PROV"}
 
     def test_yields_every_page_including_filtered_ones(self, oracle):
-        """A fully date-filtered page still yields (page_end, []) so the caller can
-        save its cursor and check cancellation; the next page starts after its page_end."""
+        """When a page's rows are all filtered out by date, then it's still yielded (empty), so the
+        caller can save its cursor and check cancellation."""
         client, cur = oracle
         cur.fetchall.side_effect = [
             [("G1-PROV",), ("G2-PROV",)],  # page 1 (full at chunk_size=2)
@@ -302,7 +325,7 @@ class TestStreamGranuleIdsPaged:
 
 
 def test_call_tracked_only_while_in_flight(oracle):
-    """What lets a hung call be logged while it hangs."""
+    """When an Oracle call runs, then it's tracked until it returns, so a hung call can be logged."""
     import app.db.call_tracker as tracker
     client, cur = oracle
     in_flight = []
@@ -326,6 +349,8 @@ class TestSmallProviders:
         return client, cur
 
     def test_provider_list_reads_providers_table(self, oracle):
+        """When providers are listed, then METADATA_DB.providers is read and the small flags
+        cached."""
         client, cur = oracle
         cur.fetchall.return_value = [("NORMAL", 0), ("SMALLP", 1)]
         assert client.get_all_provider_ids() == ["NORMAL", "SMALLP"]
@@ -334,12 +359,14 @@ class TestSmallProviders:
         assert client._providers == {"NORMAL": False, "SMALLP": True}
 
     def test_unknown_provider_reloads_the_list(self, small):
+        """When a provider isn't in the cache, then the list is reloaded before routing it."""
         client, cur = small
         cur.fetchall.return_value = [("SMALLP", 1), ("NEWP", 1)]
         client.fetch_granule_id_range_chunk("NEWP", 0, 10)
         assert "SMALL_PROV_GRANULES" in cur.execute.call_args.args[0]
 
     def test_provider_wide_queries_filter_by_provider(self, small):
+        """When a small provider is scanned, then the shared table is filtered by provider_id."""
         client, cur = small
         client.find_next_granule_id_in_range("SMALLP", 0)
         client.fetch_granule_id_range_chunk("SMALLP", 0, 10)
@@ -348,7 +375,8 @@ class TestSmallProviders:
         assert all("provider_id = 'SMALLP'" in s for s in sqls)
 
     def test_collection_and_concept_queries_use_shared_table_unfiltered(self, small):
-        """Already scoped by collection or concept id."""
+        """When a small provider's collection or concept is queried, then the shared table is read
+        without a provider filter, since the collection or concept id already scopes it."""
         client, cur = small
         cur.fetchall.side_effect = [[("G1-SMALLP",)], [("G1-SMALLP", 1)]]
         list(client.stream_granule_ids_paged("C1-SMALLP", chunk_size=10))

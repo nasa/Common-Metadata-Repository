@@ -29,8 +29,9 @@ def _should_stop(request_id: str) -> bool:
     return throttler.is_job_cancelled(request_id) or throttler.stop_event.is_set()
 
 
-def _acquire_scan_slot(request_id: str) -> bool:
-    """False if cancelled or stopped while waiting; on True the caller must release the slot."""
+def _wait_for_scan_slot(request_id: str) -> bool:
+    """Block until one of the _MAX_CONCURRENT_SCANS slots is free and take it. True once taken,
+    and the caller must release it; False if the job is cancelled or the task stops first."""
     while not _scan_slots.acquire(timeout=1.0):
         if _should_stop(request_id):
             return False
@@ -47,8 +48,9 @@ def _dedup_latest_revision(rows: list[tuple]) -> list[tuple]:
     return list(latest.values())
 
 
-def _wait_for_green_or_signal(request_id: str) -> bool:
-    """True once both ES clusters are green; False if cancelled or shutting down."""
+def _wait_for_es_green(request_id: str) -> bool:
+    """Block until both ES clusters are green, rechecking every 10s. True once green; False if
+    the job is cancelled or the task is shutting down first."""
     paused = False
     while not _should_stop(request_id):
         health = get_all_es_health()
@@ -72,7 +74,7 @@ def _dispatch(request_id: str, records: list[tuple]) -> bool:
     return throttler.dispatch_in_batches(
         records, request_id,
         on_progress=lambda n: job_store.update_dispatched(request_id, n),
-        gate=lambda: _wait_for_green_or_signal(request_id),
+        gate=lambda: _wait_for_es_green(request_id),
     )
 
 
@@ -83,7 +85,7 @@ def _scan_provider(request_id: str, provider_id: str, after: Optional[str], befo
     # PK min/max path, so it's costly.
     next_id: Optional[int] = None
     probe_from = start_id
-    while _wait_for_green_or_signal(request_id):
+    while _wait_for_es_green(request_id):
         if next_id is None:
             next_id = db_client.find_next_granule_id_in_range(provider_id, probe_from, after, before)
             if next_id is None:
@@ -126,7 +128,7 @@ def _scan_collection(job: dict) -> bool:
         before=job.get("before"),
         start_after_concept_id=start_after,
     ):
-        if not _wait_for_green_or_signal(request_id) or not _dispatch(request_id, chunk):
+        if not _wait_for_es_green(request_id) or not _dispatch(request_id, chunk):
             return False
         job_store.update_scan_cursor(request_id, page_end)
     return True
@@ -136,7 +138,7 @@ def _run(request_id: str) -> None:
     acquired = False
     try:
         waited_since = time.monotonic()
-        acquired = _acquire_scan_slot(request_id)
+        acquired = _wait_for_scan_slot(request_id)
         if not acquired:
             _log_stopped(request_id)
             return

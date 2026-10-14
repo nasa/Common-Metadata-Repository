@@ -25,15 +25,18 @@ def mock_throttler(monkeypatch):
 
 
 def test_get_returns_current_rate(client):
+    """When the throttle is read, then the current rate is returned."""
     assert client.get("/reindexer/throttle").json()["rate_per_minute"] == pytest.approx(1200.0)
 
 
 def test_put_sets_and_returns_the_rate(client, mock_throttler):
+    """When the throttle is set, then the new rate is applied and returned."""
     r = client.put("/reindexer/throttle", json={"rate_per_minute": 450})
     assert (r.status_code, r.json()["rate_per_minute"]) == (200, 450)
     mock_throttler.set_rate.assert_called_once_with(450)
 
 
 def test_put_zero_rate_returns_400(client, mock_throttler):
+    """When the rate is set to 0, then 400 and the rate is unchanged."""
     assert client.put("/reindexer/throttle", json={"rate_per_minute": 0}).status_code == 400
     mock_throttler.set_rate.assert_not_called()

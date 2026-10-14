@@ -25,11 +25,14 @@ def mock_http(monkeypatch):
 class TestCheckAllEsHealthCaching:
 
     def test_calls_within_ttl_share_one_check(self, fake_clock, mock_http):
+        """When ES health is asked for repeatedly within the TTL, then both clusters are checked
+        only once."""
         results = [health_mod.get_all_es_health() for _ in range(5)]
         assert mock_http.call_count == 2
         assert all(r == {"collections": "green", "granules": "green", "overall": "green"} for r in results)
 
     def test_each_expired_window_checks_again(self, fake_clock, mock_http):
+        """When the TTL expires, then the next call checks both clusters again."""
         for _ in range(3):
             health_mod.get_all_es_health()
             fake_clock["now"] += health_mod._CACHE_TTL_SECONDS + 0.1

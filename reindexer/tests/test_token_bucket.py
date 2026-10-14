@@ -17,6 +17,7 @@ def _drained(rate):
 
 
 def test_update_rate_changes_rate_and_clamps_tokens():
+    """When the rate is lowered, then the rate changes and stored tokens are capped at the new rate."""
     tb = TokenBucket(600)
     tb.update_rate(60)
     assert tb.current_rate == pytest.approx(60.0)
@@ -24,6 +25,7 @@ def test_update_rate_changes_rate_and_clamps_tokens():
 
 
 def test_consume_returns_false_when_stopped_during_wait():
+    """When shutdown is signalled while waiting for tokens, then consume returns False."""
     tb = _drained(1)
     stop = threading.Event()
     threading.Timer(0.05, stop.set).start()
@@ -31,6 +33,7 @@ def test_consume_returns_false_when_stopped_during_wait():
 
 
 def test_consume_polls_cancel_fn_on_each_wake_up():
+    """When waiting for tokens, then cancel_fn is checked on every wake-up until it returns True."""
     tb = _drained(1)
     calls = []
     assert tb.consume(1, cancel_fn=lambda: calls.append(1) or len(calls) >= 2) is False
@@ -38,13 +41,15 @@ def test_consume_polls_cancel_fn_on_each_wake_up():
 
 
 def test_consume_clamps_to_capacity_after_rate_decrease():
-    """Without the clamp, a count above the new capacity could never be satisfied."""
+    """When the rate drops below the requested count, then consume still succeeds; without the
+    clamp the request could never be satisfied."""
     tb = TokenBucket(10_000)
     tb.update_rate(1)
     assert tb.consume(10_000) is True
 
 
 def test_refill_replenishes_tokens_over_time():
+    """When time passes on an empty bucket, then tokens refill at the configured rate."""
     tb = _drained(600)  # 10 per second
     time.sleep(0.15)
     with tb._lock:

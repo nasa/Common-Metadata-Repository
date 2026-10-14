@@ -21,6 +21,8 @@ def sqs(monkeypatch):
 
 
 def test_publish_concept_update_body(sqs):
+    """When publishing a concept update, then the body has the right action, concept id and
+    revision, and it goes to the indexer queue."""
     publish_concept_update("G9876-TESTPROV", 42, "req-1")
     kwargs = sqs.send_message.call_args.kwargs
     assert kwargs["QueueUrl"] == config.indexer_queue_url
@@ -28,6 +30,8 @@ def test_publish_concept_update_body(sqs):
 
 
 def test_batch_bodies_and_ids(sqs):
+    """When publishing a batch, then deleted records become concept-delete, the rest
+    concept-update, each with a unique entry id, sent to the indexer queue."""
     publish_indexer_events_batch([("G1-PROV", 3, 1), ("G2-PROV", 1, 0), ("G3-PROV", 2)], "req-1")
     kwargs = sqs.send_message_batch.call_args.kwargs
     assert kwargs["QueueUrl"] == config.indexer_queue_url
@@ -41,12 +45,14 @@ def test_batch_bodies_and_ids(sqs):
 
 @pytest.mark.parametrize("n, sizes", [(10, [10]), (21, [1, 10, 10])])
 def test_records_split_into_batches_of_ten(sqs, n, sizes):
+    """When publishing more than 10 records, then they go out in SQS batches of at most 10."""
     publish_indexer_events_batch([(f"G{i}-P", i) for i in range(n)], "req-1")
     # Batches are sent concurrently, so compare sorted sizes.
     assert sorted(len(c.kwargs["Entries"]) for c in sqs.send_message_batch.call_args_list) == sizes
 
 
 def test_partial_failure_raises(sqs):
+    """When SQS reports any failed entry, then the publish raises."""
     sqs.send_message_batch.return_value = {
         "Successful": [], "Failed": [{"Id": "0", "Code": "InternalError", "Message": "SQS blew up"}],
     }
@@ -55,6 +61,7 @@ def test_partial_failure_raises(sqs):
 
 
 def test_get_queue_counts_splits_available_and_in_flight(sqs):
+    """When reading queue attributes, then counts come back as available and in_flight."""
     sqs.get_queue_attributes.return_value = {"Attributes": {
         "ApproximateNumberOfMessages": "7", "ApproximateNumberOfMessagesNotVisible": "2",
     }}

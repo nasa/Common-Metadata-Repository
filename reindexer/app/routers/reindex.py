@@ -150,7 +150,7 @@ def _start_granule_job(
 _CONCEPT_TYPE_BATCH_SIZE = 500
 
 
-@leases.holding
+@leases.holds_lease
 def publish_concept_type(request_id: str, internal_type: str, before: Optional[str] = None) -> None:
     """Send a concept-update for every live concept of internal_type revised before `before`,
     then mark the job completed. Not rate limited. Fails the job if ES isn't green at the start,

@@ -17,6 +17,7 @@ def _es_resp(status: str) -> MagicMock:
 
 
 def test_health_makes_no_external_calls():
+    """When /health is called, then it answers ok without touching ES or SQS."""
     with patch("app.es.health.httpx.get", side_effect=AssertionError("ES called")):
         with patch("app.sqs.client._sqs", side_effect=AssertionError("SQS called")):
             r = client.get("/reindexer/health")
@@ -36,6 +37,8 @@ class TestStatus:
                 return client.get("/reindexer/status")
 
     def test_shape(self):
+        """When /status is called, then it reports ES health, indexer queue counts, and this task's
+        held jobs and rate."""
         import app.leases as leases
         leases.hold("job-b")
         leases.hold("job-a")
@@ -49,6 +52,7 @@ class TestStatus:
         assert task["rate_limit_per_minute"] > 0
 
     def test_sqs_unreachable_reports_null_counts_not_5xx(self):
+        """When SQS can't report queue counts, then /status still answers, with indexer_queue null."""
         r = self._get(side_effect=Exception("no sqs"))
         assert r.status_code == 200
         assert r.json()["indexer_queue"] is None
@@ -57,6 +61,7 @@ class TestStatus:
 @pytest.mark.parametrize("resp", [Exception("refused"), MagicMock(**{"json.return_value": {}}), _es_resp("purple")],
                          ids=["unreachable", "no-status-field", "unknown-status"])
 def test_check_es_health_is_none_when_unknown(resp):
+    """When a cluster is unreachable or reports no or an unknown status, then its health is None."""
     kwargs = {"side_effect": resp} if isinstance(resp, Exception) else {"return_value": resp}
     with patch("app.es.health.httpx.get", **kwargs):
         assert check_es_health("localhost", 9211) is None
@@ -70,6 +75,8 @@ def test_check_es_health_is_none_when_unknown(resp):
     ("green", None, None),
 ])
 def test_get_all_es_health_reports_the_worse_cluster(col, gran, overall):
+    """When the two clusters differ, then overall is the worse of them, or None if either is
+    unknown."""
     resps = [_es_resp(s) if s else Exception("unreachable") for s in (col, gran)]
     with patch("app.es.health.httpx.get", side_effect=resps):
         assert get_all_es_health() == {"collections": col, "granules": gran, "overall": overall}

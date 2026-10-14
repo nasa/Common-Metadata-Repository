@@ -58,22 +58,26 @@ def _post(headers, sids, acls):
 # ---------------------------------------------------------------------------
 
 def test_missing_token_returns_401():
+    """When a request has no token, then it gets 401."""
     assert client.post("/protected").status_code == 401
 
 
 def test_invalid_token_returns_401():
+    """When the ACL service rejects the token, then the request gets 401."""
     with patch("app.auth.httpx.post", return_value=MagicMock(status_code=401)):
         r = client.post("/protected", headers={"Authorization": "bad-token"})
     assert r.status_code == 401
 
 
 def test_sids_service_unreachable_returns_503():
+    """When the ACL service can't be reached for SIDs, then the request gets 503."""
     with patch("app.auth.httpx.post", side_effect=Exception("connection refused")):
         r = client.post("/protected", headers={"Authorization": "any-token"})
     assert r.status_code == 503
 
 
 def test_acl_fetch_unreachable_returns_503():
+    """When the ACL list can't be fetched, then the request gets 503."""
     with patch("app.auth.httpx.post", return_value=_sids_resp([_REGISTERED_SID])), \
          patch("app.auth.httpx.get", side_effect=Exception("connection refused")):
         r = client.post("/protected", headers={"Authorization": "any-token"})
@@ -86,6 +90,8 @@ def test_acl_fetch_unreachable_returns_503():
 
 @pytest.mark.parametrize("acl", [_acl("read"), _acl("update", identity="provider")], ids=["read-only", "provider-level"])
 def test_without_system_level_update_returns_403(acl):
+    """When the token has only read access, or only a provider-level grant, then the request gets
+    403."""
     r, _, _ = _post({"Authorization": "some-token"}, [_REGISTERED_SID], [acl])
     assert r.status_code == 403
 
@@ -95,11 +101,15 @@ def test_without_system_level_update_returns_403(acl):
     (_GROUP_SID, _acl("update", group_id=_GROUP_SID)),
 ], ids=["user-type", "group"])
 def test_system_level_update_passes(sid, acl):
+    """When a user-type or group SID has system-level update, then the request passes with its
+    token."""
     r, _, _ = _post({"Echo-Token": "good-token"}, [sid], [acl])
     assert (r.status_code, r.json()["token"]) == (200, "good-token")
 
 
 def test_bearer_prefix_stripped_and_token_sent_in_body_not_url():
+    """When the token has a Bearer prefix, then it's stripped and sent to the ACL service in the
+    body, never the URL."""
     r, mock_post, _ = _post({"Authorization": "Bearer my-secret-token"}, [_REGISTERED_SID], [_acl("update")])
     assert r.json()["token"] == "my-secret-token"
     assert "my-secret-token" not in mock_post.call_args[0][0]
@@ -107,6 +117,8 @@ def test_bearer_prefix_stripped_and_token_sent_in_body_not_url():
 
 
 def test_acl_request_uses_system_token_and_system_level_acls():
+    """When ACLs are fetched, then the system token is used and only system-level
+    INGEST_MANAGEMENT_ACL entries are requested."""
     from app.config import config
     _, _, mock_get = _post({"Authorization": "user-token"}, [_REGISTERED_SID], [_acl("update")])
     assert mock_get.call_args[1]["headers"]["Authorization"] == config.echo_system_token
@@ -140,9 +152,11 @@ def real_app(monkeypatch):
     ("PUT", "/reindexer/throttle", {"rate_per_minute": 100}),
 ])
 def test_mutating_routes_require_a_token(real_app, method, path, body):
+    """When a write route is called without a token, then it gets 401."""
     assert real_app.request(method, path, json=body).status_code == 401
 
 
 @pytest.mark.parametrize("path", ["/reindexer/jobs", "/reindexer/throttle"])
 def test_read_routes_are_open(real_app, path):
+    """When a read-only route is called without a token, then it succeeds."""
     assert real_app.get(path).status_code == 200

@@ -56,7 +56,6 @@ async def lifespan(app: FastAPI):
         "version": config.service_version,
         "db_backend": config.db_backend,
         "db_dsn": f"{config.db_host}:{config.db_port}/{config.db_service}",
-        "db_user": config.db_user,
         "oracle_pool_min": config.oracle_pool_min,
         "oracle_pool_max": config.oracle_pool_max,
         "oracle_pool_increment": config.oracle_pool_increment,

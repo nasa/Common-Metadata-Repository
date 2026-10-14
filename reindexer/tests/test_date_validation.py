@@ -29,6 +29,8 @@ def _days_ago(n: float) -> str:
 ], ids=["29-days", "31-days-override", "before-only", "31-days", "after-equals-before",
         "after-past-before", "offset", "fractional-seconds", "date-only", "bad-before"])
 def test_validate_date_params(after, before, override, ok):
+    """When after/before are checked, then bad formats, after >= before, and an after over 30 days
+    old without the override are rejected."""
     if ok:
         _validate_date_params(after, before, override)
     else:
@@ -64,5 +66,7 @@ def mock_io(monkeypatch):
 ])
 @pytest.mark.parametrize("header, status", [(None, 400), ("true", 202), ("TRUE", 202), ("false", 400)])
 def test_override_header(client, path, header, status):
+    """When after is over 30 days old, then each granule endpoint returns 202 only with X-CMR-
+    Override-Date-Limit: true."""
     headers = {"X-CMR-Override-Date-Limit": header} if header else {}
     assert client.post(path, params={"after": _days_ago(31)}, headers=headers).status_code == status
