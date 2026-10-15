@@ -26,6 +26,7 @@
                           [com.fasterxml.jackson.core/jackson-databind "2.21.7"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.21.7"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.22.2"]
+                          [com.google.guava/guava "33.7.2-jre"]
                           [compojure "1.6.3"]
                           [nrepl/nrepl "1.1.0"]
                           [org.clojure/clojure "1.11.4"] ;; latest is 1.11.4 or 1.12.2
