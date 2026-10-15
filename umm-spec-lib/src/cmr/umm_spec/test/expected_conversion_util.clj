@@ -201,7 +201,7 @@
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
 
-(defn fix-doi-published-dates
+(defn convert-doi-previous-version-from-str-to-datetime
   "Converts string timestamps in :PreviousVersion maps to Joda DateTime objects."
   [previous-versions]
   (when (seq previous-versions)
@@ -220,7 +220,7 @@
     (let [updated-doi (util/remove-nil-keys
                        (dissoc (into {} doi) :Authority :MissingReason :Explanation))
           updated-doi (if (:PreviousVersion updated-doi)
-                        (update updated-doi :PreviousVersion fix-doi-published-dates)
+                        (update updated-doi :PreviousVersion convert-doi-previous-version-from-str-to-datetime)
                         updated-doi)]
       (if (seq updated-doi)
         updated-doi

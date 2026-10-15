@@ -4187,7 +4187,8 @@
              [{:Version "1.0"
                :Description "Desc"
                :DOI "10.5067/fake.record.00"
-               :Published "2024-01-01T00:00:00Z"}]}
+               :Published "2024-01-01T00:00:00Z"
+               :CollectionProgress "NOT PROVIDED"}]}
             :MetadataSpecification
             {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.7"
              :Name "UMM-C"
