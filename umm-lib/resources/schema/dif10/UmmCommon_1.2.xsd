@@ -455,7 +455,7 @@ technical contact
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="PLANNED"/>
-            <xs:enumeration value="IN WORK"/>
+            <xs:enumeration value="ACTIVE"/>
             <xs:enumeration value="COMPLETE"/>
             <xs:enumeration value="DEPRECATED"/>
             <xs:enumeration value="NOT PROVIDED"/>
@@ -608,7 +608,7 @@ technical contact
                 When set to other, then Description_Of_Other_Type is to be used.
 
                 Example Usage:
-                * Associcated_DOIs/Type = 'Other'
+                * Associated_DOIs/Type = 'Other'
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
@@ -636,7 +636,7 @@ technical contact
         <xs:sequence>
             <xs:element name="Type"             type="PersistentIdentifierEnum"/>
             <xs:element name="Identifier"       type="string-1k"/>
-            <xs:element name="Previous_Version" type="DOIPreviousVersionType"   minOccurs="0"/> <!-- added in ECS-1474-->
+            <xs:element name="Previous_Version" type="DOIPreviousVersionType"   minOccurs="0" maxOccurs="unbounded"/> <!-- added in ECS-1474-->
         </xs:sequence>
     </xs:complexType>
     
@@ -664,7 +664,7 @@ technical contact
 
             | ECHO 10            | UMM                | DIF 10               |
             | ------------------ | ------------------ | -------------------- |
-            | DOIPreviousVersion | DOIPreviousVersion | DOI_Previous_Version |
+            | PreviousVersion | PreviousVersion | Previous_Version |
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -672,6 +672,10 @@ technical contact
             <xs:element name="Description"  type="string-4000"          minOccurs="0"/>
             <xs:element name="DOI"          type="string-1k"/>
             <xs:element name="Published"    type="DateOrTimeOrEnumType" minOccurs="0"/>
+            <xs:element name="BeginningDateTime" type="DateOrTimeOrEnumType" minOccurs="0"/>
+            <xs:element name="EndingDateTime" type="DateOrTimeOrEnumType" minOccurs="0"/>
+            <xs:element name="DeprecatedDateTime" type="DateOrTimeOrEnumType" minOccurs="0"/>
+            <xs:element name="CollectionProgress" type="DatasetProgressEnum" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 

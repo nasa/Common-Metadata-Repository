@@ -101,7 +101,7 @@
    </Range_DateTime>
   </Temporal_Coverage>
    <!--renamed from Data_Set_Progress to Dataset_Progress-->
-<Dataset_Progress>IN WORK</Dataset_Progress>
+<Dataset_Progress>ACTIVE</Dataset_Progress>
    
    <Spatial_Coverage>
     <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>

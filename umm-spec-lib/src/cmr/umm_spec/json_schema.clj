@@ -490,5 +490,7 @@
                   coerced)
         previous-version (get-in coerced [:DOI :PreviousVersion])]
     (if previous-version
-      (assoc-in coerced [:DOI :PreviousVersion] (umm-cmn/map->PreviousVersionType previous-version))
+      ;; Safely handle both single objects (old schemas) and arrays (1.18.7+)
+      (let [pv-list (if (sequential? previous-version) previous-version [previous-version])]
+        (assoc-in coerced [:DOI :PreviousVersion] (mapv umm-cmn/map->PreviousVersionType pv-list)))
       coerced)))
