@@ -905,6 +905,11 @@
       c)))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.7" "1.18.6"]
+;; Migrates down from UMM-C 1.18.7 to 1.18.6
+;; In 1.18.7, DOI/PreviousVersion became an array and added 4 new fields:
+;; BeginningDateTime, EndingDateTime, DeprecatedDateTime, and CollectionProgress.
+;; To migrate down to 1.18.6, we must extract the most recent PreviousVersion from the array,
+;; strip out those 4 unsupported fields, and convert it back into a single object.
   [_context c & _]
   (let [previous-versions (get-in c [:DOI :PreviousVersion])
         ;; Coerce to sequence to gracefully handle tests/data that might pass a single map

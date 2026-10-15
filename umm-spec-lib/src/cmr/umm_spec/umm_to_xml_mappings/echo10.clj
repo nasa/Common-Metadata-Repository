@@ -187,7 +187,9 @@
          (when (:Authority doi)
            [:Authority (:Authority doi)])
          (for [pv (:PreviousVersion doi)]
-           [:PreviousVersion (elements-from pv :Version :Description :DOI :Published :BeginningDateTime :EndingDateTime :DeprecatedDateTime :CollectionProgress (or (:CollectionProgress pv) "NOT PROVIDED"))])]
+           [:PreviousVersion
+            (elements-from pv :Version :Description :DOI :Published :BeginningDateTime :EndingDateTime :DeprecatedDateTime)
+            [:CollectionProgress (or (:CollectionProgress pv) "NOT PROVIDED")]])]
         (when (:MissingReason doi)
           [:DOI
            [:MissingReason (:MissingReason doi)]
@@ -219,93 +221,93 @@
                (if-let [desc (:DescriptionOfOtherType assoc-doi)]
                  (str original-type " - " desc)
                  original-type)]))])])
-     [:CollectionDataType (:CollectionDataType c)]
-     [:StandardProduct (:StandardProduct c)]
-     (when-let [revision-date (dates/metadata-update-date c)]
-       [:RevisionDate (p/clj-time->date-time-str revision-date)])
-     [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
-     (dc/generate-processing-centers c)
-     [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
-     [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
-     (dc/generate-archive-centers c)
-     [:VersionDescription (:VersionDescription c)]
-     (generate-collection-citations c)
-     [:CollectionState (:CollectionProgress c)]
-     [:RestrictionFlag (-> c :AccessConstraints :Value)]
-     [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
-     (when-let [use-constraints (get c :UseConstraints)]
-       [:UseConstraints
-         [:Description (:Description use-constraints)]
-         (when (some? (:FreeAndOpenData use-constraints))
-           [:FreeAndOpenData (Boolean/valueOf (:FreeAndOpenData use-constraints))])
-         (when-let [eula-identifiers (:EULAIdentifiers use-constraints)]
-           (for [id eula-identifiers] [:EULAIdentifier id]))
-         (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
-           [:LicenseURL
-             [:URL url]
-             [:Description (get-in use-constraints [:LicenseURL :Description])]
-             [:Type (or (get-in use-constraints [:LicenseURL :Name])
-                        "License URL")]
-             [:MimeType (get-in use-constraints [:LicenseURL :MimeType])]])
-         (when-let [license-text (:LicenseText use-constraints)]
-           [:LicenseText license-text])])
-     [:Price (when-let [price-str (find-first-available-distribution-price c)]
-               (try (format "%9.2f" (Double. price-str))
-                 ;; If price is not a number string just ignore it. ECHO10
-                 ;; expectes a string in %9.2f format, so we have to
-                 ;;ignore 'Free', 'Gratis', etc.
-                 (catch NumberFormatException _e)))]
-     ;; Go through all of the FileDistributionInformation elements and set the
-     ;; ECHO 10 DataFormats.
-     (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
-       [:DataFormat (:Format data-format)])
-     [:SpatialKeywords
-      (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
-        [:Keyword kw])]
-     [:TemporalKeywords
-      (for [kw (:TemporalKeywords c)]
-        [:Keyword kw])]
-     (echo10-temporal c)
-     (dc/generate-contacts c) ;; Contacts are both Data Centers and Contact Persons
-     (echo10-sciencekeywords c)
-     (echo10-platforms c)
-     [:AdditionalAttributes
-      (for [aa (:AdditionalAttributes c)]
-        [:AdditionalAttribute
-         [:Name (:Name aa)]
-         [:DataType (:DataType aa)]
-         [:Description (with-default (:Description aa))]
-         [:ParameterRangeBegin (:ParameterRangeBegin aa)]
-         [:ParameterRangeEnd (:ParameterRangeEnd aa)]
-         [:Value (:Value aa)]])]
-     (metadata-associations c)
-     [:Campaigns
-      (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
-        [:Campaign
-         [:ShortName ShortName]
-         [:LongName LongName]
-         [:StartDate StartDate]
-         [:EndDate EndDate]])]
-     [:TwoDCoordinateSystems
-      (for [sys (:TilingIdentificationSystems c)]
-        [:TwoDCoordinateSystem
-         [:TwoDCoordinateSystemName (with-default (:TilingIdentificationSystemName sys))]
-         [:Coordinate1
-          (elements-from (:Coordinate1 sys) :MinimumValue :MaximumValue)]
-         [:Coordinate2
-          (elements-from (:Coordinate2 sys) :MinimumValue :MaximumValue)]])]
-     (spatial/spatial-info-element c)
-     (ru/generate-access-urls (:RelatedUrls c))
-     (ru/generate-resource-urls (:RelatedUrls c))
-     (when-let [fnc (:FileNamingConvention c)]
-       [:FileNamingConvention  (elements-from fnc :Convention :Description)])
-     (spatial/spatial-element c)
-     (ru/generate-browse-urls (:RelatedUrls c))
-     (when-let [direct-dist-info (:DirectDistributionInformation c)]
-       [:DirectDistributionInformation
-         [:Region (:Region direct-dist-info)]
-         (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
-           [:S3BucketAndObjectPrefixName prefix-name])
-         [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
-         [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])
-     (generate-quality c)]))
+    [:CollectionDataType (:CollectionDataType c)]
+    [:StandardProduct (:StandardProduct c)]
+    (when-let [revision-date (dates/metadata-update-date c)]
+      [:RevisionDate (p/clj-time->date-time-str revision-date)])
+    [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
+    (dc/generate-processing-centers c)
+    [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
+    [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+    (dc/generate-archive-centers c)
+    [:VersionDescription (:VersionDescription c)]
+    (generate-collection-citations c)
+    [:CollectionState (:CollectionProgress c)]
+    [:RestrictionFlag (-> c :AccessConstraints :Value)]
+    [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
+    (when-let [use-constraints (get c :UseConstraints)]
+      [:UseConstraints
+       [:Description (:Description use-constraints)]
+       (when (some? (:FreeAndOpenData use-constraints))
+         [:FreeAndOpenData (Boolean/valueOf (:FreeAndOpenData use-constraints))])
+       (when-let [eula-identifiers (:EULAIdentifiers use-constraints)]
+         (for [id eula-identifiers] [:EULAIdentifier id]))
+       (when-let [url (get-in use-constraints [:LicenseURL :Linkage])]
+         [:LicenseURL
+          [:URL url]
+          [:Description (get-in use-constraints [:LicenseURL :Description])]
+          [:Type (or (get-in use-constraints [:LicenseURL :Name])
+                     "License URL")]
+          [:MimeType (get-in use-constraints [:LicenseURL :MimeType])]])
+       (when-let [license-text (:LicenseText use-constraints)]
+         [:LicenseText license-text])])
+    [:Price (when-let [price-str (find-first-available-distribution-price c)]
+              (try (format "%9.2f" (Double. price-str))
+                   ;; If price is not a number string just ignore it. ECHO10
+                   ;; expectes a string in %9.2f format, so we have to
+                   ;;ignore 'Free', 'Gratis', etc.
+                   (catch NumberFormatException _e)))]
+    ;; Go through all of the FileDistributionInformation elements and set the
+    ;; ECHO 10 DataFormats.
+    (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]
+      [:DataFormat (:Format data-format)])
+    [:SpatialKeywords
+     (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
+       [:Keyword kw])]
+    [:TemporalKeywords
+     (for [kw (:TemporalKeywords c)]
+       [:Keyword kw])]
+    (echo10-temporal c)
+    (dc/generate-contacts c) ;; Contacts are both Data Centers and Contact Persons
+    (echo10-sciencekeywords c)
+    (echo10-platforms c)
+    [:AdditionalAttributes
+     (for [aa (:AdditionalAttributes c)]
+       [:AdditionalAttribute
+        [:Name (:Name aa)]
+        [:DataType (:DataType aa)]
+        [:Description (with-default (:Description aa))]
+        [:ParameterRangeBegin (:ParameterRangeBegin aa)]
+        [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+        [:Value (:Value aa)]])]
+    (metadata-associations c)
+    [:Campaigns
+     (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
+       [:Campaign
+        [:ShortName ShortName]
+        [:LongName LongName]
+        [:StartDate StartDate]
+        [:EndDate EndDate]])]
+    [:TwoDCoordinateSystems
+     (for [sys (:TilingIdentificationSystems c)]
+       [:TwoDCoordinateSystem
+        [:TwoDCoordinateSystemName (with-default (:TilingIdentificationSystemName sys))]
+        [:Coordinate1
+         (elements-from (:Coordinate1 sys) :MinimumValue :MaximumValue)]
+        [:Coordinate2
+         (elements-from (:Coordinate2 sys) :MinimumValue :MaximumValue)]])]
+    (spatial/spatial-info-element c)
+    (ru/generate-access-urls (:RelatedUrls c))
+    (ru/generate-resource-urls (:RelatedUrls c))
+    (when-let [fnc (:FileNamingConvention c)]
+      [:FileNamingConvention  (elements-from fnc :Convention :Description)])
+    (spatial/spatial-element c)
+    (ru/generate-browse-urls (:RelatedUrls c))
+    (when-let [direct-dist-info (:DirectDistributionInformation c)]
+      [:DirectDistributionInformation
+       [:Region (:Region direct-dist-info)]
+       (for [prefix-name (:S3BucketAndObjectPrefixNames direct-dist-info)]
+         [:S3BucketAndObjectPrefixName prefix-name])
+       [:S3CredentialsAPIEndpoint (:S3CredentialsAPIEndpoint direct-dist-info)]
+       [:S3CredentialsAPIDocumentationURL (:S3CredentialsAPIDocumentationURL direct-dist-info)]])
+    (generate-quality c)]))

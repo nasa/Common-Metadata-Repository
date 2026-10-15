@@ -361,7 +361,7 @@
         (assoc-in [:LicenseURL :ApplicationProfile] nil))
     use-constraints))
 
-(defn- fix-doi-published-dates
+(defn- convert-str-published-dates-to-datetime
   "Converts string date fields in PreviousVersion into Joda DateTime objects to match DIF10 parsing."
   [previous-versions]
   (when (seq previous-versions)
@@ -387,7 +387,7 @@
     (let [updated-doi (util/remove-nil-keys
                        (dissoc (into {} doi) :Authority :MissingReason :Explanation))
           updated-doi (if (:PreviousVersion updated-doi)
-                        (update updated-doi :PreviousVersion fix-doi-published-dates)
+                        (update updated-doi :PreviousVersion convert-str-published-dates-to-datetime)
                         updated-doi)]
       (if (seq updated-doi)
         updated-doi

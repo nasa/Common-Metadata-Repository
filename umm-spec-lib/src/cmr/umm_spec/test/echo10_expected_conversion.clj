@@ -168,18 +168,7 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
-;;(defn- expected-echo10-doi
-;;  "Returns the expected ECHO10 DOI for comparison with the umm model."
-;;  [doi]
-;;    (cmn/map->DoiType
-;;      (if (:PreviousVersion doi)
-;;        (-> doi
-;;            (update-in [:PreviousVersion] util/remove-nil-keys)
-;;            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
-;;            util/remove-nil-keys)
-;;        (util/remove-nil-keys doi))))
-
-(defn- fix-previous-version-fields
+(defn- convert-previous-version-field-from-str-to-datetime
   "Converts string date fields into Joda DateTime objects and normalizes CollectionProgress."
   [previous-versions]
   (when (seq previous-versions)
@@ -203,7 +192,7 @@
    (if (and doi (or (:DOI doi) (:MissingReason doi)))
      (let [cleaned (util/remove-nil-keys (into {} doi))
            updated (if (seq (:PreviousVersion cleaned))
-                     (update-in cleaned [:PreviousVersion] fix-previous-version-fields)
+                     (update-in cleaned [:PreviousVersion] convert-previous-version-field-from-str-to-datetime)
                      (dissoc cleaned :PreviousVersion))]
        (cmn/map->DoiType updated))
      (cmn/map->DoiType

@@ -214,7 +214,7 @@
       } ],
       "ContactMechanisms" : [ {
         "Type" : "Email",
-        "Value" : "livesey@mls.jpl.nasa.gov"
+        "Value" : "anEmail1@server.com"
       } ]
     }
   }, {
@@ -235,7 +235,7 @@
         "Value" : "301-614-5121"
       }, {
         "Type" : "Email",
-        "Value" : "James.Johnson@nasa.gov"
+        "Value" : "anEmail1@server.com"
       } ]
     }
   } ],
