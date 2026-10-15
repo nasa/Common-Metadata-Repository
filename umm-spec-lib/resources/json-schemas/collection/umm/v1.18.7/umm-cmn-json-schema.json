@@ -1301,7 +1301,7 @@
       "additionalProperties": false,
       "description": "Information about quality of the collection data, including a summary, known issues, strengths, limitations, and other quality-related information.",
       "properties": {
-        "Summary": { 
+        "Summary": {
           "description": "Summary, a short description, of the quality element(s) of the data in the collection in the form of a text overview and can be itemized with hyperlinks.",
           "type": "string",
           "minLength": 1,
@@ -1313,7 +1313,7 @@
         }
       },
       "required": ["Summary"]
-    },     
+    },
     "QualityContentDetailsType": {
       "type": "object",
       "additionalProperties": false,
@@ -1327,8 +1327,8 @@
                 { "required": ["Limitations"] },
                 { "required": ["KnownIssues"] },
                 { "required": ["Other"]
-      }]    
-    },    
+      }]
+    },
     "QualityContentDetailStringType": {
       "type": "string",
       "minLength": 1,
