@@ -493,12 +493,42 @@
           [tm _] (util/time-execution (hash-cache/set-values cache cache-key lookup-map))]
       (rl-util/log-redis-write-complete "create-kms-index" cache-key tm))))
 
+(def keyword-scheme->index-definitions
+  "Maps each keyword scheme to the [cache-key generate-fn] pairs that directly index its data.
+   Multi-scheme aggregates (kms-short-name-cache-key, kms-umm-c-cache-key) are intentionally
+   excluded here — they are rebuilt only during a full refresh via create-kms-index."
+  {:providers          [[kms-providers-cache-key            generate-lookup-by-providers-name-map]]
+   :platforms          [[kms-platforms-cache-key            generate-lookup-by-platforms-name-map]]
+   :instruments        [[kms-instruments-cache-key          generate-lookup-by-instruments-name-map]]
+   :projects           [[kms-projects-cache-key             generate-lookup-by-project-name-map]]
+   :temporal-keywords  [[kms-temporal-keywords-cache-key    generate-lookup-by-temporal-keywords-name-map]]
+   :spatial-keywords    [[kms-location-cache-key             generate-lookup-by-location-map]
+                        [kms-spatial-keywords-cache-key     generate-lookup-by-spatial-keywords-map]]
+   :spatial-keywords-old []
+   :science-keywords   [[kms-science-keywords-cache-key     generate-lookup-by-science-keywords-map]]
+   :measurement-name   [[kms-measurement-cache-key          generate-lookup-by-measurement-name]]
+   :concepts           [[kms-concepts-cache-key             generate-lookup-by-concepts-name-map]]
+   :iso-topic-categories [[kms-iso-topic-categories-cache-key generate-lookup-by-iso-topic-categories-name-map]]
+   :related-urls       [[kms-related-urls-cache-key         generate-lookup-by-related-urls-map]]
+   :granule-data-format [[kms-granule-data-format-cache-key  generate-lookup-by-granule-data-format-name-map]]
+   :mime-type          [[kms-mime-type-cache-key            generate-lookup-by-mime-type-name-map]]
+   :processing-levels  [[kms-processing-level-cache-key     generate-lookup-by-processing-level-map]]})
+
 (defn create-kms-index
   "Creates the KMS index structure to be used for fast lookups and stores these values in
    redis. Calling this function will CHANGE an external resource."
   [context kms-keywords-map]
   (rl-util/log-refresh-start (string/join " " (map first kms-index-definitions)))
   (doseq [[cache-key generate-fn] kms-index-definitions]
+    (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+  kms-keywords-map)
+
+(defn create-kms-index-for-schemes
+  "Rebuilds only the lookup indexes directly associated with the given keyword-schemes.
+   Use this for a partial refresh. For a full rebuild use create-kms-index."
+  [context kms-keywords-map keyword-schemes]
+  (doseq [keyword-scheme keyword-schemes
+          [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
     (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
   kms-keywords-map)
 
