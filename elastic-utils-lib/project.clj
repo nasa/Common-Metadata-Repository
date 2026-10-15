@@ -1,4 +1,4 @@
-(def elastic-version "8.19.17")
+(def elastic-version "8.19.23")
 
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
@@ -9,7 +9,6 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-core]
                  [com.fasterxml.jackson.core/jackson-databind]
-
                  [clj-http]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
