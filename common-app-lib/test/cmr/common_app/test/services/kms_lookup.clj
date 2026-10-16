@@ -281,7 +281,7 @@
     (let [updated-map (-> sample-map
                           (update :platforms conj {:short-name "NEW-PLAT" :category "Spacecraft" :uuid "new-plat-uuid"})
                           (update :instruments conj {:short-name "NEW-INST" :uuid "new-inst-uuid"}))]
-      (kms-lookup/create-kms-index-for-schemes create-context updated-map [:platforms])
+      (kms-lookup/create-kms-index create-context updated-map [:platforms])
       (testing "Updated scheme (platforms) reflects new entry"
         (is (= "new-plat-uuid"
                (kms-lookup/lookup-platform-by-short-name create-context "NEW-PLAT"))))

@@ -23,7 +23,7 @@
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.kms :as transmit-kms])
   (:import #_{:clj-kondo/ignore [:unused-import]}
-           (clojure.lang ExceptionInfo)))
+   (clojure.lang ExceptionInfo)))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
@@ -94,10 +94,6 @@
                  valid-names))))
     schemes))
 
-(comment
-  (parse-concept-schemes "platforms")
-  :rcf)
-
 ;; Called indirectly by bootstrap. This may call KMS service directly through transmit.
 (defn- fetch-gcmd-keywords-map
   "Fetches keyword data from KMS for the given schemes and merges with base-map.
@@ -161,8 +157,9 @@
        (let [partial? (some? concept-scheme-param)
              [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context keyword-schemes base-map))
              _ (when gcmd-keywords-map
+                 ;; Refresh cache for either specific scheme or all schemes
                  (if partial?
-                   (kms-lookup/create-kms-index-for-schemes context gcmd-keywords-map keyword-schemes)
+                   (kms-lookup/create-kms-index context gcmd-keywords-map keyword-schemes)
                    (kms-lookup/create-kms-index context gcmd-keywords-map)))
              gcmd-keywords-map (cmr.common.util/remove-empty-maps gcmd-keywords-map)
              [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]

@@ -29,7 +29,7 @@
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache])
   (:import #_{:clj-kondo/ignore [:unused-import]}
-           (clojure.lang ExceptionInfo)))
+   (clojure.lang ExceptionInfo)))
 
 ;; ---------------------------------------------------------------------
 ;; initializing kms cache keys
@@ -119,7 +119,6 @@
   "The key used to store the data generated from KMS into a temporal keywords index cache
   in the system hash cache map for fast lookups."
   :kms-temporal-keywords-index)
-
 
 ;; ---------------------------------------------------------------------
 ;; Initializing cache instances for kms keywords
@@ -334,9 +333,9 @@
   [gcmd-keywords-map]
   (let [location-keywords (->> gcmd-keywords-map :spatial-keywords (sort-by count) reverse)
         location-keywords (into {}
-                            (for [location-keyword-map location-keywords
-                                  location (vals (dissoc location-keyword-map :uuid))]
-                              [(string/upper-case location) location-keyword-map]))]
+                                (for [location-keyword-map location-keywords
+                                      location (vals (dissoc location-keyword-map :uuid))]
+                                  [(string/upper-case location) location-keyword-map]))]
     (merge location-keywords duplicate-keywords)))
 
 (defn- generate-lookup-by-project-name-map
@@ -500,22 +499,20 @@
       (rl-util/log-redis-write-complete "create-kms-index" cache-key tm))))
 
 (defn create-kms-index
-  "Creates the KMS index structure to be used for fast lookups and stores these values in
-   redis. Calling this function will CHANGE an external resource."
-  [context kms-keywords-map]
-  (rl-util/log-refresh-start (string/join " " (map first kms-index-definitions)))
-  (doseq [[cache-key generate-fn] kms-index-definitions]
-    (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
-  kms-keywords-map)
-
-(defn create-kms-index-for-schemes
-  "Rebuilds only the lookup indexes directly associated with the given keyword-schemes.
-   Use this for a partial refresh. For a full rebuild use create-kms-index."
-  [context kms-keywords-map keyword-schemes]
-  (doseq [keyword-scheme keyword-schemes
-          [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
-    (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
-  kms-keywords-map)
+  "Stores KMS lookup indexes in Redis. Calling this function will CHANGE an external resource.
+   With no keyword-schemes (2-arity): rebuilds all indexes including multi-scheme aggregates.
+   With keyword-schemes (3-arity): rebuilds only the indexes directly associated with those
+   schemes. Multi-scheme aggregates are excluded and must be rebuilt via a full refresh."
+  ([context kms-keywords-map]
+   (rl-util/log-refresh-start (string/join " " (map first kms-index-definitions)))
+   (doseq [[cache-key generate-fn] kms-index-definitions]
+     (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+   kms-keywords-map)
+  ([context kms-keywords-map keyword-schemes]
+   (doseq [keyword-scheme keyword-schemes
+           [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
+     (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+   kms-keywords-map))
 
 ;; ---------------------------------------------------------------------
 ;; Define scheme lookups
@@ -673,8 +670,8 @@
    long-name is not present in the umm-c-keyword.  We only want to validate long-name if it is not nil."
   [kms-index-value]
   (into {}
-    (for [[k v] kms-index-value]
-      [(dissoc k :long-name) v])))
+        (for [[k v] kms-index-value]
+          [(dissoc k :long-name) v])))
 
 (defn lookup-by-umm-c-keyword-data-format
   "Takes a keyword as represented in the UMM concepts as a map or as an individual string
@@ -687,7 +684,7 @@
                        {:short-name umm-c-keyword}
                        {:short-name (:format umm-c-keyword)})
           comparison-map (normalize-for-lookup format-map (kms-scheme->fields-for-umm-c-lookup
-                                                            keyword-scheme))
+                                                           keyword-scheme))
           umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
           [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
           _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-data-format" kms-umm-c-cache-key tm)]
@@ -789,13 +786,13 @@
             {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
             ;; Build either a 3 or 2 item map depending on if we have Quantities
             measurements-to-find (if (seq MeasurementQuantities)
-                           (map (fn [quantity]
-                                  {:context-medium MeasurementContextMedium
-                                   :object MeasurementObject
-                                   :quantity (:Value quantity)})
-                                MeasurementQuantities)
-                           [{:context-medium MeasurementContextMedium
-                             :object MeasurementObject}])]
+                                   (map (fn [quantity]
+                                          {:context-medium MeasurementContextMedium
+                                           :object MeasurementObject
+                                           :quantity (:Value quantity)})
+                                        MeasurementQuantities)
+                                   [{:context-medium MeasurementContextMedium
+                                     :object MeasurementObject}])]
         ;; Remove will always return something when dealing with a nil keyword cache which we do not
         ;; what if there is no cache at all. When we have a cache, then do the removes.
         (when measurement-index
