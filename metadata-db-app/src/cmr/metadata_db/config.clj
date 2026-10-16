@@ -54,12 +54,16 @@
   "The ingest exchange to which concept update/save messages are published."
   {:default "cmr_ingest.exchange"})
 
+(defconfig ingest-delete-exchange-name
+  "The exchange to which ingest delete event messages are published."
+  {:default "cmr_ingest_delete.exchange"})
+
 (defconfig access-control-exchange-name
   "The access control exchange to which update/save messages are published for access control data."
   {:default "cmr_access_control.exchange"})
 
 (def concept-type->exchange-name-fn
-  "Maps concept types to a function that returns the name of the exchange to publish the message to."
+  "Maps concept types to a function that returns the name of the ingest exchange (for create/updates) to publish the message to."
   (merge
    {:granule ingest-exchange-name 
     :collection ingest-exchange-name
@@ -77,6 +81,26 @@
     :subscription ingest-exchange-name
     :generic-association ingest-exchange-name}
    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-exchange-name))))
+
+(def concept-type->exchange-delete-name-fn
+  "Maps concept types to a function that returns the name of the delete exchange to publish the message to."
+  (merge
+    {:granule ingest-exchange-name
+     :collection ingest-delete-exchange-name ;; only have collection delete go to the delete exchange for now
+     :tag ingest-exchange-name
+     :tag-association ingest-exchange-name
+     :service ingest-exchange-name
+     :service-association ingest-exchange-name
+     :access-group access-control-exchange-name
+     :acl access-control-exchange-name
+     :humanizer ingest-exchange-name
+     :variable ingest-exchange-name
+     :variable-association ingest-exchange-name
+     :tool ingest-exchange-name
+     :tool-association ingest-exchange-name
+     :subscription ingest-exchange-name
+     :generic-association ingest-exchange-name}
+    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-delete-exchange-name))))
 
 (defconfig deleted-concept-revision-exchange-name
   "An exchange that will have messages passed to it whenever a concept revision is removed from
@@ -99,5 +123,6 @@
   (assoc (rmq-conf/default-config)
          :exchanges [(deleted-concept-revision-exchange-name)
                      (ingest-exchange-name)
+                     (ingest-delete-exchange-name)
                      (access-control-exchange-name)
                      (deleted-granule-exchange-name)]))
