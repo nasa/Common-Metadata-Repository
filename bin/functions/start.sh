@@ -22,7 +22,9 @@ function start_local_sqs_sns () {
     echo "Starting local SQS/SNS services with docker ..."
     rm -f $SQS_CONTAINER_ID_FILE
     docker pull $SQS_DOCKER_REPO
-    docker run -d --cidfile=$SQS_CONTAINER_ID_FILE -p 4100:4100 $SQS_DOCKER_REPO
+    docker run -d --cidfile=$SQS_CONTAINER_ID_FILE -p 4100:4566 \
+        -e SERVICES=sqs,sns -e SQS_ENDPOINT_STRATEGY=path -e LOCALSTACK_HOST=localhost:4100 \
+        $SQS_DOCKER_REPO
     echo "Done."
 }
 

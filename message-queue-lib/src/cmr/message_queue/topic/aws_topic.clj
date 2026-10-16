@@ -8,6 +8,7 @@
    [cmr.common.util :as util]
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.aws-queue :as aws-queue]
+   [cmr.message-queue.queue.sqs :as sqs]
    [cmr.message-queue.topic.topic-protocol :as topic-protocol])
   (:import
    (software.amazon.awssdk.regions Region)
@@ -155,11 +156,13 @@
 (record-pretty-printer/enable-record-pretty-printing AWSTopic)
 
 (defn create-sns-client
-  "Create an AWS SNS service client."
+  "Create an AWS SNS service client, using CMR_SNS_ENDPOINT if set."
   []
-  (-> (SnsClient/builder)
-      (.region Region/US_EAST_1)
-      (.build)))
+  (let [builder (-> (SnsClient/builder)
+                    (.region Region/US_EAST_1))]
+    (when-let [endpoint (sqs/sns-endpoint)]
+      (.endpointOverride builder (java.net.URI. endpoint)))
+    (.build builder)))
 
 (defn create-sns-topic
   "Create an SNS topic in AWS."

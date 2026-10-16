@@ -15,6 +15,7 @@
   (:import
    (clojure.lang Keyword Reflector)
    (cmr.message_queue.test ExitException)
+   (com.amazonaws.client.builder AwsClientBuilder AwsClientBuilder$EndpointConfiguration)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
@@ -206,21 +207,21 @@
   the configuration operation doesn't actually take place."
   identity)
 
+(defn- build-aws-client
+  "Build a client from the given builder, using endpoint if it is set. The endpoint must be
+  set on the builder: setEndpoint on a built client throws, as built clients are immutable."
+  [^AwsClientBuilder builder endpoint]
+  (when endpoint
+    (.setEndpointConfiguration builder (AwsClientBuilder$EndpointConfiguration. endpoint "us-east-1")))
+  (.build builder))
+
 (defmethod create-aws-client :sqs
   [^Keyword _type]
-  ;; new AmazonSNS() has been depricated in favor of
-  ;; AmazonSNS sns = AmazonSNSClient.builder().build();
-  (configure-aws-client
-    (.build (AmazonSQSClient/builder))
-    :setEndpoint (sqs-endpoint)))
+  (build-aws-client (AmazonSQSClient/builder) (sqs-endpoint)))
 
 (defmethod create-aws-client :sns
   [^Keyword _type]
-  ;; new AmazonSNS() has been depricated in favor of
-  ;; AmazonSNS sns = AmazonSNSClient.builder().build();
-  (configure-aws-client
-    (.build (AmazonSNSClient/builder))
-    :setEndpoint (sns-endpoint)))
+  (build-aws-client (AmazonSNSClient/builder) (sns-endpoint)))
 
 (defn- create-async-handler
   "Creates a thread that will asynchronously pull messages off the queue, pass them to the handler,
@@ -276,7 +277,9 @@
   (let [q-name (normalize-queue-name queue-name)
         dlq-name (dead-letter-queue q-name)
 
-        ;; Create the dead-letter-queue first and get its url
+        ;; Create the dead-letter-queue first and get its url. createQueue is a no-op for an
+        ;; existing queue with the same attributes.
+        _ (.createQueue sqs-client dlq-name)
         dlq-arn (get-queue-arn sqs-client dlq-name)
         ;; the policy that sets retries and what dead-letter-queue to use
         redrive-policy (format "{\"maxReceiveCount\":\"%d\", \"deadLetterTargetArn\": \"%s\"}"

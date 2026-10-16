@@ -47,7 +47,7 @@ If you would like to test messaging against a local clone of SQS/SNS, then you
 can do the following:
 
 * Be sure that Docker is installed on your system and running
-* Run `cmr start local sqs-sns`
+* Run `cmr start local sqs-sns`, which starts LocalStack (SQS and SNS) on port 4100
 * From the shell where you will start the REPL, you will need the
   `CMR_SNS_ENDPOINT` and `CMR_SQS_ENDPOINT` environment variables set;
   in most cases you will want both of these set to `http://localhost:4100`
@@ -56,7 +56,12 @@ can do the following:
   standard AWS credential environment variables, `AWS_ACCESS_KEY_ID` and
   `AWS_SECRET_ACCESS_KEY` (it doesn't matter what the actual values are).
 * For CMR to use the local SQS/SNS, it needs to have the
-  `CMR_DEV_SYSTEM_QUEUE_TYPE` environment variable set to "aws".
+  `CMR_DEV_SYSTEM_QUEUE_TYPE` environment variable set to "aws". This also
+  switches the queue type for every app, so don't set `CMR_QUEUE_TYPE`.
+* If CMR runs in a container and LocalStack on the host, use
+  `http://host.docker.internal:4100` for both endpoints, and start LocalStack
+  with `LOCALSTACK_HOST=host.docker.internal:4100` so the queue URLs it
+  returns are reachable from the container.
 * Start the REPL, e.g. `cmr start repl`.
 * Reset the REPL (which reloads the code and starts up the system components):
   `(reset)`

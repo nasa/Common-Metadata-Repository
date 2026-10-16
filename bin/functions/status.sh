@@ -27,7 +27,7 @@ function status_docker  () {
 }
 
 function status_sqs_sns () {
-    docker ps|egrep 'CONTAINER|pafortin/goaws'
+    docker ps|egrep 'CONTAINER|localstack/localstack'
 }
 
 function status_uberjar_proj () {

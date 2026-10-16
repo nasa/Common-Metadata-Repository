@@ -3,7 +3,8 @@
   can use the AWS SDK Java2 libararies. The local queue uses the
   dockerized elasticMQ."
   (:require
-   [cmr.common.log :refer [error]])
+   [cmr.common.log :refer [error]]
+   [cmr.message-queue.queue.sqs :as sqs])
   (:import
    (software.amazon.awssdk.regions Region)
    (software.amazon.awssdk.services.sqs SqsClient)
@@ -21,11 +22,14 @@
 
 (defn create-sqs-client
   "Create an SQS service client using AWS SDK java 2 classes. This
-  function can also be used to connect to elasticMQ for testing."
+  function can also be used to connect to elasticMQ for testing. With no endpoint given,
+  uses CMR_SQS_ENDPOINT if set."
   ([]
-   (-> (SqsClient/builder)
-       (.region Region/US_EAST_1)
-       (.build)))
+   (if-let [endpoint (sqs/sqs-endpoint)]
+     (create-sqs-client endpoint)
+     (-> (SqsClient/builder)
+         (.region Region/US_EAST_1)
+         (.build))))
   ([override-endpoint-url]
    (-> (SqsClient/builder)
        (.region Region/US_EAST_1)
