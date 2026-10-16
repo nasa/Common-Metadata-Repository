@@ -462,27 +462,33 @@
 ;; Create KMS indexes for cache
 ;; ---------------------------------------------------------------------
 
+(def keyword-scheme->index-definitions
+  "Maps each keyword scheme to the [cache-key generate-fn] pairs that directly index its data.
+   Multi-scheme aggregates (kms-short-name-cache-key, kms-umm-c-cache-key) are intentionally
+   excluded here — they are rebuilt only during a full refresh via create-kms-index."
+  {:providers            [[kms-providers-cache-key            generate-lookup-by-providers-name-map]]
+   :platforms            [[kms-platforms-cache-key            generate-lookup-by-platforms-name-map]]
+   :instruments          [[kms-instruments-cache-key          generate-lookup-by-instruments-name-map]]
+   :projects             [[kms-projects-cache-key             generate-lookup-by-project-name-map]]
+   :temporal-keywords    [[kms-temporal-keywords-cache-key    generate-lookup-by-temporal-keywords-name-map]]
+   :spatial-keywords     [[kms-location-cache-key             generate-lookup-by-location-map]
+                          [kms-spatial-keywords-cache-key     generate-lookup-by-spatial-keywords-map]]
+   :spatial-keywords-old []
+   :science-keywords     [[kms-science-keywords-cache-key     generate-lookup-by-science-keywords-map]]
+   :measurement-name     [[kms-measurement-cache-key          generate-lookup-by-measurement-name]]
+   :concepts             [[kms-concepts-cache-key             generate-lookup-by-concepts-name-map]]
+   :iso-topic-categories [[kms-iso-topic-categories-cache-key generate-lookup-by-iso-topic-categories-name-map]]
+   :related-urls         [[kms-related-urls-cache-key         generate-lookup-by-related-urls-map]]
+   :granule-data-format  [[kms-granule-data-format-cache-key  generate-lookup-by-granule-data-format-name-map]]
+   :mime-type            [[kms-mime-type-cache-key            generate-lookup-by-mime-type-name-map]]
+   :processing-levels    [[kms-processing-level-cache-key     generate-lookup-by-processing-level-map]]})
+
 (def ^:private kms-index-definitions
-  "Pairs of [cache-key generate-fn] describing every KMS index. The generate-fn takes the
-   kms-keywords-map and returns the lookup map to store under that cache key. Adding a new
-   KMS index means adding one line here."
-  [[kms-short-name-cache-key           generate-lookup-by-short-name-map]
-   [kms-projects-cache-key             generate-lookup-by-project-name-map]
-   [kms-processing-level-cache-key     generate-lookup-by-processing-level-map]
-   [kms-umm-c-cache-key                generate-lookup-by-umm-c-map]
-   [kms-location-cache-key             generate-lookup-by-location-map]
-   [kms-measurement-cache-key          generate-lookup-by-measurement-name]
-   [kms-science-keywords-cache-key     generate-lookup-by-science-keywords-map]
-   [kms-platforms-cache-key            generate-lookup-by-platforms-name-map]
-   [kms-instruments-cache-key          generate-lookup-by-instruments-name-map]
-   [kms-providers-cache-key            generate-lookup-by-providers-name-map]
-   [kms-spatial-keywords-cache-key     generate-lookup-by-spatial-keywords-map]
-   [kms-concepts-cache-key             generate-lookup-by-concepts-name-map]
-   [kms-iso-topic-categories-cache-key generate-lookup-by-iso-topic-categories-name-map]
-   [kms-granule-data-format-cache-key  generate-lookup-by-granule-data-format-name-map]
-   [kms-mime-type-cache-key            generate-lookup-by-mime-type-name-map]
-   [kms-related-urls-cache-key         generate-lookup-by-related-urls-map]
-   [kms-temporal-keywords-cache-key    generate-lookup-by-temporal-keywords-name-map]])
+  "All [cache-key generate-fn] pairs for every KMS index. Scheme-specific entries are derived
+   from keyword-scheme->index-definitions; the two multi-scheme aggregates are appended."
+  (concat (apply concat (vals keyword-scheme->index-definitions))
+          [[kms-short-name-cache-key generate-lookup-by-short-name-map]
+           [kms-umm-c-cache-key      generate-lookup-by-umm-c-map]]))
 
 (defn- store-kms-index!
   "Writes a single KMS lookup map to redis under cache-key. No-ops on an empty map so we
@@ -492,27 +498,6 @@
     (let [cache (hash-cache/context->cache context cache-key)
           [tm _] (util/time-execution (hash-cache/set-values cache cache-key lookup-map))]
       (rl-util/log-redis-write-complete "create-kms-index" cache-key tm))))
-
-(def keyword-scheme->index-definitions
-  "Maps each keyword scheme to the [cache-key generate-fn] pairs that directly index its data.
-   Multi-scheme aggregates (kms-short-name-cache-key, kms-umm-c-cache-key) are intentionally
-   excluded here — they are rebuilt only during a full refresh via create-kms-index."
-  {:providers          [[kms-providers-cache-key            generate-lookup-by-providers-name-map]]
-   :platforms          [[kms-platforms-cache-key            generate-lookup-by-platforms-name-map]]
-   :instruments        [[kms-instruments-cache-key          generate-lookup-by-instruments-name-map]]
-   :projects           [[kms-projects-cache-key             generate-lookup-by-project-name-map]]
-   :temporal-keywords  [[kms-temporal-keywords-cache-key    generate-lookup-by-temporal-keywords-name-map]]
-   :spatial-keywords    [[kms-location-cache-key             generate-lookup-by-location-map]
-                        [kms-spatial-keywords-cache-key     generate-lookup-by-spatial-keywords-map]]
-   :spatial-keywords-old []
-   :science-keywords   [[kms-science-keywords-cache-key     generate-lookup-by-science-keywords-map]]
-   :measurement-name   [[kms-measurement-cache-key          generate-lookup-by-measurement-name]]
-   :concepts           [[kms-concepts-cache-key             generate-lookup-by-concepts-name-map]]
-   :iso-topic-categories [[kms-iso-topic-categories-cache-key generate-lookup-by-iso-topic-categories-name-map]]
-   :related-urls       [[kms-related-urls-cache-key         generate-lookup-by-related-urls-map]]
-   :granule-data-format [[kms-granule-data-format-cache-key  generate-lookup-by-granule-data-format-name-map]]
-   :mime-type          [[kms-mime-type-cache-key            generate-lookup-by-mime-type-name-map]]
-   :processing-levels  [[kms-processing-level-cache-key     generate-lookup-by-processing-level-map]]})
 
 (defn create-kms-index
   "Creates the KMS index structure to be used for fast lookups and stores these values in

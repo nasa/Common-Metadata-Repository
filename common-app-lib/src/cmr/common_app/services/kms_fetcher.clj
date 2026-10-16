@@ -69,30 +69,30 @@
                                    :ttl kms-cache-ttl}))
 
 (defn- parse-concept-schemes
-       "Parses and validates the concept_scheme query param. Accepts a comma-separated string or a
+  "Parses and validates the concept_scheme query param. Accepts a comma-separated string or a
   vector of strings. Returns a seq of keyword scheme keys valid for use with transmit-kms."
-       [param]
-       (def p param)
-       (let [raw (if (sequential? param) (string/join "," param) param)
-             schemes (->> (string/split raw #",")
-                          (map string/trim)
-                          (remove string/blank?)
-                          (map csk/->kebab-case-keyword)
-                          (map transmit-kms/translate-keyword-scheme-to-gcmd)
-                          distinct)
-             valid? (set (keys transmit-kms/keyword-scheme->field-names))
-             invalid (remove valid? schemes)]
-            (when (empty? schemes)
-                  (srv-err/throw-service-error
-                    :bad-request "concept_scheme param is required when provided and must not be blank."))
-            (when (seq invalid)
-                  (let [valid-names (string/join ", " (sort (map #(-> % name csk/->snake_case) valid?)))]
-                       (srv-err/throw-service-error
-                         :bad-request
-                         (format "Invalid concept_scheme value(s): [%s]. Valid schemes are: %s."
-                                 (string/join ", " (map name invalid))
-                                 valid-names))))
-            schemes))
+  [param]
+  (def p param)
+  (let [schemes (->> (util/seqify param)
+                     (mapcat #(string/split % #","))
+                     (map string/trim)
+                     (remove string/blank?)
+                     (map csk/->kebab-case-keyword)
+                     (map transmit-kms/translate-keyword-scheme-to-gcmd)
+                     distinct)
+        valid? (set (keys transmit-kms/keyword-scheme->field-names))
+        invalid (remove valid? schemes)]
+    (when (empty? schemes)
+      (srv-err/throw-service-error
+       :bad-request "concept_scheme param is required when provided and must not be blank."))
+    (when (seq invalid)
+      (let [valid-names (string/join ", " (sort (map #(-> % name csk/->snake_case) valid?)))]
+        (srv-err/throw-service-error
+         :bad-request
+         (format "Invalid concept_scheme value(s): [%s]. Valid schemes are: %s."
+                 (string/join ", " (map name invalid))
+                 valid-names))))
+    schemes))
 
 (comment
   (parse-concept-schemes "platforms")
