@@ -667,7 +667,10 @@
 
 (defn- cascade-collection-delete
   "Performs the cascade actions of collection deletion,
-  i.e. propagate collection deletion to granules and variables"
+  i.e. propagate collection deletion to granules and variables
+  - delete-request-timestamp is used to address race conditions when a user is trying to re-ingest currently deleting collection granules.
+  It is a timestamp that will keep track of what is 'new' and what needs to be deleted.
+  We will use the concept's 'revision-date' as the value of the deleted-request-timestamp."
   [context concept-id revision-id delete-request-timestamp]
   (let [small-collections-index-name (-> (idx-set/get-concept-type-index-names context)
                                          (:index-names)
@@ -676,7 +679,6 @@
     (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
       (if (= index small-collections-index-name)
         (let [concept-id-clause {:term {(query-field->elastic-field :collection-concept-id :granule) concept-id}}
-              ;; (Assuming 'delete-request-timestamp' is passed in from the SQS message)
               revision-date-clause {:range {(query-field->elastic-field :revision-date :granule)
                                             {:lte delete-request-timestamp}}}
 
@@ -739,7 +741,7 @@
      :not-found
      (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db.")))
 
-  (let [{:keys [all-revisions-index? delete-request-timestamp]} options
+  (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
         elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
@@ -772,7 +774,7 @@
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (let [[tm result] (util/time-execution
-                                 (cascade-collection-delete context concept-id revision-id delete-request-timestamp))]
+                                 (cascade-collection-delete context concept-id revision-id (:revision-date concept)))]
                 (debug (format "Timed function %s/cascade-collection-delete took %d ms." (str *ns*) tm))
                 result))))))))
 

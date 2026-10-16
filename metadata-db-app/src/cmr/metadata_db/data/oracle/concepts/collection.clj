@@ -4,7 +4,7 @@
    [clj-time.coerce :as cr]
    [clj-time.core :as core]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer [debug]]
+   [cmr.common.log :refer [debug error]]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.util :as data-util]
@@ -42,15 +42,24 @@
 
 (defmethod c/post-commit-step :collection
   [db provider concept]
-  (debug (format "INSIDE post-commit-step :collection with provider %s and coll-id %s" provider {:concept-id concept}))
-  ;; If this is a tombstone (deletion), run your batch-delete loop
+  (debug (format "INSIDE post-commit-step :collection with provider %s and coll-id %s and revision-date %s" provider {:concept-id concept} {:revision-date concept}))
+
   (when (:deleted concept)
-    (debug "Running DB batched granule deletion for collection" (:concept-id concept))
-    ;; Cascade deletion to real deletes of granules
-    (concepts/force-delete-by-params db
-                                     provider
-                                     {:concept-type :granule
-                                      :provider-id (:provider-id concept)
-                                      :parent-collection-id (:concept-id concept)
-                                      :revision-date-boundary (or (:revision-date concept)
-                                                                  (core/now))})))
+    (let [;; Fetch the exact tombstone record back from Oracle to get the SYSTIMESTAMP it generated
+          tombstone (concepts/get-concept db :collection provider (:concept-id concept) (:revision-id concept))
+          ;; Extract the true database revision date
+          db-revision-date (:revision-date tombstone)]
+
+      (debug "Running batched granule deletion for collection with db-revision-date %s" (:concept-id concept) db-revision-date)
+
+      (if db-revision-date
+        ;; Pass it to the batch delete function to prevent us deleting re-ingested new grans during a coll delete
+        (concepts/force-delete-by-params db
+                                         provider
+                                         {:concept-type :granule
+                                          :provider-id (:provider-id concept)
+                                          :parent-collection-id (:concept-id concept)
+                                          :revision-date-boundary db-revision-date})
+
+        ;; Fallback (Should never happen, but good for safety)
+        (error (format "CRITICAL: Could not retrieve database revision_date for tombstone %s" (:concept-id concept)))))))

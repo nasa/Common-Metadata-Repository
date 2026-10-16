@@ -68,8 +68,7 @@
   [{:keys [concept-id revision-id revision-date]}]
   {:action :concept-delete
    :concept-id concept-id
-   :revision-id revision-id
-   :delete-request-timestamp revision-date})
+   :revision-id revision-id})
 
 (defn concept-expire-event
   "Creates an event representing a concept being expired"
