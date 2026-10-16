@@ -6,7 +6,8 @@
   :dependencies [[camel-snake-kebab "0.4.0"]
                  [cheshire
                   :exclusions [com.fasterxml.jackson.core/jackson-core
-                               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+                               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor
+                               com.fasterxml.jackson.dataformat/jackson-dataformat-smile]]
                  [clj-time]
                  [clojail "1.0.6"]
 
@@ -20,9 +21,7 @@
                  [com.dadrox/quiet-slf4j "0.1"]
                  [com.fasterxml.jackson.core/jackson-core]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-smile
-                  :exclusions [com.fasterxml.jackson.core/jackson-core
-                               com.fasterxml.jackson.core/jackson-databind]]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
                  [commons-codec/commons-codec "1.11"]
