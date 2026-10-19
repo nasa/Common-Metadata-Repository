@@ -257,7 +257,8 @@
           (> (- (System/currentTimeMillis) start-time) max-wait-ms)
           (do
             (let [timeout-minutes (/ max-wait-ms 60000.0)]
-              (warn (format "Delete-By-Query: Task %s exceeded the %.1f-minute limit. Cancelling the task on Elasticsearch to prevent overlap on the next SQS retry."
+              (warn (format (str "Delete-By-Query: Task %s exceeded the %.1f-minute limit. Cancelling the task on "
+                                 "Elasticsearch to prevent overlap on the next SQS retry.")
                             task-id timeout-minutes)))
 
             ;; End the task on the cluster to prevent overlapping tasks when SQS retries this failed msg
@@ -282,36 +283,41 @@
    (delete-by-query conn index mapping-type query {}))
 
   ([conn index _mapping-type query options]
-    (loop [attempt 1]
-      (let [result (try
-                     (let [task-id (attempt-to-start-task conn index query options)]
-                       [:ok (poll-task-for-completion conn task-id options)])
-                     (catch Exception e
-                       [:error e]))]
+   (loop [attempt 1]
+     (let [result (try
+                    (let [task-id (attempt-to-start-task conn index query options)]
+                      [:ok (poll-task-for-completion conn task-id options)])
+                    (catch Exception e
+                      [:error e]))]
 
-        ;; Attempt Retries if failed due to Elastic's scroll context errors
-        (if (= :ok (first result))
-          (second result)
-          (let [e (second result)
-                ex-data-map (ex-data e)]
+       ;; Attempt Retries if failed due to Elastic's scroll context errors
+       (if (= :ok (first result))
+         (second result)
+         (let [e (second result)
+               ex-data-map (ex-data e)]
 
-            (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
-              (do
-                ;; Log the exact ex-info message and data that triggered the retry
-                (warn (format "Delete-By-Query: Caught exception: %s | Data: %s"
+           (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
+             (do
+               ;; Exponential Backoff
+               (let [backoff-ms (long (* (Math/pow 5 attempt) 1000))]
+                 (info (format "Delete-By-Query: Ran into scroll context error on attempt %d/%d. Retrying in %d seconds..."
+                               attempt
+                               3
+                               (/ backoff-ms 1000)))
+                 (Thread/sleep backoff-ms))
+
+               (recur (inc attempt)))
+
+             (do
+               ;; Log the exact ex-info message and data right before permanently failing
+               (error (format (str "Delete-By-Query: Task permanently failed due to max retries reached or some "
+                                   "exception that wasn't related to scroll context error. "
+                                   "Retries %d/%d | Exception: %s | Data: %s")
+                              attempt
+                              3
                               (ex-message e)
                               (pr-str ex-data-map)))
-                (debug (format "Delete-By-Query: Scroll context error on attempt %d. Retrying in 1 second..." attempt))
-                (Thread/sleep 1000)
-                (recur (inc attempt)))
-
-              (do
-                ;; Log the exact ex-info message and data right before permanently failing
-                (error (format "Delete-By-Query: Task permanently failed or max retries reached. Exception: %s | Data: %s"
-                               (ex-message e)
-                               (pr-str ex-data-map)))
-                ;; Pass the exception up the chain
-                (throw e)))))))))
+               (throw e)))))))))
 
 (defn delete-index
   "Deletes an index from the elastic store"
