@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
+   [cmr.metadata-db.config :as config]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
@@ -67,7 +68,7 @@
         ;; Extract the SQL string and the values from the built statement
         sql-str (first built-stmt)
         sql-vals (rest built-stmt)
-        batch-size 10000
+        batch-size (config/force-delete-concept-by-params-db-batch-size)
 
         ;; Append ROWNUM <= ? for batch async calls and conditionally append revision_date to the SQL string
         ;; so we can bound which concepts we are deleting during delete vs ingest race conditions

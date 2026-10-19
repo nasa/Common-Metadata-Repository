@@ -284,7 +284,8 @@
 
   ([conn index _mapping-type query options]
    (loop [attempt 1]
-     (let [result (try
+     (let [max-attempts (es-config/delete-by-query-error-retry-attempts)
+           result (try
                     (let [task-id (attempt-to-start-task conn index query options)]
                       [:ok (poll-task-for-completion conn task-id options)])
                     (catch Exception e
@@ -296,25 +297,26 @@
          (let [e (second result)
                ex-data-map (ex-data e)]
 
-           (if (and (< attempt 3) (= :scroll-context-error (:type ex-data-map)))
+           (if (and (< attempt max-attempts) (= :scroll-context-error (:type ex-data-map)))
              (do
                ;; Exponential Backoff
-               (let [backoff-ms (long (* (Math/pow 5 attempt) 1000))]
+               (let [calculated-backoff (* (Math/pow 5 attempt) 1000)
+                     ;; never allow the backoff to be > 60 secs
+                     backoff-ms (long (min calculated-backoff 60000))]
                  (info (format "Delete-By-Query: Ran into scroll context error on attempt %d/%d. Retrying in %d seconds..."
                                attempt
-                               3
+                               max-attempts
                                (/ backoff-ms 1000)))
                  (Thread/sleep backoff-ms))
 
                (recur (inc attempt)))
 
              (do
-               ;; Log the exact ex-info message and data right before permanently failing
                (error (format (str "Delete-By-Query: Task permanently failed due to max retries reached or some "
                                    "exception that wasn't related to scroll context error. "
                                    "Retries %d/%d | Exception: %s | Data: %s")
                               attempt
-                              3
+                              max-attempts
                               (ex-message e)
                               (pr-str ex-data-map)))
                (throw e)))))))))

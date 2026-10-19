@@ -7,6 +7,12 @@
    [cmr.oracle.connection :as conn]
    [cmr.message-queue.config :as rmq-conf]))
 
+;; This is here to remove linter unresolved variable error.
+(declare metadata-db-username metadata-db-password metadata-db-system catalog-rest-db-username parallel-chunk-size
+         result-set-fetch-size force-delete-concept-by-params-db-batch-size metadata-db-nrepl-port ingest-exchange-name
+         ingest-delete-exchange-name access-control-exchange-name deleted-concept-revision-exchange-name
+         deleted-granule-exchange-name publish-messages)
+
 (defconfig metadata-db-username
   "The database username"
   {:default "METADATA_DB"})
@@ -43,6 +49,11 @@
 (defconfig result-set-fetch-size
   "Gets the setting for query fetch-size (number of rows to fetch at once)"
   {:default 200
+   :type Long})
+
+(defconfig force-delete-concept-by-params-db-batch-size
+  "Sets the batch size of how many rows to delete in db per concept batch delete"
+  {:default 10000
    :type Long})
 
 (defconfig metadata-db-nrepl-port

@@ -129,6 +129,12 @@
   {:default 270 ;; 4.5 mins on a 5 min sqs timeout
    :type Long})
 
+(declare delete-by-query-error-retry-attempts)
+(defconfig delete-by-query-error-retry-attempts
+  "The amount of times the delete-by-query will attempt to retry elastic deletes based on specific errors before giving up"
+  {:default 3
+   :type Long})
+
 (defn gran-elastic-config
   "Returns the elastic config as a map"
   []
