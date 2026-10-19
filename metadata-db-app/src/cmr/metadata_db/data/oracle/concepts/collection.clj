@@ -50,16 +50,18 @@
           ;; Extract the true database revision date
           db-revision-date (:revision-date tombstone)]
 
-      (debug "Running batched granule deletion for collection with db-revision-date %s" (:concept-id concept) db-revision-date)
+      (debug (format "Running batched granule deletion for collection %s with db-revision-date %s" (:concept-id concept) db-revision-date))
 
       (if db-revision-date
         ;; Pass it to the batch delete function to prevent us deleting re-ingested new grans during a coll delete
-        (concepts/force-delete-by-params db
-                                         provider
-                                         {:concept-type :granule
-                                          :provider-id (:provider-id concept)
-                                          :parent-collection-id (:concept-id concept)
-                                          :revision-date-boundary db-revision-date})
+        (do
+          (concepts/force-delete-by-params db
+                                           provider
+                                           {:concept-type :granule
+                                            :provider-id (:provider-id concept)
+                                            :parent-collection-id (:concept-id concept)
+                                            :revision-date-boundary db-revision-date})
+          (debug (format "Successfully finished background post-commit-step :collection for concept %s" (:concept-id concept))))
 
         ;; Fallback (Should never happen, but good for safety)
         (error (format "CRITICAL: Could not retrieve database revision_date for tombstone %s" (:concept-id concept)))))))

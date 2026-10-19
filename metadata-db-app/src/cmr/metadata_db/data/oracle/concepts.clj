@@ -470,8 +470,6 @@
           ;; run the post-commit sql statements (like large granule deletes) asynchronously
           (post-commit-step db provider concept)
 
-          (debug (format "Successfully finished background post-commit-step for concept %s" (:concept-id concept)))
-
           (catch Exception e
             (error e (format "ERROR - Background Oracle background process save-concept failed in post-commit-step for concept %s" (:concept-id concept)))))))
 
