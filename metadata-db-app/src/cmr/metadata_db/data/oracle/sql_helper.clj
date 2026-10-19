@@ -61,6 +61,8 @@
                  (dissoc params :concept-type :provider-id :revision-date-boundary))
         table (ct/get-table-name provider concept-type)
 
+        _ (debug (format "CMR-11560 - Preparing to build SQL for table %s with boundary %s" table revision-date-boundary))
+
         ;; Build the base query (e.g. WHERE parent_collection_id = ?)
         sql-query (delete table
                           (where (find-params->sql-clause params)))
