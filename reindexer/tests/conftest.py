@@ -1,6 +1,17 @@
 import os
 
-# Unit tests never touch a real Oracle instance.  Set the backend to the
-# in-memory stub before any app modules are imported so that app.db does not
-# try to instantiate OracleClient (which would call oracledb.create_pool).
+import pytest
+
+# Before any app import, so app.db never creates a real Oracle pool.
 os.environ.setdefault("DB_BACKEND", "stub")
+
+
+@pytest.fixture(autouse=True)
+def _reset_es_health_cache():
+    """So one test's mocked ES health can't leak into the next through the cache."""
+    import app.es.health as health_mod
+    health_mod._cached_health = None
+    health_mod._cached_at = 0.0
+    yield
+    health_mod._cached_health = None
+    health_mod._cached_at = 0.0
