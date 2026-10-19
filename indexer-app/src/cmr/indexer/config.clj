@@ -43,7 +43,7 @@
 
 (defconfig index-delete-queue-listener-count
   "Number of worker threads to use for the index delete queue listener"
-  {:default 5
+  {:default 2
    :type Long})
 
 (defconfig index-delete-queue-max-wait-secs

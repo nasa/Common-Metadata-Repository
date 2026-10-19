@@ -433,10 +433,10 @@
             (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                                (when (= :variable-association (:concept-type concept))
                                  (validate-collection-not-associated-with-another-variable-with-same-name db concept)))]
-              ;; There was a concept id, native id mismatch with earlier concepts
+              ;; There was a concept id, native id mismatch with earlier concepts so return error
               error
 
-              ;; Concept id native id pair was valid
+              ;; Else Concept id native id pair was valid
               (let [{:keys [concept-type]} concept
                     table (tables/get-table-name provider concept-type)
                     seq-name (str table "_seq")

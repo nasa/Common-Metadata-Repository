@@ -100,7 +100,7 @@
      :tool-association ingest-exchange-name
      :subscription ingest-exchange-name
      :generic-association ingest-exchange-name}
-    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-delete-exchange-name))))
+    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-exchange-name))))
 
 (defconfig deleted-concept-revision-exchange-name
   "An exchange that will have messages passed to it whenever a concept revision is removed from
