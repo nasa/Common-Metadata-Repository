@@ -93,7 +93,7 @@
       <Beginning_Date_Time>2000-04-05T00:00:00Z</Beginning_Date_Time>
     </Range_DateTime>
   </Temporal_Coverage>
-  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Dataset_Progress>ACTIVE</Dataset_Progress>
   <Spatial_Coverage>
     <Granule_Spatial_Representation>NO_SPATIAL</Granule_Spatial_Representation>
     <Geometry>
