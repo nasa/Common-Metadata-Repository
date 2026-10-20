@@ -97,8 +97,8 @@
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch ~elastic-version]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [nrepl/nrepl]
-                                  [org.clojure/tools.namespace]
+                                  [nrepl/nrepl "1.1.0"]
+                                  [org.clojure/tools.namespace "0.2.11"]
                                   [org.yaml/snakeyaml "1.31"]]
                    :aot [cmr.elasticsearch.plugins.spatial.script.core
                          cmr.elasticsearch.plugins.spatial.factory.lfactory
