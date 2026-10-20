@@ -21,9 +21,9 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.namespace]
                                   [nrepl/nrepl]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [pjstadig/humane-test-output]
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]
                    ;; Uncomment this to enable assertions. Turn off during performance tests.
@@ -54,7 +54,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"

@@ -11,14 +11,14 @@
                  [com.fasterxml.jackson.core/jackson-databind]
 
                  [clj-http]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api]
                  [org.apache.logging.log4j/log4j-core]
                  [org.clojure/clojure]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                  [ring/ring-jetty-adapter "1.15.4"
                   :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
@@ -55,8 +55,8 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]]
+                                  [org.clojure/tools.namespace]
+                                  [nrepl/nrepl]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}
@@ -77,7 +77,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"
