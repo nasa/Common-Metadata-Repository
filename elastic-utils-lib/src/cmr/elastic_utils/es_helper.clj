@@ -146,7 +146,7 @@
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))
-        _ (debug (format "Delete-By-Query: Response for starting delete query task with slices %s and scroll size %s for index %s is %s" slices scroll-size index response))
+        _ (debug (format "Delete-By-Query: Response for starting delete query task with query %s slices %s and scroll size %s for index %s is %s" query slices scroll-size index response))
         status (:status response)
         body (:body response)]
 
