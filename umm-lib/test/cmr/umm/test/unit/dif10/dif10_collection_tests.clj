@@ -285,7 +285,7 @@
         <Ending_Date_Time>1999-03-24</Ending_Date_Time>
       </Range_DateTime>
     </Temporal_Coverage>
-    <Dataset_Progress>ACTIVE</Dataset_Progress>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
     <Spatial_Coverage>
       <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
       <Geometry>
