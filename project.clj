@@ -26,11 +26,16 @@
                           [com.fasterxml.jackson.core/jackson-databind "2.21.7"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.21.7"]
                           [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.22.2"]
+                          [commons-codec/commons-codec "1.22.1"]
+                          [commons-io/commons-io "2.22.0"]
                           [compojure "1.6.3"]
-                          [nrepl/nrepl "1.1.0"]
+                          [net.sf.saxon/Saxon-HE "13.0"]
+                          [nrepl/nrepl "1.8.0"]
                           [org.clojure/clojure "1.11.4"] ;; latest is 1.11.4 or 1.12.2
                           [org.clojure/core.cache "1.0.225"]
+                          [org.clojure/data.csv "1.1.1"]
                           [org.clojure/test.check "1.1.1"]
+                          [org.clojure/tools.namespace "1.5.1"]
                           [org.clojure/tools.reader "1.4.0"]
                           [org.apache.commons/commons-compress "1.28.0"] ;; see testcontainers
                           [org.apache.logging.log4j/log4j-api "2.25.5"]
@@ -41,8 +46,11 @@
                           [org.eclipse.jetty/jetty-io "12.1.12"]
                           [org.eclipse.jetty/jetty-util "12.1.12"]
                           [org.eclipse.jetty/jetty-server "12.1.12"]
+                          [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.14"]
                           [org.testcontainers/testcontainers "2.0.5"
-                           :exclusions [[org.apache.commons/commons-compress]]]]
+                           :exclusions [[org.apache.commons/commons-compress]]]
+                          [pjstadig/humane-test-output "0.11.0"]
+                          [selmer "1.13.5"]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"
                                         "indexer-app"
