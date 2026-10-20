@@ -9,7 +9,7 @@
 
 (def state-map
   {:planned  "PLANNED"
-   :in-work  "IN WORK"
+   :in-work  "ACTIVE"
    :complete "COMPLETE"})
 
 (defn parse
