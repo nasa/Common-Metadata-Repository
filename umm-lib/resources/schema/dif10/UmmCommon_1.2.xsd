@@ -455,6 +455,7 @@ technical contact
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="PLANNED"/>
+            <xs:enumeration value="IN WORK"/>
             <xs:enumeration value="ACTIVE"/>
             <xs:enumeration value="COMPLETE"/>
             <xs:enumeration value="DEPRECATED"/>
