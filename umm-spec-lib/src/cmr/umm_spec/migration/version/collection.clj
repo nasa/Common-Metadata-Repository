@@ -899,9 +899,14 @@
   ;; 1.18.7 changes PreviousVersion from an object to an array and adds optional fields
   (let [c (m-spec/update-version c :collection "1.18.7")]
     (if-let [pv (get-in c [:DOI :PreviousVersion])]
-      (if (sequential? pv)
-        c
-        (assoc-in c [:DOI :PreviousVersion] [pv]))
+      (let [pv-list (if (sequential? pv) pv [pv])
+            ;; CollectionProgress is required in 1.18.7 PreviousVersionType.
+            pv-list (mapv (fn [item]
+                            (if (map? item)
+                              (update item :CollectionProgress #(or % "NOT PROVIDED"))
+                              item))
+                          pv-list)]
+        (assoc-in c [:DOI :PreviousVersion] pv-list))
       c)))
 
 (defmethod interface/migrate-umm-version [:collection "1.18.7" "1.18.6"]
