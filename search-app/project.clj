@@ -50,7 +50,7 @@
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
-                 [metosin/ring-swagger-ui "2.1.4-0"]
+                 [metosin/ring-swagger-ui "2.1.4-0" :exclusions [metosin/scjsv]]
                  [metosin/ring-swagger "0.22.14"]
                  [prismatic/schema "1.1.9"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
