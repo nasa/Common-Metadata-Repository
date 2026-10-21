@@ -235,8 +235,8 @@
              :data-quality-summary-draft ["1.0.0"]
              :order-option-draft ["1.0.0"]
              :grid-draft ["1.0.0"]
-             :visualization ["1.1.0"]
-             :visualization-draft ["1.1.0"]
+             :visualization ["1.2.0"]
+             :visualization-draft ["1.2.0"]
              :citation ["1.0.0"]
              :citation-draft ["1.0.0"]}
    :parser #(json/parse-string % true)})

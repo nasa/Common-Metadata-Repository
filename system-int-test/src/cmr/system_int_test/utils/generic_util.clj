@@ -41,12 +41,12 @@
                         (slurp)
                         (json/parse-string true)))
 
-(def visualization (-> "schemas/visualization/v1.1.0/metadata.json"
+(def visualization (-> "schemas/visualization/v1.2.0/metadata.json"
                        (io/resource)
                        (slurp)
                        (json/parse-string true)))
 
-(def visualization-draft (-> "schemas/visualization/v1.1.0/metadata.json"
+(def visualization-draft (-> "schemas/visualization/v1.2.0/metadata.json"
                              (io/resource)
                              (slurp)
                              (json/parse-string true)))
