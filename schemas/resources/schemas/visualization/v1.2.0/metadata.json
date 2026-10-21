@@ -1,0 +1,141 @@
+{
+    "Identifier": "OPERA_L3_DSWX-HLS_LL_v1_STD",
+    "Name": "OPERA_L3_Dynamic_Surface_Water_Extent-HLS_v1_STD",
+    "Title": "OPERA Dynamic Surface Water Extent (L3)",
+    "Subtitle": "DSWx-HLS",
+    "Description": "YET_TO_SUPPLY",
+    "VisualizationType": "tiles",
+    "ScienceKeywords": [
+        {
+            "Category": "EARTH SCIENCE",
+            "Topic": "SPECTRAL/ENGINEERING",
+            "Term": "tbd",
+            "VariableLevel1": "tbd",
+            "DetailedVariable": "tbd"
+        },
+        {
+            "Category": "EARTH SCIENCE SERVICES",
+            "Topic": "DATA ANALYSIS AND VISUALIZATION",
+            "Term": "DATA VISUALIZATION",
+            "VariableLevel1": "tbd"
+        }
+    ],
+    "ConceptIds": [
+        {
+            "Type": "STD",
+            "Value": "C2617126679-POCLOUD",
+            "ShortName": "OPERA_L3_DSWX-HLS_V1",
+            "Title": "OPERA Dynamic Surface Water Extent from Harmonized Landsat Sentinel-2 product (Version 1)",
+            "Version": "1.0",
+            "DataCenter": "POCLOUD"
+        }
+    ],
+    "Specification": {
+        "ProductIdentification": {
+            "InternalIdentifier": "OPERA_L3_DSWX-HLS_LL_v1_STD",
+            "StandardOrNRTExternalIdentifier": "OPERA_L3_Dynamic_Surface_Water_Extent-HLS_v1_STD",
+            "BestAvailableExternalIdentifier": "OPERA_L3_Dynamic_Surface_Water_Extent-HLS",
+            "GIBSTitle": "OPERA Dynamic Surface Water Extent (L3, DSWx-HLS)",
+            "WorldviewTitle": "OPERA Dynamic Surface Water Extent (L3)",
+            "WorldviewSubtitle": "DSWx-HLS"
+        },
+        "ProductMetadata": {
+            "InternalIdentifier": "OPERA_L3_DSWX-HLS_LL_v1_STD",
+            "SourceDatasets": [
+                "C2617126679-POCLOUD"
+            ],
+            "RepresentingDatasets": [
+                "C2617126679-POCLOUD"
+            ],
+            "ScienceParameters": [
+                "dswx_hls"
+            ],
+            "ParameterUnits": [null],
+            "Measurement": "Surface Water Extent",
+            "GranuleOrComposite": "Granule",
+            "DataDayBreak": "00:00:00Z",
+            "VisualizationLatency": "1 day",
+            "UpdateInterval": 1440,
+            "TemporalCoverage": "2023-04-10/P1D",
+            "WGS84SpatialCoverage": [
+                -84.0,
+                -180.0,
+                84.0,
+                180.0
+            ],
+            "NativeSpatialCoverage": [
+                -84.0,
+                -180.0,
+                84.0,
+                180.0
+            ],
+            "AscendingOrDescending": "N/A",
+            "ColorMap": "colormap is embedded in the tif file",
+            "Ongoing": true,
+            "RetentionPeriod": -1,
+            "Daynight": [
+                "day"
+            ],
+            "OrbitTracks": [
+                "OrbitTracks_Landsat-8_Descending",
+                "OrbitTracks_Sentinel-2A_Descending",
+                "OrbitTracks_Sentinel-2B_Descending"
+            ],
+            "OrbitDirection": [
+                "descending"
+            ],
+            "LayerPeriod": "Daily",
+            "ows:Identifier": "OPERA_L3_Dynamic_Surface_Water_Extent-HLS_v1_STD",
+            "wmts:TileMatrixSetLink": {
+                "TileMatrixSet": "31.25m"
+            },
+            "wmts:Dimension": {
+                "Identifier": "Time",
+                "UOM": "ISO8601",
+                "Default": "2024-11-19",
+                "Current": false,
+                "Value": [
+                    "2024-05-11/2024-06-02/P1D",
+                    "2024-06-04/2024-11-19/P1D"
+                ]
+            },
+            "wmts:Format": ["image/png"],
+            "ows:Metadata": [
+                {
+                    "xlink:Href": "https://gitc.earthdata.nasa.gov/colormaps/v1.0/OPERA_Dynamic_Surface_Water_Extent.xml",
+                    "xlink:Role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.0",
+                    "xlink:Title": "GIBS Color Map: Data - RGB Mapping",
+                    "xlink:Type": "simple"
+                },
+                {
+                    "xlink:Href": "https://gitc.earthdata.nasa.gov/colormaps/v1.3/OPERA_Dynamic_Surface_Water_Extent.xml",
+                    "xlink:Role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/1.3",
+                    "xlink:Title": "GIBS Color Map: Data - RGB Mapping",
+                    "xlink:Type": "simple"
+                },
+                {
+                    "xlink:Href": "https://gitc.earthdata.nasa.gov/colormaps/v1.3/OPERA_Dynamic_Surface_Water_Extent.xml",
+                    "xlink:Role": "http://earthdata.nasa.gov/gibs/metadata-type/colormap/",
+                    "xlink:Title": "GIBS Color Map: Data - RGB Mapping",
+                    "xlink:Type": "simple"
+                }
+            ]
+        }
+    },
+    "Generation": {
+        "SourceProjection": "EPSG:4326",
+        "SourceResolution": "Native",
+        "SourceFormat": "GeoTIFF",
+        "SourceColorModel": "Indexed RGBA",
+        "SourceCoverage": "Tiled",
+        "OutputProjection": "EPSG:4326",
+        "OutputResolution": "31.25m",
+        "OutputFormat": "PPNG"
+    },
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/umm/visualization/v1.1.0",
+        "Name": "Visualization",
+        "Version": "1.1.0"
+    }
+}
+
