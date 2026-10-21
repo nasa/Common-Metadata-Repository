@@ -1,0 +1,48 @@
+{
+  "$id": "https://example.com/umm-vis-maps.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-Vis-Maps",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Specification": {
+      "$ref": "#/definitions/Specification"
+    },
+    "Generation": {
+      "$ref": "#/definitions/Generation"
+    }
+  },
+  "required": ["Specification", "Generation"],
+  "definitions": {
+    "Specification": {
+      "title": "UMM-Vis-Maps", 
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the Map type.",
+      "properties": {
+        "SpecificationMap1": {
+          "type": "string"
+        },
+        "SpecificationMap2": {
+          "type": "string" 
+        }
+      },
+      "required": ["SpecificationMap1", "SpecificationMap2"]
+    },
+    "Generation": {
+      "title": "UMM-Vis-Maps",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Specifies the Map type.",
+      "properties": {
+        "GenerationMap1": {
+          "type": "string"
+        },
+        "GenerationMap2": {
+          "type": "string"
+        }
+      },
+      "required": ["GenerationMap1", "GenerationMap2"]
+    }
+  }
+}
