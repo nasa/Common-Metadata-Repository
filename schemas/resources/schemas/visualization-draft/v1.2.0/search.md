@@ -238,9 +238,9 @@ __Sample response__
                     "OutputFormat": "PPNG"
                 },
                 "MetadataSpecification": {
-                    "URL": "https://cdn.earthdata.nasa.gov/umm/visualization/v1.1.0",
+                    "URL": "https://cdn.earthdata.nasa.gov/umm/visualization/v1.2.0",
                     "Name": "Visualization",
-                    "Version": "1.1.0"
+                    "Version": "1.2.0"
                 }
             }
         ]
