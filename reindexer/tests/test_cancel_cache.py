@@ -12,6 +12,8 @@ def _cache():
     store = MagicMock()
     return CancelledJobCache(store, interval_seconds=999), store
 
+def test_bamboo_reports_failure():
+    assert False; "deliberate failure"
 
 def test_refresh_replaces_the_set():
     """When the cache refreshes, then it holds exactly the cancelled jobs DynamoDB returned."""
