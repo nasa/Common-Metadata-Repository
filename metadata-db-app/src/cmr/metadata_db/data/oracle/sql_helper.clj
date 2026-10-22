@@ -53,15 +53,12 @@
   To make sure it properly auto-commits between batches, do not wrap this func in a
   with-db-transaction func (which will disable auto-commit)"
   [db provider params]
-  (debug (format "CMR-11560 - INSIDE force-delete-concept-by-params for provider %s with params %s" provider params))
   (let [{:keys [concept-type revision-date-boundary]} params
         ;; Remove concept-type, provider-id, and the boundary so the raw SQL builder doesn't crash
         params (if (:small provider)
                  (dissoc params :concept-type :revision-date-boundary)
                  (dissoc params :concept-type :provider-id :revision-date-boundary))
         table (ct/get-table-name provider concept-type)
-
-        _ (debug (format "CMR-11560 - Preparing to build SQL for table %s with boundary %s" table revision-date-boundary))
 
         ;; Build the base query (e.g. WHERE parent_collection_id = ?)
         sql-query (delete table
@@ -81,8 +78,6 @@
                (into [(str sql-str " AND ROWNUM <= ?")]
                      (concat sql-vals [batch-size])))]
 
-    (debug (format "CMR-11560 - stmt is %s" stmt))
-
     ;; Loop and execute until 0 rows are deleted
     (loop [total-deleted 0
            attempt 1]
@@ -90,7 +85,7 @@
             rows-deleted (j/with-db-transaction [batch-conn db]
                                                 (first (j/execute! batch-conn stmt)))]
 
-        (debug (format "CMR-11560 - INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
+        (debug (format "INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
 
         (if (> rows-deleted 0)
           (do
@@ -100,6 +95,6 @@
 
           ;; Loop finished!
           (do
-            (info (format "CMR-11560 - Finished deleting %d %s(s) in %d batches from db table %s."
+            (info (format "Finished deleting %d %s(s) in %d batches from db table %s."
                           total-deleted concept-type attempt table))
             total-deleted))))))
