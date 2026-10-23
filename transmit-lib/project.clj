@@ -8,8 +8,8 @@
                  [buddy/buddy-sign "3.6.1-359"
                   :exclusions [org.bouncycastle/bcprov-jdk18on]]
                  [clj-http]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
@@ -17,8 +17,8 @@
                  ;; replaces org.bouncycastle/bcprov-jdk18on
                  [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
-                 [org.clojure/data.csv "0.1.4"]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.clojure/data.csv]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
                  [ring/ring-jetty-adapter "1.15.4"
@@ -31,9 +31,9 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.namespace]
                                   [nrepl/nrepl]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]

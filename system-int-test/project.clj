@@ -12,8 +12,8 @@
                  [clj-time]
                  [clj-xml-validation "1.0.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [crouton "0.1.2"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
@@ -37,7 +37,7 @@
                  [org.clojure/clojure]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.clojure/tools.reader "1.4.0"]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.jsoup/jsoup "1.23.2"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]
@@ -59,10 +59,10 @@
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [org.clojure/tools.namespace]
+                                  [nrepl/nrepl]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
+                                  [pjstadig/humane-test-output]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :injections [(require 'pjstadig.humane-test-output)
@@ -84,7 +84,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+             :kaocha {:dependencies [[org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      [ring/ring-jetty-adapter "1.15.4"
                                       :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                      [lambdaisland/kaocha "1.0.732"]
