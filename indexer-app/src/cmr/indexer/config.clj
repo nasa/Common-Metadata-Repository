@@ -5,7 +5,7 @@
 
 ;; This is here to remove linter unresolved variable error.
 (declare index-queue-name index-queue-listener-count index-delete-queue-name index-delete-queue-listener-count
-         index-delete-queue-max-wait-secs all-revisions-index-queue-name
+         index-delete-queue-visibility-timeout-secs index-delete-queue-max-wait-secs all-revisions-index-queue-name
          all-revisions-index-queue-listener-count deleted-granule-index-queue-name
          deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
          ingest-exchange-name ingest-delete-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
@@ -46,10 +46,17 @@
   {:default 2
    :type Long})
 
+(defconfig index-delete-queue-visibility-timeout-secs
+  "The SQS visibility timeout for the index delete queue to allow enough time for
+  massive concept deletes before sqs retries"
+  {:default 3900 ;; 65 mins
+   :type Long})
+
 (defconfig index-delete-queue-max-wait-secs
   "The maximum time (in seconds) the indexer will wait for an Elasticsearch
    concept deletion to finish before cancelling it. This MUST be set to slightly
-   less than the SQS Delete Queue Visibility Timeout of the index delete queue."
+   less than the SQS Delete Queue Visibility Timeout of the index delete queue set
+   by the param index-delete-queue-visibility-timeout-secs."
   {:default 3600 ;; 60 mins on a 65 min sqs visibility timeout
   :type Long})
 
@@ -124,6 +131,7 @@
                      (deleted-concept-revision-exchange-name)
                      (deleted-granule-exchange-name)
                      (provider-exchange-name)]
+         :queues-to-policies {(index-delete-queue-name) {:visibility-timeout-secs (index-delete-queue-visibility-timeout-secs)}}
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)]
           (index-delete-queue-name) [(ingest-delete-exchange-name)]

@@ -43,12 +43,12 @@
   {:default 43200
    :type Long})
 
-(declare index-delete-queue-visibility-timeout-secs)
-(defconfig index-delete-queue-visibility-timeout-secs
-  "The SQS visibility timeout for the index delete queue to allow enough time for
-  massive concept deletes before sqs retries"
-  {:default 3900 ;; 65 mins
-   :type Long})
+;(declare index-delete-queue-visibility-timeout-secs)
+;(defconfig index-delete-queue-visibility-timeout-secs
+;  "The SQS visibility timeout for the index delete queue to allow enough time for
+;  massive concept deletes before sqs retries"
+;  {:default 3900 ;; 65 mins
+;   :type Long})
 
 (declare default-num-tries)
 (defconfig default-num-tries
@@ -94,9 +94,9 @@
     (string/includes? queue-name "provider")
     (provider-queue-visibility-timeout)
 
-    ;; The Index Delete queue
-    (= queue-name "cmr_index_delete.queue")
-    (index-delete-queue-visibility-timeout-secs)
+    ;;; The Index Delete queue
+    ;(= queue-name "cmr_index_delete.queue")
+    ;(index-delete-queue-visibility-timeout-secs)
 
     :else
     (default-queue-visibility-timeout)))
