@@ -38,7 +38,7 @@
                   :exclusions [io.netty/netty-codec
                                io.netty/netty-codec-http
                                io.netty/netty-handler]]
-                 [com.fasterxml.jackson.core/jackson-annotations "2.21"]
+                 [com.fasterxml.jackson.core/jackson-annotations]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.18.0"]
                  [commons-logging "1.2"]
