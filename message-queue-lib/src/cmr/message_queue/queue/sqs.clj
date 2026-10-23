@@ -33,7 +33,7 @@
 (defconfig default-queue-visibility-timeout
   "Default number of seconds SQS should wait after a message is read before making it visible to
   other queue readers."
-  {:default 300 ;; 5 mins
+  {:default 300
    :type Long})
 
 (declare provider-queue-visibility-timeout)
@@ -42,13 +42,6 @@
   it visible to other readers."
   {:default 43200
    :type Long})
-
-;(declare index-delete-queue-visibility-timeout-secs)
-;(defconfig index-delete-queue-visibility-timeout-secs
-;  "The SQS visibility timeout for the index delete queue to allow enough time for
-;  massive concept deletes before sqs retries"
-;  {:default 3900 ;; 65 mins
-;   :type Long})
 
 (declare default-num-tries)
 (defconfig default-num-tries
@@ -86,19 +79,11 @@
    :type String})
 
 (defn queue-visibility-timeout
-  "Number of seconds SQS should wait after a message is read from a queue before making
+  "Number of seconds SQS should wait after a message is read from a provider queue before making
   it visible to other readers."
   [queue-name]
-  (cond
-    ;; The Provider queue
-    (string/includes? queue-name "provider")
+  (if (string/includes? queue-name "provider")
     (provider-queue-visibility-timeout)
-
-    ;;; The Index Delete queue
-    ;(= queue-name "cmr_index_delete.queue")
-    ;(index-delete-queue-visibility-timeout-secs)
-
-    :else
     (default-queue-visibility-timeout)))
 
 (def queue-arn-attribute
