@@ -276,6 +276,18 @@
    '({:context-medium "atmosphere-at_cloud_base" :object "air_bad" :quantity "pressure"})
    {:MeasurementContextMedium "atmosphere-at_cloud_base", :MeasurementContextMediumURI nil, :MeasurementObject "air_bad", :MeasurementObjectURI nil, :MeasurementQuantities [{:Value "pressure", :MeasurementQuantityURI nil}]}))
 
+(deftest create-kms-index-for-schemes-test
+  (testing "Only specified scheme indexes are updated; unspecified schemes are unchanged"
+    (let [updated-map (-> sample-map
+                          (update :platforms conj {:short-name "NEW-PLAT" :category "Spacecraft" :uuid "new-plat-uuid"})
+                          (update :instruments conj {:short-name "NEW-INST" :uuid "new-inst-uuid"}))]
+      (kms-lookup/create-kms-index create-context updated-map [:platforms])
+      (testing "Updated scheme (platforms) reflects new entry"
+        (is (= "new-plat-uuid"
+               (kms-lookup/lookup-platform-by-short-name create-context "NEW-PLAT"))))
+      (testing "Unspecified scheme (instruments) cache is not updated"
+        (is (nil? (kms-lookup/lookup-instrument-by-short-name create-context "NEW-INST")))))))
+
 (deftest blank-and-not-provided-long-name-validation-test
   (testing "Platform long name validation with blank and 'Not provided' values"
     (are3

@@ -22,3 +22,27 @@
     (testing "Test KMS keywords API returning nil for testing purposes."
       (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
         (is (nil? (trans-kms/get-keywords-for-keyword-scheme context :projects)))))))
+
+(deftest partial-refresh-kms-cache-test
+  (let [sys (transmit-config/system-with-connections
+             {:caches bootstrap-system/application-caches}
+             [:kms])
+        context {:system sys}
+        kms-cache (cache/context->cache context kf/kms-cache-key)]
+
+    (testing "Partial refresh with a single scheme populates only that scheme in cache"
+      (kf/refresh-kms-cache context "platforms")
+      (let [kms-map (cache/get-value kms-cache kf/kms-cache-key)]
+        (is (some? (:platforms kms-map)))))
+
+    (testing "Invalid concept_scheme throws bad-request service error"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"Invalid concept_scheme"
+           (kf/refresh-kms-cache context "not-a-real-scheme"))))
+
+    (testing "Blank concept_scheme throws bad-request service error"
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo
+           #"must not be blank"
+           (kf/refresh-kms-cache context "   "))))))
