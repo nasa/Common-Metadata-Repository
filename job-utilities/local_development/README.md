@@ -11,3 +11,11 @@ Cron jobs are assumed to be run once every day at a given time. Most jobs are li
 
 Ensure you have the right dependencies by running `pip3 install -r requirements.txt` and then simply run the local_scheduler.py program.
 Note that the program currently does not run jobs immediately upon scheduling. To run a job right away as a test, use the -t flag.
+
+## Developing
+
+### Keeping up to date
+
+To test snyn use the following command:
+
+    snyk test --file=requirements.txt --command=python3 --severity-threshold=high
