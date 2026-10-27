@@ -67,7 +67,7 @@ def create_schedule():
             if job_details["scheduling"]["type"] == "cron":
                 minutes = str(job_details["scheduling"]["timing"]["minutes"]).zfill(2)
                 hours: str = str(job_details["scheduling"]["timing"]["hours"])
-                logger.info("Scheduling job " + job_name + " at " + hours + ":" + minutes)
+                logger.info("Scheduling cron job " + job_name + " at " + hours + ":" + minutes)
                 if hours == "*":
                     schedule.every().hour.at(":" + minutes).do(run_job,
                                                          job_details=job_details, job_name=job_name)
@@ -79,9 +79,9 @@ def create_schedule():
                 minutes = job_details["scheduling"]["timing"].get("minutes", 0)
                 hours = job_details["scheduling"]["timing"].get("hours", 0)
                 total_minutes = minutes + hours*60
-                logger.info("Scheduling job for every %d minutes", total_minutes)
+                logger.info("Scheduling interval job %s for every %d minutes", job_name, total_minutes)
 
-                schedule.every(total_minutes).seconds.do(run_job, job_details=job_details,
+                schedule.every(total_minutes).minutes.do(run_job, job_details=job_details,
                                                          job_name=job_name)
 
 def main():
