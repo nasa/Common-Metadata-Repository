@@ -20,9 +20,9 @@
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                   :dependencies [[org.clojure/tools.namespace "1.5.1"]
+                                  [nrepl/nrepl "1.8.0"]
+                                  [pjstadig/humane-test-output "0.11.0"]
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]

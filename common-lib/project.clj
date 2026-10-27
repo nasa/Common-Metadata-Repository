@@ -24,7 +24,7 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
-                 [commons-codec/commons-codec "1.11"]
+                 [commons-codec/commons-codec]
                  [compojure :exclusions [commons-fileupload]]
                  [digest "1.4.8"]
                  [environ "1.1.0"]
@@ -44,7 +44,7 @@
                  [org.clojure/test.check]
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [org.eclipse.jetty/jetty-io]
@@ -71,7 +71,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojure/tools.namespace]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
                                   [proto-repl "0.3.1"]
@@ -107,7 +107,7 @@
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
+             :kaocha {:dependencies [[org.clojure/tools.namespace]
                                      [lambdaisland/kaocha "1.88.1376"]
                                      [lambdaisland/kaocha-cloverage "1.1.89"]
                                      [lambdaisland/kaocha-junit-xml "1.17.101"]]}}

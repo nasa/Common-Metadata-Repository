@@ -39,8 +39,8 @@
                                io.netty/netty-codec-http
                                io.netty/netty-handler]]
                  [com.fasterxml.jackson.core/jackson-annotations]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [commons-logging "1.2"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -50,7 +50,7 @@
                  [org.apache.httpcomponents/httpcore "4.4.10"]
                  [org.clojure/clojure]
                  [org.clojure/tools.reader]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  ;; testcontainers needs a newer version of commons-compress, for now
                  ;; we will force it to use the latest version
                  [org.apache.commons/commons-compress]
@@ -68,10 +68,10 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojure/tools.namespace]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [nrepl/nrepl]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
@@ -93,7 +93,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"
                                       :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}
