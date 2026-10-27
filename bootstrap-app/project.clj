@@ -7,8 +7,8 @@
                  [clj-http] ;; was 2.3.0
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-time]
-                 [commons-codec/commons-codec "1.11"]
-                 [commons-io "2.18.0"]
+                 [commons-codec/commons-codec]
+                 [commons-io]
                  [compojure :exclusions [commons-fileupload]]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
@@ -27,7 +27,7 @@
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]
                  [potemkin "0.4.5"]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-core "1.15.4"]
@@ -45,9 +45,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojure/tools.namespace]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]
