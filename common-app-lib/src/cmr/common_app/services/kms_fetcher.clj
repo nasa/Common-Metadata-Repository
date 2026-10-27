@@ -72,7 +72,6 @@
   "Parses and validates the concept_scheme query param. Accepts a comma-separated string or a
   vector of strings. Returns a seq of keyword scheme keys valid for use with transmit-kms."
   [param]
-  (def p param)
   (let [schemes (->> (util/seqify param)
                      (mapcat #(string/split % #","))
                      (map string/trim)

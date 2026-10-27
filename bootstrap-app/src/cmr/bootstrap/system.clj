@@ -64,7 +64,7 @@
   {acl/token-imp-cache-key (acl/create-token-imp-cache)
    kf/kms-cache-key (kf/create-kms-cache)
    kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                          kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+   kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
    kl/kms-projects-cache-key (kl/create-kms-project-uuid-cache)
    kl/kms-processing-level-cache-key (kl/create-kms-processing-level-uuid-cache)
    kl/kms-location-cache-key (kl/create-kms-location-cache)

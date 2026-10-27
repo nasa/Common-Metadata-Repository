@@ -288,6 +288,21 @@
       (testing "Unspecified scheme (instruments) cache is not updated"
         (is (nil? (kms-lookup/lookup-instrument-by-short-name create-context "NEW-INST")))))))
 
+(deftest create-kms-index-partial-refresh-updates-aggregates-test
+  (testing "Partial refresh always rebuilds aggregate indexes (short-name and umm-c)"
+    (let [new-plat {:short-name "AGG-PLAT" :long-name "Aggregate Platform" :category "Spacecraft" :uuid "agg-plat-uuid"}
+          updated-map (update sample-map :platforms conj new-plat)]
+      (kms-lookup/create-kms-index create-context updated-map [:platforms])
+      (testing "short-name aggregate index reflects new platform"
+        (is (= "agg-plat-uuid"
+               (:uuid (kms-lookup/lookup-by-short-name create-context :platforms "AGG-PLAT")))))
+      (testing "umm-c aggregate index reflects new platform"
+        (is (= "agg-plat-uuid"
+               (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
+                                                          {:short-name "AGG-PLAT"
+                                                           :long-name "Aggregate Platform"
+                                                           :type "Spacecraft"}))))))))
+
 (deftest blank-and-not-provided-long-name-validation-test
   (testing "Platform long name validation with blank and 'Not provided' values"
     (are3

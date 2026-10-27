@@ -509,9 +509,13 @@
      (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
    kms-keywords-map)
   ([context kms-keywords-map keyword-schemes]
-   (doseq [keyword-scheme keyword-schemes
-           [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
-     (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+   (let [scheme-cache-keys (set (map first (apply concat (vals keyword-scheme->index-definitions))))
+         aggregate-defs    (remove #(scheme-cache-keys (first %)) kms-index-definitions)]
+     (doseq [keyword-scheme keyword-schemes
+             [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
+       (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+     (doseq [[cache-key generate-fn] aggregate-defs]
+       (store-kms-index! context cache-key (generate-fn kms-keywords-map))))
    kms-keywords-map))
 
 ;; ---------------------------------------------------------------------
