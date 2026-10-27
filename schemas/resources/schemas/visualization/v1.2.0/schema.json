@@ -1382,7 +1382,7 @@
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
           "enum": [
-            "https://cdn.earthdata.nasa.gov/umm/visualization/v1.1.0"
+            "https://cdn.earthdata.nasa.gov/umm/visualization/v1.2.0"
           ]
         },
         "Name": {
@@ -1396,7 +1396,7 @@
           "description": "This element represents the version of the schema.",
           "type": "string",
           "enum": [
-            "1.1.0"
+            "1.2.0"
           ]
         }
       },
@@ -1724,7 +1724,7 @@
           "description": "Identify and specify visualization product.",
           "properties": {
             "ProductIdentification": {
-              "$comment": "Table 3.1 1 in GIBS Imagery Provider ICD, Revision B",
+              "$comment": "Table 3.1 1 in GIBS Imagery Provider ICD, Revision B. Line 3-7 in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
               "description": "Fields used to identify products internally and externally to the GIBS system.",
               "type": "object",
               "additionalProperties": false,
@@ -1756,11 +1756,10 @@
                   "$ref": "#/definitions/TitleType"
                 }
               },
-              "$comment": "Line 3-7 in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
               "required": ["StandardOrNRTExternalIdentifier", "BestAvailableExternalIdentifier", "GIBSTitle", "WorldviewTitle", "WorldviewSubtitle"]
             },
             "ProductMetadata": {
-              "$comment": "Table 3.1 2 in GIBS Imagery Provider ICD, Revision B, Fields at this level are all defined in ICD Table 3.1 2, exceptd ones with their own inline comment(s), from https://wiki.earthdata.nasa.gov/download/attachments/197006592/LayerMetadata_v1.0-0.json and ones with prefix ows: and wmts:, which are from OGC OWS and WMTS xsd files and ones commented as Experimental, which are based on discussions with stakeholders.",
+              "$comment": "Table 3.1 2 in GIBS Imagery Provider ICD, Revision B, Fields at this level are all defined in ICD Table 3.1 2, exceptd ones with their own inline comment(s), from https://wiki.earthdata.nasa.gov/download/attachments/197006592/LayerMetadata_v1.0-0.json and ones with prefix ows: and wmts:, which are from OGC OWS and WMTS xsd files and ones commented as Experimental, which are based on discussions with stakeholders. Line 10,12-23,33,38  in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
               "description": "Fields within the GIBS visualization product metadata model that can be directly traced to items found in the underlying dataset and/or parameter metadata or are descriptions of the visualization process/product.",
               "type": "object",
               "additionalProperties": false,
@@ -1846,9 +1845,8 @@
                   "$ref": "#/definitions/VisualizationLatencyType"
                 },
                 "UpdateInterval": {
-                  "$comment": "Line 19 in umm-vis_v1.1.0_field_value_match_pattern_fix_20251009.txt",
+                  "$comment": "Line 19 in umm-vis_v1.1.0_field_value_match_pattern_fix_20251009.txt. Integer or 'N/A'",
                   "description": "The approximate interval, in minutes, between updates for Near Real-Time or partially-delivered Standard visualizations. For example, the number of minutes between PDRs that contain input tiles for a specific data day. A value of 'N/A' may be provided if not applicable.",
-                  "$comment": "Integer or 'N/A'",
                   "oneOf": [
                     {
                       "type":"integer"
@@ -1938,8 +1936,7 @@
                   "type": "boolean"
                 },
                 "Daynight": {
-                  "$comment": "Line 13 in umm-vis_v1.1.0_field_value_match_pattern_fix_20251009.txt",
-                  "$comment": "LayerMetadata v1.0-0",
+                  "$comment": "Line 13 in umm-vis_v1.1.0_field_value_match_pattern_fix_20251009.txt. LayerMetadata v1.0-0",
                   "description": "Whether the visualization layer represents data captured during the day, night (or both) as perceived during time of data acquisition.",
                   "title": "Day or Night",
                   "type": "array",
@@ -2022,7 +2019,6 @@
                   "type": "integer"
                 }
               },
-              "$comment": "Line 10,12-23,33,38  in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
               "required": ["SourceDatasets", "ScienceParameters", "ParameterUnits",  "Measurement", "DataResolution", "GranuleOrComposite", "DataDayBreak", "VisualizationLatency", "UpdateInterval", "TemporalCoverage", "WGS84SpatialCoverage", "NativeSpatialCoverage", "AscendingOrDescending", "Daynight", "Ongoing"]
             }
           }
@@ -2184,7 +2180,6 @@
               }
             }
           },
-          "$comment": "Need to add more?",
           "required": ["VariableName", "OutputCRS", "OutputFormat", "Services"]
          },
 
