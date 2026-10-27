@@ -8,7 +8,7 @@
                  [clj-http]
                  [clj-time]
                  [com.fasterxml.jackson.core/jackson-core]
-                 [commons-io "2.18.0"] ;; used by migration
+                 [commons-io] ;; used by migration
                  [compojure :exclusions [commons-fileupload]]
                  [inflections "0.13.0"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
@@ -25,7 +25,7 @@
                  [org.clojure/clojure]
                  [nrepl/nrepl]
                  [org.clojure/tools.reader]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [org.quartz-scheduler/quartz "2.3.2"]
@@ -48,13 +48,13 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.clojure/tools.namespace]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [pjstadig/humane-test-output]
                                   [proto-repl "0.3.1"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]

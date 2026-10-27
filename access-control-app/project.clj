@@ -38,15 +38,15 @@
                            [com.fasterxml.jackson.core/jackson-core]
                            [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                            [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                           [commons-codec/commons-codec "1.11"]
-                           [commons-io "2.18.0"]
+                           [commons-codec/commons-codec]
+                           [commons-io]
                            [compojure :exclusions [commons-fileupload]]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
                            [org.bouncycastle/bcpkix-jdk18on]
                            [org.clojure/clojure]
                            [org.clojure/tools.reader]
-                           [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                           [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                            [org.eclipse.jetty/jetty-http]
                            [org.eclipse.jetty/jetty-util]
                            [ring/ring-core "1.15.4"]
@@ -71,10 +71,10 @@
              :dev {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
                                   [org.bouncycastle/bcpkix-jdk18on]
                                   [org.clojure/core.async "1.6.681"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [nrepl/nrepl "1.1.0"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [org.clojure/tools.namespace]
+                                  [nrepl/nrepl]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
+                                  [pjstadig/humane-test-output]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-codec "1.3.0"]
                                   [ring/ring-jetty-adapter "1.15.4"
@@ -91,9 +91,9 @@
              ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                                     [nrepl/nrepl "1.1.0"]
-                                     [pjstadig/humane-test-output "0.9.0"]
+             :static {:dependencies [[org.clojure/tools.namespace]
+                                     [nrepl/nrepl]
+                                     [pjstadig/humane-test-output]
                                      [proto-repl "0.3.1"]
                                      [ring-mock "0.1.5"]]}
              :uberjar {:main cmr.access-control.runner
