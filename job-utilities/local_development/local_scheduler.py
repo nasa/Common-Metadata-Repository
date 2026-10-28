@@ -5,6 +5,11 @@ local_scheduler takes the job details json file to create
 a simple schedule with the Python schedule library.
 Interval jobs are simply translated unto the library,
 cron jobs are assumed to run at a given HH:MM every day.
+
+Local, isolated, tests can be done by running a sample test server with:
+    python3 everything_is_awesome_server.py
+and then calling
+     python3 local_scheduler.py -t
 """
 import argparse
 import logging
@@ -60,19 +65,23 @@ def create_schedule():
         for job_name, job_details in jobs_map.items():
             #Cron scheduling will assume it is scheduled to run at a certain time every day
             if job_details["scheduling"]["type"] == "cron":
-                hours = str(job_details["scheduling"]["timing"]["hours"]).zfill(2)
                 minutes = str(job_details["scheduling"]["timing"]["minutes"]).zfill(2)
-                logger.info("Scheduling job " + job_name + " at " + hours + ":" + minutes)
-
-                schedule.every().day.at(hours + ":" + minutes).do(run_job,
+                hours: str = str(job_details["scheduling"]["timing"]["hours"])
+                logger.info("Scheduling cron job " + job_name + " at " + hours + ":" + minutes)
+                if hours == "*":
+                    schedule.every().hour.at(":" + minutes).do(run_job,
+                                                         job_details=job_details, job_name=job_name)
+                else:
+                    hours = hours.zfill(2)
+                    schedule.every().day.at(hours + ":" + minutes).do(run_job,
                                                       job_details=job_details, job_name=job_name)
             elif job_details["scheduling"]["type"] == "interval":
                 minutes = job_details["scheduling"]["timing"].get("minutes", 0)
                 hours = job_details["scheduling"]["timing"].get("hours", 0)
                 total_minutes = minutes + hours*60
-                logger.info("Scheduling job for every %d minutes", total_minutes)
+                logger.info("Scheduling interval job %s for every %d minutes", job_name, total_minutes)
 
-                schedule.every(total_minutes).seconds.do(run_job, job_details=job_details,
+                schedule.every(total_minutes).minutes.do(run_job, job_details=job_details,
                                                          job_name=job_name)
 
 def main():
