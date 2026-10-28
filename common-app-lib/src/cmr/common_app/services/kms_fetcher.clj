@@ -79,13 +79,13 @@
                      (map csk/->kebab-case-keyword)
                      (map transmit-kms/translate-keyword-scheme-to-gcmd)
                      distinct)
-        valid? (set (keys transmit-kms/keyword-scheme->field-names))
-        invalid (remove valid? schemes)]
+        valid-schemes  (set (keys transmit-kms/keyword-scheme->field-names))
+        invalid (remove valid-schemes schemes)]
     (when (empty? schemes)
       (srv-err/throw-service-error
        :bad-request "concept_scheme param is required when provided and must not be blank."))
     (when (seq invalid)
-      (let [valid-names (string/join ", " (sort (map #(-> % name csk/->snake_case) valid?)))]
+      (let [valid-names (string/join ", " (sort (map #(-> % name csk/->snake_case) valid-schemes)))]
         (srv-err/throw-service-error
          :bad-request
          (format "Invalid concept_scheme value(s): [%s]. Valid schemes are: %s."
@@ -132,39 +132,45 @@
 
 ;; This is only called by bootstrap and should not be used out side of that app
 (defn refresh-kms-cache
-  "Bootstrap calls for a refresh of the KMS keywords stored in the cache. This should be called
+      "Bootstrap calls for a refresh of the KMS keywords stored in the cache. This should be called
    from a background job on a timer to keep the cache fresh.
 
    When concept-scheme-param is provided it must be a comma-separated string (or vector) of CMR
    keyword scheme names. Only those schemes are fetched from KMS and merged into the existing cache.
    When nil, all schemes are refreshed."
-  ([context]
-   (refresh-kms-cache context nil))
-  ([context concept-scheme-param]
-   (def c1 context)
-   (rl-util/log-refresh-start kms-cache-key)
-   (let [cache (cache/context->cache context kms-cache-key)
-         [keyword-schemes base-map]
-         (if (some? concept-scheme-param)
-           (let [schemes (parse-concept-schemes concept-scheme-param)]
-             (info (str "refresh-kms-cache has been requested for schemes: " (string/join ", " (map name schemes))))
-             [schemes (or (cache/get-value cache kms-cache-key) {})])
-           (do
-             (info "refresh-kms-cache has been requested")
-             [(keys transmit-kms/keyword-scheme->field-names) {}]))]
-     (try
-       (let [partial? (some? concept-scheme-param)
-             [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context keyword-schemes base-map))
-             _ (when gcmd-keywords-map
+      ([context]
+       (refresh-kms-cache context nil))
+      ([context concept-scheme-param]
+       ;; tODO remove me
+       (def c1 context)
+       (rl-util/log-refresh-start kms-cache-key)
+       (let [cache (cache/context->cache context kms-cache-key)
+             [keyword-schemes base-map]
+             (if (some? concept-scheme-param)
+                 (let [schemes (parse-concept-schemes concept-scheme-param)]
+                      (info (str "refresh-kms-cache has been requested for schemes: " (string/join ", " (map name schemes))))
+                      [schemes (or (cache/get-value cache kms-cache-key) {})])
+                 (do
+                   (info "refresh-kms-cache has been requested")
+                   [(keys transmit-kms/keyword-scheme->field-names) {}]))]
+            (try
+              (let [[t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context keyword-schemes base-map))
+                    _ (when gcmd-keywords-map
                  ;; Refresh cache for either specific scheme or all schemes
-                 (if partial?
-                   (kms-lookup/create-kms-index context gcmd-keywords-map keyword-schemes)
-                   (kms-lookup/create-kms-index context gcmd-keywords-map)))
-             gcmd-keywords-map (cmr.common.util/remove-empty-maps gcmd-keywords-map)
-             [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
-         (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2))
-       (catch Exception e
+                            (if (some? concept-scheme-param)
+                                (kms-lookup/create-kms-index context gcmd-keywords-map keyword-schemes)
+                                (kms-lookup/create-kms-index context gcmd-keywords-map)))
+                    gcmd-keywords-map (cmr.common.util/remove-empty-maps gcmd-keywords-map)
+                    [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
+                   (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2))
+              (catch Exception e
          ;; refresh-kms-cache is being called by a ring route so return a standard CMR error
-         (cmr.common.services.errors/throw-service-error
-          :bad-request
-          (.getLocalizedMessage e)))))))
+                     (cmr.common.services.errors/throw-service-error
+                       :bad-request
+                       (.getLocalizedMessage e)))))))
+
+(comment
+  (let [cache (cache/context->cache c1 kms-cache-key)
+        [keyword-schemes base-map] (cache/get-value cache kms-cache-key)] ; <- whatever the real fetch fn is
+    [keyword-schemes base-map]))
+

@@ -30,18 +30,18 @@
         context {:system sys}
         kms-cache (cache/context->cache context kf/kms-cache-key)]
 
-    (testing "Partial refresh with a single scheme populates only that scheme in cache"
+    (testing "When a partial refresh is requested with a single scheme, then only that scheme is populated in the cache"
       (kf/refresh-kms-cache context "platforms")
       (let [kms-map (cache/get-value kms-cache kf/kms-cache-key)]
         (is (some? (:platforms kms-map)))))
 
-    (testing "Invalid concept_scheme throws bad-request service error"
+    (testing "When an invalid concept_scheme is provided, then a bad-request service error is thrown"
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Invalid concept_scheme"
            (kf/refresh-kms-cache context "not-a-real-scheme"))))
 
-    (testing "Blank concept_scheme throws bad-request service error"
+    (testing "When a blank concept_scheme is provided, then a bad-request service error is thrown"
       (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"must not be blank"
