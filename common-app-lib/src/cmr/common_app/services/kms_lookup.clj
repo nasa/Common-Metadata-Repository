@@ -502,7 +502,29 @@
   "Stores KMS lookup indexes in Redis. Calling this function will CHANGE an external resource.
    With no keyword-schemes (2-arity): rebuilds all indexes including multi-scheme aggregates.
    With keyword-schemes (3-arity): rebuilds only the indexes directly associated with those
-   schemes. Multi-scheme aggregates are excluded and must be rebuilt via a full refresh."
+   schemes. Multi-scheme aggregates are excluded and must be rebuilt via a full refresh.
+
+   Arguments:
+   - context:          the system context used to access Redis.
+   - kms-keywords-map: a map of concept scheme keyword -> sequence of keyword maps, where each
+                       keyword map holds that concept's fields plus its :uuid.
+   - keyword-schemes:  (3-arity only) a collection of concept scheme keywords to rebuild.
+
+   Example kms-keywords-map (truncated):
+   {:measurement-name ({:context-medium \"atmosphere-top\"
+                        :object         \"air\"
+                        :quantity       \"pressure\"
+                        :uuid           \"2862699c-a8e0-478f-8c28-e3f204dffedd\"}
+                       ...)
+    :mime-type        ({:mime-type \"application/gml+xml\"
+                        :uuid      \"40bdf6e5-780c-43e2-ab8e-e5dfae4bd779\"}
+                       {:mime-type \"application/gzip\"
+                        :uuid      \"a8ee535a-8bc8-46fd-8b97-917bd7ea7666\"}
+                       ...)}
+
+   Example keyword-schemes: [:mime-type :measurement-name]
+
+   Returns kms-keywords-map unchanged."
   ([context kms-keywords-map]
    (rl-util/log-refresh-start (string/join " " (map first kms-index-definitions)))
    (doseq [[cache-key generate-fn] kms-index-definitions]
