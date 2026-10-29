@@ -2173,7 +2173,8 @@
             },
             "required": ["VariableName", "OutputCRS", "OutputFormat", "Services"]
           }
-        }
+        },
+        "required": ["BrowseImage"]
       },{
         "type": "object",
         "title": "UMM-Vis-Tiles MRF Generation",
@@ -2285,7 +2286,8 @@
             },
             "required": ["SourceProjection", "SourceResolution", "SourceFormat", "SourceColorModel", "SourceNoDataIndexOrRGB", "SourceCoverage", "OutputProjection", "OutputResolution", "OutputFormat"]
           }
-        }
+        },
+        "required": ["MRF"]
       },{
         "title": "UMM-Vis-Maps",
         "type": "object",
