@@ -84,6 +84,10 @@
        (.withEnv "xpack.security.http.ssl.enabled" "false")
        (.withEnv "indices.id_field_data.enabled" "true")
        (.withEnv "node.name" "embedded-elastic")
+       ;; ES 8 derives maxClauseCount from heap and search thread count, and the thread count
+       ;; follows the host's CPUs, so clause-heavy queries passed or failed depending on the
+       ;; machine. Pinning processors keeps the limit the same everywhere.
+       (.withEnv "node.processors" (str (min 4 (.availableProcessors (Runtime/getRuntime)))))
        ;; Disables the automatic generation of passwords and tokens
        (.withEnv "xpack.security.autoconfiguration.enabled" "false")
        (.withNetwork network)
