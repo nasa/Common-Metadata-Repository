@@ -110,6 +110,19 @@
                  :revision-date :transaction-id)
          (dissoc deleted-coll :revision-date :transaction-id))))
 
+(defn- wait-until-granule-revisions-deleted
+  "With Oracle, a collection delete removes the collection's granules in a background thread after
+  the tombstone is saved, so they can still be read for a moment after the delete returns. Polls
+  until every given revision is gone or 10 seconds pass; the assertions that follow report a
+  timeout."
+  [concept-id revision-ids]
+  (loop [attempts-left 100]
+    (when (and (pos? attempts-left)
+               (some #(not= 404 (:status (util/get-concept-by-id-and-revision concept-id %)))
+                     revision-ids))
+      (Thread/sleep 100)
+      (recur (dec attempts-left)))))
+
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -154,6 +167,7 @@
             "The deleted collection revision date should be after the previous revisions revision date.")
 
         ;; Verify granule was deleted
+        (wait-until-granule-revisions-deleted (:concept-id gran1) [1 2])
         (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
         (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
 
@@ -216,6 +230,7 @@
             "The deleted collection revision date should be after the previous revisions revision date.")
 
         ;; Verify granule was deleted
+        (wait-until-granule-revisions-deleted (:concept-id gran1) [1 2])
         (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 1)))
         (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
 
