@@ -104,11 +104,11 @@
     },
     "Specification": {
       "$comment": "must be here when additionalProperties==false. otherwise fails",
-      "$ref": "#/definitions/Specification"
+      "$ref": "#/definitions/SpecificationType"
     },
     "Generation": {
       "$comment": "must be here when additionalProperties==false. otherwise fails",
-      "$ref": "#/definitions/Generation"
+      "$ref": "#/definitions/GenerationType"
     },
     "MetadataSpecification": {
       "description": "Required to add in schema information into every record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
@@ -134,12 +134,13 @@
         "properties": {
           "Specification": {
             "oneOf": [
-              { "$ref": "#/definitions/Specification/oneOf/0" }
+              { "$ref": "#/definitions/SpecificationType/oneOf/0" }
             ]
           },
           "Generation": {
             "oneOf": [
-              { "$ref": "#/definitions/Generation/oneOf/0" }
+              { "$ref": "#/definitions/GenerationType/oneOf/0" },
+              { "$ref": "#/definitions/GenerationType/oneOf/1" }
             ]
           }
         }
@@ -154,12 +155,12 @@
           "properties": {
             "Specification": {
               "oneOf": [
-                { "$ref": "#/definitions/Specification/oneOf/1" }
+                { "$ref": "#/definitions/SpecificationType/oneOf/1" }
               ]
             },
             "Generation": {
               "oneOf": [
-                { "$ref": "#/definitions/Generation/oneOf/1" }
+                { "$ref": "#/definitions/GenerationType/oneOf/2" }
               ]
             }
           }
@@ -1715,7 +1716,7 @@
       "minLength": 1,
       "maxLength": 256
     },
-    "Specification": {
+    "SpecificationType": {
       "oneOf": [
         {
           "type": "object",
@@ -2043,272 +2044,266 @@
         }
       ]
     },
-    "Generation": {
-      "oneOf": [
-        {
-         "BrowseImage": {
-          "$comment": "Based on discussion with Jackie to support browse image generation by bignbit",
-          "description": "How browse image is generated from raw data.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-
-            "VariableName": {
-              "description": "Name of variable used to generate browse image.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-
-            "SourceCRS": {
-              "$comment": "support well-known text (WKT) too?",
-              "description": "Coordinate reference system of source data.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-
-            "OutputCRS": {
-              "$comment": "support well-known text (WKT) too?",
-              "description": "Coordinate reference system of output image.",
-              "type": "string",
-              "enum": ["EPSG:4326", "EPSG:3413", "EPSG:3031", "EPSG:3857"]
-            },
-
-            "ColormapURL": {
-              "$comment": "Example: https://gibs.earthdata.nasa.gov/colormaps/txt/GHRSST_Sea_Surface_Temperature.txt",
-              "description": "URL of Colormap in txt format.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-
-            "QualityFlagVariableName": {
-              "description": "Name of variable for quality flag.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-
-            "QualityFlagFiltering": {
-              "description": "Quality flag filtering heuristic",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-
-            "ScaleExtent": {
-              "description": "Scale Extent",
-              "type": "object",
-              "properties": {
-                "x": {
-                  "type": "object",
-                  "properties": {
-                    "min": {
-                      "type": "number"
-                    },
-                    "max": {
-                      "type": "number"
-                    }
-                  }
-                },
-                "y": {
-                  "type": "object",
-                  "properties": {
-                    "min": {
-                      "type": "number"
-                    },
-                    "max": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            },
-
-            "ScaleSize": {
-              "description": "Scale size",
-              "properties": {
-                "x": {
-                  "type": "number"
-                },
-                "y": {
-                  "type": "number"
-                }
-              }
-            },
-
-            "InterpolationMethod": {
-              "description": "Ineterpolation method used",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-
-            "OutputHeight": {
-              "description": "Height of the output image in gridcells.",
-              "type": "integer"
-            },
-
-            "OutputWidth": {
-              "description": "Width of the output image in gridcells.",
-              "type": "integer"
-            },
-
-            "OutputFormat": {
-              "description": "Format of the output image as MIME type.",
-              "type": "string",
-              "enum": ["image/png"]
-            },
-
-            "Services": {
-              "$comment": "Can this be done using CMR association approach?",
-              "description": "UMM-S associations using concept id.",
-              "type": "array",
-              "items": {
-                "$ref": "definitions.json#/definitions/ConceptIdType"
+    "GenerationType": {
+      "oneOf": [{
+        "type": "object",
+        "title": "UMM-Vis-Tiles Browse Generation",
+        "additionalProperties": false,
+        "description": "Identify and specify visualization generation.",
+        "properties": {
+          "BrowseImage": {
+            "$comment": "Based on discussion with Jackie to support browse image generation by bignbit",
+            "description": "How browse image is generated from raw data.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "VariableName": {
+                "description": "Name of variable used to generate browse image.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
               },
-              "minItems": 1
-            },
-
-            "BandRecombination": {
-              "$comment": "List of band index or name used?",
-              "description": "Define how to create true color/false color from a multi-band dataset.",
-              "type": "array",
-              "items": {
-                "type": ["integer", "string"]
+              "SourceCRS": {
+                "$comment": "support well-known text (WKT) too?",
+                "description": "Coordinate reference system of source data.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "OutputCRS": {
+                "$comment": "support well-known text (WKT) too?",
+                "description": "Coordinate reference system of output image.",
+                "type": "string",
+                "enum": ["EPSG:4326", "EPSG:3413", "EPSG:3031", "EPSG:3857"]
+              },
+              "ColormapURL": {
+                "$comment": "Example: https://gibs.earthdata.nasa.gov/colormaps/txt/GHRSST_Sea_Surface_Temperature.txt",
+                "description": "URL of Colormap in txt format.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "QualityFlagVariableName": {
+                "description": "Name of variable for quality flag.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "QualityFlagFiltering": {
+                "description": "Quality flag filtering heuristic",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "ScaleExtent": {
+                "description": "Scale Extent",
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "y": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "ScaleSize": {
+                "description": "Scale size",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              "InterpolationMethod": {
+                "description": "Ineterpolation method used",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "OutputHeight": {
+                "description": "Height of the output image in gridcells.",
+                "type": "integer"
+              },
+              "OutputWidth": {
+                "description": "Width of the output image in gridcells.",
+                "type": "integer"
+              },
+              "OutputFormat": {
+                "description": "Format of the output image as MIME type.",
+                "type": "string",
+                "enum": ["image/png"]
+              },
+              "Services": {
+                "$comment": "Can this be done using CMR association approach?",
+                "description": "UMM-S associations using concept id.",
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/ConceptIdType"
+                },
+                "minItems": 1
+              },
+              "BandRecombination": {
+                "$comment": "List of band index or name used?",
+                "description": "Define how to create true color/false color from a multi-band dataset.",
+                "type": "array",
+                "items": {
+                  "type": ["integer", "string"]
+                }
               }
-            }
-          },
-          "required": ["VariableName", "OutputCRS", "OutputFormat", "Services"]
-         },
-
-         "MRF": {
-          "$comment": "Table 4.1 2 in GIBS Imagery Provider ICD, Revision B, Table 3.1 1 in GIBS Imagery Provider ICD, Revision B",
-          "description": "How this visualization is generated.",
-          "title": "UMM-Vis-Tiles",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "SourceProjection": {
-              "description": "The EPSG code identifying the projection of the source visualization files.",
-              "type": "string",
-              "$comment": "Table 4.1.1-1 in GIBS Imagery Provider ICD, Revision B",
-              "enum": [
-                "EPSG:4326",
-                "EPSG:3413",
-                "EPSG:3031"
-              ]
             },
-            "SourceResolution": {
-              "description": "An indication of whether the resolution of the source visualization file(s) will match one of GIBS' access resolutions or will be in data's the native resolution",
-              "type": "string",
-              "$comment": "Value '0.25°' appears in GIBS ICD Appendix - PODAAC_v1_21.xlsx, but not in ICD document",
-              "enum": [
-                "GIBS",
-                "Native",
-                "0.25°"
-              ]
+            "required": ["VariableName", "OutputCRS", "OutputFormat", "Services"]
+          }
+        }
+      },{
+        "type": "object",
+        "title": "UMM-Vis-Tiles MRF Generation",
+        "additionalProperties": false,
+        "description": "Identify and specify visualization generation.",
+        "properties": {
+          "MRF": {
+            "$comment": "Table 4.1 2 in GIBS Imagery Provider ICD, Revision B, Table 3.1 1 in GIBS Imagery Provider ICD, Revision B. Line 58-66,74 in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
+            "description": "How this visualization is generated.",
+            "title": "UMM-Vis-Tiles",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "SourceProjection": {
+                "description": "The EPSG code identifying the projection of the source visualization files.",
+                "type": "string",
+                "$comment": "Table 4.1.1-1 in GIBS Imagery Provider ICD, Revision B",
+                "enum": [
+                  "EPSG:4326",
+                  "EPSG:3413",
+                  "EPSG:3031"
+                ]
+              },
+              "SourceResolution": {
+                "description": "An indication of whether the resolution of the source visualization file(s) will match one of GIBS' access resolutions or will be in data's the native resolution",
+                "type": "string",
+                "$comment": "Value '0.25°' appears in GIBS ICD Appendix - PODAAC_v1_21.xlsx, but not in ICD document",
+                "enum": [
+                  "GIBS",
+                  "Native",
+                  "0.25°"
+                ]
+              },
+              "SourceFormat": {
+                "description": "The format of the source visualization file(s).",
+                "type": "string",
+                "enum": [
+                  "PNG",
+                  "JPEG",
+                  "GeoTIFF",
+                  "GeoJSON",
+                  "Shapefile"
+                ]
+              },
+              "SourceColorModel": {
+                "description": "The color model of the source raster visualization file(s).",
+                "type": "string",
+                "$comment": "Table 4.1.4-1 in GIBS Imagery Provider ICD, Revision B",
+                "enum": [
+                  "Full-Color RGB",
+                  "Full-Color RGBA",
+                  "Indexed RGBA",
+                  "Indexed Grayscale",
+                  "Hybrid RGBA",
+                  "N/A"
+                ]
+              },
+              "SourceNoDataIndexOrRGB": {
+                "description": "The palette entry index that is designated as the \"No Data\" value in the associated colormap for raster visualization products with a Source Color Model value of 'Indexed RGBA', 'Hybrid RGBA', or 'Indexed Grayscale' OR The RGB value to be used as \"No Data\" value for raster visualization products with a Source Color Model value of 'Full-Color RGB' or 'Full-Color RGBA'.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "SourceCoverage": {
+                "description": "The geographic coverage type of the source visualization file(s).",
+                "type": "string",
+                "enum": [
+                  "Full",
+                  "Tiled",
+                  "Granule",
+                  "Tiled-Granule"
+                ]
+              },
+              "OutputProjection": {
+                "description": "The EPSG code identifying the projection of the output visualization product generated and served by GIBS.",
+                "type": "string",
+                "$comment": "Table 4.1.7-1 in in GIBS Imagery Provider ICD, Revision B",
+                "enum": [
+                  "EPSG:4326",
+                  "EPSG:3413",
+                  "EPSG:3031"
+                ]
+              },
+              "OutputResolution": {
+                "description": "The normalized resolution (meters /pixel) of the output visualization product generated and served by GIBS.",
+                "type": "string",
+                "$comment": "Table 4.1.8-1 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-2 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-3 in GIBS Imagery Provider ICD, Revision B",
+                "enum": [
+                  "2km",
+                  "1km",
+                  "500m",
+                  "250m",
+                  "125m",
+                  "62.5m",
+                  "31.25m",
+                  "15.125m"
+                ]
+              },
+              "OutputFormat": {
+                "description": "The format of the visualization that will be served by GIBS.",
+                "type": "string",
+                "enum": [
+                  "PNG",
+                  "PPNG",
+                  "JPEG",
+                  "MVT"
+                ]
+              }
             },
-            "SourceFormat": {
-              "description": "The format of the source visualization file(s).",
-              "type": "string",
-              "enum": [
-                "PNG",
-                "JPEG",
-                "GeoTIFF",
-                "GeoJSON",
-                "Shapefile"
-              ]
-            },
-            "SourceColorModel": {
-              "description": "The color model of the source raster visualization file(s).",
-              "type": "string",
-              "$comment": "Table 4.1.4-1 in GIBS Imagery Provider ICD, Revision B",
-              "enum": [
-                "Full-Color RGB",
-                "Full-Color RGBA",
-                "Indexed RGBA",
-                "Indexed Grayscale",
-                "Hybrid RGBA",
-                "N/A"
-              ]
-            },
-            "SourceNoDataIndexOrRGB": {
-              "description": "The palette entry index that is designated as the \"No Data\" value in the associated colormap for raster visualization products with a Source Color Model value of 'Indexed RGBA', 'Hybrid RGBA', or 'Indexed Grayscale' OR The RGB value to be used as \"No Data\" value for raster visualization products with a Source Color Model value of 'Full-Color RGB' or 'Full-Color RGBA'.",
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            },
-            "SourceCoverage": {
-              "description": "The geographic coverage type of the source visualization file(s).",
-              "type": "string",
-              "enum": [
-                "Full",
-                "Tiled",
-                "Granule",
-                "Tiled-Granule"
-              ]
-            },
-            "OutputProjection": {
-              "description": "The EPSG code identifying the projection of the output visualization product generated and served by GIBS.",
-              "type": "string",
-              "$comment": "Table 4.1.7-1 in in GIBS Imagery Provider ICD, Revision B",
-              "enum": [
-                "EPSG:4326",
-                "EPSG:3413",
-                "EPSG:3031"
-              ]
-            },
-            "OutputResolution": {
-              "description": "The normalized resolution (meters /pixel) of the output visualization product generated and served by GIBS.",
-              "type": "string",
-              "$comment": "Table 4.1.8-1 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-2 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-3 in GIBS Imagery Provider ICD, Revision B",
-              "enum": [
-                "2km",
-                "1km",
-                "500m",
-                "250m",
-                "125m",
-                "62.5m",
-                "31.25m",
-                "15.125m"
-              ]
-            },
-            "OutputFormat": {
-              "description": "The format of the visualization that will be served by GIBS.",
-              "type": "string",
-              "enum": [
-                "PNG",
-                "PPNG",
-                "JPEG",
-                "MVT"
-              ]
-            },
-            "$comment":"Line 58-66,74 in umm-vis_v1.1.0_fields_check_mark_required_20250909.xlsx",
             "required": ["SourceProjection", "SourceResolution", "SourceFormat", "SourceColorModel", "SourceNoDataIndexOrRGB", "SourceCoverage", "OutputProjection", "OutputResolution", "OutputFormat"]
           }
-         }
-        },
-        {
-          "title": "UMM-Vis-Maps",
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Specifies the Map type.",
-          "properties": {
-            "GenerationMap1": {
-              "type": "string"
-            },
-            "GenerationMap2": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "GenerationMap1",
-            "GenerationMap2"
-          ]
         }
-      ]
+      },{
+        "title": "UMM-Vis-Maps",
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Specifies the Map type.",
+        "properties": {
+          "GenerationMap1": {
+            "type": "string"
+          },
+          "GenerationMap2": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "GenerationMap1",
+          "GenerationMap2"
+        ]
+      }]
     }
   }
 }
