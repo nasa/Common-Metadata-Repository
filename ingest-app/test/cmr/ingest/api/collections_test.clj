@@ -2,13 +2,22 @@
   "Unit tests for cmr.ingest.api.collections, starting with
    get-validation-options. More tests for other functions in this
    namespace can be added here over time."
-  (:require [clojure.test :refer [deftest testing is]]
+  (:require [clojure.test :refer [deftest testing is use-fixtures]]
             [cmr.ingest.api.collections :as v :refer [get-validation-options
                                                       VALIDATE_KEYWORDS_HEADER
                                                       ENABLE_UMM_C_VALIDATION_HEADER
                                                       TESTING_EXISTING_ERRORS_HEADER
                                                       SEND_KMS_METADATA_FIXER_HEADER]]
             [cmr.ingest.config :as ingest-config]))
+
+;; enforced-providers-cache is a delay that lives for the whole JVM, so a test that realizes it
+;; while keyword-enforced-providers is redefined leaks that provider list into every later test.
+;; Give each test its own unrealized cache built from whatever config that test sets.
+(use-fixtures :each
+  (fn [f]
+    (with-redefs [v/enforced-providers-cache
+                  (delay (#'v/normalize-providers (ingest-config/keyword-enforced-providers)))]
+      (f))))
 
 ;; ---------------------------------------------------------------------
 ;; :validate-keywords? — default-true-enabled? = true
