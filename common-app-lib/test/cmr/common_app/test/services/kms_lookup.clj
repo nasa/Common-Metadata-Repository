@@ -277,26 +277,26 @@
    {:MeasurementContextMedium "atmosphere-at_cloud_base", :MeasurementContextMediumURI nil, :MeasurementObject "air_bad", :MeasurementObjectURI nil, :MeasurementQuantities [{:Value "pressure", :MeasurementQuantityURI nil}]}))
 
 (deftest create-kms-index-for-schemes-test
-  (testing "Only specified scheme indexes are updated; unspecified schemes are unchanged"
+  (testing "When only specific schemes are passed to create-kms-index"
     (let [updated-map (-> sample-map
                           (update :platforms conj {:short-name "NEW-PLAT" :category "Spacecraft" :uuid "new-plat-uuid"})
                           (update :instruments conj {:short-name "NEW-INST" :uuid "new-inst-uuid"}))]
       (kms-lookup/create-kms-index create-context updated-map [:platforms])
-      (testing "Updated scheme (platforms) reflects new entry"
+      (testing "Then the specified scheme (platforms) reflects the new entry"
         (is (= "new-plat-uuid"
                (kms-lookup/lookup-platform-by-short-name create-context "NEW-PLAT"))))
-      (testing "Unspecified scheme (instruments) cache is not updated"
+      (testing "Then the unspecified scheme (instruments) is unchanged"
         (is (nil? (kms-lookup/lookup-instrument-by-short-name create-context "NEW-INST")))))))
 
 (deftest create-kms-index-partial-refresh-updates-aggregates-test
-  (testing "Partial refresh always rebuilds aggregate indexes (short-name and umm-c)"
+  (testing "When a partial refresh is performed for a single scheme"
     (let [new-plat {:short-name "AGG-PLAT" :long-name "Aggregate Platform" :category "Spacecraft" :uuid "agg-plat-uuid"}
           updated-map (update sample-map :platforms conj new-plat)]
       (kms-lookup/create-kms-index create-context updated-map [:platforms])
-      (testing "short-name aggregate index reflects new platform"
+      (testing "Then the short-name aggregate index is rebuilt and reflects the new platform"
         (is (= "agg-plat-uuid"
                (:uuid (kms-lookup/lookup-by-short-name create-context :platforms "AGG-PLAT")))))
-      (testing "umm-c aggregate index reflects new platform"
+      (testing "Then the umm-c aggregate index is rebuilt and reflects the new platform"
         (is (= "agg-plat-uuid"
                (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
                                                           {:short-name "AGG-PLAT"

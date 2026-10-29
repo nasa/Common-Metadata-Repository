@@ -95,15 +95,15 @@
 
 ;; Called indirectly by bootstrap. This may call KMS service directly through transmit.
 (defn- fetch-gcmd-keywords-map
-  "Fetches keyword data from KMS for the given schemes and merges with base-map.
+  "Fetches keyword data from KMS for the given schemes and merges with cached-gcmd-keywords-map.
   Returns the merged keywords map or nil on Carmine error."
-  [context keyword-schemes base-map]
+  [context keyword-schemes cached-gcmd-keywords-map]
   (try
     (let [fetched (->> (for [keyword-scheme keyword-schemes]
                          [keyword-scheme (transmit-kms/get-keywords-for-keyword-scheme context keyword-scheme)])
                        (into {})
                        cmr.common.util/remove-nil-keys)
-          data (merge base-map fetched)]
+          data (merge cached-gcmd-keywords-map fetched)]
       (when (seq data)
         (info "refresh-kms-cache: get-kms-index: have parsed keyword data, about to create cache.")
         data))
@@ -132,13 +132,13 @@
 
 ;; This is only called by bootstrap and should not be used out side of that app
 (defn- resolve-refresh-schemes
-  "Determines which KMS keyword schemes to refresh and the base map to merge them into.
+  "Determines which KMS keyword schemes to refresh and the already cached gcmd keyword map to merge them into.
 
    When concept-scheme-param is provided, returns the parsed schemes and the existing cache
    contents (or an empty map) so the refreshed schemes are merged into it. When nil, returns
-   all known schemes and an empty base map so the entire cache is rebuilt.
+   all known schemes and an empty cached gcmd keywords map so the entire cache is rebuilt.
 
-   Returns a vector of [keyword-schemes base-map]."
+   Returns a vector of [keyword-schemes cached-gcmd-keywords-map]."
   [cache concept-scheme-param]
   (if (some? concept-scheme-param)
     (let [schemes (parse-concept-schemes concept-scheme-param)]
@@ -161,10 +161,10 @@
   ([context concept-scheme-param]
    (rl-util/log-refresh-start kms-cache-key)
    (let [cache (cache/context->cache context kms-cache-key)
-         [keyword-schemes base-map] (resolve-refresh-schemes cache concept-scheme-param)]
+         [keyword-schemes cached-gcmd-keywords-map] (resolve-refresh-schemes cache concept-scheme-param)]
      (try
        (let [[t1 gcmd-keywords-map] (util/time-execution
-                                     (fetch-gcmd-keywords-map context keyword-schemes base-map))
+                                     (fetch-gcmd-keywords-map context keyword-schemes cached-gcmd-keywords-map))
              _ (when gcmd-keywords-map
                  ;; Refresh cache for either specific scheme or all schemes
                  (if (some? concept-scheme-param)
@@ -178,9 +178,3 @@
          (cmr.common.services.errors/throw-service-error
           :bad-request
           (.getLocalizedMessage e)))))))
-
-(comment
-  (let [cache (cache/context->cache c1 kms-cache-key)
-        [keyword-schemes base-map] (cache/get-value cache kms-cache-key)] ; <- whatever the real fetch fn is
-    [keyword-schemes base-map]))
-
