@@ -158,6 +158,19 @@
       (when-not (some #{200 202 204} [status])
         (errors/internal-error! (m/index-delete-failure-msg response))))))
 
+(defn written-index-names
+  "Returns the names of the given indexes that have had documents indexed into or deleted from them
+  since they were created."
+  [conn index-names]
+  (let [url (es-util/url-with-path conn (vec index-names) "_stats" "indexing,docs")
+        response (client/get url (merge (:http-opts conn) {:accept :json}))]
+    (for [[index-name {:keys [primaries]}] (:indices (es-util/decode-response response))
+          :when (some pos? [(get-in primaries [:indexing :index_total] 0)
+                            (get-in primaries [:indexing :delete_total] 0)
+                            (get-in primaries [:docs :count] 0)
+                            (get-in primaries [:docs :deleted] 0)])]
+      (name index-name))))
+
 (defn save-document-in-elastic
   "Save the document in Elasticsearch in specific elastic cluster, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc es-cluster-name]
