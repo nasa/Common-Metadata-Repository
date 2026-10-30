@@ -33,9 +33,9 @@
   (when (seq actual)
     (is (scores-descending? actual)))
 
-  ;; compare values
-  (let [expected (map #(dissoc % :score) expected)
-        actual (map #(dissoc % :score) actual)]
+  ;; compare values, ignoring order: ranking between different values depends on per-shard term statistics
+  (let [expected (sort-by (juxt :type :value :fields) (map #(dissoc % :score) expected))
+        actual (sort-by (juxt :type :value :fields) (map #(dissoc % :score) actual))]
     (is (= expected actual))))
 
 (def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
@@ -124,12 +124,13 @@
                                                     :concept-type :collection
                                                     :format-key :echo10})
         coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
+        ;; PROV2 gets one instrument so it doesn't race PROV1 to write the shared lVIs suggestion
         coll5 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
                 {:EntryTitle "Secret Collection"
                  :Projects (:Projects (fu/projects "From whence you came!"))
-                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))
+                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 1 1))
                  :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
                  :AccessConstraints (data-umm-spec/access-constraints
                                      {:Value 1 :Description "Those files are for British eyes only."})})
@@ -141,7 +142,7 @@
                 {:ShortName "short but not so short that it's not unique"
                  :EntryTitle "Registered Collection"
                  :Projects (:Projects (fu/projects "DMSP 5B/F3"))
-                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))})
+                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 1 1))})
                {:format :umm-json
                 :validate-keywords false})
         c1-echo (d/ingest "PROV1"
