@@ -156,8 +156,8 @@ __Sample response__
                     "Title": "Title_1",
                     "MetadataSpecification": {
                         "Name": "Visualization",
-                        "Version": "1.1.0",
-                        "URL": "https://cdn.earthdata.nasa.gov/generics/visualization/1.1.0"
+                        "Version": "1.2.0",
+                        "URL": "https://cdn.earthdata.nasa.gov/generics/visualization/1.2.0"
                     }
                 }
             }

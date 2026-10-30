@@ -42,14 +42,14 @@ get a JSON response:
 ```
     <?xml version="1.0" encoding="UTF-8"?>
     <errors>
-        <error>While validating the record against the [visualization] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested.</error>
+        <error>While validating the record against the [visualization] schema with version [1.2.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested.</error>
     </errors>
 ```
 
 #### Failed Response in JSON
 
 ```
-    {"errors":["While validating the record against the [visualization] schema with version [1.1.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested."]}
+    {"errors":["While validating the record against the [visualization] schema with version [1.2.0] the following error occurred: [#: #: only 1 subschema matches out of 2]. The record cannot be ingested."]}
 ```
 
 ### <a name="delete-visualization"></a> Delete a Visualization
