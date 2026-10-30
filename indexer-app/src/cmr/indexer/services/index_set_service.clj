@@ -351,6 +351,17 @@
 
     (index-requested-index-set context index-set es-cluster-name revision-id)))
 
+(defn recreate-indices
+  "Deletes the named indices of the index set and creates them again with their aliases. The
+  indices are handled in parallel because each create waits on a cluster state update."
+  [context es-cluster-name index-set index-names]
+  (let [es-store (indexer-util/context->es-store context es-cluster-name)
+        index-names (set index-names)]
+    (dorun (pmap #(es/delete-index es-store %) index-names))
+    (dorun (pmap #(es/update-index es-store %)
+                 (filter #(contains? index-names (:index-name %))
+                         (build-indices-list-w-config index-set es-cluster-name))))))
+
 (defn put-index-set
   "Upsert the given index-set to the index-sets index in ES."
   [context combined-index-set]
