@@ -102,7 +102,7 @@
     (let [fetched (->> (for [keyword-scheme keyword-schemes]
                          [keyword-scheme (transmit-kms/get-keywords-for-keyword-scheme context keyword-scheme)])
                        (into {})
-                       cmr.common.util/remove-nil-keys)
+                       util/remove-nil-keys)
           data (merge cached-gcmd-keywords-map fetched)]
       (when (seq data)
         (info "refresh-kms-cache: get-kms-index: have parsed keyword data, about to create cache.")
