@@ -89,6 +89,34 @@
         }
     },
     "Generation": {
+        "BrowseImage": {
+            "VariableName": "VariableName",
+            "SourceCRS": "EPSG:3413",
+            "OutputCRS": "EPSG:4326",
+            "ColormapURL": "https://colormap.url.com",
+            "QualityFlagVariableName": "Flag Name",
+            "QualityFlagFiltering": "filtering",
+            "ScaleExtent": {
+                "x": {
+                    "min": 1,
+                    "max": 2
+                },
+                "y": {
+                    "min": 1,
+                    "max": 2
+                }
+            },
+            "ScaleSize": {
+                "x": 1,
+                "y": 2
+            },
+            "InterpolationMethod": "Interpolation",
+            "OutputHeight": 4,
+            "OutputWidth": 6,
+            "OutputFormat": "image/png",
+            "Services": ["S12344543-PODAAC"],
+            "BandRecombination": [4, 6]
+        },
         "MRF" : {
             "SourceProjection": "EPSG:4326",
             "SourceResolution": "Native",
