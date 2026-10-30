@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.index-set-versioning-test
+(ns cmr.system-int-test.ingest.misc.index-set-versioning-test
   "Tests that index-set updates are versioned in Metadata DB."
   (:require
    [clojure.test :refer :all]
