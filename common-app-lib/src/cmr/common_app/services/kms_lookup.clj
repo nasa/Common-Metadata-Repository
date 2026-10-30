@@ -501,8 +501,9 @@
 (defn create-kms-index
   "Stores KMS lookup indexes in Redis. Calling this function will CHANGE an external resource.
    With no keyword-schemes (2-arity): rebuilds all indexes including multi-scheme aggregates.
-   With keyword-schemes (3-arity): rebuilds only the indexes directly associated with those
-   schemes. Multi-scheme aggregates are excluded and must be rebuilt via a full refresh.
+   With keyword-schemes (3-arity): rebuilds only the scheme-specific indexes for the given
+   schemes, then always rebuilds the multi-scheme aggregates (short-name and umm-c indexes)
+   so they stay consistent with the updated kms-keywords-map.
 
    Arguments:
    - context:          the system context used to access Redis.
@@ -531,11 +532,15 @@
      (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
    kms-keywords-map)
   ([context kms-keywords-map keyword-schemes]
-   (let [scheme-cache-keys (set (map first (apply concat (vals keyword-scheme->index-definitions))))
+   (let [;; cache-keys that belong to individual schemes
+         scheme-cache-keys (set (map first (apply concat (vals keyword-scheme->index-definitions))))
+         ;; aggregate entries not owned by any single scheme (short-name-index, umm-c-index)
          aggregate-defs    (remove #(scheme-cache-keys (first %)) kms-index-definitions)]
+     ;; rebuild only the indexes for the requested schemes
      (doseq [keyword-scheme keyword-schemes
              [cache-key generate-fn] (get keyword-scheme->index-definitions keyword-scheme [])]
        (store-kms-index! context cache-key (generate-fn kms-keywords-map)))
+     ;; always rebuild aggregates so they reflect the updated kms-keywords-map
      (doseq [[cache-key generate-fn] aggregate-defs]
        (store-kms-index! context cache-key (generate-fn kms-keywords-map))))
    kms-keywords-map))
