@@ -1,3 +1,2 @@
 ["test/cmr/system_int_test/virtual_product"
- "test/cmr/system_int_test/ingest/provider"
  "test/cmr/system_int_test/ingest/subscription"]
