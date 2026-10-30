@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "ows:MetadataType": {
-      "$comment": "http://schemas.opengis.net/ows/1.1.0/owsCommon.xsd",
+      "$comment": "http://schemas.opengis.net/ows/1.2.0/owsCommon.xsd",
       "type": "object",
       "additionalProperties": false,
       "description": "This element either references or contains more metadata about the element that includes this element. To reference metadata stored remotely, at least the xlinks:href attribute in xlink:simpleAttrs shall be included. Either at least one of the attributes in xlink:simpleAttrs or a substitute for the AbstractMetaData element shall be included, but not both. An Implementation Specification can restrict the contents of this element to always be a reference or always contain metadata. (Informative: This element was adapted from the metaDataProperty element in GML 3.0.)",
@@ -67,19 +67,19 @@
       "description": "An image of a legend relevant to a Style of a Layer. The Format element indicates the MIME type of the legend. minScaleDenominator and maxScaleDenominator attributes may be provided to indicate to the client which scale(s) (inclusive) the legend image is appropriate for. (If provided, these values must exactly match the scale denominators of available TileMatrixes.) width and height attributes may be provided to assist client applications in laying out space to display the legend.",
       "properties": {
         "xlink:Href": {
-          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "$comment": "https://schemas.opengis.net/ows/1.2.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
           "type": "string"
         },
         "xlink:Role": {
-          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "$comment": "https://schemas.opengis.net/ows/1.2.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
           "type": "string"
         },
         "xlink:Title": {
-          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "$comment": "https://schemas.opengis.net/ows/1.2.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
           "type": "string"
         },
         "xlink:Type": {
-          "$comment": "https://schemas.opengis.net/ows/1.1.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
+          "$comment": "https://schemas.opengis.net/ows/1.2.0/ows19115subset.xsd, http://www.w3.org/1999/xlink.xsd",
           "type": "string"
         },
         "Format": {
