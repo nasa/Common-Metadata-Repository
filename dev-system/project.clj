@@ -155,9 +155,11 @@
              ["shell" "cmr" "install" "local" "spatial_plugin"]]
             ;; Install with local elasticsearch
             "install"
-            ["do"
-             "install-spatial-plugin,"
-             "install"]
+            ~(if (= "true" (System/getenv "CMR_SKIP_DEV_SYSTEM_INSTALL"))
+               ["shell" "echo" "Skipping dev-system install: CMR_SKIP_DEV_SYSTEM_INSTALL is true"]
+               ["do"
+                "install-spatial-plugin,"
+                "install"])
             "install!"
             ["install"]
             ;; Linting aliases

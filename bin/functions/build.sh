@@ -28,6 +28,7 @@ Environment variables required for some of the build tasks:
     CMR_DEV_SYSTEM_DB_TYPE
     CMR_INTERNAL_NEXUS_REPO
     CMR_ORACLE_JAR_REPO
+    CMR_SKIP_DEV_SYSTEM_INSTALL
 
 Notes on the ENV variables:
 
@@ -46,6 +47,9 @@ Notes on the ENV variables:
 * CMR_ORACLE_JAR_REPO - Oracle libraries are not available in public maven
     repositories. We can host them in internal ones for building. If this is
     set then the maven repo will be updated to use this.
+* CMR_SKIP_DEV_SYSTEM_INSTALL - If set to 'true', 'cmr build all' won't install
+    the dev-system jar into the local maven repository. Nothing depends on that
+    jar, and the dev-system uberjar is still built.
 
 EOH
 
