@@ -67,7 +67,8 @@
    :ingest ingest-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset
-   :access-control access-control/reset})
+   :access-control access-control/reset
+   :bootstrap cache/reset-caches})
 
 (def service-clear-cache-fns
   "A map of services to clear cache functions."
