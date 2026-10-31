@@ -1676,7 +1676,7 @@
       "type": "string",
       "minLength": 4,
       "maxLength": 64,
-      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+      "pattern": "^[A-Z]+\\d+-[A-Z0-9_]+$"
     },
     "VisualizationLatencyType": {
       "description": "The approximate latency between the end of data acquisition and visualization file availability for GIBS to ingest. This value may be minutes, hours, or days, depending on the appropriate units. A value of 'N/A' may be provided if not applicable (e.g. static historical products)",
@@ -1684,7 +1684,7 @@
       "type": "string",
       "oneOf": [
         {
-          "pattern": "(\\d+(\\.\\d+)?) (second|minute|hour|day|week|month|year)(s)?"
+          "pattern": "^(\\d+(\\.\\d+)?) (second|minute|hour|day|week|month|year)(s)?$"
         },
         {
           "enum": ["N/A"]
@@ -1804,7 +1804,7 @@
                   "type": "array",
                   "items": {
                     "description": "A unit name.",
-                    "$comment": "can be null if no units are appropriate.",
+                    "$comment": "use N/A if no units are appropriate.",
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 64
@@ -1837,7 +1837,7 @@
                   "$comment": "Line 9 in umm-vis_v1.1.0_field_value_match_pattern_fix_20251009.txt",
                   "description": "The time of day (UTC) at which the \"data day\" changes for a data granule being visualized.",
                   "type": "string",
-                  "pattern": "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]Z$"
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$"
                 },
                 "VisualizationLatency": {
                   "description": "The approximate latency between the end of data acquisition and visualization file availability for GIBS to ingest. This value may be minutes, hours, or days, depending on the appropriate units. A value of 'N/A' may be provided if not applicable (e.g. static historical products)",
@@ -1896,7 +1896,7 @@
                 "ColorMap": {
                   "description": "The extension-less filename (e.g. \"MODIS_Brightness_Temperature\") of the colormap associated with this product. One or more visualization products may have the same mapping from data to RGB (e.g. MODIS Aqua/Terra Brightness Temp Day/Night). To simplify configuration and improve usability, GIBS will utilize a consolidated colormap for all products that share that colormap. Existing colormaps within the GIBS visualization catalog may be reviewed here https://gibs.earthdata.nasa.gov/colormaps/v1.3/output/. A value of 'N/A' may be provided if not applicable (e.g. JPEG multi- band visualizations)",
                   "type": "string",
-                  "minLength": 8,
+                  "minLength": 3,
                   "maxLength": 256
                 },
                 "VectorStyle": {
@@ -2021,7 +2021,8 @@
               },
               "required": ["SourceDatasets", "ScienceParameters", "ParameterUnits",  "Measurement", "DataResolution", "GranuleOrComposite", "DataDayBreak", "VisualizationLatency", "UpdateInterval", "TemporalCoverage", "WGS84SpatialCoverage", "NativeSpatialCoverage", "AscendingOrDescending", "Daynight", "Ongoing"]
             }
-          }
+          },
+          "required": ["ProductIdentification", "ProductMetadata"]
         },
         {
           "title": "UMM-Vis-Maps",
