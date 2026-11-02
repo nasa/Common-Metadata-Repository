@@ -48,8 +48,11 @@ Notes on the ENV variables:
     repositories. We can host them in internal ones for building. If this is
     set then the maven repo will be updated to use this.
 * CMR_SKIP_DEV_SYSTEM_INSTALL - If set to 'true', 'cmr build all' won't install
-    the dev-system jar into the local maven repository. Nothing depends on that
-    jar, and the dev-system uberjar is still built.
+    the dev-system jar into the local maven repository, and the dev-system
+    install won't build the spatial plugin, which 'cmr build all' builds
+    itself. Nothing depends on that jar, and the dev-system uberjar is still
+    built. Only set it for 'cmr build all': with it set, 'cmr install jars'
+    and 'lein install' in dev-system skip the spatial plugin too.
 
 EOH
 
