@@ -412,6 +412,7 @@
   "Delete elasticsearch indexes via deleting the index-set and re-create them via index-set app. A nuclear option just for the development team.
   When the default index sets are still in place, only the indexes that changed since the last reset are recreated."
   [context]
+  (warn "Resetting the Elasticsearch store. This deletes indexes and is only meant for development and testing.")
   (let [default-index-sets (default-index-sets)]
     (when-not (try-reset-changed-indexes context default-index-sets)
       (index-set-svc/reset context)
