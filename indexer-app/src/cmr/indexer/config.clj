@@ -162,7 +162,8 @@
 (defconfig collection-delete-elastic-slices
   "The number of parallel slices (threads) to use for elastic cascade collection delete tasks.
   Use a number (e.g., 5) to cap it, or 'auto' to use one thread per primary shard."
-  {:default 5}) ;; Note: No :type specified so it can accept an Int or the string "auto"
+  {:default "5"
+   :type String}) ;; Note: So it can accept an Int string or the string "auto"
 
 (defconfig collection-delete-elastic-scroll-size
  "The batch size per slice for elastic cascade collection delete tasks.
