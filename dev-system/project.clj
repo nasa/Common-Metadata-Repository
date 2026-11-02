@@ -153,11 +153,14 @@
             ["do"
              ["shell" "printf" "\ninstall-spatial-plugin\n"]
              ["shell" "cmr" "install" "local" "spatial_plugin"]]
-            ;; Install with local elasticsearch
+            ;; Install with local elasticsearch. The skip is meant for 'cmr build all', which builds
+            ;; the spatial plugin itself.
             "install"
-            ["do"
-             "install-spatial-plugin,"
-             "install"]
+            ~(if (= "true" (System/getenv "CMR_SKIP_DEV_SYSTEM_INSTALL"))
+               ["shell" "echo" "Skipping dev-system install and spatial plugin build: CMR_SKIP_DEV_SYSTEM_INSTALL is true"]
+               ["do"
+                "install-spatial-plugin,"
+                "install"])
             "install!"
             ["install"]
             ;; Linting aliases
