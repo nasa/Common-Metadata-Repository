@@ -157,7 +157,7 @@
      ;; Add routes for accessing caches
      common-routes/cache-api-routes
      (context "/caches/refresh/:cache-name" [cache-name]
-       (POST "/" {:keys [request-context]}
+       (POST "/" {:keys [request-context params]}
          (acl/verify-ingest-management-permission request-context :update)
          (let [keyword-cache-name (keyword cache-name)
                refresh-result
@@ -166,7 +166,7 @@
                  (cmc/refresh-cache request-context)
 
                  (= keyword-cache-name kms-fetcher/kms-cache-key)
-                 (kms-fetcher/refresh-kms-cache request-context)
+                 (kms-fetcher/refresh-kms-cache request-context (:concept_scheme params))
 
                  (= keyword-cache-name provider-cache/cache-key)
                  (provider-cache/refresh-provider-cache request-context)

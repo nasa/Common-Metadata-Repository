@@ -22,10 +22,10 @@
                           [clj-http "3.11.0"] ;; latest is 3.13.1
                           [clj-time "0.15.1"] ;; latest is 0.15.2 will break acl_matches_test.clj
                           [com.fasterxml.jackson.core/jackson-annotations "2.22"]
-                          [com.fasterxml.jackson.core/jackson-core "2.22.3"]
-                          [com.fasterxml.jackson.core/jackson-databind "2.22.3"]
-                          [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.22.3"]
-                          [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.22.3"]
+                          [com.fasterxml.jackson.core/jackson-core "2.22.4"]
+                          [com.fasterxml.jackson.core/jackson-databind "2.22.4"]
+                          [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.22.4"]
+                          [com.fasterxml.jackson.dataformat/jackson-dataformat-smile "2.22.4"]
                           [commons-codec/commons-codec "1.22.1"]
                           [commons-io/commons-io "2.22.0"]
                           [compojure "1.6.3"]
