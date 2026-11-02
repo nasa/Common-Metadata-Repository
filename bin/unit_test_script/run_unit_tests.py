@@ -43,7 +43,10 @@ opt_out = ["cmr-dev-system",
     "cmr-oracle-lib",
     "cmr-mock-echo-app",]
 
-run_alone = ["cmr-common-app-lib", "cmr-indexer-app", "cmr-search-app"]
+# Unit tests that start Redis or ElasticMQ bind fixed host ports, so those modules run one at a
+# time. umm-spec-lib (Redis) and message-queue-lib (ElasticMQ) are the only users left in parallel.
+run_alone = ["cmr-common-app-lib", "cmr-indexer-app", "cmr-search-app",
+             "cmr-ingest-app", "cmr-redis-utils-lib"]
 
 # ##############################################################################
 
