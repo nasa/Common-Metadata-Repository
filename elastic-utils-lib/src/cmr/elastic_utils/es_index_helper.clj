@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.elastic-utils.es-util :as es-util]
    [cmr.transmit.config :as config]))
 
@@ -17,6 +18,38 @@
   (let [url (es-util/url-with-path conn index-name)
         response (client/head url (merge (:http-opts conn) {:throw-exceptions false}))]
     (= 200 (:status response))))
+
+(defn written-index-names
+  "Returns the names of the given indexes that have had documents indexed into or deleted from them
+  since they were created. Indexes that don't exist are left out."
+  [conn index-names]
+  (let [url (es-util/url-with-path conn (vec index-names) "_stats" "indexing,docs")
+        response (client/get url (merge (:http-opts conn)
+                                        {:accept :json
+                                         :query-params {:ignore_unavailable true}}))]
+    (for [[index-name {:keys [primaries]}] (:indices (es-util/decode-response response))
+          :when (some pos? [(get-in primaries [:indexing :index_total] 0)
+                            (get-in primaries [:indexing :delete_total] 0)
+                            (get-in primaries [:docs :count] 0)
+                            (get-in primaries [:docs :deleted] 0)])]
+      (name index-name))))
+
+(defn metadata-versions
+  "Returns the state and the mapping, settings and aliases versions of the given indexes by index
+  name. Elasticsearch raises a version whenever that part of the index changes. Indexes that don't
+  exist are left out."
+  [conn index-names]
+  (let [url (es-util/url-with-path conn "_cluster/state/metadata" (vec index-names))
+        fields ["state" "mapping_version" "settings_version" "aliases_version"]
+        response (client/get url (merge (:http-opts conn)
+                                        {:accept :json
+                                         :query-params {:ignore_unavailable true
+                                                        :filter_path (string/join
+                                                                      ","
+                                                                      (map #(str "metadata.indices.*." %) fields))}}))]
+    (into {}
+          (for [[index-name metadata] (get-in (es-util/decode-response response) [:metadata :indices])]
+            [(name index-name) metadata]))))
 
 (defn update-mapping
   "Register or modify specific mapping definition. Note that ES index mapping updates performs a MERGE and not a REPLACE. So properties are either added or changed, but never deleted."

@@ -11,6 +11,19 @@
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
+(deftest run-in-parallel-test
+  (doseq [failure [(ex-info "failed" {}) (AssertionError. "failed")]]
+    (testing (str "every call finishes before the first failure is thrown: " (type failure))
+      (let [finished (atom #{})
+            f (fn [n]
+                (when (zero? n)
+                  (throw failure))
+                (Thread/sleep 50)
+                (swap! finished conj n))]
+        (is (thrown-with-msg? Throwable #"failed"
+                              (#'svc/run-in-parallel! f (range 20))))
+        (is (= (set (range 1 20)) @finished))))))
+
 (deftest gen-valid-index-name-test
   (let [index-set-id "77"
         req-index-name1 "C4-collections"
