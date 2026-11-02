@@ -3,6 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as client]
+    [clojure.string :as string]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.url-helper :as url]))
 
@@ -43,3 +44,20 @@
                    {:throw-exceptions false
                     :connection-manager (s/conn-mgr)})]
     (= 200 (:status response))))
+
+(defn delete-index-set
+  "Deletes the index set with the given id and its indexes from the elastic cluster directly,
+  leaving metadata db alone."
+  [index-set-id elastic-name]
+  (let [root (url/elastic-root elastic-name)
+        opts {:throw-exceptions false
+              :connection-manager (s/conn-mgr)}
+        index-names (->> (client/get (format "%s/_cat/indices/%s_*" root index-set-id)
+                                     (assoc opts :query-params {:format "json" :h "index"}))
+                         :body
+                         (#(json/decode % true))
+                         (map :index))]
+    (client/delete (format "%s/%s-index-sets/_doc/%s" root elastic-name index-set-id)
+                   (assoc opts :query-params {:refresh true}))
+    (when (seq index-names)
+      (client/delete (format "%s/%s" root (string/join "," index-names)) opts))))
