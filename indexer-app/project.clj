@@ -18,7 +18,7 @@
                  [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [nrepl/nrepl]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
@@ -36,8 +36,8 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.clojure/tools.namespace]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]

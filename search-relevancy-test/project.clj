@@ -10,9 +10,9 @@
                  [com.fasterxml.jackson.core/jackson-core]
                  [clj-http] ;; was 2.3.0
                  [clj-time]
-                 [commons-codec/commons-codec "1.11"]
+                 [commons-codec/commons-codec]
                  [commons-fileupload "1.6.0"]
-                 [commons-io "2.18.0"]
+                 [commons-io]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
@@ -31,8 +31,8 @@
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [pjstadig/humane-test-output "0.9.0"]]
+                                  [org.clojure/tools.namespace]
+                                  [pjstadig/humane-test-output]]
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
                    :jvm-opts ^:replace ["-server"
@@ -55,7 +55,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"
                                       :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}

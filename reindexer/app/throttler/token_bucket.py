@@ -8,6 +8,7 @@ class TokenBucket:
 
     def __init__(self, rate_per_minute: float):
         self._lock = threading.Lock()
+        self._rate_per_minute = rate_per_minute
         self._rate_per_second = rate_per_minute / 60.0
         self._max_tokens = float(rate_per_minute)
         self._tokens = self._max_tokens
@@ -16,19 +17,11 @@ class TokenBucket:
     @property
     def current_rate(self) -> float:
         with self._lock:
-            return self._rate_per_second * 60.0
-
-    @property
-    def tokens_available(self) -> float:
-        with self._lock:
-            self._refill()
-            return self._tokens
-
-    def set_rate(self, rate_per_minute: float) -> None:
-        self.update_rate(rate_per_minute)
+            return self._rate_per_minute
 
     def update_rate(self, rate_per_minute: float) -> None:
         with self._lock:
+            self._rate_per_minute = rate_per_minute
             self._rate_per_second = rate_per_minute / 60.0
             self._max_tokens = float(rate_per_minute)
             self._tokens = min(self._tokens, self._max_tokens)
@@ -39,23 +32,12 @@ class TokenBucket:
         stop_event: Optional[threading.Event] = None,
         cancel_fn=None,
     ) -> bool:
-        """Block until tokens are available, then consume them.
-
-        Requests are clamped to max_tokens on every iteration so a mid-run rate
-        decrease via update_rate() can never make count permanently un-fillable.
-        The effective amount consumed may be less than count when the rate has
-        just been lowered; the caller's next sub-batch will be sliced at the new
-        (smaller) rate, so the overage is bounded to one sub-batch.
-
-        Returns True if tokens were consumed, False if stop_event fired or
-        cancel_fn returned True.  cancel_fn is polled each wake-up interval so
-        the caller can abort a long wait (e.g. when a job is cancelled mid-page).
-        """
+        """Block until count tokens are consumed (True), or stop_event fires or cancel_fn
+        returns True (False). count is clamped to capacity, so a rate lowered mid-run
+        can't make it unfillable."""
         while True:
             with self._lock:
                 self._refill()
-                # Clamp to max_tokens each iteration: if update_rate() lowered the
-                # rate below count, count can never be satisfied without clamping.
                 effective = min(count, max(1, int(self._max_tokens)))
                 if self._tokens >= effective:
                     self._tokens -= effective

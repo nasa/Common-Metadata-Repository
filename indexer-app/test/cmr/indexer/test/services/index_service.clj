@@ -6,6 +6,7 @@
    [cmr.common.util :refer [are3]]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.common.index-set-util :as idx-set-util]
+   [cmr.indexer.config :as indexer-config]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.indexer-util :as indexer-util]
@@ -67,38 +68,54 @@
   update-index-set, or nil when no index-set update occurs."
   [gran-index-set granule-index-names delete-index-status]
   (let [concept-id "C1234-PROV1"
-        updated-index-set (atom nil)]
+        updated-index-set (atom nil)
+        ;; Create a dummy timestamp for the new Smart Delete parameter
+        dummy-timestamp "2025-02-05T05:33:45.743Z"]
+
     (with-redefs [idx-set/get-concept-type-index-names
                   (fn [_context]
                     {:index-names {:granule {:small_collections "1_small_collections"}}})
+
                   idx-set/get-granule-index-names-for-collection
                   (fn [_context _concept-id]
                     granule-index-names)
+
                   idx-set-util/get-index-set
                   (fn [_context _elastic-name _index-set-id]
                     gran-index-set)
+
                   indexer-util/context->conn
                   (fn [_context _cluster-name]
                     nil)
+
                   es/delete-granule-index
                   (fn [_context _index-name]
                     {:status delete-index-status})
+
                   es-helper/delete-by-query
                   (fn [& _args]
                     {:status 200})
+
                   idx-set-svc/validate-requested-index-set
                   (fn [& _args])
+
                   idx-set-svc/save-combined-index-set-to-mdb
                   (fn [& _args]
                     33)
+
                   idx-set-svc/update-index-set
                   (fn [_context _elastic-name index-set _revision-id]
                     (reset! updated-index-set index-set)
                     {:status 200})
+
                   index-svc/reindex-associated-variables
                   (fn [& _args]
-                    :ok)]
-      (#'index-svc/cascade-collection-delete {} {:granule "granule"} concept-id 7))
+                    :ok)
+
+                  indexer-config/index-delete-queue-max-wait-secs
+                  (fn [] 3600)]
+
+      (#'index-svc/cascade-collection-delete {} concept-id 7 dummy-timestamp))
     @updated-index-set))
 
 (deftest cascade-collection-delete-index-set-result-test

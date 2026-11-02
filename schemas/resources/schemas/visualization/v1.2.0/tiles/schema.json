@@ -1,0 +1,640 @@
+{
+  "$id": "https://example.com/umm-vis-tiles.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-Vis-Tiles",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+
+    "Specification": {
+      "description": "Identify and specify visualization product.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "ProductIdentification": {
+          "$comment": "Table 3.1 1 in GIBS Imagery Provider ICD, Revision B",
+          "description": "Fields used to identify products internally and externally to the GIBS system.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "InternalIdentifier": {
+              "description": "The visualization product's internal identifier used by the GIBS team.",
+              "$ref": "definitions.json#/definitions/IdentifierType"
+            },
+            "StandardOrNRTExternalIdentifier": {
+              "description": "The visualization product's external identifier used for accessing the \"standard\" or \"near real-time\" visualizations through GIBS APIs.",
+              "$ref": "definitions.json#/definitions/IdentifierType"
+            },
+            "BestAvailableExternalIdentifier": {
+              "description": "The visualization product's external identifier used for acces sing the \"best available\" visualizations through GIBS APIs.",
+              "$ref": "definitions.json#/definitions/IdentifierType"
+            },
+            "GIBSTitle": {
+              "description": "A human-readable title for the visualization product to be used in the GIBS service documentation (e.g. WMTS Title).",
+              "$ref": "definitions.json#/definitions/TitleType"
+            },
+            "WorldviewTitle": {
+              "description": "The first line to the product title in the Worldview client.",
+              "$ref": "definitions.json#/definitions/TitleType"
+            },
+            "WorldviewSubtitle": {
+              "description": "The second line to the product title in the Worldview client.",
+              "$ref": "definitions.json#/definitions/TitleType"
+            }
+          }
+        },
+
+        "ProductMetadata": {
+          "$comment": "Table 3.1 2 in GIBS Imagery Provider ICD, Revision B, Fields at this level are all defined in ICD Table 3.1 2, exceptd ones with their own inline comment(s), from https://wiki.earthdata.nasa.gov/download/attachments/197006592/LayerMetadata_v1.0-0.json and ones with prefix ows: and wmts:, which are from OGC OWS and WMTS xsd files and ones commented as Experimental, which are based on discussions with stakeholders.",
+          "description": "Fields within the GIBS visualization product metadata model that can be directly traced to items found in the underlying dataset and/or parameter metadata or are descriptions of the visualization process/product.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "InternalIdentifier": {
+              "description": "The visualization product's internal identifier used by the GIBS team.",
+              "$ref": "definitions.json#/definitions/IdentifierType"
+            },
+            "SourceDatasets": {
+              "description": "The CMR Concept ID for the collection(s) from which visualizations are generated.",
+              "type": "array",
+              "items": {
+                "description": "A single CMR Concept ID.",
+                "$ref": "definitions.json#/definitions/ConceptIdType"
+              },
+              "minItems": 1
+            },
+            "RepresentingDatasets": {
+              "description": "The CMR Concept ID for the collection(s) for which visualizations represent.",
+              "type": "array",
+              "items": {
+                "description": "A single CMR Concept ID.",
+                "$ref": "definitions.json#/definitions/ConceptIdType"
+              },
+              "minItems": 1
+            },
+            "ScienceParameters": {
+              "description": "The name of science parameter (s) or HDF/netCDF Science Data Set(s) that were utilized during visualization generation.",
+              "type": "array",
+              "items": {
+                "description": "A science parameter name.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "minItems": 1
+            },
+            "ParameterUnits": {
+              "description": "The units for the parameter being visualized.",
+              "type": "array",
+              "items": {
+                "description": "A unit name.",
+                "$comment": "can be null if no units are appropriate.",
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "minItems": 1
+            },
+            "Measurement": {
+              "description": "The scientific measurement category to which the visualization product will be assigned within the Worldview interface.",
+              "type": "string",
+              "$comment": "These values do not directly correlate to Science Keyword values managed within the GCMD.",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "DataResolution": {
+              "description": "The x/y resolution of the data that is being visualized (e.g. '1.0 degree x 1.0 degree').",
+              "$ref": "definitions.json#/definitions/SpatialResolutionNameTypeA"
+            },
+            "GranuleOrComposite": {
+              "description": "Indicates what unit of data is being visualized and provided to end-users.",
+              "type": "string",
+              "enum": ["Granule", "Composite"]
+            },
+            "DataDayBreak": {
+              "description": "The time of day (UTC) at which the \"data day\" changes for a data granule being visualized.",
+              "type": "string",
+              "pattern": "^[0-2][0-3]:[0-5][0-9]:[0-5][0-9]Z$"
+            },
+            "VisualizationLatency": {
+              "description": "The approximate latency between the end of data acquisition and visualization file availability for GIBS to ingest. This value may be minutes, hours, or days, depending on the appropriate units. A value of 'N/A' may be provided if not applicable (e.g. static historical products)",
+              "$comment": "Integer + Units or 'N/A'",
+              "$ref": "definitions.json#/definitions/VisualizationLatencyType"
+            },
+            "UpdateInterval": {
+              "description": "The approximate interval, in minutes, between updates for Near Real-Time or partially-delivered Standard visualizations. For example, the number of minutes between PDRs that contain input tiles for a specific data day. A value of 'N/A' may be provided if not applicable.",
+              "$comment": "Integer or 'N/A'",
+              "oneOf": [
+                {
+                  "type":"integer"
+                },
+                {
+                  "type":"string",
+                  "enum": ["N/A"]
+                }
+              ]
+            },
+            "TemporalCoverage": {
+              "description": "A time interval specifying the start , end, and duration of the visualization products that will be generated. The ISO 8601 interval notation (PnYnMnDTnHnMnS) is used to specify the durat ion between images. For example, a product that is generated every day within 2013 would have the following temporal coverage: 2013-01-01/2013-12-31/P1D. If a layer has discontinuous ranges, they should be provided in a comma-separated list. Visualization products that have a nonstatic end-date should provide only the start date and interval (e.g. 2013-01-01/P1D). Note that files which represent a 5-day average, but are generated daily, would have a period of P1D.",
+              "$comment": "A pattern for full matching of iso 8601 can be overkill. More discussion with stakeholders about pattern detail is needed.",
+              "type": "string",
+              "minLength": 3
+            },
+            "WGS84SpatialCoverage": {
+              "description": "The spatial coverage of the data that will be visualized. The coverage is referenced in the WGS84 coordinate system.",
+              "$comment": "LL_Lat, LL_Lon, UR_Lat, UR_Lon",
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4
+            },
+            "NativeSpatialCoverage": {
+              "description": "The spatial coverage of the data that will be visualized. The coverage is referenced in the coordinate system native to the projection.",
+              "$comment": "LL_Y, LL_X, UR_Y, UR_X",
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4
+            },
+            "AscendingOrDescending": {
+              "description": "Indicates whether visualizations are generated from data that was acquired during the ascending or descending orbit. May be 'N/A' for Geostationary platforms or utility visualization products.",
+              "type": "string",
+              "enum": [
+                "Ascending",
+                "Descending",
+                "Both",
+                "N/A"
+              ]
+            },
+            "ColorMap": {
+              "description": "The extension-less filename (e.g. \"MODIS_Brightness_Temperature\") of the colormap associated with this product. One or more visualization products may have the same mapping from data to RGB (e.g. MODIS Aqua/Terra Brightness Temp Day/Night). To simplify configuration and improve usability, GIBS will utilize a consolidated colormap for all products that share that colormap. Existing colormaps within the GIBS visualization catalog may be reviewed here https://gibs.earthdata.nasa.gov/colormaps/v1.3/output/. A value of 'N/A' may be provided if not applicable (e.g. JPEG multi- band visualizations)",
+              "$ref": "definitions.json#/definitions/TextStringOrNaType"
+            },
+            "VectorStyle": {
+              "description": "The extension-less filename (e.g. \"FIRMS_MODIS_Thermal_Anomalies\") of the vector style file associated with this product. One or more vector visualization products may utilize the same vector style file for simplification of configuration and improved usability. Existing vector style files within the GIBS visualization catalog may be reviewed here https://gibs.earthdata.nasa.gov/vector-styles/v1.0/.",
+              "$ref": "definitions.json#/definitions/TextStringOrNaType"
+            },
+            "VectorMetadata": {
+              "description": "The extension-less filename (e.g. \"FIRMS_MODIS_Thermal_Anomalies\") of the vector metadata file associated with this product. One or more vector products may utilize the same vector metadata file for simplification of configuration and improved usability. Existing vector metadata files within the GIBS visualization catalog may be reviewed here https://gibs.earthdata.nasa.gov/vector-metadata/v1.0/.",
+              "$ref": "definitions.json#/definitions/TextStringOrNaType"
+            },
+            "TitleAlt": {
+              "$comment": "LayerMetadata v1.0-0, kept for review and renamed as TitleAlt. /Title should be preferred.",
+              "deprecated": true,
+              "description": "The layer title.",
+              "$ref": "definitions.json#/definitions/TitleType"
+            },
+            "SubtitleAlt": {
+              "$comment": "LayerMetadata v1.0-0, kept for review and renamed as SubtitleAlt. /Subtitle should be preferred.",
+              "deprecated": true,
+              "description": "The layer subtitle. Usually '${SatelliteName} / ${InstrumentName}'",
+              "$ref": "definitions.json#/definitions/TitleType"
+            },
+            "MeasurementAlt": {
+              "$comment": "LayerMetadata v1.0-0, kept for review and renamed as MeasurementAlt ./Measurement should be preferred.",
+              "deprecated": true,
+              "description": "The visualization layer’s measurement category",
+              "type": "string",
+              "minLength": 1,
+              "maxlenght": 256
+            },
+            "LayerPeriod": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "The visualization layer’s temporal resolution",
+              "type": "string",
+              "enum": [
+                "Subdaily",
+                "Daily",
+                "Multi-Day",
+                "4-Day",
+                "5-Day",
+                "7-Day",
+                "8-Day",
+                "16-Day",
+                "Weekly",
+                "Monthly",
+                "3-Month",
+                "Yearly"
+              ]
+            },
+            "TransAntiMeridian": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Whether the visualization layer provides representations that cross the antimeridian.",
+              "type": "boolean"
+            },
+            "Daynight": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Whether the visualization layer represents data captured during the day, night (or both) as perceived during time of data acquisition.",
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 2,
+              "items": {
+                "enum": [
+                  "day",
+                  "night"
+                ]
+              }
+            },
+            "OrbitTracks": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Corresponding orbit track layers",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "description": "Orbit track layer identifier(s)",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "OrbitDirection": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Whether the visualization layer represents data from the ascending, descending, or both tracks of a satellite.",
+              "type": "array",
+              "maxItems": 2,
+              "items": {
+                "description": "Orbit track direction",
+                "enum": [
+                  "ascending",
+                  "descending"
+                ]
+              }
+            },
+            "ConceptIdsAlt": {
+              "$comment": "LayerMetadata v1.0-0, kept for review and renamed as ConceptIdsAlt. /ConceptIds should be preferred.",
+              "description": "Which CMR dataset(s) are represented by the visualization layer.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "Identify whether the associated dataset is NRT or STD.",
+                    "type": "string",
+                    "enum": [
+                      "NRT",
+                      "STD"
+                    ]
+                  },
+                  "value": {
+                    "description": "The dataset's CMR concept id",
+                    "$ref": "definitions.json#/definitions/ConceptIdType"
+                  }
+                },
+                "required": ["type", "value"],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            },
+    
+            "ResolutionAtNadir": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "The visualization layer's approximate horizontal spatial resolution @ NADIR retrieval (e.g. \"250m\").",
+              "type": "string",
+              "minLength": 1
+            },
+            "Ongoing": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Whether the visualization layer is being actively updated or is a static (i.e. historical-only or reference) layer.",
+              "type": "boolean"
+            },
+            "RetentionPeriod": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "The retention period for a visualization layer, as calculated as the number of days after the end of acquisition for the associated data. Indefinite retention indicated by value of -1.",
+              "type": "integer"
+            },
+            "Latency": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "Latency, in minutes, between the end of data acquisition and when the visualization layer will reflect the sensed data.",
+              "type": "integer"
+            },
+            "UpdateFrequency": {
+              "$comment": "LayerMetadata v1.0-0",
+              "description": "How often, in minutes, a non-static visualization layer is updated for the current data day.",
+              "type": "integer"
+            },
+
+            "ows:Title": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsDataIdentification.xsd",
+              "description": "OWS Title",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "ows:Abstract": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsDataIdentification.xsd",
+              "description": "OWS Abstract",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "ows:Keywords": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsDataIdentification.xsd",
+              "description": "OWS Keywords",
+              "type": "array",
+              "items": {
+                "description": "OWS Keyword",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "minItems": 1
+            },
+            "ows:WGS84BoundingBox": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsContents.xsd",
+              "description": "Unordered list of zero or more minimum bounding rectangles surrounding coverage data, using the WGS 84 CRS with decimal degrees and longitude before latitude. ... If multiple WGS 84 bounding boxes are included, this shall be interpreted as the union of the areas of these bounding boxes.",
+              "type": "array",
+              "items": {
+                "description": "longitude0, longitude1, latitude0, latitude1",
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4
+            },
+            "ows:Identifier": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsContents.xsd",
+              "description": "Unambiguous identifier or name of this coverage, unique for this server.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "ows:BoundingBox": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsContents.xsd",
+              "description": "Unordered list of zero or more minimum bounding rectangles surrounding coverage data, in AvailableCRSs. Zero or more BoundingBoxes are allowed in addition to one or more WGS84BoundingBoxes to allow more precise specification of the Dataset area in AvailableCRSs. ... If multiple bounding boxes are included with the same CRS, this shall be interpreted as the union of the areas of these bounding boxes.",
+              "type": "array",
+              "items": {
+                "description": "longitude0, longitude1, latitude0, latitude1",
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4
+            },
+            "ows:Metadata": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsContents.xsd",
+              "description": "Optional unordered list of additional metadata about this dataset. A list of optional metadata elements for this dataset description could be specified in the Implementation Specification for this service.",
+              "type": "array",
+              "items": {
+                "$ref": "definitions.json#/definitions/ows:MetadataType"
+              },
+              "minItems": 1
+            },
+            "ows:DatasetDescriptionSummary ": {
+              "$comment": "http://schemas.opengis.net/ows/1.1.0/owsContents.xsd",
+              "description": "Metadata describing zero or more unordered subsidiary datasets available from this server.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "wmts:Style": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "WMTS Style",
+              "type": "array",
+              "items": {
+                "$ref": "definitions.json#/definitions/wmts:StyleType"
+              },
+              "minItems": 1
+            },
+            "wmts:Format": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "Supported valid output MIME types for a tile.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "minItems": 1
+            },
+            "wmts:InfoFormat": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "Supported valid output MIME types for a FeatureInfo. If there isn't any, The server do not support FeatureInfo requests for this layer.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "minItems": 1
+            },
+            "wmts:Dimension": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "Metadata about a particular dimension that the tiles of a layer are available.",
+              "$ref": "definitions.json#/definitions/wmts:DimensionType"
+            },
+            "wmts:TileMatrixSetLink": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "Metadata about the TileMatrixSet reference.",
+              "$ref": "definitions.json#/definitions/wmts:TileMatrixSetLinkType"
+            },
+            "wmts:ResourceURL": {
+              "$comment": "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd",
+              "description": "URL template to a tile or a FeatureInfo resource on resource oriented architectural style.",
+              "$ref": "definitions.json#/definitions/wmts:URLTemplateType"
+            }
+
+          },
+
+          "required": []
+        }
+
+      }
+
+    },
+
+    "Generation": {
+
+      "$comment": "Table 4.1 2 in GIBS Imagery Provider ICD, Revision B, Table 3.1 1 in GIBS Imagery Provider ICD, Revision B",
+      "description": "How this visualization is generated.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "SourceProjection": {
+          "description": "The EPSG code identifying the projection of the source visualization files.",
+          "type": "string",
+          "$comment": "Table 4.1.1-1 in GIBS Imagery Provider ICD, Revision B",
+          "enum": ["EPSG:4326", "EPSG:3413", "EPSG:3031"]
+        },
+        "SourceResolution": {
+          "description": "An indication of whether the resolution of the source visualization file(s) will match one of GIBS’ access resolutions or will be in data’s the native resolution",
+          "type": "string",
+          "$comment": "Value '0.25°' appears in GIBS ICD Appendix - PODAAC_v1_21.xlsx, but not in ICD document",
+          "enum": ["GIBS", "Native", "0.25°"]
+        },
+        "SourceFormat": {
+          "description": "The format of the source visualization file(s).",
+          "type": "string",
+          "enum": ["PNG", "JPEG", "GeoTIFF", "GeoJSON", "Shapefile"]
+        },
+        "SourceColorModel": {
+          "description": "The color model of the source raster visualization file(s).",
+          "type": "string",
+          "$comment": "Table 4.1.4-1 in GIBS Imagery Provider ICD, Revision B",
+          "enum": ["Full-Color RGB", "Full-Color RGBA", "Indexed RGBA", "Indexed Grayscale", "Hybrid RGBA", "N/A"]
+        },
+        "SourceNoDataIndexOrRGB": {
+          "description": "The palette entry index that is designated as the \"No Data\" value in the associated colormap for raster visualization produc ts with a Source Color Model value of 'Indexed RGBA', 'Hybrid RGBA', or 'Indexed Grayscale’ OR The RGB value to be used as \"No Data\" value for raster visualization products with a Source Color Model value of 'Full-Color RGB' or 'Full-Color RGBA'.",
+          "type": ["integer", "string"]
+        },
+        "SourceCoverage": {
+          "description": "The geographic coverage type of the source visualization file(s).",
+          "type": "string",
+          "enum": ["Full", "Tiled", "Granule", "Tiled-Granule"]
+        },
+
+        "OutputProjection": {
+          "description": "The EPSG code identifying the projection of the output visualization product generated and served by GIBS.",
+          "type": "string",
+          "$comment": "Table 4.1.7-1 in in GIBS Imagery Provider ICD, Revision B",
+          "enum": ["EPSG:4326", "EPSG:3413", "EPSG:3031"]
+        },
+        "OutputResolution": {
+          "description": "The normalized resolution (meters /pixel) of the output visualization product generated and served by GIBS.",
+          "type": "string",
+          "$comment": "Table 4.1.8-1 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-2 in GIBS Imagery Provider ICD, Revision B, Table 4.1.8-3 in GIBS Imagery Provider ICD, Revision B",
+          "enum": ["2km", "1km", "500m", "250m", "125m", "62.5m", "31.25m", "15.125m"]
+        },
+        "OutputFormat": {
+          "description": "The format of the visualization that will be served by GIBS.",
+          "type": "string",
+          "enum": ["PNG", "PPNG", "JPEG", "MVT"]
+        },
+
+        "SourceData": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "Source data used to create visualization",
+          "type": "array",
+          "items": {
+              "$ref": "definitions.json#/definitions/SourceDataType"
+          },
+          "minItems": 1
+        },
+        "Reprojection": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "How reprojection is done. Describe what source projection and output projection are",
+          "type": "object",
+          "properties": {
+            "Source": {
+              "$ref": "definitions.json#/definitions/ProjectionType"
+            },
+            "Output": {
+              "$ref": "definitions.json#/definitions/ProjectionType"
+            }
+          }
+        },
+        "Regridding": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "How regridding is done. Ddescribe what source grid and output grid are",
+          "type": "object",
+          "properties": {
+            "Source": {
+              "$ref": "definitions.json#/definitions/GridType"
+            },
+            "Output": {
+              "$ref": "definitions.json#/definitions/GridType"
+            }
+          }
+        },
+        "Sampling": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "How sampling is done. Type can be interpolate,  average-out, etc.",
+          "type": "object",
+          "properties": {
+            "Type": {
+              "type": "string",
+              "enum": ["interpolation"]
+            },
+            "Method": {
+              "type": "string",
+              "enum": ["nearest-neighbor"]
+            }
+          }
+        },
+        "Resolution": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "What are resolutions of source data and resulting visualization.",
+          "type": "object",
+          "properties": {
+            "Source": {
+              "$ref": "definitions.json#/definitions/SpatialResolutionTypeAlt"
+            },
+            "Output": {
+              "$ref": "definitions.json#/definitions/SpatialResolutionTypeAlt"
+            }
+          }
+        },
+        "QualityFlag": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "Descibe filtering, mask, etc.",
+          "type": "string"
+        },
+        "ColorMapAlt": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation. Kept for review and renamed as ColorMapAlt. /Specification/ProductMetadata/ColorMap is preferred? Or they are different?",
+          "deprecated": true,
+          "description": "Describe color map or table used.",
+          "type": "object",
+          "properties": {
+            "Name": {
+              "type": "string"
+            },
+            "Url": {
+              "type": "string"
+            }
+          }
+        },
+        "Range": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "Describe min/max value in data used.",
+          "type": "object",
+          "properties": {
+            "Min": {
+              "type": "number"
+            },
+            "Max": {
+              "type": "number"
+            }
+          }
+        },
+        "Scale": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "Describe algorithm used in scaling data. It can be linear, logarithmic, etc.",
+          "type": "object",
+          "properties": {
+            "Method": {
+              "type": "string",
+              "enum": ["linear", "logarithmic"]
+            }
+          }
+        },
+        "PixelStyle": {
+          "$comment": "Experimental. From discussion with Jeff Hall, author of classic IDL-based tools for browse image generation.",
+          "description": "Describe shape of pixel when visualization is rendered.",
+          "type": "object",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "enum": ["rectangle"]
+            }
+          }
+        }
+
+      }
+
+    }
+
+  },
+
+  "required": ["Specification", "Generation"]
+}

@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[commons-io "2.18.0"]
+  :dependencies [[commons-io]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -23,10 +23,10 @@
              :dev {:dependencies [[clj-http "2.3.0"]
                                   [criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.namespace]
                                   [nrepl/nrepl]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
-                                  [pjstadig/humane-test-output "0.9.0"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
+                                  [pjstadig/humane-test-output]
                                   [proto-repl "0.3.1"]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
@@ -58,7 +58,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]
-                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                     [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                      ;; ring is needed or this fails in sys int group3
                                      [ring/ring-jetty-adapter "1.15.4"
                                       :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]}}

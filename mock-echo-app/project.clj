@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
   :parent-project {:path "../project.clj"
                    :inherit [:managed-dependencies]}
-  :dependencies [[commons-io "2.18.0"]
+  :dependencies [[commons-io]
                  [compojure :exclusions [commons-fileupload]]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -12,7 +12,7 @@
                  [org.bouncycastle/bcpkix-jdk18on]
                  [org.clojure/clojure]
                  [org.clojure/tools.reader]
-                 [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                 [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                  [org.eclipse.jetty/jetty-http]
                  [org.eclipse.jetty/jetty-util]
                  [ring/ring-codec "1.3.0"]
@@ -32,9 +32,9 @@
              :dev {:exclusions [[org.clojure/tools.nrepl]]
                    :dependencies [[nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojure/tools.namespace]
                                   [nrepl/nrepl]
-                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                                  [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                                   [ring/ring-jetty-adapter "1.15.4"
                                    :exclusions [org.eclipse.jetty.ee9/jetty-ee9-servlet]]]
                    :jvm-opts ^:replace ["-server"]

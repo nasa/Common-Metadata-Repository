@@ -38,42 +38,62 @@ class StubOracleClient:
     def get_all_provider_ids(self) -> list[str]:
         return list(self._providers)
 
-    def get_collection_ids_for_provider(self, provider_id: str) -> list[str]:
-        return list(self._collections.get(provider_id, []))
+    def is_small_provider(self, provider_id: str) -> bool:
+        return False
 
-    def stream_granule_ids(
+    def find_next_granule_id_in_range(
+        self,
+        provider_id: str,
+        min_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> Optional[int]:
+        """Fake dense id space [0, total)."""
+        total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
+        return min_id if min_id < total else None
+
+    def fetch_granule_id_range_chunk(
+        self,
+        provider_id: str,
+        start_id: int,
+        end_id: int,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> list[tuple[str, int]]:
+        total = sum(self._granule_counts.get(cid, 0) for cid in self._collections.get(provider_id, []))
+        return [
+            (f"G{1000000000 + i}-{provider_id}", 1)
+            for i in range(max(0, start_id), min(end_id, total))
+        ]
+
+    def stream_granule_ids_paged(
         self,
         collection_id: str,
         chunk_size: int,
         after: Optional[str] = None,
         before: Optional[str] = None,
         start_after_concept_id: Optional[str] = None,
-    ) -> Iterator[list[tuple[str, int]]]:
-        """Yield chunks of fake granule IDs, respecting keyset resume and chunk_size.
-
-        start_after_concept_id mirrors the Oracle keyset cursor: only IDs that sort
-        after that value are returned.  The stub uses a sequential integer suffix so
-        lexicographic order matches the generation order.
-        """
+    ) -> Iterator[tuple[str, list[tuple[str, int]]]]:
+        """Ignores after/before and has no tombstones. Ids sort in generation order, so
+        the keyset cursor works as in Oracle."""
         count = self._granule_counts.get(collection_id, 0)
         provider = collection_id.split("-", 1)[1] if "-" in collection_id else "UNKNOWN"
 
-        # Build all IDs for this collection and apply the keyset filter
         all_ids = [(f"G{1000000000 + i}-{provider}", 1) for i in range(count)]
         if start_after_concept_id:
             all_ids = [(cid, rev) for cid, rev in all_ids if cid > start_after_concept_id]
 
-        # Yield in chunk_size batches
         for i in range(0, len(all_ids), chunk_size):
-            yield all_ids[i:i + chunk_size]
+            chunk = all_ids[i:i + chunk_size]
+            yield chunk[-1][0], chunk
 
-    def get_concept_ids_by_type(
+    def stream_concept_ids_by_type(
         self,
         concept_type: str,
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> list[tuple[str, int]]:
-        return list(self._concept_type_ids.get(concept_type, []))
+    ) -> Iterator[tuple[str, int]]:
+        yield from self._concept_type_ids.get(concept_type, [])
 
     def get_concept_by_id(self, concept_id: str) -> Optional[dict]:
         return {"concept-id": concept_id, "revision-id": 1}

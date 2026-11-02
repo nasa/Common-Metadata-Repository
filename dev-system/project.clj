@@ -50,11 +50,11 @@
                    :inherit [:managed-dependencies]}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
+  :dependencies ~(concat '[[commons-codec/commons-codec]
                            ;; replaces org.bouncycastle/bcpkix-jdk15on
                            [org.bouncycastle/bcpkix-jdk18on]
                            [org.clojure/clojure]
-                           [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.10"]
+                           [org.eclipse.jetty.ee9/jetty-ee9-servlet]
                            [org.eclipse.jetty.websocket/jetty-websocket-core-common]
                            [ring/ring-codec "1.3.0"]
                            [ring/ring-jetty-adapter "1.15.4"
@@ -85,9 +85,9 @@
                                                [debugger "0.2.0"]
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT" :exclusions [clojure-tools]]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
-                                               [org.clojure/tools.namespace "0.2.11"]
+                                               [org.clojure/tools.namespace]
                                                [nrepl/nrepl]
-                                               [pjstadig/humane-test-output "0.9.0"]
+                                               [pjstadig/humane-test-output]
                                                [proto-repl "0.3.1"]
                                                [proto-repl-charts "0.3.2"]
                                                [proto-repl-sayid "0.1.3"]

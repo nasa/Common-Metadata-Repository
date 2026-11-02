@@ -44,7 +44,7 @@
      :Unit unit}))
 
 (defn- convert-temporal-resolution
-  "Go through all of the temporal extents and convert their UMM temporal 
+  "Go through all of the temporal extents and convert their UMM temporal
   resolutions to satisfy the ISO schema."
   [temporal-extents]
   (util/remove-nils-empty-maps-seqs

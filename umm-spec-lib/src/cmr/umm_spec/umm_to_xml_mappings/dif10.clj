@@ -16,14 +16,14 @@
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"COMPLETE" "COMPLETE"
-   "ACTIVE" "IN WORK"
+   "ACTIVE" "ACTIVE"
+   "IN WORK" "ACTIVE"
    "PLANNED" "PLANNED"
    "DEPRECATED" "DEPRECATED"
    "NOT PROVIDED" "NOT PROVIDED"
    "PREPRINT" "PREPRINT"
    "INREVIEW" "INREVIEW"
-   "SUPERSEDED" "SUPERSEDED"
-   })
+   "SUPERSEDED" "SUPERSEDED"})
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -257,15 +257,29 @@
   "Returns the dif10 Data_Set_Citations from UMM-C."
   [c]
   (let [doi (get-in c [:DOI :DOI])
-        pv (get-in c [:DOI :PreviousVersion])]
+        pv (get-in c [:DOI :PreviousVersion])
+        build-prev-versions
+        (fn [versions]
+          (when (seq versions)
+            (for [v versions]
+              [:Previous_Version
+               (when-let [ver (:Version v)] [:Version ver])
+               (when-let [desc (:Description v)] [:Description desc])
+               (when-let [d (:DOI v)] [:DOI d])
+               (when-let [d (:Published v)] [:Published (str d)])
+               (when-let [d (:BeginningDateTime v)] [:BeginningDateTime (str d)])
+               (when-let [d (:EndingDateTime v)] [:EndingDateTime (str d)])
+               (when-let [d (:DeprecatedDateTime v)] [:DeprecatedDateTime (str d)])
+               (when-let [cp (when-let [coll-progress (:CollectionProgress v)]
+                                (get coll-progress-mapping (string/upper-case coll-progress)))]
+                  [:CollectionProgress cp])])))]
     (if (empty? (:CollectionCitations c))
       (when (seq doi)
         [:Dataset_Citation
          [:Persistent_Identifier
           [:Type "DOI"]
           [:Identifier doi]
-          (when (seq pv)
-              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])]])
+          (build-prev-versions pv)]])
       (for [collection-citation (:CollectionCitations c)]
         [:Dataset_Citation
          [:Dataset_Creator (:Creator collection-citation)]
@@ -283,21 +297,38 @@
            [:Persistent_Identifier
             [:Type "DOI"]
             [:Identifier doi]
-            (when (seq pv)
-              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])])
+            (build-prev-versions pv)])
          (when-let [online-resource (:OnlineResource collection-citation)]
            [:Online_Resource (:Linkage online-resource)])]))))
 
 (defn generate-associated-dois
   "Returns the DIF 10 XML associated dois from a UMM-C collection record."
   [c]
-  (for [assoc-doi (get c :AssociatedDOIs)]
+  (for [assoc-doi (get c :AssociatedDOIs)
+        :let [original-type (:Type assoc-doi)
+              ;; The valid enumeration list for DIF 10
+              valid-dif10-types #{"Child Dataset" "Collaborative/Other Agency"
+                                  "Field Campaign" "Parent Dataset"
+                                  "Related Dataset" "Other"}
+              dif10-type (when original-type
+                           (if (valid-dif10-types original-type)
+                             original-type
+                             "Other"))]]
     [:Associated_DOIs
      [:DOI (:DOI assoc-doi)]
      [:Title (:Title assoc-doi)]
      [:Authority (:Authority assoc-doi)]
-     [:Type (:Type assoc-doi)]
-     [:Description_Of_Other_Type (:DescriptionOfOtherType assoc-doi)]]))
+     (when dif10-type
+       [:Type dif10-type])
+     (when (= "Other" dif10-type)
+       (if (= original-type "Other")
+         ;; If it was natively "Other", keep the original description
+         [:Description_Of_Other_Type (:DescriptionOfOtherType assoc-doi)]
+         ;; If it was forced to "Other", prepend the original type
+         [:Description_Of_Other_Type
+          (if-let [desc (:DescriptionOfOtherType assoc-doi)]
+            (str original-type " - " desc)
+            original-type)]))]))
 
 (defn- generate-other-identifiers
   "Returns the DIF 10 XML other identifiers from a UMM-C collection record."

@@ -10,7 +10,7 @@ services:
   reindexer:
     build: .
     ports:
-      - "8080:8000"
+      - "8080:8080"
     depends_on:
       - dynamodb-local
     environment:
@@ -29,12 +29,12 @@ services:
 
       # SQS (local ElasticMQ started via `cmr start local sqs-sns`)
       SQS_ENDPOINT_URL: "${SQS_ENDPOINT_URL:-http://host.docker.internal:4100}"
-      COLLECTION_QUEUE_URL: "${COLLECTION_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-reindexer-jobs}"
       INDEXER_QUEUE_URL: "${INDEXER_QUEUE_URL:-http://host.docker.internal:4100/queue/cmr-indexer-jobs}"
 
-      # Throttler
-      STREAM_CHUNK_SIZE: "${STREAM_CHUNK_SIZE:-10000}"
+      # Scan sizes and rate limit
+      STREAM_CHUNK_SIZE: "${STREAM_CHUNK_SIZE:-1000}"
       RATE_PER_MINUTE: "${RATE_PER_MINUTE:-600}"
+      ID_RANGE_CHUNK_SIZE: "${ID_RANGE_CHUNK_SIZE:-20000}"
 
       # DynamoDB (job tracking)
       DYNAMODB_ENDPOINT_URL: "${DYNAMODB_ENDPOINT_URL:-http://dynamodb-local:8000}"

@@ -438,6 +438,20 @@ To issue a KMS Redis Cache reindex, call
 
 No output is returned on success. HTTP status code of 200 when cache has been refreshed.
 
+To refresh only specific keyword schemes, pass a comma-separated `concept_scheme` query parameter with one or more CMR keyword scheme names:
+
+	curl -i \
+		-X POST \
+		-H "Authorization: token" \
+		"http://localhost:3006/caches/refresh/kms?concept_scheme=platforms,science_keywords"
+
+
+Valid scheme names: `concepts`, `granule_data_format`, `instruments`, `iso_topic_categories`, `measurement_name`, `mime_type`, `platforms`, `processing_levels`, `projects`, `providers`, `related_urls`, `science_keywords`, `spatial_keywords`, `spatial_keywords_old`, `temporal_keywords`.
+
+Accepted aliases: `archive_centers` and `data_centers` resolve to `providers`; `location_keywords` resolves to `spatial_keywords`.
+
+An invalid scheme name returns HTTP 400 with a list of valid values. When `concept_scheme` is omitted, all schemes are refreshed as before.
+
 
 ## Check Application health
 
