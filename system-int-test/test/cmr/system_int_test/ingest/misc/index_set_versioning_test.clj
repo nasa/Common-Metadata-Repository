@@ -2,7 +2,9 @@
   "Tests that index-set updates are versioned in Metadata DB."
   (:require
    [clojure.test :refer :all]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.system-int-test.data2.index-set :as data-index-set]
+   [cmr.system-int-test.utils.elastic-util :as elastic]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -97,8 +99,7 @@
 
     (testing "Graceful Metadata Stripping: revision-id in PUT request is ignored"
       (let [id 9999
-            is (data-index-set/sample-index-set id)
-            _ (index/create-index-set is)
+            _ (index/create-index-set (data-index-set/sample-index-set id))
             ;; Fetch current state which now includes revision-id
             current-data (index/get-index-set-by-id id)
             _ (is (= 1 (get-in current-data [:index-set :revision-id])))
@@ -110,17 +111,19 @@
           (is (= 2 (get-in new-data [:index-set :revision-id])) "Oracle should have correctly incremented the revision"))))
 
     (testing "Disaster Recovery: Restore lost ES cluster from Oracle with sync from database API"
-      (let [id 5555
-            is (data-index-set/sample-index-set id)]
+      (let [id 5555]
         ;; create index-set with revision 1
-        (index/create-index-set is)
-        (is (some? (index/get-index-set-by-id id)))
-        ;; Simulate ES loss by deleting elastic index-set and tombstoning latest index-set in db as revision 2
-        (is (= 204 (:satus (index/index-set-reset))))
+        (is (= 201 (:status (index/create-index-set (data-index-set/sample-index-set id)))))
+        (is (= 200 (:status (index/get-index-set-by-id id))))
+        ;; Simulate ES loss by deleting the index-set and its indexes from elastic only
+        (doseq [elastic-name [es-config/elastic-name es-config/gran-elastic-name]]
+          (elastic/delete-index-set id elastic-name))
         (is (= 404 (:status (index/get-index-set-by-id id))))
-        ;; Sync from db and get latest non-tombstoned index-set revision 1
+        (is (not (elastic/index-exists? "5555_coll2_prov1" es-config/elastic-name)))
+        ;; Sync from db restores revision 1 and its indexes
         (is (= 204 (:status (index/sync-index-sets-from-db))))
-        ;; Verify
         (let [restored (index/get-index-set-by-id id)]
-          (is (some? restored))
-          (is (= id (get-in restored [:index-set :id]))))))))
+          (is (= 200 (:status restored)))
+          (is (= id (get-in restored [:index-set :id])))
+          (is (elastic/index-exists? "5555_coll2_prov1" es-config/elastic-name))
+          (is (elastic/index-exists? "5555_small_collections" es-config/gran-elastic-name)))))))
