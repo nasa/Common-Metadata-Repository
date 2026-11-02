@@ -33,9 +33,9 @@
   (when (seq actual)
     (is (scores-descending? actual)))
 
-  ;; compare values, ignoring order: ranking between different values depends on per-shard term statistics
-  (let [expected (sort-by (juxt :type :value :fields) (map #(dissoc % :score) expected))
-        actual (sort-by (juxt :type :value :fields) (map #(dissoc % :score) actual))]
+  ;; compare values
+  (let [expected (map #(dissoc % :score) expected)
+        actual (map #(dissoc % :score) actual)]
     (is (= expected actual))))
 
 (def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
@@ -200,8 +200,8 @@
     (index/wait-until-indexed)
     (compare-autocomplete-results
      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
-     [{:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-      {:type "instrument" :value "lVIs" :fields "lVIs"}]))
+     [{:type "instrument" :value "lVIs" :fields "lVIs"}
+      {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3 [query expected]
@@ -210,13 +210,13 @@
 
       "shorter match"
       "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
       "more complete match"
       "q=solar irradiation"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3 [query expected]
