@@ -12,6 +12,7 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.search.es-index :as es-index]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.config :as config]
@@ -198,6 +199,13 @@
         [existing-index-set expected-index-set] (get-existing-and-expected-index-sets context es-cluster-name)]
     (index-set-requires-update? existing-index-set expected-index-set)))
 
+(defn- create-collections-alias
+  "Points the collections search alias at the collections index."
+  [context]
+  (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
+                          (idx-set/collections-index)
+                          (idx-set/collections-index-alias)))
+
 (defn create-default-indexes
   "Create elastic indexes for each index name for both es clusters."
   [context]
@@ -217,9 +225,7 @@
       (nil? existing-non-gran-index-set)
       (do
         (index-set-svc/update-index-set context es-config/elastic-name expected-non-gran-index-set revision-id)
-        (esi/create-index-alias (indexer-util/context->conn context es-config/elastic-name)
-                                (idx-set/collections-index)
-                                (idx-set/collections-index-alias)))
+        (create-collections-alias context))
 
       ;; Check if exist and needs update
       (index-set-requires-update? existing-non-gran-index-set expected-non-gran-index-set)
@@ -301,55 +307,117 @@
                     (pr-str index)))
       {:status (or (:status (ex-data e)) 500)})))
 
-(defn- default-index-sets-in-place?
-  "Returns true when both clusters hold the index set a reset creates, with nothing a test added
-  such as extra granule indexes, resharded indexes or rebalancing collections."
-  [context]
-  (every? (fn [elastic-name]
-            (let [[existing-index-set _] (get-existing-and-expected-index-sets context elastic-name)
-                  default-index-set (util/remove-nils-empty-maps-seqs (expected-index-set elastic-name nil))]
-              (and existing-index-set
-                   (not (index-set-requires-update? existing-index-set default-index-set)))))
-          [es-config/elastic-name es-config/gran-elastic-name]))
+;; The metadata versions of the default indexes after the last reset, by elastic cluster name
+(defonce ^:private index-versions-after-reset (atom {}))
 
-(defn- reset-written-indexes
-  "Resets the default index sets by recreating only the indexes that have been written to.
-  Recreating each index costs a cluster state update, and most tests touch only a few of the
-  indexes. The indexes are recreated rather than emptied with a delete by query because documents
-  are indexed with external versions, and the tombstones a delete leaves behind can reject the
-  lower revision ids metadata db hands out again after its own reset."
-  [context]
-  (let [index-sets {es-config/elastic-name (expected-index-set es-config/elastic-name nil)
-                    es-config/gran-elastic-name (expected-index-set es-config/gran-elastic-name nil)}
-        ;; metadata db has been reset too, so save the index set again as a full reset does
-        revision-id (index-set-svc/save-index-set-to-mdb
+(defn- default-index-sets
+  "Returns the index set a reset creates for each elastic cluster."
+  []
+  {es-config/elastic-name (expected-index-set es-config/elastic-name nil)
+   es-config/gran-elastic-name (expected-index-set es-config/gran-elastic-name nil)})
+
+(defn- cluster-without-default-index-set
+  "Returns the name of a cluster whose index set is missing or differs from the default one, for
+  example with extra granule indexes, resharded indexes or rebalancing collections."
+  [context default-index-sets]
+  (some (fn [[elastic-name default-index-set]]
+          (let [existing-index-set (util/remove-nils-empty-maps-seqs
+                                    (index-set-es/get-index-set context elastic-name idx-set/index-set-id))]
+            (when (or (nil? existing-index-set)
+                      (index-set-requires-update? existing-index-set
+                                                  (util/remove-nils-empty-maps-seqs default-index-set)))
+              elastic-name)))
+        default-index-sets))
+
+(defn- changed-index-names
+  "Returns the names of the given indexes that were written to, changed or removed since the last
+  reset."
+  [conn elastic-name index-names]
+  (let [written (set (esi-helper/written-index-names conn index-names))
+        versions (esi-helper/metadata-versions conn index-names)
+        versions-after-reset (get @index-versions-after-reset elastic-name)]
+    (filter (fn [index-name]
+              (or (contains? written index-name)
+                  (not (contains? versions index-name))
+                  (when-let [version-after-reset (get versions-after-reset index-name)]
+                    (not= version-after-reset (get versions index-name)))))
+            index-names)))
+
+(defn- reset-changed-indexes
+  "Resets the default index sets by recreating only the indexes that were written to, changed or
+  removed since the last reset, and deletes any other index set. Recreating each index costs a
+  cluster state update, and most tests touch only a few of the indexes. The indexes are recreated
+  rather than emptied with a delete by query because documents are indexed with external versions,
+  and the tombstones a delete leaves behind can reject the lower revision ids metadata db hands out
+  again after its own reset."
+  [context default-index-sets]
+  (index-set-svc/delete-other-index-sets context idx-set/index-set-id)
+  (doseq [[elastic-name index-set] default-index-sets
+          :let [index-names (index-set-svc/get-index-names index-set elastic-name)
+                changed (changed-index-names (indexer-util/context->conn context elastic-name)
+                                             elastic-name
+                                             index-names)]]
+    (infof "Reset recreates %d of %d indexes in %s: %s"
+           (count changed) (count index-names) elastic-name (pr-str changed))
+    (index-set-svc/recreate-indices context elastic-name index-set changed)
+    (when (some #{(idx-set/collections-index)} changed)
+      (create-collections-alias context)))
+  ;; metadata db has been reset too, so save the index set again as a full reset does. Saving it
+  ;; last leaves metadata db untouched for the full reset if anything above fails.
+  (let [revision-id (index-set-svc/save-index-set-to-mdb
                      context
-                     (util/deep-merge (get index-sets es-config/elastic-name)
-                                      (get index-sets es-config/gran-elastic-name)))]
-    (doseq [[elastic-name index-set] index-sets
-            :let [conn (indexer-util/context->conn context elastic-name)
-                  index-names (index-set-svc/get-index-names index-set elastic-name)
-                  written (index-set-es/written-index-names conn index-names)]]
-      (infof "Reset recreates %d of %d indexes in %s: %s"
-             (count written) (count index-names) elastic-name (pr-str written))
-      (index-set-svc/recreate-indices context elastic-name index-set written)
-      (when (some #{(idx-set/collections-index)} written)
-        (esi/create-index-alias conn (idx-set/collections-index) (idx-set/collections-index-alias)))
+                     (util/deep-merge (get default-index-sets es-config/elastic-name)
+                                      (get default-index-sets es-config/gran-elastic-name)))]
+    (doseq [[elastic-name index-set] default-index-sets]
       (index-set-svc/index-requested-index-set context index-set elastic-name revision-id))))
+
+(defn- try-reset-changed-indexes
+  "Resets only the changed indexes when the default index sets are in place. Returns true when it
+  did, and false when a full reset is needed."
+  [context default-index-sets]
+  (try
+    (if-let [elastic-name (cluster-without-default-index-set context default-index-sets)]
+      (do
+        (infof "The index set in %s is missing or not the default one, so reset recreates every index."
+               elastic-name)
+        false)
+      (do
+        (reset-changed-indexes context default-index-sets)
+        true))
+    (catch Exception e
+      (warn e "Recreating only the changed indexes failed, falling back to a full reset.")
+      false)))
+
+(defn- delete-default-indexes
+  "Deletes the default indexes that are still present after the index sets were deleted, such as
+  ones missing from an index set a test replaced."
+  [context default-index-sets]
+  (doseq [[elastic-name index-set] default-index-sets
+          :let [es-store (indexer-util/context->es-store context elastic-name)
+                index-names (index-set-svc/get-index-names index-set elastic-name)]
+          index-name (keys (esi-helper/metadata-versions (:conn es-store) index-names))]
+    (index-set-es/delete-index es-store index-name)))
+
+(defn- record-index-versions!
+  "Remembers the metadata versions of the default indexes, so the next reset can tell which changed."
+  [context default-index-sets]
+  (reset! index-versions-after-reset
+          (into {}
+                (for [[elastic-name index-set] default-index-sets]
+                  [elastic-name (esi-helper/metadata-versions
+                                 (indexer-util/context->conn context elastic-name)
+                                 (index-set-svc/get-index-names index-set elastic-name))]))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes via deleting the index-set and re-create them via index-set app. A nuclear option just for the development team.
-  When the default index sets are still in place, only the indexes that were written to are recreated."
+  When the default index sets are still in place, only the indexes that changed since the last reset are recreated."
   [context]
-  (when-not (try
-              (when (default-index-sets-in-place? context)
-                (reset-written-indexes context)
-                true)
-              (catch Exception e
-                (warn e "Recreating only the written indexes failed, falling back to a full reset.")
-                false))
-    (index-set-svc/reset context)
-    (create-default-indexes context)))
+  (let [default-index-sets (default-index-sets)]
+    (when-not (try-reset-changed-indexes context default-index-sets)
+      (index-set-svc/reset context)
+      (delete-default-indexes context default-index-sets)
+      (create-default-indexes context))
+    (record-index-versions! context default-index-sets)))
 
 (defrecord ESstore
            [;; configuration of host, port and admin-token for elasticsearch

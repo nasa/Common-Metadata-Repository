@@ -1,11 +1,14 @@
 (ns cmr.indexer.test.data.elasticsearch
   (:require
    [clojure.test :refer [deftest is testing]]
+   [cmr.elastic-utils.es-index-helper :as esi-helper]
    [cmr.elastic-utils.index-util :as esi]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.index-set :as i]
+   [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
-   [cmr.indexer.indexer-util :as indexer-util]))
+   [cmr.indexer.indexer-util :as indexer-util]
+   [cmr.indexer.services.index-set-service :as index-set-svc]))
 
 (def test-index-set
   "A real copy of an index set from UAT with the mappings replaced to be smaller and reduce churn"
@@ -118,6 +121,65 @@
                                       (throw (RuntimeException. "Connection failed")))]
         (is (= {:status 500}
                (es/delete-granule-index {} "granule-index")))))))
+
+(deftest changed-index-names-test
+  (with-redefs [esi-helper/written-index-names (constantly ["1_a"])
+                esi-helper/metadata-versions (constantly {"1_a" {:aliases_version 2}
+                                                          "1_b" {:aliases_version 3}
+                                                          "1_c" {:aliases_version 2}})]
+    (testing "written, changed and missing indexes are returned"
+      (reset! @#'es/index-versions-after-reset
+              {"elastic" {"1_a" {:aliases_version 2}
+                          "1_b" {:aliases_version 2}
+                          "1_c" {:aliases_version 2}}})
+      (is (= ["1_a" "1_b" "1_d"]
+             (#'es/changed-index-names :conn "elastic" ["1_a" "1_b" "1_c" "1_d"]))))
+    (testing "without versions from an earlier reset only written and missing indexes are returned"
+      (reset! @#'es/index-versions-after-reset {})
+      (is (= ["1_a" "1_d"]
+             (#'es/changed-index-names :conn "elastic" ["1_a" "1_b" "1_c" "1_d"]))))))
+
+(deftest reset-es-store-test
+  (let [default-index-sets (#'es/default-index-sets)
+        calls (atom [])
+        record (fn [call] (fn [& _] (swap! calls conj call) nil))]
+    (with-redefs [index-set-es/get-index-set (fn [_ elastic-name _] (get default-index-sets elastic-name))
+                  indexer-util/context->conn (constantly :conn)
+                  indexer-util/context->es-store (constantly {:conn :conn})
+                  esi-helper/written-index-names (constantly ["1_collections_v2"])
+                  esi-helper/metadata-versions (fn [_ index-names] (zipmap index-names (repeat {})))
+                  esi/create-index-alias (record :create-collections-alias)
+                  index-set-es/delete-index (record :delete-default-index)
+                  index-set-svc/delete-other-index-sets (record :delete-other-index-sets)
+                  index-set-svc/save-index-set-to-mdb (record :save-index-set-to-mdb)
+                  index-set-svc/index-requested-index-set (record :index-requested-index-set)
+                  index-set-svc/reset (record :full-reset)
+                  es/create-default-indexes (record :create-default-indexes)]
+      (testing "only changed indexes are recreated, and the index set is saved after them"
+        (with-redefs [index-set-svc/recreate-indices (fn [_ _ _ index-names]
+                                                       (swap! calls conj [:recreate (vec index-names)]))]
+          (reset! calls [])
+          (es/reset-es-store {})
+          (is (= [:delete-other-index-sets
+                  [:recreate ["1_collections_v2"]]
+                  :create-collections-alias
+                  [:recreate []]
+                  :save-index-set-to-mdb
+                  :index-requested-index-set
+                  :index-requested-index-set]
+                 @calls))))
+      (testing "a failure falls back to a full reset before anything is saved to metadata db"
+        (with-redefs [index-set-svc/recreate-indices (fn [& _] (throw (ex-info "create failed" {})))]
+          (reset! calls [])
+          (es/reset-es-store {})
+          (is (= [:delete-other-index-sets :full-reset :delete-default-index :create-default-indexes]
+                 (dedupe @calls)))))
+      (testing "an index set that is not the default one gets a full reset that deletes the default indexes left behind"
+        (with-redefs [index-set-es/get-index-set (constantly nil)]
+          (reset! calls [])
+          (es/reset-es-store {})
+          (is (= [:full-reset :delete-default-index :create-default-indexes]
+                 (dedupe @calls))))))))
 
 (deftest extra-granule-indexes-test
   (testing "extra indexes configured"
