@@ -131,8 +131,9 @@
   "Makes a single attempt to start the delete-by-query task.
   Throws an exception on any failure, returns a task-id on success."
   [conn index query options]
-  (let [slices (get options :slices 1)               ;; Default to 1
-        scroll-size (get options :scroll-size 500)   ;; Default to 500
+  (let [slices (get options :slices 1)
+        scroll-size (get options :scroll-size 500)
+        req-per-sec (get options :requests-per-second -1)
         start-task-url (es-util/url-with-path conn index "_delete_by_query")
         response (http/post start-task-url
                             (merge (:http-opts conn)
@@ -143,6 +144,7 @@
                                     :query-params {:wait_for_completion false
                                                    :slices slices
                                                    :scroll_size scroll-size
+                                                   :requests_per_second req-per-sec
                                                    :conflicts "proceed"}
                                     :body (json/generate-string {:query query})
                                     :throw-exceptions false}))

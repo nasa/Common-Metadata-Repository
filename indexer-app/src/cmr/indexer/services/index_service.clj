@@ -686,8 +686,9 @@
                      {:must [concept-id-clause
                              revision-date-clause]}}
 
-              query-options {:slices "auto"
-                             :scroll-size 5000
+              query-options {:slices (config/collection-delete-elastic-slices)
+                             :scroll-size (config/collection-delete-elastic-scroll-size)
+                             :requests-per-second (config/collection-delete-elastic-requests-per-second)
                              :max-wait-ms (* (config/index-delete-queue-max-wait-secs) 1000)}
 
               resp (es-helper/delete-by-query

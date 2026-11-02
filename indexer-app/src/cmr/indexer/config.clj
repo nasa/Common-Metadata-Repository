@@ -9,7 +9,8 @@
          all-revisions-index-queue-listener-count deleted-granule-index-queue-name
          deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
          ingest-exchange-name ingest-delete-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
-         deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
+         deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log
+         collection-delete-elastic-slices collection-delete-elastic-scroll-size collection-delete-elastic-requests-per-second)
 
 
 ;; index name and config for storing index-set requests
@@ -157,3 +158,20 @@
    retention requirements. Turning this feature on may break Splunk reports."
   {:default false
    :type Boolean})
+
+(defconfig collection-delete-elastic-slices
+  "The number of parallel slices (threads) to use for elastic cascade collection delete tasks.
+  Use a number (e.g., 5) to cap it, or 'auto' to use one thread per primary shard."
+  {:default 5}) ;; Note: No :type specified so it can accept an Int or the string "auto"
+
+(defconfig collection-delete-elastic-scroll-size
+ "The batch size per slice for elastic cascade collection delete tasks.
+  Lower this value to reduce RAM usage on the Elasticsearch nodes."
+ {:default 1000
+  :type Long})
+
+(defconfig collection-delete-elastic-requests-per-second
+ "The throttle speed limit for elastic cascade collection delete tasks.
+  Set to -1 for no limit, or a positive integer (e.g., 2000) to throttle."
+ {:default 2000
+  :type Long})
