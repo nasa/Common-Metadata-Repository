@@ -290,9 +290,9 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        kibana? (dev-config/embedded-kibana-enabled)
-        gran-elastic-server (create-elastic-server elastic (es-config/gran-elastic-port) (when kibana? (dev-config/embedded-kibana-gran-port)))
-        elastic-server (create-elastic-server elastic (es-config/elastic-port) (when kibana? (dev-config/embedded-kibana-port)))
+        kibana-enabled? (dev-config/embedded-kibana-enabled)
+        gran-elastic-server (create-elastic-server elastic (es-config/gran-elastic-port) (when kibana-enabled? (dev-config/embedded-kibana-gran-port)))
+        elastic-server (create-elastic-server elastic (es-config/elastic-port) (when kibana-enabled? (dev-config/embedded-kibana-port)))
         redis-server (create-redis redis)
         sqs-server (create-sqs-server sqs-server)
         control-server (control/create-server)]
