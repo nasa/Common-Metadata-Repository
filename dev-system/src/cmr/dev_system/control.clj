@@ -61,21 +61,19 @@
               :actual-acls actual-acls}))))
 
 (def service-reset-fns
-  "A map of services to reset functions."
+  "A map of services to reset functions, called in order. Caches are cleared separately for every
+  application."
   {:metadata-db mdb-service/reset
    :indexer indexer-service/reset
    :ingest ingest-service/reset
-   :search cache/reset-caches
    :mock-echo mock-echo-api/reset
    :access-control access-control/reset})
 
-(def service-clear-cache-fns
-  "A map of services to clear cache functions."
-  {:indexer cache/reset-caches
-   :access-control cache/reset-caches
-   :metadata-db cache/reset-caches
-   :search cache/reset-caches
-   :ingest cache/reset-caches})
+(defn- reset-all-caches
+  "Clears the caches of every application deployed in the system."
+  [system]
+  (doseq [service-name (keys (:apps system))]
+    (cache/reset-caches (app-context system service-name))))
 
 (defn- build-routes [system]
   (routes
@@ -118,6 +116,7 @@
               ;; Only call reset on applications which are deployed to the current system
               :when (get-in system [:apps service-name])]
         (reset-fn (app-context system service-name)))
+      (reset-all-caches system)
       ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
       (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :gran-elastic]))
       (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :elastic]))
@@ -133,8 +132,7 @@
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
       (redis/reset)
-      (doseq [[service-name clear-cache-fn] service-clear-cache-fns]
-        (clear-cache-fn (app-context system service-name)))
+      (reset-all-caches system)
       (debug "dev system /clear-cache complete")
       {:status 200})
 

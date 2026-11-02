@@ -34,6 +34,11 @@
   {:default 5602
    :type Long})
 
+(defconfig embedded-kibana-enabled
+  "Specifies whether dev system starts an embedded kibana next to each in-memory Elasticsearch cluster."
+  {:default true
+   :type Boolean})
+
 (defconfig dev-system-echo-type
   "Specifies whether dev system should run an in-memory mock ECHO or use an
   external ECHO."

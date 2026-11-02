@@ -124,12 +124,13 @@
                                                     :concept-type :collection
                                                     :format-key :echo10})
         coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
+        ;; PROV2 gets one instrument so it doesn't race PROV1 to write the shared lVIs suggestion
         coll5 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
                 {:EntryTitle "Secret Collection"
                  :Projects (:Projects (fu/projects "From whence you came!"))
-                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))
+                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 1 1))
                  :ScienceKeywords (:ScienceKeywords (fu/science-keywords sk12))
                  :AccessConstraints (data-umm-spec/access-constraints
                                      {:Value 1 :Description "Those files are for British eyes only."})})
@@ -141,7 +142,7 @@
                 {:ShortName "short but not so short that it's not unique"
                  :EntryTitle "Registered Collection"
                  :Projects (:Projects (fu/projects "DMSP 5B/F3"))
-                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))})
+                 :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 1 1))})
                {:format :umm-json
                 :validate-keywords false})
         c1-echo (d/ingest "PROV1"
@@ -199,8 +200,8 @@
     (index/wait-until-indexed)
     (compare-autocomplete-results
      (get-in (search/get-autocomplete-json "q=l") [:feed :entry])
-     [{:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}
-      {:type "instrument" :value "lVIs" :fields "lVIs"}]))
+     [{:type "instrument" :value "lVIs" :fields "lVIs"}
+      {:type "organization" :value "Langley DAAC User Services" :fields "Langley DAAC User Services"}]))
 
   (testing "Ensure science keywords are being indexed properly"
     (are3 [query expected]
@@ -209,13 +210,13 @@
 
       "shorter match"
       "q=solar"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]
 
       "more complete match"
       "q=solar irradiation"
-      [{:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}
-       {:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}]))
+      [{:type "science_keywords" :value "Solar Irradiance" :fields "Atmosphere:Atmospheric Radiation:Solar Irradiance"}
+       {:type "science_keywords" :value "Solar Irradiance" :fields "Sun-Earth Interactions:Solar Activity:Solar Irradiance"}]))
 
   (testing "Anti-value filtering"
     (are3 [query expected]

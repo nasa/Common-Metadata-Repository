@@ -351,6 +351,24 @@
 
     (index-requested-index-set context index-set es-cluster-name revision-id)))
 
+(defn- run-in-parallel!
+  "Calls f on each item in parallel. Every call finishes before the first failure is thrown, so
+  none is still running when the caller handles it."
+  [f items]
+  (when-let [e (some identity (doall (pmap #(try (f %) nil (catch Throwable e e)) items)))]
+    (throw e)))
+
+(defn recreate-indices
+  "Deletes the named indices of the index set and creates them again with their aliases. The
+  indices are handled in parallel because each create waits on a cluster state update."
+  [context es-cluster-name index-set index-names]
+  (let [es-store (indexer-util/context->es-store context es-cluster-name)
+        index-names (set index-names)]
+    (run-in-parallel! #(es/delete-index es-store %) index-names)
+    (run-in-parallel! #(es/update-index es-store %)
+                      (filter #(contains? index-names (:index-name %))
+                              (build-indices-list-w-config index-set es-cluster-name)))))
+
 (defn put-index-set
   "Upsert the given index-set to the index-sets index in ES."
   [context combined-index-set]
@@ -1012,8 +1030,8 @@
           ;; Use put-index-set to ensure we update existing or create new
           (put-index-set context combined-index-set))))))
 
-(defn reset
-  "Put elastic and db in a clean state after deleting indices associated with index-sets and index-set docs and the index-set db table."
+(defn- get-all-index-set-ids
+  "Returns the ids of the index sets in both elastic clusters."
   [context]
   (let [{:keys [index-name]} (config/idx-cfg-for-index-sets es-config/gran-elastic-name)
         gran-index-set-ids (es/get-index-set-ids
@@ -1024,9 +1042,19 @@
         non-gran-index-set-ids (es/get-index-set-ids
                                 (indexer-util/context->es-store context es-config/elastic-name)
                                 index-name
-                                "_doc")
-        all-index-set-ids (into (set gran-index-set-ids) non-gran-index-set-ids)]
+                                "_doc")]
+    (into (set gran-index-set-ids) non-gran-index-set-ids)))
 
-    ;; delete indices assoc with index-sets
-    (doseq [id all-index-set-ids]
-      (delete-index-set context id true))))
+(defn delete-other-index-sets
+  "Deletes every index set except the one with the given id, along with its indices."
+  [context index-set-id]
+  (doseq [id (get-all-index-set-ids context)
+          :when (not= (str index-set-id) (str id))]
+    (delete-index-set context id true)))
+
+(defn reset
+  "Put elastic and db in a clean state after deleting indices associated with index-sets and index-set docs and the index-set db table."
+  [context]
+  ;; delete indices assoc with index-sets
+  (doseq [id (get-all-index-set-ids context)]
+    (delete-index-set context id true)))
