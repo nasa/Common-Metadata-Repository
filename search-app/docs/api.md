@@ -2219,7 +2219,7 @@ Find collections matching tool concept id.
 
 ##### <a name="c-polygon"></a> Polygon
 
-Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on. Each polygon is limited to 1000 points by default.
 
 The polygon parameter could be either "polygon", for single polygon search:
 
@@ -2558,7 +2558,7 @@ The parameters used for searching granules by spatial are the same as the spatia
 Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
 
 ##### <a name="g-polygon"></a> Polygon
-Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on. Each polygon is limited to 1000 points by default.
 
 The polygon parameter could be either "polygon", for single polygon search:
 

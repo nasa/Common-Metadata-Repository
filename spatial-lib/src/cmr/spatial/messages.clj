@@ -11,6 +11,10 @@
   "The maximum number of points a line parameter can have"
   {:default 500 :type Long})
 
+(defconfig max-polygon-points
+  "The maximum number of points a polygon parameter can have"
+  {:default 1000 :type Long})
+
 (defn line-too-many-points-msg
   [type s]
   (format "[%s] has too many points for type %s" s (csk/->snake_case_string type)))

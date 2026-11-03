@@ -66,13 +66,23 @@
 
 (def point-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
-(def polygon-regex #"(?:(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))(?:,(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))){3,})")
-
-(def line-regex #"(?:(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))(?:,(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))){1,})")
+(def ordinate-regex #"[+\-]?\d+(?:\.\d+)?")
 
 (def mbr-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
 (def circle-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
+
+(defn- parse-ordinates
+  "Returns the ordinates in s as doubles, or nil if s is not a comma separated list of at least
+  min-points lon,lat pairs. Each ordinate is matched on its own because a single regex over the
+  whole list overflows the stack on large shapes."
+  [s min-points]
+  (let [ords (string/split s #"," -1)
+        matcher (re-matcher ordinate-regex "")]
+    (when (and (even? (count ords))
+               (>= (count ords) (* 2 min-points))
+               (every? #(.matches (.reset matcher ^String %)) ords))
+      (mapv #(Double. ^String %) ords))))
 
 (defmethod url-decode :point
   [_type s]
@@ -94,33 +104,19 @@
 
 (defmethod url-decode :polygon
   [_type s]
-  (if (re-matches polygon-regex s)
-    (let [ordinates (map #(Double. ^String %) (string/split s #","))]
+  (if-let [ordinates (parse-ordinates s 4)]
+    (if (> (/ (count ordinates) 2) (smsg/max-polygon-points))
+      {:errors [(smsg/line-too-many-points-msg :polygon s)]}
       (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 (defmethod url-decode :line
   [_type s]
-  ;; If the line string is too large, we will experience a StackOverflowError in the java Regex code.
-  ;; To avoid this, when the string is large enough we just split the string verify each token is a number
-  ;; And that here is an even amount. Through testing we've determined about 660ish points is the limit,
-  ;; which is the equivalent to about a 5000 characters long string, so to branch the logic away from
-  ;; the Regex validation, we will count 4500 char strings or above as too large.
-  (if (> (count s) 4500)
-    (let [split-line-str (string/split s #",")]
-      (if (or (some #(not (util/numeric-string? %)) split-line-str)
-              (odd? (count split-line-str)))
-        {:errors [(smsg/shape-decode-msg :line s)]}
-        ;; The maximum shape file size by default is around 5000, we are mirroring that configuration
-        ;; for the too-many-points validation.
-        (if (> (/ (count split-line-str) 2) (smsg/max-line-points))
-          {:errors [(smsg/line-too-many-points-msg :line s)]}
-          (let [ordinates (map #(Double. ^String %) split-line-str)]
-            (l/ords->line-string :geodetic ordinates)))))
-    (if (re-matches line-regex s)
-      (let [ordinates (map #(Double. ^String %) (string/split s #","))]
-        (l/ords->line-string :geodetic ordinates))
-      {:errors [(smsg/shape-decode-msg :line s)]})))
+  (if-let [ordinates (parse-ordinates s 2)]
+    (if (> (/ (count ordinates) 2) (smsg/max-line-points))
+      {:errors [(smsg/line-too-many-points-msg :line s)]}
+      (l/ords->line-string :geodetic ordinates))
+    {:errors [(smsg/shape-decode-msg :line s)]}))
 
 (defmethod url-decode :circle
   [_type s]
