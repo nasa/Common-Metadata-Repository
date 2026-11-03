@@ -72,6 +72,18 @@
 
 (def circle-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
+(defn- over-max-points?
+  "Returns true if s has more than max-points lon,lat pairs. Counts commas without allocating so
+  oversized input is rejected before it is split."
+  [^String s max-points]
+  (let [max-commas (dec (* 2 max-points))]
+    (loop [from 0 commas 0]
+      (let [i (.indexOf s (int \,) (int from))]
+        (cond
+          (neg? i) false
+          (>= commas max-commas) true
+          :else (recur (inc i) (inc commas)))))))
+
 (defn- parse-ordinates
   "Returns the ordinates in s as doubles, or nil if s is not a comma separated list of at least
   min-points lon,lat pairs. Each ordinate is matched on its own because a single regex over the
@@ -104,19 +116,19 @@
 
 (defmethod url-decode :polygon
   [_type s]
-  (if-let [ordinates (parse-ordinates s 4)]
-    (if (> (/ (count ordinates) 2) (smsg/max-polygon-points))
-      {:errors [(smsg/line-too-many-points-msg :polygon s)]}
-      (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
-    {:errors [(smsg/shape-decode-msg :polygon s)]}))
+  (if (over-max-points? s (smsg/max-polygon-points))
+    {:errors [(smsg/line-too-many-points-msg :polygon s)]}
+    (if-let [ordinates (parse-ordinates s 4)]
+      (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)])
+      {:errors [(smsg/shape-decode-msg :polygon s)]})))
 
 (defmethod url-decode :line
   [_type s]
-  (if-let [ordinates (parse-ordinates s 2)]
-    (if (> (/ (count ordinates) 2) (smsg/max-line-points))
-      {:errors [(smsg/line-too-many-points-msg :line s)]}
-      (l/ords->line-string :geodetic ordinates))
-    {:errors [(smsg/shape-decode-msg :line s)]}))
+  (if (over-max-points? s (smsg/max-line-points))
+    {:errors [(smsg/line-too-many-points-msg :line s)]}
+    (if-let [ordinates (parse-ordinates s 2)]
+      (l/ords->line-string :geodetic ordinates)
+      {:errors [(smsg/shape-decode-msg :line s)]})))
 
 (defmethod url-decode :circle
   [_type s]
