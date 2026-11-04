@@ -88,6 +88,11 @@
           (is (= 400 (:status resp)))
           (is (= ["The CMR does not allow querying across granules with json queries. You should limit your query using conditions that identify one or more collections such as provider, concept_id, short_name, or entry_title."] (:errors resp)))))
 
+      (testing "collection_concept_id pattern is rejected"
+        (let [resp (search/find-refs-with-json-query :granule {} {:collection_concept_id {:value "C*" :pattern true}})]
+          (is (= 400 (:status resp)))
+          (is (= ["Collection-concept-id [C*] is not valid."] (:errors resp)))))
+
       (are3 [items json-query options]
         (d/refs-match? items (search/find-refs-with-json-query :granule options json-query))
 
@@ -107,6 +112,11 @@
         {:entry_title {:value "anotherCollectionV1" :ignore_case true}}
         {}
 
+        "entry-title matching no collection"
+        []
+        {:entry_title "NoSuchCollection"}
+        {}
+
         "short-name"
         [gran1 gran2]
         {:short_name "S1"}
@@ -120,6 +130,22 @@
         "provider"
         [gran1 gran2 gran3]
         {:provider "PROV1"}
+        {}
+
+        "provider in lowercase"
+        [gran1 gran2 gran3]
+        {:provider "prov1"}
+        {}
+
+        "provider with pattern"
+        [gran1 gran2 gran3 gran4 gran5]
+        {:provider {:value "PROV*" :pattern true}}
+        {}
+
+        "provider and short-name"
+        [gran1 gran2]
+        {:provider "PROV1"
+         :short_name "S1"}
         {}
 
         "concept-id"
@@ -179,6 +205,12 @@
                 {:instrument "instrument-1"}]}}
         {}
 
+        "not short-name"
+        [gran3]
+        {:and [{:provider "PROV1"}
+               {:not {:short_name "S1"}}]}
+        {}
+
         "or"
         [gran1 gran5]
         {:or [{:instrument "instrument-1"}
@@ -189,4 +221,11 @@
         [gran1]
         {:and [{:short_name "S1"}
                {:instrument "instrument-1"}]}
+        {}
+
+        "or of collection and granule conditions with not"
+        [gran3]
+        {:and [{:or [{:short_name "S2"}
+                     {:instrument "instrument-1"}]}
+               {:not {:short_name "S1"}}]}
         {}))))

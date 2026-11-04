@@ -58,8 +58,9 @@
   (let [{:keys [context]} reduce-info
         [coll-ids resolved-cond] (resolve-collection-query condition context)
         reduce-info (update-in reduce-info [:resolved-conditions] conj resolved-cond)]
-    (if (= coll-ids :all)
-      reduce-info
+    ;; A branch not limited to collections (:all, or nil from a group) leaves the OR unlimited.
+    (if (or (= coll-ids :all) (nil? coll-ids) (= :all (:collection-ids reduce-info)))
+      (assoc reduce-info :collection-ids :all)
       (update-in reduce-info [:collection-ids] #(if % (set/union % coll-ids) coll-ids)))))
 
 (defmethod group-sub-condition-resolver :and

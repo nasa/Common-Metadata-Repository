@@ -3,11 +3,14 @@
    [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index :as idx]
    [cmr.elastic-utils.search.es-index-name-cache :as idx-names-cache]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
-   [cmr.search.data.elastic-search-index :as search-index]))
+   [cmr.search.data.elastic-search-index :as search-index]
+   [cmr.search.services.json-parameters.conversion :as jp]
+   [cmr.search.services.query-walkers.collection-query-resolver :as resolver]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
 
@@ -34,15 +37,19 @@
    :subscription {:subscriptions "1_subscriptions" :all-subscription-revisions "1_all_subscription_revisions"}
    :rebalancing-collections ()})
 
-(deftest get-cached-index-names-test
+(defn- index-names-context
+  "Returns a context whose index names cache holds the given index names."
+  [index-names]
   (let [cache-key idx-names-cache/index-names-cache-key
         cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]
                                                          :read-connection (redis-config/redis-read-conn-opts)
-                                                         :primary-connection (redis-config/redis-conn-opts)})
-        _ (hash-cache/reset cache cache-key)
-        context {:system {:caches {cache-key cache}}}]
-    (hash-cache/set-values cache cache-key cached-index-names)
+                                                         :primary-connection (redis-config/redis-conn-opts)})]
+    (hash-cache/reset cache cache-key)
+    (hash-cache/set-values cache cache-key index-names)
+    {:system {:caches {cache-key cache}}}))
 
+(deftest get-cached-index-names-test
+  (let [context (index-names-context cached-index-names)]
     (testing "Testing get granule index names"
       (is (= {:small_collections "1_small_collections"}
              (#'search-index/get-granule-index-names context))))
@@ -64,3 +71,19 @@
                               :condition (qm/string-conditions :provider-id ["PROV1"] true)
                               :page-size 3})]
          (is (= "1_c*_alias,1_small_collections_alias,-1_collections*" (#'search-index/get-granule-index-aliases context query)))))))
+
+(deftest json-query-collection-identifier-index-aliases-test
+  (let [context (index-names-context
+                 (assoc-in cached-index-names [:granule :C1-PROV1] "1_c1_prov1"))
+        query (qm/query {:concept-type :granule
+                         :condition (jp/parse-json-condition :granule :short-name "S1")})
+        resolve-with-hits (fn [coll-ids]
+                            (with-redefs [idx/execute-query (constantly
+                                                             {:hits {:hits (map #(hash-map :_id %) coll-ids)}})]
+                              (resolver/resolve-collection-queries context query)))]
+    (testing "searches only the indexes of the matching collections"
+      (is (= "1_c1_prov1"
+             (#'search-index/get-granule-index-aliases context (resolve-with-hits ["C1-PROV1"])))))
+
+    (testing "resolves to match-none when no collection matches"
+      (is (= qm/match-none (:condition (resolve-with-hits [])))))))
