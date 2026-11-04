@@ -106,12 +106,25 @@
     (testing "collection queries and normal conditions"
       (let [test-or (or-conds (generic "normal")
                               (mock-coll-query-cond "coll-id" [:a :b]))]
-        (is (= [#{:a :b} (or-conds (generic "normal") (generic ":b,:a"))]
+        (is (= [:all (or-conds (generic "normal") (generic ":b,:a"))]
                (c/resolve-collection-query test-or {}))))
       (let [test-or (or-conds (mock-coll-query-cond "coll-id" [:a :b])
                               (generic "normal"))]
-        (is (= [#{:a :b} (or-conds (generic ":b,:a") (generic "normal"))]
+        (is (= [:all (or-conds (generic ":b,:a") (generic "normal"))]
+               (c/resolve-collection-query test-or {}))))
+      (let [test-or (or-conds (and-conds (generic "normal") (generic "other"))
+                              (mock-coll-query-cond "coll-id" [:a :b]))]
+        (is (= [:all (or-conds (and-conds (generic "normal") (generic "other"))
+                               (generic ":b,:a"))]
                (c/resolve-collection-query test-or {}))))))
+  (testing "or with normal conditions does not limit collection queries in sibling conditions"
+    (let [test-and (and-conds (or-conds (generic "gran-inst")
+                                        (mock-coll-query-cond "coll-inst" [:a]))
+                              (or-conds (generic "gran-plat")
+                                        (mock-coll-query-cond "coll-plat" [:b])))]
+      (is (= [nil (and-conds (or-conds (generic "gran-inst") (generic ":a"))
+                             (or-conds (generic "gran-plat") (generic ":b")))]
+             (c/resolve-collection-query test-and {})))))
   (testing "query with collection identifying collection query"
     (let [test-query (query (and-conds (or-conds (generic "gran-inst")
                                                  (mock-coll-query-cond "coll-inst" [:d :f :g]))

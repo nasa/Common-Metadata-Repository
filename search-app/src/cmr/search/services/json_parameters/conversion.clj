@@ -8,6 +8,7 @@
    [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.elastic-utils.search.es-params-converter :as common-params]
    [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.concepts :as cc]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.date-time-parser :as parser]
    [cmr.common.services.errors :as errors]
@@ -31,10 +32,10 @@
   (js/parse-json-schema-from-path "schema/GranuleJSONQueryLanguage.json"))
 
 (def query-condition-name->condition-type-map-granules
-  {:entry-title :string
-   :provider :string
-   :short-name :string
-   :version :string
+  {:entry-title :collection-query
+   :provider :collection-query
+   :short-name :collection-query
+   :version :collection-query
    :concept-id :string
    :platform :string
    :instrument :string
@@ -43,7 +44,7 @@
    :bounding-box :bounding-box
    :temporal :temporal
    :updated-since :updated-since
-   :collection-concept-id :string
+   :collection-concept-id :collection-query
 
    ;; query constructs
    :or :or
@@ -145,6 +146,14 @@
       (errors/throw-service-error
        :bad-request error))))
 
+(defn- validate-collection-concept-id
+  "Validates a collection_concept_id condition value the same way as the collection_concept_id
+  parameter, which also rejects patterns."
+  [value]
+  (when-let [errors (cc/concept-id-validation :collection-concept-id
+                                              (if (map? value) (:value value) value))]
+    (errors/throw-service-errors :bad-request errors)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- query-condition-name->condition-type
@@ -188,6 +197,14 @@
 (defmethod parse-json-condition :string
   [concept-type condition-name value]
   (parse-json-string-condition concept-type condition-name value))
+
+(defmethod parse-json-condition :collection-query
+  [_concept-type condition-name value]
+  (let [condition-name (if (= :collection-concept-id condition-name)
+                         (do (validate-collection-concept-id value) :concept-id)
+                         condition-name)]
+    (qm/->CollectionQueryCondition
+     (parse-json-string-condition :collection condition-name value))))
 
 (defmethod parse-json-condition :keyword
   [concept-type _ value]
