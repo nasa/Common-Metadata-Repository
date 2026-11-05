@@ -129,7 +129,7 @@
                                                                              {:granule-ur ur
                                                                               :spatial-coverage (apply dg/spatial shapes)}))))
         whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
-        excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
+        excessive-amount-of-points (string/trim (slurp (io/resource "large-line-param.txt")))]
     (index/wait-until-indexed)
     (testing "Excessive amount of points"
       (testing "line search"

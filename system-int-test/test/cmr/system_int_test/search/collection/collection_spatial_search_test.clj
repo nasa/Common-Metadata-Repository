@@ -1,8 +1,10 @@
 (ns cmr.system-int-test.search.collection.collection-spatial-search-test
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as u :refer [are3]]
+   [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -42,7 +44,7 @@
 
 (deftest excessive-points-line-spatial-search-test
   (let [whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
-        excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
+        excessive-amount-of-points (string/trim (slurp (io/resource "large-line-param.txt")))]
     (index/wait-until-indexed)
     (testing "Excessive amount of points"
       (testing "line search"
@@ -66,6 +68,23 @@
           (is (= {:errors [(smsg/line-too-many-points-msg :line points)]
                   :status 400}
                  (search/find-refs :collection {:line points :provider "PROV1"}))))))))
+
+(deftest large-polygon-spatial-search-test
+  (let [whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
+        _far-away (make-coll :geodetic "far-away" (m/mbr 100 50 110 40))
+        large-polygon (codec/url-encode
+                       (spatial-circle/circle->polygon (spatial-circle/circle -45 -1 500000) 900))]
+    (index/wait-until-indexed)
+    (is (d/refs-match? [whole-world]
+                       (search/find-refs-with-post :collection {:polygon large-polygon
+                                                                :provider "PROV1"})))
+    (testing "too many points"
+      (let [points (string/join "," (repeat (* 2 (inc (smsg/max-polygon-points))) "1"))]
+        (is (= {:errors [(smsg/line-too-many-points-msg :polygon points)]
+                :status 400}
+               (search/find-refs :collection
+                                 {:polygon points :provider "PROV1"}
+                                 {:method :post})))))))
 
 (deftest spatial-search-test
   (let [;; Lines

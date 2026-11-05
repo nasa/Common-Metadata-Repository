@@ -1,6 +1,7 @@
 (ns cmr.spatial.test.codec
   (:require
-   [clojure.test :refer [are deftest testing]]
+   [clojure.string :as string]
+   [clojure.test :refer [are deftest is testing]]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
@@ -30,6 +31,11 @@
       "45,a"
       "45,45,"
 
+      ",1,1,2,2"
+      "1,1,2,2,"
+      "NaN,1,2,2"
+      "1e5,1,2,2"
+
       ;; too few points
       "1,1"
       ;; odd number of ordinates
@@ -43,6 +49,7 @@
       "45.045"
       "45,a"
       "45,45,"
+      "1,1,2,2,3,3,1,1,"
 
       ;; too few points
       "1,1,2,2,3,3"
@@ -80,6 +87,21 @@
       ;; Too many
       "1,2,3,"
       "1,2,3,4")))
+
+(deftest url-decode-large-shapes-test
+  (let [ords #(string/join "," (repeat (* 2 %) "-45.12345678"))]
+    (testing "large shapes decode without overflowing the stack"
+      (is (= (smesg/max-polygon-points)
+             (count (:points (first (:rings (c/url-decode :polygon (ords (smesg/max-polygon-points)))))))))
+      (is (= (smesg/max-line-points)
+             (count (:points (c/url-decode :line (ords (smesg/max-line-points))))))))
+    (testing "shapes over the max points"
+      (are [type max-points]
+           (let [s (ords (inc max-points))]
+             (= {:errors [(smesg/line-too-many-points-msg type s)]}
+                (c/url-decode type s)))
+        :polygon (smesg/max-polygon-points)
+        :line (smesg/max-line-points)))))
 
 (declare point-encode-decode-test)
 (defspec point-encode-decode-test 100
