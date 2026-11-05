@@ -266,7 +266,6 @@
       (index/wait-until-indexed)
       ;; Refresh the aggregate cache so that it includes all the granules that were added.
       (index/full-refresh-collection-granule-aggregate-cache)
-      (index/wait-until-indexed)
 
       ;; Reindex all the collections to get the latest information.
       (ingest/reindex-all-collections)

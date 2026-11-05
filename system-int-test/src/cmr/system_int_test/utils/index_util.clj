@@ -24,14 +24,16 @@
   (refresh-all-elastic-indexes))
 
 (defn full-refresh-collection-granule-aggregate-cache
-  "Triggers a full refresh of the collection granule aggregate cache in the indexer."
+  "Triggers a full refresh of the collection granule aggregate cache in the indexer and waits for
+  it to finish."
   []
   (let [response (client/post
                   (url/full-refresh-collection-granule-aggregate-cache-url)
                   {:connection-manager (s/conn-mgr)
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :throw-exceptions false})]
-    (is (= 200 (:status response)) (:body response))))
+    (is (= 200 (:status response)) (:body response))
+    (wait-until-indexed)))
 
 (defn partial-refresh-collection-granule-aggregate-cache
   "Triggers a partial refresh of the collection granule aggregate cache in the indexer."
