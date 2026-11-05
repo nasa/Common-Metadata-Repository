@@ -1,7 +1,10 @@
 (ns cmr.metadata-db.data.ingest-events
   "Allows broadcast of ingest events via the message queue"
   (:require
+   [clj-time.core :as t]
+   [clj-time.format :as f]
    [cmr.common.concepts :as cc]
+   [cmr.common.log :as log :refer [debug]]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.services.queue :as queue]
    [cmr.metadata-db.config :as config]))
@@ -12,11 +15,18 @@
   (when-not (:concept-id msg)
     (errors/internal-error! (str "Expecting every message to contain a concept-id. msg: " (pr-str msg))))
   (when (config/publish-messages)
-    (when-let [exchange-name-fn (config/concept-type->exchange-name-fn
-                                 (cc/concept-id->type (:concept-id msg)))]
-      (let [queue-broker (get-in context [:system :queue-broker])]
-        (when queue-broker
-          (queue/publish-message queue-broker (exchange-name-fn) msg))))))
+    (let [exchange-name-fn (if (= (:action msg) :concept-delete)
+                             ;; pick from delete exchange names
+                             (config/concept-type->exchange-delete-name-fn
+                               (cc/concept-id->type (:concept-id msg)))
+                             ;; else default exchange names
+                             (config/concept-type->exchange-name-fn
+                               (cc/concept-id->type (:concept-id msg))))]
+      (when exchange-name-fn
+        (let [queue-broker (get-in context [:system :queue-broker])]
+          (debug (format "INSIDE publish-event with msg = %s exchange-name-fun = %s and queue-broker = %s" msg exchange-name-fn queue-broker))
+          (when queue-broker
+            (queue/publish-message queue-broker (exchange-name-fn) msg)))))))
 
 (defn associations-update-event
   "Create an event representing a list of collections that are associated
@@ -55,7 +65,7 @@
 
 (defn concept-delete-event
   "Creates an event representing a concept being deleted."
-  [{:keys [concept-id revision-id]}]
+  [{:keys [concept-id revision-id revision-date]}]
   {:action :concept-delete
    :concept-id concept-id
    :revision-id revision-id})

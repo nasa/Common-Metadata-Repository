@@ -4,11 +4,13 @@
    [cmr.message-queue.config :as rmq-conf]))
 
 ;; This is here to remove linter unresolved variable error.
-(declare index-queue-name index-queue-listener-count all-revisions-index-queue-name
+(declare index-queue-name index-queue-listener-count index-delete-queue-name index-delete-queue-listener-count
+         index-delete-queue-visibility-timeout-secs index-delete-queue-max-wait-secs all-revisions-index-queue-name
          all-revisions-index-queue-listener-count deleted-granule-index-queue-name
          deleted-granules-index-queue-listener-count provider-queue-name provider-queue-listener-count
-         ingest-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
-         deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log)
+         ingest-exchange-name ingest-delete-exchange-name provider-exchange-name deleted-concept-revision-exchange-name
+         deleted-granule-exchange-name indexer-nrepl-port ongoing-days reduced-indexer-log
+         collection-delete-elastic-slices collection-delete-elastic-scroll-size collection-delete-elastic-requests-per-second)
 
 
 ;; index name and config for storing index-set requests
@@ -35,6 +37,29 @@
   "Number of worker threads to use for the queue listener"
   {:default 5
    :type Long})
+
+(defconfig index-delete-queue-name
+  "The queue containing ingest delete events for the indexer"
+  {:default "cmr_index_delete.queue"})
+
+(defconfig index-delete-queue-listener-count
+  "Number of worker threads to use for the index delete queue listener"
+  {:default 2
+   :type Long})
+
+(defconfig index-delete-queue-visibility-timeout-secs
+  "The SQS visibility timeout for the index delete queue to allow enough time for
+  massive concept deletes before sqs retries"
+  {:default 3900 ;; 65 mins
+   :type Long})
+
+(defconfig index-delete-queue-max-wait-secs
+  "The maximum time (in seconds) the indexer will wait for an Elasticsearch
+   concept deletion to finish before cancelling it. This MUST be set to slightly
+   less than the SQS Delete Queue Visibility Timeout of the index delete queue set
+   by the param index-delete-queue-visibility-timeout-secs."
+  {:default 3600 ;; 60 mins on a 65 min sqs visibility timeout
+  :type Long})
 
 (defconfig all-revisions-index-queue-name
   "The queue containing ingest events for the indexer all revisions index. We use a
@@ -74,6 +99,10 @@
   "The ingest exchange to which ingest event messages are published."
   {:default "cmr_ingest.exchange"})
 
+(defconfig ingest-delete-exchange-name
+  "The exchange to which ingest delete event messages are published."
+  {:default "cmr_ingest_delete.exchange"})
+
 (defconfig provider-exchange-name
   "The ingest exchange to which provider change and non-ingest messages are published."
   {:default "cmr_ingest_provider.exchange"})
@@ -94,20 +123,23 @@
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
+                  (index-delete-queue-name)
                   (all-revisions-index-queue-name)
                   (deleted-granule-index-queue-name)
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
+                     (ingest-delete-exchange-name)
                      (deleted-concept-revision-exchange-name)
                      (deleted-granule-exchange-name)
                      (provider-exchange-name)]
+         :queues-to-policies {(index-delete-queue-name) {:visibility-timeout-secs (index-delete-queue-visibility-timeout-secs)}}
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)]
+          (index-delete-queue-name) [(ingest-delete-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
           (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
-          ;; The all revisions index  queue will be bound to both the ingest exchange and the
-          ;; deleted concept revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)
+                                            (ingest-delete-exchange-name)
                                             (deleted-concept-revision-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
@@ -126,3 +158,21 @@
    retention requirements. Turning this feature on may break Splunk reports."
   {:default false
    :type Boolean})
+
+(defconfig collection-delete-elastic-slices
+  "The number of parallel slices (threads) to use for elastic cascade collection delete tasks.
+  Use a number (e.g., 5) to cap it, or 'auto' to use one thread per primary shard."
+  {:default "5"
+   :type String}) ;; Note: So it can accept an Int string or the string "auto"
+
+(defconfig collection-delete-elastic-scroll-size
+ "The batch size per slice for elastic cascade collection delete tasks.
+  Lower this value to reduce RAM usage on the Elasticsearch nodes."
+ {:default 1000
+  :type Long})
+
+(defconfig collection-delete-elastic-requests-per-second
+ "The throttle speed limit for elastic cascade collection delete tasks.
+  Set to -1 for no limit, or a positive integer (e.g., 2000) to throttle."
+ {:default 2000
+  :type Long})
