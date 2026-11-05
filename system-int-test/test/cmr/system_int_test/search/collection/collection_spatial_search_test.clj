@@ -77,7 +77,14 @@
     (index/wait-until-indexed)
     (is (d/refs-match? [whole-world]
                        (search/find-refs-with-post :collection {:polygon large-polygon
-                                                                :provider "PROV1"})))))
+                                                                :provider "PROV1"})))
+    (testing "too many points"
+      (let [points (string/join "," (repeat (* 2 (inc (smsg/max-polygon-points))) "1"))]
+        (is (= {:errors [(smsg/line-too-many-points-msg :polygon points)]
+                :status 400}
+               (search/find-refs :collection
+                                 {:polygon points :provider "PROV1"}
+                                 {:method :post})))))))
 
 (deftest spatial-search-test
   (let [;; Lines
