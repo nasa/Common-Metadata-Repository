@@ -543,3 +543,27 @@
         ;;               :Instruments [{:ShortName "Inst 1"
         ;;                              :LongName "Instrument 1"}]}]}
         )))))
+
+(deftest collection-progress-field-updates
+  (let [umm {:EntryTitle "Test" :CollectionProgress "PLANNED"}]
+    (are3 [update-type update-value find-value result]
+      (is (= result
+             (field-update/apply-update update-type umm [:CollectionProgress] update-value find-value)))
+
+      "Clear and replace"
+      :clear-all-and-replace
+      {:CollectionProgress "ACTIVE"}
+      nil
+      {:EntryTitle "Test" :CollectionProgress "ACTIVE"}
+
+      "Find and replace - match"
+      :find-and-replace
+      {:CollectionProgress "ACTIVE"}
+      {:CollectionProgress "PLANNED"}
+      {:EntryTitle "Test" :CollectionProgress "ACTIVE"}
+
+      "Find and replace - no match returns nil"
+      :find-and-replace
+      {:CollectionProgress "ACTIVE"}
+      {:CollectionProgress "COMPLETE"}
+      nil)))
