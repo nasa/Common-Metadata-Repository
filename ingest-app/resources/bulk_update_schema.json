@@ -15,7 +15,7 @@
         },
         "UpdateFieldEnum": {
           "type": "string",
-          "enum": ["SCIENCE_KEYWORDS", "LOCATION_KEYWORDS", "DATA_CENTERS", "PLATFORMS", "INSTRUMENTS"]
+          "enum": ["SCIENCE_KEYWORDS", "LOCATION_KEYWORDS", "DATA_CENTERS", "PLATFORMS", "INSTRUMENTS", "COLLECTION_PROGRESS"]
         }
     },
     "title": "Ingest Bulk Update",
