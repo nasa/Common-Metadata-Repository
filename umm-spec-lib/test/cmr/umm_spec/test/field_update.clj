@@ -567,3 +567,107 @@
       {:CollectionProgress "ACTIVE"}
       {:CollectionProgress "COMPLETE"}
       nil)))
+
+(deftest related-urls-field-updates
+  (let [url1 {:URLContentType "PublicationURL"
+               :Type "VIEW RELATED INFORMATION"
+               :URL "https://example.com/doc1"}
+        url2 {:URLContentType "DistributionURL"
+               :Type "GET DATA"
+               :URL "https://example.com/data"}
+        url3 {:URLContentType "PublicationURL"
+               :Type "VIEW RELATED INFORMATION"
+               :URL "https://example.com/doc2"}]
+    (testing "Existing related urls"
+      (let [umm {:EntryTitle "Test" :RelatedUrls [url1 url2]}]
+        (are3 [update-type update-value find-value result]
+          (is (= result
+                 (field-update/apply-update update-type umm [:RelatedUrls] update-value find-value)))
+
+          "Clear and replace"
+          :clear-all-and-replace
+          url3
+          nil
+          {:EntryTitle "Test" :RelatedUrls [url3]}
+
+          "Add to existing"
+          :add-to-existing
+          url3
+          nil
+          {:EntryTitle "Test" :RelatedUrls [url1 url2 url3]}
+
+          "Find and remove"
+          :find-and-remove
+          nil
+          {:URLContentType "PublicationURL"}
+          {:EntryTitle "Test" :RelatedUrls [url2]}
+
+          "Find and remove, not found"
+          :find-and-remove
+          nil
+          {:URLContentType "ViewOnlineResource"}
+          nil
+
+          "Find and update"
+          :find-and-update
+          {:URL "https://example.com/updated"}
+          {:URLContentType "PublicationURL"}
+          {:EntryTitle "Test"
+           :RelatedUrls [{:URLContentType "PublicationURL"
+                          :Type "VIEW RELATED INFORMATION"
+                          :URL "https://example.com/updated"}
+                         url2]}
+
+          "Find and update, not found"
+          :find-and-update
+          {:URL "https://example.com/updated"}
+          {:URLContentType "ViewOnlineResource"}
+          nil
+
+          "Find and replace"
+          :find-and-replace
+          url3
+          {:URLContentType "PublicationURL"}
+          {:EntryTitle "Test" :RelatedUrls [url3 url2]}
+
+          "Find and replace, not found"
+          :find-and-replace
+          url3
+          {:URLContentType "ViewOnlineResource"}
+          nil)))
+
+    (testing "No related urls"
+      (let [umm {:EntryTitle "Test"}]
+        (are3 [update-type update-value find-value result]
+          (is (= result
+                 (field-update/apply-update update-type umm [:RelatedUrls] update-value find-value)))
+
+          "Clear and replace"
+          :clear-all-and-replace
+          url1
+          nil
+          {:EntryTitle "Test" :RelatedUrls [url1]}
+
+          "Add to existing"
+          :add-to-existing
+          url1
+          nil
+          {:EntryTitle "Test" :RelatedUrls [url1]}
+
+          "Find and remove"
+          :find-and-remove
+          nil
+          {:URLContentType "PublicationURL"}
+          nil
+
+          "Find and update"
+          :find-and-update
+          {:URL "https://example.com/updated"}
+          {:URLContentType "PublicationURL"}
+          nil
+
+          "Find and replace"
+          :find-and-replace
+          url3
+          {:URLContentType "PublicationURL"}
+          nil)))))

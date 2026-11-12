@@ -218,9 +218,20 @@
              :find-value {:CollectionProgress "BAD"}
              :update-value {:CollectionProgress "ACTIVE"}}
             400
-            ["Invalid CollectionProgress find value [BAD]. Must be one of: ACTIVE, COMPLETE, DEPRECATED, INREVIEW, NOT PROVIDED, PLANNED, PREPRINT, SUPERSEDED"]))))
+            ["Invalid CollectionProgress find value [BAD]. Must be one of: ACTIVE, COMPLETE, DEPRECATED, INREVIEW, NOT PROVIDED, PLANNED, PREPRINT, SUPERSEDED"]
 
-            ;; Short-name/version currently not supported. Support will be added
+            "RELATED_URLS does not support FIND_AND_UPDATE_HOME_PAGE_URL"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "RELATED_URLS"
+             :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
+             :find-value {:URLContentType "PublicationURL"}
+             :update-value {:URLContentType "PublicationURL"
+                            :Type "VIEW RELATED INFORMATION"
+                            :URL "https://example.com/doc"}}
+            400
+            ["FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [RELATED_URLS] update field. It can only be used for the DATA_CENTERS update field."]))))
+
+;; Short-name/version currently not supported. Support will be added
             ;; back in with CMR-4129
 
             ; "Missing collection identifiers"
