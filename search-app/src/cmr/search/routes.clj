@@ -11,6 +11,7 @@
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.api.token-denylist :as token-denylist]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as cmr-context]
    [cmr.common.config :refer [defconfig]]
@@ -111,6 +112,7 @@
 
 (defn handlers [system]
   (-> (build-routes system)
+      token-denylist/deny-listed-token-handler
       ;; add-authentication-handler adds the token and client id for user to
       ;; the context add-user-id-and-sids-handler lazy adds the user id and
       ;; sids for that token Need to maintain this order (works backwards).

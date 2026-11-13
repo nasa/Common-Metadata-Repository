@@ -17,6 +17,10 @@ See the [CMR Client Partner User Guide][client-guide] for a general guide to dev
     * [POST - Check User Permissions](#get-permissions)
 * [/s3-buckets](#s3-buckets)
     * [GET - Check User Permissions to S3 Buckets](#get-s3-buckets)
+* [/token-denylist](#token-denylist)
+    * [GET - List deny list entries](#list-token-denylist)
+    * [PUT - Deny a token or user](#add-token-denylist)
+    * [DELETE - Remove a deny list entry](#remove-token-denylist)
 * [/health](#health)
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -789,6 +793,49 @@ Content-Type: application/json
 
 ["s3://aws.example-2.com","s3://aws.example-3.com"]
 ```
+
+## <a name="token-denylist"></a> Token Deny List
+
+Search, ingest and access control reject requests whose token, or the user it belongs to, is on the deny list, with a 401. Each application reloads the list every 30 seconds (`CMR_TOKEN_DENYLIST_REFRESH_SECONDS`). These endpoints require system level `INGEST_MANAGEMENT_ACL` permission: read to list, update to change.
+
+A token entry is the SHA-256 hex digest of the token, as issued, without the `Bearer ` prefix. Re-encoded copies of the same JWT are blocked too. Ingest logs it as `token_hash` on each successful ingest, or compute it with:
+
+    printf '%s' "$TOKEN" | sha256sum
+
+### <a name="list-token-denylist"></a> List Deny List Entries
+
+```
+curl -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/token-denylist
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=utf-8
+
+{"tokens":[{"reason":"leaked","added_by":"admin1","added_at":"2026-11-12T18:04:11.123Z","hash":"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"}],"users":[{"reason":null,"added_by":"admin1","added_at":"2026-11-12T18:05:40.012Z","user_id":"user1"}]}
+```
+
+### <a name="add-token-denylist"></a> Deny a Token or User
+
+`PUT /token-denylist/tokens/<sha256>` or `PUT /token-denylist/users/<user-id>`. The body is optional; if sent, it must be JSON with `Content-Type: application/json` and only takes `reason`.
+
+```
+curl -i -XPUT -H "Authorization: Bearer XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/token-denylist/users/user1 -d '{"reason": "abuse"}'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=utf-8
+
+{"reason":"abuse","added_by":"admin1","added_at":"2026-11-12T18:05:40.012Z"}
+```
+
+### <a name="remove-token-denylist"></a> Remove a Deny List Entry
+
+Returns 204, or 404 if there is no such entry.
+
+```
+curl -i -XDELETE -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/token-denylist/users/user1
+
+HTTP/1.1 204 No Content
+```
+
 ## <a name="health"></a> Health
 
 ### <a name="application-health"></a> Application Health

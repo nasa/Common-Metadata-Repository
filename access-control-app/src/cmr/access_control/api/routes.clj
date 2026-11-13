@@ -17,6 +17,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.api.token-denylist :as token-denylist]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (info error)]
@@ -301,6 +302,8 @@
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
+
+      token-denylist/token-denylist-api-routes
 
       ;; Reindex all groups
       (POST "/reindex-groups"
