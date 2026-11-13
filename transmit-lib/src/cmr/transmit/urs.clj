@@ -1,5 +1,6 @@
 (ns cmr.transmit.urs
   (:require
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [error]]
@@ -31,6 +32,10 @@
 (defn- launchpad-validation-url
   [conn]
   (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
+
+(defn- token-validation-url
+  [conn]
+  (format "%s/oauth/tokens/user" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URS cache functions
@@ -160,6 +165,51 @@
            (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
                    (common-util/scrub-token token)
                    status)))))))
+
+(defn get-token-user
+  "Validates an EDL user token with EDL. Returns {:uid uid}."
+  [context token]
+  (let [bare-token (string/replace (string/trim token) #"^Bearer\s+" "")
+        {:keys [status body]} (request-with-auth context {:url-fn token-validation-url
+                                                          :method :post
+                                                          :raw? true
+                                                          :http-options {:form-params {:client_id (config/urs-username)
+                                                                                       :token bare-token}}})
+        scrubbed (common-util/scrub-token token)
+        edl-error (when (map? body) (:error body))]
+    (cond
+      (and (= 200 status) (map? body) (:uid body))
+      {:uid (:uid body)}
+
+      (= 408 status)
+      (errors/throw-service-error
+       :request-timeout
+       (format "Request timeout while validating token [%s]. Please try again later." scrubbed))
+
+      (= 429 status)
+      (errors/throw-service-error
+       :too-many-requests
+       (format "EDL rate limit exceeded while validating token [%s]. Please try again later." scrubbed))
+
+      (#{500 502 503 504} status)
+      (errors/throw-service-error
+       :dependency-failed
+       (format "EDL error while validating token [%s]. Please try again later. Status code [%d]."
+               scrubbed status))
+
+      (= "token_expired" edl-error)
+      (errors/throw-service-error
+       :unauthorized
+       (format "Token [%s] has expired. Note the token value has been partially redacted." scrubbed))
+
+      :else
+      (do
+        (when-not (= "invalid_token" edl-error)
+          (error (format "Unexpected EDL response validating token [%s]. Status code [%d]. Body [%s]"
+                         scrubbed status (pr-str (common-util/trunc (str body) 500)))))
+        (errors/throw-service-error
+         :unauthorized
+         (format "Token %s does not exist" scrubbed))))))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
