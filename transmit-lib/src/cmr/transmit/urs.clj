@@ -33,9 +33,9 @@
   [conn]
   (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
 
-(defn- token-validation-url
+(defn- token-introspection-url
   [conn]
-  (format "%s/oauth/tokens/user" (conn/root-url conn)))
+  (format "%s/oauth/introspect" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URS cache functions
@@ -167,19 +167,24 @@
                    status)))))))
 
 (defn get-token-user
-  "Validates an EDL user token with EDL. Returns {:uid uid}."
+  "Validates an EDL user or OAuth token with EDL token introspection. Returns {:uid uid}."
   [context token]
   (let [bare-token (string/replace (string/trim token) #"^Bearer\s+" "")
-        {:keys [status body]} (request-with-auth context {:url-fn token-validation-url
-                                                          :method :post
-                                                          :raw? true
-                                                          :http-options {:form-params {:client_id (config/urs-username)
-                                                                                       :token bare-token}}})
+        {:keys [status body]} (http-helper/request context :urs
+                                                   {:url-fn token-introspection-url
+                                                    :method :post
+                                                    :raw? true
+                                                    :http-options {:basic-auth [(config/urs-username)
+                                                                                (config/urs-password)]
+                                                                   :form-params {:token bare-token}}})
         scrubbed (common-util/scrub-token token)
         edl-error (when (map? body) (:error body))]
     (cond
       (and (= 200 status) (map? body) (:uid body))
       {:uid (:uid body)}
+
+      (= 401 status)
+      (errors/internal-error! "EDL rejected CMR's application credentials while validating a token.")
 
       (= 408 status)
       (errors/throw-service-error
@@ -196,11 +201,6 @@
        :dependency-failed
        (format "EDL error while validating token [%s]. Please try again later. Status code [%d]."
                scrubbed status))
-
-      (= "token_expired" edl-error)
-      (errors/throw-service-error
-       :unauthorized
-       (format "Token [%s] has expired. Note the token value has been partially redacted." scrubbed))
 
       :else
       (do

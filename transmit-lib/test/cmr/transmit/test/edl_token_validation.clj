@@ -13,8 +13,7 @@
 (defn- get-token-user
   [response]
   (let [sent (atom nil)]
-    (with-redefs [urs/get-bearer-token (constantly "app-token")
-                  http-helper/request (fn [_ _ request] (reset! sent request) response)]
+    (with-redefs [http-helper/request (fn [_ _ request] (reset! sent request) response)]
       [(try
          (urs/get-token-user {} (str "Bearer " token))
          (catch clojure.lang.ExceptionInfo e (:type (ex-data e))))
@@ -23,9 +22,10 @@
 (deftest get-token-user-test
   (let [[result sent] (get-token-user {:status 200 :body {:uid "user1"}})]
     (is (= {:uid "user1"} result))
-    (is (= {:client_id (transmit-config/urs-username) :token token}
-           (get-in sent [:http-options :form-params]))))
-  (is (= :unauthorized (first (get-token-user {:status 401 :body {:error "invalid_token"}}))))
+    (is (= {:token token} (get-in sent [:http-options :form-params])))
+    (is (= [(transmit-config/urs-username) (transmit-config/urs-password)]
+           (get-in sent [:http-options :basic-auth]))))
+  (is (= :unauthorized (first (get-token-user {:status 400 :body {:error "invalid_token"}}))))
   (is (= :dependency-failed (first (get-token-user {:status 503 :body ""})))))
 
 (deftest jwt-validated-with-edl-when-local-verification-off-test
