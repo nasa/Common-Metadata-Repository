@@ -71,6 +71,45 @@
   "Represents DATA_CENTERS update field"
   "DATA_CENTERS")
 
+(def collection-progress
+  "Represents COLLECTION_PROGRESS update field"
+  "COLLECTION_PROGRESS")
+
+(def ^:private collection-progress-allowed-update-types
+  "Only these update types are meaningful for a required scalar enum field."
+  #{clear-all-and-replace find-and-replace})
+
+(def ^:private collection-progress-allowed-values
+  #{"ACTIVE" "PLANNED" "COMPLETE" "DEPRECATED" "NOT PROVIDED"
+    "PREPRINT" "INREVIEW" "SUPERSEDED"})
+
+(defn- validate-collection-progress-enum
+  "Throw if val is not a recognized CollectionProgress enum string."
+  [val label]
+  (when-not (collection-progress-allowed-values val)
+    (errors/throw-service-errors
+     :bad-request
+     [(format "Invalid CollectionProgress %s [%s]. Must be one of: %s"
+              label
+              (util/html-escape (str val))
+              (string/join ", " (sort collection-progress-allowed-values)))])))
+
+(defn- validate-collection-progress-params
+  "Validation rules specific to the COLLECTION_PROGRESS update field."
+  [update-type update-value find-value]
+  (when-not (contains? collection-progress-allowed-update-types update-type)
+    (errors/throw-service-errors
+     :bad-request
+     [(str "Only " clear-all-and-replace " and " find-and-replace
+           " are supported for the " collection-progress " update field.")]))
+  (when (sequential? update-value)
+    (errors/throw-service-errors
+     :bad-request
+     [(str "Update value must be a single object for the " collection-progress " update field.")]))
+  (validate-collection-progress-enum (:CollectionProgress update-value) "value")
+  (when (= find-and-replace update-type)
+    (validate-collection-progress-enum (:CollectionProgress find-value) "find value")))
+
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
@@ -90,15 +129,17 @@
        [(str find-and-update-home-page-url " update type can not be used for the [" (util/html-escape update-field)
              "] update field. "
              "It can only be used for the " data-centers " update field.")]))
+    (when (= collection-progress update-field)
+      (validate-collection-progress-params update-type update-value find-value))
     (when (and (not= add-to-existing update-type)
                (not= clear-all-and-replace update-type)
                (not= find-and-replace update-type)
                (sequential? update-value))
       (errors/throw-service-errors
-        :bad-request
-        [(str "An update value must be a single object for the [" (util/html-escape update-type) "] update type. "
-              "Arrays are only supported for the " add-to-existing ", " clear-all-and-replace
-              " and " find-and-replace " update types.")]))
+       :bad-request
+       [(str "An update value must be a single object for the [" (util/html-escape update-type) "] update type. "
+             "Arrays are only supported for the " add-to-existing ", " clear-all-and-replace
+             " and " find-and-replace " update types.")]))
     (when (and (or (= find-and-replace update-type)
                    (= find-and-remove update-type)
                    (= find-and-update update-type))
@@ -118,8 +159,8 @@
     (if (seq collections)
       (map :concept-id collections)
       (errors/throw-service-errors
-        :bad-request
-        [(format "There are no collections that have not been deleted for provider [%s]." provider-id)]))))
+       :bad-request
+       [(format "There are no collections that have not been deleted for provider [%s]." provider-id)]))))
 
 (defn- get-collection-concept-id-validation-err-msgs
   "Returns the concept-id validation msgs"
@@ -127,10 +168,10 @@
   (for [id concept-ids
         :let [err-msg (concepts/concept-id-validation id)
               err-msg
-               (if err-msg
-                 err-msg
-                 (when-not (string/starts-with? id "C")
-                   [(format "Collection concept-id [%s] is invalid, must start with C" (util/html-escape id))]))]
+              (if err-msg
+                err-msg
+                (when-not (string/starts-with? id "C")
+                  [(format "Collection concept-id [%s] is invalid, must start with C" (util/html-escape id))]))]
         :when err-msg]
     err-msg))
 
@@ -141,8 +182,8 @@
     (let [err-msgs (get-collection-concept-id-validation-err-msgs concept-ids)]
       (when (seq err-msgs)
         (errors/throw-service-errors
-          :bad-request
-          [(string/join ", " err-msgs)])))))
+         :bad-request
+         [(string/join ", " err-msgs)])))))
 
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or
@@ -253,10 +294,10 @@
   (if-let [updated-concept (update-collection-concept context concept bulk-update-params user-id)]
     (let [warnings (validate-and-save-collection context updated-concept)]
       (data-bulk-update/update-bulk-update-task-collection-status
-        context task-id concept-id updated-status (create-success-status-message warnings)))
+       context task-id concept-id updated-status (create-success-status-message warnings)))
     (data-bulk-update/update-bulk-update-task-collection-status
-      context task-id concept-id skipped-status
-      (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
+     context task-id concept-id skipped-status
+     (format "Collection with concept-id [%s] is not updated because no find-value found." concept-id))))
 
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept-id is not associated
@@ -265,16 +306,16 @@
   (try
     (if-not (string/ends-with? concept-id provider-id)
       (data-bulk-update/update-bulk-update-task-collection-status
-        context task-id concept-id failed-status
-        (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
+       context task-id concept-id failed-status
+       (format "Concept-id [%s] is not associated with provider-id [%s]." concept-id provider-id))
       (if-let [concept (mdb2/get-latest-concept context concept-id)]
         (if (:deleted concept)
           (data-bulk-update/update-bulk-update-task-collection-status
-            context task-id concept-id failed-status
-            (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))
+           context task-id concept-id failed-status
+           (format "Collection with concept-id [%s] is deleted. Can not be updated." concept-id))
           (update-concept-and-status context task-id concept concept-id bulk-update-params user-id))
         (data-bulk-update/update-bulk-update-task-collection-status
-          context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))
+         context task-id concept-id failed-status (format "Concept-id [%s] does not exist." concept-id))))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update
@@ -286,7 +327,7 @@
                                                             bulk-update-params
                                                             user-id))
         (data-bulk-update/update-bulk-update-task-collection-status
-          context task-id concept-id failed-status (.getMessage ex-info))))
+         context task-id concept-id failed-status (.getMessage ex-info))))
     (catch Exception e
       (let [message (or (.getMessage e) default-exception-message)
             concept-id-message (re-find #"Concept-id.*is not valid." message)]

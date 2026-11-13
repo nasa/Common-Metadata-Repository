@@ -219,15 +219,36 @@
       (apply-umm-list-update update-type umm update-field update-value find-value))
     (apply-umm-list-update update-type umm update-field update-value find-value)))
 
+(def ^:private scalar-update-fields
+  "Update fields that are single scalar values in UMM rather than lists of objects."
+  #{[:CollectionProgress]})
+
+(defn- apply-umm-scalar-update
+  "Apply a bulk update to a scalar (non-list) UMM field.
+  Supports :clear-all-and-replace (unconditional set) and :find-and-replace (conditional set).
+  update-value and find-value are expected as objects keyed by field name, e.g.
+  {:CollectionProgress \"ACTIVE\"}."
+  [update-type umm update-field update-value find-value]
+  (let [field-key (last update-field)
+        new-val (get update-value field-key)]
+    (case update-type
+      :clear-all-and-replace (assoc-in umm update-field new-val)
+      :find-and-replace (let [current (get-in umm update-field)
+                              find-val (get find-value field-key)]
+                          (when (= current find-val)
+                            (assoc-in umm update-field new-val))))))
+
 (defn apply-update
   "Apply an update to a umm record. Check for field-specific function and use that
   if update-field is a supported nested field, otherwise apply the default list update.
   Note: For all the find operations, if the find-value doesn't exist in umm, returns nil,
   which indicates that no update will be done."
   [update-type umm update-field update-value find-value]
-  (if-let [partial-update-fn (get (field-update-functions umm) update-field)]
-    (apply-list-update-nested update-type umm update-field update-value find-value partial-update-fn)
-    (apply-list-update-default update-type umm update-field update-value find-value)))
+  (if (contains? scalar-update-fields update-field)
+    (apply-umm-scalar-update update-type umm update-field update-value find-value)
+    (if-let [partial-update-fn (get (field-update-functions umm) update-field)]
+      (apply-list-update-nested update-type umm update-field update-value find-value partial-update-fn)
+      (apply-list-update-default update-type umm update-field update-value find-value))))
 
 (defn update-concept
   "Apply an update to a raw concept.

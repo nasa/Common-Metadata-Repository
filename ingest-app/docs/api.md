@@ -1534,6 +1534,8 @@ Collection bulk update currently supports updating the following fields:
 * Data Centers
 * Instruments
 * Platforms
+* Collection Progress
+* Related URLs
 
 The following update types are supported:
 
@@ -1549,13 +1551,17 @@ Bulk update post request takes the following parameters:
 * Concept-ids (required) - a list of concept ids to update, which need to be associated with the provider the bulk update is initiated with. If it is equal to ["ALL"], case insensitive, all the collections for the provider will be updated.
 * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
 * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
-* Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
+* Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`, `COLLECTION_PROGRESS`, `RELATED_URLS`
 * Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.
 * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
 
 Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc. It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.
 
 The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
+
+`COLLECTION_PROGRESS` is a required scalar field (not a list) so it only supports `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. The update value and find value must be a single object with a `CollectionProgress` key, e.g. `{"CollectionProgress": "ACTIVE"}`. Valid enum values are: `ACTIVE`, `PLANNED`, `COMPLETE`, `DEPRECATED`, `NOT PROVIDED`, `PREPRINT`, `INREVIEW`, `SUPERSEDED`. With `FIND_AND_REPLACE`, collections whose current `CollectionProgress` does not match the find value are marked `SKIPPED` without error.
+
+`RELATED_URLS` supports all five generic update-types (`ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_REPLACE`, `FIND_AND_UPDATE`). The update value and find value must be a RelatedUrl object with at least `URLContentType`, `Type`, and `URL` keys, e.g. `{"URLContentType": "PublicationURL", "Type": "VIEW RELATED INFORMATION", "URL": "https://example.com/doc"}`. Note that `FIND_AND_UPDATE_HOME_PAGE_URL` is not supported for `RELATED_URLS`; editing DataCenter home page URLs under a DataCenter's ContactInformation is handled via `DATA_CENTERS + FIND_AND_UPDATE_HOME_PAGE_URL`.
 
 `FIND_AND_UPDATE_HOME_PAGE_URL` is a special case for `FIND_AND_UPDATE`. It can only be used with Update field being `DATA_CENTERS`. It is the same as `FIND_AND_UPDATE` except that when update value contains ContactInformation, it doesn't replace the ContactInformation, instead it only replaces the data center HOME PAGE URL part with the new data center HOME PAGE URL specified in the RelatedUrls, if it exists, and leaves everything else in the ContactInformation untouched. If the new data center HOME PAGE URL is not present in the update value, the HOME PAGE URL of the found data centers will be removed.
 
