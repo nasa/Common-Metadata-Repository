@@ -178,10 +178,12 @@
                                                                                 (config/urs-password)]
                                                                    :form-params {:token bare-token}}})
         scrubbed (common-util/scrub-token token)
-        edl-error (when (map? body) (:error body))]
+        edl-error (when (map? body) (:error body))
+        ;; EDL documents uid but returns the user as username and sub.
+        uid (when (map? body) (some body [:uid :username :sub]))]
     (cond
-      (and (= 200 status) (map? body) (:uid body))
-      {:uid (:uid body)}
+      (and (= 200 status) uid (not (false? (:active body))))
+      {:uid uid}
 
       (= 401 status)
       (errors/internal-error! "EDL rejected CMR's application credentials while validating a token.")
@@ -204,7 +206,7 @@
 
       :else
       (do
-        (when-not (= "invalid_token" edl-error)
+        (when-not (or (= "invalid_token" edl-error) (false? (:active body)))
           (error (format "Unexpected EDL response validating token [%s]. Status code [%d]. Body [%s]"
                          scrubbed status (pr-str (common-util/trunc (str body) 500)))))
         (errors/throw-service-error

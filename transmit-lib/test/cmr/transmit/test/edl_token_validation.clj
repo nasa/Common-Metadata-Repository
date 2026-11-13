@@ -20,12 +20,13 @@
        @sent])))
 
 (deftest get-token-user-test
-  (let [[result sent] (get-token-user {:status 200 :body {:uid "user1"}})]
+  (let [[result sent] (get-token-user {:status 200 :body {:username "user1" :sub "user1" :active true}})]
     (is (= {:uid "user1"} result))
     (is (= {:token token} (get-in sent [:http-options :form-params])))
     (is (= [(transmit-config/urs-username) (transmit-config/urs-password)]
            (get-in sent [:http-options :basic-auth]))))
   (is (= :unauthorized (first (get-token-user {:status 400 :body {:error "invalid_token"}}))))
+  (is (= :unauthorized (first (get-token-user {:status 200 :body {:username "user1" :active false}}))))
   (is (= :dependency-failed (first (get-token-user {:status 503 :body ""})))))
 
 (deftest jwt-validated-with-edl-when-local-verification-off-test
