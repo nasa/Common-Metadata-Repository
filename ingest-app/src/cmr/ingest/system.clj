@@ -33,6 +33,7 @@
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.transmit.urs :as urs]))
 
 (def ^:private component-order
@@ -110,6 +111,7 @@
    humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
    launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
    urs/urs-cache-key (urs/create-urs-cache)
+   token-denylist/snapshot-cache-key (token-denylist/create-snapshot-cache)
    generic-validation/schema-validation-cache-key (generic-validation/create-schema-validation-cache)
    subscription-cache/subscription-cache-key (subscription-cache/create-cache-client)})
 
