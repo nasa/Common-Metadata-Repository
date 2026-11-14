@@ -138,6 +138,12 @@
          {:content-type :json
           :body (json/encode body-obj)}))
 
+(defn- loggable-params
+  [params]
+  (cond-> (select-keys params [:headers :form-params :content-type])
+    (get-in params [:headers "Authorization"]) (update-in [:headers "Authorization"] common-util/scrub-token)
+    (get-in params [:form-params :id]) (update-in [:form-params :id] common-util/scrub-token)))
+
 (defn rest-post
   "Makes a post request to echo-rest. Returns a tuple of status, the parsed body, and the body."
   ([context url-path body-obj]
@@ -149,7 +155,7 @@
          params (if (some? (:form-params body-obj))
                   (merge (request-options conn) body-obj)
                   (merge (post-options conn body-obj) options))
-         _ (warn (format "Using legacy API call to POST %s with params: %s" url params))
+         _ (warn (format "Using legacy API call to POST %s with params: %s" url (loggable-params params)))
          response (client/post url params)
          {:keys [status body headers]} response
          parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
@@ -159,17 +165,23 @@
 (defn get-user-id
   "Returns the user-id for the given token."
   [context token]
-  (if (transmit-config/echo-system-token? token)
+  (cond
+    (transmit-config/echo-system-token? token)
     (transmit-config/echo-system-username)
-    (if (and (common-util/is-jwt-token? token)
-             (transmit-config/local-edl-verification))
+
+    (common-util/is-jwt-token? token)
+    (if (transmit-config/local-edl-verification)
       (verify-edl-token-locally token)
-      (if (common-util/is-launchpad-token? token)
-        (:uid (launchpad-user-cache/get-launchpad-user context token))
-        (let [[status parsed body] (rest-post context "/tokens/get_token_info"
-                                              {:headers {"Accept" mt/json
-                                                         "Authorization" (transmit-config/echo-system-token)}
-                                               :form-params {:id token}})]
-          (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                        (common-util/scrub-token token) status))
-          (handle-get-user-id token status parsed body))))))
+      (:uid (launchpad-user-cache/get-edl-token-user context token)))
+
+    (common-util/is-launchpad-token? token)
+    (:uid (launchpad-user-cache/get-launchpad-user context token))
+
+    :else
+    (let [[status parsed body] (rest-post context "/tokens/get_token_info"
+                                          {:headers {"Accept" mt/json
+                                                     "Authorization" (transmit-config/echo-system-token)}
+                                           :form-params {:id token}})]
+      (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                    (common-util/scrub-token token) status))
+      (handle-get-user-id token status parsed body))))
