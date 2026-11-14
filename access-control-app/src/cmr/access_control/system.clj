@@ -12,6 +12,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -24,6 +25,7 @@
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.transmit.urs :as urs]))
 
 (declare access-control-nrepl-port)
@@ -98,7 +100,9 @@
    common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
    common-health/health-cache-key (common-health/create-health-cache)
    launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
-   urs/urs-cache-key (urs/create-urs-cache)})
+   urs/urs-cache-key (urs/create-urs-cache)
+   token-denylist/snapshot-cache-key (token-denylist/create-snapshot-cache)
+   context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)})
 
 (def hours->ms "Convert hours to ms" (partial * 1000 3600))
 
