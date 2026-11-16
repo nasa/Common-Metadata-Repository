@@ -60,13 +60,19 @@
     "You do not have permission to perform that action."))
 
 (defn verify-write-token-with-edl
-  "Validates the request's JWT with EDL, whatever local-edl-verification says. Called for writes
-  by validate-write-token and subscription writes. Throws if EDL rejects the token."
+  "Validates the request's JWT with EDL, whatever local-edl-verification says, unless the
+  edl-validate-write-tokens emergency switch is off. With local verification on, the local
+  signature and expiry check runs first, so forged or expired JWTs are rejected without asking
+  EDL. Write handlers call it through validate-write-token or directly. Throws if the token is
+  rejected."
   [request-context]
   (let [token (:token request-context)]
     (when (and token
                (not (transmit-config/echo-system-token? token))
-               (common-util/is-jwt-token? token))
+               (common-util/is-jwt-token? token)
+               (transmit-config/edl-validate-write-tokens))
+      (when (transmit-config/local-edl-verification)
+        (tokens/verify-edl-token-locally token))
       (launchpad-user-cache/get-edl-token-user request-context token))))
 
 (defn validate-write-token

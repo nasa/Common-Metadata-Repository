@@ -3,6 +3,7 @@
   launchpad tokens to avoid needing to call out to EDL for authentication every time.  Launchpad tokens have a lifetime currently of 60 minutes.
   EDL JWTs validated with EDL, rather than locally, are cached here too for edl-token-cache-seconds."
   (:require
+   [clj-time.coerce :as tc]
    [clj-time.core :as t]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
@@ -58,30 +59,25 @@
                                :expiration-time (t/plus (time-keeper/now) (t/minutes (transmit-config/invalid-token-timeout)))})))))]
     (if-let [cache (cache/context->cache context launchpad-user-cache-key)]
       (let [cache-key (keyword (DigestUtils/sha256Hex token))
-            token-info (cache/get-value cache cache-key get-user-fn)]
-        (if (t/before? (:expiration-time token-info) (time-keeper/now))
-          ;; Cache entry expired (after 5 min for errors, or token lifetime for valid tokens)
-          ;; Evict and retry EDL
-          (do
-            (cache/evict cache cache-key)
-            (let [fresh-result (get-user-fn)]
-              (if (:valid fresh-result)
-                (do
-                  (cache/set-value cache cache-key fresh-result)
-                  fresh-result)
-                (errors/throw-service-error
-                 (or (:error-type fresh-result) :unauthorized)
-                 (or (:error-message fresh-result)
-                     (format "Invalid token (partially redacted) [%s]"
-                             (common-util/scrub-token token)))))))
-          ;; Cache entry still valid - return cached result or throw cached error
-          (if (:valid token-info)
-            token-info
-            (errors/throw-service-error
-             (or (:error-type token-info) :unauthorized)
-             (or (:error-message token-info)
-                 (format "Invalid token (partially redacted) [%s]"
-                         (common-util/scrub-token token)))))))
+            cached (cache/get-value cache cache-key)
+            expired? (and cached (t/before? (:expiration-time cached) (time-keeper/now)))
+            token-info (if (and cached (not expired?))
+                         cached
+                         ;; Call EDL outside the cache's atomic update, which would otherwise
+                         ;; repeat the call whenever another token's lookup changes the cache.
+                         (let [fresh (get-user-fn)]
+                           (cache/evict cache cache-key)
+                           ;; A failed revalidation of an expired entry is not cached.
+                           (if (or (not expired?) (:valid fresh))
+                             (cache/get-value cache cache-key (constantly fresh))
+                             fresh)))]
+        (if (:valid token-info)
+          token-info
+          (errors/throw-service-error
+           (or (:error-type token-info) :unauthorized)
+           (or (:error-message token-info)
+               (format "Invalid token (partially redacted) [%s]"
+                       (common-util/scrub-token token))))))
       (let [result (get-user-fn)]
         (if (:valid result)
           result
@@ -104,9 +100,12 @@
                                                  (t/from-now))))))
 
 (defn get-edl-token-user
-  "Get the user for an EDL JWT from cache or by validating it with EDL."
+  "Get the user for an EDL JWT from cache or by validating it with EDL. A result is cached for
+  edl-token-cache-seconds, or until the token expires if that is sooner."
   [context token]
   (get-token-user context
                   token
-                  #(assoc (urs/get-token-user context token)
-                          :expiration-time (t/from-now (t/seconds (edl-token-cache-seconds))))))
+                  #(let [resp (urs/get-token-user context token)
+                         cap (t/plus (time-keeper/now) (t/seconds (edl-token-cache-seconds)))
+                         exp (when (number? (:exp resp)) (tc/from-long (* 1000 (long (:exp resp)))))]
+                     (assoc resp :expiration-time (if (and exp (t/before? exp cap)) exp cap)))))

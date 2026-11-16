@@ -18,6 +18,7 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.generics :as gcom]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
@@ -145,6 +146,7 @@
     (POST "/" {:keys [request-context body headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
+      (lt-validation/verify-write-token-with-edl request-context)
       (one-result->response-map
        (provider-service/create-provider request-context
                                          (validate-and-prepare-provider-concept
@@ -171,6 +173,7 @@
                           headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
+      (lt-validation/verify-write-token-with-edl request-context)
       (one-result->response-map
        (provider-service/update-provider request-context
                                          (validate-and-prepare-provider-concept
@@ -182,6 +185,7 @@
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
       (common-enabled/validate-write-enabled request-context "ingest")
+      (lt-validation/verify-write-token-with-edl request-context)
       (provider-service/verify-empty-provider request-context provider-id headers)
       (one-result->response-map
        (provider-service/delete-provider request-context provider-id)))

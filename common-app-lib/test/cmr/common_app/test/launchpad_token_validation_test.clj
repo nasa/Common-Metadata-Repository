@@ -10,7 +10,8 @@
    [cmr.common.util :as util]))
 
 (use-fixtures :each (fn [f]
-                      (with-redefs [launchpad-user-cache/get-edl-token-user (constantly {:uid "edl-user"})]
+                      (with-redefs [launchpad-user-cache/get-edl-token-user (constantly {:uid "edl-user"})
+                                    tokens/verify-edl-token-locally (constantly "local-user")]
                         (f))))
 
 (defn mock-context [token]
@@ -195,14 +196,27 @@
 (deftest verify-write-token-with-edl-test
   (let [checked (atom nil)]
     (with-redefs [util/is-jwt-token? (fn [token] (boolean (re-find #"^JWT-" token)))
+                  tokens/get-jwt-claims mock-get-jwt-claims
+                  transmit-config/local-edl-verification (constantly true)
+                  tokens/verify-edl-token-locally (fn [token]
+                                                    (or (:uid (mock-get-jwt-claims token))
+                                                        (throw (ex-info "bad signature" {:type :unauthorized}))))
                   launchpad-user-cache/get-edl-token-user (fn [_ token] (reset! checked token) {:uid "u1"})]
       (testing "JWTs on writes are validated with EDL even with local verification on"
         (lt-validation/verify-write-token-with-edl (mock-context "JWT-L5"))
         (is (= "JWT-L5" @checked)))
-      (testing "other tokens are not"
+      (testing "other tokens are not checked"
         (reset! checked nil)
         (lt-validation/verify-write-token-with-edl (mock-context "LAUNCHPAD-TOKEN"))
         (is (nil? @checked)))
+      (testing "a JWT that fails the local check is rejected without asking EDL"
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (lt-validation/verify-write-token-with-edl (mock-context "JWT-FORGED"))))
+        (is (nil? @checked)))
+      (testing "the emergency switch turns the check off"
+        (with-redefs [transmit-config/edl-validate-write-tokens (constantly false)]
+          (lt-validation/verify-write-token-with-edl (mock-context "JWT-L5"))
+          (is (nil? @checked))))
       (testing "a token that passes the local checks but EDL rejects fails the write"
         (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
                       config/launchpad-token-enforced (constantly true)

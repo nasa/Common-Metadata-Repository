@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -65,6 +66,7 @@
   provider(s) of the collection(s) in order for the association(s) to be successful."
   [context headers body concept-type concept-id]
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-association-content-type headers)
   (info (format "Associate %s [%s] on collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))
@@ -82,6 +84,7 @@
   collections in the request body."
   [context headers body concept-type concept-id]
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."
                 (name concept-type) concept-id body (:client-id context)))

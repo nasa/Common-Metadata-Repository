@@ -13,6 +13,7 @@
                          :headers {"Authorization" system-token "Accept" "application/json"}
                          :form-params {:id user-token}}))]
     (is (not (string/includes? logged system-token)))
+    (is (not (string/includes? logged (subs system-token 0 10))))
     (is (not (string/includes? logged user-token)))
     (is (not (string/includes? logged ":connection-manager")))
     (is (string/includes? logged "application/json"))))

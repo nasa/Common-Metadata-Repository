@@ -141,7 +141,7 @@
 (defn- loggable-params
   [params]
   (cond-> (select-keys params [:headers :form-params :content-type])
-    (get-in params [:headers "Authorization"]) (update-in [:headers "Authorization"] common-util/scrub-token)
+    (get-in params [:headers "Authorization"]) (assoc-in [:headers "Authorization"] "[redacted]")
     (get-in params [:form-params :id]) (update-in [:form-params :id] common-util/scrub-token)))
 
 (defn rest-post

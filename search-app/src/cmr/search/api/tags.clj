@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (debug)]
    [cmr.search.api.association :as assoc]
    [cmr.common.mime-types :as mt]
@@ -68,6 +69,7 @@
   [context headers body]
   (verify-tag-modification-permission context :create)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (let [result (tagging-service/create-tag context body)
         status-code (if (= 1 (:revision-id result)) 201 200)]
@@ -83,6 +85,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (tag-api-response (tagging-service/update-tag context tag-key body)))
 
@@ -90,6 +93,7 @@
   "Deletes the tag with the given tag-key."
   [context tag-key]
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (verify-tag-modification-permission context :delete)
   (tag-api-response (tagging-service/delete-tag context tag-key)))
 
@@ -98,6 +102,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections: %s by client: %s."
                 tag-key body (:client-id context)))
@@ -110,6 +115,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (debug (format "Dissociating tag [%s] from collections: %s by client: %s."
                 tag-key body (:client-id context)))
@@ -122,6 +128,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (debug (format "Tagging [%s] on collections by query: %s by client: %s."
                 tag-key body (:client-id context)))
@@ -132,6 +139,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-tag-content-type headers)
   (debug (format "Dissociating tag [%s] from collections by query: %s by client: %s."
                 tag-key body (:client-id context)))
