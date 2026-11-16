@@ -1,12 +1,17 @@
 (ns cmr.common-app.test.launchpad-token-validation-test
   (:require
-   [clojure.test :refer [deftest is testing]]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.config :as config]
    [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
    [cmr.transmit.tokens :as tokens]
    [cmr.acl.core :as acl]
    [cmr.common.util :as util]))
+
+(use-fixtures :each (fn [f]
+                      (with-redefs [launchpad-user-cache/get-edl-token-user (constantly {:uid "edl-user"})]
+                        (f))))
 
 (defn mock-context [token]
   {:token token})
@@ -186,3 +191,20 @@
       (is (nil? (lt-validation/validate-write-token
                  (mock-context "SYSTEM-TOKEN")
                  "PROV1"))))))
+
+(deftest verify-write-token-with-edl-test
+  (let [checked (atom nil)]
+    (with-redefs [util/is-jwt-token? (fn [token] (boolean (re-find #"^JWT-" token)))
+                  launchpad-user-cache/get-edl-token-user (fn [_ token] (reset! checked token) {:uid "u1"})]
+      (testing "JWTs on writes are validated with EDL even with local verification on"
+        (lt-validation/verify-write-token-with-edl (mock-context "JWT-L5"))
+        (is (= "JWT-L5" @checked)))
+      (testing "other tokens are not"
+        (reset! checked nil)
+        (lt-validation/verify-write-token-with-edl (mock-context "LAUNCHPAD-TOKEN"))
+        (is (nil? @checked)))
+      (testing "a token EDL rejects fails the write"
+        (with-redefs [launchpad-user-cache/get-edl-token-user
+                      (fn [_ _] (throw (ex-info "Token does not exist" {:type :unauthorized})))]
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (lt-validation/validate-write-token (mock-context "JWT-L5") "PROV1"))))))))
