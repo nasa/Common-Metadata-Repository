@@ -203,8 +203,12 @@
         (reset! checked nil)
         (lt-validation/verify-write-token-with-edl (mock-context "LAUNCHPAD-TOKEN"))
         (is (nil? @checked)))
-      (testing "a token EDL rejects fails the write"
-        (with-redefs [launchpad-user-cache/get-edl-token-user
+      (testing "a token that passes the local checks but EDL rejects fails the write"
+        (with-redefs [tokens/get-jwt-claims mock-get-jwt-claims
+                      config/launchpad-token-enforced (constantly true)
+                      config/enable-idfed-jwt-authentication (constantly true)
+                      config/required-assurance-level (constantly 4)
+                      launchpad-user-cache/get-edl-token-user
                       (fn [_ _] (throw (ex-info "Token does not exist" {:type :unauthorized})))]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (lt-validation/validate-write-token (mock-context "JWT-L5") "PROV1"))))))))
+          (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Token does not exist"
+                                (lt-validation/validate-write-token (mock-context "JWT-L5") "PROV1"))))))))

@@ -128,8 +128,8 @@
 (declare local-edl-verification)
 (defconfig local-edl-verification
   "Controls when cmr uses the EDL public key to locally verify JWT tokens. When false, JWTs are
-  validated with EDL instead, which also catches tokens revoked in EDL. JWTs on write requests
-  are always validated with EDL."
+  validated with EDL instead, which also catches tokens revoked in EDL. Ingest and access control
+  writes that pass the write token check, and subscription writes, always validate JWTs with EDL."
   {:type Boolean
    :default true})
 

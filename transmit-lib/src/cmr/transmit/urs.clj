@@ -186,7 +186,9 @@
       {:uid uid}
 
       (= 401 status)
-      (errors/internal-error! "EDL rejected CMR's application credentials while validating a token.")
+      (let [msg "EDL rejected CMR's application credentials while validating a token."]
+        (error msg)
+        (errors/throw-service-error :internal-server-error msg))
 
       (= 408 status)
       (errors/throw-service-error

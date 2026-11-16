@@ -60,11 +60,13 @@
     "You do not have permission to perform that action."))
 
 (defn verify-write-token-with-edl
-  "Validates the request's JWT with EDL. Writes always check EDL, whatever
-  local-edl-verification says. Throws if EDL rejects the token."
+  "Validates the request's JWT with EDL, whatever local-edl-verification says. Called for writes
+  by validate-write-token and subscription writes. Throws if EDL rejects the token."
   [request-context]
   (let [token (:token request-context)]
-    (when (and token (common-util/is-jwt-token? token))
+    (when (and token
+               (not (transmit-config/echo-system-token? token))
+               (common-util/is-jwt-token? token))
       (launchpad-user-cache/get-edl-token-user request-context token))))
 
 (defn validate-write-token
