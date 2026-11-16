@@ -306,18 +306,22 @@
         (when (util/is-jwt-token? token)
           (:uid (tokens/get-jwt-claims token))))))
 
+(defn token-hash
+  "Returns the deny list hash of the request's token, for logging."
+  [request-context]
+  (some-> (:token request-context) token-denylist/token-hash))
+
 (defn log-concept-with-metadata-size
   "Log the concept with metadata-size-bytes added, and metadata removed."
   [concept request-context]
   (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
-        concept (assoc concept :metadata-size-bytes metadata-size-bytes)
-        token (:token request-context)]
+        concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
     (info (format "Successfully ingested %s from client %s, token_type %s, user %s, token_hash %s"
                   (concept->loggable-string concept)
                   (:client-id request-context)
-                  (lt-validation/get-token-type token)
+                  (lt-validation/get-token-type (:token request-context))
                   (known-user-id request-context)
-                  (some-> token token-denylist/token-hash)))))
+                  (token-hash request-context)))))
 
 (defn set-default-error-format
   "Ring middleware to add a default format to the exception-info created during exceptions. This
@@ -346,8 +350,9 @@
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (info (format "Deleting %s %s from client %s"
-                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+    (info (format "Deleting %s %s from client %s, token_hash %s"
+                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)
+                  (token-hash request-context)))
     (generate-ingest-response headers
                               (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept
