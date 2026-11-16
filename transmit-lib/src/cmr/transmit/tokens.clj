@@ -20,12 +20,17 @@
 (def edl-assurance-level-edl-mfa 4)
 (def edl-assurance-level-launchpad-piv 5)
 
+(defn bearer-stripped
+  "Returns the token as JWT verification sees it. The deny list hashes this same string."
+  [token]
+  (string/replace token #"Bearer\W+" ""))
+
 (defn get-jwt-claims
   "Extracts claims from a JWT token. Returns nil if invalid."
   [token]
   (try
     (let [public-key (buddy-keys/jwk->public-key (json/parse-string (transmit-config/edl-public-key) true))
-          bearer-stripped-token (string/replace token #"Bearer\W+" "")]
+          bearer-stripped-token (bearer-stripped token)]
       (jwt/unsign bearer-stripped-token public-key {:alg :rs256}))
     (catch Exception _e
       nil)))
@@ -53,7 +58,7 @@
   [token]
   (try
     (let [public-key (buddy-keys/jwk->public-key (json/parse-string (transmit-config/edl-public-key) true))
-          bearer-stripped-token (string/replace token #"Bearer\W+" "")
+          bearer-stripped-token (bearer-stripped token)
           decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
       (:uid decrypted-token))
     (catch clojure.lang.ExceptionInfo ex

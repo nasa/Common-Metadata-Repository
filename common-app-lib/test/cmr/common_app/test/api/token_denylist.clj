@@ -22,10 +22,11 @@
   (with-redefs [denylist/denied? (fn [_ _ user-id-fn] (= "user1" (user-id-fn)))
                 tokens/get-user-id (constantly "user1")]
     (is (= :unauthorized (error-type #(token-denylist/verify-token-allowed {:token user-token}))))
-    (is (nil? (token-denylist/verify-token-allowed {})))
-    (is (nil? (token-denylist/verify-token-allowed {:token (transmit-config/echo-system-token)})))
     ;; Legacy tokens resolve through a call that logs the token, so they are never looked up.
-    (is (nil? (token-denylist/verify-token-allowed {:token "short-legacy-token"})))))
+    (is (nil? (token-denylist/verify-token-allowed {:token "short-legacy-token"}))))
+  (with-redefs [denylist/denied? (constantly true)]
+    (is (nil? (token-denylist/verify-token-allowed {})))
+    (is (nil? (token-denylist/verify-token-allowed {:token (transmit-config/echo-system-token)})))))
 
 (deftest add-entry-route-test
   (let [added (atom nil)]

@@ -108,12 +108,12 @@
 
 (defn- remove-entry
   [ctx entry-type id]
-  (let [id (validate-id entry-type id)]
+  (let [id (validate-id entry-type id)
+        user (requesting-user ctx)]
     (if (denylist/remove-entry! entry-type id)
       (do
         (denylist/reload-snapshot ctx)
-        (info (format "User [%s] removed %s [%s] from the token deny list."
-                      (requesting-user ctx) (name entry-type) id))
+        (info (format "User [%s] removed %s [%s] from the token deny list." user (name entry-type) id))
         {:status 204})
       (json-response 404 {:errors [(format "No %s deny list entry for [%s]." (name entry-type) id)]}))))
 

@@ -12,7 +12,8 @@
    [cmr.common.log :refer [error]]
    [cmr.common.time-keeper :as tk]
    [cmr.redis-utils.config :as redis-config]
-   [cmr.redis-utils.redis-hash-cache :as redis-hash-cache])
+   [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
+   [cmr.transmit.tokens :as tokens])
   (:import
    (java.util Base64)
    (java.util.concurrent.locks ReentrantLock)
@@ -53,10 +54,10 @@
         (catch IllegalArgumentException _ nil)))))
 
 (defn token-hash
-  "Returns the SHA-256 hex digest of the token, ignoring any Bearer prefix and normalizing the
-  encoding of JWTs."
+  "Returns the SHA-256 hex digest of the token as JWT verification sees it (Bearer removed),
+  with JWT encoding normalized."
   [token]
-  (let [token (string/replace (string/trim token) #"^Bearer\s+" "")]
+  (let [token (tokens/bearer-stripped (string/trim token))]
     (DigestUtils/sha256Hex ^String (or (canonical-jwt token) token))))
 
 (defn- field

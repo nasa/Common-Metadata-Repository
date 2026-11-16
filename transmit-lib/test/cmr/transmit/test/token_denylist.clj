@@ -29,10 +29,11 @@
 
 (deftest token-hash-test
   (is (= (denylist/token-hash token) (denylist/token-hash (str "Bearer " token))))
-  (testing "re-encoded JWTs hash the same"
+  (testing "every form JWT verification accepts hashes the same"
     (is (= (denylist/token-hash "eyJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJ1MSJ9.QQ")
            (denylist/token-hash "eyJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJ1MSJ9.QR")
-           (denylist/token-hash "eyJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJ1MSJ9.QQ==")))))
+           (denylist/token-hash "eyJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJ1MSJ9.QQ==")
+           (denylist/token-hash "eyJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJ1MSJ9.QQBearer-")))))
 
 (deftest denied-test
   (with-fields (constantly [token-field "user:user1"])
