@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.api.token-denylist
   (:require
-   [clojure.test :refer [deftest is]]
+   [clojure.test :refer [deftest is testing]]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.token-denylist :as token-denylist]
@@ -43,4 +43,14 @@
       (is (= :bad-request (error-type #(token-denylist/token-denylist-api-routes
                                         {:request-method :put
                                          :uri "/token-denylist/tokens/not-a-hash"
-                                         :request-context {:token "admin-token"}})))))))
+                                         :request-context {:token "admin-token"}}))))
+      (testing "user ids are stored lowercased"
+        (token-denylist/token-denylist-api-routes
+         {:request-method :put :uri "/token-denylist/users/JDoe" :request-context {:token "admin-token"}})
+        (is (= [:user "jdoe"] (take 2 @added))))
+      (testing "reason must be a string"
+        (is (= :bad-request (error-type #(token-denylist/token-denylist-api-routes
+                                          {:request-method :put
+                                           :uri "/token-denylist/users/jdoe"
+                                           :request-context {:token "admin-token"}
+                                           :body (java.io.ByteArrayInputStream. (.getBytes "{\"reason\": [1]}"))}))))))))

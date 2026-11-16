@@ -16,16 +16,19 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.token-denylist :as denylist]
    [cmr.transmit.tokens :as tokens]
-   [compojure.core :refer [context DELETE GET PUT]]))
+   [compojure.core :refer [context DELETE GET PUT]])
+  (:import
+   (org.apache.commons.codec.digest DigestUtils)))
 
 (defn- token->user-id
   [ctx token]
-  ;; Legacy tokens resolve through the retired ECHO REST call, which logs the token.
+  ;; Legacy tokens can't authenticate now that the ECHO REST endpoint is retired; hash only.
   (when-not (util/is-legacy-token? token)
     (or (when (= token (:token ctx))
           (util/get-real-or-lazy ctx :user-id))
         (if-let [user-id-cache (cache/context->cache ctx context-augmenter/token-user-id-cache-name)]
-          (cache/get-value user-id-cache token #(tokens/get-user-id ctx token))
+          ;; Hashed key, since the cache API can list keys.
+          (cache/get-value user-id-cache (DigestUtils/sha256Hex ^String token) #(tokens/get-user-id ctx token))
           (tokens/get-user-id ctx token)))))
 
 (defn verify-token-allowed
@@ -55,16 +58,18 @@
 
 (defn- validate-id
   [entry-type id]
-  (let [id (if (= :token entry-type) (string/lower-case id) id)]
+  (let [id (string/lower-case id)]
     (when-not (if (= :token entry-type)
                 (re-matches #"[0-9a-f]{64}" id)
-                (re-matches #"\S+" id))
+                (re-matches #"[\x21-\x7E]+" id))
       (errors/throw-service-error
        :bad-request
        (if (= :token entry-type)
          "Token entries are identified by the token's SHA-256 hash in hex."
-         "User id must be non-blank and contain no whitespace.")))
+         "User id must be printable ASCII with no whitespace.")))
     id))
+
+(def ^:private max-reason-length 500)
 
 (defn- parse-reason
   [body]
@@ -72,10 +77,15 @@
     (let [parsed (try
                    (json/parse-string body true)
                    (catch Exception _
-                     (errors/throw-service-error :bad-request "Request body must be JSON.")))]
+                     (errors/throw-service-error :bad-request "Request body must be JSON.")))
+          reason (when (map? parsed) (:reason parsed))]
       (when-not (map? parsed)
         (errors/throw-service-error :bad-request "Request body must be a JSON object."))
-      (:reason parsed))))
+      (when-not (or (nil? reason) (and (string? reason) (<= (count reason) max-reason-length)))
+        (errors/throw-service-error
+         :bad-request
+         (format "reason must be a string of at most %d characters." max-reason-length)))
+      reason)))
 
 (defn- json-response
   [status body]
@@ -102,8 +112,8 @@
                   :added_at (str (tk/now))}]
     (denylist/add-entry! entry-type id metadata)
     (denylist/reload-snapshot ctx)
-    (info (format "User [%s] added %s [%s] to the token deny list. Reason: [%s]"
-                  (:added_by metadata) (name entry-type) id (:reason metadata)))
+    (info (format "User [%s] added %s [%s] to the token deny list. Reason: %s"
+                  (:added_by metadata) (name entry-type) id (pr-str (:reason metadata))))
     (json-response 200 metadata)))
 
 (defn- remove-entry

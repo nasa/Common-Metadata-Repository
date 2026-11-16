@@ -137,4 +137,4 @@
          search-count (count @shard-counts-atom)
          format-str (str "Found %d %ss in %d ms from client %s, token_type %s, token_hash %s in format %s using %d Elasticsearch queries across %d shards " param-str)]
      (apply format format-str hits concept-type total-took client-id (get-token-type token)
-            (some-> token token-denylist/token-hash) result-format search-count total-shard-count param-args))))
+            (token-denylist/token-hash-for-log token) result-format search-count total-shard-count param-args))))

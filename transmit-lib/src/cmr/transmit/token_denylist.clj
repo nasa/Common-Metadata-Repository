@@ -9,13 +9,14 @@
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
-   [cmr.common.log :refer [error]]
-   [cmr.common.time-keeper :as tk]
+   [cmr.common.log :refer [error info warn]]
+   [cmr.common.util :as common-util]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.tokens :as tokens])
   (:import
-   (java.util Base64)
+   (java.util.concurrent TimeUnit)
    (java.util.concurrent.locks ReentrantLock)
    (org.apache.commons.codec.digest DigestUtils)))
 
@@ -41,24 +42,27 @@
   []
   (mem-cache/create-in-memory-cache))
 
-(defn- canonical-jwt
-  "Re-encodes each segment of a JWT without padding, or returns nil if token isn't one. JWT
-  verification accepts several encodings of the same signature, so the hash has to use one."
-  [token]
-  (let [segments (string/split token #"\." -1)]
-    (when (= 3 (count segments))
-      (try
-        (let [^java.util.Base64$Decoder decoder (Base64/getUrlDecoder)
-              ^java.util.Base64$Encoder encoder (.withoutPadding (Base64/getUrlEncoder))]
-          (string/join "." (map #(.encodeToString encoder (.decode decoder ^String %)) segments)))
-        (catch IllegalArgumentException _ nil)))))
-
 (defn token-hash
-  "Returns the SHA-256 hex digest of the token as JWT verification sees it (Bearer removed),
-  with JWT encoding normalized."
+  "Returns the SHA-256 hex digest identifying the token. For an EDL JWT only the signed header and
+  payload are hashed, so every form of the token that passes signature verification hashes the
+  same, however the signature is encoded."
   [token]
-  (let [token (tokens/bearer-stripped (string/trim token))]
-    (DigestUtils/sha256Hex ^String (or (canonical-jwt token) token))))
+  (let [token (string/trim (tokens/bearer-stripped token))
+        [header payload signature] (string/split token #"\." 3)
+        signed (when (and signature
+                          (re-matches #"[A-Za-z0-9=_-]+" header)
+                          (re-matches #"[A-Za-z0-9=_-]+" payload))
+                 (str header "." payload))
+        ;; Classified by the signed part alone, whatever the signature holds. The anchored checks
+        ;; above keep is-jwt-token?'s unanchored regex linear; it also throws on some bad headers.
+        jwt? (and signed (try (common-util/is-jwt-token? (str signed ".x")) (catch Exception _ false)))]
+    (DigestUtils/sha256Hex ^String (if jwt? signed token))))
+
+(defn token-hash-for-log
+  "The token's hash for log lines, or nil for no token or the system token."
+  [token]
+  (when (and token (not (transmit-config/echo-system-token? token)))
+    (token-hash token)))
 
 (defn- field
   [entry-type id]
@@ -111,19 +115,41 @@
   []
   (reduce (fn [snapshot f]
             (if-let [[entry-type id] (parse-field f)]
-              (update snapshot entry-type conj id)
+              (update snapshot entry-type conj (if (= :user entry-type) (string/lower-case id) id))
               snapshot))
           empty-snapshot
           (hash-cache/get-keys (store) denylist-key)))
 
+(defn- now-ms
+  []
+  ;; Monotonic, so wall clock changes can't stop refreshes.
+  (quot (System/nanoTime) 1000000))
+
 (defn- fresh?
   [{:keys [expires-at]}]
-  (and expires-at (< (tk/now-ms) expires-at)))
+  (and expires-at (< (now-ms) expires-at)))
 
 (defonce ^:private ^ReentrantLock refresh-lock (ReentrantLock.))
 
 ;; Survives /caches/clear-cache so a reset during a Redis outage doesn't drop the list.
 (defonce ^:private last-loaded (atom nil))
+
+(def ^:private first-load-wait-ms
+  "How long a request waits for an instance's first load of the list before going unchecked."
+  500)
+
+(defn- entry-count
+  [snapshot]
+  (+ (count (:token snapshot)) (count (:user snapshot))))
+
+(defn- log-change
+  [previous loaded]
+  (when (not= previous loaded)
+    (let [msg (format "Token deny list now has %d token and %d user entries, previously %d."
+                      (count (:token loaded)) (count (:user loaded)) (entry-count previous))]
+      (if (< (entry-count loaded) (entry-count previous))
+        (warn msg)
+        (info msg)))))
 
 (defn- refresh!
   [snapshot-cache]
@@ -132,22 +158,25 @@
       (:entries cached)
       (let [previous (or (:entries cached) @last-loaded)
             entries (try
-                      (reset! last-loaded (load-snapshot))
+                      (let [loaded (load-snapshot)]
+                        (log-change previous loaded)
+                        (reset! last-loaded loaded))
                       (catch Exception e
-                        (error (if previous
+                        (error (if @last-loaded
                                  "Unable to reload the token deny list, keeping the previous copy:"
                                  "Unable to load the token deny list, allowing all tokens until it loads:")
                                (.getMessage e))
                         (or previous empty-snapshot)))]
         (cache/set-value snapshot-cache :snapshot
                          {:entries entries
-                          :expires-at (+ (tk/now-ms) (* 1000 (token-denylist-refresh-seconds)))})
+                          :expires-at (+ (now-ms) (* 1000 (token-denylist-refresh-seconds)))})
         entries))))
 
 (defn- current-snapshot
   "Returns this instance's snapshot, reloading it from Redis once it is older than the refresh
-  interval. While one request reloads, others keep using the previous snapshot; they only wait
-  when there is none yet. A failed reload keeps the previous snapshot."
+  interval. While one request reloads, others keep using the previous snapshot. Before the first
+  load, requests wait up to first-load-wait-ms for it. A failed reload keeps the previous
+  snapshot."
   [snapshot-cache]
   (let [cached (cache/get-value snapshot-cache :snapshot)
         previous (or (:entries cached) @last-loaded)]
@@ -160,22 +189,31 @@
                    (finally (.unlock refresh-lock)))
                  previous)
 
-      :else (do
-              (.lock refresh-lock)
-              (try
-                (refresh! snapshot-cache)
-                (finally (.unlock refresh-lock)))))))
+      (.tryLock refresh-lock first-load-wait-ms TimeUnit/MILLISECONDS)
+      (try
+        (refresh! snapshot-cache)
+        (finally (.unlock refresh-lock)))
+
+      :else empty-snapshot)))
 
 (defn reload-snapshot
   "Makes the next request on this instance read the deny list from Redis."
   [context]
   (when-let [snapshot-cache (cache/context->cache context snapshot-cache-key)]
     (when-let [cached (cache/get-value snapshot-cache :snapshot)]
-      (cache/set-value snapshot-cache :snapshot (assoc cached :expires-at 0)))))
+      (cache/set-value snapshot-cache :snapshot (assoc cached :expires-at nil)))))
+
+(defn user-denied?
+  "Returns true if the user id is on the deny list."
+  [context user-id]
+  (boolean
+   (when-let [snapshot-cache (cache/context->cache context snapshot-cache-key)]
+     (contains? (:user (current-snapshot snapshot-cache)) (some-> user-id string/lower-case)))))
 
 (defn denied?
   "Returns true if the token, or the user it belongs to, is on the deny list. user-id-fn is
-  only called when users are listed; if it throws, the user is treated as not listed."
+  only called when users are listed, and if it throws the exception propagates so the request
+  fails rather than going unchecked. User ids match case-insensitively."
   [context token user-id-fn]
   (when-let [snapshot-cache (cache/context->cache context snapshot-cache-key)]
     (let [{tokens :token users :user} (current-snapshot snapshot-cache)]
@@ -183,4 +221,4 @@
        (or (and (seq tokens)
                 (contains? tokens (token-hash token)))
            (and (seq users)
-                (contains? users (try (user-id-fn) (catch Exception _ nil)))))))))
+                (contains? users (some-> (user-id-fn) string/lower-case))))))))

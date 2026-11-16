@@ -8,7 +8,8 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.ingest.services.nrt-subscription.subscription-cache :as subscription-cache]
-   [cmr.transmit.config :as t-config])
+   [cmr.transmit.config :as t-config]
+   [cmr.transmit.token-denylist :as token-denylist])
   (:import
     (org.apache.commons.validator.routines UrlValidator)))
 
@@ -372,7 +373,9 @@
                   message (create-notification-message-body context concept)
                   message-attributes-map (create-message-attributes-map endpoint-set gran-concept-mode coll-concept-id)
                   subject (create-message-subject gran-concept-mode)]
-             (when (and message-attributes-map subject)
+             (when (and message-attributes-map
+                        subject
+                        (not (token-denylist/user-denied? context (second endpoint-set))))
                 (let [result (topic-protocol/publish topic message message-attributes-map subject)
                       duration (- (System/currentTimeMillis) start)]
                   (debug (format "Subscription publish for endpoint %s took %d ms." (first endpoint-set) duration))

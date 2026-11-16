@@ -796,11 +796,12 @@ Content-Type: application/json
 
 ## <a name="token-denylist"></a> Token Deny List
 
-Search, ingest and access control reject requests whose token, or the user it belongs to, is on the deny list, with a 401. Each application reloads the list every 30 seconds (`CMR_TOKEN_DENYLIST_REFRESH_SECONDS`). These endpoints require system level `INGEST_MANAGEMENT_ACL` permission: read to list, update to change.
+Search, ingest and access control reject requests whose token, or the user it belongs to, is on the deny list, with a 401. Each application reloads the list every 30 seconds (`CMR_TOKEN_DENYLIST_REFRESH_SECONDS`). User ids match case-insensitively, and a listed user's subscriptions stop sending notifications. While the list has user entries, each request's token is resolved to its user first; if that fails, the request gets that error (401 for an invalid or expired token, 528 if EDL can't be reached). These endpoints require system level `INGEST_MANAGEMENT_ACL` permission (read to list, update to change), and changes also require a token that passes the write token check.
 
-A token entry is the SHA-256 hex digest of the token, as issued, without the `Bearer ` prefix. Re-encoded copies of the same JWT are blocked too. Ingest logs it as `token_hash` on each successful ingest, or compute it with:
+A token entry is a SHA-256 hex digest. For an EDL JWT it covers the signed header and payload, the part before the second `.`; for any other token it covers the whole token, without a `Bearer ` prefix or surrounding whitespace. Prefer the `token_hash` that search and ingest log; otherwise compute it from the bare token with:
 
-    printf '%s' "$TOKEN" | sha256sum
+    printf '%s' "${TOKEN%.*}" | sha256sum    # EDL JWT
+    printf '%s' "$TOKEN" | sha256sum         # other tokens
 
 ### <a name="list-token-denylist"></a> List Deny List Entries
 
@@ -815,7 +816,7 @@ Content-Type: application/json;charset=utf-8
 
 ### <a name="add-token-denylist"></a> Deny a Token or User
 
-`PUT /token-denylist/tokens/<sha256>` or `PUT /token-denylist/users/<user-id>`. The body is optional; if sent, it must be JSON with `Content-Type: application/json` and only takes `reason`.
+`PUT /token-denylist/tokens/<sha256>` or `PUT /token-denylist/users/<user-id>`. The body is optional; if sent, it must be JSON with `Content-Type: application/json` and only takes `reason`, a string of at most 500 characters.
 
 ```
 curl -i -XPUT -H "Authorization: Bearer XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/token-denylist/users/user1 -d '{"reason": "abuse"}'

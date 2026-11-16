@@ -309,7 +309,7 @@
 (defn token-hash
   "Returns the deny list hash of the request's token, for logging."
   [request-context]
-  (some-> (:token request-context) token-denylist/token-hash))
+  (token-denylist/token-hash-for-log (:token request-context)))
 
 (defn log-concept-with-metadata-size
   "Log the concept with metadata-size-bytes added, and metadata removed."
