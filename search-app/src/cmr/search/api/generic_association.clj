@@ -3,6 +3,7 @@
   (:require
     [cheshire.core :as json]
     [cmr.common-app.api.enabled :as common-enabled]
+    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
     [cmr.common.concepts :as common-concepts]
     [cmr.common.log :refer (info)]
     [cmr.common.mime-types :as mt]
@@ -50,6 +51,7 @@
   provider(s) of the concepts in order for the association(s) to be successful."
   [context headers body concept-id revision-id]
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-association-content-type headers)
   (info (format "Associate concept [%s] revision [%s] on concepts: %s by client: %s."
                 concept-id revision-id body (:client-id context)))
@@ -63,6 +65,7 @@
   concepts in the request body."
   [context headers body concept-id revision-id]
   (common-enabled/validate-write-enabled context "search")
+  (lt-validation/verify-write-token-with-edl context)
   (validate-association-content-type headers)
   (info (format "Dissociating concept [%s] revision [%s] from concepts: %s by client: %s."
                 concept-id revision-id body (:client-id context)))

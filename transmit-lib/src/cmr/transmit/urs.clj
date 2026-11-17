@@ -1,5 +1,6 @@
 (ns cmr.transmit.urs
   (:require
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [error]]
@@ -31,6 +32,10 @@
 (defn- launchpad-validation-url
   [conn]
   (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
+
+(defn- token-introspection-url
+  [conn]
+  (format "%s/oauth/introspect" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URS cache functions
@@ -160,6 +165,65 @@
            (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
                    (common-util/scrub-token token)
                    status)))))))
+
+(def ^:private introspection-timeouts
+  "Overrides CMR's default HTTP timeouts, which are minutes long, for token checks."
+  {:connection-timeout 5000
+   :socket-timeout 10000})
+
+(defn- edl-unavailable!
+  [scrubbed detail]
+  (error (format "EDL token validation failed for token [%s]: %s" scrubbed detail))
+  (errors/throw-service-error
+   :dependency-failed
+   (format "Unable to validate token [%s] with EDL. Please try again later." scrubbed)))
+
+(defn get-token-user
+  "Validates an EDL user or OAuth token with EDL token introspection. Returns {:uid uid :exp exp},
+  exp in epoch seconds when EDL provides it."
+  [context token]
+  (let [bare-token (string/replace (string/trim token) #"^Bearer\s+" "")
+        scrubbed (common-util/scrub-token token)
+        {:keys [status body]} (try
+                                (http-helper/request
+                                 context :urs
+                                 {:url-fn token-introspection-url
+                                  :method :post
+                                  :raw? true
+                                  :http-options (merge introspection-timeouts
+                                                       {:basic-auth [(config/urs-username)
+                                                                     (config/urs-password)]
+                                                        :form-params {:token bare-token}})})
+                                (catch Exception e
+                                  (edl-unavailable! scrubbed (str e))))
+        edl-error (when (map? body) (:error body))
+        ;; EDL documents uid but returns the user as username and sub.
+        uid (when (map? body)
+              (some #(let [v (get body %)] (when (and (string? v) (not (string/blank? v))) v))
+                    [:uid :username :sub]))]
+    (cond
+      (and (= 200 status) (true? (:active body)) uid)
+      {:uid uid :exp (:exp body)}
+
+      (or (= "invalid_token" edl-error)
+          (and (= 200 status) (false? (:active body))))
+      (errors/throw-service-error
+       :unauthorized
+       (format "Token %s does not exist" scrubbed))
+
+      (= 401 status)
+      (let [msg "EDL rejected CMR's application credentials while validating a token."]
+        (error msg)
+        (errors/throw-service-error :internal-server-error msg))
+
+      (= 429 status)
+      (errors/throw-service-error
+       :too-many-requests
+       (format "EDL rate limit exceeded while validating token [%s]. Please try again later." scrubbed))
+
+      :else
+      (edl-unavailable! scrubbed (format "status [%s] body [%s]" status
+                                         (pr-str (common-util/trunc (str body) 500)))))))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"

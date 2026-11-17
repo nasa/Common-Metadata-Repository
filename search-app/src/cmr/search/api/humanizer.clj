@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as cr]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -28,6 +29,7 @@
   "Processes a humanizer update request."
   [context headers body]
   (acl/verify-ingest-management-permission context :update)
+  (lt-validation/verify-write-token-with-edl context)
   (validate-humanizer-content-type headers)
   (hv/validate-humanizer-json body)
   (let [result (humanizer-service/update-humanizers context body)
