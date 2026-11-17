@@ -9,7 +9,6 @@ Search API provides access to this metadata.
 ### Associated Projects
 
 [cmr-token-service-client](https://github.com/nasa/cmr-token-service-client)
-[cmr-tea-config-generator](https://github.com/nasa/cmr-tea-config-generator)
 
 ## [Prerequisites](#prerequisites)
 
@@ -222,6 +221,7 @@ call `(reset :db :in-memory)`.
 There is also a different, optional test runner you can use. For more details
 see the docstring for `run-suites` in `dev-system/dev/user.clj`.
 It will contain usage instructions
+
 #### Testing in the CI Environment
 
 Throughout the modules, in the `project.clj` files there are additional `lein` aliases for
