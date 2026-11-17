@@ -127,7 +127,18 @@
 
 (declare local-edl-verification)
 (defconfig local-edl-verification
-  "Controls when cmr uses the EDL public key to locally verify JWT tokens."
+  "Controls when cmr uses the EDL public key to locally verify JWT tokens. When false, JWTs are
+  validated with EDL instead, which also catches tokens revoked in EDL. Writes in ingest (including
+  providers and subscriptions), access control, and search (tags, associations, humanizers,
+  community usage metrics) validate JWTs with EDL unless edl-validate-write-tokens is off; admin
+  maintenance routes do not."
+  {:type Boolean
+   :default true})
+
+(declare edl-validate-write-tokens)
+(defconfig edl-validate-write-tokens
+  "Emergency switch for the EDL check on writes. When false, JWTs on writes are verified only as
+  local-edl-verification says, the same as reads."
   {:type Boolean
    :default true})
 

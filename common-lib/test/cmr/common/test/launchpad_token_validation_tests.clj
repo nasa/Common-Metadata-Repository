@@ -64,6 +64,10 @@
                    false false
                    true true true
                    false] util/is-jwt-token?))
+    (testing "JWT detection matches the whole token"
+      (is (true? (util/is-jwt-token? (str token-jwt "\n"))))
+      (is (false? (util/is-jwt-token? (str token-jwt " junk"))))
+      (is (false? (util/is-jwt-token? (str token-jwt ".x")))))
     (testing "Is token a legacy token?"
       (test-group [true
                    true true true true
