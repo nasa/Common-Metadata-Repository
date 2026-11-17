@@ -32,6 +32,7 @@
   (.encodeToString (.withoutPadding (Base64/getUrlEncoder))
                    (.getBytes "{\"typ\":\"JWT\",\"origin\":\"Earthdata Login\",\"alg\":\"RS256\"}")))
 
+;; Sample token, safe for use in tests: a made-up header and the payload {"uid":"u1"}, never signed.
 (def ^:private signed (str edl-header ".eyJ1aWQiOiJ1MSJ9"))
 
 (deftest token-hash-test
