@@ -218,39 +218,32 @@
   (has-management-permission?
    context permission-type object-identity-type provider-id "NON_NASA_DRAFT_USER"))
 
+(defn- cached-management-permission?
+  "Checks permission-fn through the cache at cache-key when the app has one."
+  [context permission-type object-identity-type provider-id cache-key permission-fn]
+  (let [has-permission-fn #(permission-fn
+                            context permission-type object-identity-type provider-id)]
+    (if-let [cache (cache/context->cache context cache-key)]
+      (cache/get-value
+       cache
+       [(:token context) permission-type object-identity-type provider-id]
+       has-permission-fn)
+      (has-permission-fn))))
+
 (defn- verify-management-permission
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
   [context permission-type object-identity-type provider-id cache-key permission-fn]
-  (let [has-permission-fn (fn []
-                            (permission-fn
-                             context permission-type object-identity-type provider-id))
-        has-permission? (if-let [cache (cache/context->cache context cache-key)]
-                          ;; Read using cache. Cache key is combo of token and permission type
-                          (if (= permission-fn has-subscription-management-permission?)
-                            ;; add provider-id to the lookup key for subscription acl cache.
-                            (cache/get-value
-                             cache [(:token context) permission-type provider-id] has-permission-fn)
-                            (cache/get-value
-                             cache [(:token context) permission-type] has-permission-fn))
-                          ;; No token cache so directly check permission.
-                          (has-permission-fn))]
-    (when-not has-permission?
-      (errors/throw-service-error
-       :unauthorized
-       "You do not have permission to perform that action."))))
+  (when-not (cached-management-permission?
+             context permission-type object-identity-type provider-id cache-key permission-fn)
+    (errors/throw-service-error
+     :unauthorized
+     "You do not have permission to perform that action.")))
 
 (defn- verify-management-permission-for-provider
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs for a provider."
   [context permission-type object-identity-type provider-id cache-key permission-fn]
-  (let [has-permission-fn (fn []
-                            (permission-fn
-                             context permission-type object-identity-type provider-id))
-        has-permission? (if-let [cache (cache/context->cache context cache-key)]
-                          ;; Read using cache. Cache key is combo of token, permission type and provider id.
-                          (cache/get-value
-                           cache [(:token context) permission-type provider-id] has-permission-fn)
-                          ;; No token cache so directly check permission.
-                          (has-permission-fn))]
+  (let [has-permission? (cached-management-permission?
+                         context permission-type object-identity-type provider-id cache-key permission-fn)]
     (when-not has-permission?
       (if (= cache-key token-pc-cache-key)
         (errors/throw-service-error
