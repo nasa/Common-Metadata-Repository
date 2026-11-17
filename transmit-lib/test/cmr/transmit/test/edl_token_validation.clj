@@ -8,6 +8,7 @@
    [cmr.transmit.tokens :as tokens]
    [cmr.transmit.urs :as urs]))
 
+;; Sample token, safe for use in tests: decodes to {"typ":"JWT"}.{"uid":"user1"}.signature-value
 (def ^:private token "eyJ0eXAiOiJKV1QifQ.eyJ1aWQiOiJ1c2VyMSJ9.c2lnbmF0dXJlLXZhbHVl")
 
 (defn- get-token-user
