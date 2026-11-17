@@ -1050,10 +1050,12 @@
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [raw-token]
   (let [BEARER "Bearer "
+        raw-token (string/trim raw-token)
         token (if (string/starts-with? raw-token BEARER)
                 (subs raw-token (count BEARER))
                 raw-token)]
-    (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token))
+    ;; Anchored; an unanchored search is quadratic on long tokens.
+    (if (re-matches #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token)
       (let [token-parts (string/split token #"\.")
             token-header (first token-parts)
             header-raw (try

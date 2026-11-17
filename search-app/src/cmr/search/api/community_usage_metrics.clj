@@ -5,6 +5,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as cr]
    [cmr.common.mime-types :as mt]
    [cmr.search.services.community-usage-metrics.metrics-service :as metrics-service]
@@ -21,6 +22,7 @@
   "Processes a community usage update request"
   [context headers params body]
   (acl/verify-ingest-management-permission context :update)
+  (lt-validation/verify-write-token-with-edl context)
   (mt/extract-header-mime-type #{mt/csv} headers "content-type" true)
   (let [result (metrics-service/update-community-usage context params body)
         status-code (if (= 1 (:revision-id result)) 201 200)]
