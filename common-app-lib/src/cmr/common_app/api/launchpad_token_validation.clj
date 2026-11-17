@@ -7,6 +7,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
    [cmr.transmit.tokens :as tokens]))
 
 ;; TODO - remove legacy token check after legacy token retirement
@@ -58,6 +59,22 @@
     "Write operations are disabled. Both Launchpad SAML and IDFed JWT authentication are turned off."
     "You do not have permission to perform that action."))
 
+(defn verify-write-token-with-edl
+  "Validates the request's JWT with EDL, whatever local-edl-verification says, unless the
+  edl-validate-write-tokens emergency switch is off. With local verification on, the local
+  signature and expiry check runs first, so forged or expired JWTs are rejected without asking
+  EDL. Write handlers call it through validate-write-token or directly. Throws if the token is
+  rejected."
+  [request-context]
+  (let [token (:token request-context)]
+    (when (and token
+               (not (transmit-config/echo-system-token? token))
+               (common-util/is-jwt-token? token)
+               (transmit-config/edl-validate-write-tokens))
+      (when (transmit-config/local-edl-verification)
+        (tokens/verify-edl-token-locally token))
+      (launchpad-user-cache/get-edl-token-user request-context token))))
+
 (defn validate-write-token
   "Validates token is authorized for write operations. Level 4 JWT tokens require NON_NASA_DRAFT_USER ACL."
   ([request-context]
@@ -84,7 +101,10 @@
            (errors/throw-service-error :unauthorized (build-error-message token-info)))
 
          (when (:requires-draft-acl? token-info)
-           (acl/verify-non-nasa-draft-permission request-context :update :provider-object provider-id)))))))
+           (acl/verify-non-nasa-draft-permission request-context :update :provider-object provider-id))))
+     ;; Local checks first, so tokens they reject never cost an EDL call.
+     (verify-write-token-with-edl request-context)
+     nil)))
 
 (defn validate-read-token
   "Validates token is valid for read operations."

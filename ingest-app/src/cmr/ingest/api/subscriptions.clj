@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info warn]]
    [cmr.common.services.errors :as errors]
@@ -180,7 +181,8 @@
 (defn- common-ingest-checks
   "Common checks needed before starting to process an ingest operation"
   [context]
-  (common-enabled/validate-write-enabled context "ingest"))
+  (common-enabled/validate-write-enabled context "ingest")
+  (lt-validation/verify-write-token-with-edl context))
 
 (defn- verify-coll-modification-permission
   "Verifies the current user has been granted permission to modify collection subscription.
