@@ -4,8 +4,9 @@
             [cmr.message-queue.config :as rmq-conf]))
 
 (declare access-control-exchange-name provider-exchange-name provider-queue-name index-queue-name
-         concept-ingest-exchange-name index-queue-listener-count sync-entry-titles-concept-ids-collection-batch-size
-         enable-edl-groups enable-cmr-group-sids enable-cmr-groups enable-sids-get)
+         concept-ingest-exchange-name ingest-delete-exchange-name index-queue-listener-count
+         sync-entry-titles-concept-ids-collection-batch-size
+         enable-edl-groups enable-cmr-group-sids enable-cmr-groups enable-sids-get lockdown-acl-get-requests)
 
 (defconfig access-control-exchange-name
   "The access control exchange to which update/save messages are published for access control data."
@@ -26,6 +27,10 @@
 (defconfig concept-ingest-exchange-name
   "The ingest exchange to which collection and granule change messages are published."
   {:default "cmr_ingest.exchange"})
+
+(defconfig ingest-delete-exchange-name
+  "The exchange to which ingest delete event messages are published."
+  {:default "cmr_ingest_delete.exchange"})
 
 (defconfig index-queue-listener-count
   "Number of worker threads to use for the queue listener"
@@ -65,7 +70,9 @@
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name) (provider-queue-name)]
          :exchanges [(access-control-exchange-name) (provider-exchange-name)
-                     (concept-ingest-exchange-name)]
+                     (concept-ingest-exchange-name)
+                     (ingest-delete-exchange-name)]
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
-                                                   (concept-ingest-exchange-name)]
+                                                   (concept-ingest-exchange-name)
+                                                   (ingest-delete-exchange-name)]
                                (provider-queue-name) [(provider-exchange-name)]}))
