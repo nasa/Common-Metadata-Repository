@@ -7,6 +7,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.umm-spec.versioning :as umm-version]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,10 +130,11 @@
      (common-routes/search-response response))))
 
 (defn log-search-result-metadata
-  ([context hits concept-type total-took client-id token-type result-format param-str & param-args]
+  ([context hits concept-type total-took client-id token result-format param-str & param-args]
    (let [metadata (meta context)
          {shard-counts-atom :shard-counts} metadata
          total-shard-count (apply + @shard-counts-atom)
          search-count (count @shard-counts-atom)
-         format-str (str "Found %d %ss in %d ms from client %s, token_type %s in format %s using %d Elasticsearch queries across %d shards " param-str)]
-     (apply format format-str hits concept-type total-took client-id (get-token-type token-type) result-format search-count total-shard-count param-args))))
+         format-str (str "Found %d %ss in %d ms from client %s, token_type %s, token_hash %s in format %s using %d Elasticsearch queries across %d shards " param-str)]
+     (apply format format-str hits concept-type total-took client-id (get-token-type token)
+            (token-denylist/token-hash-for-log token) result-format search-count total-shard-count param-args))))

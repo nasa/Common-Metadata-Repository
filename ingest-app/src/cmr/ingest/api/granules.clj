@@ -93,6 +93,7 @@
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (info (format "Deleting granule %s from client %s"
-                  (pr-str concept-attribs) (:client-id request-context)))
+    (info (format "Deleting granule %s from client %s, token_hash %s"
+                  (pr-str concept-attribs) (:client-id request-context)
+                  (api-core/token-hash request-context)))
     (api-core/generate-ingest-response headers (ingest/delete-granule request-context concept-attribs))))

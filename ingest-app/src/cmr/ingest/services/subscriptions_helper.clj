@@ -14,6 +14,7 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.search :as search]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.transmit.urs :as urs]
    [markdown.core :as markdown]
    [postal.core :as postal-core]))
@@ -117,7 +118,8 @@
   "Takes a list of concept references and a subscriber id and removes any concept that the user does
    not have read access to."
   [context concept-refs subscriber-id]
-  (when (seq concept-refs)
+  (when (and (seq concept-refs)
+             (not (token-denylist/user-denied? context subscriber-id)))
     (let [permissions (json/parse-string
                        (access-control/get-permissions context {:user_id subscriber-id
                                                                 :concept_id (map :concept-id concept-refs)}))]

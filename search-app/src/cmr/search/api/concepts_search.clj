@@ -20,6 +20,7 @@
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.search.validators.all-granule-validation :as all-gran-validation]
+   [cmr.transmit.token-denylist :as token-denylist]
    [compojure.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -288,8 +289,9 @@
   "Retrieves a timeline of granules within each collection found."
   [ctx path-w-extension params headers query-string]
   (let [params (core-api/process-params :granule params path-w-extension headers mt/json)
-        _ (info (format "Getting granule timeline from client %s, token_type %s with params %s."
-                        (:client-id ctx) (get-token-type (:token ctx)) (pr-str params)))
+        _ (info (format "Getting granule timeline from client %s, token_type %s, token_hash %s with params %s."
+                        (:client-id ctx) (get-token-type (:token ctx))
+                        (token-denylist/token-hash-for-log (:token ctx)) (pr-str params)))
         search-params (lp/process-legacy-psa params)]
     (core-api/search-response ctx (query-svc/get-granule-timeline ctx search-params))))
 

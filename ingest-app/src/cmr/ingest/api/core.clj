@@ -7,6 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
+   [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [info]]
@@ -16,6 +17,7 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.transmit.tokens :as tokens]
    [cmr.common.util :as util])
   (:import
@@ -288,15 +290,38 @@
   [concept]
   (pr-str (dissoc concept :metadata)))
 
+(defn- known-user-id
+  "Returns the user id for the request's token if it is already known, without calling out to
+  resolve it."
+  [request-context]
+  (when-let [token (:token request-context)]
+    (or (:user-id request-context)
+        (let [user-id-delay (get request-context (util/key->delay-name :user-id))]
+          (when (and user-id-delay (realized? user-id-delay))
+            (try @user-id-delay (catch Exception _ nil))))
+        (some-> (cache/context->cache request-context user-id-cache-key)
+                (cache/get-value token))
+        (some-> (cache/context->cache request-context context-augmenter/token-user-id-cache-name)
+                (cache/get-value token))
+        (when (util/is-jwt-token? token)
+          (:uid (tokens/get-jwt-claims token))))))
+
+(defn token-hash
+  "Returns the deny list hash of the request's token, for logging."
+  [request-context]
+  (token-denylist/token-hash-for-log (:token request-context)))
+
 (defn log-concept-with-metadata-size
   "Log the concept with metadata-size-bytes added, and metadata removed."
   [concept request-context]
   (let [metadata-size-bytes (-> (:metadata concept) (.getBytes "UTF-8") alength)
         concept (assoc concept :metadata-size-bytes metadata-size-bytes)]
-    (info (format "Successfully ingested %s from client %s, token_type %s"
+    (info (format "Successfully ingested %s from client %s, token_type %s, user %s, token_hash %s"
                   (concept->loggable-string concept)
                   (:client-id request-context)
-                  (lt-validation/get-token-type (:token request-context))))))
+                  (lt-validation/get-token-type (:token request-context))
+                  (known-user-id request-context)
+                  (token-hash request-context)))))
 
 (defn set-default-error-format
   "Ring middleware to add a default format to the exception-info created during exceptions. This
@@ -325,8 +350,9 @@
     (common-enabled/validate-write-enabled request-context "ingest")
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (info (format "Deleting %s %s from client %s"
-                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
+    (info (format "Deleting %s %s from client %s, token_hash %s"
+                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)
+                  (token-hash request-context)))
     (generate-ingest-response headers
                               (format-and-contextualize-warnings-existing-errors
                                (ingest/delete-concept

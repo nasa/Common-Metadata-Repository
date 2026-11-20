@@ -10,6 +10,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.api.token-denylist :as token-denylist]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as api-errors]
@@ -26,6 +27,7 @@
 
 (defn handlers [system]
   (-> (build-routes system)
+      token-denylist/deny-listed-token-handler
       acl/add-authentication-handler
       common-routes/add-request-id-response-handler
       req-log/log-ring-request ;; Must be after request id

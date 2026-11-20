@@ -14,6 +14,7 @@
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.token-denylist :as token-denylist]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [warn info]]
@@ -415,7 +416,9 @@
     ;; If token is nil or empty, treat as guest
     (if (or (nil? user-token)(re-matches #"^[\s\t]*$" user-token))
       (auth-util/get-sids context :guest)
-      (auth-util/get-sids context (tokens/get-user-id context user-token)))))
+      (do
+        (token-denylist/verify-token-allowed context user-token)
+        (auth-util/get-sids context (tokens/get-user-id context user-token))))))
 
 (defn- fix-single-string-with-multiple-values
   "Check if string has embedded array, if not then return result conj'd with results,

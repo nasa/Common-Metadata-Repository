@@ -33,6 +33,7 @@
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.token-denylist :as token-denylist]
    [cmr.transmit.urs :as urs]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -115,6 +116,7 @@
    acl/token-pc-cache-key (acl/create-token-pc-cache)
    launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
    urs/urs-cache-key (urs/create-urs-cache)
+   token-denylist/snapshot-cache-key (token-denylist/create-snapshot-cache)
    kf/kms-cache-key (kf/create-kms-cache)
    kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
    kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)

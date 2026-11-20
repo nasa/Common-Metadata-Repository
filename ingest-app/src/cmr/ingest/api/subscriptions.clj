@@ -440,8 +440,9 @@
                             (api-core/set-revision-id headers)
                             (api-core/set-user-id request-context headers))]
     (check-ingest-permission request-context provider-id subscriber-id)
-    (info (format "Deleting subscription %s from client %s"
-                  (pr-str concept-attribs) (:client-id request-context)))
+    (info (format "Deleting subscription %s from client %s, token_hash %s"
+                  (pr-str concept-attribs) (:client-id request-context)
+                  (api-core/token-hash request-context)))
     (api-core/generate-ingest-response headers
                                        (api-core/format-and-contextualize-warnings-existing-errors
                                         (ingest/delete-subscription
