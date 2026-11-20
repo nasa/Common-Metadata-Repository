@@ -119,18 +119,21 @@
               (is (= (set cache-keys) (set response)) (format "could not read %s/%s" url cache)))
             "Indexer 1" (url/indexer-read-caches-url) "acls" ["acls"]
             "Indexer 2" (url/indexer-read-caches-url) "indexer-index-set-cache" ["concept-indices" "concept-mapping-types"]
-            "Indexer 3" (url/indexer-read-caches-url) "token-imp" [["mock-echo-system-token" "read"] ["ABC-2" "read"] ["ABC-1" "read"]]
-            "mdb" (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
-                                                         ["ABC-1" "read"]
-                                                         ["ABC-2" "read"]]
-            "ingest" (url/ingest-read-caches-url) "token-imp" [[nil "update"]
-                                                               ["ABC-1" "read"]
-                                                               ["ABC-2" "read"]]
+            "Indexer 3" (url/indexer-read-caches-url) "token-imp" [["mock-echo-system-token" "read" "system-object" nil]
+                                                                   ["ABC-2" "read" "system-object" nil]
+                                                                   ["ABC-1" "read" "system-object" nil]]
+            "mdb" (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update" "system-object" nil]
+                                                         ["ABC-1" "read" "system-object" nil]
+                                                         ["ABC-2" "read" "system-object" nil]]
+            "ingest" (url/ingest-read-caches-url) "token-imp" [[nil "update" "provider-object" "PROV1"]
+                                                               ["ABC-1" "read" "system-object" nil]
+                                                               ["ABC-2" "read" "system-object" nil]]
             "search 1" (url/search-read-caches-url) "acls" ["acls"]
             ;; This is now a shared redis cache server, so many keys exist
             ;;"search 2" (url/search-read-caches-url) "collections-for-gran-acls" []
             "search 3" (url/search-read-caches-url) "has-granules-map" []
-            "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
+            "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read" "system-object" nil]
+                                                                ["ABC-2" "read" "system-object" nil]]
             "search 6" (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
             "search 7" (url/search-read-caches-url) "xsl-transformer-templates" []
             "search 8" (url/search-read-caches-url) "token-user-id" ["ABC-1" "ABC-2"])
@@ -139,8 +142,8 @@
          (testing "list cache keys for bootstrap"
            (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
              (is (every? (set response)
-                         [["ABC-1" "read"]
-                          ["ABC-2" "read"]]))))))
+                         [["ABC-1" "read" "system-object" nil]
+                          ["ABC-2" "read" "system-object" nil]]))))))
 
     (testing "normal user cannot retrieve cache values"
       (are [url]

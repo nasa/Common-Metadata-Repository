@@ -2,6 +2,7 @@
   "test functions in acl core"
   (:require
     [clojure.test :refer [deftest is testing]]
+    [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.acl.core :as core]
     [cmr.common.util :refer [are3]]
     [cmr.transmit.access-control :as access-control]))
@@ -83,3 +84,19 @@
   (testing "Exception getting acls with 401 message"
     (with-redefs [access-control/acl-type->acl-key (fn [_object-identity-type] (throw (Exception. "Exception to break test with status 401")))]
       (is (thrown? Exception (core/get-permitting-acls nil nil nil nil))))))
+
+(deftest ingest-management-permission-cache-test
+  (let [prov1-acl {:provider-identity {:target "INGEST_MANAGEMENT_ACL" :provider-id "PROV1"}
+                   :group-permissions [{:user-type "registered" :permissions ["update"]}]}
+        context {:token "user-token"
+                 :system {:caches {core/token-imp-cache-key (core/create-token-imp-cache)}}}]
+    (with-redefs [acl-fetcher/get-acls (fn [_ [oit]] (when (= :provider-object oit) [prov1-acl]))
+                  core/context->sids (constantly [:registered])]
+      (testing "a cached grant for one provider does not carry to another provider or system level"
+        (is (nil? (core/verify-ingest-management-permission context :update :provider-object "PROV1")))
+        (is (thrown? Exception (core/verify-ingest-management-permission context :update :provider-object "PROV2")))
+        (is (thrown? Exception (core/verify-ingest-management-permission context :update))))
+      (testing "a cached denial for one provider does not block another provider"
+        (let [context (assoc-in context [:system :caches core/token-imp-cache-key] (core/create-token-imp-cache))]
+          (is (thrown? Exception (core/verify-ingest-management-permission context :update :provider-object "PROV2")))
+          (is (nil? (core/verify-ingest-management-permission context :update :provider-object "PROV1"))))))))

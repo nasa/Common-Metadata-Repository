@@ -2,6 +2,7 @@
   "CMR bulk update queueing flow integration tests. Endpoint validation is handled"
   (:require
    [cheshire.core :as json]
+   [clj-time.core :as time]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
@@ -20,11 +21,18 @@
 
 
 (deftest bulk-update-sorting
-  (let [concept-ids (doall (for [x (range 3)]
+  (let [;; Use past dates to avoid validation warnings about dates not being in the past
+        past-date (time/date-time 2020 1 1)
+        collection-with-past-dates (fn [x]
+                                     (data-umm-c/collection
+                                      x
+                                      {:DataDates [{:Date past-date :Type "CREATE"}]
+                                       :MetadataDates [{:Date past-date :Type "UPDATE"}]}))
+        concept-ids (doall (for [x (range 3)]
                              (:concept-id (ingest/ingest-concept
                                             (assoc
                                               (data-umm-c/collection-concept
-                                                (data-umm-c/collection x {}))
+                                                (collection-with-past-dates x))
                                               :concept-id
                                               (generate-concept-id x "PROV1"))))))
         _ (index/wait-until-indexed)
@@ -90,11 +98,18 @@
                 (map :task-id tasks)))))))
 
 (deftest bulk-update-success
-  (let [concept-ids (doall (for [x (range 3)]
+  (let [;; Use past dates to avoid validation warnings about dates not being in the past
+        past-date (time/date-time 2020 1 1)
+        collection-with-past-dates (fn [x]
+                                     (data-umm-c/collection
+                                      x
+                                      {:DataDates [{:Date past-date :Type "CREATE"}]
+                                       :MetadataDates [{:Date past-date :Type "UPDATE"}]}))
+        concept-ids (doall (for [x (range 3)]
                              (:concept-id (ingest/ingest-concept
                                             (assoc
                                               (data-umm-c/collection-concept
-                                                (data-umm-c/collection x {}))
+                                                (collection-with-past-dates x))
                                               :concept-id
                                               (generate-concept-id x "PROV1"))))))
         _ (index/wait-until-indexed)
