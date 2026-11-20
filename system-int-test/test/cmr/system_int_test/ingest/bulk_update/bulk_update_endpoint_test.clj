@@ -158,9 +158,9 @@
              :update-type "FIND_AND_UPDATE"
              :find-value {:Category "EARTH SCIENCE"}
              :update-value [{:Category "EARTH SCIENCE"
-                            :Topic "HUMAN DIMENSIONS"
-                            :Term "ENVIRONMENTAL IMPACTS"
-                            :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
+                             :Topic "HUMAN DIMENSIONS"
+                             :Term "ENVIRONMENTAL IMPACTS"
+                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
             ["An update value must be a single object for the [FIND_AND_UPDATE] update type. Arrays are only supported for the ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE and FIND_AND_REPLACE update types."]
 
@@ -171,9 +171,9 @@
              :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
              :find-value {:Category "EARTH SCIENCE"}
              :update-value [{:Category "EARTH SCIENCE"
-                            :Topic "HUMAN DIMENSIONS"
-                            :Term "ENVIRONMENTAL IMPACTS"
-                            :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
+                             :Topic "HUMAN DIMENSIONS"
+                             :Term "ENVIRONMENTAL IMPACTS"
+                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}]}
             400
             ["FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [SCIENCE_KEYWORDS] update field. It can only be used for the DATA_CENTERS update field."]
 
@@ -184,9 +184,54 @@
              :update-type "ADD_TO_EXISTING"
              :update-value {:Category "EARTH SCIENCE"}}
             400
-            ["#/update-field: Science keywords is not a valid enum value"]))))
+            ["#/update-field: Science keywords is not a valid enum value"]
 
-            ;; Short-name/version currently not supported. Support will be added
+            "COLLECTION_PROGRESS does not support ADD_TO_EXISTING"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "COLLECTION_PROGRESS"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:CollectionProgress "ACTIVE"}}
+            400
+            ["Only CLEAR_ALL_AND_REPLACE and FIND_AND_REPLACE are supported for the COLLECTION_PROGRESS update field."]
+
+            "COLLECTION_PROGRESS does not support FIND_AND_UPDATE"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "COLLECTION_PROGRESS"
+             :update-type "FIND_AND_UPDATE"
+             :find-value {:CollectionProgress "PLANNED"}
+             :update-value {:CollectionProgress "ACTIVE"}}
+            400
+            ["Only CLEAR_ALL_AND_REPLACE and FIND_AND_REPLACE are supported for the COLLECTION_PROGRESS update field."]
+
+            "COLLECTION_PROGRESS rejects invalid update value"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "COLLECTION_PROGRESS"
+             :update-type "CLEAR_ALL_AND_REPLACE"
+             :update-value {:CollectionProgress "INVALID_VALUE"}}
+            400
+            ["Invalid CollectionProgress value [INVALID_VALUE]. Must be one of: ACTIVE, COMPLETE, DEPRECATED, INREVIEW, NOT PROVIDED, PLANNED, PREPRINT, SUPERSEDED"]
+
+            "COLLECTION_PROGRESS rejects invalid find value"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "COLLECTION_PROGRESS"
+             :update-type "FIND_AND_REPLACE"
+             :find-value {:CollectionProgress "BAD"}
+             :update-value {:CollectionProgress "ACTIVE"}}
+            400
+            ["Invalid CollectionProgress find value [BAD]. Must be one of: ACTIVE, COMPLETE, DEPRECATED, INREVIEW, NOT PROVIDED, PLANNED, PREPRINT, SUPERSEDED"]
+
+            "RELATED_URLS does not support FIND_AND_UPDATE_HOME_PAGE_URL"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "RELATED_URLS"
+             :update-type "FIND_AND_UPDATE_HOME_PAGE_URL"
+             :find-value {:URLContentType "PublicationURL"}
+             :update-value {:URLContentType "PublicationURL"
+                            :Type "VIEW RELATED INFORMATION"
+                            :URL "https://example.com/doc"}}
+            400
+            ["FIND_AND_UPDATE_HOME_PAGE_URL update type can not be used for the [RELATED_URLS] update field. It can only be used for the DATA_CENTERS update field."]))))
+
+;; Short-name/version currently not supported. Support will be added
             ;; back in with CMR-4129
 
             ; "Missing collection identifiers"

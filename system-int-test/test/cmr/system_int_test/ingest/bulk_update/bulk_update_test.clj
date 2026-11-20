@@ -117,6 +117,17 @@
                 :Instruments [{:ShortName "atm"
                                :LongName "airborne topographic mapper"}]}]})
 
+(def collection-progress-umm
+  {:CollectionProgress "PLANNED"})
+
+(def related-urls-umm
+  {:RelatedUrls [{:URLContentType "PublicationURL"
+                  :Type "VIEW RELATED INFORMATION"
+                  :URL "https://example.com/doc1"}
+                 {:URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :URL "https://example.com/data"}]})
+
 (def large-status-message-umm
   {:RelatedUrls [{:Description "Related url description"
                   :URL "www.foobarbazquxquux.com"
@@ -1017,6 +1028,108 @@
       (index/wait-until-indexed)
       (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
         (is (= "COMPLETE" (:task-status collection-response)))))))
+
+(deftest bulk-update-collection-progress-test
+  (let [concept-ids (ingest-collection-in-each-format collection-progress-umm)
+        _ (index/wait-until-indexed)]
+
+    (testing "CLEAR_ALL_AND_REPLACE sets CollectionProgress on all concepts"
+      (let [task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "CLEAR_ALL_AND_REPLACE"
+                                :update-field "COLLECTION_PROGRESS"
+                                :update-value {:CollectionProgress "ACTIVE"}}))]
+        (index/wait-until-indexed)
+        (is (= "COMPLETE" (:task-status (ingest/bulk-update-task-status "PROV1" task-id))))
+        (doseq [concept-id concept-ids
+                :let [umm (-> (search/find-concepts-umm-json :collection {:concept-id concept-id})
+                              :results :items first :umm)]]
+          (is (= "ACTIVE" (:CollectionProgress umm))))))
+
+    (testing "FIND_AND_REPLACE updates matching concepts and skips non-matching"
+      (let [task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "FIND_AND_REPLACE"
+                                :update-field "COLLECTION_PROGRESS"
+                                :find-value {:CollectionProgress "ACTIVE"}
+                                :update-value {:CollectionProgress "COMPLETE"}}))]
+        (index/wait-until-indexed)
+        (is (= "COMPLETE" (:task-status (ingest/bulk-update-task-status "PROV1" task-id))))
+        (doseq [concept-id concept-ids
+                :let [umm (-> (search/find-concepts-umm-json :collection {:concept-id concept-id})
+                              :results :items first :umm)]]
+          (is (= "COMPLETE" (:CollectionProgress umm))))))
+
+    (testing "FIND_AND_REPLACE with no match marks concepts as SKIPPED"
+      (let [task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "FIND_AND_REPLACE"
+                                :update-field "COLLECTION_PROGRESS"
+                                :find-value {:CollectionProgress "PLANNED"}
+                                :update-value {:CollectionProgress "ACTIVE"}}))
+            _ (index/wait-until-indexed)
+            collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (every? #(= "SKIPPED" (:status %)) (:collection-statuses collection-response)))))))
+
+(deftest bulk-update-related-urls-test
+  (let [concept-ids (ingest-collection-in-each-format related-urls-umm)
+        _ (index/wait-until-indexed)]
+
+    (testing "CLEAR_ALL_AND_REPLACE replaces all RelatedUrls on all concepts"
+      (let [new-url {:URLContentType "PublicationURL"
+                     :Type "VIEW RELATED INFORMATION"
+                     :URL "https://example.com/replaced"}
+            task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "CLEAR_ALL_AND_REPLACE"
+                                :update-field "RELATED_URLS"
+                                :update-value new-url}))]
+        (index/wait-until-indexed)
+        (is (= "COMPLETE" (:task-status (ingest/bulk-update-task-status "PROV1" task-id))))
+        (doseq [concept-id concept-ids
+                :let [related-urls (-> (search/find-concepts-umm-json :collection {:concept-id concept-id})
+                                       :results :items first :umm :RelatedUrls)]]
+          (is (= 1 (count related-urls)))
+          (is (= "https://example.com/replaced" (:URL (first related-urls)))))))
+
+    (testing "FIND_AND_REPLACE updates matching RelatedUrls and skips non-matching"
+      (let [task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "FIND_AND_REPLACE"
+                                :update-field "RELATED_URLS"
+                                :find-value {:URLContentType "PublicationURL"}
+                                :update-value {:URLContentType "PublicationURL"
+                                               :Type "VIEW RELATED INFORMATION"
+                                               :URL "https://example.com/found-and-replaced"}}))
+            _ (index/wait-until-indexed)
+            collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (doseq [concept-id concept-ids
+                :let [related-urls (-> (search/find-concepts-umm-json :collection {:concept-id concept-id})
+                                       :results :items first :umm :RelatedUrls)
+                      pub-url (first (filter #(= "PublicationURL" (:URLContentType %)) related-urls))]]
+          (is (= "https://example.com/found-and-replaced" (:URL pub-url))))))
+
+    (testing "FIND_AND_REPLACE with no match marks concepts as SKIPPED"
+      (let [task-id (:task-id (ingest/bulk-update-collections
+                               "PROV1"
+                               {:concept-ids concept-ids
+                                :update-type "FIND_AND_REPLACE"
+                                :update-field "RELATED_URLS"
+                                :find-value {:URLContentType "ViewOnlineResource"}
+                                :update-value {:URLContentType "PublicationURL"
+                                               :Type "VIEW RELATED INFORMATION"
+                                               :URL "https://example.com/no-match"}}))
+            _ (index/wait-until-indexed)
+            collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (every? #(= "SKIPPED" (:status %)) (:collection-statuses collection-response)))))))
 
 (deftest bulk-update-large-status-message-test
   (let [concept-ids (ingest-collection-in-umm-json-format large-status-message-umm)
