@@ -234,6 +234,38 @@ class TestLoadShedding:
 
         await fake_redis.delete("lane:heavy:active")
 
+    async def _fill_heavy_lane(self):
+        app.state.lanes = RequestLanes(
+            make_lanes_config(express_permits=1, standard_permits=1, heavy_permits=1),
+            app.state.redis,
+        )
+        await app.state.redis.zadd(
+            "lane:heavy:active", {"blocking-req": time.time() + 300}
+        )
+
+    async def test_repeated_get_bounding_boxes_classified_heavy(self, client):
+        """All repeated GET values must reach the classifier, not just the last."""
+        await self._fill_heavy_lane()
+        resp = await client.get(
+            "/search/granules.json"
+            "?bounding_box[]=0,0,1,1"
+            "&bounding_box[]=2,2,3,3"
+            "&bounding_box[]=4,4,5,5"
+        )
+        assert resp.status_code == 429
+        await app.state.redis.delete("lane:heavy:active")
+
+    async def test_repeated_get_polygon_checks_every_value(self, client):
+        """A large polygon followed by a small one must still be heavy."""
+        await self._fill_heavy_lane()
+        big = ",".join(f"{i},{i % 2}" for i in range(25))
+        small = "0,0,1,0,1,1,0,0"
+        resp = await client.get(
+            f"/search/granules.json?polygon={big}&polygon={small}"
+        )
+        assert resp.status_code == 429
+        await app.state.redis.delete("lane:heavy:active")
+
 
 # Backend errors
 
