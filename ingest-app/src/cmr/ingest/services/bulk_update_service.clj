@@ -15,6 +15,7 @@
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm-spec.field-update :as field-update]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :refer [coll-progress-mapping]]
    [cmr.common.util :as util]))
 
 (def bulk-update-schema
@@ -80,8 +81,8 @@
   #{clear-all-and-replace find-and-replace})
 
 (def ^:private collection-progress-allowed-values
-  #{"ACTIVE" "PLANNED" "COMPLETE" "DEPRECATED" "NOT PROVIDED"
-    "PREPRINT" "INREVIEW" "SUPERSEDED"})
+  "Allowed COLLECTION_PROGRESS values, derived from the ISO mapping so the two can't drift apart."
+  (set (keys coll-progress-mapping)))
 
 (defn- validate-collection-progress-enum
   "Throw if val is not a recognized CollectionProgress enum string."
