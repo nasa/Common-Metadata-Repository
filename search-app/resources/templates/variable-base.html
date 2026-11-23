@@ -4,7 +4,8 @@
 
 {% block head-pre-css %}
 <script defer src="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.js"></script>
-<link href="{{ preview-root }}/plugin/metadata-preview.css?v={{ preview-version }}" rel="stylesheet" type="text/css">
+<link href="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.min.css" rel="stylesheet" type="text/css"
+      onerror="this.onerror=null;this.href='{{ preview-root }}/plugin/metadata-preview.css?v={{ preview-version }}'">
 {% endblock %}
 
 {% block main-content %}
