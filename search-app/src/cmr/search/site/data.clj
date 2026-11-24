@@ -37,7 +37,7 @@
 
 (defconfig metadata-preview-version
   "version of the metadata preview plugin"
-  {:default "23.3.2-1"})
+  {:default "26.2.4-0"})
 
 (defmulti get-providers
   "Get the providers, based on contextual data.
