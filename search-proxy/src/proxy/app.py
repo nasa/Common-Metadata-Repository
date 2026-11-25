@@ -315,7 +315,14 @@ async def proxy(request: Request, path: str):
             )
         body_hash = hashlib.sha256(body).hexdigest()
 
-    params = dict(request.query_params)
+    # Preserve repeated keys (e.g. bounding_box[]=...&bounding_box[]=...);
+    # dict(request.query_params) would keep only the last value.
+    params = {}
+    for param_name in request.query_params.keys():
+        param_values = request.query_params.getlist(param_name)
+        params[param_name] = (
+            param_values[0] if len(param_values) == 1 else param_values
+        )
     if request.method == "POST" and "application/x-www-form-urlencoded" in content_type:
         try:
             body_params = parse_qs(body.decode(), keep_blank_values=True)
