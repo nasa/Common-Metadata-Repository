@@ -2,7 +2,7 @@
   "Provides functions for subscribing to and handling events."
   (:require
    [cmr.common.concepts :as cc]
-   [cmr.common.log :refer [debug]]
+   [cmr.common.log :refer [debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.indexer.config :as config]
@@ -128,6 +128,35 @@
                      (str *ns*) concept-id revision-id all-revisions-index? tm))
       result)))
 
+;; SEPARATE INGEST AND INGEST DELETES BUT EVENTUALLY ALL CONCEPT DELETES WILL GO TO THE SAME QUEUE AND BE HANDLED BY THIS FUNC
+(defmulti handle-ingest-delete-event
+  "Handle the concept deletes that can be requested via the index delete queue. This is particularly helpful in handling
+  large deletes that can go on for a long time."
+  (fn [_context _all-revisions-index? msg]
+    (keyword (:action msg))))
+
+(defmethod handle-ingest-delete-event :default
+  [_context _all-revisions-index? msg]
+  (let [action (:action msg)
+        err-msg (format "CRITICAL: The index-delete-queue received an unexpected message action: %s.
+        This queue is strictly for deletions! Especially, the large deletions. Message: %s"
+                        action (pr-str msg))]
+    (error err-msg)
+    ;; Throw the exception so the queue broker does NOT delete the message so it can go to the DLQ.
+    (throw (ex-info err-msg {:msg msg}))))
+
+(defmethod handle-ingest-delete-event :concept-delete
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (when-not (= :humanizer (cc/concept-id->type concept-id))
+    (let [[tm result] (util/time-execution
+                        (indexer/delete-concept
+                          context concept-id revision-id {:ignore-conflict? true
+                                                          :all-revisions-index? all-revisions-index?}))]
+      (debug (format (str "Timed function %s handle-ingest-event concept-delete for concept-id %s "
+                          "revision-id %s all-revisions-index? %s took %d ms.")
+                     (str *ns*) concept-id revision-id all-revisions-index? tm))
+      result)))
+
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
   [context]
@@ -136,6 +165,10 @@
       (queue-protocol/subscribe queue-broker
                                 (config/provider-queue-name)
                                 #(handle-provider-event context %)))
+    (dotimes [_ (config/index-delete-queue-listener-count)]
+      (queue-protocol/subscribe queue-broker
+                                (config/index-delete-queue-name)
+                                #(handle-ingest-delete-event context false %)))
     (dotimes [_ (config/index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/index-queue-name)

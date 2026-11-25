@@ -1,9 +1,12 @@
 (ns cmr.metadata-db.data.oracle.sql-helper
   "Contains helper functions that are shared by providers and concepts."
   (:require
+   [clj-time.coerce :as tc]
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
+   [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
+   [cmr.metadata-db.config :as config]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
@@ -44,14 +47,54 @@
        (first comparisons)))))
 
 (defn force-delete-concept-by-params
-  "Delete the concepts based on params. concept-type and provider-id must be one of the params.
-  This function is moved from the concepts namespace to avoid cyclic inclusion issue."
+  "Delete the concepts based on params in batches to prevent overwhelming db.
+  concept-type and provider-id must be one of the params.
+  This function is moved from the concepts namespace to avoid cyclic inclusion issue.
+  To make sure it properly auto-commits between batches, do not wrap this func in a
+  with-db-transaction func (which will disable auto-commit)"
   [db provider params]
-  (let [{:keys [concept-type]} params
+  (let [{:keys [concept-type revision-date-boundary]} params
+        ;; Remove concept-type, provider-id, and the boundary so the raw SQL builder doesn't crash
         params (if (:small provider)
-                 (dissoc params :concept-type)
-                 (dissoc params :concept-type :provider-id))
+                 (dissoc params :concept-type :revision-date-boundary)
+                 (dissoc params :concept-type :provider-id :revision-date-boundary))
         table (ct/get-table-name provider concept-type)
-        stmt (su/build (delete table
-                         (where (find-params->sql-clause params))))]
-    (j/execute! db stmt)))
+
+        ;; Build the base query (e.g. WHERE parent_collection_id = ?)
+        sql-query (delete table
+                          (where (find-params->sql-clause params)))
+        built-stmt (su/build sql-query)
+
+        ;; Extract the SQL string and the values from the built statement
+        sql-str (first built-stmt)
+        sql-vals (rest built-stmt)
+        batch-size (config/force-delete-concept-by-params-db-batch-size)
+
+        ;; Append ROWNUM <= ? for batch async calls and conditionally append revision_date to the SQL string
+        ;; so we can bound which concepts we are deleting during delete vs ingest race conditions
+        stmt (if revision-date-boundary
+               (into [(str sql-str " AND revision_date <= ? AND ROWNUM <= ?")]
+                     (concat sql-vals [(tc/to-sql-time revision-date-boundary) batch-size]))
+               (into [(str sql-str " AND ROWNUM <= ?")]
+                     (concat sql-vals [batch-size])))]
+
+    ;; Loop and execute until 0 rows are deleted
+    (loop [total-deleted 0
+           attempt 1]
+      (let [;; Wrap JUST the batch execution in a transaction so it explicitly commits
+            rows-deleted (j/with-db-transaction [batch-conn db]
+                                                (first (j/execute! batch-conn stmt)))]
+
+        (debug (format "INSIDE force-delete-concept-by-params. Attempt: %d. Total deleted: %d. Rows deleted: %d" attempt total-deleted rows-deleted))
+
+        (if (> rows-deleted 0)
+          (do
+            ;; Pause for 10ms to let Oracle safely flush the Undo Tablespace to disk
+            (Thread/sleep 10)
+            (recur (+ total-deleted rows-deleted) (inc attempt)))
+
+          ;; Loop finished!
+          (do
+            (info (format "Finished deleting %d %s(s) in %d batches from db table %s."
+                          total-deleted concept-type attempt table))
+            total-deleted))))))
