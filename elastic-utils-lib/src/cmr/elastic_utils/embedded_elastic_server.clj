@@ -73,8 +73,10 @@
                   (build-kibana kibana-port network))]
      ;; This will cause a pretty big performance hit locally if you provide data-dir.
      ;; You would probably be better off just connecting to the docker machine.
-     (when data-dir
-       (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
+     (if data-dir
+       (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data")
+       ;; Index creation waits on fsync, and test resets recreate indexes constantly.
+       (.withTmpFs container {"/usr/share/elasticsearch/data" "rw,uid=1000,gid=0,mode=0775"}))
      (doto container
        ;; modifier below is to limit local embedded elastic container memory, so it will not exit from OOM.
        (.withCreateContainerCmdModifier cmd-consumer)
@@ -84,6 +86,8 @@
        (.withEnv "xpack.security.http.ssl.enabled" "false")
        (.withEnv "indices.id_field_data.enabled" "true")
        (.withEnv "node.name" "embedded-elastic")
+       ;; Starts all of a new index's shards at once instead of 4 at a time.
+       (.withEnv "cluster.routing.allocation.node_initial_primaries_recoveries" "64")
        ;; ES 8 derives maxClauseCount from heap and search thread count, and the thread count
        ;; follows the host's CPUs, so clause-heavy queries passed or failed depending on the
        ;; machine. Pinning processors keeps the limit the same everywhere.

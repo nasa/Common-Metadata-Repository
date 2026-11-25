@@ -174,13 +174,14 @@
 (defn- poll-task-for-completion
   "Polls a given task-id until it completes, fails, or times out."
   [conn task-id]
-  (let [polling-interval-ms 5000
+  (let [max-polling-interval-ms 5000
         ;; Hard limit set to 4.5 minutes to safely fit inside the 5-minute SQS window
         max-wait-ms (* 4.5 60 1000)
         start-time (System/currentTimeMillis)]
 
     (info (str "Delete-By-Query: Polling task " task-id " for completion..."))
-    (loop []
+    ;; Small deletes finish in milliseconds, so back off from a short first poll.
+    (loop [polling-interval-ms 100]
       (let [check-task-url (es-util/url-with-path conn (str "_tasks/" task-id))
             task-status-response (http/get check-task-url
                                            (merge (:http-opts conn)
@@ -245,7 +246,7 @@
             (let [status (get-in task-status-body [:task :status])]
               (info (format "Delete-By-Query: Task %s progress: %d deleted / %d total." task-id (:deleted status) (:total status))))
             (Thread/sleep polling-interval-ms)
-            (recur)))))))
+            (recur (min max-polling-interval-ms (* 2 polling-interval-ms)))))))))
 
 (defn delete-by-query
   "Performs a delete-by-query operation, blocking until completion, with retries for scroll contexts."
