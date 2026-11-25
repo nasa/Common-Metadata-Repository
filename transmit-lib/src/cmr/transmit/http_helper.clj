@@ -379,17 +379,20 @@
       "Sends a request to call the health endpoint of the given app."
       [context#]
       (let [health-fn# (fn []
-                         (let [headers# {:client-id config/cmr-client-id}
-                               {status# :status body# :body}
-                               (request context# ~app-name
-                                        {:url-fn ~cmr.transmit.http-helper/health-url
-                                         :method :get
-                                         :raw? true
-                                         :http-options {:accept :json
-                                                        :headers headers#}})]
-                           (if (= 200 status#)
-                             {:ok? true :dependencies body#}
-                             {:ok? false :dependencies body#})))
+                         (try
+                           (let [headers# {:client-id config/cmr-client-id}
+                                 {status# :status body# :body}
+                                 (request context# ~app-name
+                                          {:url-fn ~cmr.transmit.http-helper/health-url
+                                           :method :get
+                                           :raw? true
+                                           :http-options {:accept :json
+                                                          :headers headers#}})]
+                             (if (= 200 status#)
+                               {:ok? true :dependencies body#}
+                               {:ok? false :dependencies body#}))
+                           (catch Exception e#
+                             {:ok? false :problem (.getMessage e#)})))
             timeout-ms# (* util/second-as-milliseconds (+ (get ~options :timeout-secs 0)
                                    (hh/health-check-timeout-seconds)))]
         (hh/get-health health-fn# timeout-ms#)))))
