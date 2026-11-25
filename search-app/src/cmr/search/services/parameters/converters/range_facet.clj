@@ -44,8 +44,6 @@
    values. If the first array just has 1 value, then use the second array to get the unit because
    both values are using the second arrays unit. Otherwise use the first array."
   [range-part1 range-part2]
-  (def range-part1 range-part1)
-  (def range-part2 range-part2)
   (if (= 1 (count range-part1))
     (get range-part2 1)
     (get range-part1 1)))
