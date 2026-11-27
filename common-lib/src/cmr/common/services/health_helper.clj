@@ -2,7 +2,6 @@
   "This namespace provides function to timeout the execution of health check function
   and provides the timeout response when timeout occurs."
   (:require
-   [clojail.core :as c-core]
    [cmr.common.config :as config :refer [defconfig]]
    [cmr.common.util :as util]))
 
@@ -15,8 +14,11 @@
   ([function]
    (get-health function (* util/second-as-milliseconds (health-check-timeout-seconds))))
   ([function timeout-ms]
-   (try
-     (c-core/thunk-timeout function timeout-ms)
-     (catch java.util.concurrent.TimeoutException _e
-       {:ok? false
-        :problem "health check operation timed out."}))))
+   (let [check (future (function))
+         result (deref check timeout-ms ::timed-out)]
+     (if (= ::timed-out result)
+       ;; Not Thread.stop: an Error mid-request makes HttpClient 4.5 shut down the whole pool.
+       (do (future-cancel check)
+           {:ok? false
+            :problem "health check operation timed out."})
+       result))))
