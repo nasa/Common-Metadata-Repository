@@ -16,11 +16,11 @@
 
 (def ^:private elasticsearch-official-docker-image
   "Official docker image."
-  "docker.elastic.co/elasticsearch/elasticsearch:8.19.25")
+  "docker.elastic.co/elasticsearch/elasticsearch:8.19.26")
 
 (def ^:private kibana-official-docker-image
   "Official kibana docker image."
-  "docker.elastic.co/kibana/kibana:8.19.25")
+  "docker.elastic.co/kibana/kibana:8.19.26")
 
 (defn- build-kibana
   "Build kibana in an embedded docker."
