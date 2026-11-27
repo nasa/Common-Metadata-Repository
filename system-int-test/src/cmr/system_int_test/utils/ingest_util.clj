@@ -32,13 +32,15 @@
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."
   []
-  (let [response (client/post (url/disable-ingest-writes-url))]
+  (let [response (client/post (url/disable-ingest-writes-url)
+                              {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (is (= 200 (:status response)))))
 
 (defn enable-ingest-writes
   "Use the enable/disable endpoint on ingest to enable writes."
   []
-  (let [response (client/post (url/enable-ingest-writes-url))]
+  (let [response (client/post (url/enable-ingest-writes-url)
+                              {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (is (= 200 (:status response)))))
 
 (defn- create-provider-through-url
@@ -145,21 +147,24 @@
   ([{:keys [force-version]}]
    (let [response (client/post (url/reindex-all-collections-url)
                                {:connection-manager (sys/conn-mgr)
-                                :query-params {:force_version force-version}})]
+                                :query-params {:force_version force-version}
+                                :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
      (is (= 200 (:status response))))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"
   []
   (let [response (client/post (url/cleanup-expired-collections-url)
-                              {:connection-manager (sys/conn-mgr)})]
+                              {:connection-manager (sys/conn-mgr)
+                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (is (= 200 (:status response)))))
 
 (defn cleanup-bulk-granule-update-tasks
   "Tells ingest to run the trigger-bulk-granule-task-cleanup job"
   []
   (let [response (client/post (url/cleanup-granule-bulk-update-task-url)
-                              {:connection-manager (sys/conn-mgr)})]
+                              {:connection-manager (sys/conn-mgr)
+                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (is (= 200 (:status response)))))
 
 (defn translate-metadata
